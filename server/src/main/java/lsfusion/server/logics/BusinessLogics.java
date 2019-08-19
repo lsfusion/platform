@@ -492,7 +492,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public void initClassDataProps(final DBNamingPolicy namingPolicy) {
         ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(new BaseUtils.Group<ImplementTable, ConcreteCustomClass>() {
             public ImplementTable group(ConcreteCustomClass customClass) {
-                return LM.tableFactory.getClassMapTable(MapFact.singletonOrder("key", (ValueClass) customClass), namingPolicy).table;
+                return LM.tableFactory.getClassMapTable(MapFact.singletonOrder("key", customClass), namingPolicy).table;
             }
         });
 
@@ -512,7 +512,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             ClassDataProperty dataProperty = new ClassDataProperty(LocalizedString.create(classSet.toString(), false), classSet);
             LP<ClassPropertyInterface> lp = new LP<>(dataProperty);
             LM.addProperty(null, new LP<>(dataProperty));
-            LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
+            LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
             // именно такая реализация, а не implementTable, из-за того что getInterfaceClasses может попасть не в "класс таблицы", а мимо и тогда нарушится assertion что должен попасть в ту же таблицу, это в принципе проблема getInterfaceClasses
             dataProperty.markStored(table);
             dataProperty.initStored(LM.tableFactory, namingPolicy); // we need to initialize because we use calcClassValueWhere for init stored properties
@@ -1030,7 +1030,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         for (int i = 0; i < order.size(); i++) { // тут нужн
             ActionOrProperty orderProperty = order.get(order.size() - 1 - i);
             if (!proceeded.contains(orderProperty)) {
-                HMap<ActionOrProperty, LinkType> innerComponentOutTypes = new HMap<>(LinkType.<ActionOrProperty>minLinkAdd());                
+                HMap<ActionOrProperty, LinkType> innerComponentOutTypes = new HMap<>(LinkType.minLinkAdd());                
                 findComponent(orderProperty, LinkType.MAX, linksMap, proceeded, innerComponentOutTypes);
 
                 ActionOrProperty minProperty = findMinProperty(innerComponentOutTypes);
@@ -1462,14 +1462,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         // нам нужны будут сами persistent свойства + prev'ы у action'ов
         boolean canBeOutOfDepends = increment != ApplyFilter.NO;
         MExclMap<ApplyCalcEvent, MOrderMap<ApplySingleEvent, SessionEnvEvent>> mMapDepends = MapFact.mExclMap();
-        MAddMap<OldProperty, SessionEnvEvent> singleAppliedOld = MapFact.mAddMap(SessionEnvEvent.<OldProperty>mergeSessionEnv());
+        MAddMap<OldProperty, SessionEnvEvent> singleAppliedOld = MapFact.mAddMap(SessionEnvEvent.mergeSessionEnv());
         for(int i = 0, size = applyEvents.size(); i<size; i++) {
             ApplyGlobalEvent applyEvent = applyEvents.getKey(i);
             SessionEnvEvent sessionEnv = applyEvents.getValue(i);
             singleAppliedOld.addAll(applyEvent.getEventOldDepends().toMap(sessionEnv));
             
             if(applyEvent instanceof ApplyCalcEvent) { // сначала классы и stored обрабатываем
-                mMapDepends.exclAdd((ApplyCalcEvent) applyEvent, MapFact.mOrderMap(SessionEnvEvent.<ApplySingleEvent>mergeSessionEnv()));
+                mMapDepends.exclAdd((ApplyCalcEvent) applyEvent, MapFact.mOrderMap(SessionEnvEvent.mergeSessionEnv()));
                 if(applyEvent instanceof ApplyStoredEvent) { // так как бежим в нужном порядке, то и stored будут заполняться в нужном порядке (так как он соответствует порядку depends)
                     ApplyStoredEvent applyStoredEvent = (ApplyStoredEvent) applyEvent;
                     fillSingleApplyDependFrom(applyStoredEvent.property, applyStoredEvent, sessionEnv, mMapDepends, canBeOutOfDepends);
@@ -1524,7 +1524,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public MSet<Long> getOverCalculatePropertiesSet(DataSession session, Integer maxQuantity) throws SQLException, SQLHandledException {
         KeyExpr propertyExpr = new KeyExpr("Property");
-        ImRevMap<Object, KeyExpr> propertyKeys = MapFact.singletonRev((Object) "Property", propertyExpr);
+        ImRevMap<Object, KeyExpr> propertyKeys = MapFact.singletonRev("Property", propertyExpr);
 
         QueryBuilder<Object, Object> propertyQuery = new QueryBuilder<>(propertyKeys);
         propertyQuery.and(reflectionLM.canonicalNameProperty.getExpr(propertyExpr).getWhere());

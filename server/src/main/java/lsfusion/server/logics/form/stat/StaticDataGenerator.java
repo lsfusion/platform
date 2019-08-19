@@ -115,7 +115,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
     public Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<SDP>> generate(int selectTop) throws SQLException, SQLHandledException {
         Map<GroupObjectEntity, StaticKeyData> keySources = new HashMap<>();
         StaticPropertyData<SDP> propSources = new StaticPropertyData<>();
-        iterateChildGroup(hierarchy.getRoot(),  SetFact.<GroupObjectEntity>EMPTYORDER(), MapFact.<CompareEntity, Boolean>EMPTYORDER(), null, selectTop, keySources, propSources, hierarchy.getValueGroups());
+        iterateChildGroup(hierarchy.getRoot(),  SetFact.EMPTYORDER(), MapFact.EMPTYORDER(), null, selectTop, keySources, propSources, hierarchy.getValueGroups());
         return new Pair<>(keySources, propSources);
     }
     
@@ -176,9 +176,9 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                 public ImOrderSet<GroupObjectEntity> group(SDP key) {
                     return key.getColumnGroupObjects();
                 }
-            }).addIfNotContains(SetFact.<GroupObjectEntity>EMPTYORDER(), SetFact.<SDP>EMPTY()); // we need keys anyway
+            }).addIfNotContains(SetFact.EMPTYORDER(), SetFact.EMPTY()); // we need keys anyway
         else 
-            columnGroupObjectProps = MapFact.singleton(SetFact.<GroupObjectEntity>EMPTYORDER(), queryProperties);
+            columnGroupObjectProps = MapFact.singleton(SetFact.EMPTYORDER(), queryProperties);
                 
         for(int g=0,sizeG=columnGroupObjectProps.size();g<sizeG;g++) {
             ImOrderSet<GroupObjectEntity> columnGroupObjects = columnGroupObjectProps.getKey(g);
@@ -247,7 +247,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
 
                     thisColumnObjects = SetFact.EMPTY();
                     parentColumnObjects = SetFact.EMPTY();
-                    columnData = MapFact.singleton(MapFact.<ObjectEntity, Object>EMPTY(), SetFact.singletonOrder(MapFact.<ObjectEntity, Object>EMPTY()));
+                    columnData = MapFact.singleton(MapFact.EMPTY(), SetFact.singletonOrder(MapFact.EMPTY()));
                 } else {
                     ImSet<GroupObjectEntity> parentColumnGroupObjects = allColumnGroupObjects.getSet().filter(parentGroupsAndThisGroup).remove(columnGroupObjects.getSet());
 

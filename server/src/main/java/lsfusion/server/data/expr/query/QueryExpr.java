@@ -200,11 +200,11 @@ public abstract class QueryExpr<K extends Expr,I extends QueryExpr.Query<I>, J e
                 return InnerExprFollows.EMPTYEXPR();
 
             ImSet<K> groupKeys = thisObj.group.keys();
-            return new InnerExprFollows<>(lsfusion.server.data.query.Query.<K, K, K>getClassWhere(getFullWhere(), MapFact.<K, BaseExpr>EMPTY(), groupKeys.toRevMap()), groupKeys);
+            return new InnerExprFollows<>(lsfusion.server.data.query.Query.getClassWhere(getFullWhere(), MapFact.EMPTY(), groupKeys.toRevMap()), groupKeys);
         }
 
         protected IC translate(MapTranslate translate) {
-            return thisObj.createThis(thisObj.query.translateOuter(translate), (ImMap<K, BaseExpr>) translate.translateExprKeys(thisObj.group)).getInner();
+            return thisObj.createThis(thisObj.query.translateOuter(translate), translate.translateExprKeys(thisObj.group)).getInner();
         }
 
         protected T getThis() {
@@ -283,7 +283,7 @@ public abstract class QueryExpr<K extends Expr,I extends QueryExpr.Query<I>, J e
             ClassExprWhere result;
             if(staticClass==null) {
                 Expr mainExpr = getInner().getMainExpr();
-                ImRevMap<BaseExpr, Expr> valueMap = MapFact.<BaseExpr, Expr>singletonRev(QueryExpr.this, mainExpr);
+                ImRevMap<BaseExpr, Expr> valueMap = MapFact.singletonRev(QueryExpr.this, mainExpr);
                 if(getInner().isSelect()) // isSelectNotInWhere неправильно использовать, так как он коррелирует вход с выходом, а это для select агрегаций не так
                     result = ClassExprWhere.mapBack(outerInner, fullWhere).and(ClassExprWhere.mapBack(valueMap, fullWhere));
                 else {

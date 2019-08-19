@@ -133,7 +133,7 @@ public abstract class GridPropertyTable {
     }
 
     private int getViewportWidth() {
-        return ((JViewport) getTable().getParent()).getWidth() - 1;
+        return getTable().getParent().getWidth() - 1;
 //        return getTableDataScroller().getClientWidth() - 1;
     }
 

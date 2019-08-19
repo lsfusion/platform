@@ -76,7 +76,7 @@ public class NullableKeyExpr extends ParamExpr implements NullableExprInterface 
     public ImSet<NullableExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
         assert includeThis || recursive;
         if(includeThis) {
-            return SetFact.<NullableExprInterface>singleton(this);
+            return SetFact.singleton(this);
         }
         return SetFact.EMPTY();
     }

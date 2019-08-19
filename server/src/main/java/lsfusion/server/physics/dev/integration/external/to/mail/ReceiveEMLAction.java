@@ -90,7 +90,7 @@ public class ReceiveEMLAction extends EmailAction {
         Set<Long> skipEmails = new HashSet<>();
         try {
             KeyExpr emailExpr = new KeyExpr("email");
-            ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev((Object) "email", emailExpr);
+            ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev("email", emailExpr);
 
             QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
             emailQuery.addProperty("uid", LM.findProperty("uid[Email]").getExpr(emailExpr));

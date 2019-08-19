@@ -82,7 +82,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     public ImSet<Action> getDependActions() {
-        return SetFact.singleton((Action)action.action);
+        return SetFact.singleton(action.action);
     }
 
     @Override

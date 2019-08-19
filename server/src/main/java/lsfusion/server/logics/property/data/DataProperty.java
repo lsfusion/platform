@@ -65,7 +65,7 @@ public abstract class DataProperty extends AbstractDataProperty {
 
     @Override
     protected ClassWhere<Object> getDataClassValueWhere() {
-        return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", value), true);
+        return new ClassWhere<>(MapFact.addExcl(IsClassProperty.getMapClasses(interfaces), "value", value), true);
     }
 
     public ChangeEvent<?> event = null;
@@ -90,7 +90,7 @@ public abstract class DataProperty extends AbstractDataProperty {
         if(noClasses())
             return SetFact.EMPTY();
         
-        return propChanges.getUsedChanges(SetFact.toSet((Property) getClassProperty().property, (Property) getValueClassProperty().property));
+        return propChanges.getUsedChanges(SetFact.toSet(getClassProperty().property, getValueClassProperty().property));
     }
 
     @Override
@@ -189,7 +189,7 @@ public abstract class DataProperty extends AbstractDataProperty {
 
         PropertyChange<ClassPropertyInterface> eventChange = null; // до непосредственно вычисления, для хинтов
         if(event!=null)
-            eventChange = ((ChangeEvent<ClassPropertyInterface>)event).getDataChanges(changes, event.isData() ? joinValues : MapFact.<ClassPropertyInterface, Expr>EMPTY()).get(this);
+            eventChange = ((ChangeEvent<ClassPropertyInterface>)event).getDataChanges(changes, event.isData() ? joinValues : MapFact.EMPTY()).get(this);
 
 
         if(!noClasses()) {
@@ -242,9 +242,9 @@ public abstract class DataProperty extends AbstractDataProperty {
             MSet<ChangedProperty> mResult = SetFact.mSet(); 
             for (ClassPropertyInterface remove : interfaces)
                 if (remove.interfaceClass instanceof CustomClass)
-                    mResult.add(((CustomClass) remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+                    mResult.add(remove.interfaceClass.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
             if (value instanceof CustomClass)
-                mResult.add(((CustomClass) value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+                mResult.add(value.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
             return mResult.immutable();
         }
         return SetFact.EMPTY();

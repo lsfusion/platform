@@ -135,7 +135,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     }
 
     public ImSet<Value> getValues() {
-        return SetFact.<Value>singleton(this);
+        return SetFact.singleton(this);
     }
 
     public static Value ZERO = new ValueExpr(0.0, DoubleClass.instance);

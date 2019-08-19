@@ -199,7 +199,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     public ImSet<OuterContext> getOuterDepends() {
-        return SetFact.<OuterContext>toExclSet(wheres);
+        return SetFact.toExclSet(wheres);
     }
 
     private static class Edge<K> implements GreedyTreeBuilding.Edge<BaseJoin> {
@@ -272,10 +272,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private final StatKeys<Z> statKeys;
 
         public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, boolean compileInfo, BitSet inJoins, BitSet adjJoins, PushCost pushCost) {
-            this(join, statKeys, compileInfo ? SetFact.<BaseExpr>EMPTY() : null, compileInfo, inJoins, adjJoins, pushCost);
+            this(join, statKeys, compileInfo ? SetFact.EMPTY() : null, compileInfo, inJoins, adjJoins, pushCost);
         }
         public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, ImSet<BaseExpr> usedNotNulls, boolean compileInfo, BitSet inJoins, BitSet adjJoins, PushCost pushCost) {
-            super(compileInfo ? new CompileInfo(usedNotNulls, SetFact.<BaseJoin>singletonOrder(join), join instanceof QueryJoin ? statKeys.getCost() : Cost.ONE) : null, inJoins, adjJoins, join instanceof QueryJoin ? MapFact.singleton((QueryJoin)join, pushCost) : null);
+            super(compileInfo ? new CompileInfo(usedNotNulls, SetFact.singletonOrder(join), join instanceof QueryJoin ? statKeys.getCost() : Cost.ONE) : null, inJoins, adjJoins, join instanceof QueryJoin ? MapFact.singleton((QueryJoin)join, pushCost) : null);
             this.join = join;
             this.statKeys = statKeys;
         }
@@ -326,17 +326,17 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         @Override
         public ImSet<BaseJoin> getJoins() {
-            return SetFact.singleton((BaseJoin) join);
+            return SetFact.singleton(join);
         }
 
         @Override
         public ImMap<BaseJoin, Stat> getJoinStats() {
-            return MapFact.singleton((BaseJoin)join, statKeys.getRows());
+            return MapFact.singleton(join, statKeys.getRows());
         }
 
         @Override
         public ImMap<BaseJoin, DistinctKeys> getKeyStats() {
-            return MapFact.singleton((BaseJoin)join, (DistinctKeys) statKeys.getDistinct());
+            return MapFact.singleton(join, statKeys.getDistinct());
         }
 
         @Override
@@ -622,7 +622,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return new CompileInfo(usedNotNulls.addExcl(compileInfo.usedNotNulls), joinOrder.addOrderExcl(compileInfo.joinOrder), maxSubQueryCost.or(compileInfo.maxSubQueryCost));
         }
         
-        public final static CompileInfo EMPTY = new CompileInfo(SetFact.<BaseExpr>EMPTY(), SetFact.<BaseJoin>EMPTYORDER(), Cost.ONE); 
+        public final static CompileInfo EMPTY = new CompileInfo(SetFact.EMPTY(), SetFact.EMPTYORDER(), Cost.ONE); 
     }
 
     private abstract static class CostStat implements Comparable<CostStat> {
@@ -788,7 +788,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
         final MAddMap<BaseJoin, DistinctKeys> keyDistinctStats = MapFact.mAddOverrideMap();
         final MAddMap<BaseExpr, PropStat> exprStats = MapFact.mAddOverrideMap();
-        final MAddMap<BaseJoin, Cost> indexedStats = MapFact.<BaseJoin, Cost>mAddOverrideMap();
+        final MAddMap<BaseJoin, Cost> indexedStats = MapFact.mAddOverrideMap();
         Result<ImSet<Edge>> edges = new Result<>();
         
         buildGraphWithStats(groups, edges, joinStats, exprStats, null, keyDistinctStats, indexedStats, type, keyStat, pushJoin, pushInfo, pushUpWheres);
@@ -830,7 +830,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     private <K extends BaseExpr, Z extends Expr> Where getInnerCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final DebugInfoWriter debugInfoWriter) {
 //        ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet(); // по идее не надо, так как включает queryJoin
         final Result<PushInfo> pushInfo = new Result<>();
-        return calculateCost(SetFact.<BaseExpr>EMPTY(), false, keyStat, type, (costStat, joinStats, exprStats) -> getCostPushWhere(costStat, queryJoin, pushInfo.result, pushJoinWhere, joinStats, debugInfoWriter), queryJoin, pushInfo, upWheres, pushLargeDepth, debugInfoWriter);
+        return calculateCost(SetFact.EMPTY(), false, keyStat, type, (costStat, joinStats, exprStats) -> getCostPushWhere(costStat, queryJoin, pushInfo.result, pushJoinWhere, joinStats, debugInfoWriter), queryJoin, pushInfo, upWheres, pushLargeDepth, debugInfoWriter);
     }
     
     private boolean recProceedChildrenCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, boolean keepThis, ImSet<BaseJoin> keepJoins, FunctionSet<BaseJoin> notKeepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
@@ -921,7 +921,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
-            return JoinExprTranslator.translateExpr((Expr) replaceKeyJoinExpr(expr), translator).getWhere(); 
+            return JoinExprTranslator.translateExpr(replaceKeyJoinExpr(expr), translator).getWhere(); 
         }
     }
 
@@ -1302,7 +1302,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     BaseJoin[] keyJoins = compileInfo ? new BaseJoin[edgesCount] : null;
                     Object[] keys = new Object[edgesCount];
                     
-                    MAddMap<BaseExpr, Integer> minProps = MapFact.mAddMapMax(edgesCount, MapFact.<BaseExpr, Integer>override()); // map with indexes on edges with min stat
+                    MAddMap<BaseExpr, Integer> minProps = MapFact.mAddMapMax(edgesCount, MapFact.override()); // map with indexes on edges with min stat
 
                     // читаем edge'и
                     for (int j=0;j<edgesCount;j++) {
@@ -1381,7 +1381,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                         ImMap<Z, Stat> pushNotNullKeys = mNotNullKeys.immutable();
                         Stat aStat = aCostStat.getStat();
 
-                        ImSet<BaseExpr> usedNotNulls = compileInfo ? SetFact.<BaseExpr>EMPTY() : null;                        
+                        ImSet<BaseExpr> usedNotNulls = compileInfo ? SetFact.EMPTY() : null;                        
                         StatKeys<Z> pushedStatKeys;
                         Result<ImSet<Z>> rPushedKeys = pushJoin != null ? new Result<>() : null;
                         Result<ImSet<BaseExpr>> rPushedProps = compileInfo ? new Result<>() : null;
@@ -1397,7 +1397,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                             bAdjStat = bAdjStat.min(pushedStatKeys.getRows());
                         } else {
                             MExclMap<BaseExpr, Stat> mProps = MapFact.mExclMapMax(minPropsCount);
-                            MSet<BaseExpr> mNotNullProps = compileInfo ? SetFact.<BaseExpr>mSetMax(minPropsCount) : null;
+                            MSet<BaseExpr> mNotNullProps = compileInfo ? SetFact.mSetMax(minPropsCount) : null;
                             for (int p = 0; p < minPropsCount ; p++) {
                                 int i = minProps.getValue(p);
                                 if (aIsKeys[i]) {
@@ -1690,7 +1690,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             KeyJoinExpr keyJoinExpr = null;
             for(int j=0,sizeJ=exprEdges.size();j<sizeJ;j++) {
                 Pair<BaseJoin<Object>, Object> exprEdge = exprEdges.get(j);
-                if(((BaseJoin)exprEdge.first) instanceof ExprJoin && !((ExprJoin)exprEdge.first).canBeKeyJoined()) { // не создаем промежуточную вершину, чтобы не протолкнулся висячий ключ
+                if(exprEdge.first instanceof ExprJoin && !((ExprJoin)exprEdge.first).canBeKeyJoined()) { // не создаем промежуточную вершину, чтобы не протолкнулся висячий ключ
                     addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, joinExpr);
                 } else {
                     if(singleEdge == null ) {
@@ -1748,7 +1748,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     private static Where getUpWhere(WhereJoin join, UpWhere upWhere, JoinExprTranslator translator) {
         Where result = Where.TRUE;
         for(BaseExpr baseExpr : ((BaseJoin<?>) join).getJoins().valueIt()) {
-            Expr expr = JoinExprTranslator.translateExpr((Expr) baseExpr, translator);
+            Expr expr = JoinExprTranslator.translateExpr(baseExpr, translator);
             Where where;
             if(expr instanceof BaseExpr)
                 where = ((BaseExpr) expr).getOrWhere();
@@ -1816,10 +1816,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
             if(remove) {
                 removeJoins = WhereJoins.EMPTY;
-                removeUpWheres.set(UpWheres.<WhereJoin>EMPTY());
+                removeUpWheres.set(UpWheres.EMPTY());
             } else
                 removeJoins = joinFollows.removeJoin(removeJoin,
-                        BaseUtils.<UpWheres<WhereJoin>>immutableCast(joinUpWheres.result), removeUpWheres);
+                        BaseUtils.immutableCast(joinUpWheres.result), removeUpWheres);
 
             if(removeJoins!=null) { // вырезали, придется выкидывать целиком join, оставлять sibling'ом
                 if(result==null) {
@@ -2021,7 +2021,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     public long getComplexity(boolean outer) {
-        return AbstractOuterContext.getComplexity((OuterContext)this, outer);
+        return AbstractOuterContext.getComplexity(this, outer);
     }
 
     public WhereJoins pack() {

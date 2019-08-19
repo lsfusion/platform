@@ -65,11 +65,11 @@ public class DefaultChangeAggAction<P extends PropertyInterface> extends AroundA
             GroupType groupType = GroupType.ASSERTSINGLE_CHANGE();
             if(readValue.isNull()) {
                 groupExpr = GroupExpr.create(
-                        MapFact.<String, Expr>EMPTY(),
+                        MapFact.EMPTY(),
                         keyExpr,
                         keyExpr.isUpClass(aggClass).and(aggExpr.getWhere().not()),
                         groupType,
-                        MapFact.<String, Expr>EMPTY()
+                        MapFact.EMPTY()
                 );
             } else {
                 groupExpr = GroupExpr.create(

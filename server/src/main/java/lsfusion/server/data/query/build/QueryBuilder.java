@@ -52,7 +52,7 @@ public class QueryBuilder<K, V> {
     }
 
     public QueryBuilder(ImSet<K> mapInterface) {
-        this(mapInterface, MapFact.<K, DataObject>EMPTY());
+        this(mapInterface, MapFact.EMPTY());
     }
 
     public QueryBuilder(ImSet<K> keys, ImMap<K, DataObject> mapValues) {
@@ -85,7 +85,7 @@ public class QueryBuilder<K, V> {
     private ImMap<K, Expr> mapExprs;
     public ImMap<K, Expr> getMapExprs() {
         if(mapExprs == null)
-            mapExprs = (ImMap<K, Expr>) PropertyChange.simplifyExprs(mapKeys, where); //MapFact.override(mapKeys, DataObject.getMapExprs(mapValues));
+            mapExprs = PropertyChange.simplifyExprs(mapKeys, where); //MapFact.override(mapKeys, DataObject.getMapExprs(mapValues));
         return mapExprs;
     }
 

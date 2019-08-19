@@ -47,7 +47,7 @@ public class ChangeAllDatesAction extends InternalAction {
     
                     KeyExpr propertyExpr = new KeyExpr("property");
     
-                    ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "property", propertyExpr);
+                    ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("property", propertyExpr);
                     QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
                     Expr dbNameExpr = findProperty("dbName[Property]").getExpr(propertyExpr);
                     Expr returnExpr = findProperty("return[Property]").getExpr(propertyExpr);
@@ -74,7 +74,7 @@ public class ChangeAllDatesAction extends InternalAction {
     
                     KeyExpr tableKeyExpr = new KeyExpr("tableKey");
     
-                    ImRevMap<Object, KeyExpr> tableKeyKeys = MapFact.singletonRev((Object) "tableKey", tableKeyExpr);
+                    ImRevMap<Object, KeyExpr> tableKeyKeys = MapFact.singletonRev("tableKey", tableKeyExpr);
                     QueryBuilder<Object, Object> tableKeyQuery = new QueryBuilder<>(tableKeyKeys);
                     tableKeyQuery.addProperty("classSID", findProperty("classSID[TableKey]").getExpr(tableKeyExpr));
                     tableKeyQuery.addProperty("name", findProperty("name[TableKey]").getExpr(tableKeyExpr));

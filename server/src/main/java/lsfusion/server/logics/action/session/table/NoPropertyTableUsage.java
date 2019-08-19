@@ -17,12 +17,12 @@ import java.sql.SQLException;
 public class NoPropertyTableUsage<K> extends SessionTableUsage<K,String> {
 
     public NoPropertyTableUsage(String debugInfo, ImOrderSet<K> keys, Type.Getter<K> keyType) {
-        super(debugInfo, keys, SetFact.<String>EMPTYORDER(), keyType, key -> {
+        super(debugInfo, keys, SetFact.EMPTYORDER(), keyType, key -> {
             throw new RuntimeException("not supported");
         });
     }
 
     public void modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
-        modifyRecord(session, keyFields, MapFact.<String, ObjectValue>EMPTY(), type, owner);
+        modifyRecord(session, keyFields, MapFact.EMPTY(), type, owner);
     }
 }

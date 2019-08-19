@@ -72,7 +72,7 @@ public abstract class FormToolbarAction extends InternalAction {
             mNots.add(showIfNots[i]);
         }
 
-        PropertyMapImplement showIfImplement = createAnd(SetFact.<PropertyInterface>EMPTY(), createTrue(), mAnds.immutableList(), mNots.immutableList());
+        PropertyMapImplement showIfImplement = createAnd(SetFact.EMPTY(), createTrue(), mAnds.immutableList(), mNots.immutableList());
         return new LP(showIfImplement.property);
     }
 

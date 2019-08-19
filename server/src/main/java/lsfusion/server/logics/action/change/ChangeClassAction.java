@@ -98,7 +98,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
 
     @Override
     protected PropertyMapImplement<?, I> calcGroupWhereProperty() {
-        PropertyMapImplement<?, I> result = IsClassProperty.getMapProperty(MapFact.singleton(changeInterface, (ValueClass) baseClass));
+        PropertyMapImplement<?, I> result = IsClassProperty.getMapProperty(MapFact.singleton(changeInterface, baseClass));
         if(where!=null)
             result = PropertyFact.createAnd(innerInterfaces, where, result);
         return result;
@@ -159,7 +159,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
                 
                 boolean seekOther = false;
                 DataObject nearObject = null; // после удаления выбираем соседний объект
-                if (objectInstance != null && objectInstance instanceof ObjectInstance) {
+                if (objectInstance instanceof ObjectInstance) {
                     CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
                     if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) { // если удаляется
                         nearObject = BaseUtils.getNearValue((ObjectInstance) objectInstance, dataObject, ListFact.toJavaMapList(customObjectInstance.groupTo.keys.keyOrderSet()));
@@ -167,7 +167,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
                     }
                 }
 
-                context.changeClass(objectInstance, dataObject, (ConcreteObjectClass) readClass);
+                context.changeClass(objectInstance, dataObject, readClass);
 
                 if(seekOther) {
                     if (nearObject != null)
@@ -181,7 +181,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
             if(singleWhereNotNull) { // дебильный кейс, но надо все равно поддержать
                 Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();
                 if(!exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
-                    context.changeClass(new ClassChange(innerKeys.singleValue(), exprWhere, (ConcreteObjectClass)readClass));
+                    context.changeClass(new ClassChange(innerKeys.singleValue(), exprWhere, readClass));
             }
 
         return FlowResult.FINISH;

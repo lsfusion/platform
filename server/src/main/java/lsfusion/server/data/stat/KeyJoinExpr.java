@@ -80,12 +80,12 @@ public class KeyJoinExpr extends BaseExpr implements InnerBaseJoin<Object> {
 
     @Override
     public ImMap<Object, BaseExpr> getJoins() {
-        return MapFact.singleton((Object)0, expr);
+        return MapFact.singleton(0, expr);
     }
 
     @Override
     public StatKeys<Object> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
-        return new StatKeys<>(SetFact.singleton((Object)0), Stat.ALOT);
+        return new StatKeys<>(SetFact.singleton(0), Stat.ALOT);
     }
 
     @Override

@@ -26,7 +26,7 @@ public class ChangedDataClasses {
         this.newc = newc;
     }
     
-    public static final ChangedDataClasses EMPTY = new ChangedDataClasses(SetFact.<CustomClass>EMPTY(), SetFact.<CustomClass>EMPTY(), SetFact.<ConcreteObjectClass>EMPTY(), SetFact.<ConcreteObjectClass>EMPTY());
+    public static final ChangedDataClasses EMPTY = new ChangedDataClasses(SetFact.EMPTY(), SetFact.EMPTY(), SetFact.EMPTY(), SetFact.EMPTY());
 
     public ChangedDataClasses merge(ChangedDataClasses dataChangedClasses) {
         if(this == EMPTY)

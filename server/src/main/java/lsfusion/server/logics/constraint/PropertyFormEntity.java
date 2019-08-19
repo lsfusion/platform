@@ -27,7 +27,7 @@ public class PropertyFormEntity extends FormEntity {
 
         Version version = LM.getVersion();
         
-        addPropertyDraw(messageProperty, MapFact.<X, ObjectEntity>EMPTYREV(), version);
+        addPropertyDraw(messageProperty, MapFact.EMPTYREV(), version);
 
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.logPolicy);
         boolean prev = property.usePrevHeur();

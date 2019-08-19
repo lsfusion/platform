@@ -64,7 +64,7 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
         String root = rootProperty == null ? null : (String) rootProperty.read(context, context.getKeys());
         String tag = tagProperty == null ? null : (String) tagProperty.read(context, context.getKeys());
         T rootNode = createRootNode(root, tag);
-        parseNode.exportNode(rootNode, MapFact.<ObjectEntity, Object>EMPTY(), exportData);
+        parseNode.exportNode(rootNode, MapFact.EMPTY(), exportData);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charset)))) {

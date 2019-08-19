@@ -80,7 +80,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
             assert classTables.size() > inlineThreshold;
             // будем делить на inlineThreshold корзин
             Pair<KeyExpr,Expr> subQuery = getBaseClass().getSubQuery(classTables, type);
-            return new SubQueryExpr(new SubQueryExpr.Query(subQuery.second, false), MapFact.singleton(subQuery.first, (BaseExpr) expr));
+            return new SubQueryExpr(new SubQueryExpr.Query(subQuery.second, false), MapFact.singleton(subQuery.first, expr));
         }
     }
 
@@ -254,7 +254,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return getInnerJoinExpr().getInnerJoin();
     }
     public ImSet<OuterContext> calculateOuterDepends() {
-        return SetFact.<OuterContext>singleton(getInnerJoinExpr());
+        return SetFact.singleton(getInnerJoinExpr());
     }
 
     // множественное наследование StaticClassExpr

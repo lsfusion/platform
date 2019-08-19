@@ -39,7 +39,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     } 
     
     public OrObjectClassSet(UpClassSet up) {
-        this(up, SetFact.<ConcreteCustomClass>EMPTY(),false);
+        this(up, SetFact.EMPTY(),false);
     }
 
     public OrObjectClassSet(ConcreteCustomClass customClass) {
@@ -47,11 +47,11 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     }
 
     public OrObjectClassSet() {
-        this(UpClassSet.FALSE, SetFact.<ConcreteCustomClass>EMPTY(),true);
+        this(UpClassSet.FALSE, SetFact.EMPTY(),true);
     }
 
     private OrObjectClassSet(boolean isFalse) {
-        this(UpClassSet.FALSE, SetFact.<ConcreteCustomClass>EMPTY(),false);
+        this(UpClassSet.FALSE, SetFact.EMPTY(),false);
     }
     public final static OrObjectClassSet FALSE = new OrObjectClassSet(true);
 
@@ -149,7 +149,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         if(cachedResult!=null)
             return cachedResult;
 
-        MMap<CustomClass, Integer> mChildPathes = MapFact.mMap(BaseUtils.<CustomClass>addMinInt());
+        MMap<CustomClass, Integer> mChildPathes = MapFact.mMap(BaseUtils.addMinInt());
         if(commonSet.contains(customClass))
             mChildPathes.add(customClass, 0);
 
@@ -432,7 +432,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     }
     public ImRevMap<IsClassField, ObjectValueClassSet> getClassFields(boolean onlyObjectClassFields) {
         assert !unknown;
-        MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(up.getClassFields(onlyObjectClassFields), OrObjectClassSet.<IsClassField>objectValueSetAdd());
+        MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(up.getClassFields(onlyObjectClassFields), OrObjectClassSet.objectValueSetAdd());
         for(ConcreteCustomClass customClass : set)
             mMap.add(customClass.dataProperty, customClass);
         return CustomClass.pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, this);

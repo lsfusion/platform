@@ -305,7 +305,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public ImRevMap<IsClassField, ObjectValueClassSet> getClassFields(boolean onlyObjectClassFields) {
-        return MapFact.singletonRev((IsClassField)dataProperty, (ObjectValueClassSet)this);
+        return MapFact.singletonRev(dataProperty, this);
     }
 
     public ObjectValueClassSet getValueClassSet() {

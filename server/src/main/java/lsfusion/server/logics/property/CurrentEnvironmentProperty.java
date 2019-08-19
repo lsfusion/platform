@@ -19,7 +19,7 @@ public abstract class CurrentEnvironmentProperty extends NoIncrementProperty<Pro
     private final AndClassSet paramClass;
 
     public CurrentEnvironmentProperty(LocalizedString caption, String paramString, AndClassSet paramClass) {
-        super(caption, SetFact.<PropertyInterface>EMPTYORDER());
+        super(caption, SetFact.EMPTYORDER());
         this.paramString = paramString;
         this.paramClass = paramClass;
     }

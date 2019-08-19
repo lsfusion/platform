@@ -238,7 +238,7 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         ImList<PropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
 
         property.setEventChange(LogicsModule.mapCalcListImplement(valueProperty, listInterfaces),
-                BaseUtils.<ImList<PropertyMapImplement<?, T>>>immutableCast(defImplements.subList(0, whereNum)),
+                BaseUtils.immutableCast(defImplements.subList(0, whereNum)),
                 BaseUtils.<ImList<PropertyMapImplement<?, T>>>immutableCast(defImplements.subList(whereNum, defImplements.size())).getCol());
     }
 

@@ -135,7 +135,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     public void checkRecursions() {
         assert isAbstract();
-        checkRecursions(SetFact.<CaseUnionProperty>EMPTY(), null);
+        checkRecursions(SetFact.EMPTY(), null);
     }
 
     @Override
@@ -354,7 +354,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         cases = NFFact.list();
         this.isLast = isLast;
 
-        classValueWhere = new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(interfaceClasses, "value", valueClass), true);
+        classValueWhere = new ClassWhere<>(MapFact.addExcl(interfaceClasses, "value", valueClass), true);
     }
 
     public void addCase(PropertyInterfaceImplement<Interface> where, PropertyInterfaceImplement<Interface> property, Version version) {

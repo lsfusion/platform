@@ -246,6 +246,6 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map) {
-        return merge(map, MapFact.<K, V>exclusive());
+        return merge(map, MapFact.exclusive());
     }
 }

@@ -64,7 +64,7 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
     // множественное наследование
 
     public void removeAll(Version version) {
-        addChange(NFRemoveAll.<T>getInstance(), version);
+        addChange(NFRemoveAll.getInstance(), version);
     }
 
     public Iterable<T> getListIt() {

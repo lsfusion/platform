@@ -61,7 +61,7 @@ public abstract class AbstractFormDataInterface implements FormDataInterface {
     @Override
     public StaticDataGenerator.Hierarchy getHierarchy(boolean isReport) {
         // for reports its important to keep hierarchy the same (because there are templates for post processing)
-        ImSet<GroupObjectEntity> valueGroups = isReport ? SetFact.<GroupObjectEntity>EMPTY() : getValueGroupObjects();
+        ImSet<GroupObjectEntity> valueGroups = isReport ? SetFact.EMPTY() : getValueGroupObjects();
         return getFormEntity().getStaticHierarchy(isReport, valueGroups, getUserVisible());
     }
 }

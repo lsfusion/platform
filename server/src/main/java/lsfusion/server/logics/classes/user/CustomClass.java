@@ -389,7 +389,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return true;
 
             CaseAction polyAction = (CaseAction) getPolyAction(LM).action;
-            ImList<ActionCase<PropertyInterface>> cases = polyAction.getOptimizedCases(MapFact.singleton(polyAction.interfaces.single(), getUpSet()), SetFact.<PropertyInterface>EMPTY());
+            ImList<ActionCase<PropertyInterface>> cases = polyAction.getOptimizedCases(MapFact.singleton(polyAction.interfaces.single(), getUpSet()), SetFact.EMPTY());
             if(cases.size() > 1) // если есть edit кроме default'ого поведения
                 return true;
             
@@ -620,9 +620,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     @IdentityLazy
     public ImMap<IsClassField,ObjectValueClassSet> getUpClassFields(boolean onlyObjectClassFields) {
         if(isClassField != null && (!onlyObjectClassFields || isClassField instanceof ObjectClassField)) // последняя проверка оптимизационная
-            return MapFact.<IsClassField, ObjectValueClassSet>singleton(isClassField, getUpSet());
+            return MapFact.singleton(isClassField, getUpSet());
 
-        MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<IsClassField>objectValueSetAdd());
+        MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.objectValueSetAdd());
         for(CustomClass customClass : getChildrenIt())
             mMap.addAll(customClass.getUpClassFields(onlyObjectClassFields));
         if(this instanceof ConcreteCustomClass) // глуповато конечно,

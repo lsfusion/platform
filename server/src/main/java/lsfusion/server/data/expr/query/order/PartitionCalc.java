@@ -29,15 +29,15 @@ public class PartitionCalc extends PartitionToken {
         }
 
         public Aggr(String func, ImList<PartitionToken> exprs, ImSet<PartitionToken> partitions) {
-            this(func, exprs, MapFact.<PartitionToken, CompileOrder>EMPTYORDER(), partitions);
+            this(func, exprs, MapFact.EMPTYORDER(), partitions);
         }
 
         public Aggr(String func, ImSet<PartitionToken> partitions) {
-            this(func, ListFact.<PartitionToken>EMPTY(), partitions);
+            this(func, ListFact.EMPTY(), partitions);
         }
 
         public Aggr(String func, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
-            this(func, ListFact.<PartitionToken>EMPTY(), orders, partitions);
+            this(func, ListFact.EMPTY(), orders, partitions);
         }
 
         public String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax) {

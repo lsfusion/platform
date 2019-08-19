@@ -112,7 +112,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getActiveTab() {
         if (activeTab == null) {
-            activeTab = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance, LocalNestedType.ALL);
+            activeTab = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.EMPTY(), LogicalClass.instance, LocalNestedType.ALL);
         }
         return activeTab;
     }
@@ -270,7 +270,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         design = pool.readObject(inStream);
 
-        container = NFFact.finalProperty(pool.<ContainerView>deserializeObject(inStream));
+        container = NFFact.finalProperty(pool.deserializeObject(inStream));
 
         size = pool.readObject(inStream);
         

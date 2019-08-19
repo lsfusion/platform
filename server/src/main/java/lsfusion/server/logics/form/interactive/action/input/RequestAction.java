@@ -60,8 +60,8 @@ public class RequestAction extends KeepContextAction {
 
     public ImSet<Action> getDependActions() {
         return elseAction != null ?
-                SetFact.<Action>toSet(requestAction.action, doAction.action, elseAction.action) :
-                SetFact.<Action>toSet(requestAction.action, doAction.action);
+                SetFact.toSet(requestAction.action, doAction.action, elseAction.action) :
+                SetFact.toSet(requestAction.action, doAction.action);
     }
 
     @Override

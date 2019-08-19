@@ -251,7 +251,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public ImSet<Value> getValues() {
-        return SetFact.<Value>singleton(getExpr());
+        return SetFact.singleton(getExpr());
     }
 
     protected DataObject translate(MapValuesTranslate mapValues) {

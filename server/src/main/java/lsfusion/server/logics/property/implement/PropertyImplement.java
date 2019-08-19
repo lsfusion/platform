@@ -28,7 +28,7 @@ public class PropertyImplement<P extends PropertyInterface, T> extends TwinImmut
 
     public PropertyImplement(Property<P> property) {
         this.property = property;
-        mapping = MapFact.<P, T>EMPTY();
+        mapping = MapFact.EMPTY();
     }
 
     public <L> ImMap<P, L> join(ImMap<T, L> map) {

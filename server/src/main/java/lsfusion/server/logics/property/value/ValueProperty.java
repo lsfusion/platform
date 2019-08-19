@@ -25,7 +25,7 @@ public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
     } 
 
     public ValueProperty(LocalizedString caption, Object value, StaticClass staticClass) {
-        super(caption, SetFact.<PropertyInterface>EMPTYORDER());
+        super(caption, SetFact.EMPTYORDER());
         this.value = value;
         this.staticClass = staticClass;
 

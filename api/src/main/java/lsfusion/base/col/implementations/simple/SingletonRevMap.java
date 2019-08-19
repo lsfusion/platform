@@ -122,6 +122,6 @@ public class SingletonRevMap<K, V> extends ARevMap<K, V> implements ImValueMap<K
 
     @Override
     public ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map) {
-        return merge(map, MapFact.<K, V>exclusive());
+        return merge(map, MapFact.exclusive());
     }
 }

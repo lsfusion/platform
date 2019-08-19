@@ -83,7 +83,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, SubQueryExpr.Query, SubQuer
         }
 
         protected ImSet<OuterContext> calculateOuterDepends() {
-            return SetFact.<OuterContext>toSet(expr);
+            return SetFact.toSet(expr);
         }
 
         public Type getType() {

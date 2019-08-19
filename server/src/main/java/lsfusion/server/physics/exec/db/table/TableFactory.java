@@ -49,10 +49,10 @@ public class TableFactory implements FullTablesInterface {
     @NFLazy // только NFOrderSet'ов в implementTablesMap и parents недостаточно, так алгоритм include не thread-safe (хотя и устойчив к перестановкам версий)
     public ImplementTable include(String name, Version version, ValueClass... classes) {
         if (implementTablesMap.get(classes.length) == null)
-            implementTablesMap.put(classes.length, NFFact.<ImplementTable>orderSet());
+            implementTablesMap.put(classes.length, NFFact.orderSet());
 
         ImplementTable newTable = new ImplementTable(name, classes);
-        newTable.include(implementTablesMap.get(classes.length), version, true, SetFact.<ImplementTable>mAddRemoveSet(), null);
+        newTable.include(implementTablesMap.get(classes.length), version, true, SetFact.mAddRemoveSet(), null);
         return newTable;
     }
 
@@ -134,7 +134,7 @@ public class TableFactory implements FullTablesInterface {
             valueClass = findItem.getOr().getCommonClass(true);
             skipTable = null;
         }
-        return getFullMapTables(MapFact.<String, ValueClass>singletonOrder("key", valueClass), skipTable).mapSetValues(value -> value.table);
+        return getFullMapTables(MapFact.singletonOrder("key", valueClass), skipTable).mapSetValues(value -> value.table);
     }
 
     // получает "автоматическую таблицу"
@@ -173,11 +173,11 @@ public class TableFactory implements FullTablesInterface {
 
             ImMap<Integer, Long> counters = IDTable.getCounters();
             for (int i = 0, size = counters.size(); i < size; i++)
-                sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), IDTable.idTypeClass)), MapFact.singleton(IDTable.instance.value, (ObjectValue) new DataObject(counters.getValue(i), SystemClass.instance)), TableOwner.global, OperationOwner.unknown);
+                sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), IDTable.idTypeClass)), MapFact.singleton(IDTable.instance.value, new DataObject(counters.getValue(i), SystemClass.instance)), TableOwner.global, OperationOwner.unknown);
 
             // создадим dumb
             sql.ensureTable(DumbTable.instance, startLogger);
-            sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1L, SystemClass.instance)), MapFact.<PropertyField, ObjectValue>EMPTY(), TableOwner.global, OperationOwner.unknown);
+            sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1L, SystemClass.instance)), MapFact.EMPTY(), TableOwner.global, OperationOwner.unknown);
 
             sql.ensureTable(EmptyTable.instance, startLogger);
 

@@ -69,7 +69,7 @@ public class LastJoin extends QueryJoin<KeyExpr, LastJoin.Query, LastJoin, LastJ
     }
 
     public LastJoin(Cost costPerStat, Cost costMax, ImMap<KeyExpr, BaseExpr> group) {
-        this(SetFact.<KeyExpr>EMPTY(), SetFact.<Value>EMPTY(), new Query(InnerExprFollows.<KeyExpr>EMPTYEXPR(), costPerStat, costMax), group);
+        this(SetFact.EMPTY(), SetFact.EMPTY(), new Query(InnerExprFollows.EMPTYEXPR(), costPerStat, costMax), group);
     }
 
     public LastJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<KeyExpr, BaseExpr> group) {

@@ -23,7 +23,7 @@ public class ResolveOrObjectClassSet extends TwinImmutableObject implements Reso
     }
 
     private ResolveOrObjectClassSet(ResolveUpClassSet up) {
-        this(up, SetFact.<ConcreteCustomClass>EMPTY());
+        this(up, SetFact.EMPTY());
     }
 
     public static ResolveOrObjectClassSet fromSetConcreteChildren(ImSet<ConcreteCustomClass> set) {

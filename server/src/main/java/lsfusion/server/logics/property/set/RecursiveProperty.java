@@ -65,7 +65,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         assert !isLogical();
 
         IntegralClass<?> integralClass = (IntegralClass)getType();
-        return PropertyFact.createCompare(interfaces, getImplement(), PropertyFact.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
+        return PropertyFact.createCompare(interfaces, getImplement(), PropertyFact.createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
     }
 
     public LocalizedString getConstrainedMessage() {
@@ -127,7 +127,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     private boolean checkPrereadNull(ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
-        return JoinProperty.checkPrereadNull(joinImplement, step.property.isNotNull(calcType.getAlgInfo()), SetFact.singleton((PropertyInterfaceImplement<T>)initial), calcType, propChanges); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
+        return JoinProperty.checkPrereadNull(joinImplement, step.property.isNotNull(calcType.getAlgInfo()), SetFact.singleton(initial), calcType, propChanges); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
     }
 
     protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {

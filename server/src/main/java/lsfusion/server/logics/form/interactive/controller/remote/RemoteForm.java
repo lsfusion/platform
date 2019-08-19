@@ -465,7 +465,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                         }
                         mOutMap.exclAdd(propertyDraw, mList.immutableList());
                     } else
-                        mOutMap.exclAdd(0, ListFact.<ImMap<ObjectInstance, DataObject>>EMPTY());
+                        mOutMap.exclAdd(0, ListFact.EMPTY());
                 }
                 outMaps.add(mOutMap.immutableOrderCopy());
             }
@@ -474,8 +474,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.trace("groupData Action");
             }
 
-            Map<List<Object>, List<Object>> grouped = form.groupData(BaseUtils.<ImOrderMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(0)),
-                    outMaps.get(1), BaseUtils.<ImOrderMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(2)), onlyNotNull);
+            Map<List<Object>, List<Object>> grouped = form.groupData(BaseUtils.immutableCast(outMaps.get(0)),
+                    outMaps.get(1), BaseUtils.immutableCast(outMaps.get(2)), onlyNotNull);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             DataOutputStream outStream = new DataOutputStream(out);

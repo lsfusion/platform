@@ -25,19 +25,19 @@ public abstract class ExprTranslator extends TwinImmutableObject {
     }
 
     public <K> ImMap<K, Expr> translate(ImMap<K, ? extends Expr> map) {
-        return ((ImMap<K, Expr>)map).mapValues(this.<Expr>TRANS());
+        return ((ImMap<K, Expr>)map).mapValues(this.TRANS());
     }
 
     public <K> ImOrderMap<Expr, K> translate(ImOrderMap<? extends Expr, K> map) {
-        return ((ImOrderMap<Expr, K>)map).mapMergeOrderKeys(this.<Expr>TRANS());
+        return ((ImOrderMap<Expr, K>)map).mapMergeOrderKeys(this.TRANS());
     }
 
     public ImList<Expr> translate(ImList<? extends Expr> list) {
-        return ((ImList<Expr>)list).mapListValues(this.<Expr>TRANS());
+        return ((ImList<Expr>)list).mapListValues(this.TRANS());
     }
 
     public ImSet<Expr> translate(ImSet<? extends Expr> set) {
-        return ((ImSet<Expr>)set).mapSetValues(this.<Expr>TRANS());
+        return ((ImSet<Expr>)set).mapSetValues(this.TRANS());
     }
 
 }

@@ -9,7 +9,7 @@ public abstract class ModuleSingleElementFinder<T, P> implements ModuleFinder<T,
     @Override
     public final List<T> resolveInModule(LogicsModule module, String simpleName, P param) {
         T element = getElement(module, simpleName, param);
-        return element == null ? Collections.<T>emptyList() : Collections.singletonList(element);
+        return element == null ? Collections.emptyList() : Collections.singletonList(element);
     }
     
     protected abstract T getElement(LogicsModule module, String simpleName, P param);

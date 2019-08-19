@@ -4,7 +4,6 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -17,7 +16,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -120,7 +118,7 @@ public abstract class LinkClass extends DataClass<String> {
     public List<URI> getFiles(String value) {
         List<URI> files = new ArrayList<>();
         if (value != null) {
-            for (String file : Arrays.asList(value.split(";"))) {
+            for (String file : value.split(";")) {
                 files.add(getURI(file));
             }
         }

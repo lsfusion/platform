@@ -183,7 +183,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     protected Table() {
-        this(SetFact.<KeyField>EMPTYORDER(), SetFact.<PropertyField>EMPTY(), ClassWhere.<KeyField>FALSE(), MapFact.<PropertyField, ClassWhere<Field>>EMPTY());
+        this(SetFact.EMPTYORDER(), SetFact.EMPTY(), ClassWhere.FALSE(), MapFact.EMPTY());
     }
 
     protected Table(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties,ClassWhere<KeyField> classes,ImMap<PropertyField, ClassWhere<Field>> propertyClasses) {
@@ -202,7 +202,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return true;
 
         for(ClassWhere<Field> pClasses : propertyClasses.valueIt()) {
-            assert pClasses.means(BaseUtils.<ClassWhere<Field>>immutableCast(classes), true);
+            assert pClasses.means(BaseUtils.immutableCast(classes), true);
         }
         return true;
     }
@@ -284,7 +284,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             exprs = exprs.filterFn(element -> !(element.type instanceof FileClass || element.getName().contains("_LG_") || element.getName().contains("_LOG_")));
         query.addProperties(exprs);
         query.and(tableJoin.getWhere());
-        query.getQuery().executeSQL(session, MapFact.<PropertyField, Boolean>EMPTYORDER(), 0, DataSession.emptyEnv(owner), result);
+        query.getQuery().executeSQL(session, MapFact.EMPTYORDER(), 0, DataSession.emptyEnv(owner), result);
     }
 
     public static boolean checkClasses(ObjectClassSet classSet, CustomClass inconsistentTableClass, Result<Boolean> mRereadChange, RegisterClassRemove classRemove, long timestamp) {
@@ -336,13 +336,13 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         final ImMap<KeyField, ObjectValueClassSet> objectKeyClasses = splitRead(getTableKeys(), classes.getCommonClasses(getTableKeys()).fnGetValue(), inconsistent, inconsistentTableClasses, mInconsistentRereadChanges, classRemove, timestamp);
         if(objectKeyClasses == null) {
             if(inconsistent)
-                inconsistentRereadChanges.set(SetFact.<Field>EMPTY());
+                inconsistentRereadChanges.set(SetFact.EMPTY());
             return null;
         }
         final ImMap<PropertyField, ObjectValueClassSet> objectPropClasses = splitRead(properties, value -> propertyClasses.get(value).getCommonClass(value), inconsistent, inconsistentTableClasses, mInconsistentRereadChanges, classRemove, timestamp);
         if(objectPropClasses == null) {
             if(inconsistent)
-                inconsistentRereadChanges.set(SetFact.<Field>EMPTY());
+                inconsistentRereadChanges.set(SetFact.EMPTY());
             return null;
         }
 
@@ -354,7 +354,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             inconsistentRereadChanges.set(mInconsistentRereadChanges.immutable());
 
         if(objectKeyClasses.isEmpty() && objectPropClasses.isEmpty()) // no complex
-            return MapFact.singleton(MapFact.<KeyField, ConcreteClass>EMPTY(), MapFact.<PropertyField, ConcreteClass>EMPTY());
+            return MapFact.singleton(MapFact.EMPTY(), MapFact.EMPTY());
 
         ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
         final lsfusion.server.data.query.build.Join<PropertyField> tableJoin = join(mapKeys);
@@ -736,7 +736,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return Table.this.translateOuter(translator).joinAnd(translator.translateDirect(joins));
         }
         public Join translateOuter(MapTranslate translator) {
-            return (Join) aspectTranslate(translator);
+            return aspectTranslate(translator);
         }
 
         @ParamInstanceLazy
@@ -765,7 +765,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }
 
         public ImSet<OuterContext> calculateOuterDepends() {
-            return SetFact.<OuterContext>addExcl(joins.values().toSet(), Table.this);
+            return SetFact.addExcl(joins.values().toSet(), Table.this);
         }
 
         public class IsIn extends DataWhere implements FJData {
@@ -777,7 +777,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }
 
             public ImSet<OuterContext> calculateOuterDepends() {
-                return SetFact.<OuterContext>singleton(Join.this);
+                return SetFact.singleton(Join.this);
             }
 
             public Join getJoin() {
@@ -850,7 +850,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
             @Override
             public ImSet<OuterContext> calculateOuterDepends() {
-                return SetFact.<OuterContext>singleton(Join.this);
+                return SetFact.singleton(Join.this);
             }
 
             // напрямую может конструироваться только при полной уверенности что не null

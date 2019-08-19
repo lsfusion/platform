@@ -365,7 +365,7 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
         assert types.size() == types.filterList(element -> element instanceof Type).size();
 
         typeEnv.addNeedRecursion(types);
-        String recursionName = genRecursionName(BaseUtils.<ImList<Type>>immutableCast(types));
+        String recursionName = genRecursionName(BaseUtils.immutableCast(types));
         return recursionName + "('" + recName + "'" +
                 ",'(" + escapeSql(initialSelect) + ")'" + ",'(" + escapeSql(stepSelect) + ")'" +
                 ",'(" + escapeSql(stepSmallSelect) + ")'" + "," + smallLimit +

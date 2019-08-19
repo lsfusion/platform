@@ -56,7 +56,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
 
     @Override
     public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
-        if(checkChange && Property.depends((Property<?>) property.property, toChange))
+        if(checkChange && Property.depends(property.property, toChange))
             return BaseUtils.immutableCast(Collections.singleton(property.getValueImplement()));
         return super.getResolveChangeProperties(toChange);
     }

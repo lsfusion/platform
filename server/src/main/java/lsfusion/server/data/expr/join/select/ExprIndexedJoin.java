@@ -63,7 +63,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
     public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
         if (not)
-            return new StatKeys<>(SetFact.<Integer>EMPTY(), Stat.ONE);
+            return new StatKeys<>(SetFact.EMPTY(), Stat.ONE);
         else {
             if (oldMech) {
                 if (compare.equals(Compare.EQUALS) && !givesNoKeys()) { // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
@@ -178,7 +178,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
         MMap<WhereJoin, UpWhere> mUpIntervalWheres = null;
         if(upAdjWheres != null)
-            mUpIntervalWheres = MapFact.mMapMax(exprIndexedJoins.size(), AbstractUpWhere.<WhereJoin>and());
+            mUpIntervalWheres = MapFact.mMapMax(exprIndexedJoins.size(), AbstractUpWhere.and());
 
         int intStat = Settings.get().getAverageIntervalStat();
         ImSet<KeyExpr> innerKeys = null;

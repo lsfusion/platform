@@ -303,7 +303,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         final int vertexCnt = vertices.size();
         
         for (int i = 0; i < vertexCnt; ++i) {
-            adjMatrix.add(new ArrayList<>(Collections.<ComplexEdge<V, C, E>>nCopies(vertexCnt, null)));
+            adjMatrix.add(new ArrayList<>(Collections.nCopies(vertexCnt, null)));
         }
         
         for (int i = 0; i < vertexCnt; ++i) {
@@ -395,7 +395,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         int newIndex = nodeIndex.get(newTreeNode.node);
         
         int nodeCnt = adjMatrix.size();
-        adjMatrix.add(new ArrayList<>(Collections.<ComplexEdge<V, C, E>>nCopies(nodeCnt + 1, null)));
+        adjMatrix.add(new ArrayList<>(Collections.nCopies(nodeCnt + 1, null)));
         for (int i = 0; i < nodeCnt; ++i) {
             if (i != fromIndex && i != toIndex && !deleted.contains(nodes.get(i))) {
                 EdgeLinkedList<E> edges = adjMatrix.get(fromIndex).get(i).mergeSimpleEdges(adjMatrix.get(toIndex).get(i));
@@ -492,7 +492,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         initNodes();
         assert vertices.size() <= 12;
         int subsetsCount = (1 << nodes.size());
-        return DP(subsetsCount - 1, new ArrayList<>(Collections.<TreeNode<V, C>>nCopies(subsetsCount, null)), functor);
+        return DP(subsetsCount - 1, new ArrayList<>(Collections.nCopies(subsetsCount, null)), functor);
     }
     
     private void squeezeTree(TreeNode<V, C> parent, TreeNode<V, C> node, TreeNode<V, C> child) {

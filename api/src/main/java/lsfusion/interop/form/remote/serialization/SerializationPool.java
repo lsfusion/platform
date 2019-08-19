@@ -86,7 +86,7 @@ public abstract class SerializationPool<C> {
     public <T extends CustomSerializable<? extends SerializationPool<C>>> Collection<T> deserializeCollection(Collection<T> collection, DataInputStream inStream) throws IOException {
         int size = inStream.readInt();
         for (int i = 0; i < size; ++i) {
-            T element = (T) deserializeObject(inStream);
+            T element = deserializeObject(inStream);
             collection.add(element);
         }
         return collection;
@@ -98,8 +98,8 @@ public abstract class SerializationPool<C> {
 
         int size = inStream.readInt();
         for (int i = 0; i < size; ++i) {
-            K key = (K) deserializeObject(inStream);
-            V value = (V) deserializeObject(inStream);
+            K key = deserializeObject(inStream);
+            V value = deserializeObject(inStream);
             result.put(key, value);
         }
 

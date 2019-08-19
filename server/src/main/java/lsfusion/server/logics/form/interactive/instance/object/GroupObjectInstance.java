@@ -478,7 +478,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public TreeGroupInstance treeGroup = null;
     public ImOrderSet<GroupObjectInstance> getOrderDownTreeGroups() {
-        return treeGroup!=null?treeGroup.getDownTreeGroups(this):SetFact.<GroupObjectInstance>EMPTYORDER();
+        return treeGroup!=null?treeGroup.getDownTreeGroups(this):SetFact.EMPTYORDER();
     }
     public ImSet<GroupObjectInstance> getDownTreeGroups() {
         return getOrderDownTreeGroups().getSet();
@@ -707,7 +707,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 usedEnvironmentIncrementProps.add(propType, mUsedProps.immutable());
 
             if(changedProps != null)
-                changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton((Property) mappedProp.property), false)));
+                changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton(mappedProp.property), false)));
         }
     }
 
@@ -999,7 +999,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
                 if (!keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
                     if(getUpTreeGroup()==null) // если верхняя группа
-                        return activeRow>=0?keys.getKey(activeRow):MapFact.<ObjectInstance,DataObject>EMPTY();
+                        return activeRow>=0?keys.getKey(activeRow):MapFact.EMPTY();
                     else // иначе assertion что activeRow < 0, выбираем верхнюю
                         return keys.size()>0 && !currentObject.isEmpty()?keys.getKey(0):null;
                 } else // так как сейчас клиент требует прислать ему groupObject даже если он не изменился, если приходят ключи
@@ -1095,11 +1095,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         public SeekOrderObjects(boolean end, ImMap<ObjectInstance, DataObject> values) {
-            this(BaseUtils.<ImMap<OrderInstance, ObjectValue>>immutableCast(values), end);
+            this(BaseUtils.immutableCast(values), end);
         }
 
         public SeekOrderObjects(boolean end) {
-            this(MapFact.<OrderInstance, ObjectValue>EMPTY(), end);
+            this(MapFact.EMPTY(), end);
         }
 
         public SeekOrderObjects add(OrderInstance order, ObjectValue value, boolean down) {

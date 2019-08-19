@@ -30,7 +30,7 @@ public abstract class ExportMatrixWriter extends ExportByteArrayPlainWriter {
 
     protected void finalizeInit() throws IOException {
         if(headerFields != null) {
-            writeLine(headerFields.toMap(), headerFields.toMap((Type) ImportMatrixIterator.nameClass));
+            writeLine(headerFields.toMap(), headerFields.toMap(ImportMatrixIterator.nameClass));
         }
     }
 

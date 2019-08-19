@@ -24,6 +24,6 @@ public class InnerUpWhere extends AbstractUpWhere<InnerUpWhere> {
 
     @Override
     public Where getWhere(JoinExprTranslator translator) {
-        return JoinExprTranslator.translateExpr((Expr)expr, translator).getWhere();
+        return JoinExprTranslator.translateExpr(expr, translator).getWhere();
     }
 }

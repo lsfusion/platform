@@ -18,7 +18,7 @@ public class NFOrderMapImpl<K, V> extends NFChangeImpl<Pair<K, V>, NFAdd<Pair<K,
     }
 
     public ImOrderMap<K, V> getNF(Version version) {
-        final MOrderMap<K, V> mOrderMap = MapFact.mOrderMap(MapFact.<K, V>override());
+        final MOrderMap<K, V> mOrderMap = MapFact.mOrderMap(MapFact.override());
         proceedChanges(change -> {
             Pair<K, V> pair = change.element;
             mOrderMap.add(pair.first, pair.second);

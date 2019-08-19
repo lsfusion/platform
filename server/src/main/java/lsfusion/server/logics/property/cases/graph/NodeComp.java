@@ -23,10 +23,10 @@ public class NodeComp<T> implements NodeListComp<T>, NodeSetComp<T> {
     }
 
     public ImList<NodeSetComp<T>> getList() {
-        return ListFact.<NodeSetComp<T>>singleton(this);
+        return ListFact.singleton(this);
     }
 
     public ImSet<NodeListComp<T>> getSet() {
-        return SetFact.<NodeListComp<T>>singleton(this);
+        return SetFact.singleton(this);
     }
 }

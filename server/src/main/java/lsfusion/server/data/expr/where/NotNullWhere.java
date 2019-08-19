@@ -80,7 +80,7 @@ public abstract class NotNullWhere extends DataWhere {
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {
-        return SetFact.<OuterContext>singleton(getExpr());
+        return SetFact.singleton(getExpr());
     }
 
     protected void fillDataJoinWheres(MMap<FJData, Where> joins, Where andWhere) {

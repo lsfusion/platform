@@ -47,7 +47,7 @@ import java.sql.SQLException;
 public class PropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends PropertyRevImplement<P, T> implements PropertyInterfaceImplement<T> {
 
     public PropertyMapImplement(Property<P> property) {
-        super(property, MapFact.<P, T>EMPTYREV());
+        super(property, MapFact.EMPTYREV());
     }
     
     public PropertyMapImplement(Property<P> property, ImRevMap<P, T> mapping) {
@@ -258,7 +258,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     // временно
     public PropertyMapImplement<?, T> cloneProp() {
-        return PropertyFact.createJoin(new PropertyImplement<>(property, BaseUtils.<ImMap<P, PropertyInterfaceImplement<T>>>immutableCast(mapping)));
+        return PropertyFact.createJoin(new PropertyImplement<>(property, BaseUtils.immutableCast(mapping)));
     }
 
     public Graph<CalcCase<T>> mapAbstractGraph() {

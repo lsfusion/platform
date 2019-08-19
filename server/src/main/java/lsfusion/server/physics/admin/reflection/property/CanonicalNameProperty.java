@@ -19,7 +19,7 @@ public class CanonicalNameProperty extends FormulaProperty<CanonicalNameProperty
     private StringClass valueClass = StringClass.get(false, 200);
 
     public CanonicalNameProperty(LAP property) {
-        super(LocalizedString.create("canonical name", false), SetFact.<CanonicalNameProperty.Interface>EMPTYORDER());
+        super(LocalizedString.create("canonical name", false), SetFact.EMPTYORDER());
         this.property = property;
     }
 

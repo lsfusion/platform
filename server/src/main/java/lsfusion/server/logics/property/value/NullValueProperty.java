@@ -17,7 +17,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class NullValueProperty extends FormulaProperty<PropertyInterface> {
 
     private NullValueProperty() {
-        super(LocalizedString.create("Значение NULL"), SetFact.<PropertyInterface>EMPTYORDER());
+        super(LocalizedString.create("Значение NULL"), SetFact.EMPTYORDER());
 
         finalizeInit();
     }

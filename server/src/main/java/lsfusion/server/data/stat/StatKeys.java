@@ -32,7 +32,7 @@ public class StatKeys<K> extends TwinImmutableObject {
 
     public StatKeys<K> toRevMap(ImMap<K, BaseExpr> innerOuter, Result<ImRevMap<K, BaseExpr>> rRevInnerOuter) {
         // преобразуем joins в reverse map, пока делаем просто и выбираем минимум innerKeys (то есть с меньшим числом разновидностей)
-        MMap<BaseExpr, K> mRevOuterInner = MapFact.mMap(MapFact.<BaseExpr, K>override());
+        MMap<BaseExpr, K> mRevOuterInner = MapFact.mMap(MapFact.override());
         for(int i=0,size=innerOuter.size();i<size;i++) {
             K inner = innerOuter.getKey(i);
             BaseExpr outer = innerOuter.getValue(i);
@@ -91,7 +91,7 @@ public class StatKeys<K> extends TwinImmutableObject {
 //    }
 
     public StatKeys(Stat stat) { // , Cost cost
-        this(SetFact.<K>EMPTY(), stat); // , cost
+        this(SetFact.EMPTY(), stat); // , cost
     }
 
     public StatKeys(ImSet<K> allKeys, Stat stat) { // , Cost cost

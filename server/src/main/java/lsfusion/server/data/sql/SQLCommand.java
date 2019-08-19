@@ -83,7 +83,7 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
     }
 
     public static PreParsedStatement preparseStatement(String command, ImMap<String, ParseInterface> paramObjects, SQLSyntax syntax) {
-        return preparseStatement(command, false, paramObjects, syntax, false, false, new StringBuilder(), false, MapFact.<String, ParsedString>EMPTY(), null); // CONCATENATE'ов нет, поэтому ensureTypes null
+        return preparseStatement(command, false, paramObjects, syntax, false, false, new StringBuilder(), false, MapFact.EMPTY(), null); // CONCATENATE'ов нет, поэтому ensureTypes null
     }
     
     private static PreParsedStatement preparseStatement(String command, boolean parseParams, ImMap<String, ParseInterface> paramObjects, SQLSyntax syntax, boolean isVolatileStats, boolean usedRecursion, StringBuilder envString, boolean recursionFunction, ImMap<String, ParsedString> parsedSubQueries, EnsureTypeEnvironment ensureTypes) {

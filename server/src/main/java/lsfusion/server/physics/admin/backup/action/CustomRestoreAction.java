@@ -92,7 +92,7 @@ public class CustomRestoreAction extends InternalAction {
 
     private Map<String, CustomRestoreTable> getTables(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         KeyExpr tableExpr = new KeyExpr("Table");
-        ImRevMap<Object, KeyExpr> tableKeys = MapFact.<Object, KeyExpr>singletonRev("Table", tableExpr);
+        ImRevMap<Object, KeyExpr> tableKeys = MapFact.singletonRev("Table", tableExpr);
         QueryBuilder<Object, Object> tableQuery = new QueryBuilder<>(tableKeys);
         tableQuery.addProperty("sidTable", findProperty("sid[Table]").getExpr(context.getModifier(), tableExpr));
         tableQuery.addProperty("restoreObjectsTable", findProperty("restoreObjects[Table]").getExpr(context.getModifier(), tableExpr));
@@ -115,7 +115,7 @@ public class CustomRestoreAction extends InternalAction {
 
             //columns
             KeyExpr tableColumnExpr = new KeyExpr("TableColumn");
-            ImRevMap<Object, KeyExpr> tableColumnKeys = MapFact.<Object, KeyExpr>singletonRev("TableColumn", tableColumnExpr);
+            ImRevMap<Object, KeyExpr> tableColumnKeys = MapFact.singletonRev("TableColumn", tableColumnExpr);
             QueryBuilder<Object, Object> tableColumnQuery = new QueryBuilder<>(tableColumnKeys);
 
             String[] exportNames = new String[]{"sidTableColumn", "canonicalNameTableColumn", "replaceOnlyNullTableColumn"};
@@ -146,13 +146,13 @@ public class CustomRestoreAction extends InternalAction {
 
             //keys
             KeyExpr tableKeyExpr = new KeyExpr("TableKey");
-            ImRevMap<Object, KeyExpr> tableKeyKeys = MapFact.<Object, KeyExpr>singletonRev("TableKey", tableKeyExpr);
+            ImRevMap<Object, KeyExpr> tableKeyKeys = MapFact.singletonRev("TableKey", tableKeyExpr);
             QueryBuilder<Object, Object> tableKeyQuery = new QueryBuilder<>(tableKeyKeys);
             tableKeyQuery.addProperty("nameTableKey", findProperty("name[TableKey]").getExpr(context.getModifier(), tableKeyExpr));
             tableKeyQuery.addProperty("classSIDTableKey", findProperty("classSID[TableKey]").getExpr(context.getModifier(), tableKeyExpr));
             tableKeyQuery.and(findProperty("name[TableKey]").getExpr(context.getModifier(), tableKeyExpr).getWhere());
             tableKeyQuery.and(findProperty("table[TableKey]").getExpr(context.getModifier(), tableKeyExpr).compare(tableObject.getExpr(), Compare.EQUALS));
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableKeyResult = tableKeyQuery.execute(context.getSession(), MapFact.singletonOrder((Object) "nameTableKey", false));
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableKeyResult = tableKeyQuery.execute(context.getSession(), MapFact.singletonOrder("nameTableKey", false));
             for (ImMap<Object, Object> keyEntry : tableKeyResult.values()) {
                 String nameTableKey = trimToNull((String) keyEntry.get("nameTableKey"));
                 String classTableKey = trimToNull((String) keyEntry.get("classSIDTableKey"));

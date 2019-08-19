@@ -120,7 +120,7 @@ public abstract class NavigatorElement {
 
         if (isLeafElement()) {
             //leaf element
-            return singletonOrder(this, Collections.<String>emptyList());
+            return singletonOrder(this, Collections.emptyList());
         }
 
 

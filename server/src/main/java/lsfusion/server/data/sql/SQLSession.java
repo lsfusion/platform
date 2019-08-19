@@ -748,7 +748,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private static String getConstraintDeclare(String table, ImOrderSet<KeyField> keys, SQLSyntax syntax) {
-        String keyString = keys.toString(Field.<KeyField>nameGetter(syntax), ",");
+        String keyString = keys.toString(Field.nameGetter(syntax), ",");
         // "CONSTRAINT " + getConstraintName(table) + " "
         return "PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
     }
@@ -762,7 +762,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         if (keys.size() == 0)
             keys = SetFact.singletonOrder(KeyField.dumb);
-        String createString = keys.toString(this.<KeyField>getDeclare(env), ",");
+        String createString = keys.toString(this.getDeclare(env), ",");
         createString = createString + "," + getConstraintDeclare(table.getName(), keys, syntax);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
@@ -793,7 +793,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private ImOrderMap<String, Boolean> getOrderFields(ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) {
         ImOrderMap<String, Boolean> result = fields.toOrderMap(false);
         if(order)
-            result = result.addOrderExcl(keyFields.mapOrderSetValues(Field.<KeyField>nameGetter()).toOrderMap(true));
+            result = result.addOrderExcl(keyFields.mapOrderSetValues(Field.nameGetter()).toOrderMap(true));
         return result;
     }
 
@@ -826,7 +826,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         propertyReaders.immutable();
 
         ImOrderMap rs = executeSelect(command, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                0, (ImRevMap) MapFact.EMPTYREV(), (ImMap) MapFact.EMPTY(), ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+                0, MapFact.EMPTYREV(), MapFact.EMPTY(), ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
         boolean exists = false;
         for (Object rsValue : rs.values()) {
@@ -1211,7 +1211,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public static ImSet<ImOrderSet<Field>> getTemporaryIndexes(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties) {
-        return SetFact.singleton(BaseUtils.<ImOrderSet<Field>>immutableCast(keys));
+        return SetFact.singleton(BaseUtils.immutableCast(keys));
     }
 
     public void createTemporaryTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
@@ -1224,7 +1224,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         if(keys.size()==0)
             keys = SetFact.singletonOrder(KeyField.dumb);
-        String createString = SetFact.addExclSet(keys.getSet(), properties).toString(SQLSession.<Field>getDeclare(syntax, mEnv), ",");
+        String createString = SetFact.addExclSet(keys.getSet(), properties).toString(SQLSession.getDeclare(syntax, mEnv), ",");
         createString = createString + "," + getConstraintDeclare(name, keys, syntax);
         mEnv.addNoReadOnly();
         String command = syntax.getCreateSessionTable(name, createString);
@@ -1856,10 +1856,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     // системные вызовы
     public <K,V> void executeDML(String update) throws SQLException, SQLHandledException {
-        executeDML(new SQLDML(update, Cost.MIN, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), OperationOwner.unknown, TableOwner.global, MapFact.<String, ParseInterface>EMPTY(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, RegisterChange.VOID);
+        executeDML(new SQLDML(update, Cost.MIN, MapFact.EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), OperationOwner.unknown, TableOwner.global, MapFact.EMPTY(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, RegisterChange.VOID);
     }
     public <K,V> void executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
-        executeSelect(select, owner, env, MapFact.<String, ParseInterface>EMPTY(), 0, keyNames, keyReaders, propertyNames, propertyReaders, false, handler);
+        executeSelect(select, owner, env, MapFact.EMPTY(), 0, keyNames, keyReaders, propertyNames, propertyReaders, false, handler);
     }
     public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
         return executeSelect(select, owner, env, paramObjects, transactTimeout, keyNames, keyReaders, propertyNames, propertyReaders, false);
@@ -1870,7 +1870,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return result.terminate();
     }
     public <K,V> void executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders, boolean disableNestLoop, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
-        executeSelect(new SQLQuery(select, Cost.MIN, false, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false, false), disableNestLoop ? DynamicExecuteEnvironment.DISABLENESTLOOP : DynamicExecuteEnvironment.DEFAULT, owner, paramObjects, transactTimeout, keyNames, propertyNames, handler);
+        executeSelect(new SQLQuery(select, Cost.MIN, false, MapFact.EMPTY(), env,keyReaders, propertyReaders, false, false), disableNestLoop ? DynamicExecuteEnvironment.DISABLENESTLOOP : DynamicExecuteEnvironment.DEFAULT, owner, paramObjects, transactTimeout, keyNames, propertyNames, handler);
     }
 
     public <K,V> void executeSelect(SQLQuery query, DynamicExecuteEnvironment queryExecEnv, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
@@ -1892,7 +1892,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 registerChange.register(SQLSession.this, count.result); // не в proceed чтобы lock'и внутри не ставить
             }
         };
-        executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.<OE,S>create(outerEnv), pureTime, true);
+        executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.create(outerEnv), pureTime, true);
         return count.result;
     }
 
@@ -2240,7 +2240,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         String valueString = "";
 
         int paramNum = 0;
-        MExclMap<String, ParseInterface> params = MapFact.<String, ParseInterface>mExclMapMax(keyFields.size()+propFields.size());
+        MExclMap<String, ParseInterface> params = MapFact.mExclMapMax(keyFields.size()+propFields.size());
 
         // пробежим по KeyFields'ам
         for (int i=0,size=keyFields.size();i<size;i++) {
@@ -2276,7 +2276,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 
         try {
-            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", Cost.MIN, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, register(table, tableOwner, TableChange.INSERT));
+            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", Cost.MIN, MapFact.EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, register(table, tableOwner, TableChange.INSERT));
         } catch (SQLHandledException e) {
             throw new UnsupportedOperationException(); // по идее ни deadlock'а, ни update conflict'а, ни timeout'а
         }
@@ -2329,7 +2329,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public boolean isRecord(Table table, ImMap<KeyField, DataObject> keyFields, OperationOwner owner) throws SQLException, SQLHandledException {
 
         // по сути пустое кол-во ключей
-        return new Query<KeyField, String>(MapFact.<KeyField, KeyExpr>EMPTYREV(),
+        return new Query<KeyField, String>(MapFact.EMPTYREV(),
                 table.join(DataObject.getMapExprs(keyFields)).getWhere()).execute(this, owner).size() > 0;
     }
 
@@ -2402,7 +2402,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public int getCount(String table, OperationOwner opOwner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         try {
-            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>EMPTY(), 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", ValueExpr.COUNTCLASS), MapFact.<String, String>EMPTYREV(), MapFact.<String, Reader>EMPTY()).singleKey().singleValue();
+            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(), 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", ValueExpr.COUNTCLASS), MapFact.<String, String>EMPTYREV(), MapFact.EMPTY()).singleKey().singleValue();
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -2448,11 +2448,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 field.type.readDeconc(syntax.getAnyValueFunc() + "(" + fieldName + ")", field.getName(), mReadKeys, syntax, env);
             }
         else {
-            statKeys.set(tableKeys.isEmpty() ? MapFact.<KeyField, Integer>EMPTY() : MapFact.singleton(tableKeys.single(), table.count));
+            statKeys.set(tableKeys.isEmpty() ? MapFact.EMPTY() : MapFact.singleton(tableKeys.single(), table.count));
             if (table.properties.isEmpty()) {
-                keyValues.set(MapFact.<KeyField, Object>EMPTY());
-                propValues.set(MapFact.<PropertyField, Object>EMPTY());
-                statProps.set(MapFact.<PropertyField, PropStat>EMPTY());
+                keyValues.set(MapFact.EMPTY());
+                propValues.set(MapFact.EMPTY());
+                statProps.set(MapFact.EMPTY());
                 return;
             }
         }
@@ -2501,7 +2501,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     keyValues.set(mKeyValues.immutableValue());
                     statKeys.set(mStatKeys.immutableValue());
                 } else
-                    keyValues.set(MapFact.<KeyField, Object>EMPTY());
+                    keyValues.set(MapFact.EMPTY());
 
                 ImFilterValueMap<PropertyField, Object> mvPropValues = table.properties.mapFilterValues();
                 ImFilterValueMap<PropertyField, PropStat> mvStatProps = table.properties.mapFilterValues();
@@ -2630,7 +2630,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         int result = 0;
         if (modify.table.isSingle()) {// потому как запросом никак не сделаешь, просто вкинем одну пустую запись
-            if (!isRecord(modify.table, MapFact.<KeyField, DataObject>EMPTY(), modify.getOwner()))
+            if (!isRecord(modify.table, MapFact.EMPTY(), modify.getOwner()))
                 result = insertSelect(modify);
         } else
             result = insertLeftSelect(modify, false, insertOnlyNotNull);
@@ -3300,21 +3300,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         
         createTemporaryTable(sqlTo, typePool, syntax,  table, SetFact.singletonOrder(keyCount), properties.valuesSet(), owner);
 
-        insertBatchRecords(sqlTo, typePool, syntax, table, tableData.set.toIndexedMap().mapKeyValues(value -> MapFact.singleton(keyCount, (Object) value), properties::crossJoin), owner);
+        insertBatchRecords(sqlTo, typePool, syntax, table, tableData.set.toIndexedMap().mapKeyValues(value -> MapFact.singleton(keyCount, value), properties::crossJoin), owner);
 
         vacuumAnalyzeSessionTable(table, sqlTo, typePool, syntax, owner);
     }
 
     private void readData(String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ResultHandler<KeyField, PropertyField> reader, OperationOwner owner) throws SQLException, SQLHandledException {
-        ImRevMap<KeyField, String> keyNames = keys.getSet().mapRevValues(Field.<KeyField>nameGetter());
-        ImRevMap<PropertyField, String> propNames = properties.mapRevValues(Field.<PropertyField>nameGetter());
+        ImRevMap<KeyField, String> keyNames = keys.getSet().mapRevValues(Field.nameGetter());
+        ImRevMap<PropertyField, String> propNames = properties.mapRevValues(Field.nameGetter());
 
         ImRevMap<String, KeyField> revKeyNames = keyNames.reverse();
         ImRevMap<String, PropertyField> revPropNames = propNames.reverse();
-        String select = "SELECT " + SQLSession.stringExpr(revKeyNames.mapValues(Field.<KeyField>nameGetter(syntax)),
-                revPropNames.mapValues(Field.<PropertyField>nameGetter(syntax))) + " FROM " + syntax.getSessionTableName(table);
+        String select = "SELECT " + SQLSession.stringExpr(revKeyNames.mapValues(Field.nameGetter(syntax)),
+                revPropNames.mapValues(Field.nameGetter(syntax))) + " FROM " + syntax.getSessionTableName(table);
 
-        executeSelect(select, owner, StaticExecuteEnvironmentImpl.EMPTY, keyNames, revKeyNames.mapValues(Field.<KeyField>fnTypeGetter()), propNames, revPropNames.mapValues(Field.<PropertyField>fnTypeGetter()), reader);
+        executeSelect(select, owner, StaticExecuteEnvironmentImpl.EMPTY, keyNames, revKeyNames.mapValues(Field.fnTypeGetter()), propNames, revPropNames.mapValues(Field.fnTypeGetter()), reader);
     }
 
     @Override

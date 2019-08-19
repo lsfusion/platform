@@ -59,7 +59,7 @@ public class ProcessTemplateAction extends InternalAction {
                     List<TemplateEntry> templateEntriesList = new ArrayList<>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");
-                    ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
+                    ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev("TemplateEntry", templateEntryExpr);
 
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
                     String[] templateEntryNames = new String[]{"objValue", "key", "value", "type", "columnSeparator", "rowSeparator"};
@@ -71,7 +71,7 @@ public class ProcessTemplateAction extends InternalAction {
 
                     templateEntryQuery.and(findProperty("template[TemplateEntry]").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
 
-                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> templateEntryResult = templateEntryQuery.execute(context, MapFact.singletonOrder((Object) "objValue", false));
+                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> templateEntryResult = templateEntryQuery.execute(context, MapFact.singletonOrder("objValue", false));
 
                     for (ImMap<Object, Object> templateEntry : templateEntryResult.values()) {
 

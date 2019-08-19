@@ -22,7 +22,7 @@ public enum GroupStatType {
     // группируем по KeyEqual + статистике, or'им Where
     private <K> ImCol<GroupSplitWhere<K>> groupStat(boolean noWhere, ImCol<GroupSplitWhere<K>>... statJoinsList) {
 
-        MMap<Pair<KeyEqual, StatKeys<K>>, Where> mMapWhere = MapFact.mMap(AbstractWhere.<Pair<KeyEqual, StatKeys<K>>>addOr());
+        MMap<Pair<KeyEqual, StatKeys<K>>, Where> mMapWhere = MapFact.mMap(AbstractWhere.addOr());
         for(ImCol<GroupSplitWhere<K>> statJoins : statJoinsList)
             for(GroupSplitWhere<K> statJoin : statJoins)
                 mMapWhere.add(new Pair<>(statJoin.keyEqual,
@@ -40,8 +40,8 @@ public enum GroupStatType {
     // группируем по keyEqual, or'им StatKeys и Where
     private <K> ImCol<GroupSplitWhere<K>> groupAll(boolean noWhere, ImMap<KeyEqual, Where> keyEquals, ImCol<GroupSplitWhere<K>>... statJoinsList) {
 
-        MMap<KeyEqual, Where> mMapWhere = MapFact.mMap(AbstractWhere.<KeyEqual>addOr());
-        MMap<KeyEqual, StatKeys<K>> mMapStats = MapFact.mMap(StatKeys.<KeyEqual, K>addOr());
+        MMap<KeyEqual, Where> mMapWhere = MapFact.mMap(AbstractWhere.addOr());
+        MMap<KeyEqual, StatKeys<K>> mMapStats = MapFact.mMap(StatKeys.addOr());
         for(ImCol<GroupSplitWhere<K>> statJoins : statJoinsList)
             for(GroupSplitWhere<K> statJoin : statJoins) {
                 mMapWhere.add(statJoin.keyEqual, noWhere || keyEquals!=null ? Where.TRUE : statJoin.where);

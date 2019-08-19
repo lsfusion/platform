@@ -25,7 +25,7 @@ public abstract class ParseNode {
 
         // generating used property groups hierarchy
         Map<Group, MOrderExclSet<PGNode>> childGroupNodes = new HashMap<>(); // not MMap because we need null keys in this case
-        childGroupNodes.put(null, SetFact.<PGNode>mOrderExclSet());
+        childGroupNodes.put(null, SetFact.mOrderExclSet());
 
         if(Settings.get().isGroupIntegrationHierarchyOldOrder()) {
 

@@ -54,7 +54,7 @@ public class CaseAction extends ListCaseAction {
         MList<ActionCase<I>> mCases = ListFact.mListMax(2);
         mCases.add(new ActionCase<>(ifProp, trueAction));
         if(falseAction != null)
-            mCases.add(new ActionCase<>(PropertyFact.<I>createTrue(), falseAction));
+            mCases.add(new ActionCase<>(PropertyFact.createTrue(), falseAction));
         return new CaseAction(caption, false, innerInterfaces, mCases.immutableList());
     }
 
@@ -83,7 +83,7 @@ public class CaseAction extends ListCaseAction {
         PropertyMapImplement<?, PropertyInterface> where =  action.mapWhereProperty();
         ExplicitActionCase<PropertyInterface> addCase;
         if(type == AbstractType.MULTI)
-            addCase = new ExplicitActionCase<>((PropertyMapImplement<?, PropertyInterface>) where.mapClassProperty(), action, signature);
+            addCase = new ExplicitActionCase<>(where.mapClassProperty(), action, signature);
         else
             addCase = new ExplicitActionCase<>(where, action);
         addAbstractCase(addCase, version);
@@ -96,10 +96,10 @@ public class CaseAction extends ListCaseAction {
     }
 
     public <I extends PropertyInterface> CaseAction(LocalizedString caption, boolean isExclusive, ImList<ActionMapImplement> impls, ImOrderSet<I> innerInterfaces) {
-        this(caption, isExclusive, innerInterfaces, impls.<ActionCase<I>>mapListValues(new Function<ActionMapImplement, ActionCase<I>>() {
+        this(caption, isExclusive, innerInterfaces, impls.mapListValues(new Function<ActionMapImplement, ActionCase<I>>() {
             @Override
             public ActionCase<I> apply(ActionMapImplement value) {
-                return new ActionCase<>((PropertyMapImplement) value.mapWhereProperty().mapClassProperty(), value);
+                return new ActionCase<>(value.mapWhereProperty().mapClassProperty(), value);
             }
         }));
     }
@@ -210,7 +210,7 @@ public class CaseAction extends ListCaseAction {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         final ActionCase<PropertyInterface> singleCase = getCases().single();
-        return ForAction.pushFor(interfaces, singleCase.where, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, (context1, where, orders1, ordersNotNull1, mapInnerInterfaces) -> createForAction(context1, where, orders1, ordersNotNull1, singleCase.implement.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false));
+        return ForAction.pushFor(interfaces, singleCase.where, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, (context1, where, orders1, ordersNotNull1, mapInnerInterfaces) -> createForAction(context1, where, orders1, ordersNotNull1, singleCase.implement.map(mapInnerInterfaces), null, false, SetFact.EMPTY(), false));
     }
 
     @Override

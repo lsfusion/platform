@@ -73,7 +73,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
         
         public Query(Expr expr, GroupType type, boolean noInnerFollows) {
-            this(ListFact.singleton(expr), MapFact.<Expr, Boolean>EMPTYORDER(), false, type, noInnerFollows);
+            this(ListFact.singleton(expr), MapFact.EMPTYORDER(), false, type, noInnerFollows);
             assert type.hasAdd();
         }
 
@@ -226,7 +226,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
 
     @ParamLazy
     public Expr translate(ExprTranslator translator) {
-        return createOuterGroupCases(translator.translate(group), query, MapFact.<BaseExpr, BaseExpr>EMPTY(), false);
+        return createOuterGroupCases(translator.translate(group), query, MapFact.EMPTY(), false);
     }
 
     public String getExprSource(final CompileSource source, SubQueryContext subcontext) {
@@ -496,7 +496,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
             public void remove() {
                 throw new RuntimeException("not supported");
             }
-        }, MapFact.<BaseExpr, BaseExpr>EMPTY(), outerInner));
+        }, MapFact.EMPTY(), outerInner));
     }
 
     // exprValues в "контексте" B - правой части map'а
@@ -540,7 +540,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
                     return NULL;
                 }
                 protected Expr proceedBase(Query data, ImMap<BaseExpr, BaseExpr> map) {
-                    return createInnerExprCases(BaseUtils.<ImMap<BaseExpr, Expr>>immutableCast(map), data, pack);
+                    return createInnerExprCases(BaseUtils.immutableCast(map), data, pack);
                 }
                 protected Expr add(Expr op1, Expr op2) {
                     return query.type.add(op1, op2);

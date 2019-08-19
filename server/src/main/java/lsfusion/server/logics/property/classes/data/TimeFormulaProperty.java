@@ -16,7 +16,7 @@ public class TimeFormulaProperty extends ValueFormulaProperty<PropertyInterface>
     private final Time time;
 
     public TimeFormulaProperty(LocalizedString caption, Time time) {
-        super(caption, SetFact.<PropertyInterface>EMPTYORDER(), time.getConcreteValueClass());
+        super(caption, SetFact.EMPTYORDER(), time.getConcreteValueClass());
 
         this.time = time;
 

@@ -48,7 +48,7 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
     private final boolean ordersNotNull;
 
     public <T extends PropertyInterface> AddObjectAction(CustomClass valueClass, Property<T> result, boolean autoSet) {
-        this(valueClass, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new PropertyMapImplement<>(result) : null, MapFact.<PropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet);
+        this(valueClass, SetFact.EMPTY(), SetFact.EMPTYORDER(), null, result!=null ? new PropertyMapImplement<>(result) : null, MapFact.EMPTYORDER(), false, autoSet);
     }
 
     public AddObjectAction(CustomClass valueClass, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, PropertyMapImplement<T, I> where, PropertyMapImplement<?, I> result, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {

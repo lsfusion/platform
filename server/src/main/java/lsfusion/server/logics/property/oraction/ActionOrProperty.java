@@ -298,7 +298,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
     
     public ImOrderSet<ActionOrProperty> getActionOrProperties() {
-        return SetFact.singletonOrder((ActionOrProperty) this);
+        return SetFact.singletonOrder(this);
     }
     
     public static void cleanPropCaches() {
@@ -347,7 +347,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     protected ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
         if(valueClasses.size() == 1) { // доп оптимизация для DrillDown
             if(interfaces.size() == 1 && isInInterface(MapFact.singleton(interfaces.single(), valueClasses.single().valueClass.getUpSet()), true))
-                return ListFact.<ActionOrPropertyClassImplement>singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
+                return ListFact.singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
             return ListFact.EMPTY();
         }
 

@@ -30,7 +30,7 @@ public class SetComp<T> implements NodeSetComp<T> {
     public ImList<NodeSetComp<T>> getList() {
         if(comps.isEmpty())
             return ListFact.EMPTY();
-        return ListFact.<NodeSetComp<T>>singleton(this);
+        return ListFact.singleton(this);
     }
 
     public ImSet<NodeListComp<T>> getSet() {

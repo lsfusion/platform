@@ -30,7 +30,7 @@ public class StartProfilerAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             KeyExpr userKey = new KeyExpr("User");
-            QueryBuilder<Object, Object> queryU = new QueryBuilder<>(MapFact.singletonRev((Object) "User", userKey));
+            QueryBuilder<Object, Object> queryU = new QueryBuilder<>(MapFact.singletonRev("User", userKey));
             queryU.and(findProperty("overFilter[User]").getExpr(context.getModifier(), userKey).getWhere());
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> resultU = queryU.execute(context.getSession());
 
@@ -40,7 +40,7 @@ public class StartProfilerAction extends InternalAction {
             }
 
             KeyExpr formKey = new KeyExpr("ProfileForm");
-            QueryBuilder<Object, Object> queryF = new QueryBuilder<>(MapFact.singletonRev((Object) "ProfileForm", formKey));
+            QueryBuilder<Object, Object> queryF = new QueryBuilder<>(MapFact.singletonRev("ProfileForm", formKey));
             queryF.addProperty("formCN", findProperty("canonicalName[Form]").getExpr(context.getModifier(), formKey));
             queryF.and(findProperty("dataFilter[Form]").getExpr(context.getModifier(), formKey).getWhere());
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> resultF = queryF.execute(context.getSession());

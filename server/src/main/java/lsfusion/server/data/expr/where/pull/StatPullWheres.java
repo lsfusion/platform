@@ -20,7 +20,7 @@ public class StatPullWheres extends ExclPullWheres<Stat, Integer, Where> {
 
     protected Stat proceedBase(Where data, ImMap<Integer, BaseExpr> map) {
         BaseExpr baseExpr = map.get(0);
-        StatKeys<BaseExpr> statKeys = data.getStatKeys(SetFact.<BaseExpr>singleton(baseExpr), statType);
+        StatKeys<BaseExpr> statKeys = data.getStatKeys(SetFact.singleton(baseExpr), statType);
         Stat result = statKeys.getDistinct(baseExpr);
         assert BaseUtils.hashEquals(result, statKeys.getRows());
         return result;

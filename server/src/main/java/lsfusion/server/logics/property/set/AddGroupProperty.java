@@ -37,7 +37,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
     }
 
     public ImOrderMap<PropertyInterfaceImplement<I>, Boolean> getOrders() {
-        return MapFact.<PropertyInterfaceImplement<I>, Boolean>EMPTYORDER();
+        return MapFact.EMPTYORDER();
     }
 
     public boolean getOrdersNotNull() {

@@ -394,7 +394,7 @@ public abstract class ProcessDumpAction extends InternalAction {
             Integer blocked_pid = (Integer) entry.get("blocked_pid");
             Integer blocking_pid = (Integer) entry.get("blocking_pid");
             String blocking_statement = trim((String) entry.get("blocking_statement"), 100);
-            resultMap.put(blocked_pid, Arrays.<Object>asList(blocking_pid, blocking_statement));
+            resultMap.put(blocked_pid, Arrays.asList(blocking_pid, blocking_statement));
         }
         return resultMap;
     }

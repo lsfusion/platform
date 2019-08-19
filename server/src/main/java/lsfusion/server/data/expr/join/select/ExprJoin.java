@@ -32,7 +32,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
 
     @Override
     public ImSet<OuterContext> calculateOuterDepends() {
-        return SetFact.<OuterContext>singleton(baseExpr);
+        return SetFact.singleton(baseExpr);
     }
 
     public int hash(HashContext hashContext) {
@@ -57,7 +57,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
     }
 
     public ImMap<Integer, BaseExpr> getJoins() {
-        return MapFact.singleton(0, (BaseExpr) baseExpr);
+        return MapFact.singleton(0, baseExpr);
     }
 
     public static InnerJoins getInnerJoins(BaseExpr baseExpr) {

@@ -90,7 +90,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
         ImSet<String> freeSQLProcesses = mFreeSQLProcesses.immutable();
 
         ImMap<String, JavaProcess> javaProcesses = getJavaProcesses(activeSQL ? null : ThreadUtils.getAllThreads(),
-                active || activeSQL ? sqlJavaActiveThreads : SetFact.<Thread>EMPTY(), active || activeJava, readAllocatedBytes, logSqlProcesses);
+                active || activeSQL ? sqlJavaActiveThreads : SetFact.EMPTY(), active || activeJava, readAllocatedBytes, logSqlProcesses);
 
         // вырезаем "лишние" СУБД'ые процессы (которые нужны чисто чтобы видеть последние запросы)
         if (active) { // оставляем только javaProcesses + freeProcesses
@@ -230,7 +230,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
         try {
             for (LP lcp : props) {
                 PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
-                context.getEnv().change((Property) lcp.property, propChange);
+                context.getEnv().change(lcp.property, propChange);
             }
         } finally {
             importTable.drop(sql, owner);
@@ -255,7 +255,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
         try {
             for (LP lcp : props) {
                 PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
-                context.getEnv().change((Property) lcp.property, propChange);
+                context.getEnv().change(lcp.property, propChange);
             }
         } finally {
             importTable.drop(sql, owner);

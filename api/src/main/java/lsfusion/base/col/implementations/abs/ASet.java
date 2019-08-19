@@ -172,7 +172,7 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     }
 
     public ImSet<K> filter(ImSet<? extends K> filter) {
-        if(size()>filter.size()) return ((ImSet<K>)filter).filter((ImSet<? extends K>)this);
+        if(size()>filter.size()) return ((ImSet<K>)filter).filter(this);
         return filterFn((FunctionSet<K>) filter);
     }
 
@@ -358,10 +358,10 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     }
 
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
-        return new FilterValueMap<>(this.<M>mapItValues());
+        return new FilterValueMap<>(this.mapItValues());
     }
     public <M> ImFilterRevValueMap<K, M> mapFilterRevValues() {
-        return new FilterRevValueMap<>(this.<M>mapItRevValues());
+        return new FilterRevValueMap<>(this.mapItRevValues());
     }
 
     @Override

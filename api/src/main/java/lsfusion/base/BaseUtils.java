@@ -1960,15 +1960,15 @@ public class BaseUtils {
 
         final ImMap<K, C> classParams = hashInterface.getParams();
         if (classParams.size() == 0)
-            return new HashComponents<>(MapFact.<K, GlobalObject>EMPTY(), hashInterface.hashParams(MapFact.<K, GlobalObject>EMPTY()));
+            return new HashComponents<>(MapFact.EMPTY(), hashInterface.hashParams(MapFact.EMPTY()));
 
-        MMap<K, GlobalObject> mComponents = MapFact.mMap(classParams, MapFact.<K, GlobalObject>override());
+        MMap<K, GlobalObject> mComponents = MapFact.mMap(classParams, MapFact.override());
 
         int resultHash = 0; // как по сути "список" минимальных хэшей
         int compHash = 16769023;
 
         ImSet<K> freeKeys = null;
-        ImOrderMap<C, ImSet<K>> classOrders = classParams.groupValues().sort(BaseUtils.<Comparator<C>>immutableCast(GlobalObject.comparator));
+        ImOrderMap<C, ImSet<K>> classOrders = classParams.groupValues().sort(BaseUtils.immutableCast(GlobalObject.comparator));
         for (int i = 0, size = classOrders.size(); i < size; i++) {
             freeKeys = classOrders.getValue(i);
             C groupClass = classOrders.getKey(i);
@@ -1977,7 +1977,7 @@ public class BaseUtils {
                 int minHash = Integer.MAX_VALUE;
                 MFilterSet<K> mMinKeys = SetFact.mFilter(freeKeys);
                 for (K key : freeKeys) {
-                    MMap<K, GlobalObject> mMergedComponents = MapFact.mMap(classParams, MapFact.<K, GlobalObject>override()); // замещаем базовые ъэши - новыми
+                    MMap<K, GlobalObject> mMergedComponents = MapFact.mMap(classParams, MapFact.override()); // замещаем базовые ъэши - новыми
                     mMergedComponents.addAll(mComponents.immutableCopy());
                     mMergedComponents.add(key, new HashClass<>(groupClass, compHash));
 
@@ -2385,7 +2385,7 @@ public class BaseUtils {
 
     public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
         if (update)
-            keyValues.put(key, BaseUtils.<K, K, K, V>override(keyValues.get(key), values));
+            keyValues.put(key, BaseUtils.override(keyValues.get(key), values));
         else
             keyValues.put(key, values);
     }

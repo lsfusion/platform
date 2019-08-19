@@ -83,7 +83,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public <K> ImMap<K, Expr> followTrue(ImMap<K, ? extends Expr> map, final boolean pack) {
-        return ((ImMap<K, Expr>)map).mapValues(value -> value.followFalse(not(), pack));
+        return map.mapValues(value -> value.followFalse(not(), pack));
     }
 
     public ImList<Expr> followFalse(ImList<Expr> list, final boolean pack) {
@@ -193,7 +193,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public abstract MeanClassWheres calculateMeanClassWheres(boolean useNots);
 
     private ImMap<BaseExpr, BaseExpr> getExprValues(boolean and, boolean only) {
-        MMap<BaseExpr, BaseExpr> result = MapFact.mMap(MapFact.<BaseExpr, BaseExpr>override());
+        MMap<BaseExpr, BaseExpr> result = MapFact.mMap(MapFact.override());
         for(Where opWhere : and?getOr():getAnd()) {
             BaseExpr expr = null; BaseExpr valueExpr = null;
             if(opWhere instanceof EqualsWhere) {

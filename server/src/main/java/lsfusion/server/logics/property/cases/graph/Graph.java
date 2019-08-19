@@ -37,7 +37,7 @@ public class Graph<T> {
         MExclMap<T, MSet<T>> mResult = MapFact.mExclMap();
 
         for(T prop : edgesIn.keyIt())
-            mResult.exclAdd(prop, SetFact.<T>mSet());
+            mResult.exclAdd(prop, SetFact.mSet());
 
         for(int i=0,size=edgesIn.size();i<size;i++) {
             T element = edgesIn.getKey(i);

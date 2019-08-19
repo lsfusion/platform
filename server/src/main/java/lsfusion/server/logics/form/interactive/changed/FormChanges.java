@@ -276,7 +276,7 @@ public class FormChanges {
 
             // panel props 
             ImSet<PropertyDrawInstance> panelProperties = filterPropertiesExternal(properties, true);
-            serializePropertiesExternal(groupObjectJSON, panelProperties, MapFact.<ObjectInstance, DataObject>EMPTY());
+            serializePropertiesExternal(groupObjectJSON, panelProperties, MapFact.EMPTY());
         }
 
         // drop props
@@ -293,7 +293,7 @@ public class FormChanges {
     public ImMap<GroupObjectInstance, ImSet<PropertyDrawInstance>> getGroupProperties() {
         MExclMap<GroupObjectInstance, MExclSet<PropertyDrawInstance>> mGroupProperties = MapFact.mExclMap();
         for(GroupObjectInstance group : gridObjects.keys().merge(objects.keys()))
-            mGroupProperties.exclAdd(group, SetFact.<PropertyDrawInstance>mExclSet());
+            mGroupProperties.exclAdd(group, SetFact.mExclSet());
         for (PropertyReaderInstance property : properties.keyIt()) {
             if (property instanceof PropertyDrawInstance) {
                 GroupObjectInstance toDraw = ((PropertyDrawInstance) property).toDraw;

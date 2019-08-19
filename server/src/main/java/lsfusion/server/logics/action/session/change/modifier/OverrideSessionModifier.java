@@ -221,7 +221,7 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     public OverrideSessionModifier(String debugInfo, IncrementProps override, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(debugInfo, override, Settings.get().isNoApplyIncrement() ? FullFunctionSet.<Property>instance() : SetFact.<Property>EMPTY(), FullFunctionSet.<Property>instance(), SetFact.<Property>EMPTY(), SetFact.<Property>EMPTY(), modifier);
+        this(debugInfo, override, Settings.get().isNoApplyIncrement() ? FullFunctionSet.instance() : SetFact.EMPTY(), FullFunctionSet.instance(), SetFact.EMPTY(), SetFact.EMPTY(), modifier);
 
         limitHintIncrementComplexity = Settings.get().getLimitApplyHintIncrementComplexity();
         limitHintIncrementStat = Settings.get().getLimitApplyHintIncrementStat();

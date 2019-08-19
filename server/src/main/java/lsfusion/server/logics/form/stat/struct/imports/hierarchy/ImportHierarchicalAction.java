@@ -43,7 +43,7 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
         FormImportData importData = new FormImportData(formEntity, context);
         if(file != null) {
             T rootNode = getRootNode(file, root);
-            hierarchy.getIntegrationHierarchy().importNode(rootNode, MapFact.<ObjectEntity, Object>EMPTY(), importData);
+            hierarchy.getIntegrationHierarchy().importNode(rootNode, MapFact.EMPTY(), importData);
         }
         // filling properties that were not imported (to drop their changes too)
         for(ImOrderSet<PropertyDrawEntity> properties : hierarchy.getAllProperties())

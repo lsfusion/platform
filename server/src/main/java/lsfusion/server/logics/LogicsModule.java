@@ -423,7 +423,7 @@ public abstract class LogicsModule {
 
     private ImList<CustomClass> checkEmptyParents(ImList<CustomClass> parents) {
         if(parents.isEmpty())
-            parents = ListFact.<CustomClass>singleton(getBaseClass());
+            parents = ListFact.singleton(getBaseClass());
         return parents;
     }
 
@@ -509,7 +509,7 @@ public abstract class LogicsModule {
 
         AndFormulaProperty andProperty = new AndFormulaProperty(list.size());
         ImMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> mapImplement =
-                MapFact.<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>addExcl(
+                MapFact.addExcl(
                         andProperty.andInterfaces.mapValues(new IntFunction<PropertyInterfaceImplement<JoinProperty.Interface>>() {
                             public PropertyInterfaceImplement<JoinProperty.Interface> apply(int i) {
                                 return list.get(i);
@@ -570,7 +570,7 @@ public abstract class LogicsModule {
         return addIFAProp(null, caption, form, objectsToSet, ListFact.toList(false, objectsToSet.size()), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, syncType, windowType, forbidDuplicate, false, false);
     }
     protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
-        return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.<O>EMPTY(), ListFact.<LP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<O>EMPTY(), ListFact.<Property>EMPTY(), syncType, windowType, forbidDuplicate, checkOnOk, readonly);
+        return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.EMPTY(), ListFact.EMPTY(), ListFact.EMPTY(), manageSession, noCancel, ListFact.EMPTY(), ListFact.EMPTY(), syncType, windowType, forbidDuplicate, checkOnOk, readonly);
     }
     protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<Property> contextProperties, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
         return addAction(group, new LA<>(new FormInteractiveAction<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
@@ -714,7 +714,7 @@ public abstract class LogicsModule {
         PropertyInterfaceImplement<PropertyInterface> where = innerInterfaces.size() == 1 && whereLCP != null ? whereLCP.getImplement(innerInterfaces.single()) : null;
 
         // creating form
-        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
+        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.EMPTYORDER(), aliases, literals, exprs, where, MapFact.EMPTYORDER(), attr, version);
         
         // create action
         return addImportFAProp(type, form, paramsCount, SetFact.singletonOrder(form.groupObject == null ? GroupObjectEntity.NULL : form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasWhere, null); 
@@ -736,16 +736,16 @@ public abstract class LogicsModule {
     // ------------------- List action ----------------- //
 
     protected LA addListAProp(Object... params) {
-        return addListAProp(SetFact.<SessionDataProperty>EMPTY(), params);
+        return addListAProp(SetFact.EMPTY(), params);
     }
     protected LA addListAProp(ImSet<SessionDataProperty> localsInScope, Object... params) {
         return addListAProp(null, 0, LocalizedString.NONAME, localsInScope, params);
     }
     protected LA addListAProp(int removeLast, Object... params) {
-        return addListAProp(null, removeLast, LocalizedString.NONAME, SetFact.<SessionDataProperty>EMPTY(), params);
+        return addListAProp(null, removeLast, LocalizedString.NONAME, SetFact.EMPTY(), params);
     }
     protected LA addListAProp(LocalizedString caption, Object... params) {
-        return addListAProp(null, 0, caption, SetFact.<SessionDataProperty>EMPTY(), params);        
+        return addListAProp(null, 0, caption, SetFact.EMPTY(), params);        
     }
     protected LA addListAProp(Group group, int removeLast, LocalizedString caption, ImSet<SessionDataProperty> localsInScope, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
@@ -897,7 +897,7 @@ public abstract class LogicsModule {
         return addSessionScopeAProp(null, sessionScope, action);
     }
     protected LA addSessionScopeAProp(Group group, FormSessionScope sessionScope, LA action) {
-        return addSessionScopeAProp(group, sessionScope, action, SetFact.<LP>EMPTY());
+        return addSessionScopeAProp(group, sessionScope, action, SetFact.EMPTY());
     }
     protected LA addSessionScopeAProp(FormSessionScope sessionScope, LA action, ImCol<LP> nestedProps) {
         return addSessionScopeAProp(null, sessionScope, action, nestedProps);
@@ -1364,7 +1364,7 @@ public abstract class LogicsModule {
                 property = new MaxUnionProperty(unionType == Union.MIN, caption, listInterfaces, listOperands.getCol());
                 break;
             case SUM:
-                MMap<PropertyInterfaceImplement<UnionProperty.Interface>, Integer> mMapOperands = MapFact.mMap(MapFact.<PropertyInterfaceImplement<UnionProperty.Interface>>addLinear());
+                MMap<PropertyInterfaceImplement<UnionProperty.Interface>, Integer> mMapOperands = MapFact.mMap(MapFact.addLinear());
                 for(int i=0;i<listOperands.size();i++)
                     mMapOperands.add(listOperands.get(i), coeffs[i]);
                 property = new SumUnionProperty(caption, listInterfaces, mMapOperands.immutable());
@@ -1490,7 +1490,7 @@ public abstract class LogicsModule {
     }
 
     private void markLoggableStored(LP lp, DBNamingPolicy namingPolicy) {
-        lp.property.markStored((ImplementTable)null);
+        lp.property.markStored(null);
         if(namingPolicy != null)
             lp.property.initStored(baseLM.tableFactory, namingPolicy); // we need to initialize it because reflection events initialized after init stored
     }
@@ -1597,7 +1597,7 @@ public abstract class LogicsModule {
 
     public void setupDrillDownProperty(Property property, boolean isLightStart) {
         if (property.supportsDrillDown()) {
-            LA<?> drillDownFormProperty = isLightStart ? addLazyAProp((Property) property) : addDDAProp((Property) property);
+            LA<?> drillDownFormProperty = isLightStart ? addLazyAProp(property) : addDDAProp(property);
             Action formProperty = drillDownFormProperty.action;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
             property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
@@ -1610,8 +1610,8 @@ public abstract class LogicsModule {
 
     public LA<?> addDDAProp(LP property) {
         assert property.property.getReflectionOrderInterfaces().equals(property.listInterfaces);
-        if (property.property instanceof Property && ((Property) property.property).supportsDrillDown())
-            return addDDAProp((Property) property.property);
+        if (property.property instanceof Property && property.property.supportsDrillDown())
+            return addDDAProp(property.property);
         else 
             throw new UnsupportedOperationException();
     }
@@ -1905,12 +1905,12 @@ public abstract class LogicsModule {
         ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
 //            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.<ObjectSelector>EMPTY(), ListFact.<Boolean>EMPTY(), null, null, FormPrintType.MESSAGE, false, 30, null, null, true).action.getImplement();
+        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.EMPTY(), ListFact.EMPTY(), null, null, FormPrintType.MESSAGE, false, 30, null, null, true).action.getImplement();
         ActionMapImplement<?, ClassPropertyInterface> constraintAction =
                 PropertyFact.createListAction(
-                        SetFact.<ClassPropertyInterface>EMPTY(),
+                        SetFact.EMPTY(),
                         ListFact.toList(logAction,
-                                baseLM.cancel.action.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
+                                baseLM.cancel.action.getImplement(SetFact.EMPTYORDER())
                         )
                 );
         constraintAction.mapEventAction(this, PropertyFact.createAnyGProp(property).getImplement(), event, true, debugPoint);
@@ -1931,7 +1931,7 @@ public abstract class LogicsModule {
     }
 
     public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(Action<P> action, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve, DebugInfo.DebugPoint debugPoint) {
-        addEventAction(action.interfaces, action.getImplement(), whereImplement, orders, ordersNotNull, event, SetFact.<P>EMPTY(), false, resolve, debugPoint);
+        addEventAction(action.interfaces, action.getImplement(), whereImplement, orders, ordersNotNull, event, SetFact.EMPTY(), false, resolve, debugPoint);
     }
 
     public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionMapImplement<?, P> action, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, boolean resolve, DebugInfo.DebugPoint debugPoint) {
@@ -1941,7 +1941,7 @@ public abstract class LogicsModule {
         Action<? extends PropertyInterface> eventAction =
                 innerInterfaces.isEmpty() ?
                     PropertyFact.createIfAction(innerInterfaces, whereImplement, action, null).action :
-                    PropertyFact.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, action, null, false, noInline, forceInline).action;
+                    PropertyFact.createForAction(innerInterfaces, SetFact.EMPTY(), whereImplement, orders, ordersNotNull, action, null, false, noInline, forceInline).action;
 
         if(debugPoint != null) { // создано getEventDebugPoint
             if(debugger.isEnabled()) // topContextActionDefinitionBodyCreated
@@ -2204,7 +2204,7 @@ public abstract class LogicsModule {
         } else {
             paramClasses = propClasses.get(lp);
         }
-        return paramClasses == null ? Collections.<ResolveClassSet>nCopies(lp.listInterfaces.size(), null) : paramClasses;                   
+        return paramClasses == null ? Collections.nCopies(lp.listInterfaces.size(), null) : paramClasses;                   
     }
 
     // для обратной совместимости

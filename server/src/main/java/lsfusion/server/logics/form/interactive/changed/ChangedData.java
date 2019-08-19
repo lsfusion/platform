@@ -13,14 +13,14 @@ public class ChangedData {
 
     public final FunctionSet<Property> externalProps;
 
-    public static ChangedData EMPTY = new ChangedData(SetFact.<Property>EMPTY(), SetFact.<Property>EMPTY(), false);
+    public static ChangedData EMPTY = new ChangedData(SetFact.EMPTY(), SetFact.EMPTY(), false);
 
     public ChangedData(ImSet<Property> props, boolean wasRestart) {
-        this(Property.getDependsOnSet(props), SetFact.<Property>EMPTY(), wasRestart);
+        this(Property.getDependsOnSet(props), SetFact.EMPTY(), wasRestart);
     }
 
     public ChangedData(ImSet<Property> externalProps) {
-        this(SetFact.<Property>EMPTY(), Property.getDependsOnSet(externalProps), false);
+        this(SetFact.EMPTY(), Property.getDependsOnSet(externalProps), false);
     }
 
     public ChangedData(FunctionSet<Property> props, FunctionSet<Property> externalProps, boolean wasRestart) {

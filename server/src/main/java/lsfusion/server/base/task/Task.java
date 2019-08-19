@@ -142,7 +142,7 @@ public abstract class Task {
         if(propertyTimeout == null) {
             run(logger);
         } else {
-            ExecutorService service = ExecutorFactory.createTaskMirrorSyncService(BaseUtils.<ExecutionContext<PropertyInterface>>immutableCast(context));
+            ExecutorService service = ExecutorFactory.createTaskMirrorSyncService(BaseUtils.immutableCast(context));
             final Result<Long> threadId = new Result<>();
             Future future = service.submit(() -> {
                 threadId.set(Thread.currentThread().getId());
@@ -182,7 +182,7 @@ public abstract class Task {
         if (l1 < l2) {
             return -1;
         }
-        return ((Integer) System.identityHashCode(o1)).compareTo((Integer) System.identityHashCode(o2));
+        return ((Integer) System.identityHashCode(o1)).compareTo(System.identityHashCode(o2));
     }
 
     private static long addComplexity(long oldComplexity, long newComplexity) {

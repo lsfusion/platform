@@ -67,11 +67,11 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
     }
 
     public <X extends PropertyInterface> FlowResult execute(ExecutionContext<X> context) throws SQLException, SQLHandledException {
-        return action.execute(BaseUtils.<ExecutionContext<T>>immutableCast(context.override(MapFact.<X, ObjectValue>EMPTY())));
+        return action.execute(BaseUtils.immutableCast(context.override(MapFact.EMPTY())));
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, Event event, LP<P> lp, Integer... mapping) {
-        lm.addEventAction(action, new PropertyMapImplement<>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.<PropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false, null);
+        lm.addEventAction(action, new PropertyMapImplement<>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.EMPTYORDER(), false, event, false, null);
     }
 
     public ValueClass[] getInterfaceClasses() { // obsolete

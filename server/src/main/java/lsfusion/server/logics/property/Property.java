@@ -403,11 +403,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public void change(ExecutionContext context, String value) throws SQLException, SQLHandledException {
-        change(MapFact.<T, DataObject>EMPTY(), context.getEnv(), value);
+        change(MapFact.EMPTY(), context.getEnv(), value);
     }
 
     public void change(ExecutionEnvironment env, Boolean value) throws SQLException, SQLHandledException {
-        change(MapFact.<T, DataObject>EMPTY(), env, value);
+        change(MapFact.EMPTY(), env, value);
     }
 
     public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue value) throws SQLException, SQLHandledException {
@@ -562,7 +562,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             properties = SetFact.singleton(propValue);
 
             classes = property.getClassWhere(algType).remap(revMapFields);
-            propertyClasses = MapFact.singleton(propValue, property.getClassValueWhere(algType).remap(MapFact.<Object, Field>addRevExcl(revMapFields, "value", propValue)));
+            propertyClasses = MapFact.singleton(propValue, property.getClassValueWhere(algType).remap(MapFact.addRevExcl(revMapFields, "value", propValue)));
         }
 
         @IdentityLazy
@@ -584,7 +584,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public PropertyChange<T> getIncrementChange(PropertyChanges propChanges) {
-        IQuery<T, String> incrementQuery = getQuery(CalcType.EXPR, propChanges, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY());
+        IQuery<T, String> incrementQuery = getQuery(CalcType.EXPR, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY());
         return new PropertyChange<>(incrementQuery.getMapKeys(), incrementQuery.getExpr("value"), incrementQuery.getExpr("changed").getWhere());
     }
 
@@ -809,7 +809,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         if(actionChangeProps==null)
             actionChangeProps = ListFact.mCol();
-        actionChangeProps.add(BaseUtils.<Pair<ActionOrProperty<?>, LinkType>>immutableCast(pair));
+        actionChangeProps.add(BaseUtils.immutableCast(pair));
     }
     public ImCol<Pair<ActionOrProperty<?>, LinkType>> getActionChangeProps() {
         if(actionChangeProps!=null)
@@ -961,7 +961,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ChangeType modifyChanges = propChanges.getUsedChange(this);
         if(modifyChanges!=null)
-            return SetFact.add(SetFact.singleton((Property) this), modifyChanges.isFinal() ? SetFact.<Property>EMPTY() : getUsedChanges(propChanges.remove(this)));
+            return SetFact.add(SetFact.singleton(this), modifyChanges.isFinal() ? SetFact.EMPTY() : getUsedChanges(propChanges.remove(this)));
 
         return calculateUsedChanges(propChanges);
     }
@@ -1297,16 +1297,16 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
-        return getClassValueWhere(AlgType.storedType).remap(MapFact.<Object, Field>addRevExcl(mapTable.mapKeys, "value", storedField)); //
+        return getClassValueWhere(AlgType.storedType).remap(MapFact.addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
 
     public Object read(ExecutionContext context) throws SQLException, SQLHandledException {
-        return read(context.getSession().sql, MapFact.<T, ObjectValue>EMPTY(), context.getModifier(), context.getQueryEnv());
+        return read(context.getSession().sql, MapFact.EMPTY(), context.getModifier(), context.getQueryEnv());
     }
 
     public Object read(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue";
-        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.<T>EMPTY());
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
         readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier));
         return readQuery.execute(session, env).singleValue().get(readValue);
     }
@@ -1333,19 +1333,19 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return readClasses(context.getEnv());
     }
     public ObjectValue readClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        return readClasses(env.getSession(), MapFact.<T, ObjectValue>EMPTY(), env.getModifier(), env.getQueryEnv());
+        return readClasses(env.getSession(), MapFact.EMPTY(), env.getModifier(), env.getQueryEnv());
     }
 
     public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue";
-        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.<T>EMPTY());
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
         readQuery.addProperty(readValue, getExpr(keys, modifier));
         return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
     }
 
     public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue"; String readChanged = "readChanged";
-        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.<T>EMPTY());
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
         WhereBuilder changedWhere = new WhereBuilder();
         readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier, changedWhere));
         readQuery.addProperty(readChanged, ValueExpr.get(changedWhere.toWhere()));
@@ -1473,11 +1473,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
         if(action && !Settings.get().isDisableWhenCalcDo()) {
             ActionMapImplement<?, T> setAction = PropertyFact.createSetAction(interfaces, getImplement(), valueImplement);
-            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.<PropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, Event.SESSION, null, true, false, null);
+            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.EMPTYORDER(), false, Event.SESSION, null, true, false, null);
             return;
         }
 
-        if(!((Property)whereImplement.property).noDB())
+        if(!whereImplement.property.noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET, ChangeEvent.scope);
 
         ChangeEvent<T> event = new ChangeEvent<>(this, valueImplement, whereImplement);
@@ -1514,11 +1514,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ObjectValue defaultValue = getDefaultDataObject();
             if(defaultValue != null) {
                 StaticClass objectClass = (StaticClass) ((DataObject) defaultValue).objectClass;
-                return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.<T>createStatic(PropertyFact.getValueForProp(defaultValue.getValue(), objectClass), objectClass));
+                return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.createStatic(PropertyFact.getValueForProp(defaultValue.getValue(), objectClass), objectClass));
             }
             return null;
         } else
-            return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.<T>createNull());
+            return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.createNull());
     }
 
     protected boolean assertPropClasses(CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {
@@ -1661,7 +1661,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public static <T extends PropertyInterface> Inferred<T> op(ImList<Inferred<T>> operands, boolean or, InferType inferType) {
-        Inferred<T> result = or ? Inferred.<T>FALSE() : Inferred.<T>EMPTY();
+        Inferred<T> result = or ? Inferred.FALSE() : Inferred.EMPTY();
         for(int i=0,size=operands.size();i<size;i++) {
             Inferred<T> operandInferred = operands.get(i);
             if (i == 0)
@@ -1872,7 +1872,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         super.prereadCaches();
         getRecDepends();
         if(isNotNull(CalcType.EXPR.getAlgInfo()))
-            getQuery(CalcType.EXPR, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY()).pack();
+            getQuery(CalcType.EXPR, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, MapFact.EMPTY()).pack();
     }
 
     public PropertyMapImplement<?, T> getClassProperty() {
@@ -2038,7 +2038,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     // странная конечно эвристика, нужна чтобы f(a) IF g(a) наследовал draw options f(a), возможно в будущем надо убрать
     public ImList<Property> getAndProperties() {
-        return ListFact.singleton((Property) this);
+        return ListFact.singleton(this);
     }
 
     private boolean loggable;

@@ -167,7 +167,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) {
         Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerName);
-        pingInfoEntry = pingInfoEntry != null ? pingInfoEntry : MapFact.<Long, List<Long>>getGlobalConcurrentHashMap();
+        pingInfoEntry = pingInfoEntry != null ? pingInfoEntry : MapFact.getGlobalConcurrentHashMap();
         pingInfoEntry.putAll(pingInfoMap);
         RemoteLoggerAspect.pingInfoMap.put(computerName, pingInfoEntry);
     }

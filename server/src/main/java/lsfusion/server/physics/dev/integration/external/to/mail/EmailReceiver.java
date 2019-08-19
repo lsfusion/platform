@@ -93,7 +93,7 @@ public class EmailReceiver {
         Set<String> skipEmails = new HashSet<>();
         try {
             KeyExpr emailExpr = new KeyExpr("email");
-            ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev((Object) "email", emailExpr);
+            ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev("email", emailExpr);
 
             QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
             emailQuery.addProperty("fromAddressEmail", LM.findProperty("fromAddress[Email]").getExpr(emailExpr));
@@ -260,11 +260,11 @@ public class EmailReceiver {
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
                             }
                             FileData emlFileEmail = new FileData(getEMLByteArray(message), "eml");
-                            dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
+                            dataEmails.add(Arrays.asList(idEmail, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
                             int counter = 1;
                             if (messageEmail.attachments != null) {
                                 for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
-                                    dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), getFileNameWithoutExt(entry.getKey()), entry.getValue()));
+                                    dataAttachments.add(Arrays.asList(idEmail, String.valueOf(counter), getFileNameWithoutExt(entry.getKey()), entry.getValue()));
                                     counter++;
                                 }
                             }

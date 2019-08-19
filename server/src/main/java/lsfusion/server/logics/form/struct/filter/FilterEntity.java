@@ -63,7 +63,7 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
     }
 
     public GroupObjectEntity getApplyObject(FormEntity formEntity) {
-        return getApplyObject(formEntity, SetFact.<GroupObjectEntity>EMPTY());
+        return getApplyObject(formEntity, SetFact.EMPTY());
     }
 
     public GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects) {

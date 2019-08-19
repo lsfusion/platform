@@ -127,7 +127,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public ImMap<K, Integer> multiSet() {
-        return MapFact.<K, Integer>singletonRev(key, 1);
+        return MapFact.singletonRev(key, 1);
     }
 
     public <M> ImCol<M> mapColValues(IntObjectFunction<K, M> getter) {
@@ -171,7 +171,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public Collection<K> toJavaCol() {
-        return Collections.<K>singleton(key);
+        return Collections.singleton(key);
     }
 
     public ImSet<K> getSet() {
@@ -207,11 +207,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public <V> ImRevMap<K, V> mapSet(ImOrderSet<? extends V> set) {
-        return MapFact.<K, V>singletonRev(key, set.get(0));
+        return MapFact.singletonRev(key, set.get(0));
     }
 
     public <V> ImMap<K, V> mapList(ImList<? extends V> list) {
-        return MapFact.<K, V>singleton(key, list.get(0));
+        return MapFact.singleton(key, list.get(0));
     }
 
     public ImOrderSet<K> removeOrder(ImSet<? extends K> set) {
@@ -234,7 +234,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public <V> ImOrderMap<K, V> mapOrderMap(ImMap<K, V> map) {
-        return MapFact.<K, V>singletonOrder(key, map.get(key));
+        return MapFact.singletonOrder(key, map.get(key));
     }
 
     public ImOrderSet<K> reverseOrder() {
@@ -322,7 +322,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public <V> ImOrderMap<K, V> toOrderMap(V value) {
-        return MapFact.<K, V>singletonOrder(key, value);
+        return MapFact.singletonOrder(key, value);
     }
 
     public K[] toArray(K[] array) {
@@ -418,7 +418,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public List<K> toJavaList() {
-        return Collections.<K>singletonList(key);
+        return Collections.singletonList(key);
     }
 
     public boolean intersect(ImSet<? extends K> set) {
@@ -445,7 +445,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         if(group==null)
             return MapFact.EMPTY();
         
-        return MapFact.<G, ImSet<K>>singleton(group, this);
+        return MapFact.singleton(group, this);
     }
 
     public <G> ImMap<G, ImOrderSet<K>> groupOrder(BaseUtils.Group<G, K> getter) {
@@ -453,7 +453,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         if(group==null)
             return MapFact.EMPTY();
 
-        return MapFact.<G, ImOrderSet<K>>singleton(group, this);
+        return MapFact.singleton(group, this);
     }
 
     public <V> ImCol<V> map(ImMap<K, ? extends V> map) {
@@ -503,10 +503,10 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
-        return new FilterValueMap<>(this.<M>mapItValues());
+        return new FilterValueMap<>(this.mapItValues());
     }
     public <M> ImFilterRevValueMap<K, M> mapFilterRevValues() {
-        return new FilterRevValueMap<>(this.<M>mapItRevValues());
+        return new FilterRevValueMap<>(this.mapItRevValues());
     }
 
     public ImSet<K> filterFn(FunctionSet<K> filter) {
@@ -517,7 +517,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
 
     public ImSet<K> split(FunctionSet<K> filter, Result<ImSet<K>> rest) {
         if(filter.contains(key)) {
-            rest.set(SetFact.<K>EMPTY());
+            rest.set(SetFact.EMPTY());
             return this;
         }
         rest.set(this);
@@ -563,7 +563,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         if(group==null)
             return MapFact.EMPTY();
 
-        return MapFact.<G, ImList<K>>singleton(group, this);
+        return MapFact.singleton(group, this);
     }
 
     @Override
@@ -572,15 +572,15 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public <V> ImMap<K, V> toMap(V value) {
-        return MapFact.<K, V>singleton(key, value);
+        return MapFact.singleton(key, value);
     }
 
     public ImMap<K, K> toMap() {
-        return MapFact.<K, K>singleton(key, key);
+        return MapFact.singleton(key, key);
     }
 
     public ImRevMap<K, K> toRevMap() {
-        return MapFact.<K, K>singletonRev(key, key);
+        return MapFact.singletonRev(key, key);
     }
 
     public ImOrderSet<K> toOrderSet() {
@@ -656,7 +656,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public Set<K> toJavaSet() {
-        return Collections.<K>singleton(key);
+        return Collections.singleton(key);
     }
 
     @Override
@@ -671,7 +671,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     public ImSet<K> split(ImSet<K> filter, Result<ImSet<K>> rest, Result<ImSet<K>> restSplit) {
         if(filter.contains(key)) {
             restSplit.set(filter.removeIncl(key));
-            rest.set(SetFact.<K>EMPTY());
+            rest.set(SetFact.EMPTY());
             return this;
         } else {
             restSplit.set(filter);

@@ -64,7 +64,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     }
 
     public void cancel(ExecutionStack stack) throws SQLException, SQLHandledException {
-        cancel(stack, SetFact.<SessionDataProperty>EMPTY());
+        cancel(stack, SetFact.EMPTY());
     }
 
     public abstract DataSession getSession();

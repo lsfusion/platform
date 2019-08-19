@@ -146,7 +146,7 @@ public class MapFact {
     }
 
     public static <B, K extends B, V> ImRevMap<K, V> replaceValues(ImRevMap<K, ? extends V> map1, final ImRevMap<B, ? extends V> map2) {
-        return ((ImMap<K, V>)map1).mapRevValues((key, value) -> {
+        return map1.mapRevValues((key, value) -> {
             V value2 = map2.get(key);
             if (value2 != null)
                 return value2;
@@ -155,7 +155,7 @@ public class MapFact {
     }
 
     public static <B, K extends B, V> ImMap<K, V> replaceValues(ImMap<K, ? extends V> map1, final ImMap<B, ? extends V> map2) {
-        return ((ImMap<K, V>)map1).mapValues((key, value) -> {
+        return map1.mapValues((key, value) -> {
             V value2 = map2.get(key);
             if(value2 != null)
                 return value2;
@@ -255,7 +255,7 @@ public class MapFact {
     }
 
     public static <BK, K extends BK, V> ImRevMap<K, V> splitRevKeys(ImRevMap<BK, V> map, ImSet<K> keys, Result<ImRevMap<BK, V>> rest) {
-        return BaseUtils.immutableCast(map.splitRevKeys(BaseUtils.<ImSet<BK>>immutableCast(keys), BaseUtils.<Result<ImRevMap<BK, V>>>immutableCast(rest)));
+        return BaseUtils.immutableCast(map.splitRevKeys(BaseUtils.<ImSet<BK>>immutableCast(keys), BaseUtils.immutableCast(rest)));
     }
 
     public static <K, V> ImMap<K, V> mergeMaps(ImCol<ImMap<K, V>> maps, AddValue<K, V> addValue) {
@@ -470,7 +470,7 @@ public class MapFact {
     }
 
     public static <K, V> MExclMap<K, V> mExclMap() {
-        return new HMap<>(MapFact.<K, V>exclusive());
+        return new HMap<>(MapFact.exclusive());
     }
 
     public static <K, V> MExclMap<K, V> mExclMap(int size) { // для массивов
@@ -479,13 +479,13 @@ public class MapFact {
 
     public static <K, V> MExclMap<K, V> mExclMapMax(int size) {
         if(size<SetFact.useArrayMax || size >= SetFact.useIndexedArrayMin) // если слишком мало или много элементов используем массивы
-            return new ArMap<>(size, MapFact.<K, V>exclusive());
-        return new HMap<>(size, MapFact.<K, V>exclusive());
+            return new ArMap<>(size, MapFact.exclusive());
+        return new HMap<>(size, MapFact.exclusive());
     }
 
     public static <K, V> MExclMap<K, V> mExclMap(ImMap<? extends K, ? extends V> map) {
         if(map instanceof HMap)
-            return new HMap<>((HMap<? extends K, ? extends V>) map, MapFact.<K, V>exclusive());
+            return new HMap<>((HMap<? extends K, ? extends V>) map, MapFact.exclusive());
 
         MExclMap<K, V> mMap = mExclMap();
         mMap.exclAddAll(map);
@@ -494,7 +494,7 @@ public class MapFact {
 
     public static <K, V> MMap<K, V> mMap(boolean isExclusive) {
         if(!isExclusive)
-            return mMap(MapFact.<K, V>override());
+            return mMap(MapFact.override());
         final MExclMap<K, V> mExclMap = MapFact.mExclMap();
         return new MMap<K, V>() {
             public boolean add(K key, V value) {
@@ -524,10 +524,10 @@ public class MapFact {
     public static <K, V> MFilterMap<K, V> mFilter(ImMap<K, V> map) {
         int size = map.size();
         if(map instanceof ArIndexedMap)
-            return new ArIndexedMap<>(size, MapFact.<K, V>exclusive());
+            return new ArIndexedMap<>(size, MapFact.exclusive());
         if(size < SetFact.useArrayMax)
-            return new ArMap<>(size, MapFact.<K, V>exclusive());
-        return new HMap<>(size, MapFact.<K, V>exclusive());
+            return new ArMap<>(size, MapFact.exclusive());
+        return new HMap<>(size, MapFact.exclusive());
     }
 
     public static <K, V> ImMap<K, V> imFilter(MFilterMap<K, V> mMap, ImMap<K, V> map) {
@@ -543,7 +543,7 @@ public class MapFact {
     // reversed
 
     public static <K, V> MRevMap<K, V> mRevMap() {
-        return new HMap<>(MapFact.<K, V>exclusive());
+        return new HMap<>(MapFact.exclusive());
     }
 
     public static <K, V> MRevMap<K, V> mRevMap(int size) {
@@ -552,13 +552,13 @@ public class MapFact {
 
     public static <K, V> MRevMap<K, V> mRevMapMax(int size) {
         if(size<SetFact.useArrayMax || size >= SetFact.useIndexedArrayMin) // если слишком мало или много элементов используем массивы
-            return new ArMap<>(size, MapFact.<K, V>exclusive());
-        return new HMap<>(size, MapFact.<K, V>exclusive());
+            return new ArMap<>(size, MapFact.exclusive());
+        return new HMap<>(size, MapFact.exclusive());
     }
 
     public static <K, V> MRevMap<K, V> mRevMap(ImRevMap<K, V> map) {
         if(map instanceof HMap)
-            return new HMap<>((HMap<? extends K, ? extends V>) map, MapFact.<K, V>exclusive());
+            return new HMap<>((HMap<? extends K, ? extends V>) map, MapFact.exclusive());
 
         MRevMap<K, V> mMap = mRevMap();
         mMap.revAddAll(map);
@@ -568,10 +568,10 @@ public class MapFact {
     public static <K, V> MFilterRevMap<K, V> mRevFilter(ImRevMap<K, V> map) {
         int size = map.size();
         if(map instanceof ArIndexedMap)
-            return new ArIndexedMap<>(size, MapFact.<K, V>exclusive());
+            return new ArIndexedMap<>(size, MapFact.exclusive());
         if(size < SetFact.useArrayMax)
-            return new ArMap<>(size, MapFact.<K, V>exclusive());
-        return new HMap<>(size, MapFact.<K, V>exclusive());
+            return new ArMap<>(size, MapFact.exclusive());
+        return new HMap<>(size, MapFact.exclusive());
     }
 
     public static <K, V> ImRevMap<K, V> imRevFilter(MFilterRevMap<K, V> mMap, ImRevMap<K, V> map) {
@@ -586,7 +586,7 @@ public class MapFact {
     // ordered
 
     public static <K, V> MOrderMap<K, V> mOrderMap() {
-        return mOrderMap(MapFact.<K, V>keep());
+        return mOrderMap(MapFact.keep());
     }
 
     public static <K, V> MOrderMap<K, V> mOrderMap(AddValue<K, V> addValue) {
@@ -595,7 +595,7 @@ public class MapFact {
 
     public static <K, V> MOrderMap<K, V> mOrderMap(ImOrderMap<K, V> map) {
         if(map instanceof HOrderMap)
-            return new HOrderMap<>((HOrderMap<K, V>) map, MapFact.<K, V>keep());
+            return new HOrderMap<>((HOrderMap<K, V>) map, MapFact.keep());
 
         MOrderMap<K, V> mOrderMap = mOrderMap();
         mOrderMap.addAll(map);
@@ -604,12 +604,12 @@ public class MapFact {
 
     public static <K, V> MOrderMap<K, V> mOrderMapMax(int size) {
         if(size < SetFact.useArrayMax)
-            return new ArOrderMap<>(size, MapFact.<K, V>keep());
-        return new HOrderMap<>(size, MapFact.<K, V>keep());
+            return new ArOrderMap<>(size, MapFact.keep());
+        return new HOrderMap<>(size, MapFact.keep());
     }
 
     public static <K, V> MOrderExclMap<K, V> mOrderExclMap() {
-        return new ArOrderMap<>(MapFact.<K, V>exclusive());
+        return new ArOrderMap<>(MapFact.exclusive());
     }
 
     public static <K, V> MOrderExclMap<K, V> mOrderExclMap(int size) {
@@ -618,13 +618,13 @@ public class MapFact {
 
     public static <K, V> MOrderExclMap<K, V> mOrderExclMapMax(int size) {
         if(size<SetFact.useArrayMax || size >= SetFact.useIndexedArrayMin) // если слишком мало или много элементов используем массивы
-            return new ArOrderMap<>(size, MapFact.<K, V>exclusive());
-        return new HOrderMap<>(size, MapFact.<K, V>exclusive());
+            return new ArOrderMap<>(size, MapFact.exclusive());
+        return new HOrderMap<>(size, MapFact.exclusive());
     }
 
     public static <K, V> MOrderExclMap<K, V> mOrderExclMap(ImOrderMap<? extends K, ? extends V> map) {
         if(map instanceof HOrderMap)
-            return new HOrderMap<>((HOrderMap<K, V>) map, MapFact.<K, V>exclusive());
+            return new HOrderMap<>((HOrderMap<K, V>) map, MapFact.exclusive());
 
         MOrderExclMap<K, V> mOrderMap = mOrderExclMap();
         mOrderMap.exclAddAll(map);
@@ -636,8 +636,8 @@ public class MapFact {
 //        if(map instanceof ArOrderIndexedMap) keep сложнее поддерживать
 //            return new ArOrderIndexedMap<K, V>(size, MapFact.<K, V>exclusive());
         if(size < SetFact.useArrayMax || size >= SetFact.useIndexedArrayMin)
-            return new ArOrderMap<>(size, MapFact.<K, V>exclusive());
-        return new HOrderMap<>(size, MapFact.<K, V>exclusive());
+            return new ArOrderMap<>(size, MapFact.exclusive());
+        return new HOrderMap<>(size, MapFact.exclusive());
     }
 
     public static <K, V> ImOrderMap<K, V> imOrderFilter(MOrderFilterMap<K, V> mMap, ImOrderMap<K, V> map) {
@@ -653,7 +653,7 @@ public class MapFact {
 
     // mutable'ы на заполнение, то есть кэши, локальные обработки
     public static <K, V> MAddMap<K, V> mAddOverrideMap() {
-        return mAddMap(MapFact.<K, V>override());
+        return mAddMap(MapFact.override());
     }
 
     public static <K, V> MAddMap<K, V> mAddMap(AddValue<K, V> addValue) {
@@ -665,7 +665,7 @@ public class MapFact {
     }
 
     public static <K, V> MAddMap<K, V> mAddOverrideMap(ImMap<? extends K, ? extends V> map) {
-        return mAddMap(map, MapFact.<K, V>override());
+        return mAddMap(map, MapFact.override());
     }
 
     public static <K, V> MAddMap<K, V> mAddMap(ImMap<? extends K, ? extends V> map, AddValue<K, V> addValue) {
@@ -678,7 +678,7 @@ public class MapFact {
     }
 
     public static <K, V> MAddExclMap<K, V> mAddExclMap() {
-        return new HMap<>(MapFact.<K, V>exclusive());
+        return new HMap<>(MapFact.exclusive());
     }
 
     public static <K, V> MAddExclMap<K, V> mBigStrongMap() {
@@ -686,12 +686,12 @@ public class MapFact {
     }
 
     public static <K, V> MAddExclMap<K, V> mSmallStrongMap() {
-        return new ArIndexedMap<>(MapFact.<K, V>exclusive());
+        return new ArIndexedMap<>(MapFact.exclusive());
     }
 
     public static <K, V> MAddExclMap<K, V> mAddExclMap(ImMap<K, V> map) {
         if(map instanceof HMap)
-            return new HMap<>((HMap<K, V>) map, MapFact.<K, V>exclusive());
+            return new HMap<>((HMap<K, V>) map, MapFact.exclusive());
 
         MAddExclMap<K, V> mResult = mAddExclMap();
         for(int i=0,size=map.size();i<size;i++)
@@ -700,7 +700,7 @@ public class MapFact {
     }
 
     public static <K, V> MAddExclMap<K, V> mAddExclMapMax(int size) {
-        return new HMap<>(size, MapFact.<K, V>exclusive());
+        return new HMap<>(size, MapFact.exclusive());
     }
 
     // реальный mutable с добавлением \ удалением

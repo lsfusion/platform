@@ -36,7 +36,7 @@ public class MakeZipFileAction extends InternalAction {
         try {
 
             KeyExpr iExpr = new KeyExpr("i");
-            ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "i", iExpr);
+            ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("i", iExpr);
             QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
             query.addProperty("zipping", findProperty("zipping[STRING[1000]]").getExpr(context.getModifier(), iExpr));
             query.and(findProperty("zipping[STRING[1000]]").getExpr(context.getModifier(), iExpr).getWhere());

@@ -322,7 +322,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     static class CompareMap extends HMap<Equal,Compare> {
 
         CompareMap() {
-            super(MapFact.<Equal, Compare>override());
+            super(MapFact.override());
         }
 
         Compare getCompare(Equal expr) {
@@ -761,13 +761,13 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return new GroupJoinsWheres(result.immutable(), type);
     }
     public KeyEquals calculateGroupKeyEquals() {
-        MMap<KeyEqual, Where> result = MapFact.mMap(AbstractWhere.<KeyEqual>addOr());
+        MMap<KeyEqual, Where> result = MapFact.mMap(AbstractWhere.addOr());
         for(Where where : wheres)
             result.addAll(where.getKeyEquals());
         return new KeyEquals(result.immutable(), false); // потому что вызывается из calculateGroupKeyEquals, а там уже проверили что все не isSimple
     }
     public MeanClassWheres calculateGroupMeanClassWheres(boolean useNots) {
-        MMap<MeanClassWhere, CheckWhere> result = MapFact.mMap(AbstractWhere.<MeanClassWhere>addOrCheck());
+        MMap<MeanClassWhere, CheckWhere> result = MapFact.mMap(AbstractWhere.addOrCheck());
         for(Where where : wheres)
             result.addAll(where.groupMeanClassWheres(useNots));
         return new MeanClassWheres(result.immutable());

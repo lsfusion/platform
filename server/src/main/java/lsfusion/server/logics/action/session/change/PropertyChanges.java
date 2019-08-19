@@ -34,7 +34,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     private final static SFunctionSet<ModifyChange> emptyChanges = element -> element==null || (!element.isFinal && element.isEmpty());
     public PropertyChanges replace(ImMap<Property, ModifyChange> replace) {
         ImSet<Property> keys = replace.filterFnValues(emptyChanges).keys();
-        return new PropertyChanges(changes.remove(keys).merge(replace.remove(keys), MapFact.<Property, ModifyChange>overridePrevRef())); // override с оставлением ссылки
+        return new PropertyChanges(changes.remove(keys).merge(replace.remove(keys), MapFact.overridePrevRef())); // override с оставлением ссылки
     }
 
     @IdentityLazy
@@ -58,7 +58,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     }
 
     public <T extends PropertyInterface> PropertyChanges(Property<T> property, ModifyChange<T> change) {
-        changes = MapFact.<Property, ModifyChange>singleton(property, change);
+        changes = MapFact.singleton(property, change);
     }
 
     public PropertyChanges(ImMap<? extends Property, ? extends PropertyChange> mapChanges, final boolean isFinal) {
@@ -67,7 +67,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     }
 
     protected PropertyChanges(PropertyChanges changes1, PropertyChanges changes2) {
-        changes = changes1.changes.merge(changes2.changes, ModifyChange.<Property>addValue());
+        changes = changes1.changes.merge(changes2.changes, ModifyChange.addValue());
     }
     public PropertyChanges add(PropertyChanges add) {
         if(isEmpty())

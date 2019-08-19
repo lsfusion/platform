@@ -47,37 +47,37 @@ public abstract class MapValuesTranslator extends AbstractMapTranslator implemen
     }
 
     public <K,U extends ValuesContext<U>> ImMap<K, U> translateValues(ImMap<K, U> map) {
-        return map.mapValues(this.<U>TRANS());
+        return map.mapValues(this.TRANS());
     }
 
     public <K1, U1 extends ValuesContext<U1>, K2, U2 extends ValuesContext<U2>> ImMap<ImMap<K1, U1>, ImMap<K2, U2>> translateMapKeyValues(ImMap<ImMap<K1, U1>, ImMap<K2, U2>> map) {
-        return map.mapKeyValues(this.<K1, U1>TRANSMAP(), this.<K2, U2>TRANSMAP());
+        return map.mapKeyValues(this.TRANSMAP(), this.TRANSMAP());
     }
 
     public <K1, U1 extends ValuesContext<U1>, U2 extends ValuesContext<U2>> ImMap<ImMap<K1, U1>, U2> translateMapKeyValue(ImMap<ImMap<K1, U1>, U2> map) {
-        return map.mapKeyValues(this.<K1, U1>TRANSMAP(), this.<U2>TRANS());
+        return map.mapKeyValues(this.TRANSMAP(), this.TRANS());
     }
 
     public <V extends Value> ImSet<V> translateValues(ImSet<V> values) {
-        return values.mapSetValues(this.<V>TRANSVALUE());
+        return values.mapSetValues(this.TRANSVALUE());
     }
 
     public <K, U extends Value> ImMap<K, U> translateMapValues(ImMap<K, U> map) {
-        return map.mapValues(this.<U>TRANSVALUE());
+        return map.mapValues(this.TRANSVALUE());
     }
 
     public <K, U extends Value> ImRevMap<K, U> translateMapValues(ImRevMap<K, U> map) {
-        return map.mapRevValues(this.<U>TRANSVALUE());
+        return map.mapRevValues(this.TRANSVALUE());
     }
 
     @Override
     public <K extends Value, U> ImMap<K, U> translateValuesMapKeys(ImMap<K, U> map) {
-        return map.mapKeys(this.<K>TRANSVALUE());
+        return map.mapKeys(this.TRANSVALUE());
     }
 
     @Override
     public <K extends Value, U> ImRevMap<K, U> translateValuesMapKeys(ImRevMap<K, U> map) {
-        return map.mapRevKeys(this.<K>TRANSVALUE());
+        return map.mapRevKeys(this.TRANSVALUE());
     }
 
     public ParamExpr translate(ParamExpr expr) {

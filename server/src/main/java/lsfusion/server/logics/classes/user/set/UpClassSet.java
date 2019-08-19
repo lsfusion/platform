@@ -80,7 +80,7 @@ public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueCl
         if(node instanceof ConcreteClass)
             return has((ConcreteClass)node);
         if(node instanceof UpClassSet)
-            return ((UpClassSet)node).inSet(this, SetFact.<ConcreteCustomClass>EMPTY());
+            return ((UpClassSet)node).inSet(this, SetFact.EMPTY());
         return getOr().containsAll((OrClassSet) node, implicitCast);
     }
 
@@ -167,7 +167,7 @@ public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueCl
         return OrObjectClassSet.getIsClassFields(this);
     }
     public ImRevMap<IsClassField, ObjectValueClassSet> getClassFields(boolean onlyObjectClassFields) {
-        MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<IsClassField>objectValueSetAdd());
+        MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.objectValueSetAdd());
         for(CustomClass customClass : wheres)
             mMap.addAll(customClass.getUpClassFields(onlyObjectClassFields));
         return CustomClass.pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, this);

@@ -44,7 +44,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {
-        return SetFact.<OuterContext>toExclSet(wheres);
+        return SetFact.toExclSet(wheres);
     }
 
     protected boolean isComplex() {

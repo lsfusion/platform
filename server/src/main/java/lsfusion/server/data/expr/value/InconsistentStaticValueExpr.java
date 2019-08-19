@@ -113,7 +113,7 @@ public class InconsistentStaticValueExpr extends VariableSingleClassExpr impleme
 
     @Override
     public ImSet<Value> getValues() {
-        return SetFact.<Value>singleton(this);
+        return SetFact.singleton(this);
     }
 
     @Override

@@ -26,7 +26,7 @@ public abstract class ProfileObject {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj != null && obj instanceof ProfileObject && objects.length == ((ProfileObject) obj).objects.length) {
+        if (obj instanceof ProfileObject && objects.length == ((ProfileObject) obj).objects.length) {
             for (int i = 0; i < objects.length; i++) {
                 if (!nullEquals(objects[i], ((ProfileObject) obj).objects[i])) {
                     return false;

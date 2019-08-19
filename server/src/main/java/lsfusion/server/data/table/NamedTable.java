@@ -32,7 +32,7 @@ public abstract class NamedTable extends Table {
     }
 
     protected NamedTable(DataInputStream inStream, BaseClass baseClass) throws IOException {
-        this(inStream.readUTF(), deserializeKeys(inStream), deserializeProperties(inStream), ClassWhere.<KeyField>FALSE(), MapFact.<PropertyField, ClassWhere<Field>>EMPTY());
+        this(inStream.readUTF(), deserializeKeys(inStream), deserializeProperties(inStream), ClassWhere.FALSE(), MapFact.EMPTY());
 
         initBaseClasses(baseClass);
     }

@@ -49,12 +49,12 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
 
     @Override
     protected RawFileData parseHTTPNotNull(FileData b) {
-        return ((FileData) b).getRawFile();
+        return b.getRawFile();
     }
 
     @Override
     protected FileData formatHTTPNotNull(RawFileData b) {
-        return new FileData((RawFileData) b, getOpenExtension(b));
+        return new FileData(b, getOpenExtension(b));
     }
     
     protected ImSet<String> getExtensions() {

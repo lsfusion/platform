@@ -40,7 +40,7 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {
-        return SetFact.<OuterContext>toSet(expr1, expr2);
+        return SetFact.toSet(expr1, expr2);
     }
 
     public InnerJoins getInnerJoins() {

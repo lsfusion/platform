@@ -85,7 +85,7 @@ public class Inferred<T extends PropertyInterface> {
 
     // предполагается что все не null пока
     public Inferred(ImMap<T, ExClassSet> params) {
-        this(checkNull(params), SetFact.<Compared<T>>EMPTY());
+        this(checkNull(params), SetFact.EMPTY());
     }
 
     // внутренний конструктор для верхнего конструктора
@@ -94,7 +94,7 @@ public class Inferred<T extends PropertyInterface> {
     }
 
     public Inferred(ImMap<T, ExClassSet> params, NotNull<T> notNull, ImSet<Compared<T>> compared) {
-        this(params, notNull, compared, MapFact.<T, ExClassSet>EMPTY(), NotNull.<T>EMPTY(), SetFact.<Compared<T>>EMPTY());
+        this(params, notNull, compared, MapFact.EMPTY(), NotNull.EMPTY(), SetFact.EMPTY());
     }
 
     private static <T extends PropertyInterface> Inferred<T> checkNull(ImMap<T, ExClassSet> params, NotNull<T> notNull, ImSet<Compared<T>> compared, ImMap<T, ExClassSet> notParams, NotNull<T> notNotNull, ImSet<Compared<T>> notCompared) {
@@ -128,11 +128,11 @@ public class Inferred<T extends PropertyInterface> {
     }
 
     private Inferred() {
-        this(MapFact.<T, ExClassSet>EMPTY());
+        this(MapFact.EMPTY());
     }
 
     private Inferred(Compared<T> compared) {
-        this(MapFact.<T, ExClassSet>EMPTY(), NotNull.<T>EMPTY(), SetFact.singleton(compared));
+        this(MapFact.EMPTY(), NotNull.EMPTY(), SetFact.singleton(compared));
     }
     
     public static <T extends PropertyInterface> Inferred<T> create(Compared<T> compare, InferType inferType, boolean not) {
@@ -229,7 +229,7 @@ public class Inferred<T extends PropertyInterface> {
     }
 
     public Inferred<T> orAny() { // или null или any
-        return new Inferred<>(params == null ? MapFact.<T, ExClassSet>EMPTY() : params.mapValues(value -> ExClassSet.orAny(value)), NotNull.<T>EMPTY(), SetFact.<Compared<T>>EMPTY());        
+        return new Inferred<>(params == null ? MapFact.EMPTY() : params.mapValues(value -> ExClassSet.orAny(value)), NotNull.EMPTY(), SetFact.EMPTY());        
     }
     
     public boolean isEmpty(InferType inferType) {
@@ -263,7 +263,7 @@ public class Inferred<T extends PropertyInterface> {
         return map == null ? null : map.mapValues(ExClassSet::getBase);
     }
     public Inferred<T> getBase(InferType inferType) {
-        return new Inferred<>(getBase(getParams(inferType)), notNull, SetFact.<Compared<T>>EMPTY(), getBase(getNotParams(inferType)), notNotNull, SetFact.<Compared<T>>EMPTY());
+        return new Inferred<>(getBase(getParams(inferType)), notNull, SetFact.EMPTY(), getBase(getNotParams(inferType)), notNotNull, SetFact.EMPTY());
     }
 
     // only for check caches

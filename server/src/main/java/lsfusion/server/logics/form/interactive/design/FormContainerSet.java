@@ -49,7 +49,7 @@ public class FormContainerSet {
     }
 
     public static FormContainerSet fillContainers(FormView form, ContainerFactory<ContainerView> contFactory) {
-        return fillContainers(form, contFactory, ContainerAdder.<ContainerView, ComponentView, LocalizedString>DEFAULT());
+        return fillContainers(form, contFactory, ContainerAdder.DEFAULT());
     }
 
     public static FormContainerSet fillContainers(FormView form, ContainerFactory<ContainerView> contFactory, ContainerAdder<ContainerView, ComponentView, LocalizedString> adder) {

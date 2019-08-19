@@ -283,7 +283,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         if(filter.isFull()) // оптимизация
             return this;
         if(filter.isEmpty())
-            return MapFact.<K, V>EMPTY();
+            return MapFact.EMPTY();
 
         MFilterMap<K, V> mResult = MapFact.mFilter(this);
         for(int i=0,size=size();i<size;i++) {
@@ -421,7 +421,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public ImMap<K, V> override(ImMap<? extends K, ? extends V> imMap) {
-        return merge(imMap, MapFact.<K, V>override());
+        return merge(imMap, MapFact.override());
     }
     
     public ImMap<K, V> overrideIncl(final ImMap<? extends K, ? extends V> map) {
@@ -628,10 +628,10 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
-        return new FilterValueMap<>(this.<M>mapItValues());
+        return new FilterValueMap<>(this.mapItValues());
     }
     public <M> ImFilterRevValueMap<K, M> mapFilterRevValues() {
-        return new FilterRevValueMap<>(this.<M>mapItRevValues());
+        return new FilterRevValueMap<>(this.mapItRevValues());
     }
 
     private static final AddValue<Object, ImMap<Object, ImSet<Object>>> addMergeMapSets = new SymmAddValue<Object, ImMap<Object, ImSet<Object>>>() {

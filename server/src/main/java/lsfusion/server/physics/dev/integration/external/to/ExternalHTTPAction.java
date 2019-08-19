@@ -78,8 +78,8 @@ public class ExternalHTTPAction extends ExternalAction {
             if(connectionString != null) {
                 connectionString = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
                 bodyUrl = bodyUrl != null ? replaceParams(context, bodyUrl, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN)) : null;
-                ImMap<String, String> headers = headersProperty != null ? readPropertyValues(context.getEnv(), headersProperty) : MapFact.<String, String>EMPTY();
-                ImMap<String, String> cookies = cookiesProperty != null ? readPropertyValues(context.getEnv(), cookiesProperty) : MapFact.<String, String>EMPTY();
+                ImMap<String, String> headers = headersProperty != null ? readPropertyValues(context.getEnv(), headersProperty) : MapFact.EMPTY();
+                ImMap<String, String> cookies = cookiesProperty != null ? readPropertyValues(context.getEnv(), cookiesProperty) : MapFact.EMPTY();
                 CookieStore cookieStore = new BasicCookieStore();
                 HttpResponse response = readHTTP(context, connectionString, bodyUrl, rNotUsedParams.result, headers, cookies, cookieStore);
                 HttpEntity responseEntity = response.getEntity();
