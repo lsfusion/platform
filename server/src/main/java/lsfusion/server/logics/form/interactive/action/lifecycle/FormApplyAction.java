@@ -23,7 +23,7 @@ public class FormApplyAction extends FormFlowAction {
 
     static LP applyBackground = new LP(
             PropertyFact.createAnd(
-                    PropertyFact.<ClassPropertyInterface>createStatic(Color.green, ColorClass.instance),
+                    PropertyFact.createStatic(Color.green, ColorClass.instance),
                     DataSession.isDataChanged.getImplement()
             ).property
     );

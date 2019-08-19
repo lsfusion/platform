@@ -87,7 +87,7 @@ public class ImplementTable extends DBTable { // последний интерф
 
     private TableStatKeys statKeys = null;
     private ImMap<PropertyField, PropStat> statProps = null;
-    private ImSet<PropertyField> indexedProps = SetFact.<PropertyField>EMPTY();
+    private ImSet<PropertyField> indexedProps = SetFact.EMPTY();
     private ImSet<ImOrderSet<Field>> indexes = SetFact.EMPTY();
 
     public boolean markedFull;
@@ -484,8 +484,8 @@ public class ImplementTable extends DBTable { // последний интерф
     private Object readCount(DataSession session, Where where, int total, boolean useCoefficient) throws SQLException, SQLHandledException {
         QueryBuilder<Object, Object> query = new QueryBuilder<>(SetFact.EMPTY());
         StaticValueExpr one = ValueExpr.COUNT;
-        query.addProperty("count", GroupExpr.create(MapFact.<Integer, Expr>EMPTY(), one,
-                where, GroupType.SUM, MapFact.<Integer, Expr>EMPTY()));
+        query.addProperty("count", GroupExpr.create(MapFact.EMPTY(), one,
+                where, GroupType.SUM, MapFact.EMPTY()));
         Integer count = (Integer) query.execute(session).singleValue().singleValue();
         return count == null ? Math.min(total, 1) : (useCoefficient ? (int) Math.min(total, (count / topCoefficient) + 1) : count);
     }
@@ -536,7 +536,7 @@ public class ImplementTable extends DBTable { // последний интерф
             Integer total = (Integer) readCount(session, inWhere);
 
             for (KeyField key : keys) {
-                ImMap<Object, Expr> map = MapFact.<Object, Expr>singleton(0, mapKeys.get(key));
+                ImMap<Object, Expr> map = MapFact.singleton(0, mapKeys.get(key));
                 mResult.exclAdd(key, readCount(session, getCountWhere(session.sql, GroupExpr.create(map, inWhere, map, true),
                             GroupExpr.create(map, inWhere, map, false), mapKeys.get(key), total, top && keys.size() > 1), total, top && keys.size() > 1));
             }

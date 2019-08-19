@@ -128,23 +128,23 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         protected And<K> intersect(And<K> where2) {
-            ImMap<K, AndClassSet> result = map.merge(where2.map, AbstractClassWhere.<K>addAnd()); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
+            ImMap<K, AndClassSet> result = map.merge(where2.map, AbstractClassWhere.addAnd()); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
             if(result==null)
                 return null;
             return new And<>(result);
         }
 
         public <T> And<T> remap(ImRevMap<K, ? extends T> remap) {
-            return new And<>((ImMap<T, AndClassSet>) remap.rightCrossJoin(map));
+            return new And<>(remap.rightCrossJoin(map));
         }
         public <T> And<T> remap(Function<K, T> remap) {
             return new And<>((ImMap<T, AndClassSet>) map.mapKeys(remap));
         }
         public <T> And<T> innerRemap(ImRevMap<K, ? extends T> remap) {
-            return new And<>((ImMap<T, AndClassSet>) remap.innerCrossJoin(map));
+            return new And<>(remap.innerCrossJoin(map));
         }
         public <T> And<T> mapBack(ImRevMap<T, ? extends K> remap) {
-            return new And<>(((ImRevMap<T, K>) remap).join(map));
+            return new And<>(remap.join(map));
         }
 
         public And<K> remove(ImSet<? extends K> keys) {
@@ -242,7 +242,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     protected AbstractClassWhere(ImMap<K,? extends AndClassSet> map) {
-        super(new And<>((ImMap<K, AndClassSet>) map));
+        super(new And<>(map));
     }
 
     public boolean isTrue() {
@@ -362,7 +362,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                         if(knfs[i] != null) {
                             for(int j=i+1;j<knfs.length;j++)
                                 if(knfs[j] != null) {
-                                    BaseUtils.Paired<Or<K>> paired = new BaseUtils.Paired<>(knfs[i].wheres, knfs[j].wheres, KNF.<K>instancer());
+                                    BaseUtils.Paired<Or<K>> paired = new BaseUtils.Paired<>(knfs[i].wheres, knfs[j].wheres, KNF.instancer());
                                     if(max == null || paired.common.length > max.common.length) {
                                         max = paired; lm = i; rm = j;
                                     }
@@ -414,7 +414,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
         protected Or<K> intersect(Or<K> where2) {
             if(size()>where2.size()) return where2.intersect(this);
-            return new Or<>(map.merge(where2.map, OrObjectClassSet.<K>addOr())); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
+            return new Or<>(map.merge(where2.map, OrObjectClassSet.addOr())); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
         }
 
         public boolean meansFrom(And<K> where, boolean implicitCast) {
@@ -524,7 +524,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     // we are sort of finishing single knf computation (but we can exit a lot ealier)
     public static <K> boolean meansFrom(Or<K>[][] knfs, And<K> andFrom, boolean implicitCast) {
         assert knfs.length > 1;
-        ArrayCombinations<Or<K>> combinations = new ArrayCombinations<>(knfs, AbstractClassWhere.<K>arrayInstancer());
+        ArrayCombinations<Or<K>> combinations = new ArrayCombinations<>(knfs, AbstractClassWhere.arrayInstancer());
         for(Or<K>[] wheres : combinations) {
             Or<K> orResult = wheres[0]; 
             for(int i=1;i<wheres.length;i++) {
@@ -558,7 +558,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     public <T extends K> ImMap<T, AndClassSet> getCommonClasses(ImSet<T> keys) {
-        MMap<T,AndClassSet> mResult = MapFact.mMap(AbstractClassWhere.<T>addOr());
+        MMap<T,AndClassSet> mResult = MapFact.mMap(AbstractClassWhere.addOr());
         for(And<K> where : wheres)
             mResult.addAll(where.filterKeys(keys));
         return mResult.immutable();

@@ -43,7 +43,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
     protected void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException {
         Map<GroupObjectEntity, RawFileData> files = new HashMap<>();
 
-        exportGroupData(hierarchy.getRoot(), SetFact.<GroupObjectEntity>EMPTY(), hierarchy, files, exportData, null);
+        exportGroupData(hierarchy.getRoot(), SetFact.EMPTY(), hierarchy, files, exportData, null);
 
         writeResult(context, files);
     }
@@ -66,7 +66,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
         ImSet<ObjectEntity> parentObjects = null;
         ImMap<ImMap<ObjectEntity, Object>, Integer> parentIndexes = null; // optimization, a lot faster then indexof
         if(!parentGroups.isEmpty()) {
-            fieldTypes = MapFact.singletonOrder(PlainConstants.parentFieldName, (Type) IntegerClass.instance);
+            fieldTypes = MapFact.singletonOrder(PlainConstants.parentFieldName, IntegerClass.instance);
             parentObjects = GroupObjectEntity.getObjects(parentGroups);
 
             parentIndexes = parentRows.mapOrderValues((int i) -> i);

@@ -108,7 +108,7 @@ public abstract class ListCaseAction extends KeepContextAction {
 
     public void markRecursions() {
         assert isAbstract();
-        markRecursions(SetFact.<ListCaseAction>EMPTY());
+        markRecursions(SetFact.EMPTY());
     }
 
     @Override

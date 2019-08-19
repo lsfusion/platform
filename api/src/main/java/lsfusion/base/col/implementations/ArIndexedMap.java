@@ -354,7 +354,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map) {
-        return merge(map, MapFact.<K, V>exclusive());
+        return merge(map, MapFact.exclusive());
     }
 
     @Override
@@ -393,7 +393,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
                 return false;
             else if(hash == twHash) {
                 if(keys[i]==twKeys[i] || keys[i].equals(twKeys[i])) { // самый частый случай
-                    if(!BaseUtils.nullHashEquals((V)values[i], (V)twValues[i]))
+                    if(!BaseUtils.nullHashEquals(values[i], twValues[i]))
                         return false;
 
                     i++;
@@ -420,7 +420,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
                         boolean founded = false;
                         for(int ktw = i; ktw < ntw; ktw++)
                             if(!found[ktw-i] && (key == twKeys[ktw] || key.equals(twKeys[ktw]))) {
-                                if(!BaseUtils.nullHashEquals(addedValue, (V)twValues[ktw]))
+                                if(!BaseUtils.nullHashEquals(addedValue, twValues[ktw]))
                                     return false;
 
                                 found[ktw-i] = true;

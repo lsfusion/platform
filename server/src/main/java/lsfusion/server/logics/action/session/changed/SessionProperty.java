@@ -26,7 +26,7 @@ public abstract class SessionProperty<T extends PropertyInterface> extends Simpl
 
     @Override
     public ImSet<OldProperty> getParseOldDepends() {
-        return SetFact.singleton((OldProperty)getOldProperty());
+        return SetFact.singleton(getOldProperty());
     }
 
     @Override

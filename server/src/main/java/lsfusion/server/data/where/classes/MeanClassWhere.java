@@ -73,16 +73,16 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
     }
 
     public MeanClassWhere(ClassExprWhere classWhere) {
-        this(classWhere, SetFact.<ImSet<VariableClassExpr>>EMPTY(), true);
+        this(classWhere, SetFact.EMPTY(), true);
     }
     
     public MeanClassWhere(ClassExprWhere classWhere, boolean not) {
-        this(ClassExprWhere.TRUE, classWhere, SetFact.<ImSet<VariableClassExpr>>EMPTY(), SetFact.<ImSet<VariableClassExpr>>EMPTY());
+        this(ClassExprWhere.TRUE, classWhere, SetFact.EMPTY(), SetFact.EMPTY());
         assert not;
     }
 
     public MeanClassWhere(ClassExprWhere classWhere, ImSet<ImSet<VariableClassExpr>> comps, boolean isEquals) {
-        this(classWhere, ClassExprWhere.FALSE, isEquals ? comps : SetFact.<ImSet<VariableClassExpr>>EMPTY(), isEquals ? SetFact.<ImSet<VariableClassExpr>>EMPTY() : comps);
+        this(classWhere, ClassExprWhere.FALSE, isEquals ? comps : SetFact.EMPTY(), isEquals ? SetFact.EMPTY() : comps);
     }
 
     public MeanClassWhere(ClassExprWhere classWhere, ClassExprWhere classNotWhere, ImSet<ImSet<VariableClassExpr>> equals, ImSet<ImSet<VariableClassExpr>> greaters) {
@@ -106,7 +106,7 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
         for(int i=0;i<equalMap.num;i++) {
             Equal equal = equalMap.comps[i];
             if(!equal.dropped)
-                mAndEquals.add(BaseUtils.<ImSet<VariableClassExpr>>immutableCast(SetFact.toExclSet(equal.size, equal.exprs)));
+                mAndEquals.add(BaseUtils.immutableCast(SetFact.toExclSet(equal.size, equal.exprs)));
         }
         return mAndEquals.immutable();
     }

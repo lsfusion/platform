@@ -13,8 +13,8 @@ public class Event {
         return base.getScope();
     }
 
-    public static final Event APPLY = new Event(SystemEvent.APPLY, SessionEnvEvent.ALWAYS, SetFact.<Property>EMPTY());
-    public static final Event SESSION = new Event(SystemEvent.SESSION, SessionEnvEvent.ALWAYS, SetFact.<Property>EMPTY());
+    public static final Event APPLY = new Event(SystemEvent.APPLY, SessionEnvEvent.ALWAYS, SetFact.EMPTY());
+    public static final Event SESSION = new Event(SystemEvent.SESSION, SessionEnvEvent.ALWAYS, SetFact.EMPTY());
 
     public Event(BaseEvent base, SessionEnvEvent session, ImSet<Property> after) {
         this.base = base;

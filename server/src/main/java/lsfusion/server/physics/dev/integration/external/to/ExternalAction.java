@@ -75,7 +75,7 @@ public abstract class ExternalAction extends SystemAction {
     }
     protected String replaceParams(ExecutionContext<PropertyInterface> context, String connectionString, Result<ImOrderSet<PropertyInterface>> rNotUsedParams, Charset urlEncodeCharset) {
         ImOrderSet<PropertyInterface> orderInterfaces = paramInterfaces;
-        MOrderExclSet<PropertyInterface> mNotUsedParams = rNotUsedParams != null ? SetFact.<PropertyInterface>mOrderExclSetMax(orderInterfaces.size()) : null;
+        MOrderExclSet<PropertyInterface> mNotUsedParams = rNotUsedParams != null ? SetFact.mOrderExclSetMax(orderInterfaces.size()) : null;
         for (int i = 0, size = orderInterfaces.size(); i < size ; i++) {
             String prmName = getParamName(String.valueOf(i + 1));
             PropertyInterface paramInterface = orderInterfaces.get(i);

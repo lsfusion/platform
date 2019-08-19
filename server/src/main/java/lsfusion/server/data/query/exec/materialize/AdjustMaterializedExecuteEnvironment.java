@@ -123,7 +123,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             materializedQueries = MapFact.EMPTY();
 
         if(current == null) { // first start
-            current = new Step(null, SetFact.<SQLQuery>EMPTYORDER(), false);
+            current = new Step(null, SetFact.EMPTYORDER(), false);
             outerQueries = materializedQueries.keys();
             setDefaultTimeout(current, command, materializedQueries);
         }
@@ -263,7 +263,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         public Node(SQLQuery query, SQLCommand command) {
             this.query = query;
 
-            size = command.getCost(MapFact.<SQLQuery, Stat>EMPTY()).rows.getWeight();
+            size = command.getCost(MapFact.EMPTY()).rows.getWeight();
             hasTooLongKeys = query != null && SQLQuery.hasTooLongKeys(query.keyReaders);
             hasNotMaterializables = query != null && query.getEnv().hasNotMaterializable();
             hasPessQuery = query != null && query.pessQuery != null;
@@ -480,14 +480,14 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         }
 
         public Step(boolean disableNestedLoop, Step previous) {
-            this(previous, SetFact.<SQLQuery>EMPTYORDER(), disableNestedLoop);
+            this(previous, SetFact.EMPTYORDER(), disableNestedLoop);
             assert disableNestedLoop;
             assert !previous.disableNestedLoop;
             timeout = 0;
         }
 
         public Step(Step previous) {
-            this(previous, SetFact.<SQLQuery>EMPTYORDER(), false);
+            this(previous, SetFact.EMPTYORDER(), false);
             timeout = Integer.MAX_VALUE;
         }
 

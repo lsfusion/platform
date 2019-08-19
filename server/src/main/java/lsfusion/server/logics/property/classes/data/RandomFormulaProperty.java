@@ -14,7 +14,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class RandomFormulaProperty extends ValueFormulaProperty<PropertyInterface> {
 
     public RandomFormulaProperty(LocalizedString caption) {
-        super(caption, SetFact.<PropertyInterface>EMPTYORDER(), DoubleClass.instance);
+        super(caption, SetFact.EMPTYORDER(), DoubleClass.instance);
 
         finalizeInit();
     }

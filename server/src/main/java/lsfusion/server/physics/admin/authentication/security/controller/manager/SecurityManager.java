@@ -347,7 +347,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             q.and(orderExpr.getWhere());
             q.and(q.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
 
-            ImOrderMap<Object, Boolean> orderBy = MapFact.<Object, Boolean>singletonOrder("pOrder", false);
+            ImOrderMap<Object, Boolean> orderBy = MapFact.singletonOrder("pOrder", false);
             ImSet<ImMap<String, Object>> keys = q.execute(session, orderBy, 0).keys();
             if (keys.size() != 0) {
                 for (ImMap<String, Object> keyMap : keys) {

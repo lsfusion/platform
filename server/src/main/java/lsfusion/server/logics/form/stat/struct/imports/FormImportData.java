@@ -71,7 +71,7 @@ public class FormImportData implements ImportData {
         return propertyValues;
     }
     
-    private final MAddMap<ObjectEntity, Integer> indexes = MapFact.mAddMap(MapFact.<ObjectEntity, Integer>override()); // end-to-end numeration
+    private final MAddMap<ObjectEntity, Integer> indexes = MapFact.mAddMap(MapFact.override()); // end-to-end numeration
 
     private final MExclMap<ObjectEntity, MExclSet<Long>> addedObjects = MapFact.mExclMap();
 

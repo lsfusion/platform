@@ -405,7 +405,7 @@ public class PropertyDrawView extends ComponentView {
 
         setCharHeight(inStream.readInt());
         setCharWidth(inStream.readInt());
-        setValueSize(pool.<Dimension>readObject(inStream));
+        setValueSize(pool.readObject(inStream));
 
         changeKey = pool.readObject(inStream);
         showChangeKey = inStream.readBoolean();

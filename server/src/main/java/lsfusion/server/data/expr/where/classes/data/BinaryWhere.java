@@ -66,7 +66,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {
-        return SetFact.<OuterContext>toSet(operator1, operator2);
+        return SetFact.toSet(operator1, operator2);
     }
 
     public void fillDataJoinWheres(MMap<FJData, Where> joins, Where andWhere) {

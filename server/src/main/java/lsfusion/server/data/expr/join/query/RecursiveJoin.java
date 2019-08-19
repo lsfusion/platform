@@ -111,7 +111,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Where initialWhere, Where stepWhere, ImRevMap<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical, ImMap<KeyExpr, BaseExpr> group, boolean noInnerFollows) {
-        super(keys, values, new Query(InnerExprFollows.<KeyExpr>EMPTYEXPR(), initialWhere, stepWhere, cyclePossible, isLogical, mapIterate, noInnerFollows), group);
+        super(keys, values, new Query(InnerExprFollows.EMPTYEXPR(), initialWhere, stepWhere, cyclePossible, isLogical, mapIterate, noInnerFollows), group);
     }
 
     public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<KeyExpr, BaseExpr> group) {
@@ -157,7 +157,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     public StatKeys<KeyExpr> getStatKeys(StatType type) {
-        return getStatKeys(type, StatKeys.<KeyExpr>NOPUSH());
+        return getStatKeys(type, StatKeys.NOPUSH());
     }
 
     public StatKeys<KeyExpr> getStatKeys(StatType type, StatKeys<KeyExpr> pushStatKeys) {
@@ -173,7 +173,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     private Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean> getRecClassesStats(StatType statType) {
-        return getRecClassesStats(statType, StatKeys.<KeyExpr>NOPUSH());
+        return getRecClassesStats(statType, StatKeys.NOPUSH());
     }
 
     // теоретически можно было бы разными прогонами, но тогда функциональщиной пришлось бы заниматься, плюс непонятно как подставлять друг другу статистику / классы
@@ -194,12 +194,12 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
 
         int iterations = 0; int maxStatsIterations = Settings.get().getMaxRecursionStatsIterations();
         while(!recClasses.isFalse() && !(mCheckedClasses.add(recClasses) && (iterations >= maxStatsIterations || mCheckedStats.add(recStats)))) {
-            Where recWhere = stepWhere.and(getRecJoin(MapFact.<String, Type>EMPTY(), "recursivetable", genKeyNames(),
+            Where recWhere = stepWhere.and(getRecJoin(MapFact.EMPTY(), "recursivetable", genKeyNames(),
                     recClasses, recStats, null, null).getWhere());
             if(!recWhere.isFalse()) // значит будет еще итерация
                 onlyInitial = false;
             recClasses = getClassWhere(recWhere);
-            recStats = getStatKeys(recWhere, statType, StatKeys.<KeyExpr>NOPUSH()); // тут можно было бы и pushStatKeys, но нет особого смысла
+            recStats = getStatKeys(recWhere, statType, StatKeys.NOPUSH()); // тут можно было бы и pushStatKeys, но нет особого смысла
 
             resultClasses = recClasses.or(resultClasses);
             resultStats = recStats.or(resultStats);

@@ -56,7 +56,7 @@ public class WeakIdentityHashMap<K, V> {
     private void expunge() {
         Reference<? extends K> ref;
         while ((ref = refQueue.poll()) != null)
-            map.remove((IdentityWeakReference)ref);
+            map.remove(ref);
     }
 
     private static class IdentityWeakReference<T> extends WeakReference<T> {

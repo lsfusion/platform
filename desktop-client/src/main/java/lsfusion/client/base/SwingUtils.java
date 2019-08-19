@@ -733,7 +733,7 @@ public class SwingUtils {
         }
 
         // flex колонки увеличиваем на нужную величину, соответственно остальные flex'ы надо уменьшить на эту величину
-        double toAddFlex = (double) delta * totalFlex / (double) flexWidth;
+        double toAddFlex = (double) delta * totalFlex / flexWidth;
         if(greater(0.0, toAddFlex + flexes[column])) // не shrink'аем, но и левые столбцы не уменьшаются (то есть removeLeftFlex false)
             toAddFlex = -flexes[column];
 

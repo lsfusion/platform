@@ -35,7 +35,7 @@ public class ChangeEvent<C extends PropertyInterface> {
     }
 
     public ChangeEvent(Property<C> writeTo, PropertyInterfaceImplement<C> writeFrom, PropertyMapImplement<?, C> where) {
-        assert ((Property)where.property).noDB();
+        assert where.property.noDB();
         this.writeTo = writeTo;
         this.where = where;
         this.writeFrom = writeFrom;

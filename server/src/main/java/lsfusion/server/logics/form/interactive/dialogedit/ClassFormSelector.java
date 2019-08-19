@@ -59,6 +59,6 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
         if(formEntity == null)
             return null;
         
-        return new Pair<>((FormEntity) formEntity.form, MapFact.singletonRev(formEntity.object, virtualObject));
+        return new Pair<>(formEntity.form, MapFact.singletonRev(formEntity.object, virtualObject));
     }
 }

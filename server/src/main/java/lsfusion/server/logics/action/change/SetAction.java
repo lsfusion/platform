@@ -98,7 +98,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         // если не хватает ключей надо or добавить, так чтобы кэширование работало
         ImSet<I> extInterfaces = innerInterfaces.remove(mapInterfaces.valuesSet());
         PropertyMapImplement<?, I> changeWhere = (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces) && !(writeTo.property instanceof SessionDataProperty)) ?
-                (where == null ? PropertyFact.<I>createTrue() : where) : getFullProperty();
+                (where == null ? PropertyFact.createTrue() : where) : getFullProperty();
 
         Where exprWhere = changeWhere.mapExpr(innerExprs, context.getModifier()).getWhere();
 

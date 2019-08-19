@@ -43,7 +43,7 @@ public class ReceiveEmailAction extends InternalAction {
         if(context.getDbManager().isServer()) {
 
             KeyExpr accountExpr = new KeyExpr("account");
-            ImRevMap<Object, KeyExpr> accountKeys = MapFact.singletonRev((Object) "account", accountExpr);
+            ImRevMap<Object, KeyExpr> accountKeys = MapFact.singletonRev("account", accountExpr);
 
             QueryBuilder<Object, Object> accountQuery = new QueryBuilder<>(accountKeys);
             accountQuery.addProperty("receiveHostAccount", emailLM.receiveHostAccount.getExpr(accountExpr));

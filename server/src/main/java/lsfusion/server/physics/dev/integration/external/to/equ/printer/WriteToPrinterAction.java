@@ -40,7 +40,7 @@ public class WriteToPrinterAction extends InternalAction {
             String printerName = (String) context.getDataKeyValue(printerNameInterface).object;
 
             String result = (String) context.requestUserInteraction(new WriteToPrinterClientAction(text, charset, printerName));
-            findProperty("printed[]").change(result == null ? (Boolean) true : null, context);
+            findProperty("printed[]").change(result == null ? true : null, context);
             if (result != null)
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
         } catch (Exception e) {

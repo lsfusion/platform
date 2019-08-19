@@ -91,7 +91,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
         Where where = GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, mapKeys).getWhere().and( // в импортируемой таблице
                 implement.property.getExpr(mapKeys, session.getModifier()).getWhere().not()); // для которых не определился объект
 
-        return session.addObjects(debugInfo, (ConcreteCustomClass)keyClass, new PropertyOrderSet<>(mapKeys, where, MapFact.<Expr, Boolean>EMPTYORDER(), false));
+        return session.addObjects(debugInfo, (ConcreteCustomClass)keyClass, new PropertyOrderSet<>(mapKeys, where, MapFact.EMPTYORDER(), false));
     }
 
     @Override

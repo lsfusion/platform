@@ -58,7 +58,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     }
 
     public static <K> ImMap<K,Expr> getMapExprs(ImMap<K,? extends ObjectValue> map) {
-        return ((ImMap<K, ObjectValue>)map).mapValues(ObjectValue::getExpr);
+        return map.mapValues(ObjectValue::getExpr);
     }
 
     public static <K> ImMap<K,ConcreteClass> getMapClasses(ImMap<K,ObjectValue> map) {

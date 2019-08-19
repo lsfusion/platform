@@ -254,7 +254,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         try {
             List<List<Object>> data = new ArrayList<>();
             for (String oldName : nameChanges.keySet()) {
-                data.add(Arrays.<Object>asList(oldName, nameChanges.get(oldName)));
+                data.add(Arrays.asList(oldName, nameChanges.get(oldName)));
             }
 
             startLogger.info("migrateNavigatorElements integration service started");
@@ -283,9 +283,9 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         
         List<List<Object>> formsData = new ArrayList<>();
         for (FormEntity form : businessLogics.getFormEntities()) {
-            formsData.add(asList((Object) form.getCanonicalName(), ThreadLocalContext.localize(form.getCaption())));
+            formsData.add(asList(form.getCanonicalName(), ThreadLocalContext.localize(form.getCaption())));
         }
-        formsData.add(asList((Object)"_NOFORM", ThreadLocalContext.localize(reflectionLM.noForm.getObjectCaption("instance"))));
+        formsData.add(asList("_NOFORM", ThreadLocalContext.localize(reflectionLM.noForm.getObjectCaption("instance"))));
 
         startLogger.info("synchronizeForms integration service started");
         List<ImportProperty<?>> props = new ArrayList<>();
@@ -357,7 +357,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         
         int counter = 1;
         for (NavigatorElement child : element.getChildrenList()) {
-            parentInfo.add(BaseUtils.toList((Object) child.getCanonicalName(), element.getCanonicalName(), counter++));
+            parentInfo.add(BaseUtils.toList(child.getCanonicalName(), element.getCanonicalName(), counter++));
             parentInfo.addAll(getRelations(child));
         }
         
@@ -375,7 +375,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         
         int counter = 1;
         for (NavigatorElement child : element.getChildrenList()) {
-            parentInfo.add(BaseUtils.toList((Object) child.getCanonicalName(), element.getCanonicalName(), counter++));
+            parentInfo.add(BaseUtils.toList(child.getCanonicalName(), element.getCanonicalName(), counter++));
             parentInfo.addAll(getRelations(child));
         }
         return parentInfo;
@@ -399,7 +399,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 String newName = nameChanges.get(oldName);
                 String oldFormName = oldName.substring(0, oldName.lastIndexOf('.'));
                 String newFormName = newName.substring(0, newName.lastIndexOf('.'));
-                data.add(Arrays.<Object>asList(oldName.substring(oldFormName.length() + 1), oldFormName, newName.substring(newFormName.length() + 1), newFormName));
+                data.add(Arrays.asList(oldName.substring(oldFormName.length() + 1), oldFormName, newName.substring(newFormName.length() + 1), newFormName));
             }
 
             startLogger.info("migratePropertyDraws integration service started");
@@ -430,7 +430,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             if (canonicalName != null && formElement.needsToBeSynchronized()) {
                 for (PropertyDrawEntity drawEntity : formElement.getPropertyDrawsListIt()) {
                     GroupObjectEntity groupObjectEntity = drawEntity.getToDraw(formElement);
-                    dataPropertyDraws.add(asList(drawEntity.getCaption().toString(), drawEntity.getSID(), (Object) canonicalName, groupObjectEntity == null ? null : groupObjectEntity.getSID()));
+                    dataPropertyDraws.add(asList(drawEntity.getCaption().toString(), drawEntity.getSID(), canonicalName, groupObjectEntity == null ? null : groupObjectEntity.getSID()));
                 }
             }
         }
@@ -481,7 +481,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     GroupObjectEntity groupObjectEntity = property.getToDraw(formElement);
                     if (groupObjectEntity != null) {
                         dataGroupObjectList.add(
-                                Arrays.asList((Object) formCanonicalName, groupObjectEntity.getSID()));
+                                Arrays.asList(formCanonicalName, groupObjectEntity.getSID()));
                     }
                 }
             }
@@ -578,7 +578,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
                     
-                    dataProperty.add(asList(actionOrProperty.getCanonicalName(), (Object)fieldSID, ThreadLocalContext.localize(actionOrProperty.caption), actionOrProperty instanceof Property && ((Property)actionOrProperty).isLoggable() ? true : null,
+                    dataProperty.add(asList(actionOrProperty.getCanonicalName(), fieldSID, ThreadLocalContext.localize(actionOrProperty.caption), actionOrProperty instanceof Property && ((Property)actionOrProperty).isLoggable() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isStored() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).reflectionNotNull ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, actionOrProperty.annotation, 
@@ -637,7 +637,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             if (needsToBeSynchronized(property)) {
                 if((property instanceof Action) != actions)
                     continue;
-                dataParent.add(asList(property.getCanonicalName(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
+                dataParent.add(asList(property.getCanonicalName(), property.getParent().getSID(), getNumberInListOfChildren(property)));
             }
         }
 
@@ -678,7 +678,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         List<List<Object>> data = new ArrayList<>();
 
         for (Group group : businessLogics.getChildGroups()) {
-            data.add(asList(group.getSID(), (Object) ThreadLocalContext.localize(group.caption)));
+            data.add(asList(group.getSID(), ThreadLocalContext.localize(group.caption)));
         }
 
         startLogger.info("synchronizeGroupProperties integration service started");
@@ -695,7 +695,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
         for (Group group : businessLogics.getChildGroups()) {
             if (group.getParent() != null) {
-                data2.add(asList(group.getSID(), (Object) group.getParent().getSID(), getNumberInListOfChildren(group)));
+                data2.add(asList(group.getSID(), group.getParent().getSID(), getNumberInListOfChildren(group)));
             }
         }
 

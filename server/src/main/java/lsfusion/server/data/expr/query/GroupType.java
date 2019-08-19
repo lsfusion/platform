@@ -190,7 +190,7 @@ public enum GroupType implements AggrType {
                 return syntax.getArrayAgg(exprs.get(0), exprReaders.get(0), typeEnv);
             case LAST:
                 assert exprs.size()==2;
-                return syntax.getOrderGroupAgg(this, type, ListFact.<String>singleton(exprs.get(1)), ListFact.<ClassReader>singleton(exprReaders.get(1)), orders, typeEnv);
+                return syntax.getOrderGroupAgg(this, type, ListFact.singleton(exprs.get(1)), ListFact.singleton(exprReaders.get(1)), orders, typeEnv);
             default:
                 throw new RuntimeException("can not be");
         }

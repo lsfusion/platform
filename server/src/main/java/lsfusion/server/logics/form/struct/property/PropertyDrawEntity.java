@@ -333,7 +333,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public ActionObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy) {
         try {
-            return getEditAction(actionId, null, securityPolicy != null ? SetFact.singleton(securityPolicy) : SetFact.<SecurityPolicy>EMPTY());
+            return getEditAction(actionId, null, securityPolicy != null ? SetFact.singleton(securityPolicy) : SetFact.EMPTY());
         } catch (SQLException | SQLHandledException e) {
             assert false;
             throw Throwables.propagate(e);
@@ -553,7 +553,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // interactive
     public GroupObjectEntity getToDraw(FormEntity form) {
-        return toDraw==null? getApplyObject(form, SetFact.<GroupObjectEntity>EMPTY(), true) :toDraw;
+        return toDraw==null? getApplyObject(form, SetFact.EMPTY(), true) :toDraw;
     }
 
     public GroupObjectEntity getApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects, boolean supportGroupColumns) {

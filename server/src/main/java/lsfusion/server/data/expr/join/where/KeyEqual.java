@@ -60,7 +60,7 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
     }
 
     public KeyEqual and(KeyEqual and) {
-        return new KeyEqual(keyExprs.merge(and.keyExprs, KeyEqual.<BaseExpr>keepValue()));
+        return new KeyEqual(keyExprs.merge(and.keyExprs, KeyEqual.keepValue()));
     }
 
     public KeyEqual or(KeyEqual and) {

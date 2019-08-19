@@ -52,7 +52,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
                 ImSet<ConcreteCustomClass> concreteChilds = ((ObjectValueClassSet) element).getSetConcreteChildren();
                 for (int i = 0, size = concreteChilds.size(); i < size; i++) {
                     ConcreteCustomClass customClass = concreteChilds.get(i);
-                    ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
+                    ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, customClass.ID));
                     getBL().LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
                 }
             }

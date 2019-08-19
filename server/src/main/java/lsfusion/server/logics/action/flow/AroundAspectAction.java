@@ -23,7 +23,7 @@ public abstract class AroundAspectAction extends KeepContextAction {
     }
 
     public ImSet<Action> getDependActions() {
-        return SetFact.singleton((Action) aspectActionImplement.action);
+        return SetFact.singleton(aspectActionImplement.action);
     }
 
     public final FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {

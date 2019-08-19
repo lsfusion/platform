@@ -52,7 +52,7 @@ public abstract class GroupModuleTask extends BLGroupSingleTask<LogicsModule> {
             result = SetFact.EMPTY();
 
         if (result.isEmpty()) {
-            result = SetFact.<LogicsModule>singleton(rootElement);
+            result = SetFact.singleton(rootElement);
         }
         return result;
     }

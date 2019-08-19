@@ -57,7 +57,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public static <T extends PropertyInterface> boolean isIdentity(ImSet<Interface> interfaces, PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement) {
         Set<Interface> rest = SetFact.mAddRemoveSet(interfaces);
         for(PropertyInterfaceImplement<Interface> impl : implement.mapping.values())
-            if(!(impl instanceof Interface && rest.remove((Interface)impl)))
+            if(!(impl instanceof Interface && rest.remove(impl)))
                 return false;
         return rest.isEmpty();
     }
@@ -117,7 +117,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     @Override
     public void fillDepends(MSet<Property> depends, boolean events) {
         fillDepends(depends,implement.mapping.values());
-        depends.add((Property) implement.property);
+        depends.add(implement.property);
     }
 
     // разрешить менять основное свойство
@@ -275,7 +275,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             if (implementEdit != null) {
                 return PropertyFact.createIfAction(
                         interfaces,
-                        PropertyFact.createAnd(interfaces, PropertyFact.<Interface>createTrue(), ands),
+                        PropertyFact.createAnd(interfaces, PropertyFact.createTrue(), ands),
                         implementEdit,
                         null
                 );

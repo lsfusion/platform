@@ -11,7 +11,7 @@ public class EqualMap extends HMap<BaseExpr,Equal> {
     public int num = 0;
 
     public EqualMap(int max) {
-        super(MapFact.<BaseExpr, Equal>override());
+        super(MapFact.override());
         comps = new Equal[max];
     }
 

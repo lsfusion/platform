@@ -407,7 +407,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         if(inStream.readBoolean()) {
-            addRemove = new Pair<>(pool.<ClientObject>deserializeObject(inStream), inStream.readBoolean());
+            addRemove = new Pair<>(pool.deserializeObject(inStream), inStream.readBoolean());
         }
 
         askConfirm = inStream.readBoolean();

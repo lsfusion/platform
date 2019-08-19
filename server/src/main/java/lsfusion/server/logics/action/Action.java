@@ -191,7 +191,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return result.immutable();
     }
     protected static <T extends PropertyInterface> ImMap<Property, Boolean> getUsedProps(PropertyInterfaceImplement<T>... props) {
-        return getUsedProps(SetFact.<PropertyInterfaceImplement<T>>EMPTY(), props);
+        return getUsedProps(SetFact.EMPTY(), props);
     }
     protected static <T extends PropertyInterface> ImMap<Property, Boolean> getUsedProps(ImCol<? extends PropertyInterfaceImplement<T>> col, PropertyInterfaceImplement<T>... props) {
         MSet<Property> mResult = SetFact.mSet();
@@ -561,7 +561,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public ImList<ActionMapImplement<?, P>> getList() {
-        return ListFact.<ActionMapImplement<?, P>>singleton(getImplement());
+        return ListFact.singleton(getImplement());
     }
     public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(ImRevMap<P, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         return false;

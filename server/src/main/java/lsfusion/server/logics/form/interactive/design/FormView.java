@@ -650,10 +650,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         mainContainer = pool.deserializeObject(inStream);
-        treeGroups = NFFact.finalSet(pool.<TreeGroupView>deserializeSet(inStream));
-        groupObjects = NFFact.finalOrderSet(pool.<GroupObjectView>deserializeList(inStream));
-        properties = NFFact.finalOrderSet(pool.<PropertyDrawView>deserializeList(inStream));
-        regularFilters = NFFact.finalOrderSet(pool.<RegularFilterGroupView>deserializeList(inStream));
+        treeGroups = NFFact.finalSet(pool.deserializeSet(inStream));
+        groupObjects = NFFact.finalOrderSet(pool.deserializeList(inStream));
+        properties = NFFact.finalOrderSet(pool.deserializeList(inStream));
+        regularFilters = NFFact.finalOrderSet(pool.deserializeList(inStream));
 
         int orderCount = inStream.readInt();
         MOrderExclMap<PropertyDrawView, Boolean> mDefaultOrders = MapFact.mOrderExclMap(orderCount);

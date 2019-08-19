@@ -16,7 +16,7 @@ public class PartialKeyExprTranslator extends KeyExprTranslator {
     }
 
     public PartialKeyExprTranslator(ImMap<KeyExpr, ? extends Expr> keys, boolean keyExprs) {
-        this(BaseUtils.<ImMap<ParamExpr, ? extends Expr>>immutableCast(keys));
+        this(BaseUtils.immutableCast(keys));
         assert keyExprs;
     }
 

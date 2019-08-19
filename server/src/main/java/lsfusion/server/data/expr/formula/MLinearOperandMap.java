@@ -9,7 +9,7 @@ import lsfusion.server.data.expr.where.cases.CaseExpr;
 
 public class MLinearOperandMap {
 
-    private final MMap<Expr, Integer> mMap = MapFact.mMap(MapFact.<Expr>addLinear()); // теоретически можно было бы size протянуть
+    private final MMap<Expr, Integer> mMap = MapFact.mMap(MapFact.addLinear()); // теоретически можно было бы size протянуть
 
     private void add(LinearOperandMap map, int coeff) {
         for(int i=0,size=map.size();i<size;i++)

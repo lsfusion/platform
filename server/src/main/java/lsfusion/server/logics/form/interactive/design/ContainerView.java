@@ -226,7 +226,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        children = NFFact.finalOrderSet(pool.<ComponentView>deserializeList(inStream));
+        children = NFFact.finalOrderSet(pool.deserializeList(inStream));
 
         caption = LocalizedString.create(pool.readString(inStream));
         description = LocalizedString.create(pool.readString(inStream));

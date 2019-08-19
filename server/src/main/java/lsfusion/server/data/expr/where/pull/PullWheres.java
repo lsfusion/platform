@@ -38,6 +38,6 @@ public abstract class PullWheres<R, K> {
             }
         }
 
-        return proceedBase((ImMap<K, BaseExpr>) (ImMap<K, ? extends BaseExpr>) map);
+        return proceedBase((ImMap<K, BaseExpr>) map);
    }
 }

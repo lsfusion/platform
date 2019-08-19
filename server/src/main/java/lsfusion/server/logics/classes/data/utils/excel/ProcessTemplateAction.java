@@ -57,7 +57,7 @@ public class ProcessTemplateAction extends InternalAction {
                     List<TemplateEntry> templateEntriesList = new ArrayList<>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");
-                    ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
+                    ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev("TemplateEntry", templateEntryExpr);
 
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
 

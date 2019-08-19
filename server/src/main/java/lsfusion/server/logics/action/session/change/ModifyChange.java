@@ -18,7 +18,7 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
     public final PrereadRows<P> preread;
 
     public ModifyChange(PropertyChange<P> change, boolean isFinal) {
-        this(change, PrereadRows.<P>EMPTY(), isFinal);
+        this(change, PrereadRows.EMPTY(), isFinal);
     }
 
     public ModifyChange(PropertyChange<P> change, PrereadRows<P> preread, boolean isFinal) {

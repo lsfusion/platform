@@ -56,7 +56,7 @@ public class NullExpr extends Expr {
     }
 
     public ExprCaseList getCases() {
-        return new ExprCaseList(SetFact.<ExprCase>EMPTY());
+        return new ExprCaseList(SetFact.EMPTY());
     }
 
     public Expr followFalse(Where where, boolean pack) {

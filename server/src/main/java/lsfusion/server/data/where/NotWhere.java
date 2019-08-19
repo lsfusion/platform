@@ -70,7 +70,7 @@ public class NotWhere extends ObjectWhere {
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {
-        return SetFact.<OuterContext>singleton(where);
+        return SetFact.singleton(where);
     }
 
     public String getSource(CompileSource compile) {

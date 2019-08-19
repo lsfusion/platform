@@ -37,7 +37,7 @@ public abstract class OverridePropSourceSessionModifier<P extends Property> exte
     }
     
     public OverridePropSourceSessionModifier(String debugInfo, IncrementTableProps overrideTable, IncrementChangeProps overrideChange, boolean disableHintIncrement, SessionModifier modifier) {
-        this(debugInfo, overrideTable, overrideChange, disableHintIncrement ? FullFunctionSet.<Property>instance() : SetFact.<Property>EMPTY(), FullFunctionSet.<Property>instance(), SetFact.<Property>EMPTY(), SetFact.<Property>EMPTY(), modifier);
+        this(debugInfo, overrideTable, overrideChange, disableHintIncrement ? FullFunctionSet.instance() : SetFact.EMPTY(), FullFunctionSet.instance(), SetFact.EMPTY(), SetFact.EMPTY(), modifier);
     }
 
     // важный assert что getSourceProperties не должен быть depends в обе стороны от property !!! так как потенциально может быть рекурсия

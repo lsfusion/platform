@@ -334,7 +334,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     }
 
     public SQLDML getInsertDML(String name, ImOrderSet<KeyField> keyFieldOrder, ImOrderSet<PropertyField> propertyFieldOrder, boolean orderPreserved, ImOrderSet<String> keySelectOrder, ImOrderSet<String> propertySelectOrder, SQLSyntax syntax) {
-        String insertString = SetFact.addOrderExcl(keyFieldOrder, propertyFieldOrder).toString(Field.<Field>nameGetter(syntax), ",");
+        String insertString = SetFact.addOrderExcl(keyFieldOrder, propertyFieldOrder).toString(Field.nameGetter(syntax), ",");
 
         MStaticExecuteEnvironment execEnv = StaticExecuteEnvironmentImpl.mEnv(this.env);
         return new SQLDML("INSERT INTO " + syntax.getSessionTableName(name) + " (" + (insertString.length() == 0 ? "dumb" : insertString) + ") " +
@@ -391,8 +391,8 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
             }
         }, null, actual, tableOwner, owner);
 
-        String mapFields = SQLSession.stringExpr(keys.mapSet(keyOrder.mapOrderSetValues(Field.<KeyField>nameGetter(session.syntax))),
-                                                properties.mapSet(propOrder.mapOrderSetValues(Field.<PropertyField>nameGetter(session.syntax))));
+        String mapFields = SQLSession.stringExpr(keys.mapSet(keyOrder.mapOrderSetValues(Field.nameGetter(session.syntax))),
+                                                properties.mapSet(propOrder.mapOrderSetValues(Field.nameGetter(session.syntax))));
         return new MaterializedQuery(table, mapFields, SystemProperties.inDevMode ? keyOrder : null, SystemProperties.inDevMode ?  propOrder.getSet() : null, actual.result, pureTime.get(), tableOwner);
     }
 

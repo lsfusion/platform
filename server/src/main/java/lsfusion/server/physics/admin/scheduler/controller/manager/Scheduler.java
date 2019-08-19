@@ -195,7 +195,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     private void fillUserScheduledTasks(DataSession session, List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Modifier modifier = session.getModifier();
         KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
-        ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTaskExpr);
+        ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.singletonRev("scheduledTask", scheduledTaskExpr);
 
         QueryBuilder<Object, Object> scheduledTaskQuery = new QueryBuilder<>(scheduledTaskKeys);
         scheduledTaskQuery.addProperty("nameScheduledTask", BL.schedulerLM.nameScheduledTask.getExpr(modifier, scheduledTaskExpr));
@@ -243,7 +243,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     private UserSchedulerTask readUserSchedulerTask(DataSession session, Modifier modifier, DataObject scheduledTaskObject, String nameScheduledTask,
                                                     Time timeFrom, Time timeTo, String daysOfWeekScheduledTask, String daysOfMonthScheduledTask) throws SQLException, SQLHandledException {
         KeyExpr scheduledTaskDetailExpr = new KeyExpr("scheduledTaskDetail");
-        ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
+        ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
 
         QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<>(scheduledTaskDetailKeys);
         scheduledTaskDetailQuery.addProperty("canonicalNameAction", BL.schedulerLM.canonicalNameActionScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));

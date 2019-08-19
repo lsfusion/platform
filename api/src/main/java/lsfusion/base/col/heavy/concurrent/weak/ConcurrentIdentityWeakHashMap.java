@@ -270,7 +270,7 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
 
         Segment(int initialCapacity, float lf) {
             loadFactor = lf;
-            setTable(HashEntry.<K, V> newArray(initialCapacity));
+            setTable(HashEntry.newArray(initialCapacity));
         }
 
         @SuppressWarnings("unchecked")

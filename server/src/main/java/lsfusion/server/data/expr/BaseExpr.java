@@ -60,7 +60,7 @@ public abstract class BaseExpr extends Expr {
 
     // получает список ExprCase'ов
     public ExprCaseList getCases() {
-        return new ExprCaseList(SetFact.<ExprCase>singleton(new ExprCase(Where.TRUE, this)));
+        return new ExprCaseList(SetFact.singleton(new ExprCase(Where.TRUE, this)));
     }
 
     public ImSet<NullableExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {

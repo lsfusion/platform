@@ -35,7 +35,7 @@ public class ListComp<T> implements NodeListComp<T> {
 
     @Override
     public ImSet<NodeListComp<T>> getSet() {
-        return SetFact.<NodeListComp<T>>singleton(this);
+        return SetFact.singleton(this);
     }
 
     public static <T> Comp<T> create(ImList<NodeSetComp<T>> comps) {

@@ -52,7 +52,7 @@ public class DesignStyles {
         style.setName("GroupCellStyle" + groupLevel);
         if(groupLevel > 0 && groupLevel < maxTreeLevel) { // first and last groups are white (transparent)
             style.setMode(ModeEnum.OPAQUE);
-            int color = (int) (255 - 64 * groupLevel / maxTreeLevel);
+            int color = (255 - 64 * groupLevel / maxTreeLevel);
             style.setBackcolor(new Color(color, color, color));
         }
         return style;

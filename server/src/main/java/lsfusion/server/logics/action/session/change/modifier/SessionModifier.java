@@ -75,7 +75,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     public <P extends Property> void eventDataChanges(ImSet<P> properties) throws SQLException, SQLHandledException {
-        eventChanges(properties, ModifyResult.DATA_SOURCE.<P>fnGetValue());
+        eventChanges(properties, ModifyResult.DATA_SOURCE.fnGetValue());
     }
 
     protected void eventChange(Property property, boolean data, boolean source) throws SQLHandledException {
@@ -134,7 +134,7 @@ public abstract class SessionModifier implements Modifier {
     private MMap<Property, Boolean> mChanged = null;
     private void addChange(Property property, boolean dataChanged) {
         if(mChanged == null)
-            mChanged = MapFact.mMap(MapFact.<Property>or());
+            mChanged = MapFact.mMap(MapFact.or());
         mChanged.add(property, dataChanged);
     }
 
@@ -387,7 +387,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     public <P extends PropertyInterface> ModifyChange<P> getModifyChange(Property<P> property) {
-        return getModifyChange(property, PrereadRows.<P>EMPTY(), SetFact.<Property>EMPTY());
+        return getModifyChange(property, PrereadRows.EMPTY(), SetFact.EMPTY());
     }
 
     public <P extends PropertyInterface> ModifyChange<P> getModifyChange(Property<P> property, PrereadRows<P> preread, FunctionSet<Property> disableHint) {

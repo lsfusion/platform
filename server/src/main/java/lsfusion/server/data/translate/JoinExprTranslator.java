@@ -40,7 +40,7 @@ public class JoinExprTranslator extends ExprTranslator {
     public <T extends SourceJoin<T>> T translate(T expr) {
         SourceJoin sourceJoin = expr;
         if(sourceJoin instanceof BaseExpr)
-            return BaseUtils.<T>immutableCast(translate((BaseExpr)sourceJoin));
+            return BaseUtils.immutableCast(translate((BaseExpr)sourceJoin));
         return super.translate(expr);
     }
 

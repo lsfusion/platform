@@ -62,7 +62,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
         }
 
         public ImSet<OuterContext> calculateOuterDepends() {
-            return SetFact.<OuterContext>singleton(follows);
+            return SetFact.singleton(follows);
         }
     }
 
@@ -206,7 +206,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
 
     @Override
     public StatKeys<K> getInnerStatKeys(StatType type) {
-        return getPushedStatKeys(type, StatKeys.<K>NOPUSH());
+        return getPushedStatKeys(type, StatKeys.NOPUSH());
     }
 
     // важно делать IdentityLazy для мемоизации
@@ -336,7 +336,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     protected abstract T createThis(ImSet<KeyExpr> keys, ImSet<Value> values, I query, ImMap<K, BaseExpr> group);
 
     protected T translate(MapTranslate translator) {
-        return createThis(translator.translateDirect(keys), translator.translateValues(values), query.translateOuter(translator), (ImMap<K,BaseExpr>) translator.translateExprKeys(group));
+        return createThis(translator.translateDirect(keys), translator.translateValues(values), query.translateOuter(translator), translator.translateExprKeys(group));
     }
 
     public boolean equalsInner(T object) {

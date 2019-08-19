@@ -231,8 +231,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.propertyShowIf = externalShowIf;
 
-        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
-        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
+        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.EMPTYREV()));
+        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
     }
 
     public void finalizeInit(Version version) {
@@ -481,7 +481,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public MetaExternal getMetaExternal(final SecurityPolicy policy) {
-        final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties(SetFact.<GroupObjectEntity>EMPTY(), false);
+        final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties(SetFact.EMPTY(), false);
 
         return new MetaExternal(getGroups().mapValues(new Function<GroupObjectEntity, GroupMetaExternal>() {
             public GroupMetaExternal apply(GroupObjectEntity value) {
@@ -630,7 +630,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return addPropertyDraw(property, version, SetFact.singletonOrder(object));
     }
     public PropertyDrawEntity addPropertyDraw(LAP property, Version version) {
-        return addPropertyDraw(property, version, SetFact.<ObjectEntity>EMPTYORDER());
+        return addPropertyDraw(property, version, SetFact.EMPTYORDER());
     }
 
     public void addPropertyDraw(LAP[] properties, Version version, ObjectEntity object) {
@@ -657,7 +657,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public GroupObjectEntity getApplyObject(ImSet<ObjectEntity> objects) {
-        return getApplyObject(objects, SetFact.<GroupObjectEntity>EMPTY());
+        return getApplyObject(objects, SetFact.EMPTY());
     }
     public GroupObjectEntity getApplyObject(ImSet<ObjectEntity> objects, ImSet<GroupObjectEntity> excludeGroupObjects) {
         GroupObjectEntity result = null;
@@ -736,7 +736,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return addPropertyObject(property, property.getRevMap(objects));
     }
     public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(LP<P> property) {
-        return addPropertyObject(property, MapFact.<P, ObjectEntity>EMPTYREV());
+        return addPropertyObject(property, MapFact.EMPTYREV());
     }
     public <P extends PropertyInterface> ActionObjectEntity<P> addPropertyObject(LA<P> property, ImOrderSet<ObjectEntity> objects) {
         return addPropertyObject(property, property.getRevMap(objects));
@@ -864,7 +864,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     protected void addHintsNoUpdate(LP prop, Version version) {
-        addHintsNoUpdate((Property) prop.property, version);
+        addHintsNoUpdate(prop.property, version);
     }
 
     public void addHintsNoUpdate(Property prop, Version version) {
@@ -903,10 +903,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityInstanceLazy
     public StaticDataGenerator.Hierarchy getImportHierarchy() {
-        return getHierarchy(false, SetFact.<GroupObjectEntity>EMPTY(), null);
+        return getHierarchy(false, SetFact.EMPTY(), null);
     }
     public ImMap<GroupObjectEntity, ImSet<FilterEntity>> getImportFixedFilters() {
-        return getGroupFixedFilters(SetFact.<GroupObjectEntity>EMPTY());
+        return getGroupFixedFilters(SetFact.EMPTY());
     }
 
     @IdentityInstanceLazy
@@ -927,7 +927,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityInstanceLazy
     public GroupObjectHierarchy getSingleGroupObjectHierarchy(GroupObjectEntity groupObject) {
-        return new GroupObjectHierarchy(groupObject, Collections.singletonMap(groupObject, SetFact.<GroupObjectEntity>EMPTYORDER()));
+        return new GroupObjectHierarchy(groupObject, Collections.singletonMap(groupObject, SetFact.EMPTYORDER()));
     }
 
     public void addActionsOnObjectChange(ObjectEntity object, Version version, ActionObjectEntity... actions) {
@@ -1225,6 +1225,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) {
-        return new Pair<>((FormEntity)this, getObjects().toRevMap());
+        return new Pair<>(this, getObjects().toRevMap());
     }
 }

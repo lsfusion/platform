@@ -92,11 +92,11 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         assert (addObject==null || !noInline.contains(addObject)) && !noInline.intersect(mapInterfaces.getSet()) && innerInterfaces.containsAll(noInline);
 
         finalizeInit();
-        assert innerInterfaces.containsAll(action.mapping.valuesSet().merge(ifProp != null ? ifProp.mapping.valuesSet() : SetFact.<I>EMPTY()));
+        assert innerInterfaces.containsAll(action.mapping.valuesSet().merge(ifProp != null ? ifProp.mapping.valuesSet() : SetFact.EMPTY()));
     }
 
     public ImSet<Action> getDependActions() {
-       ImSet<Action> result = SetFact.singleton((Action) action.action);
+       ImSet<Action> result = SetFact.singleton(action.action);
        if(elseAction != null)
            result = result.merge(elseAction.action);
        return result;
@@ -219,7 +219,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
     private ImOrderSet<ImMap<I, DataObject>> readRows(final ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends Expr> innerExprs) throws SQLException, SQLHandledException {
         if(ifProp == null)
-            return SetFact.singletonOrder(MapFact.<I, DataObject>EMPTY());
+            return SetFact.singletonOrder(MapFact.EMPTY());
             
         Where where = ifProp.mapExpr(innerExprs, context.getModifier()).getWhere();
 
@@ -230,7 +230,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     protected PropertyMapImplement<?, I> calcGroupWhereProperty() {
-       PropertyMapImplement<?, I> whereProp = ifProp != null ? ifProp : PropertyFact.<I>createTrue();
+       PropertyMapImplement<?, I> whereProp = ifProp != null ? ifProp : PropertyFact.createTrue();
        if(ordersNotNull)
            whereProp = PropertyFact.createAnd(innerInterfaces, whereProp, orders.keys());
        return PropertyFact.createIfElseUProp(innerInterfaces, whereProp,
@@ -246,7 +246,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
     private ImMap<I, ValueClass> getExtendClasses() {
         if(ifProp==null)
-            return MapFact.<I, ValueClass>EMPTY();
+            return MapFact.EMPTY();
         assert forIsFull();
         return ifProp.mapInterfaceClasses(ClassType.forPolicy).remove(mapInterfaces.valuesSet()); // вообще тут предполагается ASSERTFULL, но только для extend interfaces, а пока такой возможности нет
     }
@@ -313,9 +313,9 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
             // затем сделать GROUP ANY TRUE IF с группировкой по noInline интерфейсам, затем
             PropertyMapImplement<?, I> groupNoInline = PropertyFact.createAnyGProp(noInlineIfProp, noInlineInterfaces);
             // по нему уже сгруппировать FOR noInline интерфейсам с опцией Inline.NO, а внутри FOR по материализованному условию где noInline уже будут внешними интерфейсами
-            ActionMapImplement<?, I> cleanAction = createForAction(innerInterfaces, extNoInline, noInlineIfProp, MapFact.<PropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
-                    action, null, addObject, addClass, autoSet, recursive, SetFact.<I>EMPTY(), forceInline);
-            mResult.add(createForAction(extNoInline, context, groupNoInline, MapFact.<PropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
+            ActionMapImplement<?, I> cleanAction = createForAction(innerInterfaces, extNoInline, noInlineIfProp, MapFact.EMPTYORDER(), false,
+                    action, null, addObject, addClass, autoSet, recursive, SetFact.EMPTY(), forceInline);
+            mResult.add(createForAction(extNoInline, context, groupNoInline, MapFact.EMPTYORDER(), false,
                     cleanAction, elseAction, false, noInline, false));
             return PropertyFact.createListAction(context, mResult.immutableList(), mLocals.immutable());
         }

@@ -45,7 +45,7 @@ public class TaskRunner {
         int nThreads = threadCount != null && threadCount != 0 ? threadCount : availableProcessors();
         TaskBlockingQueue taskQueue = new TaskBlockingQueue();
 //        BlockingQueue<Task.PriorityRunnable> taskQueue = new PriorityBlockingQueue<Task.PriorityRunnable>();
-        executor = ExecutorFactory.createTaskService(nThreads, taskQueue,  BaseUtils.<ExecutionContext<PropertyInterface>>immutableCast(context));
+        executor = ExecutorFactory.createTaskService(nThreads, taskQueue,  BaseUtils.immutableCast(context));
 
 //        ExecutorService executor = Executors.newSingleThreadExecutor(new ContextAwareDaemonThreadFactory(ThreadLocalContext.get(), "task-daemon"));
         AtomicInteger taskCount = new AtomicInteger(0);

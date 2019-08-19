@@ -140,9 +140,9 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     }
 
     private static Pair<ImMap<KeyField, Integer>, ImMap<PropertyField, PropStat>> getStats(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
-        final ImList<MSet<DataObject>> distinctKeyValues = ListFact.toList(keys.size(), ListFact.<DataObject>mSet());
+        final ImList<MSet<DataObject>> distinctKeyValues = ListFact.toList(keys.size(), ListFact.mSet());
         ImOrderSet<PropertyField> propList = properties.toOrderSet();
-        final ImList<MSet<ObjectValue>> distinctPropValues = ListFact.toList(propList.size(), ListFact.<ObjectValue>mSet());
+        final ImList<MSet<ObjectValue>> distinctPropValues = ListFact.toList(propList.size(), ListFact.mSet());
 
         for(int i=0,size=rows.size();i<size;i++) {
             ImMap<KeyField, DataObject> keyValues = rows.getKey(i);
@@ -214,7 +214,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     }
 
     public ImSet<Value> getContextValues() {
-        return SetFact.<Value>singleton(this);
+        return SetFact.singleton(this);
     }
 
     public ParseInterface getParseInterface(QueryEnvironment env, final EnsureTypeEnvironment typeEnv) {
@@ -341,7 +341,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     }
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orClasses) {
-        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propertyClasses.merge(orClasses.second, ClassWhere.<PropertyField, Field>getAddOr());
+        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propertyClasses.merge(orClasses.second, ClassWhere.getAddOr());
         return new Pair<>(classes.or(orClasses.first), orPropertyClasses);
     }
 
@@ -370,9 +370,9 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         final ClassWhere<KeyField> andKeyClasses = classes.and(addKeyClasses);
 
         ImMap<PropertyField, ClassWhere<Field>> andPropertyClasses = propertyClasses.mapValues(value -> value.and(BaseUtils.<ClassWhere<Field>>immutableCast(addKeyClasses))).addExcl(
-                propFields.mapValues((key, value) -> !(value instanceof DataObject)?ClassWhere.<Field>FALSE():
+                propFields.mapValues((key, value) -> !(value instanceof DataObject)?ClassWhere.FALSE():
                         new ClassWhere<>(MapFact.<Field, ConcreteClass>singleton(key, ((DataObject) value).objectClass)).
-                                and(BaseUtils.<ClassWhere<Field>>immutableCast(andKeyClasses))));
+                                and(BaseUtils.immutableCast(andKeyClasses))));
         return new Pair<>(andKeyClasses, andPropertyClasses);
     }
 
@@ -386,7 +386,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     }
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getFieldsClassWheres(ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> data) {
-        ClassWhere<KeyField> keysClassWhere = ClassWhere.<KeyField>FALSE();
+        ClassWhere<KeyField> keysClassWhere = ClassWhere.FALSE();
         ImMap<PropertyField, ClassWhere<Field>> propertiesClassWheres = null;
         for (int i=0,size=data.size();i<size;) {
             final ImMap<KeyField, ConcreteClass> rowKeyClasses = DataObject.getMapDataClasses(data.getKey(i));
@@ -398,7 +398,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
             if(propertiesClassWheres==null)
                 propertiesClassWheres = rowClasses;
             else
-                propertiesClassWheres = propertiesClassWheres.mapAddValues(rowClasses, ClassWhere.<PropertyField, Field>getAddOr());
+                propertiesClassWheres = propertiesClassWheres.mapAddValues(rowClasses, ClassWhere.getAddOr());
         }
         return new Pair<>(keysClassWhere, propertiesClassWheres);
     }
@@ -549,12 +549,12 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                 mMapData.exclAdd(property, (DataClass) property.type);
         ImMap<Field, Expr> mapExprs = mMapExprs.immutable();
         ImMap<Field, DataClass> mapData = mMapData.immutable();
-        ImMap<PropertyField, ClassWhere<Field>> updatedPropertyClasses = properties.toMap(ClassWhere.<Field>FALSE());
+        ImMap<PropertyField, ClassWhere<Field>> updatedPropertyClasses = properties.toMap(ClassWhere.FALSE());
 
         // пока исходим из assertion'а что не null, потом надо будет разные делать
         SQLSession sql = session.sql;
         QueryEnvironment env = session.env;
-        for(ImMap<Field, ConcreteObjectClass> diffClasses : ClassChanges.readChangedCurrentObjectClasses(join.getWhere(), MapFact.<Field, Expr>EMPTY(), mapExprs, sql, session.modifier, env, session.baseClass)) {
+        for(ImMap<Field, ConcreteObjectClass> diffClasses : ClassChanges.readChangedCurrentObjectClasses(join.getWhere(), MapFact.EMPTY(), mapExprs, sql, session.modifier, env, session.baseClass)) {
             final ImMap<Field, ConcreteClass> result = MapFact.addExcl(diffClasses, mapData);
             updatedClasses = updatedClasses.or(new ClassWhere<>(result.filterIncl(getTableKeys())));
             
@@ -779,7 +779,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                 }
             }
             if(fUpdatedClasses)
-                value = value.and(BaseUtils.<ClassWhere<Field>>immutableCast(fNewClasses));
+                value = value.and(BaseUtils.immutableCast(fNewClasses));
             return value;
         });
 

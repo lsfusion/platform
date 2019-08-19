@@ -102,19 +102,19 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public Query(ImRevMap<K, KeyExpr> mapKeys, Expr property, V value) {
-        this(mapKeys, MapFact.<V, Expr>singleton(value, property));
+        this(mapKeys, MapFact.singleton(value, property));
     }
 
     public Query(ImRevMap<K, KeyExpr> mapKeys, Expr property, V value, Where where) {
-        this(mapKeys, MapFact.<V, Expr>singleton(value, property),where);
+        this(mapKeys, MapFact.singleton(value, property),where);
     }
 
     public Query(ImRevMap<K,KeyExpr> mapKeys,Where where) {
-        this(mapKeys, MapFact.<V, Expr>EMPTY(), where);
+        this(mapKeys, MapFact.EMPTY(), where);
     }
 
     public Query(ImRevMap<K,KeyExpr> mapKeys,Where where, ImMap<K, DataObject> mapValues) {
-        this(mapKeys, where, mapValues, MapFact.<V, Expr>EMPTY());
+        this(mapKeys, where, mapValues, MapFact.EMPTY());
     }
 
     public ImRevMap<K, KeyExpr> getMapKeys() {
@@ -216,7 +216,7 @@ public class Query<K,V> extends IQuery<K,V> {
         if(joinKeys==null)
             return joinExprs(joinImplement, mapValues);
         else
-            return new MapJoin<>(new MapTranslator(BaseUtils.<ImRevMap<ParamExpr, ParamExpr>>immutableCast(mapKeys.crossJoin(joinKeys)), mapValues), getJoin());
+            return new MapJoin<>(new MapTranslator(BaseUtils.immutableCast(mapKeys.crossJoin(joinKeys)), mapValues), getJoin());
     }
 
     @ContextTwin
@@ -304,7 +304,7 @@ public class Query<K,V> extends IQuery<K,V> {
                 return ClassWhere.FALSE();
             }
             protected ClassWhere<B> proceedBase(Where data, ImMap<V, BaseExpr> map) {
-                return (ClassWhere<B>)(ClassWhere<?>)getClassWhereBase(data, mapKeys, map);
+                return getClassWhereBase(data, mapKeys, map);
             }
             protected ClassWhere<B> add(ClassWhere<B> op1, ClassWhere<B> op2) {
                 return op1.or(op2);
@@ -313,7 +313,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     private static <B, K extends B, V extends B> ClassWhere<B> getClassWhereBase(Where where, ImMap<K, ? extends BaseExpr> mapKeys, ImMap<V, BaseExpr> mapProps) {
-        return getClassWhereBase(where.and(Expr.getWhere(mapProps.values())), MapFact.<B, BaseExpr>addExcl(mapProps, mapKeys));
+        return getClassWhereBase(where.and(Expr.getWhere(mapProps.values())), MapFact.addExcl(mapProps, mapKeys));
     }
 
     private static <B> ClassWhere<B> getClassWhereBase(Where where, ImMap<B, BaseExpr> mapExprs) {
@@ -387,7 +387,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session) throws SQLException, SQLHandledException {
-        return execute(session, MapFact.<V, Boolean>EMPTYORDER(), 0);
+        return execute(session, MapFact.EMPTYORDER(), 0);
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(ExecutionContext context) throws SQLException, SQLHandledException {
@@ -400,11 +400,11 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(FormInstance form) throws SQLException, SQLHandledException {
-        return execute(form, MapFact.<V, Boolean>EMPTYORDER(), 0);
+        return execute(form, MapFact.EMPTYORDER(), 0);
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return execute(session, MapFact.<V, Boolean>EMPTYORDER(), 0, env);
+        return execute(session, MapFact.EMPTYORDER(), 0, env);
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(ExecutionContext context, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
@@ -456,7 +456,7 @@ public class Query<K,V> extends IQuery<K,V> {
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException, SQLHandledException {
         ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> singleResult = executeSingle(env); // оптимизация
         if(singleResult!=null)
-            return singleResult.mapOrderKeyValues(Query.<K, DataObject>getMapDataObjectValues(), Query.<V, ObjectValue>getMapDataObjectValues());
+            return singleResult.mapOrderKeyValues(Query.getMapDataObjectValues(), Query.getMapDataObjectValues());
 
         return executeSQL(session, orders, selectTop, env);
     }
@@ -474,11 +474,11 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return executeClasses(session, MapFact.<V, Boolean>EMPTYORDER(), 0, baseClass, env);
+        return executeClasses(session, MapFact.EMPTYORDER(), 0, baseClass, env);
     }
 
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass, int selectTop) throws SQLException, SQLHandledException {
-        return executeClasses(session, MapFact.<V, Boolean>EMPTYORDER(), selectTop, baseClass, env);
+        return executeClasses(session, MapFact.EMPTYORDER(), selectTop, baseClass, env);
     }
 
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass, ImOrderMap<? extends Expr, Boolean> orders) throws SQLException, SQLHandledException {
@@ -493,13 +493,13 @@ public class Query<K,V> extends IQuery<K,V> {
         return orderQuery.executeClasses(session, orderProperties, 0, baseClass, env).mapOrderValues((ImMap<Object, ObjectValue> value) -> value.filterIncl(properties.keys()));
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionContext context) throws SQLException, SQLHandledException {
-        return executeClasses(context, MapFact.<V, Boolean>EMPTYORDER());
+        return executeClasses(context, MapFact.EMPTYORDER());
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionContext context, ImOrderMap<? extends V, Boolean> orders) throws SQLException, SQLHandledException {
         return executeClasses(context.getEnv(), orders);
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        return executeClasses(env, MapFact.<V, Boolean>EMPTYORDER());
+        return executeClasses(env, MapFact.EMPTYORDER());
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionEnvironment env, ImOrderMap<? extends V, Boolean> orders) throws SQLException, SQLHandledException {
         DataSession session = env.getSession();
@@ -510,7 +510,7 @@ public class Query<K,V> extends IQuery<K,V> {
         return executeClasses(session.sql, env.getQueryEnv(), session.baseClass, orders);
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(FormInstance formInstance, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return executeClasses(formInstance.session.sql, MapFact.<V, Boolean>EMPTYORDER(), 0, formInstance.session.baseClass, formInstance.getQueryEnv());
+        return executeClasses(formInstance.session.sql, MapFact.EMPTYORDER(), 0, formInstance.session.baseClass, formInstance.getQueryEnv());
     }
 
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, ImOrderMap<? extends V, Boolean> orders, int selectTop, final BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {

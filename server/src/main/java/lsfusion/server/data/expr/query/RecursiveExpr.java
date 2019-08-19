@@ -75,7 +75,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         }
 
         protected ImSet<OuterContext> calculateOuterDepends() {
-            return SetFact.<OuterContext>toSet(step, initial);
+            return SetFact.toSet(step, initial);
         }
         
         public DataClass getType() {

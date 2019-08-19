@@ -149,9 +149,9 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
 
     private ImSet<KeyExpr> filterFullKeys(ImSet<KeyExpr> keys, Result<ImSet<Expr>> usedPartitions, Result<Boolean> useWhere, boolean assertFull) {
         MSet<KeyExpr> mAllPartitionKeys = SetFact.mSet();
-        MExclSet<Expr> mUsedPartitions = usedPartitions == null ? null : SetFact.<Expr>mExclSet();
+        MExclSet<Expr> mUsedPartitions = usedPartitions == null ? null : SetFact.mExclSet();
         for(Expr partition : getPartitions()) {
-            ImSet<KeyExpr> partitionKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(partition.getOuterKeys());
+            ImSet<KeyExpr> partitionKeys = BaseUtils.immutableCast(partition.getOuterKeys());
             if(keys.containsAll(partitionKeys)) { // пересекается
                 mAllPartitionKeys.addAll(partitionKeys);
                 if(mUsedPartitions != null)

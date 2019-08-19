@@ -55,7 +55,7 @@ public abstract class NullableExpr extends VariableSingleClassExpr implements Nu
         
         // не кэшируем так как редко используется
         if(includeInnerWithoutNotNull || hasNotNull())
-            return SetFact.<NullableExprInterface>singleton(this);
+            return SetFact.singleton(this);
         else
             return SetFact.EMPTY();
     }

@@ -46,7 +46,7 @@ public class ShowOnMapPathAction extends GeoAction {
             query.addProperty("numberPathPOI", findProperty("numberPath[POI]").getExpr(context.getModifier(), poiExpr));
             query.addProperty("namePOI", findProperty("name[POI]").getExpr(poiExpr));
             query.and(findProperty("numberPath[POI]").getExpr(context.getModifier(), poiExpr).getWhere());
-            ImOrderMap<ImMap<String, Object>, ImMap<Object, Object>> result = query.execute(context, MapFact.singletonOrder((Object) "numberPathPOI", false));
+            ImOrderMap<ImMap<String, Object>, ImMap<Object, Object>> result = query.execute(context, MapFact.singletonOrder("numberPathPOI", false));
             String uri = "";
             int index = 1;
             String firstLatLong = null;

@@ -52,7 +52,7 @@ public class RegularFilterGroupView extends ComponentView {
         super.customDeserialize(pool, inStream);
 
         entity = pool.context.entity.getRegularFilterGroup(ID);
-        filters = NFFact.finalOrderSet(pool.<RegularFilterView>deserializeList(inStream));
+        filters = NFFact.finalOrderSet(pool.deserializeList(inStream));
     }
 
     @Override

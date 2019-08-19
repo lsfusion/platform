@@ -15,7 +15,7 @@ public class CustomFormulaSyntax {
     }
 
     public CustomFormulaSyntax(String defaultSyntax) {
-        this(defaultSyntax, MapFact.<SQLSyntaxType, String>EMPTY());
+        this(defaultSyntax, MapFact.EMPTY());
     }
 
     public CustomFormulaSyntax(String defaultSyntax, ImMap<SQLSyntaxType, String> customSyntaxes) {

@@ -206,7 +206,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
     
     private static <I extends PropertyInterface> ImOrderSet<Interface<I>> getInterfaces(ImCol<? extends PropertyInterfaceImplement<I>> interfaceImplements) {
-        return ((ImCol<PropertyInterfaceImplement<I>>) interfaceImplements).mapColSetValues(
+        return interfaceImplements.mapColSetValues(
                 Interface::new).toOrderSet();
     }
 }

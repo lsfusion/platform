@@ -60,7 +60,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
     }
 
     public void removeAll(Version version) {
-        addChange(NFRemoveAll.<T>getInstance(), version);
+        addChange(NFRemoveAll.getInstance(), version);
     }
 
     public void addFirst(T element, Version version) {

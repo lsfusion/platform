@@ -415,7 +415,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         }
 
         // need it before initMainLogic because it is used in constraints
-        cancel = addCancelAProp(null, LocalizedString.NONAME, SetFact.<SessionDataProperty>EMPTY());
+        cancel = addCancelAProp(null, LocalizedString.NONAME, SetFact.EMPTY());
 
         super.initMainLogic();
         initGroups();
@@ -492,9 +492,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     private void initNativeProperties() {
         objectClass = addProperty(null, new LP<>(baseClass.getObjectClassProperty()));
-        makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
+        makePropertyPublic(objectClass, "objectClass", Collections.nCopies(1, null));
         random = addRMProp(LocalizedString.create("Random"));
-        makePropertyPublic(random, "random", Collections.<ResolveClassSet>emptyList());
+        makePropertyPublic(random, "random", Collections.emptyList());
     }
 
     private void initNativeGroups() {
@@ -811,7 +811,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @IdentityStrongLazy
     public LA getFormNavigatorAction(FormEntity form) {
-        LA<?> result = addIFAProp(LocalizedString.NONAME, form, SetFact.<ObjectEntity>EMPTYORDER(), false, WindowFormType.DOCKED, true);
+        LA<?> result = addIFAProp(LocalizedString.NONAME, form, SetFact.EMPTYORDER(), false, WindowFormType.DOCKED, true);
 
         String contextPrefix = getFormPrefix(form);
         String name = "_NAVIGATORFORM" + contextPrefix;

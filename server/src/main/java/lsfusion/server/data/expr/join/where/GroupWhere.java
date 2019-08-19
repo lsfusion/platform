@@ -53,6 +53,6 @@ public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableO
     }
     
     public static <T extends GroupWhere> ImList<T> sort(ImCol<T> joins) {
-        return joins.sort(GroupWhere.<T>comparator());
+        return joins.sort(GroupWhere.comparator());
     }
 }

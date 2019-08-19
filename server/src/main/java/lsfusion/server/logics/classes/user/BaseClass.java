@@ -56,9 +56,9 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public BaseClass(String canonicalName, LocalizedString caption, String staticCanonicalName, LocalizedString staticCanonicalCaption, Version version) {
-        super(canonicalName, caption, version, ListFact.<CustomClass>EMPTY());
+        super(canonicalName, caption, version, ListFact.EMPTY());
         unknown = new UnknownClass(this);
-        staticObjectClass = new AbstractCustomClass(staticCanonicalName, staticCanonicalCaption, version, ListFact.singleton((CustomClass) this));
+        staticObjectClass = new AbstractCustomClass(staticCanonicalName, staticCanonicalCaption, version, ListFact.singleton(this));
     }
 
     @Override
@@ -96,7 +96,7 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public void initObjectClass(Version version, String canonicalName) { // чтобы сохранить immutability классов
-        objectClass = new ConcreteCustomClass(canonicalName, LocalizedString.create("{classes.object.class}"), version, ListFact.singleton((CustomClass) staticObjectClass));
+        objectClass = new ConcreteCustomClass(canonicalName, LocalizedString.create("{classes.object.class}"), version, ListFact.singleton(staticObjectClass));
 
         ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 

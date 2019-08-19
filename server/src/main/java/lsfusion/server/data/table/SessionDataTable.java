@@ -149,7 +149,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         if(remove.isEmpty())
             return new SessionDataTable(table, keys, keyValues, propertyValues);
         
-        return new SessionDataTable(table.removeFields(session, SetFact.<KeyField>EMPTY(), remove, owner, opOwner), keys, keyValues, propertyValues.addExcl(remove.toMap(NullValue.instance)));
+        return new SessionDataTable(table.removeFields(session, SetFact.EMPTY(), remove, owner, opOwner), keys, keyValues, propertyValues.addExcl(remove.toMap(NullValue.instance)));
     }
 
     @Override
@@ -220,17 +220,17 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         ClassWhere<Field> propClasses;
         ObjectValue<?> objectValue = propertyValues.get(property);
         if(objectValue!=null)
-            propClasses = objectValue.<Field>getClassWhere(property).and(BaseUtils.<ClassWhere<Field>>immutableCast(table.getClasses()));
+            propClasses = objectValue.<Field>getClassWhere(property).and(BaseUtils.immutableCast(table.getClasses()));
         else
             propClasses = table.getClassWhere(property);
-        return propClasses.and(BaseUtils.<ClassWhere<Field>>immutableCast(getKeyValueClasses()));
+        return propClasses.and(BaseUtils.immutableCast(getKeyValueClasses()));
     }
 
     // см. usage
     public SessionDataTable fixKeyClasses(ClassWhere<KeyField> fixClasses, PropertyField valueField) {
         SessionTable fixTable;
         ObjectValue propertyValue = propertyValues.get(valueField);
-        if(propertyValue != null && propertyValue instanceof NullValue &&
+        if(propertyValue instanceof NullValue &&
                 !hashEquals(table, fixTable = table.fixKeyClasses(fixClasses.remove(keyValues.keys())))) {
             return new SessionDataTable(fixTable, keys, keyValues, propertyValues);
         } else

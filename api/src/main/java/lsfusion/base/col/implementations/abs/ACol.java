@@ -78,7 +78,7 @@ public abstract class ACol<K> extends AColObject implements ImCol<K> {
     }
 
     public ImMap<K, Integer> multiSet() {
-        MMap<K, Integer> mResult = MapFact.mMapMax(size(), MapFact.<K>addLinear());
+        MMap<K, Integer> mResult = MapFact.mMapMax(size(), MapFact.addLinear());
         for(int i=0,size=size();i<size;i++)
             mResult.add(get(i), 1);
         return mResult.immutable();

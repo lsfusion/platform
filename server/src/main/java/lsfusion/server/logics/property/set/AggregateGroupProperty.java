@@ -91,7 +91,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
             }
 
             ImSet<PropertyInterface> setInnerInterfaces = SetFact.addExcl(interfaces, addedObject);
-            return BaseUtils.immutableCast(PropertyFact.createForAction(setInnerInterfaces, BaseUtils.<ImSet<PropertyInterface>>immutableCast(interfaces),
+            return BaseUtils.immutableCast(PropertyFact.createForAction(setInnerInterfaces, BaseUtils.immutableCast(interfaces),
                     PropertyFact.createListAction(setInnerInterfaces, mActions.immutableList()), addedObject, null, false));
         } else
             return super.getSetNotNullAction(notNull);

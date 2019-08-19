@@ -36,7 +36,7 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
         }
 
         private static boolean hasDivisionProblem(DataClass type, int scaleProblem) {
-            return type != null && type instanceof IntegralClass && ((IntegralClass) type).getPrecision() > scaleProblem;
+            return type instanceof IntegralClass && ((IntegralClass) type).getPrecision() > scaleProblem;
         }
 
         public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {

@@ -52,7 +52,7 @@ public class IDTable extends DBTable {
 
         classes = new ClassWhere<>(key, idTypeClass);
 
-        ImMap<Field, DataClass> valueClasses = MapFact.toMap(key, (DataClass) idTypeClass, value, SystemClass.instance);
+        ImMap<Field, DataClass> valueClasses = MapFact.toMap(key, idTypeClass, value, SystemClass.instance);
         propertyClasses = MapFact.singleton(value, new ClassWhere<>(valueClasses));
     }
 
@@ -73,7 +73,7 @@ public class IDTable extends DBTable {
         return query.getQuery();
     }
 
-    private MAddMap<Integer, Pair<Long, Long>> ids = MapFact.mAddMap(MapFact.<Integer, Pair<Long, Long>>override());
+    private MAddMap<Integer, Pair<Long, Long>> ids = MapFact.mAddMap(MapFact.override());
     {
         ImMap<Integer, Long> counters = getCounters();
         for(int i=0,size=counters.size();i<size;i++)

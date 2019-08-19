@@ -247,7 +247,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
         if(groupType == GroupType.STRING_AGG) { // будем считать что все implicit прокастится
             assert exprs.size() == 2;
             StringClass textClass = StringClass.getv(ExtInt.UNLIMITED);
-            fixedTypes = ListFact.<Type>toList(textClass, textClass);
+            fixedTypes = ListFact.toList(textClass, textClass);
             exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, this, typeEnv);
         } else {
             fixedTypes = readers.mapListValues((ClassReader value) -> {

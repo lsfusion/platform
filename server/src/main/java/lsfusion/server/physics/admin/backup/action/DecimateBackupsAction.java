@@ -42,7 +42,7 @@ public class DecimateBackupsAction extends InternalAction {
             long week = new Long("604800000"); // 7 * 24 * 3600 * 1000
 
             KeyExpr backupExpr = new KeyExpr("Backup");
-            ImRevMap<Object, KeyExpr> backupKeys = MapFact.<Object, KeyExpr>singletonRev("Backup", backupExpr);
+            ImRevMap<Object, KeyExpr> backupKeys = MapFact.singletonRev("Backup", backupExpr);
 
             QueryBuilder<Object, Object> backupQuery = new QueryBuilder<>(backupKeys);
             backupQuery.addProperty("dateBackup", findProperty("date[Backup]").getExpr(newContext.getModifier(), backupExpr));

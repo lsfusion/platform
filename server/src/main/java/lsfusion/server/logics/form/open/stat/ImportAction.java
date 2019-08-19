@@ -127,7 +127,7 @@ public abstract class ImportAction extends SystemAction {
                     MMap<PropertyObjectEntity, ObjectValue> mProps = mRows.get(keys);
                     if(mProps == null) {
                         // fill map with null values (needed for writeRows)
-                        mProps = MapFact.mMap(nullValues, MapFact.<PropertyObjectEntity, ObjectValue>override());
+                        mProps = MapFact.mMap(nullValues, MapFact.override());
                         mRows.exclAdd(keys, mProps);
                     }                    
                     mProps.add(prop, value);

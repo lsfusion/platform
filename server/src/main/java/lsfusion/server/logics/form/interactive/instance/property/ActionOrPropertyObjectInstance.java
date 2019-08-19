@@ -53,7 +53,7 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
 
     // в интерфейсе
     public boolean isInInterface(GroupObjectInstance classGroup) {
-        return isInInterface(classGroup == null ? SetFact.<GroupObjectInstance>EMPTY() : SetFact.singleton(classGroup), false);
+        return isInInterface(classGroup == null ? SetFact.EMPTY() : SetFact.singleton(classGroup), false);
     }
 
     public boolean isInInterface(final ImSet<GroupObjectInstance> classGroups, boolean any) {
@@ -85,7 +85,7 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
             DataObject mapValue = mapKeyValues.get(value);
             if (mapValue != null) {
                 if (value instanceof ObjectInstance) {
-                    Object currentValue = ((ObjectInstance) value).getObjectValue().getValue();
+                    Object currentValue = value.getObjectValue().getValue();
                     if (!BaseUtils.nullEquals(currentValue, mapValue.getValue())) {
                         value = mapValue;
                     }

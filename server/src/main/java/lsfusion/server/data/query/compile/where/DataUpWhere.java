@@ -23,6 +23,6 @@ public class DataUpWhere extends AbstractUpWhere<DataUpWhere> {
 
     @Override
     public Where getWhere(JoinExprTranslator translator) {
-        return JoinExprTranslator.translateExpr((Where)where, translator);
+        return JoinExprTranslator.translateExpr(where, translator);
     }
 }

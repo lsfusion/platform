@@ -448,12 +448,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private static IncrementChangeProps createEnvironmentIncrement(boolean isSync, boolean isFloat, boolean isExternal, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
         IncrementChangeProps environment = new IncrementChangeProps();
-        environment.add(FormEntity.isSync, PropertyChange.<ClassPropertyInterface>STATIC(isSync));
-        environment.add(FormEntity.isFloat, PropertyChange.<ClassPropertyInterface>STATIC(isFloat));
-        environment.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(isAdd));
-        environment.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(manageSession));
-        environment.add(FormEntity.isExternal, PropertyChange.<ClassPropertyInterface>STATIC(isExternal));
-        environment.add(FormEntity.showDrop, PropertyChange.<ClassPropertyInterface>STATIC(showDrop));
+        environment.add(FormEntity.isSync, PropertyChange.STATIC(isSync));
+        environment.add(FormEntity.isFloat, PropertyChange.STATIC(isFloat));
+        environment.add(FormEntity.isAdd, PropertyChange.STATIC(isAdd));
+        environment.add(FormEntity.manageSession, PropertyChange.STATIC(manageSession));
+        environment.add(FormEntity.isExternal, PropertyChange.STATIC(isExternal));
+        environment.add(FormEntity.showDrop, PropertyChange.STATIC(showDrop));
         return environment;
     }
 
@@ -1066,8 +1066,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public int countRecords(int groupObjectID) throws SQLException, SQLHandledException {
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
-        Expr expr = GroupExpr.create(MapFact.<Object, Expr>EMPTY(), ValueExpr.COUNT, group.getWhere(group.getMapKeys(), getModifier()), GroupType.SUM, MapFact.<Object, Expr>EMPTY());
-        QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
+        Expr expr = GroupExpr.create(MapFact.EMPTY(), ValueExpr.COUNT, group.getWhere(group.getMapKeys(), getModifier()), GroupType.SUM, MapFact.EMPTY());
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.EMPTYREV());
         query.addProperty("quant", expr);
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(this);
         Integer quantity = (Integer) result.getValue(0).get("quant");
@@ -1090,9 +1090,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
 
-        Expr expr = GroupExpr.create(MapFact.<Object, Expr>EMPTY(), propertyDraw.getDrawInstance().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, MapFact.<Object, Expr>EMPTY());
+        Expr expr = GroupExpr.create(MapFact.EMPTY(), propertyDraw.getDrawInstance().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, MapFact.EMPTY());
 
-        QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
+        QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.EMPTYREV());
         query.addProperty("sum", expr);
         ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> result = query.execute(this);
         Object sum = result.getValue(0).get("sum");
@@ -1340,7 +1340,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (!succeeded)
             return false;
 
-        environmentIncrement.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(false));
+        environmentIncrement.add(FormEntity.isAdd, PropertyChange.STATIC(false));
         
         refreshData(); // нужно перечитать ключи в таблицах, и т.п.
         fireOnAfterApply(stack);
@@ -2083,7 +2083,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         for (GroupObjectInstance group : getGroups()) {
             boolean groupHidden = isHidden(group);
-            ImSet<GroupObjectInstance> gridGroups = (group.curClassView.isGrid() ? SetFact.singleton(group) : SetFact.<GroupObjectInstance>EMPTY());
+            ImSet<GroupObjectInstance> gridGroups = (group.curClassView.isGrid() ? SetFact.singleton(group) : SetFact.EMPTY());
             if (group.propertyBackground != null) {
                 if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyBackground, gridGroups, changedProps, groupHidden))
                     mReadProperties.exclAdd(group.rowBackgroundReader, gridGroups);
@@ -2222,7 +2222,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
                 for (PropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
-                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((Property) filterImplement.property).getOnChangeProperty((Property) propValues.property);
+                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) filterImplement.property.getOnChangeProperty(propValues.property);
                     mPullProps.add(onChangeProperty);
                     mContextFilters.add(onChangeProperty.getContextFilter((ImMap<F, DataObject>) filterImplement.mapping, propValues.mapping, filterObject));
                 }
@@ -2317,7 +2317,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
                 dialogObject = formEntity.object;
 
-                return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, SetFact.<PullChangeProperty>EMPTY(), stack);
+                return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, SetFact.EMPTY(), stack);
             }
         };
     }
@@ -2533,7 +2533,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             return;
 
         if (manageSession) {
-            if (!context.apply(getEventsOnOk(), SetFact.<SessionDataProperty>EMPTY())) {
+            if (!context.apply(getEventsOnOk(), SetFact.EMPTY())) {
                 return;
             }
         } else
@@ -2559,12 +2559,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public List<ReportPath> getCustomReportPathList() throws SQLException, SQLHandledException {
-        FormReportManager newFormManager = new StaticFormReportManager(entity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null); // можно теоретически interactiveFormManager использовать, но он в RemoteForm, а переносить его сюда, не хочется создавать такую зависимость 
+        FormReportManager newFormManager = new StaticFormReportManager(entity, MapFact.EMPTY(), null); // можно теоретически interactiveFormManager использовать, но он в RemoteForm, а переносить его сюда, не хочется создавать такую зависимость 
         return newFormManager.getCustomReportPathList(FormPrintType.PRINT);
     }
 
     public static List<ReportPath> saveAndGetCustomReportPathList(FormEntity formEntity, boolean recreate) throws SQLException, SQLHandledException {
-        FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null);
+        FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.EMPTY(), null);
         return newFormManager.saveAndGetCustomReportPathList(FormPrintType.PRINT, recreate);
     }
 }

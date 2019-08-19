@@ -59,7 +59,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract IQuery<K, V> translateQuery(MapTranslate translate);
 
     public CompiledQuery<K,V> compile(CompileOptions<V> options) {
-        return compile(MapFact.<V, Boolean>EMPTYORDER(), options);
+        return compile(MapFact.EMPTYORDER(), options);
     }
     public abstract CompiledQuery<K,V> compile(ImOrderMap<V, Boolean> orders, CompileOptions<V> options);
 
