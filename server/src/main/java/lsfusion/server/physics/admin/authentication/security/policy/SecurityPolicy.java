@@ -3,6 +3,7 @@ package lsfusion.server.physics.admin.authentication.security.policy;
 public class SecurityPolicy {
     public final long ID;
     public Boolean configurator;
+    public Boolean editObjects;
 
     public SecurityPolicy() {
         this(-1);
@@ -25,6 +26,9 @@ public class SecurityPolicy {
         
         if (policy.configurator != null) {
             configurator = policy.configurator;
+        }
+        if (policy.editObjects != null) {
+            editObjects = policy.editObjects;
         }
     }
 

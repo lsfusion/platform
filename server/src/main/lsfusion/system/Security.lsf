@@ -94,6 +94,9 @@ forbidViewAllSetupPolicies (User user) = forbidViewAllSetupPolicies(mainRole(use
 forbidChangeAllSetupPolicies '{security.change.security.policy.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 forbidChangeAllSetupPolicies (User user) = forbidChangeAllSetupPolicies(mainRole(user));
 
+forbidEditObjects '{security.forbid.edit.objects}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
+forbidEditObjects (User user) = forbidEditObjects(mainRole(user));
+
 copy (UserRole from, UserRole to) +{
     forbidChangePassword(to) <- forbidChangePassword(from);
 
@@ -101,6 +104,7 @@ copy (UserRole from, UserRole to) +{
 
     forbidViewAllSetupPolicies(to) <- forbidViewAllSetupPolicies(from);
     forbidChangeAllSetupPolicies(to) <- forbidChangeAllSetupPolicies(from);
+    forbidEditObjects(to) <- forbidEditObjects(from);
 }
 
 // ------- Properties ------- //
@@ -439,7 +443,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur)                             permitAllForms, forbidAllForms
     PROPERTIES(ur) BACKGROUND RGB(232,232,255) permitViewAllProperty, forbidViewAllProperty
     PROPERTIES(ur)                             permitChangeAllProperty, forbidChangeAllProperty
-    PROPERTIES(ur) BACKGROUND RGB(232,232,255) forbidViewAllSetupPolicies, forbidChangeAllSetupPolicies
+    PROPERTIES(ur) BACKGROUND RGB(232,232,255) forbidViewAllSetupPolicies, forbidChangeAllSetupPolicies, forbidEditObjects
 
     PROPERTIES(ur)                             forbidChangePassword, forbidEditProfile
 

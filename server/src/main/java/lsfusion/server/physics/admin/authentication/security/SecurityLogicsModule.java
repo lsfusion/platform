@@ -33,6 +33,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
     public LP forbidViewAllSetupPolicies;
     public LP forbidChangeAllSetupPolicies;
+    public LP forbidEditObjects;
 
     public LP permitNavigatorElement;
     public LP forbidNavigatorElement;
@@ -105,6 +106,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
         forbidViewAllSetupPolicies = findProperty("forbidViewAllSetupPolicies[User]");
         forbidChangeAllSetupPolicies = findProperty("forbidChangeAllSetupPolicies[User]");
+        forbidEditObjects = findProperty("forbidEditObjects[User]");
 
         // Разрешения для каждого свойства
         forbidViewUserProperty = findProperty("forbidView[User,ActionOrProperty]");
