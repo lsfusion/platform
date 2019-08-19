@@ -322,9 +322,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         for(SecurityPolicy securityPolicy : securityPolicies)
-            if(!securityPolicy.property.change.checkPermission(securityProperty))
+            if(!securityPolicy.property.change.checkPermission(securityProperty) || forbidEditObjects(editActionSID, securityPolicy))
                 return false;
         return true;
+    }
+
+    private boolean forbidEditObjects(String editActionSID, SecurityPolicy securityPolicy) {
+        return EDIT_OBJECT.equals(editActionSID) && !securityPolicy.editObjects;
     }
 
     public ActionObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy) {

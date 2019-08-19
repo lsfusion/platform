@@ -454,13 +454,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             qu.addProperty("forbidViewAllSetupPolicies", securityLM.forbidViewAllSetupPolicies.getExpr(session.getModifier(), userExpr));
             qu.addProperty("forbidChangeAllSetupPolicies", securityLM.forbidChangeAllSetupPolicies.getExpr(session.getModifier(), userExpr));
-            
+            qu.addProperty("forbidEditObjects", securityLM.forbidEditObjects.getExpr(session.getModifier(), userExpr));
+
             qu.addProperty("cachePropertyPolicy", securityLM.cachePropertyPolicyUser.getExpr(session.getModifier(), userExpr));
 
             boolean cachePropertyPolicy = false;
             boolean forbidViewAllSetupPolicies = false;
             boolean forbidChangeAllSetupPolicies = false;
-            
+            boolean forbidEditObjects = false;
+
             ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session).values();
             for (ImMap<String, Object> valueMap : userPermissionValues) {
                 if (valueMap.get("forbidAllForms") != null)
@@ -481,6 +483,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 cachePropertyPolicy = valueMap.get("cachePropertyPolicy") != null;
                 forbidViewAllSetupPolicies = valueMap.get("forbidViewAllSetupPolicies") != null;
                 forbidChangeAllSetupPolicies = valueMap.get("forbidChangeAllSetupPolicies") != null;
+                forbidEditObjects = valueMap.get("forbidEditObjects") != null;
             }
 
             QueryBuilder<String, String> qne = new QueryBuilder<>(SetFact.toExclSet("userId", "neId"));
@@ -516,6 +519,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 }
             }
 
+            policy.editObjects = !forbidEditObjects;
             if(forbidViewAllSetupPolicies || forbidChangeAllSetupPolicies) {
                 for (ActionOrProperty prop : LM.propertyPolicyGroup.getIndexedPropChildren().keyIt()) {
                     if(forbidViewAllSetupPolicies)
