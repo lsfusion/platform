@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.lambda.Provider;
@@ -215,10 +214,8 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         private final MExclMap<ImMap<K, Object>, MMap<V, ImSet<Object>>> mExecResult = MapFact.mExclMap();
 
         public void proceed(ImMap<K, Object> rowKey, ImMap<V, Object> rowValue) throws SQLException {
-            ImMap<V, ImSet<Object>> rowValueSet = rowValue.mapValues(new GetValue<ImSet<Object>, Object>() {
-                public ImSet<Object> getMapValue(Object value) {
-                    return value == null ? SetFact.singleton(nullObject) : SetFact.singleton(value); // ImSet doesn't support nulls
-                }
+            ImMap<V, ImSet<Object>> rowValueSet = rowValue.mapValues(value -> {
+                return value == null ? SetFact.singleton(nullObject) : SetFact.singleton(value); // ImSet doesn't support nulls
             });
 
             MMap<V, ImSet<Object>> mValues = mExecResult.get(rowKey);
@@ -247,13 +244,10 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
             for(int i=0,size=execResult.size();i<size;i++) {
                 ImMap<V, ImSet<Object>> diffValues = execResult.getValue(i).immutable();
                 final Result<Boolean> hasDifferentProps = new Result<>(false);
-                ImMap<V, String> diffConcatValues = diffValues.mapItValues(new GetValue<String, ImSet<Object>>() {
-                    @Override
-                    public String getMapValue(ImSet<Object> value) {
-                        if (value.size() > 1)
-                            hasDifferentProps.set(true);
-                        return value.toString(",");
-                    }
+                ImMap<V, String> diffConcatValues = diffValues.mapItValues(value -> {
+                    if (value.size() > 1)
+                        hasDifferentProps.set(true);
+                    return value.toString(",");
                 });
                 if(hasDifferentProps.result)
                     result.mapValue(i, diffConcatValues);

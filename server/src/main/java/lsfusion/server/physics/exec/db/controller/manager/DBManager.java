@@ -107,6 +107,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
@@ -1828,12 +1829,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImSet<String> notRecalculateStatsTableSet = SetFact.EMPTY();
         Expr expr = reflectionLM.disableStatsTableSID.getExpr(query.getMapExprs().singleValue());
         query.and(expr.getWhere());
-        return query.execute(session).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
-            @Override
-            public String getMapValue(ImMap<String, Object> value) {
-                return (String) value.singleValue();
-            }
-        }).toJavaSet();
+        return query.execute(session).keys().mapSetValues(value -> (String) value.singleValue()).toJavaSet();
     }
 
     public Set<String> getDisableClassesTableSet(DataSession session) throws SQLException, SQLHandledException {
@@ -1850,12 +1846,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         try (final DataSession dataSession = createSession()) {
             Expr expr = reflectionLM.disableStatsTableColumnSID.getExpr(query.getMapExprs().singleValue());
             query.and(expr.getWhere());
-            disableStatsTableColumnSet = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
-                @Override
-                public String getMapValue(ImMap<String, Object> value) {
-                    return (String) value.singleValue();
-                }
-            });
+            disableStatsTableColumnSet = query.execute(dataSession).keys().mapSetValues(value -> (String) value.singleValue());
 
         } catch (SQLException | SQLHandledException e) {
             serviceLogger.info(e.getMessage());
