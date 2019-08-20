@@ -118,6 +118,7 @@ import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.LogTime;
@@ -2652,7 +2653,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 });
     }
 
-    private final static Comparator<Property> propCompare = (o1, o2) -> ((Integer)o1.getID()).compareTo(o2.getID());
+    private final static Comparator<Property> propCompare = Comparator.comparingInt(ActionOrProperty::getID);
     public <P extends PropertyInterface> SessionTableUsage<KeyField, Property> splitReadSave(String debugInfo, ImplementTable table, ImSet<Property> properties) throws SQLException, SQLHandledException {
         IncrementChangeProps increment = new IncrementChangeProps();
         MAddSet<SessionTableUsage<KeyField, Property>> splitTables = SetFact.mAddSet();

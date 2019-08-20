@@ -40,7 +40,7 @@ public interface GlobalObject {
                     compare2 = getUniqueCompareInt(o2);
                 }
             }
-            return compare1>compare2?1:(compare1<compare2?-1:0);
+            return Integer.compare(compare1, compare2);
         }
     };
 }

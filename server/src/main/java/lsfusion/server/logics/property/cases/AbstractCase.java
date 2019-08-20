@@ -194,7 +194,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
         }
 
         // "очистка" ребер (важно после inline так как могут появится избыточные ребра)
-        graph = graph.cleanNodes((SFunctionSet<Pair<F, F>>) element1 -> getClasses(element1.first).andCompatible(getClasses(element1.second)).isFalse());
+        graph = graph.cleanNodes(element1 -> getClasses(element1.first).andCompatible(getClasses(element1.second)).isFalse());
         
         // 2. "проверка ambigious" - берем 2 реализации B и C, compare(B, C) == 0, берем все x такие что compare(X, B) > 0, и compare(X, C) > 0 объединяем их классы и смотрим что он включает B AND C
         List<F> nodes = new ArrayList<>(graph.getNodes().toJavaSet());

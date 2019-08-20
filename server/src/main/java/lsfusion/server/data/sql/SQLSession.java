@@ -427,13 +427,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public static void setEnvParams(Connection connection, boolean ACID, SQLSyntax syntax) throws SQLException {
-        Statement statement = createSingleStatement(connection);
-        try {
+        try (Statement statement = createSingleStatement(connection)) {
             syntax.setACID(statement, ACID);
         } catch (SQLException e) { // there can be permission denied, so we'll just suppress that exception
             sqlSuppLog(e);
-        } finally {
-            statement.close();
         }
     }
 

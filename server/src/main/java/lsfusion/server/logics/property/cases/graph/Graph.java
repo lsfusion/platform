@@ -208,7 +208,7 @@ public class Graph<T> {
         return new Graph<>(edgesOut.removeIncl(element).mapValues(substitute).addExcl(graph.edgesOut.mapValues(value -> value.addExcl(elementOut))), edgesIn.removeIncl(element).mapValues(substitute).addExcl(graph.edgesIn.mapValues(value -> value.addExcl(elementIn))));
     }
     
-    public Graph<T> cleanNodes(final FunctionSet<Pair<T, T>> set) {
+    public Graph<T> cleanNodes(final SFunctionSet<Pair<T, T>> set) {
         BiFunction<T, ImSet<T>, ImSet<T>> adjustSet = (key, value) -> value.filterFn(element -> !set.contains(new Pair<>(key, element)));
         return new Graph<>(edgesOut.mapValues(adjustSet), edgesIn.mapValues(adjustSet));
     }

@@ -182,7 +182,7 @@ public abstract class Task {
         if (l1 < l2) {
             return -1;
         }
-        return ((Integer) System.identityHashCode(o1)).compareTo(System.identityHashCode(o2));
+        return Integer.compare(System.identityHashCode(o1), System.identityHashCode(o2));
     }
 
     private static long addComplexity(long oldComplexity, long newComplexity) {

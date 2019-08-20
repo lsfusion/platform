@@ -385,24 +385,6 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         }
     }
 
-    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getFieldsClassWheres(ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> data) {
-        ClassWhere<KeyField> keysClassWhere = ClassWhere.FALSE();
-        ImMap<PropertyField, ClassWhere<Field>> propertiesClassWheres = null;
-        for (int i=0,size=data.size();i<size;) {
-            final ImMap<KeyField, ConcreteClass> rowKeyClasses = DataObject.getMapDataClasses(data.getKey(i));
-
-            keysClassWhere = keysClassWhere.or(new ClassWhere(rowKeyClasses));
-
-            ImMap<PropertyField, ClassWhere<Field>> rowClasses = data.getValue(i).mapValues((key, value) -> new ClassWhere<>(MapFact.addExcl(rowKeyClasses, key, ((DataObject) value).objectClass)));
-
-            if(propertiesClassWheres==null)
-                propertiesClassWheres = rowClasses;
-            else
-                propertiesClassWheres = propertiesClassWheres.mapAddValues(rowClasses, ClassWhere.getAddOr());
-        }
-        return new Pair<>(keysClassWhere, propertiesClassWheres);
-    }
-
     public SessionTable modifyRecord(final SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, final TableOwner owner, OperationOwner opOwner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         boolean updateClasses = changeTable;

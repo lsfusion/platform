@@ -24,11 +24,7 @@ public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableO
     private static final Comparator<GroupWhere> comparator = (o1, o2) -> {
         long compl1 = o1.getComplexity(true);
         long compl2 = o2.getComplexity(true);
-        if(compl1 > compl2)
-            return 1;
-        if(compl1 < compl2)
-            return -1;
-        return 0;
+        return Long.compare(compl1, compl2);
     };
     private static <K extends GroupWhere> Comparator<K> comparator() {
         return (Comparator<K>) comparator;
