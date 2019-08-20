@@ -3,15 +3,8 @@ MODULE Image;
 REQUIRE System;
 
 resizedImage = DATA LOCAL IMAGEFILE ();
-resizeImage  INTERNAL  'lsfusion.server.logics.classes.data.utils.image.ResizeImageAction' (IMAGEFILE, DOUBLE);
-
-//sampleResizeAction = {
-//    REQUEST IMAGEFILE INPUT;
-//    IF requestedImageFile() THEN {
-//        resizeImage(requestedImageFile(), 2);
-//        open(resizedImage());
-//    }
-//}
+resizeImage(image, scale)  INTERNAL  'lsfusion.server.logics.classes.data.utils.image.ResizeImageScaleAction' (IMAGEFILE, DOUBLE);
+resizeImage(image, width, height)  INTERNAL  'lsfusion.server.logics.classes.data.utils.image.ResizeImageSizeAction' (IMAGEFILE, INTEGER, INTEGER);
 
 convertedImage = DATA LOCAL IMAGEFILE ();
 //file, convert extension 

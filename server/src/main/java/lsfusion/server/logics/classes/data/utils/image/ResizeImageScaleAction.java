@@ -16,11 +16,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ResizeImageAction extends InternalAction {
+public class ResizeImageScaleAction extends InternalAction {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface scaleInterface;
 
-    public ResizeImageAction(ScriptingLogicsModule LM, ValueClass... valueClasses) {
+    public ResizeImageScaleAction(ScriptingLogicsModule LM, ValueClass... valueClasses) {
         super(LM, valueClasses);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
