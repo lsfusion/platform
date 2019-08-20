@@ -125,7 +125,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         public ObjectInfo(String sid, String name, LocalizedString caption, Long id) {
             this.sid = sid;
             this.name = name;
-            this.caption = caption;
+            this.caption = (caption != null ? caption : LocalizedString.create(name, false));
             this.id = id;
         }
 
