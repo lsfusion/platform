@@ -30,6 +30,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -2429,26 +2430,22 @@ public class BaseUtils {
 
     public static byte[] calculateHash(String algorithm, String input, Object salt) throws RuntimeException {
         try {
-            return MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes("UTF-8"));
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            return MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
 
     //TODO: убрать после перехода всех на Java 8
     public static String calculateBase64HashOld(String algorithm, String input, Object salt) throws RuntimeException {
-        try {
-            return new String(Base64.encodeBase64(calculateHashOld(algorithm, input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return new String(Base64.encodeBase64(calculateHashOld(algorithm, input, salt).getBytes(StandardCharsets.UTF_8)), Charset.forName("UTF-8"));
     }
 
     //TODO: убрать после перехода всех на Java 8
     public static String calculateHashOld(String algorithm, String input, Object salt) throws RuntimeException {
         try {
-            return new String(MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            return new String(MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes(StandardCharsets.UTF_8)), Charset.forName("UTF-8"));
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
