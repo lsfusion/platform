@@ -3114,8 +3114,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(windowType == null)
             windowType = WindowFormType.FLOAT;
 
-        List<LPWithParams> propParams = new ArrayList<>();
-        propParams.addAll(contextLPs);
+        List<LPWithParams> propParams = new ArrayList<>(contextLPs);
         List<Integer> allParams = mergeAllParams(propParams);
 
         ImList<O> objects = mObjects.immutableList();

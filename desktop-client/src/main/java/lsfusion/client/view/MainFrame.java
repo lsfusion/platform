@@ -163,7 +163,7 @@ public abstract class MainFrame extends JFrame {
 
         Date twoDigitYearStartDate = null;
         if (twoDigitYearStart != null) {
-            GregorianCalendar c = new GregorianCalendar(twoDigitYearStart, 0, 1);
+            GregorianCalendar c = new GregorianCalendar(twoDigitYearStart, Calendar.JANUARY, 1);
             twoDigitYearStartDate = c.getTime();
         }
         

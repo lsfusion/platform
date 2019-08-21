@@ -502,7 +502,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
 
     private static Date minDate;
     private static Timestamp minTimestamp;
-    {
+    static {
         GregorianCalendar cal = new GregorianCalendar();
         cal.set(1753, Calendar.JANUARY, 1);
         minDate = new Date(cal.getTimeInMillis());

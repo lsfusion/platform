@@ -23,7 +23,7 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     }
 
     public <A extends FormRequestCountingAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback) {
-        execute((FormAction) action, callback);
+        execute((FormAction<R>) action, callback);
         return action.requestIndex;
     }
 
