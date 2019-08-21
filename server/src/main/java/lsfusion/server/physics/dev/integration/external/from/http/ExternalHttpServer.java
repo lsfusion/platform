@@ -85,6 +85,9 @@ public class ExternalHttpServer extends MonitorServer {
             // поток создается HttpServer'ом, поэтому ExecutorService'ом как остальные не делается
             ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
+
+                ServerLoggers.httpServerLogger.info(request.getRequestURI() + "; headers: " + StringUtils.join(request.getRequestHeaders().entrySet().iterator(), ","));
+
                 String[] headerNames = request.getRequestHeaders().keySet().toArray(new String[0]);
                 String[] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
 
