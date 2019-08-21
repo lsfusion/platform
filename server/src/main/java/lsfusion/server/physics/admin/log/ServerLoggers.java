@@ -64,6 +64,8 @@ public class ServerLoggers {
 
     public static final Logger schedulerLogger = Logger.getLogger("SchedulerLogger");
 
+    public static final Logger httpServerLogger = Logger.getLogger("HttpServerLogger");
+
     private static final int FORCE_FLUSH_DELAY = 60;
 
     static {
