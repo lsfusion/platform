@@ -9,8 +9,8 @@ printed '{printer.printed}' = DATA LOCAL BOOLEAN ();
 
 getAvailablePrinters '{printer.get.available.printers}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.GetAvailablePrintersAction' ();
 
-//text, charset, ip, port
-writeToSocketAction  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToServerSocketAction' (TEXT, STRING[10], STRING[30], INTEGER);
+writeToSocket (text, charset, ip, port, isClient)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToSocketAction' (TEXT, STRING[10], STRING[30], INTEGER, BOOLEAN);
+writeToServerSocket (text, charset, ip, port) { writeToSocket(text, charset, ip, port, NULL); }
 
 printPath '{printer.print.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintFileAction' (STRING, STRING);
 printPath '{printer.print.file}' (STRING path) { printPath(path, NULL); }
