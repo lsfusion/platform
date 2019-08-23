@@ -26,12 +26,12 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
 
         setFormatterFactory(new DefaultFormatterFactory(formatter));
 
+        String stringValue = "";
         if (value != null) {
             try {
-                setText(formatter.valueToString(value));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+                stringValue = formatter.valueToString(value); 
+            } catch (ParseException ignored) {}
         }
+        setText(stringValue);
     }
 }

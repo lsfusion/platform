@@ -15,7 +15,7 @@ public class TimePropertyEditor extends DatePropertyEditor {
 
     @Override
     public Date valueToDate(Object value) {
-        return DateConverter.timeToDate((Time) value);
+        return value instanceof Time ? DateConverter.timeToDate((Time) value) : null;
     }
 
     @Override

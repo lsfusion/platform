@@ -25,7 +25,7 @@ public class RichTextPropertyEditor extends JPanel implements PropertyEditor, Cl
     public RichTextPropertyEditor(Component owner, Object value, ComponentDesign design) {
         super(new BorderLayout());
         richArea = new RichEditorPane();
-        richArea.setText(value == null ? "" : (String)value);
+        richArea.setText(value == null ? "" : value.toString());
         
         //не показываем тулбар сразу, чтобы он не ловил событие начала редактирования
         richArea.setToolbarVisible(false);

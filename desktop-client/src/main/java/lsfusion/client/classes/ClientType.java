@@ -10,7 +10,6 @@ import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;
-import java.io.IOException;
 import java.text.ParseException;
 
 public interface ClientType {
@@ -20,8 +19,6 @@ public interface ClientType {
     PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form);
 
     PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value);
-
-    PropertyEditor getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException;
 
     PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value);
 
