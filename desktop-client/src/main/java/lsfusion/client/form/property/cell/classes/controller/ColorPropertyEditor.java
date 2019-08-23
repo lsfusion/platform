@@ -23,7 +23,7 @@ public class ColorPropertyEditor extends DialogBasedPropertyEditor {
     public ColorPropertyEditor(Object value) {
         super();
 
-        final Color initialColor = value != null ? (Color) value : ClientColorClass.getDefaultValue();
+        final Color initialColor = (value instanceof Color) ? (Color) value : ClientColorClass.getDefaultValue();
 
         setBackground(initialColor);
 

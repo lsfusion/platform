@@ -40,7 +40,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
     }
 
     public Date valueToDate(Object value) {
-        return DateConverter.sqlToDate((java.sql.Date) value);
+        return value instanceof java.sql.Date ? DateConverter.sqlToDate((java.sql.Date) value) : null;
     }
     
     public Object dateToValue(Date date) {

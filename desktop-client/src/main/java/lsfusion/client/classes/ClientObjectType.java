@@ -16,7 +16,6 @@ import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;
-import java.io.IOException;
 import java.text.ParseException;
 
 import static lsfusion.interop.form.property.Compare.*;
@@ -54,11 +53,6 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
-        assert false:"shouldn't be used anymore";
-        return null;
-    }
-
-    public PropertyEditor getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
         assert false:"shouldn't be used anymore";
         return null;
     }

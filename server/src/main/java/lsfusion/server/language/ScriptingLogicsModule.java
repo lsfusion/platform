@@ -153,7 +153,6 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -2019,14 +2018,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         assert targetProp == null;
         LP<?> tprop = getInputProp(targetProp, requestDataClass, null);
 
-        LA action = addInputAProp(requestDataClass, tprop != null ? tprop.property : null);
-        
         if (changeProp == null)
             changeProp = oldValue;
-
+        boolean hasOldValue = false;
         // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom()) 
         if (oldValue == null || getTypeByParamProperty(oldValue, oldContext) instanceof FileClass)
             oldValue = new LPWithParams(baseLM.vnull);
+        else
+            hasOldValue = true;
+
+        LA action = addInputAProp(requestDataClass, tprop != null ? tprop.property : null, hasOldValue);
         LAWithParams inputAction = addScriptedJoinAProp(action, Collections.singletonList(oldValue));
 
         return proceedInputDoClause(doAction, elseAction, oldContext, newContext, ListFact.singleton(tprop), inputAction,
