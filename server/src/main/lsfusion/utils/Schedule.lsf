@@ -115,14 +115,14 @@ monthName (INTEGER i) =
            
     
 changeDateFrom(ScheduleDetail d) {
-    INPUT date = DATE DO{
+    INPUT date = dateFrom(d) DO{
         dateFrom(d) <- date;
         captionDateFrom(d) <- extractDay(date)+' '+ monthName(extractMonthNumber(date));        
     }
 }     
 
 changeDateTo(ScheduleDetail d) {
-    INPUT date = DATE DO{
+    INPUT date = dateTo(d) DO{
         dateTo(d) <- date;
         captionDateTo(d) <- extractDay(date)+' '+ monthName(extractMonthNumber(date));             
     }
