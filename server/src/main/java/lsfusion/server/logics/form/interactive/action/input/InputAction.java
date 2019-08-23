@@ -20,17 +20,19 @@ public class InputAction extends SystemExplicitAction {
 
     private final DataClass dataClass;
     private final LP<?> targetProp;
+    private final boolean hasOldValue; // fix. to tell EditPropertyDispatcher to act synchronously - ask for value of expression on edit
             
     //  используется только для событий поэтому по идее не надо, так как в событиях user activity быть не может
 //    public ImMap<Property, Boolean> aspectChangeExtProps() {
 //        return getChangeProps(requestCanceledProperty.property, requestedPropertySet.getLCP(dataClass).property);
 //    }
 
-    public InputAction(LocalizedString caption, DataClass dataClass, LP targetProp) {
+    public InputAction(LocalizedString caption, DataClass dataClass, LP targetProp, boolean hasOldValue) {
         super(caption, dataClass);
 
         this.dataClass = dataClass;
         this.targetProp = targetProp;
+        this.hasOldValue = hasOldValue;
     }
 
     @Override
@@ -41,7 +43,7 @@ public class InputAction extends SystemExplicitAction {
     
     @Override
     public Type getSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        if(inRequest)
+        if(inRequest && !hasOldValue)
             return dataClass;
         return null;
     }

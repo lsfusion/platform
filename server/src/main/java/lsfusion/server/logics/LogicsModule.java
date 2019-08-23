@@ -958,12 +958,9 @@ public abstract class LogicsModule {
 
     // ------------------- Input ----------------- //
 
-    protected LAP addInputAProp(Group group, LocalizedString caption, DataClass dataClass, LP<?> targetProp, Object... params) {
-        return addJoinAProp(group, caption, addInputAProp(dataClass, targetProp != null ? targetProp.property : null), params);
-    }
     @IdentityStrongLazy
-    protected LA addInputAProp(DataClass dataClass, Property targetProp) { // так как у LP нет 
-        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), dataClass, targetProp != null ? new LP(targetProp) : null)));
+    protected LA addInputAProp(DataClass dataClass, Property targetProp, boolean hasOldValue) { // так как у LP нет 
+        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), dataClass, targetProp != null ? new LP(targetProp) : null, hasOldValue)));
     }
 
     // ------------------- Constant ----------------- //
