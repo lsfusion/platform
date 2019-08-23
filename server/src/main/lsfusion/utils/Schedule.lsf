@@ -1,0 +1,367 @@
+MODULE Schedule;
+
+REQUIRE Time, MasterData, Utils;
+
+CLASS Schedule 'Расписание';
+
+name 'Наименование' = DATA STRING[100] (Schedule);
+
+CLASS ScheduleDetail 'Строка расписания';
+
+schedule = DATA Schedule (ScheduleDetail) INDEXED NONULL DELETE;
+
+timeFrom 'Время с' = DATA TIME (ScheduleDetail);
+timeTo 'Время по' = DATA TIME (ScheduleDetail);
+
+dowFrom 'День недели с' = DATA DOW (ScheduleDetail);
+captionDowFrom 'День недели с' (ScheduleDetail d) = staticCaption(dowFrom(d));
+dowTo = DATA DOW (ScheduleDetail);
+captionDowTo 'День недели по' (ScheduleDetail d) = staticCaption(dowTo(d));
+
+dateFrom 'Дата с' = DATA DATE (ScheduleDetail);
+captionDateFrom 'Дата с' = DATA STRING[100] (ScheduleDetail);
+dateTo 'Дата по' = DATA DATE (ScheduleDetail);
+captionDateTo 'Дата по' = DATA STRING[100] (ScheduleDetail);
+
+CONSTRAINT (timeFrom(ScheduleDetail d) AND NOT timeTo(d)) OR (timeTo(d) AND NOT timeFrom(d))
+    MESSAGE 'Интервал должен быть закрытым';
+    
+CONSTRAINT (dowFrom(ScheduleDetail d) AND NOT dowTo(d)) OR (dowTo(d) AND NOT dowFrom(d))
+    MESSAGE 'Интервал должен быть закрытым';
+    
+CONSTRAINT (dateFrom(ScheduleDetail d) AND NOT dateTo(d)) OR (dateTo(d) AND NOT dateFrom(d))
+    MESSAGE 'Интервал должен быть закрытым';   
+    
+CLASS Holidays 'Выходные дни' {
+    onlyWeekdays 'Только по будням',
+    onlyHolidays 'Только по выходным'    
+}    
+
+holidays = DATA Holidays (ScheduleDetail);
+captionHolidays 'Выходные дни' (ScheduleDetail d)= staticCaption(holidays(d));
+
+inDate (DATETIME date, ScheduleDetail d) =
+    CASE WHEN d IS ScheduleDetail AND dateFrom(d) AND dateTo(d) AND number(extractMonth(dateFrom(d)))<=number(extractMonth(dateTo(d))) AND
+              extractDay(dateFrom(d))<=extractDay(dateTo(d)) AND number(extractMonth(dateFrom(d)))<=number(extractMonth(toDate(date))) AND 
+              extractDay(dateFrom(d))<=extractDay(toDate(date)) AND number(extractMonth(dateTo(d)))>=number(extractMonth(toDate(date))) AND extractDay(dateTo(d))>=extractDay(toDate(date)) THEN TRUE
+         WHEN d IS ScheduleDetail AND dateFrom(d) AND dateTo(d) AND number(extractMonth(dateFrom(d)))>=number(extractMonth(dateTo(d))) AND extractDay(dateFrom(d))>extractDay(dateTo(d)) AND        
+              ((number(extractMonth(dateFrom(d)))<=number(extractMonth(toDate(date))) AND extractDay(dateFrom(d))<=extractDay(toDate(date)) AND number(extractMonth(dateTo(d)))<=number(extractMonth(toDate(date))) AND extractDay(dateTo(d))<=extractDay(toDate(date))) OR
+               (number(extractMonth(dateFrom(d)))>=number(extractMonth(toDate(date))) AND extractDay(dateFrom(d))>=extractDay(toDate(date)) AND number(extractMonth(dateTo(d)))>=number(extractMonth(toDate(date))) AND extractDay(dateTo(d))>=extractDay(toDate(date)))) THEN TRUE
+         WHEN d IS ScheduleDetail AND NOT (dateFrom(d) AND dateTo(d)) AND date IS DATETIME THEN TRUE
+         ELSE NULL; 
+         
+inDate =
+    GROUP SUM 1 IF inDate(DATETIME date, ScheduleDetail d) BY date, schedule(d);
+
+inDOW (DATETIME date, ScheduleDetail d) =
+    CASE WHEN d IS ScheduleDetail AND dowFrom(d) AND dowTo(d) AND numberM(dowFrom(d))<=numberM(dowTo(d)) AND 
+              numberM(dowFrom(d))<=numberM(extractDOW(toDate(date))) AND numberM(dowTo(d))>=numberM(extractDOW(toDate(date))) THEN TRUE
+         WHEN d IS ScheduleDetail AND dowFrom(d) AND dowTo(d) AND numberM(dowFrom(d))>numberM(dowTo(d)) AND 
+              ((numberM(dowFrom(d))<=numberM(extractDOW(toDate(date))) AND numberM(dowTo(d))<=numberM(extractDOW(toDate(date)))) OR 
+               (numberM(dowFrom(d))>=numberM(extractDOW(toDate(date))) AND numberM(dowTo(d))>=numberM(extractDOW(toDate(date))))) THEN TRUE 
+         WHEN d IS ScheduleDetail AND NOT (dowFrom(d) AND dowTo(d)) AND date IS DATETIME THEN TRUE
+         ELSE NULL;       
+
+inDOW =
+    GROUP SUM 1 IF inDOW(DATETIME date, ScheduleDetail d) BY date, schedule(d);
+        
+inTime (DATETIME hour, ScheduleDetail d)=
+    CASE WHEN d IS ScheduleDetail AND timeFrom(d) AND timeTo(d) AND extractHour(timeFrom(d))<=extractHour(timeTo(d)) AND
+              extractHour(timeFrom(d))<=extractHour(hour) AND extractHour(timeTo(d))>=extractHour(hour) THEN TRUE
+         WHEN d IS ScheduleDetail AND timeFrom(d) AND timeTo(d) AND extractHour(timeFrom(d))>extractHour(timeTo(d)) AND
+              ((extractHour(timeFrom(d))<=extractHour(hour) AND extractHour(timeTo(d))<=extractHour(hour)) OR 
+               (extractHour(timeFrom(d))>=extractHour(hour) AND extractHour(timeTo(d))>=extractHour(hour))) THEN TRUE 
+         WHEN d IS ScheduleDetail AND NOT (timeFrom(d) AND timeTo(d)) AND hour IS DATETIME THEN TRUE
+         ELSE NULL;            
+
+inTime =
+    GROUP SUM 1 IF inTime(DATETIME hour, ScheduleDetail d) BY hour, schedule(d);             
+
+isDayOff = ABSTRACT BOOLEAN (DATE);
+inHolidays (DATETIME date, ScheduleDetail d) =
+    CASE WHEN d IS ScheduleDetail AND holidays(d) AND holidays(d)==Holidays.onlyHolidays AND isDayOff(toDate(date)) THEN TRUE
+         WHEN d IS ScheduleDetail AND holidays(d) AND holidays(d)==Holidays.onlyWeekdays AND NOT isDayOff(toDate(date)) THEN TRUE
+         WHEN d IS ScheduleDetail AND NOT holidays(d) AND date IS DATETIME THEN TRUE
+         ELSE NULL;
+         
+inHolidays =
+    GROUP SUM 1 IF inHolidays(DATETIME hour, ScheduleDetail d) BY hour, schedule(d);             
+
+in (DATETIME dt, Schedule s) = inDate(dt,s) AND inDOW(dt,s) AND inTime(dt,s) AND inHolidays(dt,s); 
+
+dateCaption 'День' = DATA LOCAL NESTED STRING[100] (INTEGER ); 
+day = DATA LOCAL NESTED INTEGER (INTEGER );
+month = DATA LOCAL NESTED INTEGER (INTEGER );
+dow = DATA LOCAL NESTED INTEGER (INTEGER );
+
+in (INTEGER hour, INTEGER date, Schedule s) = in(toDateTimeFormat(STRING(currentYear())+lpad(STRING(month(date)),2,'0')+lpad(STRING(day(date)),2,'0')+lpad(STRING(hour),2,'0')+'00'+'00','YYYYMMDDHH24MISS'),s);    
+showIn = DATA LOCAL NESTED INTEGER (INTEGER, INTEGER, Schedule);           
+//showIn (INTEGER h, INTEGER d, Schedule s) = ' ' IF in(h,d,s);             
+background (INTEGER h, INTEGER d, Schedule s) = IF in(h,d,s) THEN RGB(125,125,255) ;             
+    
+monthName (INTEGER i) =
+    CASE WHEN i==1 THEN 'января'
+         WHEN i==2 THEN 'февраля' 
+         WHEN i==3 THEN 'марта'
+         WHEN i==4 THEN 'апреля'
+         WHEN i==5 THEN 'мая'
+         WHEN i==6 THEN 'июня'
+         WHEN i==7 THEN 'июля'
+         WHEN i==8 THEN 'августа'
+         WHEN i==9 THEN 'сентября'
+         WHEN i==10 THEN 'октября'
+         WHEN i==11 THEN 'ноября'
+         WHEN i==12 THEN 'декабря';
+           
+    
+changeDateFrom(ScheduleDetail d) {
+    INPUT date = DATE DO{
+        dateFrom(d) <- date;
+        captionDateFrom(d) <- extractDay(date)+' '+ monthName(extractMonthNumber(date));        
+    }
+}     
+
+changeDateTo(ScheduleDetail d) {
+    INPUT date = DATE DO{
+        dateTo(d) <- date;
+        captionDateTo(d) <- extractDay(date)+' '+ monthName(extractMonthNumber(date));             
+    }
+} 
+
+changeDateTimeFrom ABSTRACT (DATETIME );
+changeDateTimeTo ABSTRACT (DATETIME);
+
+FORM schedule 'Расписание'
+    OBJECTS s = Schedule PANEL 
+    PROPERTIES(s) name     
+    
+    OBJECTS d = ScheduleDetail
+    PROPERTIES(d) captionDateFrom ON CHANGE changeDateFrom(d), captionDateTo ON CHANGE changeDateTo(d), captionDowFrom, captionDowTo, timeFrom, timeTo, captionHolidays       
+    PROPERTIES(d) NEW, DELETE  
+    
+    FILTERS schedule(d)==s
+    
+    OBJECTS df=DATETIME PANEL , dt=DATETIME PANEL 
+    PROPERTIES dateFrom 'Время с' =VALUE(df) ON CHANGE changeDateTimeFrom(dt), dateTo 'Время по' =VALUE(dt) ON CHANGE changeDateTimeTo(df)
+        
+    OBJECTS hour = INTEGER 
+    FILTERS iterate(hour,0,23)    
+    
+    OBJECTS date = INTEGER 
+    PROPERTIES READONLY dateCaption(date)
+    FILTERS iterate(date,1,daysInclBetweenDates(toDate(df),toDate(dt)))
+    
+    PROPERTIES BACKGROUND background(hour,date,s) READONLY showIn(hour,date,s) COLUMNS (hour) HEADER LONG(hour)
+    
+    EDIT Schedule OBJECT s    
+;
+
+DESIGN schedule {
+    NEW mainContainer{
+        type = SPLITV;
+        fill=1;
+        NEW topContainer{
+            type = CONTAINERV ;
+            fill=1;
+            caption = 'Параметры';
+            MOVE BOX(s);
+            MOVE BOX(d);
+        }
+        NEW bottomContainer{
+            type = CONTAINERV;
+            fill = 1;
+            caption = 'Предпросмотр';
+            NEW dateCotainer{
+                caption = 'Период';
+                type = CONTAINERH;
+                MOVE PROPERTY(dateFrom);
+                MOVE PROPERTY(dateTo);
+            }
+            MOVE BOX (date);
+            MOVE BOX (hour);
+            PROPERTY(showIn(hour,date,s)){
+                valueWidth = 4;
+            }
+            PROPERTY(showIn(hour,date,s)){
+                valueHeight = 4;
+            }         
+        }                 
+    }   
+    MOVE TOOLBARBOX;
+}
+
+FORM dialogSchedules 'Расписания'
+    OBJECTS s = Schedule  
+    PROPERTIES(s) READONLY name
+    
+    OBJECTS d = ScheduleDetail
+    PROPERTIES(d) READONLY captionDateFrom, captionDateTo, captionDowFrom, captionDowTo, timeFrom, timeTo, captionHolidays
+    
+    FILTERS schedule(d)==s
+
+    LIST Schedule OBJECT s
+;
+
+changeDateTimeFrom2 ABSTRACT (DATETIME );
+changeDateTimeTo2 ABSTRACT (DATETIME);
+
+FORM schedules 'Расписания'
+    OBJECTS s = Schedule  
+    PROPERTIES(s) READONLY name
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
+        
+    OBJECTS d = ScheduleDetail
+    PROPERTIES(d) READONLY captionDateFrom, captionDateTo, captionDowFrom, captionDowTo, timeFrom, timeTo, captionHolidays
+
+    FILTERS schedule(d)==s  
+    
+    OBJECTS df=DATETIME PANEL , dt=DATETIME PANEL 
+    PROPERTIES dateFrom 'Время с' =VALUE(df) ON CHANGE changeDateTimeFrom2(dt), dateTo 'Время по' =VALUE(dt) ON CHANGE changeDateTimeTo2(df)
+        
+    OBJECTS hour = INTEGER 
+    FILTERS iterate(hour,0,23)    
+    
+    OBJECTS date = INTEGER 
+    PROPERTIES READONLY dateCaption(date)
+    FILTERS iterate(date,1,daysInclBetweenDates(toDate(df),toDate(dt)))
+    
+    PROPERTIES BACKGROUND background(hour,date,s) READONLY showIn(hour,date,s) COLUMNS (hour) HEADER LONG(hour)           
+;
+
+DESIGN schedules{
+    NEW mainContainer{
+        type = SPLITV;
+        fill = 1;
+        MOVE BOX(s);
+        NEW tabbedContainer{
+            type = TABBED;
+            fill=2;
+            MOVE BOX(d);
+            NEW previewContainer{
+                fill = 1;
+                caption = 'Предпросмотр';
+                NEW dateCotainer{
+                    caption = 'Период';
+                    type = CONTAINERH;
+                    MOVE PROPERTY(dateFrom);
+                    MOVE PROPERTY(dateTo);
+                }
+                MOVE BOX (date);
+                MOVE BOX (hour);
+                PROPERTY(showIn(hour,date,s)){
+                    valueWidth = 4;
+                }
+                PROPERTY(showIn(hour,date,s)){
+                    valueHeight = 4;
+                }                     
+            }        
+        }
+    } 
+    MOVE TOOLBARBOX; 
+}
+
+setDates() {
+    SEEK schedule.df = dateTimeToDateTime(firstDayOfMonth(currentDate()),00:00);
+    SEEK schedule.dt = dateTimeToDateTime(lastDayOfMonth(currentDate()),23:59);
+
+    LOCAL i=INTEGER();
+    i()<-1;
+    FOR iterate(DATE d,firstDayOfMonth(currentDate()),lastDayOfMonth(currentDate())) ORDER d DO {
+        dateCaption(i()) <- (extractDay(d)+' '+ monthName(extractMonthNumber(d))); 
+        day(i()) <- extractDay(d); 
+        month(i()) <- number(extractMonth(d));          
+        dow(i()) <- numberM(extractDOW(d));          
+        i() <- i() + 1;
+    }       
+}
+
+changeDateTimeFrom (DATETIME  dt) + {
+    INPUT df = DATETIME DO {
+        SEEK schedule.df = df;
+        LOCAL i=INTEGER();
+        i()<-1;
+        FOR iterate(DATE d,toDate(df),toDate(dt)) ORDER d DO {
+            dateCaption(i()) <- (extractDay(d)+' '+ monthName(extractMonthNumber(d))); 
+            day(i()) <- extractDay(d); 
+            month(i()) <- number(extractMonth(d)); 
+            dow(i()) <- numberM(extractDOW(d));  
+            i() <- i() + 1;
+        }       
+    }
+}
+
+changeDateTimeTo (DATETIME  df) + {
+    INPUT dt = DATETIME DO {
+        SEEK schedule.dt = dt; 
+        LOCAL i=INTEGER();
+        i()<-1;   
+        FOR iterate(DATE d,toDate(df),toDate(dt)) ORDER d DO {
+            dateCaption(i()) <- (extractDay(d)+' '+ monthName(extractMonthNumber(d))); 
+            day(i()) <- extractDay(d); 
+            month(i()) <- number(extractMonth(d));
+            dow(i()) <- numberM(extractDOW(d));                
+            i() <- i() + 1;
+        }         
+    }
+}
+
+EXTEND FORM schedule 
+    EVENTS
+        ON INIT setDates()    
+;
+
+setDates2() {
+    SEEK schedules.df = dateTimeToDateTime(firstDayOfMonth(currentDate()),00:00);
+    SEEK schedules.dt = dateTimeToDateTime(lastDayOfMonth(currentDate()),23:59);
+
+    LOCAL i=INTEGER();
+    i()<-1;
+    FOR iterate(DATE d,firstDayOfMonth(currentDate()),lastDayOfMonth(currentDate())) ORDER d DO {
+        dateCaption(i()) <- (extractDay(d)+' '+ monthName(extractMonthNumber(d))); 
+        day(i()) <- extractDay(d); 
+        month(i()) <- number(extractMonth(d));          
+        dow(i()) <- numberM(extractDOW(d));          
+        i() <- i() + 1;
+    }       
+}
+
+changeDateTimeFrom2 (DATETIME  dt) + {
+    INPUT df = DATETIME DO {
+        SEEK schedules.df = df;
+        LOCAL i=INTEGER();
+        i()<-1;
+        FOR iterate(DATE d,toDate(df),toDate(dt)) ORDER d DO {
+            dateCaption(i()) <- (extractDay(d)+' '+ monthName(extractMonthNumber(d))); 
+            day(i()) <- extractDay(d); 
+            month(i()) <- number(extractMonth(d)); 
+            dow(i()) <- numberM(extractDOW(d));  
+            i() <- i() + 1;
+        }       
+    }
+}
+
+changeDateTimeTo2 (DATETIME  df) + {
+    INPUT dt = DATETIME DO {
+        SEEK schedules.dt = dt; 
+        LOCAL i=INTEGER();
+        i()<-1;   
+        FOR iterate(DATE d,toDate(df),toDate(dt)) ORDER d DO {
+            dateCaption(i()) <- (extractDay(d)+' '+ monthName(extractMonthNumber(d))); 
+            day(i()) <- extractDay(d); 
+            month(i()) <- number(extractMonth(d));
+            dow(i()) <- numberM(extractDOW(d));                
+            i() <- i() + 1;
+        }         
+    }
+}
+
+EXTEND FORM schedules 
+    EVENTS
+        ON INIT setDates2()    
+;
+
+NAVIGATOR {
+    masterData{
+        NEW schedules;
+    }
+}
