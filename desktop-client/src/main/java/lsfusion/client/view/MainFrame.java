@@ -328,7 +328,7 @@ public abstract class MainFrame extends JFrame {
     }
 
     public interface FormCloseListener {
-        void formClosed();
+        void formClosed(boolean openFailed);
     }
 
     protected File baseDir;
