@@ -209,9 +209,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             beforeModalActionInSameEDT(true);
             ClientFormDockable blockingForm = MainFrame.instance.runForm(action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, new MainFrame.FormCloseListener() {
                 @Override
-                public void formClosed() {
+                public void formClosed(boolean openFailed) {
                     afterModalActionInSameEDT(true);
-                    continueDispatching();
+                    if (!openFailed) {
+                        continueDispatching();
+                    }
                 }
             });
             setBlockingForm(blockingForm);

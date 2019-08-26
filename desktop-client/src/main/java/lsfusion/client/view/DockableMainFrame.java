@@ -380,7 +380,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             return formsController.openForm(mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
         } catch (Exception e) {
             if(closeListener != null)
-                closeListener.formClosed();
+                closeListener.formClosed(true);
 
             Throwables.propagate(e);
         }

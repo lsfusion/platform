@@ -25,7 +25,7 @@ public class ClientFormDockable extends ClientDockable {
                 }
                 
                 if (closeListener != null) {
-                    closeListener.formClosed();
+                    closeListener.formClosed(false);
                 }
                 super.onFormHidden();
             }
