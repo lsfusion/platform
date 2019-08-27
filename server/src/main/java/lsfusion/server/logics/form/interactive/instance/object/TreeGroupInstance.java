@@ -30,18 +30,13 @@ public class TreeGroupInstance {
     
     public GroupObjectInstance getDownTreeGroup(GroupObjectInstance group) {
         ImOrderSet<GroupObjectInstance> downTreeGroups = getDownTreeGroups(group);
-        return downTreeGroups.isEmpty() ? null : downTreeGroups.last();
+        return downTreeGroups.isEmpty() ? null : downTreeGroups.get(0);
     }
 
     @IdentityLazy
     public GroupObjectInstance getUpTreeGroup(GroupObjectInstance group) {
-        GroupObjectInstance result = null;
-        for(GroupObjectInstance upGroup : groups) {
-            if(upGroup.equals(group))
-                return result;
-            result = upGroup;
-        }
-        throw new RuntimeException("should not be");
+        ImOrderSet<GroupObjectInstance> upTreeGroups = getUpTreeGroups(group);
+        return upTreeGroups.size() < 2 ? null : upTreeGroups.get(upTreeGroups.size() - 2);
     }
 
     @IdentityLazy
