@@ -861,20 +861,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    public void expandGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
-        if (group.expandTable == null)
-            group.expandTable = group.createKeyTable("expgo");
-        group.expandTable.modifyRecord(session.sql, value, Modify.MODIFY, session.getOwner());
-        group.updated |= UPDATED_EXPANDS;
-    }
-
-    public void collapseGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
-        if (group.expandTable != null) {
-            group.expandTable.modifyRecord(session.sql, value, Modify.DELETE, session.getOwner());
-            group.updated |= UPDATED_EXPANDS;
-        }
-    }
-
     public void expandCurrentGroupObject(ObjectInstance object) throws SQLException, SQLHandledException {
         GroupObjectInstance groupObject = object.groupTo;
         if (groupObject != null && groupObject.isInTree()) {
@@ -897,9 +883,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ImMap<ObjectInstance, DataObject> value = mValue.immutable();
                 if (!value.isEmpty() && value.size() == upObjects) { // проверка на то, что в каждом из верхних groupObject выбран какой-то объект
                     if (group.parent != null) {
-                        expandGroupObject(group, value);
+                        group.expandDown(this, value);
                     } else {
-                        expandGroupObject(group.getUpTreeGroup(), value);
+                        group.getUpTreeGroup().expandDown(this, value);
                     }
                 }
                 if (group.equals(groupObject)) {

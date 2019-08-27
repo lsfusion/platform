@@ -14,6 +14,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.expr.join.query.RecursiveJoin;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.stat.Stat;
@@ -45,9 +46,9 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
     }
 
     public static class Query extends QueryExpr.Query<Query> {
-        public final ImRevMap<KeyExpr, KeyExpr> mapIterate; // новые на старые
-        public final Expr initial; // может содержать и старый и новый контекст
-        public final Expr step; // может содержать и старый и новый контекст
+        public final ImRevMap<KeyExpr, KeyExpr> mapIterate; // new to old
+        public final Expr initial; // there should be old values, however they are always equal to new (in RecursiveProperty constructor there is an explicit createAnd), so later should be refactored to have only new keys (and in incrementing algorithms just use keyexpr translation, from old to new one)
+        public final Expr step;
         public final boolean cyclePossible;
 
         protected boolean isComplex() {
@@ -138,6 +139,10 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
 
     public Expr translate(ExprTranslator translator) {
         return create(query.mapIterate, query.initial, query.step, query.cyclePossible, translator.translate(group), query.noInnerFollows);
+    }
+
+    public static Expr create(final ImRevMap<KeyExpr, KeyExpr> mapIterate, final Expr initial, final Expr step, ImMap<KeyExpr, ? extends Expr> group) {
+        return create(mapIterate, initial.and(CompareWhere.compare(mapIterate)), step, true, group, false);
     }
 
     public static Expr create(final ImRevMap<KeyExpr, KeyExpr> mapIterate, final Expr initial, final Expr step, final boolean cyclePossible, ImMap<KeyExpr, ? extends Expr> group) {

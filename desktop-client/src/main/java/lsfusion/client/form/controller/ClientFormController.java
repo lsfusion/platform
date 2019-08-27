@@ -812,7 +812,17 @@ public class ClientFormController implements AsyncListener {
 
     }
 
-    public void expandGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
+    public void expandGroupObjectRecursive(ClientGroupObject group, boolean current) {
+        commitOrCancelCurrentEditing();
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("expandGroupObjectRecursive - " + group.getLogName()) {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.expandGroupObjectRecursive(requestIndex, lastReceivedRequestIndex, group.getID(), current);
+            }
+        });
+    }
+
+    public void expandGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) {
         commitOrCancelCurrentEditing();
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("expandGroupObject - " + group.getLogName()) {
             @Override

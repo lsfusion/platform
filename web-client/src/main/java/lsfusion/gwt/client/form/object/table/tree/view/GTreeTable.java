@@ -388,7 +388,23 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         fireExpandNode(tree.getNodeByRecord(record));
     }
 
-    private void fireExpandNode(GTreeTableNode node) {
+    public void fireExpandNodeRecursive(boolean current) {
+        GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
+        if (node != null) {
+            saveVisualState();
+            addExpandedNodes(current ? node : tree.root);
+            form.expandGroupObjectRecursive(node.getGroup(), current);
+        }
+    }
+
+    private void addExpandedNodes(GTreeTableNode node) {
+        expandedNodes.add(node);
+        for(GTreeTableNode child : node.getChildren()) {
+            addExpandedNodes(child);
+        }
+    }
+
+    public void fireExpandNode(GTreeTableNode node) {
         if (node != null) {
             saveVisualState();
             expandedNodes.add(node);

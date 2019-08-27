@@ -31,6 +31,8 @@ public interface ClientMessages extends Messages {
     String formGridGroupGroupChange();
     
     String formTree();
+    String formTreeExpand();
+    String formTreeExpandCurrent();
 
     String formQueriesCalculateSum();
     String formQueriesSumResult();

@@ -275,11 +275,19 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(ImMap<K, DataObject> mapValues, SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
+        return getQuery(mapValues).execute(session, orders, selectTop, env);
+    }
+
+    public Query<K, V> getQuery() {
+        return getQuery(MapFact.EMPTY()).getQuery();
+    }
+
+    private Query<K, V> getQuery(ImMap<K, DataObject> mapValues) {
         QueryBuilder<K, V> query = new QueryBuilder<>(mapKeys.valuesSet(), mapValues);
         Join<V> tableJoin = join(query.getMapExprs());
         query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
-        return query.execute(session, orders, selectTop, env);
+        return query.getQuery();
     }
 
     public ImSet<Object> readDistinct(V prop, SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {

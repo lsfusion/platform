@@ -11,6 +11,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.panel.controller.PanelController;
 import lsfusion.client.form.object.table.controller.AbstractTableController;
+import lsfusion.client.form.object.table.grid.user.design.view.ExpandTreeButton;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.TreeGroupNode;
 import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
@@ -19,6 +20,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.order.user.Order;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,6 +69,11 @@ public class TreeGroupController extends AbstractTableController {
             addToToolbar(filter.getToolbarButton());
 
             filter.getView().addActionsToInputMap(tree);
+
+            addToToolbar(Box.createHorizontalStrut(5));
+            addToToolbar(new ExpandTreeButton(this, true));
+            addToToolbar(Box.createHorizontalStrut(5));
+            addToToolbar(new ExpandTreeButton(this, false));
         }
 
         formLayout.add(treeGroup, view);
@@ -269,5 +276,9 @@ public class TreeGroupController extends AbstractTableController {
         } else {
             tree.updateCellForegroundValues(property, cellForegroundValues);
         }
+    }
+
+    public ClientGroupObject getCurrentGroupObject() {
+        return ((TreeGroupNode)tree.currentTreePath.getLastPathComponent()).group;
     }
 }

@@ -224,6 +224,10 @@ public class GTreeTableTree {
             }
             GTreeGridRecord record = new GTreeGridRecord(child.getGroup(), child.getKey(), valueMap);
 
+            if (child.isExpandable() && (child.getChildren().size() > 1 || (child.getChildren().size() == 1 && !(child.getChild(0) instanceof ExpandingTreeTableNode)))) {
+                child.setOpen(true);
+            }
+
             GTreeColumnValue treeValue = generateTreeCellValue(child, parentValue, level);
             treeValue.addLastInLevel(level - 1, node.getChildren().indexOf(child) == node.getChildren().size() - 1);
             record.setAttribute("treeColumn", treeValue);

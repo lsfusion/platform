@@ -193,11 +193,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                         RmiQueue.runAction(new Runnable() {
                             @Override
                             public void run() {
-                                try {
-                                    form.expandGroupObject(node.group, node.key);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), e);
-                                }
+                                form.expandGroupObject(node.group, node.key);
                             }
                         });
                     }

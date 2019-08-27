@@ -264,6 +264,14 @@ public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterfac
         return result;
     }
 
+    @Override
+    public ServerResponse expandGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, int groupId, boolean current) throws RemoteException {
+        logRemoteMethodStartVoidCall("expandTreeNodeRecursive");
+        ServerResponse result = target.expandGroupObjectRecursive(requestIndex, lastReceivedRequestIndex, groupId, current);
+        logRemoteMethodEndVoidCall("expandTreeNodeRecursive");
+        return result;
+    }
+
     public ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] treePath) throws RemoteException {
         logRemoteMethodStartVoidCall("expandTreeNode");
         ServerResponse result = target.expandGroupObject(requestIndex, lastReceivedRequestIndex, groupId, treePath);

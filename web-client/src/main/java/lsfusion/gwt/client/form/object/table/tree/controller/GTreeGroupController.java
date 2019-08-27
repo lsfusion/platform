@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.tree.controller;
 import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -13,6 +14,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.grid.user.design.view.GExpandTreeButton;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
@@ -69,6 +71,11 @@ public class GTreeGroupController extends GAbstractTableController {
         });
 
         addFilterButton();
+
+        addToToolbar(GwtClientUtils.createHorizontalStrut(5));
+        addToToolbar(new GExpandTreeButton(this, true));
+        addToToolbar(GwtClientUtils.createHorizontalStrut(5));
+        addToToolbar(new GExpandTreeButton(this, false));
     }
     
     public GFont getFont() {
@@ -318,5 +325,9 @@ public class GTreeGroupController extends GAbstractTableController {
     
     public boolean isExpandOnClick() {
         return treeGroup.expandOnClick;
+    }
+
+    public void fireExpandNodeRecursive(boolean current) {
+        tree.fireExpandNodeRecursive(current);
     }
 }

@@ -873,6 +873,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
+    public void expandGroupObjectRecursive(GGroupObject group, boolean current) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(group);
+        syncDispatch(new ExpandGroupObjectRecursive(group.ID, current), new ServerResponseCallback());
+    }
+
     public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
         syncDispatch(new ExpandGroupObject(group.ID, value), new ServerResponseCallback());

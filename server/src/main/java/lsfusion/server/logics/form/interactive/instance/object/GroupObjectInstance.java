@@ -25,14 +25,17 @@ import lsfusion.server.data.expr.formula.FormulaUnionExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.query.RecursiveExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.expr.where.ifs.IfExpr;
 import lsfusion.server.data.query.MapKeysInterface;
 import lsfusion.server.data.query.Query;
+import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.SessionData;
+import lsfusion.server.data.table.SessionTable;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
@@ -575,6 +578,122 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     // the problem that here it is not guaranteed that DataObject types will be the same as in ObjectInstance (and this will lead to incorrect equals, for example in updateDrawProps where is equal to keysTable, which types are object base classes)
     private <V> ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<V, ObjectValue>> castExecuteObjects(ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<V, ObjectValue>> rows) {
         return SessionData.castTypes(rows, typeGetter);        
+    }
+
+    public void expandUp(FormInstance form, ImMap<ObjectInstance, DataObject> objects) throws SQLException, SQLHandledException {
+        if (expandTable == null)
+            expandTable = createKeyTable("expgo");
+
+        if(parent != null) {
+            Query<ObjectInstance, String> query = getRecursiveExpandQuery(false, objects, form.getModifier(), form);
+            expandTable.modifyRows(form.session.sql, query, form.session.baseClass, Modify.LEFT, form.getQueryEnv(), SessionTable.nonead);
+        } else
+            expandTable.modifyRecord(form.session.sql, objects, Modify.LEFT, form.session.getOwner());
+
+        updated |= UPDATED_EXPANDS;
+    }
+
+    public void expandDown(FormInstance form, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
+        if (expandTable == null)
+            expandTable = createKeyTable("expgo");
+
+        expandTable.modifyRecord(form.session.sql, value, Modify.LEFT, form.session.getOwner());
+
+        updated |= UPDATED_EXPANDS;
+    }
+
+    public void expandAll(FormInstance form, boolean current) throws SQLException, SQLHandledException {
+        if(current) {
+            expandAll(form, getGroupObjectValue());
+        } else {
+            GroupObjectInstance upTreeGroup = getUpTreeGroup();
+            expandAll(form, upTreeGroup == null ? null : upTreeGroup.expandTable);
+        }
+    }
+
+    public void expandAll(FormInstance form, ImMap<ObjectInstance, DataObject> objects) throws SQLException, SQLHandledException {
+        if (expandTable == null)
+            expandTable = createKeyTable("expgo");
+
+        NoPropertyTableUsage<ObjectInstance> expandingTable = createKeyTable("expinggo");
+        try {
+            if(parent != null) {
+                Query<ObjectInstance, String> query = getRecursiveExpandQuery(true, objects, form.getModifier(), form);
+                expandingTable.writeRows(form.session.sql, query, form.session.baseClass, form.getQueryEnv(), SessionTable.nonead);
+            } else
+                expandingTable.modifyRecord(form.session.sql, objects, Modify.ADD, form.session.getOwner());
+            expandAllDown(form, expandingTable);
+
+            expandTable.modifyRows(form.session.sql, expandingTable.getQuery(), form.session.baseClass, Modify.LEFT, form.getQueryEnv(), SessionTable.nonead);
+        } finally {
+            expandingTable.drop(form.session.sql, form.getQueryEnv().getOpOwner());
+        }
+
+        updated |= UPDATED_EXPANDS;
+    }
+
+    private void expandAllDown(FormInstance form, NoPropertyTableUsage<ObjectInstance> expandingTable) throws SQLException, SQLHandledException {
+        GroupObjectInstance downGroup = treeGroup.getDownTreeGroup(this);
+        if (downGroup != null)
+            downGroup.expandAll(form, expandingTable);
+    }
+
+    private void expandAll(FormInstance form, NoPropertyTableUsage<ObjectInstance> expandingTable) throws SQLException, SQLHandledException {
+        if (expandTable == null)
+            expandTable = createKeyTable("expgo");
+
+        Query<ObjectInstance, String> query = getAllExpandQuery(expandingTable, form.getModifier(), form);
+        expandTable.writeRows(form.session.sql, query, form.session.baseClass, form.getQueryEnv(), SessionTable.nonead);
+
+        expandAllDown(form, expandTable);
+
+        updated |= UPDATED_EXPANDS;
+    }
+
+    private Where getRecursiveStepWhere(ImRevMap<ObjectInstance, KeyExpr> mapKeys1, ImMap<ObjectInstance, ? extends Expr> mapKeys2, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        return CompareWhere.compare(mapKeys1, parent.<Expr, SQLException, SQLHandledException>mapValuesEx(value -> value.getExpr(mapKeys2, modifier, reallyChanged)));
+    }
+
+    private Where getRecursiveExpandWhere(ImMap<ObjectInstance, DataObject> objects, boolean down, final ImRevMap<ObjectInstance, ? extends Expr> mapExprs, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+        ImRevMap<KeyExpr, KeyExpr> mapKeysPrevKeys = KeyExpr.getMapKeys(mapKeys.valuesSet());
+        final ImRevMap<ObjectInstance, KeyExpr> mapPrevKeys = mapKeys.join(mapKeysPrevKeys);
+
+        Where initialWhere = CompareWhere.compareValues(mapKeys, objects);
+
+        ImMap<ObjectInstance, DataObject> upObjects = objects.removeIncl(mapKeys.keys());
+        ImMap<ObjectInstance, Expr> upExprs = ObjectValue.getMapExprs(upObjects);
+        Where stepWhere = getWhere(upExprs.addExcl(mapKeys), modifier, reallyChanged).and(
+                          down ? getRecursiveStepWhere(mapPrevKeys, upExprs.addExcl(mapKeys), modifier, reallyChanged)
+                               : getRecursiveStepWhere(mapKeys, upExprs.addExcl(mapPrevKeys), modifier, reallyChanged));
+        Where recursiveWhere = RecursiveExpr.create(mapKeysPrevKeys, ValueExpr.get(initialWhere), ValueExpr.get(stepWhere), mapKeys.crossJoin(mapExprs)).getWhere();
+
+        return recursiveWhere.and(CompareWhere.compareInclValues(mapExprs, upObjects));
+    }
+
+    private Query<ObjectInstance, String> getRecursiveExpandQuery(boolean down, ImMap<ObjectInstance, DataObject> objects, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
+
+        assert parent != null;
+        Where expandWhere = getRecursiveExpandWhere(objects, down, mapKeys, modifier, reallyChanged);
+
+        return new Query<>(mapKeys, MapFact.EMPTY(), expandWhere);
+    }
+
+    private Query<ObjectInstance, String> getAllExpandQuery(NoPropertyTableUsage<ObjectInstance> expandingTable, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
+
+        Where expandWhere = getWhere(mapKeys, modifier, reallyChanged).and(
+                            expandingTable != null ? expandingTable.join(mapKeys).getWhere() : Where.TRUE);
+
+        return new Query<>(mapKeys, MapFact.EMPTY(), expandWhere);
+    }
+
+    public void collapse(DataSession session, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
+        if (expandTable != null) {
+            expandTable.modifyRecord(session.sql, value, Modify.DELETE, session.getOwner());
+            updated |= UPDATED_EXPANDS;
+        }
     }
 
     private ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> executeTree(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {

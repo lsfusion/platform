@@ -80,7 +80,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
 
         ImSet<T> innerInterfaces = getInnerInterfaces();
 
-        // в initial докинем недостающие ключи
+        // adding new = old condition in initialWhere
         ImCol<PropertyInterfaceImplement<T>> and = mapIterate.mapColValues((key, value) -> PropertyFact.createCompare(Compare.EQUALS, key, value));
         initial = PropertyFact.createAnd(innerInterfaces, initial, and);
 

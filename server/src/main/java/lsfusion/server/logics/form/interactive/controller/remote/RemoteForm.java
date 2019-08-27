@@ -35,7 +35,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
-import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -253,6 +252,18 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
+    public ServerResponse expandGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, final int groupId, boolean current) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
+
+            if (logger.isTraceEnabled()) {
+                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
+                logger.trace(String.format("expandGroupObjectRecursive: [ID: %1$d]", groupObject.getID()));
+            }
+            group.expandAll(form, current);
+        });
+    }
+
     public ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupId, final byte[] groupValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
@@ -268,7 +279,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
                 }
             }
-            form.expandGroupObject(group, valueToSet);
+            group.expandDown(form, valueToSet);
         });
     }
 
@@ -287,7 +298,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
                 }
             }
-            form.collapseGroupObject(group, valueToSet);
+            group.collapse(form.session, valueToSet);
         });
     }
 
