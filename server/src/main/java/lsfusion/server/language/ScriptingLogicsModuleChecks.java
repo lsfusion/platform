@@ -410,12 +410,6 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkNecessaryProperty(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        if (property.getLP() == null) {
-            errLog.emitNecessaryPropertyError(parser);
-        }
-    }
-
     public void checkIndexNecessaryProperty(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
         boolean hasProperty = false;
         for (LPWithParams lp : lps) {

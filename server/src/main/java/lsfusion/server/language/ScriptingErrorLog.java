@@ -396,10 +396,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("built-in class '%s' cannot be used in AGGR operator", className));
     }
 
-    public void emitNecessaryPropertyError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "single parameter is forbidden in this context");
-    }
-
     public void emitDeconcatIndexError(ScriptParser parser, int index, int size) throws SemanticErrorException {
         if (index == 0) {
             emitSimpleError(parser, format("wrong index '%d', indices are one-based", index));

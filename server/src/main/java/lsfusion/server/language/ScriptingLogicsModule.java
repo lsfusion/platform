@@ -8,7 +8,10 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -1212,6 +1215,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams checkPropertyIsNew(LPWithParams property) {
         if(propertyNeedsToBeWrapped(property.getLP()))
             property = new LPWithParams(wrapProperty(property.getLP()), property);
+        return property;
+    }
+    
+    public LPWithParams checkSingleParam(LPWithParams property) {
+        if (property.getLP() == null) {
+            property = new LPWithParams(baseLM.object, property);
+        }
         return property;
     }
 

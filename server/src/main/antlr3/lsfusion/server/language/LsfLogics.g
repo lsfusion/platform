@@ -1112,7 +1112,7 @@ designOrFormExprDeclaration[ScriptingFormView design] returns [LP property, ImOr
 		$signature = self.getUsedClasses(context, $expr.property.usedParams);
 	}	
 }
-	:	expr=propertyExpression[context, false] { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = $expr.property.getLP(); } }
+	:	expr=propertyExpression[context, false] { if (inMainParseState()) { $property = self.checkSingleParam($expr.property).getLP(); } }
 	;
 
 formExprOrTrivialLADeclaration returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature, FormActionOrPropertyUsage fu]
@@ -1127,8 +1127,7 @@ formExprOrTrivialLADeclaration returns [LP property, ImOrderSet<String> mapping,
 	    if($expr.la != null)
 	        $fu = $expr.la.action;
 	    else { 
-	        self.getChecks().checkNecessaryProperty($expr.property); 
-            $property = $expr.property.getLP();
+	        $property = self.checkSingleParam($expr.property).getLP();
             $mapping = self.getUsedNames(context, $expr.property.usedParams);
             $signature = self.getUsedClasses(context, $expr.property.usedParams);
         }  
@@ -1255,7 +1254,7 @@ scope {
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LP property, List<ResolveClassSet> signature]
 	:	ciPD=contextIndependentPD[context, dynamic, false] { $property = $ciPD.property; $signature = $ciPD.signature; }
 	|	exprOrCIPD=propertyExpressionOrContextIndependent[context, dynamic, true] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; $signature = $exprOrCIPD.ci.signature; } 
-                                                    else { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $signature = self.getClassesFromTypedParams(context); $property = $exprOrCIPD.property.getLP(); } }}
+                                                    else { if (inMainParseState()) { $property = self.checkSingleParam($exprOrCIPD.property).getLP(); $signature = self.getClassesFromTypedParams(context); } }}
 	|	'NATIVE' classId '(' clist=classIdList ')' { if (inMainParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
@@ -2362,7 +2361,7 @@ inlineProperty[List<TypedParameter> context] returns [LP property, List<Integer>
 }
 	:	'[' 	(	ciPD=contextIndependentPD[context, true, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
 				|   exprOrCIPD=propertyExpressionOrContextIndependent[newContext, true, false] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; $ci = true; }
-                                                                    else { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $property = $exprOrCIPD.property.getLP(); $usedContext = self.getResultInterfaces(context.size(), $exprOrCIPD.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext);} }}
+                                                                    else { if (inMainParseState()) { $property = self.checkSingleParam($exprOrCIPD.property).getLP(); $usedContext = self.getResultInterfaces(context.size(), $exprOrCIPD.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext);} }}
 				)
 		']'
 	;
@@ -3790,6 +3789,7 @@ scope {
 constraintStatement 
 @init {
 	boolean checked = false;
+	LP<?> property = null; 
 	List<NamedPropertyUsage> propUsages = null;
 	DebugInfo.DebugPoint debugPoint = null; 
 	if (inMainParseState()) {
@@ -3798,7 +3798,7 @@ constraintStatement
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedConstraint($expr.property.getLP(), $et.event, checked, propUsages, $message.property.getLP(), debugPoint);
+		self.addScriptedConstraint(property, $et.event, checked, propUsages, $message.property.getLP(), debugPoint);
 	}
 }
 	:	'CONSTRAINT'
@@ -3808,7 +3808,7 @@ constraintStatement
 				self.setPrevScope($et.event);
 			}
 		}
-		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inMainParseState()) self.getChecks().checkNecessaryProperty($expr.property); }
+		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inMainParseState()) property = self.checkSingleParam($expr.property).getLP(); }
 		{
 			if (inMainParseState()) {
 				self.dropPrevScope($et.event);

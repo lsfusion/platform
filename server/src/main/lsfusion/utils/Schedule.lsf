@@ -151,7 +151,7 @@ FORM schedule 'Расписание'
     PROPERTIES READONLY dateCaption(date)
     FILTERS iterate(date,1,daysInclBetweenDates(toDate(df),toDate(dt)))
     
-    PROPERTIES BACKGROUND background(hour,date,s) READONLY showIn(hour,date,s) COLUMNS (hour) HEADER LONG(hour)
+    PROPERTIES BACKGROUND background(hour,date,s) READONLY showIn(hour,date,s) COLUMNS (hour) HEADER hour
     
     EDIT Schedule OBJECT s    
 ;
@@ -225,7 +225,7 @@ FORM schedules 'Расписания'
     PROPERTIES READONLY dateCaption(date)
     FILTERS iterate(date,1,daysInclBetweenDates(toDate(df),toDate(dt)))
     
-    PROPERTIES BACKGROUND background(hour,date,s) READONLY showIn(hour,date,s) COLUMNS (hour) HEADER LONG(hour)           
+    PROPERTIES BACKGROUND background(hour,date,s) READONLY showIn(hour,date,s) COLUMNS (hour) HEADER hour           
 ;
 
 DESIGN schedules{

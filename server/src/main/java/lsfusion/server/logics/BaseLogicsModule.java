@@ -33,7 +33,6 @@ import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.constraint.PropertyFormEntity;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction;
@@ -99,6 +98,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP lsoeq2;
     public LP greater2, less2;
     public LP object1, and1, andNot1;
+    public LP object;
     public LP equals2, diff2;
     public LP like2;
     public LP sum;
@@ -403,6 +403,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         divide = addDivideProp();
 
         minus = addSFProp("(-(prm1))", 1);
+
+        object = addAFProp();
 
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
