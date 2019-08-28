@@ -21,7 +21,7 @@ public class SeekGroupObjectAction extends SeekAction {
     private UpdateType type;
 
     public SeekGroupObjectAction(GroupObjectEntity groupObject, List<ObjectEntity> objects, UpdateType type, ValueClass... classes) {
-        super(LocalizedString.create("Найти объект (" + groupObject.getSID() + ")", false), classes);
+        super(LocalizedString.NONAME, classes);
 
         this.groupObject = groupObject;
         this.objects = objects;

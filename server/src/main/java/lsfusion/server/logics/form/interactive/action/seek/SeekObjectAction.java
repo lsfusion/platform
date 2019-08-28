@@ -18,7 +18,7 @@ public class SeekObjectAction extends SeekAction {
     private final UpdateType type;
 
     public SeekObjectAction(ObjectEntity object, UpdateType type) {
-        super(LocalizedString.concatList("Найти объект (", object.getCaption(), ")"), object.baseClass);
+        super(LocalizedString.NONAME, object.baseClass);
 
         this.object = object;
         this.type = type;
