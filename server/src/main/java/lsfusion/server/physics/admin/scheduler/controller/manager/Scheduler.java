@@ -194,7 +194,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             ImMap<Object, Object> key = scheduledTaskResult.getKey(i);
             ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
             Long scheduledTaskId = (Long) key.getValue(0);
-            DataObject currentScheduledTaskObject = new DataObject(scheduledTaskId, BL.schedulerLM.scheduledTask);
+            DataObject currentScheduledTaskObject = new DataObject(scheduledTaskId, BL.schedulerLM.userScheduledTask);
             String nameScheduledTask = trim((String) value.get("nameScheduledTask"));
             Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
             Timestamp startDate = (Timestamp) value.get("startDateScheduledTask");
