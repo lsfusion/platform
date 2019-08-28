@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
-    public ConcreteCustomClass scheduledTask;
+    public ConcreteCustomClass userScheduledTask;
     public ConcreteCustomClass scheduledTaskLog;
     public ConcreteCustomClass scheduledClientTaskLog;
 
@@ -49,8 +49,6 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
     public LP scriptText;
     public LA evalScript;
-    
-    public LA copyAction;
 
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SchedulerLogicsModule.class.getResourceAsStream("/system/Scheduler.lsf"), "/system/Scheduler.lsf", baseLM, BL);
@@ -60,7 +58,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public void initMetaAndClasses() throws RecognitionException {
         super.initMetaAndClasses();
 
-        scheduledTask = (ConcreteCustomClass) findClass("ScheduledTask");
+        userScheduledTask = (ConcreteCustomClass) findClass("UserScheduledTask");
         scheduledTaskLog = (ConcreteCustomClass) findClass("ScheduledTaskLog");
         scheduledClientTaskLog = (ConcreteCustomClass) findClass("ScheduledClientTaskLog");
     }
@@ -102,7 +100,5 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
         scriptText = findProperty("scriptText[]");
         evalScript = findAction("evalScript[]");
-
-        copyAction = findAction("copyAction[]");
     }
 }

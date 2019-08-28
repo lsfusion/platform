@@ -23,49 +23,100 @@ DESIGN schedulerStartTypes {
     }
 }
 
-CLASS ScheduledTask '{scheduler.scheduled.task}';
+CLASS ABSTRACT ScheduledTask '{scheduler.scheduled.task}';
 TABLE scheduledTask (ScheduledTask);
 
-name '{scheduler.name.scheduled.task}' = DATA STRING[100] (ScheduledTask);
+CLASS UserScheduledTask '{scheduler.scheduled.task}' : ScheduledTask;
+
+name '{scheduler.name.scheduled.task}' = ABSTRACT STRING[100] (ScheduledTask);
+name '{scheduler.name.scheduled.task}' = DATA STRING[100] (UserScheduledTask);
+name[ScheduledTask](UserScheduledTask t) += name(t);
+
 scheduledTask (name) = GROUP AGGR ScheduledTask task WHERE task IS ScheduledTask BY name(task);
 
-runAtStart '{scheduler.run.at.start.scheduled.task}' = DATA BOOLEAN (ScheduledTask);
-timeFrom '{scheduler.time.from.scheduled.task}' = DATA TIME (ScheduledTask);
-timeTo '{scheduler.time.to.scheduled.task}' = DATA TIME (ScheduledTask);
-startDate '{scheduler.start.date.scheduled.task}' = DATA DATETIME (ScheduledTask);
-period '{scheduler.period.scheduled.task}' = DATA INTEGER (ScheduledTask); // in seconds
-schedulerStartType '{scheduler.scheduler.start.type}' = DATA SchedulerStartType (ScheduledTask);
+runAtStart '{scheduler.run.at.start.scheduled.task}' = ABSTRACT BOOLEAN (ScheduledTask);
+runAtStart '{scheduler.run.at.start.scheduled.task}' = DATA BOOLEAN (UserScheduledTask);
+runAtStart[ScheduledTask](UserScheduledTask t) += runAtStart(t);
+
+timeFrom '{scheduler.time.from.scheduled.task}' = ABSTRACT TIME (ScheduledTask);
+timeFrom '{scheduler.time.from.scheduled.task}' = DATA TIME (UserScheduledTask);
+timeFrom[ScheduledTask](UserScheduledTask t) += timeFrom(t);
+
+timeTo '{scheduler.time.to.scheduled.task}' = ABSTRACT TIME (ScheduledTask);
+timeTo '{scheduler.time.to.scheduled.task}' = DATA TIME (UserScheduledTask);
+timeTo[ScheduledTask](UserScheduledTask t) += timeTo(t);
+
+startDate '{scheduler.start.date.scheduled.task}' = ABSTRACT DATETIME (ScheduledTask);
+startDate '{scheduler.start.date.scheduled.task}' = DATA DATETIME (UserScheduledTask);
+startDate[ScheduledTask](UserScheduledTask t) += startDate(t);
+
+period '{scheduler.period.scheduled.task}' = ABSTRACT INTEGER (ScheduledTask); // in seconds
+period '{scheduler.period.scheduled.task}' = DATA INTEGER (UserScheduledTask);
+period[ScheduledTask](UserScheduledTask t) += period(t);
+
+schedulerStartType '{scheduler.scheduler.start.type}' = ABSTRACT SchedulerStartType (ScheduledTask);
+schedulerStartType '{scheduler.scheduler.start.type}' = DATA SchedulerStartType (UserScheduledTask);
+schedulerStartType[ScheduledTask](UserScheduledTask t) += schedulerStartType(t);
+
 nameSchedulerStartType '{scheduler.scheduler.start.type}' = staticCaption(schedulerStartType(ScheduledTask ScheduledTask));
-active '{scheduler.active.scheduled.task}' = DATA BOOLEAN (ScheduledTask);
-daysOfMonth '{scheduler.days.of.month.scheduled.task}' = DATA STRING[255] (ScheduledTask);
+
+active '{scheduler.active.scheduled.task}' = ABSTRACT BOOLEAN (ScheduledTask);
+active '{scheduler.active.scheduled.task}' = DATA BOOLEAN (UserScheduledTask);
+active[ScheduledTask](UserScheduledTask t) += active(t);
+
+daysOfMonth '{scheduler.days.of.month.scheduled.task}' = ABSTRACT STRING[255] (ScheduledTask);
+daysOfMonth '{scheduler.days.of.month.scheduled.task}' = DATA STRING[255] (UserScheduledTask);
+daysOfMonth[ScheduledTask](UserScheduledTask t) += daysOfMonth(t);
 
 TABLE DOWScheduledTask(DOW, ScheduledTask);
-in '{scheduler.in.dow.scheduled.task}' = DATA BOOLEAN (DOW, ScheduledTask); 
+
+in '{scheduler.in.dow.scheduled.task}' = ABSTRACT BOOLEAN (DOW, ScheduledTask); 
+in '{scheduler.in.dow.scheduled.task}' = DATA BOOLEAN (DOW, UserScheduledTask); 
+in[DOW, ScheduledTask](DOW d, UserScheduledTask t) += in(d, t);
+
 daysOfWeek (ScheduledTask t)= GROUP CONCAT STRING[3](number(DOW d)) IF in (d,t), ', ' ORDER d;   
 
-CLASS ScheduledTaskDetail '{scheduler.scheduled.task.detail}';
+CLASS ABSTRACT ScheduledTaskDetail '{scheduler.scheduled.task.detail}';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
 
-active '{scheduler.active.scheduled.task.detail}' = DATA BOOLEAN (ScheduledTaskDetail);
-order '{scheduler.order.scheduled.task.detail}' = DATA INTEGER (ScheduledTaskDetail);
-script '{scheduler.script.scheduled.task.detail}' = DATA TEXT (ScheduledTaskDetail);
+CLASS UserScheduledTaskDetail '{scheduler.scheduled.task.detail}' : ScheduledTaskDetail;
 
-scheduledTask = DATA ScheduledTask (ScheduledTaskDetail) NONULL DELETE;
-property = DATA Property (ScheduledTaskDetail); // temporary for migration
-action = DATA Action (ScheduledTaskDetail);
+active '{scheduler.active.scheduled.task.detail}' = ABSTRACT BOOLEAN (ScheduledTaskDetail);
+active '{scheduler.active.scheduled.task.detail}' = DATA BOOLEAN (UserScheduledTaskDetail);
+active[ScheduledTaskDetail](UserScheduledTaskDetail t) += active(t);
+
+order '{scheduler.order.scheduled.task.detail}' = ABSTRACT INTEGER (ScheduledTaskDetail);
+order '{scheduler.order.scheduled.task.detail}' = DATA INTEGER (UserScheduledTaskDetail);
+order[ScheduledTaskDetail](UserScheduledTaskDetail t) += order(t);
+
+script '{scheduler.script.scheduled.task.detail}' = ABSTRACT TEXT (ScheduledTaskDetail);
+script '{scheduler.script.scheduled.task.detail}' = DATA TEXT (UserScheduledTaskDetail);
+script[ScheduledTaskDetail](UserScheduledTaskDetail t) += script(t);
+
+scheduledTask = ABSTRACT ScheduledTask (ScheduledTaskDetail) NONULL DELETE;
+scheduledTask = DATA UserScheduledTask (UserScheduledTaskDetail) NONULL DELETE;
+scheduledTask[ScheduledTaskDetail](UserScheduledTaskDetail t) += scheduledTask(t);
+
+action = ABSTRACT Action (ScheduledTaskDetail);
+action = DATA Action (UserScheduledTaskDetail);
+action[ScheduledTaskDetail](UserScheduledTaskDetail t) += action(t);
+
 captionAction '{scheduler.caption.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = caption(action(scheduledTaskDetail)) CHARWIDTH 50;
 canonicalNameAction '{scheduler.canonical.name.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(action(scheduledTaskDetail)) CHARWIDTH 50;
-parameter '{scheduler.parameter.scheduled.task.detail}' = DATA TEXT (ScheduledTaskDetail);
-classAction '{scheduler.class.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = class(action(scheduledTaskDetail)) CHARWIDTH 25;
-timeout '{scheduler.timeout.scheduled.task.detail}' = DATA INTEGER (ScheduledTaskDetail);
-ignoreExceptions '{scheduler.ignore.exceptions.scheduled.task.detail}' = DATA BOOLEAN (ScheduledTaskDetail);
 
-// temporary for migration
-copyAction()  { 
-    FOR Action action = actionCanonicalName(canonicalName(property(ScheduledTaskDetail td))) INLINE DO {
-        action(td) <- action;
-    }    
-}
+parameter '{scheduler.parameter.scheduled.task.detail}' = ABSTRACT TEXT (ScheduledTaskDetail);
+parameter '{scheduler.parameter.scheduled.task.detail}' = DATA TEXT (UserScheduledTaskDetail);
+parameter[ScheduledTaskDetail](UserScheduledTaskDetail t) += parameter(t);
+
+classAction '{scheduler.class.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = class(action(scheduledTaskDetail)) CHARWIDTH 25;
+
+timeout '{scheduler.timeout.scheduled.task.detail}' = ABSTRACT INTEGER (ScheduledTaskDetail);
+timeout '{scheduler.timeout.scheduled.task.detail}' = DATA INTEGER (UserScheduledTaskDetail);
+timeout[ScheduledTaskDetail](UserScheduledTaskDetail t) += timeout(t);
+
+ignoreExceptions '{scheduler.ignore.exceptions.scheduled.task.detail}' = ABSTRACT BOOLEAN (ScheduledTaskDetail);
+ignoreExceptions '{scheduler.ignore.exceptions.scheduled.task.detail}' = DATA BOOLEAN (UserScheduledTaskDetail);
+ignoreExceptions[ScheduledTaskDetail](UserScheduledTaskDetail t) += ignoreExceptions(t);
 
 CONSTRAINT script(ScheduledTaskDetail d) AND action(d) MESSAGE '{scheduler.constraint.script.and.action}';
 
@@ -136,13 +187,13 @@ FORM scheduledTask '{scheduler.form.scheduled.task}'
     OBJECTS t=ScheduledTask
     PROPERTIES (t) GRID active, name, timeFrom, timeTo, startDate, period,
                     nameSchedulerStartType, runAtStart, daysOfMonth PANEL, executeScheduledTask, setupScheduledTask
-    PROPERTIES (t) NEW, DELETE GRID
+    PROPERTIES (t) NEW[UserScheduledTask], DELETE GRID
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) active, ignoreExceptions, order, captionAction, 
                     canonicalNameAction, parameter, classAction, 
                     timeout, script PANEL
-    PROPERTIES (td) NEW, DELETE GRID
+    PROPERTIES (td) NEW[UserScheduledTask], DELETE GRID
     
     OBJECTS tl=ScheduledTaskLog LAST
     PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, isFailed, date

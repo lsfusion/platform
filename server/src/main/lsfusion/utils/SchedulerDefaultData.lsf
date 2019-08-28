@@ -8,7 +8,7 @@ loadDefaultScheduledTasks '{scheduler.default.data.load.default.scheduled.tasks}
 @implementLoadDefaultData(loadDefaultScheduledTasks);
 
 loadDefaultScheduledTask '{scheduler.default.data.load.default.scheduled.task}'(STRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type)  { 
-    NEW s = ScheduledTask {
+    NEW s = UserScheduledTask {
         name(s) <- iname;
         active(s) <- TRUE ;
         startDate(s) <- startTime;
@@ -18,7 +18,7 @@ loadDefaultScheduledTask '{scheduler.default.data.load.default.scheduled.task}'(
 }
 
 loadDefaultScheduledTaskDetail '{scheduler.default.data.load.default.scheduled.task.detail}'(STRING[100] iname, INTEGER order, STRING[512] prop)  { 
-    NEW d = ScheduledTaskDetail {
+    NEW d = UserScheduledTaskDetail {
         order(d) <- order;
         active(d) <- TRUE;
         action(d) <- actionCanonicalName(prop);         
