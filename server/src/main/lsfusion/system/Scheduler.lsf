@@ -193,7 +193,7 @@ FORM scheduledTask '{scheduler.form.scheduled.task}'
     PROPERTIES (td) active, ignoreExceptions, order, captionAction, 
                     canonicalNameAction, parameter, classAction, 
                     timeout, script PANEL
-    PROPERTIES (td) NEW[UserScheduledTask], DELETE GRID
+    PROPERTIES (td) NEW[UserScheduledTaskDetail], DELETE GRID
     
     OBJECTS tl=ScheduledTaskLog LAST
     PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, isFailed, date
