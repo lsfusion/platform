@@ -307,7 +307,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(DataType.OBJECT);
         outStream.writeBoolean(this instanceof ConcreteCustomClass);
-        outStream.writeUTF(caption.getSourceString());
+        outStream.writeUTF(ThreadLocalContext.localize(caption));
         outStream.writeLong(ID);
         outStream.writeUTF(getSID());
 
