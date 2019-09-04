@@ -81,6 +81,7 @@ import lsfusion.server.logics.event.SessionEnvEvent;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
@@ -93,6 +94,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.DefaultIcon;
 import lsfusion.server.logics.navigator.NavigatorElement;
@@ -2186,6 +2188,31 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (groupObject != null) {
             List<Object> resultParams = getParamsPlainList(values);
             LA LA = addGOSAProp(groupObject, objects, type, resultParams.toArray());
+            return new LAWithParams(LA, mergeAllParams(values));
+        } else {
+            errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(name));
+            return null;
+        }
+    }
+
+    public LAWithParams addScriptedGroupObjectExpandProp(String name, List<String> objNames, List<LPWithParams> values, ExpandCollapseType type, boolean expand) throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = getFormFromSeekObjectName(name);
+        GroupObjectEntity expandGroupObject = getSeekGroupObject(form, name);
+
+        List<ObjectEntity> objects = new ArrayList<>();
+        if (objNames != null) {
+            for (String objName : objNames) {
+                ObjectEntity obj = form.getNFObject(objName, getVersion());
+                if (obj == null) {
+                    errLog.emitObjectNotFoundError(parser, objName);
+                }
+                objects.add(obj);
+            }
+        }
+
+        if (expandGroupObject != null) {
+            List<Object> resultParams = getParamsPlainList(values);
+            LA LA = addExpandCollapseAProp(expandGroupObject, objects, type, expand, resultParams.toArray());
             return new LAWithParams(LA, mergeAllParams(values));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(name));

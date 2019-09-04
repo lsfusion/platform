@@ -11,12 +11,13 @@ public class GExpandTreeButton extends GToolbarButton {
 
     private final GTreeGroupController treeGroupController;
     private final boolean current;
+    private boolean expand;
 
     public GExpandTreeButton(GTreeGroupController treeGroupController, boolean current) {
         super(current ? "expandTreeCurrent.png" : "expandTree.png", "");
         this.treeGroupController = treeGroupController;
         this.current = current;
-        setTitle(current ? messages.formTreeExpandCurrent() : messages.formTreeExpand());
+        updateToolTipText();
     }
 
     @Override
@@ -24,8 +25,23 @@ public class GExpandTreeButton extends GToolbarButton {
         addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                treeGroupController.fireExpandNodeRecursive(current);
+                if(expand) {
+                    treeGroupController.fireExpandNodeRecursive(current);
+                } else {
+                    treeGroupController.fireCollapseNodeRecursive(current);
+                }
+                update(treeGroupController);
             }
         });
+    }
+
+    public void update(GTreeGroupController treeGroupController) {
+        this.expand = !treeGroupController.isCurrentPathExpanded();
+        setModuleImagePath(current ? (expand ? "expandTreeCurrent.png" : "collapseTreeCurrent.png") : (expand ? "expandTree.png" : "collapseTree.png"));
+        updateToolTipText();
+    }
+
+    private void updateToolTipText() {
+        setTitle(current ? (expand ? messages.formTreeExpandCurrent() : messages.formTreeCollapseCurrent()) : (expand ? messages.formTreeExpand() : messages.formTreeCollapse()));
     }
 }

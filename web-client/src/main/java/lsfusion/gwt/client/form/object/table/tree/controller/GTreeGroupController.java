@@ -40,6 +40,9 @@ public class GTreeGroupController extends GAbstractTableController {
     
     private final GGroupObject lastGroupObject;
 
+    private final GExpandTreeButton expandTreeButton;
+    private final GExpandTreeButton expandTreeCurrentButton;
+
     public GTreeGroupController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm) {
         super(iFormController, iTreeGroup.toolbar);
         treeGroup = iTreeGroup;
@@ -73,9 +76,11 @@ public class GTreeGroupController extends GAbstractTableController {
         addFilterButton();
 
         addToToolbar(GwtClientUtils.createHorizontalStrut(5));
-        addToToolbar(new GExpandTreeButton(this, true));
+        expandTreeCurrentButton = new GExpandTreeButton(this, true);
+        addToToolbar(expandTreeCurrentButton);
         addToToolbar(GwtClientUtils.createHorizontalStrut(5));
-        addToToolbar(new GExpandTreeButton(this, false));
+        expandTreeButton = new GExpandTreeButton(this, false);
+        addToToolbar(expandTreeButton);
     }
     
     public GFont getFont() {
@@ -170,6 +175,17 @@ public class GTreeGroupController extends GAbstractTableController {
             formController.setFiltersVisible(groupObject, isTreeVisible);
         }
         panel.update();
+
+        if(expandTreeButton != null) {
+            expandTreeButton.update(this);
+        }
+        if(expandTreeCurrentButton != null) {
+            expandTreeCurrentButton.update(this);
+        }
+    }
+
+    public boolean isCurrentPathExpanded() {
+        return tree.isCurrentPathExpanded();
     }
 
     public void beforeHidingGrid() {
@@ -329,5 +345,9 @@ public class GTreeGroupController extends GAbstractTableController {
 
     public void fireExpandNodeRecursive(boolean current) {
         tree.fireExpandNodeRecursive(current);
+    }
+
+    public void fireCollapseNodeRecursive(boolean current) {
+        tree.fireCollapseNodeRecursive(current);
     }
 }

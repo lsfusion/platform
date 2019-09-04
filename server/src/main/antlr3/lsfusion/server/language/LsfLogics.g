@@ -52,6 +52,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.event.SystemEvent;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
+    import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
     import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
     import lsfusion.server.logics.form.interactive.design.ComponentView;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -2825,6 +2826,8 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	msgADB=messageActionDefinitionBody[context, dynamic] { $action = $msgADB.action; }
 	|	asyncADB=asyncUpdateActionDefinitionBody[context, dynamic] { $action = $asyncADB.action; }
 	|	seekADB=seekObjectActionDefinitionBody[context, dynamic] { $action = $seekADB.action; }
+	|	expandADB=expandGroupObjectActionDefinitionBody[context, dynamic] { $action = $expandADB.action; }
+	|	collapseADB=collapseGroupObjectActionDefinitionBody[context, dynamic] { $action = $collapseADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
 	|	drillDownADB=drillDownActionDefinitionBody[context, dynamic] { $action = $drillDownADB.action; }
@@ -3341,6 +3344,40 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	;
 
 seekObjectsList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects, List<LPWithParams> values] 
+	:	list=idEqualPEList[context, dynamic] { $objects = $list.ids; $values = $list.exprs; }
+	;
+
+expandGroupObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@init {
+	ExpandCollapseType type = ExpandCollapseType.DOWN;
+	List<String> objNames = new ArrayList<>();
+	List<LPWithParams> lps = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedGroupObjectExpandProp($gobj.sid, objNames, lps, type, true);
+	}
+}
+	:	'EXPAND' ('DOWN' { type = ExpandCollapseType.DOWN; } | 'UP' { type = ExpandCollapseType.UP; } | ('ALL' { type = ExpandCollapseType.ALL; } ('TOP' { type = ExpandCollapseType.ALLTOP; })?) )?
+		gobj=formGroupObjectID ('OBJECTS' list=expandCollapseObjectsList[context, dynamic] { objNames = $list.objects; lps = $list.values; })?
+	;
+
+collapseGroupObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@init {
+	ExpandCollapseType type = ExpandCollapseType.DOWN;
+	List<String> objNames = new ArrayList<>();
+	List<LPWithParams> lps = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedGroupObjectExpandProp($gobj.sid, objNames, lps, type, false);
+	}
+}
+	:	'COLLAPSE' ('DOWN' { type = ExpandCollapseType.DOWN; } | ('ALL' { type = ExpandCollapseType.ALL; } ('TOP' { type = ExpandCollapseType.ALLTOP; })?) )?
+		gobj=formGroupObjectID ('OBJECTS' list=expandCollapseObjectsList[context, dynamic] { objNames = $list.objects; lps = $list.values; })?
+	;
+
+expandCollapseObjectsList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects, List<LPWithParams> values]
 	:	list=idEqualPEList[context, dynamic] { $objects = $list.ids; $values = $list.exprs; }
 	;
 

@@ -883,6 +883,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ExpandGroupObject(group.ID, value), new ServerResponseCallback());
     }
 
+    public void collapseGroupObjectRecursive(GGroupObject group, boolean current) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(group);
+        syncDispatch(new CollapseGroupObjectRecursive(group.ID, current), new ServerResponseCallback());
+    }
+
     public void collapseGroupObject(GGroupObject group, GGroupObjectValue value) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
         syncDispatch(new CollapseGroupObject(group.ID, value), new ServerResponseCallback());

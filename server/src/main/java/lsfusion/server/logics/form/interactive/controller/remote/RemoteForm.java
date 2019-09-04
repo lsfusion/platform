@@ -260,7 +260,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
                 logger.trace(String.format("expandGroupObjectRecursive: [ID: %1$d]", groupObject.getID()));
             }
-            group.expandAll(form, current);
+            group.expandCollapseAll(form, current, true);
         });
     }
 
@@ -279,7 +279,19 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
                 }
             }
-            group.expandDown(form, valueToSet);
+            group.expandCollapseDown(form, valueToSet, true);
+        });
+    }
+
+    public ServerResponse collapseGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, final int groupId, boolean current) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
+
+            if (logger.isTraceEnabled()) {
+                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
+                logger.trace(String.format("collapseGroupObjectRecursive: [ID: %1$d]", groupObject.getID()));
+            }
+            group.expandCollapseAll(form, current, false);
         });
     }
 

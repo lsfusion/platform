@@ -41,7 +41,6 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
-import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.value.DataObject;
@@ -883,9 +882,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ImMap<ObjectInstance, DataObject> value = mValue.immutable();
                 if (!value.isEmpty() && value.size() == upObjects) { // проверка на то, что в каждом из верхних groupObject выбран какой-то объект
                     if (group.parent != null) {
-                        group.expandDown(this, value);
+                        group.expandCollapseDown(this, value, true);
                     } else {
-                        group.getUpTreeGroup().expandDown(this, value);
+                        group.getUpTreeGroup().expandCollapseDown(this, value, true);
                     }
                 }
                 if (group.equals(groupObject)) {

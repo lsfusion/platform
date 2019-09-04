@@ -203,15 +203,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 }
             }
 
-            public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+            public void treeWillCollapse(TreeExpansionEvent event) {
                 TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
                 if (!synchronize && !manualExpand) {
                     if (node.group != null) {
-                        try {
-                            form.collapseGroupObject(node.group, node.key);
-                        } catch (IOException e) {
-                            throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), e);
-                        }
+                        form.collapseGroupObject(node.group, node.key);
                     }
                 }
             }
@@ -276,14 +272,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                                 RmiQueue.runAction(new Runnable() {
                                     @Override
                                     public void run() {
-                                        try {
-                                            if (!isExpanded(path)) {
-                                                form.expandGroupObject(node.group, node.key);
-                                            } else {
-                                                form.collapseGroupObject(node.group, node.key);
-                                            }
-                                        } catch (IOException ex) {
-                                            throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), ex);
+                                        if (!isExpanded(path)) {
+                                            form.expandGroupObject(node.group, node.key);
+                                        } else {
+                                            form.collapseGroupObject(node.group, node.key);
                                         }
                                     }
                                 });
@@ -1121,6 +1113,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     public Dimension getMaxPreferredSize(Dimension preferredSize) {
         return gridPropertyTable.getMaxPreferredSize(preferredSize);
+    }
+
+    public boolean isCurrentPathExpanded() {
+        return isExpanded(currentTreePath);
     }
 
     private Integer hierarchicalUserWidth = null;

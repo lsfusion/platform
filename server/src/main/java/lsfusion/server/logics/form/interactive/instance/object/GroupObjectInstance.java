@@ -580,38 +580,38 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return SessionData.castTypes(rows, typeGetter);        
     }
 
-    public void expandUp(FormInstance form, ImMap<ObjectInstance, DataObject> objects) throws SQLException, SQLHandledException {
+    public void expandCollapseUp(FormInstance form, ImMap<ObjectInstance, DataObject> objects, boolean expand) throws SQLException, SQLHandledException {
         if (expandTable == null)
             expandTable = createKeyTable("expgo");
 
         if(parent != null) {
             Query<ObjectInstance, String> query = getRecursiveExpandQuery(false, objects, form.getModifier(), form);
-            expandTable.modifyRows(form.session.sql, query, form.session.baseClass, Modify.LEFT, form.getQueryEnv(), SessionTable.nonead);
+            expandTable.modifyRows(form.session.sql, query, form.session.baseClass, expand ? Modify.LEFT : Modify.DELETE, form.getQueryEnv(), SessionTable.nonead);
         } else
-            expandTable.modifyRecord(form.session.sql, objects, Modify.LEFT, form.session.getOwner());
+            expandTable.modifyRecord(form.session.sql, objects, expand ? Modify.LEFT : Modify.DELETE, form.session.getOwner());
 
         updated |= UPDATED_EXPANDS;
     }
 
-    public void expandDown(FormInstance form, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
+    public void expandCollapseDown(FormInstance form, ImMap<ObjectInstance, DataObject> value, boolean expand) throws SQLException, SQLHandledException {
         if (expandTable == null)
             expandTable = createKeyTable("expgo");
 
-        expandTable.modifyRecord(form.session.sql, value, Modify.LEFT, form.session.getOwner());
+        expandTable.modifyRecord(form.session.sql, value, expand ? Modify.LEFT : Modify.DELETE, form.session.getOwner());
 
         updated |= UPDATED_EXPANDS;
     }
 
-    public void expandAll(FormInstance form, boolean current) throws SQLException, SQLHandledException {
-        if(current) {
-            expandAll(form, getGroupObjectValue());
+    public void expandCollapseAll(FormInstance form, boolean current, boolean expand) throws SQLException, SQLHandledException {
+        if (current) {
+            expandCollapseAll(form, getGroupObjectValue(), expand);
         } else {
             GroupObjectInstance upTreeGroup = getUpTreeGroup();
-            expandAll(form, upTreeGroup == null ? null : upTreeGroup.expandTable);
+            expandCollapseAll(form, upTreeGroup == null ? null : upTreeGroup.expandTable, expand);
         }
     }
 
-    public void expandAll(FormInstance form, ImMap<ObjectInstance, DataObject> objects) throws SQLException, SQLHandledException {
+    private void expandCollapseAll(FormInstance form, ImMap<ObjectInstance, DataObject> objects, boolean expand) throws SQLException, SQLHandledException {
         if (expandTable == null)
             expandTable = createKeyTable("expgo");
 
@@ -621,10 +621,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 Query<ObjectInstance, String> query = getRecursiveExpandQuery(true, objects, form.getModifier(), form);
                 expandingTable.writeRows(form.session.sql, query, form.session.baseClass, form.getQueryEnv(), SessionTable.nonead);
             } else
-                expandingTable.modifyRecord(form.session.sql, objects, Modify.ADD, form.session.getOwner());
-            expandAllDown(form, expandingTable);
+                expandingTable.modifyRecord(form.session.sql, objects, expand ? Modify.ADD : Modify.DELETE, form.session.getOwner());
+            expandCollapseAllDown(form, expandingTable, expand);
 
-            expandTable.modifyRows(form.session.sql, expandingTable.getQuery(), form.session.baseClass, Modify.LEFT, form.getQueryEnv(), SessionTable.nonead);
+            expandTable.modifyRows(form.session.sql, expandingTable.getQuery(), form.session.baseClass, expand ? Modify.LEFT : Modify.DELETE, form.getQueryEnv(), SessionTable.nonead);
         } finally {
             expandingTable.drop(form.session.sql, form.getQueryEnv().getOpOwner());
         }
@@ -632,20 +632,23 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         updated |= UPDATED_EXPANDS;
     }
 
-    private void expandAllDown(FormInstance form, NoPropertyTableUsage<ObjectInstance> expandingTable) throws SQLException, SQLHandledException {
+    private void expandCollapseAllDown(FormInstance form, NoPropertyTableUsage<ObjectInstance> expandingTable, boolean expand) throws SQLException, SQLHandledException {
         GroupObjectInstance downGroup = treeGroup.getDownTreeGroup(this);
         if (downGroup != null)
-            downGroup.expandAll(form, expandingTable);
+            downGroup.expandCollapseAll(form, expandingTable, expand);
     }
 
-    private void expandAll(FormInstance form, NoPropertyTableUsage<ObjectInstance> expandingTable) throws SQLException, SQLHandledException {
+    private void expandCollapseAll(FormInstance form, NoPropertyTableUsage<ObjectInstance> expandingTable, boolean expand) throws SQLException, SQLHandledException {
         if (expandTable == null)
             expandTable = createKeyTable("expgo");
 
         Query<ObjectInstance, String> query = getAllExpandQuery(expandingTable, form.getModifier(), form);
-        expandTable.writeRows(form.session.sql, query, form.session.baseClass, form.getQueryEnv(), SessionTable.nonead);
+        if (expand)
+            expandTable.writeRows(form.session.sql, query, form.session.baseClass, form.getQueryEnv(), SessionTable.nonead);
+        else
+            expandTable.modifyRows(form.session.sql, query, form.session.baseClass, Modify.DELETE, form.getQueryEnv(), SessionTable.nonead);
 
-        expandAllDown(form, expandTable);
+        expandCollapseAllDown(form, expandTable, expand);
 
         updated |= UPDATED_EXPANDS;
     }

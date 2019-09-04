@@ -33,6 +33,8 @@ public interface ClientMessages extends Messages {
     String formTree();
     String formTreeExpand();
     String formTreeExpandCurrent();
+    String formTreeCollapse();
+    String formTreeCollapseCurrent();
 
     String formQueriesCalculateSum();
     String formQueriesSumResult();

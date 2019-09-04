@@ -416,6 +416,26 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         fireCollapseNode(tree.getNodeByRecord(record));
     }
 
+    public void fireCollapseNodeRecursive(boolean current) {
+        GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
+        if (node != null) {
+            saveVisualState();
+            removeExpandedNodes(current ? node : tree.root);
+            form.collapseGroupObjectRecursive(node.getGroup(), current);
+        }
+    }
+
+    private void removeExpandedNodes(GTreeTableNode node) {
+        expandedNodes.remove(node);
+        for(GTreeTableNode child : node.getChildren()) {
+            removeExpandedNodes(child);
+        }
+    }
+
+    public boolean isCurrentPathExpanded() {
+        return selectedRecord != null && tree.getNodeByRecord(selectedRecord).isOpen();
+    }
+
     private void fireCollapseNode(GTreeTableNode node) {
         if (node != null) {
             saveVisualState();

@@ -36,6 +36,9 @@ public class TreeGroupController extends AbstractTableController {
 
     private final ClientGroupObject lastGroupObject;
 
+    private ExpandTreeButton expandTreeButton = null;
+    private ExpandTreeButton expandTreeCurrentButton = null;
+
     public TreeGroupController(ClientTreeGroup itreeGroup, ClientFormController formController, ClientFormLayout formLayout) throws IOException {
         super(formController, formLayout, itreeGroup.toolbar);
         treeGroup = itreeGroup;
@@ -71,9 +74,11 @@ public class TreeGroupController extends AbstractTableController {
             filter.getView().addActionsToInputMap(tree);
 
             addToToolbar(Box.createHorizontalStrut(5));
-            addToToolbar(new ExpandTreeButton(this, true));
+            expandTreeCurrentButton = new ExpandTreeButton(this, true);
+            addToToolbar(expandTreeCurrentButton);
             addToToolbar(Box.createHorizontalStrut(5));
-            addToToolbar(new ExpandTreeButton(this, false));
+            expandTreeButton = new ExpandTreeButton(this, false);
+            addToToolbar(expandTreeButton);
         }
 
         formLayout.add(treeGroup, view);
@@ -148,6 +153,17 @@ public class TreeGroupController extends AbstractTableController {
         }
 
         panel.update();
+
+        if(expandTreeButton != null) {
+            expandTreeButton.update(this);
+        }
+        if(expandTreeCurrentButton != null) {
+            expandTreeCurrentButton.update(this);
+        }
+    }
+
+    public boolean isCurrentPathExpanded() {
+        return tree.isCurrentPathExpanded();
     }
 
     public ClientGroupObjectValue getCurrentPath() {

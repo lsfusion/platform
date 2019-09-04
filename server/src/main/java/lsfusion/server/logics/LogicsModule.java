@@ -59,6 +59,8 @@ import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseGroupObjectAction;
+import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.FocusAction;
 import lsfusion.server.logics.form.interactive.action.input.InputAction;
 import lsfusion.server.logics.form.interactive.action.input.RequestAction;
@@ -1876,6 +1878,24 @@ public abstract class LogicsModule {
         }
         SeekGroupObjectAction seekProperty = new SeekGroupObjectAction(object, objects, type, objectClasses.toArray(new ValueClass[objectClasses.size()]));
         return addAction(null, new LA<>(seekProperty));
+    }
+
+    protected LA addExpandCollapseAProp(GroupObjectEntity object, List<ObjectEntity> objects, ExpandCollapseType type, boolean expand, Object... params) {
+        return addExpandCollapseAProp(null, LocalizedString.NONAME, object, objects, type, expand, params);
+    }
+
+    protected LA addExpandCollapseAProp(Group group, LocalizedString caption, GroupObjectEntity object, List<ObjectEntity> objects, ExpandCollapseType type, boolean expand, Object... params) {
+        return addJoinAProp(group, caption, addExpandCollapseAProp(object, objects, type, expand), params);
+    }
+
+    @IdentityStrongLazy // для ID
+    public LA addExpandCollapseAProp(GroupObjectEntity object, List<ObjectEntity> objects, ExpandCollapseType type, boolean expand) {
+        List<ValueClass> objectClasses = new ArrayList<>();
+        for (ObjectEntity obj : objects) {
+            objectClasses.add(obj.baseClass);
+        }
+        ExpandCollapseGroupObjectAction expandProperty = new ExpandCollapseGroupObjectAction(object, objects, type, expand, objectClasses.toArray(new ValueClass[objectClasses.size()]));
+        return addAction(null, new LA<>(expandProperty));
     }
 
     public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange) {

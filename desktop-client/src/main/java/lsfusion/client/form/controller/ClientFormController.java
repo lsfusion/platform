@@ -832,7 +832,17 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void collapseGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
+    public void collapseGroupObjectRecursive(ClientGroupObject group, boolean current) {
+        commitOrCancelCurrentEditing();
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("collapseGroupObjectRecursive - " + group.getLogName()) {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.collapseGroupObjectRecursive(requestIndex, lastReceivedRequestIndex, group.getID(), current);
+            }
+        });
+    }
+
+    public void collapseGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) {
         commitOrCancelCurrentEditing();
         rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("collapseGroupObject") {
             @Override
