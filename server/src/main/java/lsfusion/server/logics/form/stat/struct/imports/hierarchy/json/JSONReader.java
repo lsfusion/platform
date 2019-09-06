@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.*;
+import java.net.URL;
 import java.util.Iterator;
 
 public class JSONReader {
@@ -40,6 +41,12 @@ public class JSONReader {
 
     public static void writeObject(Object object, Writer w) {
         ReflectionUtils.invokePrivateMethod(JSONObject.class, null, "writeValue", new Class[]{Writer.class, Object.class, int.class, int.class}, w, object, 0, 0);
+    }
+
+    public static JSONObject read(String url) throws IOException, JSONException {
+        try (InputStream is = new URL(url).openStream()) {
+            return new JSONObject(readAll(new BufferedReader(new InputStreamReader(is))));
+        }
     }
 
     private static String readAll(final Reader rd) throws IOException {

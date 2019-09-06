@@ -374,6 +374,7 @@ NAVIGATOR {
             
             NEW FOLDER system '{navigator.system}' {
                 NEW FOLDER performance '{navigator.performance}';
+                NEW FOLDER notification '{navigator.notification}';    
                 NEW FOLDER scheduler '{navigator.scheduler}';    
                 NEW FOLDER logs '{navigator.logs}';            
             }

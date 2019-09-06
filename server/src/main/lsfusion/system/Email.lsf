@@ -241,7 +241,7 @@ DESIGN mail {
 }
 
 NAVIGATOR {
-    scheduler {
+    notification {
         NEW mail;
     }
 }

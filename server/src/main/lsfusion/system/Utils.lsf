@@ -167,6 +167,7 @@ decodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.Decode
 
 urlEncoded = DATA LOCAL TEXT();
 urlEncode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlEncodeAction' (TEXT, BPSTRING[20]);
+urlEncode (TEXT text) { urlEncode(text, 'UTF-8'); };
 
 // --------------------------------------------- Работа с числами --------------------------------- //
 
