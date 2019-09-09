@@ -104,16 +104,17 @@ synchronizeChatsTelegram(Account a) {
     APPLY;
 }
 
+sendMessageTelegramResult = DATA LOCAL STRING();
 sendMessageTelegram(Chat chat, STRING message) {
     LOCAL result = FILE();
     urlEncode(message);
     EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + urlEncoded() TO result;
     
     LOCAL ok = BOOLEAN();
-    LOCAL description = BOOLEAN();
+    LOCAL description = STRING();
     IMPORT JSON FROM result() TO() ok, description;
     IF NOT ok() THEN {
-        MESSAGE 'SendMessage failed: ' + description();
+        sendMessageTelegramResult() <- description();
     }
 }
 //------------------- telegram -------------------//
@@ -124,26 +125,31 @@ synchronizeChats '{messenger.account.synchronize}' (Account a) {
     }
 }
 
+sendMessageResult = DATA LOCAL STRING();
 sendMessage '{messenger.chat.send.message}' (Chat chat, STRING message) {
     IF isTelegram(account(chat)) THEN {
         sendMessageTelegram(chat, message);
+        sendMessageResult() <- sendMessageTelegramResult();
     }
 }
 
 sendMessage '{messenger.chat.send.message}' (Chat chat) {
     sendMessage(chat, newMessage(chat));
+    IF sendMessageResult() THEN {
+        MESSAGE sendMessageResult();
+    }
     newMessage(chat) <- NULL;
 }
 
 FORM messengers '{messenger.messengers}'
-OBJECTS a = Account
-PROPERTIES(a) name, captionMessenger, login, token, synchronizeChats PANEL, NEW, DELETE
-
-OBJECTS c = Chat
-PROPERTIES(c) READONLY id, captionChatType, username, title
-PROPERTIES(c) PANEL newMessage, sendMessage
-
-FILTERS account(c) == a;
+    OBJECTS a = Account
+    PROPERTIES(a) name, captionMessenger, login, token, synchronizeChats PANEL, NEW, DELETE
+    
+    OBJECTS c = Chat
+    PROPERTIES(c) READONLY id, captionChatType, username, title
+    PROPERTIES(c) PANEL newMessage, sendMessage
+    
+    FILTERS account(c) == a;
 
 DESIGN messengers {                   
     MOVE PROPERTY(newMessage(c)) {
