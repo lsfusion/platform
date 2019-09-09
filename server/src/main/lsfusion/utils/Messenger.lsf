@@ -123,8 +123,7 @@ sendMessageTelegram(Chat chat, STRING message) {
 }
 
 //--------------------- viber --------------------//
-GROUP sender;
-GROUP contact;
+GROUP user;
 
 event = DATA LOCAL STRING();
 user_id = DATA LOCAL STRING();
@@ -133,8 +132,7 @@ name = DATA LOCAL STRING();
 
 FORM webHookViber
 PROPERTIES() event, user_id
-PROPERTIES() IN sender id, name;
-
+PROPERTIES() IN user id, name;
 
 webHookViber(FILE f) {
     fileToString(f,'UTF-8');
