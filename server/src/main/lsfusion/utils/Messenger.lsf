@@ -166,7 +166,7 @@ sendMessageViber(Chat chat, STRING message) {
     LOCAL httpHeaders = STRING(STRING);
     httpHeaders('X-Viber-Auth-Token') <- token(account(chat));
     
-    EXTERNAL HTTP POST 'https://chatapi.viber.com/pa/send_message' HEADERS httpHeaders PARAMS JSONFILE('\{"receiver": "' + id(chat) + '","type": "text","sender": \{"name": "LSFusion"\}\}') TO result;
+    EXTERNAL HTTP POST 'https://chatapi.viber.com/pa/send_message' HEADERS httpHeaders PARAMS JSONFILE('\{"receiver": "' + id(chat) + '","text": "' + message + '","type": "text","sender": \{"name": "LSFusion"\}\}') TO result;
     
     LOCAL status = INTEGER();
     LOCAL status_message = STRING();
