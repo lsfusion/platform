@@ -32,6 +32,8 @@ import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED;
 
@@ -85,22 +87,28 @@ public class ExternalUtils {
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
                 charset == null ? null : charset.toString(), url, query, headerNames, headerValues, cookieNames, cookieValues, logicsHost, logicsPort, logicsExportName);
-        if (uri.endsWith("/exec")) {
+
+        boolean isEvalAction = uri.endsWith("/eval/action");
+        if (uri.endsWith("/eval") || isEvalAction) {
+            Object script = getParameterValue(queryParams, SCRIPT_PARAM);
+            if (script == null && !paramsList.isEmpty()) {
+                int scriptParam = queryActionParams.size();
+                if(paramsList.size() > scriptParam) {
+                    script = paramsList.get(scriptParam);
+                    paramsList = paramsList.remove(scriptParam);
+                    request.params = paramsList.toArray(new Object[paramsList.size()]);
+                }
+            }
+            execResult = remoteExec.eval(isEvalAction, script, request);
+        } else if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
             execResult = remoteExec.exec(action, request);
         } else {
-            boolean isEvalAction = uri.endsWith("/eval/action");
-            if (uri.endsWith("/eval") || isEvalAction) {
-                Object script = getParameterValue(queryParams, SCRIPT_PARAM);
-                if (script == null && !paramsList.isEmpty()) {
-                    int scriptParam = queryActionParams.size();
-                    if(paramsList.size() > scriptParam) {
-                        script = paramsList.get(scriptParam);
-                        paramsList = paramsList.remove(scriptParam);
-                        request.params = paramsList.toArray(new Object[paramsList.size()]);
-                    }
-                }
-                execResult = remoteExec.eval(isEvalAction, script, request);
+            Pattern p = Pattern.compile(".*/exec/(.*)");
+            Matcher m = p.matcher(uri);
+            if(m.matches()) {
+                String action = m.group(1);
+                execResult = remoteExec.exec(action, request);
             }
         }
 
