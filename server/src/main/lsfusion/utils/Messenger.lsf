@@ -3,7 +3,8 @@ MODULE Messenger;
 REQUIRE Utils;
 
 CLASS Messenger {
-    telegram 'Telegram'
+    telegram 'Telegram',
+    viber 'Viber'
 }
 
 CLASS ChatType {
@@ -22,6 +23,9 @@ login '{messenger.login}' = DATA STRING (Account);
 token '{messenger.token}' = DATA STRING (Account) NONULL;
 
 isTelegram(Account a) = messenger(a) == Messenger.telegram;
+isViber(Account a) = messenger(a) == Messenger.viber;
+
+lastViberAccount() = GROUP LAST Account a IF isViber(a);
 
 CLASS Chat '{messenger.chat}';
 TABLE chat (Chat);
@@ -29,7 +33,7 @@ TABLE chat (Chat);
 account = DATA Account (Chat);
 chatType = DATA ChatType (Chat);
 captionChatType '{messenger.chat.type}' (Chat c) = staticCaption(chatType(c)) CHARWIDTH 10;
-id '{messenger.chat.id}' = DATA LONG (Chat);
+id '{messenger.chat.id}' = DATA STRING (Chat) CHARWIDTH 10;
 chatIdAccount = GROUP AGGR Chat c BY account(c), id(c);
 username '{messenger.chat.username}' = DATA STRING (Chat);
 title '{messenger.chat.title}' = DATA STRING (Chat);
@@ -43,11 +47,11 @@ GROUP channelPost EXTID 'channel_post';
 GROUP chatChannel EXTID 'chat' : channelPost;
 
 usernameChat = DATA LOCAL STRING(INTEGER);
-idChat = DATA LOCAL LONG(INTEGER);
+idChat = DATA LOCAL STRING(INTEGER);
 titleChat = DATA LOCAL STRING(INTEGER);
 typeChat = DATA LOCAL STRING(INTEGER);
 updateId = DATA LOCAL STRING(INTEGER);
-idChannel = DATA LOCAL LONG(INTEGER);
+idChannel = DATA LOCAL STRING(INTEGER);
 titleChannel = DATA LOCAL STRING(INTEGER);
 typeChannel = DATA LOCAL STRING(INTEGER);
 usernameChannel = DATA LOCAL STRING(INTEGER);
@@ -71,7 +75,7 @@ synchronizeChatsTelegram(Account a) {
     IF ok() THEN {
         FOR updateId(INTEGER result) DO {
         
-            LOCAL chatId = LONG();
+            LOCAL chatId = STRING();
             chatId() <- CASE WHEN typeChat(result) == 'private' OR typeChat(result) == 'group' THEN idChat(result)
                              WHEN typeChannel(result) == 'channel' THEN idChannel(result);
         
@@ -117,7 +121,46 @@ sendMessageTelegram(Chat chat, STRING message) {
         sendMessageTelegramResult() <- description();
     }
 }
-//------------------- telegram -------------------//
+
+//--------------------- viber --------------------//
+GROUP sender;
+GROUP contact;
+
+receiver = DATA LOCAL STRING();
+name = DATA LOCAL STRING();
+avatar = DATA LOCAL STRING();
+name1 = DATA LOCAL STRING();
+phone_number = DATA LOCAL STRING();
+min_api_version = DATA LOCAL STRING();
+tracking_data = DATA LOCAL STRING();
+type = DATA LOCAL STRING();
+
+FORM webHookViber
+PROPERTIES() receiver, min_api_version, tracking_data, type
+PROPERTIES() IN sender name, avatar
+PROPERTIES() IN contact name1 EXTID 'name', phone_number;
+
+
+webHookViber(FILE f) {
+    fileToString(f,'UTF-8');
+    printToLog(resultString());
+
+    IMPORT webHookViber JSON FROM f;
+    
+    LOCAL chat = Chat();
+    chat() <- chatIdAccount(lastViberAccount(), receiver());
+    IF NOT chat() THEN {
+        NEW chat = Chat {
+            chat() <- chat;
+            account(chat) <- lastViberAccount();
+            id(chat()) <- receiver();
+        }
+    }
+    username(chat()) <-name();
+    chatType(chat()) <- ChatType.private;
+    APPLY;
+} @@noauth;
+//--------------------- viber end --------------------//
 
 synchronizeChats '{messenger.account.synchronize}' (Account a) {
     IF isTelegram(a) THEN {
