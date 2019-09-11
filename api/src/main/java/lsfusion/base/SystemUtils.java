@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.prefs.Preferences;
 
 public class SystemUtils {
@@ -566,10 +567,13 @@ public class SystemUtils {
                         File file = new File(path);
                         if (file.exists()) {
                             JarFile jarFile = new JarFile(file);
-                            String revisionString = jarFile.getManifest().getMainAttributes().getValue("SCM-Version");
-                            Integer revision = BaseUtils.parseInt(revisionString);
-                            if (revision != null && revision > 0) {
-                                return revisionString;
+                            Manifest manifest = jarFile.getManifest();
+                            if (manifest != null) {
+                                String revisionString = manifest.getMainAttributes().getValue("SCM-Version");
+                                Integer revision = BaseUtils.parseInt(revisionString);
+                                if (revision != null && revision > 0) {
+                                    return revisionString;
+                                }
                             }
                         }
                     }
