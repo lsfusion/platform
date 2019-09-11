@@ -1,0 +1,101 @@
+MODULE Telegram;
+
+REQUIRE Messenger;
+
+EXTEND CLASS Messenger { telegram 'Telegram' }
+isTelegram(Account a) = messenger(a) == Messenger.telegram;
+
+GROUP message;
+GROUP chat : message;
+GROUP channelPost EXTID 'channel_post';
+GROUP chatChannel EXTID 'chat' : channelPost;
+usernameChat = DATA LOCAL STRING(INTEGER);
+idChat = DATA LOCAL STRING(INTEGER);
+titleChat = DATA LOCAL STRING(INTEGER);
+typeChat = DATA LOCAL STRING(INTEGER);
+updateId = DATA LOCAL STRING(INTEGER);
+idChannel = DATA LOCAL STRING(INTEGER);
+titleChannel = DATA LOCAL STRING(INTEGER);
+typeChannel = DATA LOCAL STRING(INTEGER);
+usernameChannel = DATA LOCAL STRING(INTEGER);
+
+ok = DATA LOCAL STRING();
+description = DATA LOCAL STRING();
+
+FORM getUpdatesTelegram
+PROPERTIES() ok, description
+
+OBJECTS result = INTEGER
+PROPERTIES(result) updateId EXTID 'update_id'
+
+PROPERTIES(result) IN chat usernameChat EXTID 'username', idChat EXTID 'id', titleChat EXTID 'title', typeChat EXTID 'type'
+PROPERTIES(result) IN chatChannel idChannel EXTID 'id', titleChannel EXTID 'title', typeChannel EXTID 'type', usernameChannel EXTID 'username';
+
+synchronizeChatsTelegram(Account a) {
+    LOCAL result = FILE();
+    READ 'https://api.telegram.org/bot' + token(a) + '/getUpdates' TO result;
+    IMPORT getUpdatesTelegram JSON FROM result();
+    IF ok() THEN {
+        FOR updateId(INTEGER result) DO {
+        
+            LOCAL chatId = STRING();
+            chatId() <- CASE WHEN typeChat(result) == 'private' OR typeChat(result) == 'group' THEN idChat(result)
+                             WHEN typeChannel(result) == 'channel' THEN idChannel(result);
+        
+            LOCAL chat = Chat();
+            chat() <- chatIdAccount(a, chatId());
+            IF NOT chat() THEN {
+                NEW chat = Chat {
+                    chat() <- chat;
+                    account(chat) <- a;
+                    id(chat()) <- chatId();
+                }
+            }
+            IF typeChat(result) == 'private' THEN {
+                username(chat()) <-usernameChat(result);
+                chatType(chat()) <- ChatType.private;
+            } ELSE IF typeChat(result) == 'group' THEN {
+                title(chat()) <-titleChat(result);
+                chatType(chat()) <- ChatType.group;
+            } ELSE IF typeChannel(result) == 'channel' THEN {
+                username(chat()) <-usernameChannel(result);
+                title(chat()) <-titleChannel(result);
+                chatType(chat()) <- ChatType.channel;
+            }
+        }
+    } ELSE {
+        MESSAGE 'Synchronization failed: ' + description();
+    }
+    APPLY;
+}
+
+sendMessageTelegramResult = DATA LOCAL STRING();
+sendMessageTelegram(Chat chat, STRING message) {
+    LOCAL result = FILE();
+    urlEncode(message);
+    EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + urlEncoded() TO result;
+    
+    LOCAL ok = BOOLEAN();
+    LOCAL description = STRING();
+    IMPORT JSON FROM result() TO() ok, description;
+    IF NOT ok() THEN {
+        sendMessageTelegramResult() <- description();
+    }
+}
+
+sendMessage(Chat chat, STRING message) + {
+    IF isTelegram(account(chat)) THEN {
+        sendMessageTelegram(chat, message);
+        sendMessageResult() <- sendMessageTelegramResult();
+    }
+}
+
+synchronizeChats '{messenger.account.synchronize}' (Account a) {
+    IF isTelegram(a) THEN {
+        synchronizeChatsTelegram(a);
+    }
+}
+
+EXTEND FORM messengers
+    PROPERTIES(a) synchronizeChats SHOWIF isTelegram(a) PANEL
+;

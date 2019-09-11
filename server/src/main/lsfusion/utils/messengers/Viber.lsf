@@ -1,0 +1,67 @@
+MODULE Viber;
+
+REQUIRE Messenger;
+
+EXTEND CLASS Messenger { viber 'Viber' }
+isViber(Account a) = messenger(a) == Messenger.viber;
+
+GROUP user;
+event = DATA LOCAL STRING();
+user_id = DATA LOCAL STRING();
+id = DATA LOCAL STRING();
+name = DATA LOCAL STRING();
+
+FORM webHookViber
+PROPERTIES() event, user_id
+PROPERTIES() IN user id, name;
+
+viberAccount(STRING token) = GROUP LAST Account a IF isViber(a) AND token(a) == token;
+webHookViber(FILE f) {
+    fileToString(f,'UTF-8');
+    printToLog(resultString());
+
+    IMPORT webHookViber JSON FROM f;
+    
+    IF event() == 'conversation_started' THEN {
+        LOCAL chat = Chat();
+        chat() <- chatIdAccount(viberAccount(headers('X-Viber-Auth-Token')), id());
+        IF NOT chat() THEN {
+            NEW chat = Chat {
+                chat() <- chat;
+                account(chat) <- viberAccount(headers('X-Viber-Auth-Token'));
+                id(chat()) <- id();
+            }
+        }
+        username(chat()) <-name();
+        chatType(chat()) <- ChatType.private;
+    } ELSE IF event() == 'unsubscribed' THEN {
+        DELETE Chat c WHERE id(c) == user_id();
+    }
+ 
+    APPLY;
+} @@noauth;
+
+sendMessageViberResult = DATA LOCAL STRING();
+sendMessageViber(Chat chat, STRING message) {
+    LOCAL result = FILE();
+    
+    LOCAL httpHeaders = STRING(STRING);
+    httpHeaders('X-Viber-Auth-Token') <- token(account(chat));
+    
+    EXTERNAL HTTP POST 'https://chatapi.viber.com/pa/send_message' HEADERS httpHeaders 
+        PARAMS JSONFILE('\{"receiver": "' + id(chat) + '","text": "' + message + '","type": "text","sender": \{"name": "LSFusion"\}\}') TO result;
+    
+    LOCAL status = INTEGER();
+    LOCAL status_message = STRING();
+    IMPORT JSON FROM result() TO() status, status_message;
+    IF status() != 0 THEN {
+        sendMessageViberResult() <- status_message();
+    }
+}
+
+sendMessage(Chat chat, STRING message) + {
+    IF isViber(account(chat)) THEN {
+        sendMessageViber(chat, message);
+        sendMessageResult() <- sendMessageViberResult();
+    }
+}

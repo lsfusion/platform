@@ -1,0 +1,67 @@
+MODULE Messenger;
+
+REQUIRE Utils;
+
+CLASS Messenger {}
+
+CLASS ChatType {
+    private 'Private',
+    group 'Group',
+    channel 'Channel'
+}
+
+CLASS Account '{messenger.account}';
+TABLE account (Account);
+
+name '{messenger.account.name}' = DATA STRING (Account);
+messenger '{messenger.messenger}' = DATA Messenger (Account);
+captionMessenger '{messenger.messenger}' (Account a) = staticCaption(messenger(a));
+login '{messenger.login}' = DATA STRING (Account);
+token '{messenger.token}' = DATA STRING (Account) NONULL;
+
+CLASS Chat '{messenger.chat}';
+TABLE chat (Chat);
+
+account = DATA Account (Chat);
+chatType = DATA ChatType (Chat);
+captionChatType '{messenger.chat.type}' (Chat c) = staticCaption(chatType(c)) CHARWIDTH 10;
+id '{messenger.chat.id}' = DATA STRING (Chat) CHARWIDTH 10;
+chatIdAccount = GROUP AGGR Chat c BY account(c), id(c);
+username '{messenger.chat.username}' = DATA STRING (Chat);
+title '{messenger.chat.title}' = DATA STRING (Chat);
+newMessage '{messenger.chat.new.message}' = DATA LOCAL TEXT (Chat);
+
+sendMessageResult = DATA LOCAL STRING();
+sendMessage '{messenger.chat.send.message}' ABSTRACT LIST (Chat, STRING);
+
+sendMessage '{messenger.chat.send.message}' (Chat chat) {
+    sendMessage(chat, newMessage(chat));
+    IF sendMessageResult() THEN {
+        MESSAGE sendMessageResult();
+    }
+    newMessage(chat) <- NULL;
+}
+
+FORM messengers '{messenger.messengers}'
+    OBJECTS a = Account
+    PROPERTIES(a) name, captionMessenger, login, token, NEW, DELETE
+    
+    OBJECTS c = Chat
+    PROPERTIES(c) READONLY id, captionChatType, username, title
+    PROPERTIES(c) PANEL newMessage, sendMessage
+    
+    FILTERS account(c) == a;
+
+DESIGN messengers {                   
+    MOVE PROPERTY(newMessage(c)) {
+        panelCaptionAbove = TRUE;
+    }
+    MOVE PROPERTY(sendMessage(c));                              
+    MOVE TOOLBARBOX; 
+}
+
+NAVIGATOR {
+    notification {
+        NEW messengers;
+    }
+}

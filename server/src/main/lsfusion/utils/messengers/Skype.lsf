@@ -1,0 +1,108 @@
+MODULE Skype;
+
+REQUIRE Messenger;
+
+EXTEND CLASS Messenger { skype 'Skype' }
+isSkype(Account a) = messenger(a) == Messenger.skype;
+
+GROUP recipient;
+GROUP from;
+GROUP conversation;
+country = DATA LOCAL STRING(INTEGER);
+timezone = DATA LOCAL STRING(INTEGER);
+locale = DATA LOCAL STRING(INTEGER);
+type = DATA LOCAL STRING(INTEGER);
+platform = DATA LOCAL STRING(INTEGER);
+serviceUrl = DATA LOCAL STRING();
+recipientName = DATA LOCAL STRING();
+recipientId = DATA LOCAL STRING();
+action = DATA LOCAL STRING();
+fromName = DATA LOCAL STRING();
+fromId = DATA LOCAL STRING();
+id2 = DATA LOCAL STRING();
+type1 = DATA LOCAL STRING();
+locale1 = DATA LOCAL STRING();
+channelId = DATA LOCAL STRING();
+conversationId = DATA LOCAL STRING();
+timestamp = DATA LOCAL STRING();
+
+FORM webHookSkype
+PROPERTIES() serviceUrl, action, id2 EXTID 'id', type1 EXTID 'type', locale1 EXTID 'locale', channelId, timestamp
+
+OBJECTS entities = INTEGER
+PROPERTIES(entities) country, timezone, locale, type, platform
+PROPERTIES() IN recipient recipientName EXTID 'name', recipientId EXTID 'id'
+PROPERTIES() IN from fromName EXTID 'name', fromId EXTID 'id'
+PROPERTIES() IN conversation conversationId EXTID 'id';
+
+clientSecretSkype 'Client Secret' = DATA STRING (Account);
+baseUrlSkype = DATA STRING (Chat);
+skypeAccount(STRING token) = GROUP LAST Account a IF isSkype(a) AND token(a) == token;
+webHookSkype(FILE f) {
+    fileToString(f,'UTF-8');
+    printToLog(resultString());
+
+    IMPORT webHookSkype JSON FROM f;
+    
+    IF action() == 'add' THEN {
+        LOCAL chat = Chat();
+        chat() <- chatIdAccount(skypeAccount(recipientId()), conversationId());
+        IF NOT chat() THEN {
+            NEW chat = Chat {
+                chat() <- chat;
+                account(chat) <- skypeAccount(recipientId());
+                id(chat()) <- conversationId();
+            }
+        }
+        username(chat()) <-fromName();
+        baseUrlSkype(chat()) <- serviceUrl();
+        chatType(chat()) <- ChatType.private;
+    } ELSE IF action() == 'remove' THEN {
+        DELETE Chat c WHERE id(c) == conversationId();
+    }
+ 
+    APPLY;
+} @@noauth;
+
+
+accessTokenSkype = DATA STRING(Account);
+accessTokenDateSkype = DATA DATETIME(Account);
+getAccessTokenSkype(Account a) {
+    NEWSESSION {
+        LOCAL result = FILE();
+        EXTERNAL HTTP POST 'https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token' 
+            PARAMS JSONFILE('\{"grant_type": "client_credentials", "skope": "https://api.botframework.com/.default", "client_id":"' + token(a) + '", "client_secret":"' + clientSecretSkype(a) + '"') TO result;
+    
+        LOCAL access_token = STRING();
+        IMPORT JSON FROM result() TO() access_token;
+        accessTokenSkype(a) <- access_token();
+        APPLY;
+    }
+}
+
+sendMessageSkypeResult = DATA LOCAL STRING();
+sendMessageSkype(Chat chat, STRING message) {
+
+    IF NOT accessTokenSkype(account(chat)) OR secondsBetweenDates(currentDateTime(), accessTokenDateSkype(account(chat))) > 3600 THEN {
+        getAccessTokenSkype(account(chat));
+    }
+
+    LOCAL result = FILE();
+    
+    LOCAL httpHeaders = STRING(STRING);
+    httpHeaders('Authorization') <- 'bearer ' + accessTokenSkype(account(chat));
+    
+    EXTERNAL HTTP POST baseUrlSkype(chat) + '/v3/conversations/' + id(chat) + '/activities/' HEADERS httpHeaders 
+        PARAMS JSONFILE('\{"type": "message","conversation": \{ "id": "' + id(chat) + '", \}, "recipient": \{ "id": "' + id(chat) + '", "name": "' + username(chat) + '"\},"text": "' + message + '"\}') TO result;
+}
+
+sendMessage(Chat chat, STRING message) + {
+    IF isSkype(account(chat)) THEN {
+        sendMessageSkype(chat, message);
+        sendMessageResult() <- sendMessageSkypeResult();
+    }
+}
+
+EXTEND FORM messengers
+    PROPERTIES(a) clientSecretSkype SHOWIF isSkype(a)
+;
