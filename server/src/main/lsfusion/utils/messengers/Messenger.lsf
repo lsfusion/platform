@@ -18,6 +18,8 @@ messenger '{messenger.messenger}' = DATA Messenger (Account);
 captionMessenger '{messenger.messenger}' (Account a) = staticCaption(messenger(a));
 login '{messenger.login}' = DATA STRING (Account);
 token '{messenger.token}' = DATA STRING (Account) NONULL;
+webHookUrl 'WebHook URL' = DATA STRING (Account); //Viber, Skype
+accountWebHookUrl(Messenger m, STRING webHookUrl) = GROUP LAST Account a IF messenger(a) == m AND webHookUrl(a) == webHookUrl;
 
 CLASS Chat '{messenger.chat}';
 TABLE chat (Chat);

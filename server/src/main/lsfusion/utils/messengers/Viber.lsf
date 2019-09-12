@@ -15,22 +15,20 @@ FORM webHookViber
 PROPERTIES() event, user_id
 PROPERTIES() IN user id, name;
 
-viberAccount(STRING token) = GROUP LAST Account a IF isViber(a) AND token(a) == token;
 webHookViber(FILE f) {
     fileToString(f,'UTF-8');
     printToLog(resultString());
-    printToLog(CONCAT 'headers ', headers('X-Viber-Auth-Token'));
-    printToLog(CONCAT 'headersTo ', headersTo('X-Viber-Auth-Token'));
+    printToLog(CONCAT '', 'url ', url());
 
     IMPORT webHookViber JSON FROM f;
     
     IF event() == 'conversation_started' THEN {
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(viberAccount(headersTo('X-Viber-Auth-Token')), id());
+        chat() <- chatIdAccount(accountWebHookUrl(Messenger.viber, url()), id());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
-                account(chat) <- viberAccount(headersTo('X-Viber-Auth-Token'));
+                account(chat) <- accountWebHookUrl(Messenger.viber, url());
                 id(chat()) <- id();
             }
         }
