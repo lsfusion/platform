@@ -1436,9 +1436,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LPWithParams result = null;
         
-        if(mainProp != null)
+        if(mainProp != null) {
             result = addScriptedJProp(user, mainProp, paramProps);
-        else {
+        } else {
             findLAByPropertyUsage(pUsage, paramProps, params, true);
         }                
 
@@ -1454,6 +1454,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                     formUsage = new FormPropertyUsage(pUsage, paramNames);
                 }
                 la = new LPTrivialLA(formUsage);
+            } else if (result == null ) {
+                errLog.emitPropertyNotFoundError(parser, pUsage.getSourceName());
             }
         }
         
