@@ -227,22 +227,18 @@ public class ExternalUtils {
         HttpEntity entity;
         int paramCount = results.length;
         if (paramCount > 1) {
-            if(bodyUrl != null) {
-                entity = new StringEntity(bodyUrl, APPLICATION_FORM_URLENCODED);
-            } else {
-                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-                builder.setContentType(ExternalUtils.MULTIPART_MIXED);
-                for (int i = 0; i < paramCount; i++) {
-                    Object value = results[i];
-                    if (value instanceof FileData) {
-                        String extension = ((FileData) value).getExtension();
-                        builder.addPart("param" + i, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), "filename"));
-                    } else {
-                        builder.addPart("param" + i, new StringBody((String) value, ExternalUtils.TEXT_PLAIN));
-                    }
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.setContentType(ExternalUtils.MULTIPART_MIXED);
+            for (int i = 0; i < paramCount; i++) {
+                Object value = results[i];
+                if (value instanceof FileData) {
+                    String extension = ((FileData) value).getExtension();
+                    builder.addPart("param" + i, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), "filename"));
+                } else {
+                    builder.addPart("param" + i, new StringBody((String) value, ExternalUtils.TEXT_PLAIN));
                 }
-                entity = builder.build();
             }
+            entity = builder.build();
         } else if(paramCount == 1) {
             Object value = BaseUtils.single(results);
             if (value instanceof FileData) {
@@ -254,7 +250,11 @@ public class ExternalUtils {
                 entity = new StringEntity((String) value, ExternalUtils.TEXT_PLAIN);
             }
         } else {
-            entity = new StringEntity("", ExternalUtils.TEXT_PLAIN);
+            if (bodyUrl != null) {
+                entity = new StringEntity(bodyUrl, APPLICATION_FORM_URLENCODED);
+            } else {
+                entity = new StringEntity("", ExternalUtils.TEXT_PLAIN);
+            }
         }
         return entity;
     }
