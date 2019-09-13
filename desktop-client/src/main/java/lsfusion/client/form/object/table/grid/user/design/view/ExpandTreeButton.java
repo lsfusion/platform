@@ -1,6 +1,7 @@
 package lsfusion.client.form.object.table.grid.user.design.view;
 
 import lsfusion.client.form.filter.user.FilterView;
+import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 
@@ -22,10 +23,13 @@ public class ExpandTreeButton extends ToolbarGridButton {
         this.current = current;
         update(treeGroupController);
         addActionListener(e -> {
-            if (expand) {
-                treeGroupController.getFormController().expandGroupObjectRecursive(treeGroupController.getCurrentGroupObject(), current);
-            } else {
-                treeGroupController.getFormController().collapseGroupObjectRecursive(treeGroupController.getCurrentGroupObject(), current);
+            ClientGroupObject currentGroupObject = treeGroupController.getCurrentGroupObject();
+            if(currentGroupObject != null) {
+                if (expand) {
+                    treeGroupController.getFormController().expandGroupObjectRecursive(currentGroupObject, current);
+                } else {
+                    treeGroupController.getFormController().collapseGroupObjectRecursive(currentGroupObject, current);
+                }
             }
         });
     }
