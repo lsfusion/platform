@@ -252,7 +252,7 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public String getAdjustSelectivityPredicate() {
-        return "current_timestamp<>current_timestamp";
+        return "localtimestamp<>localtimestamp";
     }
 
     @Override
