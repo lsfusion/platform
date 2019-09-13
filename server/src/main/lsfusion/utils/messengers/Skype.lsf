@@ -71,11 +71,12 @@ getAccessTokenSkype(Account a) {
     NEWSESSION {
         LOCAL result = FILE();
         EXTERNAL HTTP POST 'https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token' 
-            PARAMS JSONFILE('\{"grant_type": "client_credentials", "skope": "https://api.botframework.com/.default", "client_id":"' + token(a) + '", "client_secret":"' + clientSecretSkype(a) + '"') TO result;
-    
+            BODYURL 'grant_type=client_credentials&scope=$1&client_id=$2&client_secret=$3' PARAMS 'https://api.botframework.com/.default', token(a), clientSecretSkype(a) TO result;
+            
         LOCAL access_token = STRING();
         IMPORT JSON FROM result() TO() access_token;
         accessTokenSkype(a) <- access_token();
+        accessTokenDateSkype(a) <- currentDateTime();
         APPLY;
     }
 }
@@ -90,10 +91,10 @@ sendMessageSkype(Chat chat, STRING message) {
     LOCAL result = FILE();
     
     LOCAL httpHeaders = STRING(STRING);
-    httpHeaders('Authorization') <- 'bearer ' + accessTokenSkype(account(chat));
+    httpHeaders('Authorization') <- 'Bearer ' + accessTokenSkype(account(chat));
     
-    EXTERNAL HTTP POST baseUrlSkype(chat) + '/v3/conversations/' + id(chat) + '/activities/' HEADERS httpHeaders 
-        PARAMS JSONFILE('\{"type": "message","conversation": \{ "id": "' + id(chat) + '", \}, "recipient": \{ "id": "' + id(chat) + '", "name": "' + username(chat) + '"\},"text": "' + message + '"\}') TO result;
+    EXTERNAL HTTP POST baseUrlSkype(chat) + 'v3/conversations/' + id(chat) + '/activities/' HEADERS httpHeaders 
+        PARAMS JSONFILE('\{"type": "message","text": "' + message + '"\}') TO result;
 }
 
 sendMessage(Chat chat, STRING message) + {
