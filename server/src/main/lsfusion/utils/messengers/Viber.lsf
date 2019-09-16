@@ -43,7 +43,6 @@ PROPERTIES() IN user id, name;
 webHookViber(FILE f) {
     fileToString(f,'UTF-8');
     printToLog(resultString());
-    printToLog(CONCAT '', 'query ', query());
 
     IMPORT webHookViber JSON FROM f;
     

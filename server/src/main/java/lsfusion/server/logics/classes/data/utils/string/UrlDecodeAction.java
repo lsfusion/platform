@@ -28,7 +28,7 @@ public class UrlDecodeAction extends InternalAction {
             String string = (String) context.getKeyValue(stringInterface).getValue();
             String encoding = (String) context.getKeyValue(encodingInterface).getValue();
             String encoded = URLDecoder.decode(string, encoding);
-            findProperty("urlEncoded[]").change(encoded, context);
+            findProperty("urlDecoded[]").change(encoded, context);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

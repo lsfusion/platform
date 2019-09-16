@@ -42,7 +42,6 @@ baseUrlSkype = DATA STRING (Chat);
 webHookSkype(FILE f) {
     fileToString(f,'UTF-8');
     printToLog(resultString());
-    printToLog(CONCAT '', 'query ', query());
 
     IMPORT webHookSkype JSON FROM f;
     
