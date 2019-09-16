@@ -71,6 +71,7 @@ synchronizeChatsTelegram '{messenger.account.synchronize}' (Account a) {
 
 sendMessageTelegramResult = DATA LOCAL STRING();
 sendMessageTelegram(Chat chat, STRING message) {
+    sendMessageTelegramResult() <- NULL;
     LOCAL result = FILE();
     urlEncode(message);
     EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + urlEncoded() TO result;

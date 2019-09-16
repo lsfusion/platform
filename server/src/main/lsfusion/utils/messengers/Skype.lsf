@@ -7,34 +7,16 @@ REQUIRE Messenger;
 EXTEND CLASS Messenger { skype 'Skype' }
 isSkype(Account a) = messenger(a) == Messenger.skype;
 
-GROUP recipient;
 GROUP from;
 GROUP conversation;
-country = DATA LOCAL STRING(INTEGER);
-timezone = DATA LOCAL STRING(INTEGER);
-locale = DATA LOCAL STRING(INTEGER);
-type = DATA LOCAL STRING(INTEGER);
-platform = DATA LOCAL STRING(INTEGER);
 serviceUrl = DATA LOCAL STRING();
-recipientName = DATA LOCAL STRING();
-recipientId = DATA LOCAL STRING();
 action = DATA LOCAL STRING();
 fromName = DATA LOCAL STRING();
-fromId = DATA LOCAL STRING();
-id2 = DATA LOCAL STRING();
-type1 = DATA LOCAL STRING();
-locale1 = DATA LOCAL STRING();
-channelId = DATA LOCAL STRING();
 conversationId = DATA LOCAL STRING();
-timestamp = DATA LOCAL STRING();
 
 FORM webHookSkype
-PROPERTIES() serviceUrl, action, id2 EXTID 'id', type1 EXTID 'type', locale1 EXTID 'locale', channelId, timestamp
-
-OBJECTS entities = INTEGER
-PROPERTIES(entities) country, timezone, locale, type, platform
-PROPERTIES() IN recipient recipientName EXTID 'name', recipientId EXTID 'id'
-PROPERTIES() IN from fromName EXTID 'name', fromId EXTID 'id'
+PROPERTIES() serviceUrl, action
+PROPERTIES() IN from fromName EXTID 'name'
 PROPERTIES() IN conversation conversationId EXTID 'id';
 
 clientSecretSkype 'Client Secret' = DATA STRING (Account);
@@ -85,6 +67,7 @@ getAccessTokenSkype(Account a) {
 
 sendMessageSkypeResult = DATA LOCAL STRING();
 sendMessageSkype(Chat chat, STRING message) {
+    sendMessageSkypeResult() <- NULL;
 
     IF NOT accessTokenSkype(account(chat)) OR secondsBetweenDates(currentDateTime(), accessTokenDateSkype(account(chat))) > 3600 THEN {
         getAccessTokenSkype(account(chat));

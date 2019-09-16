@@ -1,0 +1,36 @@
+MODULE Slack;
+
+REQUIRE Messenger;
+
+//webHookUrl = host/webHookSlack?botid=name(account)
+
+EXTEND CLASS Messenger { slack 'Slack' }
+isSlack(Account a) = messenger(a) == Messenger.slack;
+
+webHookSlack(FILE f) {
+    fileToString(f,'UTF-8');
+    printToLog(resultString());
+
+    LOCAL type = STRING();
+    LOCAL challenge = STRING();
+    IMPORT JSON FROM f TO() type, challenge;
+    
+    urlDecode(params('botid'));
+    IF type() == 'url_verification' THEN {
+        exportJsonFile() <- JSONFILE ('\{"challenge":"' + challenge() + '"\}');
+    }
+ 
+    APPLY;
+} @@noauth;
+
+sendMessageSlackResult = DATA LOCAL STRING();
+sendMessageSlack(Chat chat, STRING message) {
+    sendMessageSlackResult() <- NULL;
+}
+
+sendMessage(Chat chat, STRING message) + {
+    IF isSlack(account(chat)) THEN {
+        sendMessageSlack(chat, message);
+        sendMessageResult() <- sendMessageSlackResult();
+    }
+}

@@ -68,6 +68,7 @@ webHookViber(FILE f) {
 
 sendMessageViberResult = DATA LOCAL STRING();
 sendMessageViber(Chat chat, STRING message) {
+    sendMessageViberResult() <- NULL;
     LOCAL result = FILE();
     
     LOCAL httpHeaders = STRING(STRING);
