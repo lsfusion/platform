@@ -265,7 +265,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     }
 
     public String getDateTimeMillis() {
-        return "DATE_TRUNC('milliseconds', CURRENT_TIMESTAMP)";
+        return "DATE_TRUNC('milliseconds', LOCALTIMESTAMP)";
     }
     
     public String getDateTime() {
