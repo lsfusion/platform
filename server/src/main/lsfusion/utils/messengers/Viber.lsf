@@ -47,20 +47,21 @@ webHookViber(FILE f) {
 
     IMPORT webHookViber JSON FROM f;
     
+    urlDecode(params('botid'));
     IF event() == 'conversation_started' THEN {
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(account(params('botid')), id());
+        chat() <- chatIdAccount(account(urlDecoded()), id());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
-                account(chat) <- account(params('botid'));
+                account(chat) <- account(urlDecoded());
                 id(chat()) <- id();
             }
         }
         username(chat()) <-name();
         chatType(chat()) <- ChatType.private;
     } ELSE IF event() == 'unsubscribed' THEN {
-        DELETE Chat c WHERE id(c) == user_id();
+        DELETE Chat c WHERE id(c) == user_id() AND account(c) == account(urlDecoded());
     }
  
     APPLY;

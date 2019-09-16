@@ -46,13 +46,14 @@ webHookSkype(FILE f) {
 
     IMPORT webHookSkype JSON FROM f;
     
+    urlDecode(params('botid'));
     IF action() == 'add' THEN {
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(account(params('botid')), conversationId());
+        chat() <- chatIdAccount(account(urlDecoded()), conversationId());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
-                account(chat) <- account(params('botid'));
+                account(chat) <- account(urlDecoded());
                 id(chat()) <- conversationId();
             }
         }
@@ -60,7 +61,7 @@ webHookSkype(FILE f) {
         baseUrlSkype(chat()) <- serviceUrl();
         chatType(chat()) <- ChatType.private;
     } ELSE IF action() == 'remove' THEN {
-        DELETE Chat c WHERE id(c) == conversationId();
+        DELETE Chat c WHERE id(c) == conversationId() AND account(c) == account(urlDecoded());
     }
  
     APPLY;

@@ -169,6 +169,10 @@ urlEncoded = DATA LOCAL TEXT();
 urlEncode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlEncodeAction' (TEXT, BPSTRING[20]);
 urlEncode (TEXT text) { urlEncode(text, 'UTF-8'); };
 
+urlDecoded = DATA LOCAL TEXT();
+urlDecode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlDecodeAction' (TEXT, BPSTRING[20]);
+urlDecode (TEXT text) { urlDecode(text, 'UTF-8'); };
+
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';
