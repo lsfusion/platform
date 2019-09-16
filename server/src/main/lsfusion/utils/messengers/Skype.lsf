@@ -2,6 +2,8 @@ MODULE Skype;
 
 REQUIRE Messenger;
 
+//webHookUrl = host/webHookSkype?botid=name(account)
+
 EXTEND CLASS Messenger { skype 'Skype' }
 isSkype(Account a) = messenger(a) == Messenger.skype;
 
@@ -40,17 +42,17 @@ baseUrlSkype = DATA STRING (Chat);
 webHookSkype(FILE f) {
     fileToString(f,'UTF-8');
     printToLog(resultString());
-    printToLog(CONCAT '', 'url ', url());
+    printToLog(CONCAT '', 'query ', query());
 
     IMPORT webHookSkype JSON FROM f;
     
     IF action() == 'add' THEN {
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(accountWebHookUrl(Messenger.skype, url()), conversationId());
+        chat() <- chatIdAccount(account(params('botid')), conversationId());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
-                account(chat) <- accountWebHookUrl(Messenger.skype, url());
+                account(chat) <- account(params('botid'));
                 id(chat()) <- conversationId();
             }
         }
@@ -105,5 +107,5 @@ sendMessage(Chat chat, STRING message) + {
 }
 
 EXTEND FORM messengers
-    PROPERTIES(a) clientSecretSkype SHOWIF isSkype(a)
+    PROPERTIES(a) clientSecretSkype PANEL SHOWIF isSkype(a)
 ;

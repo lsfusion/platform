@@ -160,6 +160,17 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
         if (request.query != null) {
             businessLogics.LM.query.change(request.query, session);
+
+            List<String> paramNames = new ArrayList<>();
+            List<String> paramValues = new ArrayList<>();
+            for(String param : request.query.split("[&?]")) {
+                String[] splittedParam = param.split("=");
+                if (splittedParam.length == 2) {
+                    paramNames.add(splittedParam[0]);
+                    paramValues.add(splittedParam[1]);
+                }
+            }
+            ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.params, paramNames.toArray(new String[0]), paramValues.toArray(new String[0]));
         }
         if (request.host != null) {
             businessLogics.LM.host.change(request.host, session);

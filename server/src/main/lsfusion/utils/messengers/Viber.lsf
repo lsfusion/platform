@@ -1,9 +1,34 @@
 MODULE Viber;
 
-REQUIRE Messenger;
+REQUIRE Messenger, Reflection;
 
 EXTEND CLASS Messenger { viber 'Viber' }
 isViber(Account a) = messenger(a) == Messenger.viber;
+
+setWebHookViberResult = DATA LOCAL STRING();
+setWebHookViber(Account account) {
+    LOCAL result = FILE();
+    
+    LOCAL httpHeaders = STRING(STRING);
+    httpHeaders('X-Viber-Auth-Token') <- token(account);
+    
+    urlEncode(name(account));
+    EXTERNAL HTTP POST 'https://chatapi.viber.com/pa/set_webhook' HEADERS httpHeaders 
+        PARAMS JSONFILE('\{ "url":"' + webServerUrl() + '/exec/webHookViber?botid=' + urlEncoded() + '", "event_types":["unsubscribed","conversation_started"], "send_name": true, "send_photo": false\}') TO result;
+    
+    LOCAL status = INTEGER();
+    LOCAL status_message = STRING();
+    IMPORT JSON FROM result() TO() status, status_message;
+    IF status() != 0 THEN {
+        setWebHookViberResult() <- status_message();
+    }
+}
+WHEN CHANGED (name(Account a)) AND isViber(a) DO {
+    setWebHookViber(a);
+    IF setWebHookViberResult() THEN {
+        MESSAGE setWebHookViberResult();
+    }
+}
 
 GROUP user;
 event = DATA LOCAL STRING();
@@ -18,17 +43,17 @@ PROPERTIES() IN user id, name;
 webHookViber(FILE f) {
     fileToString(f,'UTF-8');
     printToLog(resultString());
-    printToLog(CONCAT '', 'url ', url());
+    printToLog(CONCAT '', 'query ', query());
 
     IMPORT webHookViber JSON FROM f;
     
     IF event() == 'conversation_started' THEN {
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(accountWebHookUrl(Messenger.viber, url()), id());
+        chat() <- chatIdAccount(account(params('botid')), id());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
-                account(chat) <- accountWebHookUrl(Messenger.viber, url());
+                account(chat) <- account(params('botid'));
                 id(chat()) <- id();
             }
         }

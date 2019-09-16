@@ -14,11 +14,10 @@ CLASS Account '{messenger.account}';
 TABLE account (Account);
 
 name '{messenger.account.name}' = DATA STRING (Account);
+account(STRING name) = GROUP AGGR Account a BY name(a);
 messenger '{messenger.messenger}' = DATA Messenger (Account);
 captionMessenger '{messenger.messenger}' (Account a) = staticCaption(messenger(a));
 token '{messenger.token}' = DATA STRING (Account) NONULL;
-webHookUrl 'WebHook URL' = DATA STRING (Account); //Viber, Skype
-accountWebHookUrl(Messenger m, STRING webHookUrl) = GROUP LAST Account a IF messenger(a) == m AND webHookUrl(a) == webHookUrl;
 
 CLASS Chat '{messenger.chat}';
 TABLE chat (Chat);
@@ -45,7 +44,7 @@ sendMessage '{messenger.chat.send.message}' (Chat chat) {
 
 FORM messengers '{messenger.messengers}'
     OBJECTS a = Account
-    PROPERTIES(a) name, captionMessenger, token, webHookUrl, NEW, DELETE
+    PROPERTIES(a) name, captionMessenger, token, NEW, DELETE
     
     OBJECTS c = Chat
     PROPERTIES(c) READONLY id, captionChatType, username, title
