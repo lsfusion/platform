@@ -261,7 +261,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     }
 
     public String getEpoch() {
-        return "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)";
+        return "EXTRACT(EPOCH FROM LOCALTIMESTAMP)";
     }
 
     public String getDateTimeMillis() {
@@ -269,7 +269,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     }
     
     public String getDateTime() {
-        return "DATE_TRUNC('second', CURRENT_TIMESTAMP)";
+        return "DATE_TRUNC('second', LOCALTIMESTAMP)";
     }
 
     public String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env) {
