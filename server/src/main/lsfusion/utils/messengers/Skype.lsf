@@ -80,6 +80,10 @@ sendMessageSkype(Chat chat, STRING message) {
     
     EXTERNAL HTTP POST baseUrlSkype(chat) + 'v3/conversations/' + id(chat) + '/activities/' HEADERS httpHeaders 
         PARAMS JSONFILE('\{"type": "message","text": "' + message + '"\}') TO result;
+        
+    LOCAL message = STRING();
+    IMPORT JSON FROM result() TO() message;
+    sendMessageSkypeResult() <- message();     
 }
 
 sendMessage(Chat chat, STRING message) + {
