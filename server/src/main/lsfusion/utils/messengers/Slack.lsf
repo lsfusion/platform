@@ -19,8 +19,6 @@ webHookSlack(FILE f) {
     IF type() == 'url_verification' THEN {
         exportJsonFile() <- JSONFILE ('\{"challenge":"' + challenge() + '"\}');
     }
- 
-    APPLY;
 } @@noauth;
 
 sendMessageSlackResult = DATA LOCAL STRING();
