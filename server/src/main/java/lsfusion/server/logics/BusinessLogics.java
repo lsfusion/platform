@@ -45,6 +45,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.ApplyFilter;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.Correlation;
@@ -793,6 +794,17 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     public ImList<Group> getChildGroups() {
         return LM.getRootGroup().getChildGroups();
+    }
+
+    //for debug
+    public void outPropertyList() {
+        for(ActionOrProperty actionOrProperty : getPropertyList()) {
+            if(actionOrProperty instanceof Action) {
+                if(actionOrProperty.getDebugInfo() != null) {
+                    serviceLogger.info(actionOrProperty.getSID() + ": " + actionOrProperty.getDebugInfo() + ", hasCancel: " + ((Action) actionOrProperty).hasFlow(ChangeFlowType.CANCEL));
+                }
+            }
+        }
     }
 
     public ImOrderSet<ActionOrProperty> getPropertyList() {
