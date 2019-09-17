@@ -3,6 +3,7 @@ MODULE Slack;
 REQUIRE Messenger;
 
 //webHookUrl = host/webHookSlack
+//token starts from 'xoxp'
 
 EXTEND CLASS Messenger { slack 'Slack' }
 isSlack(Account a) = messenger(a) == Messenger.slack;
@@ -18,11 +19,12 @@ challenge = DATA LOCAL STRING();
 eventType = DATA LOCAL STRING();
 user = DATA LOCAL STRING();
 channel = DATA LOCAL STRING();
+channel_type = DATA LOCAL STRING();
 id = DATA LOCAL STRING();
 
 FORM webHookSlack
 PROPERTIES() api_app_id, type, challenge
-PROPERTIES() IN event eventType EXTID 'type', user, channel
+PROPERTIES() IN event eventType EXTID 'type', user, channel, channel_type
 PROPERTIES() IN channel id;
 
 webHookSlack(FILE f) {
@@ -31,7 +33,6 @@ webHookSlack(FILE f) {
 
     IMPORT webHookSlack JSON FROM f;
     
-    urlDecode(params('botid'));
     IF type() == 'url_verification' THEN {
         exportJsonFile() <- JSONFILE ('\{"challenge":"' + challenge() + '"\}');
     } ELSE IF type() == 'event_callback' THEN {
@@ -50,7 +51,8 @@ webHookSlack(FILE f) {
                 }
             }
             username(chat()) <-user();
-            chatType(chat()) <- ChatType.private;
+            chatType(chat()) <- IF eventType() == 'message' AND channel_type() == 'channel' THEN ChatType.channel ELSE ChatType.private;
+            APPLY;
         }
         
     }
@@ -65,8 +67,8 @@ sendMessageSlack(Chat chat, STRING message) {
     LOCAL httpHeaders = STRING(STRING);
     httpHeaders('Authorization') <- 'Bearer ' + token(account(chat));
     
-    EXTERNAL HTTP POST 'https://slack.com/api/chat.postMessage'
-            PARAMS JSONFILE('\{"channel": "' + id(chat) + '","text": "' + message + '"\}') TO result;
+    EXTERNAL HTTP POST 'https://slack.com/api/chat.postMessage' HEADERS httpHeaders
+            PARAMS JSONFILE('\{"channel": "' + id(chat) + '","text": "' + message + '"\}')TO result;
             
     LOCAL ok = BOOLEAN();
     LOCAL error = STRING();
