@@ -17,6 +17,7 @@ error = DATA LOCAL STRING();
 //usersList fields
 userId = DATA LOCAL STRING(INTEGER);
 userName = DATA LOCAL STRING(INTEGER);
+realName = DATA LOCAL STRING(INTEGER);
 
 //conversationsList fields
 GROUP purpose;
@@ -31,7 +32,7 @@ channelName = DATA LOCAL STRING(INTEGER);
 FORM usersList
     PROPERTIES() ok, error
     OBJECTS members = INTEGER
-    PROPERTIES(members) userId EXTID 'id', userName EXTID 'name';
+    PROPERTIES(members) userId EXTID 'id', userName EXTID 'name', realName EXTID 'real_name';
 
 FORM conversationsList
     PROPERTIES() ok, error
@@ -47,11 +48,13 @@ synchronizeChatsSlack '{messenger.account.synchronize}' (Account a) {
     
     //get user names
     LOCAL usernames = STRING(STRING);
+    LOCAL realnames = STRING(STRING);
     EXTERNAL HTTP POST 'https://slack.com/api/users.list' HEADERS httpHeaders TO result;
     IMPORT usersList JSON FROM result();
     IF ok() THEN {
         FOR userId(INTEGER user) DO {
             usernames(userId(user)) <- userName(user);
+            realnames(userId(user)) <- realName(user);
         }
    
         LOCAL synchronized = BOOLEAN (Chat);
@@ -74,6 +77,7 @@ synchronizeChatsSlack '{messenger.account.synchronize}' (Account a) {
                IF is_im(channel) THEN {
                    chatType(chat()) <- ChatType.private;
                    username(chat()) <- '@' + usernames(user(channel));
+                   title(chat()) <- realnames(user(channel));
                } ELSE IF is_channel(channel) THEN {
                    chatType(chat()) <- ChatType.channel;
                    username(chat()) <- '#' + channelName(channel);
@@ -123,5 +127,5 @@ sendMessage(Chat chat, STRING message) + {
 }
 
 EXTEND FORM messengers
-    PROPERTIES(a) PANEL SHOWIF isSlack(a) synchronizeChatsSlack
+    PROPERTIES(a) TOOLBAR SHOWIF isSlack(a) synchronizeChatsSlack BEFORE newAccount
 ;

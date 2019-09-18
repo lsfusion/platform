@@ -90,5 +90,5 @@ sendMessage(Chat chat, STRING message) + {
 }
 
 EXTEND FORM messengers
-    PROPERTIES(a) synchronizeChatsTelegram PANEL SHOWIF isTelegram(a)
+    PROPERTIES(a) TOOLBAR SHOWIF isTelegram(a) synchronizeChatsTelegram BEFORE newAccount
 ;

@@ -44,7 +44,7 @@ sendMessage '{messenger.chat.send.message}' (Chat chat) {
 
 FORM messengers '{messenger.messengers}'
     OBJECTS a = Account
-    PROPERTIES(a) name, captionMessenger, token, NEW, DELETE
+    PROPERTIES(a) name, captionMessenger, token, newAccount = NEW, DELETE
     
     OBJECTS c = Chat
     PROPERTIES(c) READONLY id, captionChatType, username, title

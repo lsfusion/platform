@@ -41,9 +41,6 @@ FORM webHookViber
     PROPERTIES() IN user id, name;
 
 webHookViber(FILE f) {
-    fileToString(f,'UTF-8');
-    printToLog(resultString());
-
     IMPORT webHookViber JSON FROM f;
     
     urlDecode(params('botid'));
