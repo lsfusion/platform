@@ -2,61 +2,98 @@ MODULE Slack;
 
 REQUIRE Messenger;
 
-//webHookUrl = host/webHookSlack
 //token starts from 'xoxp'
 
 EXTEND CLASS Messenger { slack 'Slack' }
 isSlack(Account a) = messenger(a) == Messenger.slack;
 
-appId 'App Id' = DATA STRING (Account);
-slackAccountAppId(STRING appId) = GROUP LAST Account a IF appId(a) == appId AND isSlack(a);
-
-GROUP event;
-GROUP channel : event;
-api_app_id = DATA LOCAL STRING();
 type = DATA LOCAL STRING();
 challenge = DATA LOCAL STRING();
-eventType = DATA LOCAL STRING();
-user = DATA LOCAL STRING();
-channel = DATA LOCAL STRING();
-channel_type = DATA LOCAL STRING();
-id = DATA LOCAL STRING();
 
-FORM webHookSlack
-PROPERTIES() api_app_id, type, challenge
-PROPERTIES() IN event eventType EXTID 'type', user, channel, channel_type
-PROPERTIES() IN channel id;
+//general fields
+ok = DATA LOCAL BOOLEAN();
+error = DATA LOCAL STRING();
 
-webHookSlack(FILE f) {
-    fileToString(f,'UTF-8');
-    printToLog(resultString());
+//usersList fields
+userId = DATA LOCAL STRING(INTEGER);
+userName = DATA LOCAL STRING(INTEGER);
 
-    IMPORT webHookSlack JSON FROM f;
+//conversationsList fields
+GROUP purpose;
+value = DATA LOCAL STRING(INTEGER);
+is_channel = DATA LOCAL BOOLEAN(INTEGER);
+is_group = DATA LOCAL BOOLEAN(INTEGER);
+is_im = DATA LOCAL BOOLEAN(INTEGER);
+user = DATA LOCAL STRING(INTEGER);
+channelId = DATA LOCAL STRING(INTEGER);
+channelName = DATA LOCAL STRING(INTEGER);
+
+FORM usersList
+    PROPERTIES() ok, error
+    OBJECTS members = INTEGER
+    PROPERTIES(members) userId EXTID 'id', userName EXTID 'name';
+
+FORM conversationsList
+    PROPERTIES() ok, error
+    OBJECTS channels = INTEGER
+    PROPERTIES(channels) channelId EXTID 'id', channelName EXTID 'name', is_channel, is_group, is_im, user
+    PROPERTIES(channels) IN purpose value;
+
+synchronizeChatsSlack '{messenger.account.synchronize}' (Account a) {
+    LOCAL result = FILE();
     
-    IF type() == 'url_verification' THEN {
-        exportJsonFile() <- JSONFILE ('\{"challenge":"' + challenge() + '"\}');
-    } ELSE IF type() == 'event_callback' THEN {
+    LOCAL httpHeaders = STRING(STRING);
+    httpHeaders('Authorization') <- 'Bearer ' + token(a);
     
-        LOCAL channelId = STRING();        
-        channelId() <- IF eventType() == 'message' THEN channel() ELSE IF type() == 'im_created' THEN id();      
-        
-        IF channelId() THEN {
-            LOCAL chat = Chat();
-            chat() <- chatIdAccount(slackAccountAppId(api_app_id()), channelId());
-            IF NOT chat() THEN {
-                NEW chat = Chat {
-                    chat() <- chat;
-                    account(chat) <- slackAccountAppId(api_app_id());
-                    id(chat()) <- channelId();
-                }
-            }
-            username(chat()) <-user();
-            chatType(chat()) <- IF eventType() == 'message' AND channel_type() == 'channel' THEN ChatType.channel ELSE ChatType.private;
-            APPLY;
+    //get user names
+    LOCAL usernames = STRING(STRING);
+    EXTERNAL HTTP POST 'https://slack.com/api/users.list' HEADERS httpHeaders TO result;
+    IMPORT usersList JSON FROM result();
+    IF ok() THEN {
+        FOR userId(INTEGER user) DO {
+            usernames(userId(user)) <- userName(user);
         }
-        
+   
+        LOCAL synchronized = BOOLEAN (Chat);
+        //get chats
+        EXTERNAL HTTP POST 'https://slack.com/api/conversations.list' BODYURL 'types=public_channel,private_channel,mpim,im' HEADERS httpHeaders TO result;
+        IMPORT conversationsList JSON FROM result();
+        IF ok() THEN {
+            FOR channelId(INTEGER channel) DO {
+            
+               LOCAL chat = Chat();
+               chat() <- chatIdAccount(a, channelId(channel));
+               IF NOT chat() THEN {
+                   NEW chat = Chat {
+                       chat() <- chat;
+                       account(chat) <- a;
+                       id(chat()) <- channelId(channel);
+                   }
+               }
+               
+               IF is_im(channel) THEN {
+                   chatType(chat()) <- ChatType.private;
+                   username(chat()) <- '@' + usernames(user(channel));
+               } ELSE IF is_channel(channel) THEN {
+                   chatType(chat()) <- ChatType.channel;
+                   username(chat()) <- '#' + channelName(channel);
+                   title(chat()) <- value(channel);
+               } ELSE IF is_group(channel) THEN {
+                   chatType(chat()) <- ChatType.group;
+                   username(chat()) <- '#' + channelName(channel);
+                   title(chat()) <- value(channel);
+               }
+               synchronized(chat()) <- TRUE;
+            }
+            DELETE Chat c WHERE NOT synchronized(c) AND account(c) == a;
+        } ELSE {
+           MESSAGE 'Synchronization failed (conversations.list): ' + error();
+        }
+    } ELSE {
+        MESSAGE 'Synchronization failed (users.list): ' + error();
     }
-} @@noauth;
+    APPLY;
+}
 
 sendMessageSlackResult = DATA LOCAL STRING();
 sendMessageSlack(Chat chat, STRING message) {
@@ -86,5 +123,5 @@ sendMessage(Chat chat, STRING message) + {
 }
 
 EXTEND FORM messengers
-    PROPERTIES(a) appId PANEL SHOWIF isSlack(a)
+    PROPERTIES(a) PANEL SHOWIF isSlack(a) synchronizeChatsSlack
 ;

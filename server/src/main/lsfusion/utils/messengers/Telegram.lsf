@@ -23,13 +23,11 @@ ok = DATA LOCAL STRING();
 description = DATA LOCAL STRING();
 
 FORM getUpdatesTelegram
-PROPERTIES() ok, description
-
-OBJECTS result = INTEGER
-PROPERTIES(result) updateId EXTID 'update_id'
-
-PROPERTIES(result) IN chat usernameChat EXTID 'username', idChat EXTID 'id', titleChat EXTID 'title', typeChat EXTID 'type'
-PROPERTIES(result) IN chatChannel idChannel EXTID 'id', titleChannel EXTID 'title', typeChannel EXTID 'type', usernameChannel EXTID 'username';
+    PROPERTIES() ok, description    
+    OBJECTS result = INTEGER
+    PROPERTIES(result) updateId EXTID 'update_id'
+    PROPERTIES(result) IN chat usernameChat EXTID 'username', idChat EXTID 'id', titleChat EXTID 'title', typeChat EXTID 'type'
+    PROPERTIES(result) IN chatChannel idChannel EXTID 'id', titleChannel EXTID 'title', typeChannel EXTID 'type', usernameChannel EXTID 'username';
 
 synchronizeChatsTelegram '{messenger.account.synchronize}' (Account a) {
     LOCAL result = FILE();

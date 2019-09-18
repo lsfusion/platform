@@ -15,9 +15,9 @@ fromName = DATA LOCAL STRING();
 conversationId = DATA LOCAL STRING();
 
 FORM webHookSkype
-PROPERTIES() serviceUrl, action
-PROPERTIES() IN from fromName EXTID 'name'
-PROPERTIES() IN conversation conversationId EXTID 'id';
+    PROPERTIES() serviceUrl, action
+    PROPERTIES() IN from fromName EXTID 'name'
+    PROPERTIES() IN conversation conversationId EXTID 'id';
 
 clientSecretSkype 'Client Secret' = DATA STRING (Account);
 baseUrlSkype = DATA STRING (Chat);

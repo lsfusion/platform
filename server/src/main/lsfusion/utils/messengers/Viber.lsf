@@ -37,8 +37,8 @@ id = DATA LOCAL STRING();
 name = DATA LOCAL STRING();
 
 FORM webHookViber
-PROPERTIES() event, user_id
-PROPERTIES() IN user id, name;
+    PROPERTIES() event, user_id
+    PROPERTIES() IN user id, name;
 
 webHookViber(FILE f) {
     fileToString(f,'UTF-8');
