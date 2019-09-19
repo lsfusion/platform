@@ -76,7 +76,6 @@ public class TreeGroupController extends AbstractTableController {
             addToToolbar(Box.createHorizontalStrut(5));
             expandTreeCurrentButton = new ExpandTreeButton(this, true);
             addToToolbar(expandTreeCurrentButton);
-            addToToolbar(Box.createHorizontalStrut(5));
             expandTreeButton = new ExpandTreeButton(this, false);
             addToToolbar(expandTreeButton);
         }

@@ -78,7 +78,6 @@ public class GTreeGroupController extends GAbstractTableController {
         addToToolbar(GwtClientUtils.createHorizontalStrut(5));
         expandTreeCurrentButton = new GExpandTreeButton(this, true);
         addToToolbar(expandTreeCurrentButton);
-        addToToolbar(GwtClientUtils.createHorizontalStrut(5));
         expandTreeButton = new GExpandTreeButton(this, false);
         addToToolbar(expandTreeButton);
     }
