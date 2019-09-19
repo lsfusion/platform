@@ -12,9 +12,8 @@ setWebHookViber(Account account) {
     LOCAL httpHeaders = STRING(STRING);
     httpHeaders('X-Viber-Auth-Token') <- token(account);
     
-    urlEncode(name(account));
     EXTERNAL HTTP POST 'https://chatapi.viber.com/pa/set_webhook' HEADERS httpHeaders 
-        PARAMS JSONFILE('\{ "url":"' + webServerUrl() + '/exec/webHookViber?botid=' + urlEncoded() + '", "event_types":["unsubscribed","conversation_started"], "send_name": true, "send_photo": false\}') TO result;
+        PARAMS JSONFILE('\{ "url":"' + webServerUrl() + '/exec/webHookViber?botid=' + LONG(account) + '", "event_types":["unsubscribed","conversation_started"], "send_name": true, "send_photo": false\}') TO result;
     
     LOCAL status = INTEGER();
     LOCAL status_message = STRING();
@@ -43,21 +42,20 @@ FORM webHookViber
 webHookViber(FILE f) {
     IMPORT webHookViber JSON FROM f;
     
-    urlDecode(params('botid'));
     IF event() == 'conversation_started' THEN {
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(account(urlDecoded()), id());
+        chat() <- chatIdAccount(account(LONG(params('botid'))), id());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
-                account(chat) <- account(urlDecoded());
+                account(chat) <- account(LONG(params('botid')));
                 id(chat()) <- id();
             }
         }
         username(chat()) <-name();
         chatType(chat()) <- ChatType.private;
     } ELSE IF event() == 'unsubscribed' THEN {
-        DELETE Chat c WHERE id(c) == user_id() AND account(c) == account(urlDecoded());
+        DELETE Chat c WHERE id(c) == user_id() AND account(c) == account(LONG(params('botid')));
     }
  
     APPLY;

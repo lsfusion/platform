@@ -65,6 +65,9 @@ synchronizeChatsTelegram '{messenger.account.synchronize}' (Account a) {
         MESSAGE 'Synchronization failed: ' + description();
     }
     APPLY;
+} 
+WHEN SET (Account a IS Account) DO {
+    synchronizeChatsTelegram(a);
 }
 
 sendMessageTelegramResult = DATA LOCAL STRING();

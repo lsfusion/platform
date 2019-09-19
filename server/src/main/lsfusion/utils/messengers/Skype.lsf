@@ -1,11 +1,10 @@
 MODULE Skype;
 
-REQUIRE Messenger;
-
-//webHookUrl = host/webHookSkype?botid=name(account)
+REQUIRE Messenger, Reflection;
 
 EXTEND CLASS Messenger { skype 'Skype' }
 isSkype(Account a) = messenger(a) == Messenger.skype;
+webHookUrl(Account a) = webServerUrl() + '/exec/webHookSkype?botid=' + LONG(a) CHARWIDTH 100;
 
 GROUP from;
 GROUP conversation;
@@ -19,19 +18,18 @@ FORM webHookSkype
     PROPERTIES() IN from fromName EXTID 'name'
     PROPERTIES() IN conversation conversationId EXTID 'id';
 
-clientSecretSkype 'Client Secret' = DATA STRING (Account);
+clientSecretSkype 'Client Secret' = DATA STRING (Account) CHARWIDTH 25;
 baseUrlSkype = DATA STRING (Chat);
 webHookSkype(FILE f) {
     IMPORT webHookSkype JSON FROM f;
     
-    urlDecode(params('botid'));
     IF action() == 'add' THEN {
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(account(urlDecoded()), conversationId());
+        chat() <- chatIdAccount(account(LONG(params('botid'))), conversationId());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
-                account(chat) <- account(urlDecoded());
+                account(chat) <- account(LONG(params('botid')));
                 id(chat()) <- conversationId();
             }
         }
@@ -39,7 +37,7 @@ webHookSkype(FILE f) {
         baseUrlSkype(chat()) <- serviceUrl();
         chatType(chat()) <- ChatType.private;
     } ELSE IF action() == 'remove' THEN {
-        DELETE Chat c WHERE id(c) == conversationId() AND account(c) == account(urlDecoded());
+        DELETE Chat c WHERE id(c) == conversationId() AND account(c) == account(LONG(params('botid')));
     }
  
     APPLY;
@@ -91,5 +89,5 @@ sendMessage(Chat chat, STRING message) + {
 }
 
 EXTEND FORM messengers
-    PROPERTIES(a) clientSecretSkype PANEL SHOWIF isSkype(a)
+    PROPERTIES(a) PANEL SHOWIF isSkype(a) clientSecretSkype, webHookUrl 
 ;

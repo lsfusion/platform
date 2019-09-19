@@ -81,11 +81,11 @@ synchronizeChatsSlack '{messenger.account.synchronize}' (Account a) {
                } ELSE IF is_channel(channel) THEN {
                    chatType(chat()) <- ChatType.channel;
                    username(chat()) <- '#' + channelName(channel);
-                   title(chat()) <- value(channel);
+                   title(chat()) <- IF value(channel) != '' THEN value(channel) ELSE channelName(channel);
                } ELSE IF is_group(channel) THEN {
                    chatType(chat()) <- ChatType.group;
                    username(chat()) <- '#' + channelName(channel);
-                   title(chat()) <- value(channel);
+                   title(chat()) <- IF value(channel) != '' THEN value(channel) ELSE channelName(channel);
                }
                synchronized(chat()) <- TRUE;
             }
@@ -97,6 +97,9 @@ synchronizeChatsSlack '{messenger.account.synchronize}' (Account a) {
         MESSAGE 'Synchronization failed (users.list): ' + error();
     }
     APPLY;
+}
+WHEN SET (Account a IS Account) DO {
+    synchronizeChatsSlack(a);
 }
 
 sendMessageSlackResult = DATA LOCAL STRING();
