@@ -22,7 +22,7 @@ setWebHookViber(Account account) {
         setWebHookViberResult() <- status_message();
     }
 }
-WHEN CHANGED (name(Account a)) AND isViber(a) DO {
+WHEN SET (Account a IS Account) AND isViber(a) DO {
     setWebHookViber(a);
     IF setWebHookViberResult() THEN {
         MESSAGE setWebHookViberResult();

@@ -6,6 +6,7 @@ REQUIRE Messenger;
 
 EXTEND CLASS Messenger { slack 'Slack' }
 isSlack(Account a) = messenger(a) == Messenger.slack;
+isSynchronize(Messenger m) += WHEN m == Messenger.slack THEN TRUE;
 
 type = DATA LOCAL STRING();
 challenge = DATA LOCAL STRING();
@@ -40,7 +41,7 @@ FORM conversationsList
     PROPERTIES(channels) channelId EXTID 'id', channelName EXTID 'name', is_channel, is_group, is_im, user
     PROPERTIES(channels) IN purpose value;
 
-synchronizeChatsSlack '{messenger.account.synchronize}' (Account a) {
+synchronizeChatsSlack (Account a) {
     LOCAL result = FILE();
     
     LOCAL httpHeaders = STRING(STRING);
@@ -96,11 +97,8 @@ synchronizeChatsSlack '{messenger.account.synchronize}' (Account a) {
     } ELSE {
         MESSAGE 'Synchronization failed (users.list): ' + error();
     }
-    APPLY;
 }
-WHEN SET (Account a IS Account) DO {
-    synchronizeChatsSlack(a);
-}
+synchronizeChats(Account a) + { IF isSlack(a) THEN synchronizeChatsSlack(a); }
 
 sendMessageSlackResult = DATA LOCAL STRING();
 sendMessageSlack(Chat chat, STRING message) {
@@ -128,7 +126,3 @@ sendMessage(Chat chat, STRING message) + {
         sendMessageResult() <- sendMessageSlackResult();
     }
 }
-
-EXTEND FORM messengers
-    PROPERTIES(a) TOOLBAR SHOWIF isSlack(a) synchronizeChatsSlack BEFORE newAccount
-;

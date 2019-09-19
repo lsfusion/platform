@@ -91,3 +91,7 @@ sendMessage(Chat chat, STRING message) + {
 EXTEND FORM messengers
     PROPERTIES(a) PANEL SHOWIF isSkype(a) clientSecretSkype, webHookUrl 
 ;
+
+EXTEND FORM messenger
+    PROPERTIES(a) SHOWIF isSkype(a) clientSecretSkype, webHookUrl 
+;

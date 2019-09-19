@@ -1,8 +1,9 @@
 MODULE Messenger;
 
-REQUIRE Utils;
+REQUIRE Reflection, Utils;
 
 CLASS Messenger {}
+isSynchronize = ABSTRACT CASE BOOLEAN (Messenger);
 
 CLASS ChatType {
     private 'Private',
@@ -17,7 +18,7 @@ name '{messenger.account.name}' = DATA STRING (Account);
 account(LONG id) = GROUP NAGGR Account a BY LONG (a); 
 messenger '{messenger.messenger}' = DATA Messenger (Account);
 captionMessenger '{messenger.messenger}' (Account a) = staticCaption(messenger(a));
-token '{messenger.token}' = DATA STRING (Account) NONULL;
+token '{messenger.token}' = DATA STRING (Account) NONULL CHARWIDTH 50;
 
 CLASS Chat '{messenger.chat}';
 TABLE chat (Chat);
@@ -42,15 +43,30 @@ sendMessage '{messenger.chat.send.message}' (Chat chat) {
     newMessage(chat) <- NULL;
 }
 
+synchronizeChats ABSTRACT LIST (Account);
+WHEN SET (Account a IS Account) DO {
+    synchronizeChats(a);
+}
+
+synchronizeChatsAction '{messenger.account.synchronize}' (Account a) {
+    synchronizeChats(a);
+    APPLY;
+}
+
 FORM messengers '{messenger.messengers}'
     OBJECTS a = Account
-    PROPERTIES(a) name, captionMessenger, token, newAccount = NEW, DELETE
-    
+    PROPERTIES(a) READONLY name, captionMessenger, token 
+    PROPERTIES(a) NEWSESSION synchronizeChatsAction TOOLBAR SHOWIF isSynchronize(messenger(a)), NEW, EDIT, DELETE 
     OBJECTS c = Chat
     PROPERTIES(c) READONLY id, captionChatType, username, title
     PROPERTIES(c) PANEL newMessage, sendMessage
     
     FILTERS account(c) == a;
+
+FORM messenger '{messenger.messenger}'
+    OBJECTS a = Account PANEL
+    PROPERTIES(a) name, captionMessenger, token     
+    EDIT Account OBJECT a;
 
 DESIGN messengers {                   
     MOVE PROPERTY(newMessage(c)) {
