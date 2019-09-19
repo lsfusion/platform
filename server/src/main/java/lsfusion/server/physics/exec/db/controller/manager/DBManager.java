@@ -85,7 +85,6 @@ import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
-import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
@@ -1184,6 +1183,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // В этот момент в обычной ситуации migration script уже был обработан, вызов оставлен на всякий случай. Повторный вызов ничего не делает.
         runMigrationScript();
+        checkDBVersion(oldDBStructure.dbVersion);
 
         Map<String, String> columnsToDrop = new HashMap<>();
 
@@ -1487,6 +1487,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
             initSystemUser(session);
 
             classForNameSQL();
+        }
+    }
+
+    private void checkDBVersion(DBVersion oldDBVersion) {
+        if (maxDBVersion != null && maxDBVersion.compare(oldDBVersion) < 0) {
+            throw new RuntimeException(String.format("version of migration script (%s) is less than version of database (%s).", 
+                    maxDBVersion.toString(), 
+                    oldDBVersion.toString())
+            );
         }
     }
 
@@ -2082,12 +2091,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return curVersion;
     }
 
-    private void addSIDChange(TreeMap<DBVersion, List<SIDChange>> sidChanges, String version, String oldSID, String newSID) {
+    private DBVersion maxDBVersion = null;
+    
+    public void addMigrationVersion(String version) {
         DBVersion dbVersion = new DBVersion(version);
-        if (!sidChanges.containsKey(dbVersion)) {
-            sidChanges.put(dbVersion, new ArrayList<>());
+        if (maxDBVersion == null || maxDBVersion.compare(dbVersion) < 0) {
+            maxDBVersion = dbVersion;
         }
-        sidChanges.get(dbVersion).add(new SIDChange(oldSID, newSID));
     }
 
     public void addPropertyCNChange(String version, String oldName, String oldSignature, String newName, String newSignature, boolean stored) {
@@ -2099,6 +2109,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             addSIDChange(storedPropertyCNChanges, version, oldName + oldSignature, newName + newSignature);
         }
     }   
+    
     public void addActionCNChange(String version, String oldName, String oldSignature, String newName, String newSignature) {
         if (newSignature == null) {
             newSignature = oldSignature;
@@ -2126,6 +2137,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void addNavigatorElementCNChange(String version, String oldCN, String newCN) {
         addSIDChange(navigatorCNChanges, version, oldCN, newCN);
+    }
+
+    private void addSIDChange(TreeMap<DBVersion, List<SIDChange>> sidChanges, String version, String oldSID, String newSID) {
+        DBVersion dbVersion = new DBVersion(version);
+        if (!sidChanges.containsKey(dbVersion)) {
+            sidChanges.put(dbVersion, new ArrayList<>());
+        }
+        sidChanges.get(dbVersion).add(new SIDChange(oldSID, newSID));
     }
 
     private String transformUSID(String userSID) {
