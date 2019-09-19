@@ -2057,16 +2057,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private DBVersion getCurrentDBVersion(DBVersion oldVersion) {
-        DBVersion curVersion = oldVersion;
-        List<TreeMap<DBVersion, List<SIDChange>>> changesMaps = Arrays.asList(propertyCNChanges, actionCNChanges,
-                classSIDChanges, objectSIDChanges, tableSIDChanges, propertyDrawNameChanges, navigatorCNChanges);
-
-        for (TreeMap<DBVersion, List<SIDChange>> changeMap : changesMaps) {
-            if (!changeMap.isEmpty() && curVersion.compare(changeMap.lastKey()) < 0) {
-                curVersion = changeMap.lastKey();
-            }
-        }
-        return curVersion;
+        if (maxDBVersion != null && maxDBVersion.compare(oldVersion) > 0) {
+            return maxDBVersion;
+        } 
+        return oldVersion;
     }
 
     private DBVersion maxDBVersion = null;
