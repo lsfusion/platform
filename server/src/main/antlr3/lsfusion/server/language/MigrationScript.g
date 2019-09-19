@@ -21,7 +21,7 @@ script
 scope {
 	String version;
 }
-    :	(	v=changeVersion { $script::version = $v.version; }
+    :	(	v=changeVersion { $script::version = $v.version; self.addMigrationVersion($v.version); }
     		'{'
     			statement*
     		'}'
