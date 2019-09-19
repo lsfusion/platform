@@ -5,7 +5,6 @@ import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.implementations.abs.ASet;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -106,7 +105,6 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
@@ -118,17 +116,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static final Logger startLogger = ServerLoggers.startLogger;
     public static final Logger serviceLogger = ServerLoggers.serviceLogger;
 
-    private static Comparator<DBVersion> dbVersionComparator = DBVersion::compare;
-
-    private TreeMap<DBVersion, List<SIDChange>> propertyCNChanges = new TreeMap<>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> actionCNChanges = new TreeMap<>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> propertyDrawNameChanges = new TreeMap<>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> storedPropertyCNChanges = new TreeMap<>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> classSIDChanges = new TreeMap<>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> tableSIDChanges = new TreeMap<>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> objectSIDChanges = new TreeMap<>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> navigatorCNChanges = new TreeMap<>(dbVersionComparator);
-
     private Map<String, String> finalPropertyDrawNameChanges = new HashMap<>();
     private Map<String, String> finalNavigatorElementNameChanges = new HashMap<>();
 
@@ -136,6 +123,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private RestartManager restartManager;
 
+    private MigrationManager migrationManager;
+    
     private BusinessLogics businessLogics;
 
     private boolean ignoreMigration;
@@ -958,7 +947,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // Делаем это до применения migration script, то есть не пытаемся сохранить все возможные индексы по максимуму
     private void checkIndices(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
 
-        ImMap<String, String> propertyChanges = MapFact.fromJavaMap(getChangesAfter(oldDBStructure.dbVersion, storedPropertyCNChanges));
+        ImMap<String, String> propertyChanges = MapFact.fromJavaMap(migrationManager.getStoredPropertyCNChangesAfter(oldDBStructure.migrationVersion));
 
         ImMap<String, ImRevMap<String, String>> oldTableFieldToCan = MapFact.EMPTY(); ImMap<String, ImRevMap<String, String>> newTableFieldToCan = MapFact.EMPTY();
         if(!propertyChanges.isEmpty()) { // оптимизация
@@ -1183,7 +1172,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // В этот момент в обычной ситуации migration script уже был обработан, вызов оставлен на всякий случай. Повторный вызов ничего не делает.
         runMigrationScript();
-        checkDBVersion(oldDBStructure.dbVersion);
+        migrationManager.checkMigrationVersion(oldDBStructure.migrationVersion);
 
         Map<String, String> columnsToDrop = new HashMap<>();
 
@@ -1201,8 +1190,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
             DataOutputStream outDB = new DataOutputStream(outDBStruct);
 
-            DBVersion newDBVersion = getCurrentDBVersion(oldDBStructure.dbVersion);
-            NewDBStructure newDBStructure = new NewDBStructure(newDBVersion);
+            MigrationVersion newMigrationVersion = migrationManager.getCurrentMigrationVersion(oldDBStructure.migrationVersion);
+            NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion);
 
             checkUniqueDBName(newDBStructure);
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
@@ -1213,7 +1202,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             checkIndices(sql, oldDBStructure, newDBStructure);
 
             if (!oldDBStructure.isEmpty()) {
-                startLogger.info("Applying migration script (" + oldDBStructure.dbVersion + " -> " + newDBStructure.dbVersion + ")");
+                startLogger.info("Applying migration script (" + oldDBStructure.migrationVersion + " -> " + newDBStructure.migrationVersion + ")");
 
                 // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля
                 alterDBStructure(oldDBStructure, newDBStructure, sql);
@@ -1427,7 +1416,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
             LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticName,
-                    getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges), idChanges);
+                    migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion), 
+                    migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion), 
+                    idChanges);
 
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 newClass.ID = newClass.customClass.ID;
@@ -1487,15 +1478,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             initSystemUser(session);
 
             classForNameSQL();
-        }
-    }
-
-    private void checkDBVersion(DBVersion oldDBVersion) {
-        if (maxDBVersion != null && maxDBVersion.compare(oldDBVersion) < 0) {
-            throw new RuntimeException(String.format("version of migration script (%s) is less than version of database (%s).", 
-                    maxDBVersion.toString(), 
-                    oldDBVersion.toString())
-            );
         }
     }
 
@@ -1588,8 +1570,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         migrateReflectionProperties(session, oldDBStructure, true);
     }
     private void migrateReflectionProperties(DataSession session, OldDBStructure oldDBStructure, boolean actions) {
-        DBVersion oldDBVersion = oldDBStructure.dbVersion;
-        Map<String, String> nameChanges = getChangesAfter(oldDBVersion, actions ? actionCNChanges : propertyCNChanges);
+        MigrationVersion oldVersion = oldDBStructure.migrationVersion;
+        Map<String, String> nameChanges = actions ? migrationManager.getActionCNChangesAfter(oldVersion) 
+                                                  : migrationManager.getPropertyCNChangesAfter(oldVersion);
         ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField newCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
 
@@ -1883,13 +1866,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         if (!migrationScriptWasRead) {
             try {
+                migrationManager = new MigrationManager(namingPolicy);
                 InputStream scriptStream = getClass().getResourceAsStream("/migration.script");
                 if (scriptStream != null) {
                     ANTLRInputStream stream = new ANTLRInputStream(scriptStream);
                     MigrationScriptLexer lexer = new MigrationScriptLexer(stream);
                     MigrationScriptParser parser = new MigrationScriptParser(new CommonTokenStream(lexer));
 
-                    parser.self = this;
+                    parser.self = migrationManager;
 
                     parser.script();
                     migrationScriptWasRead = true;
@@ -1911,7 +1895,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
     
     private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData) throws SQLException {
-        Map<String, String> propertyChanges = getChangesAfter(oldData.dbVersion, storedPropertyCNChanges);
+        Map<String, String> propertyChanges = migrationManager.getStoredPropertyCNChangesAfter(oldData.migrationVersion);
         for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
             boolean found = false;
             String newDBName = getNamingPolicy().transformActionOrPropertyCNToDBName(entry.getValue());
@@ -1930,7 +1914,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
     
     private void renameMigratingTables(SQLSession sql, OldDBStructure oldData) throws SQLException {
-        Map<String, String> tableChanges = getChangesAfter(oldData.dbVersion, tableSIDChanges);
+        Map<String, String> tableChanges = migrationManager.getTableSIDChangesAfter(oldData.migrationVersion);
         for (DBStoredProperty oldProperty : oldData.storedProperties) {
             if (tableChanges.containsKey(oldProperty.tableName)) {
                 oldProperty.tableName = tableChanges.get(oldProperty.tableName);
@@ -1949,7 +1933,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
     
     private void renameMigratingClasses(OldDBStructure oldData) {
-        Map<String, String> classChanges = getChangesAfter(oldData.dbVersion, classSIDChanges);
+        Map<String, String> classChanges = migrationManager.getClassSIDChangesAfter(oldData.migrationVersion);
         for (DBConcreteClass oldClass : oldData.concreteClasses) {
             if(classChanges.containsKey(oldClass.sID)) {
                 oldClass.sID = classChanges.get(oldClass.sID);
@@ -2015,8 +1999,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // Каноническое имя log-свойств сейчас определяется не из сигнатуры базового свойства, а из getInterfaces, которые могут не совпадать с сигнатурой
     // В дальнейшем. когда сделаем нормальные канонические имена у log-свойств, можно перенести этот функционал в setUserLoggableProperties 
     // и добавлять изменения канонических имен log-свойств напрямую в storedPropertyCNChanges еще на том шаге
-    private void addLogPropertiesToMigration(OldDBStructure oldData, DBVersion newDBVersion) {
-        Map<String, String> changes = getChangesAfter(oldData.dbVersion, propertyCNChanges);
+    private void addLogPropertiesToMigration(OldDBStructure oldData, MigrationVersion newMigrationVersion) {
+        Map<String, String> changes = migrationManager.getPropertyCNChangesAfter(oldData.migrationVersion);
         Map<String, String> rChanges = BaseUtils.reverse(changes);
         
         Set<String> logProperties = new HashSet<>();
@@ -2039,10 +2023,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                             String oldLogPropCN = LogicsModule.getLogPropertyCN("System", parser.getNamespace(), parser.getName(),
                                     LogicsModule.getSignatureForLogProperty(parser.getSignature(), businessLogics.systemEventsLM));
 
-                            if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
-                                storedPropertyCNChanges.put(newDBVersion, new ArrayList<>());
-                            }
-                            storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
+                            migrationManager.addStoredPropertyCNChange(newMigrationVersion.toString(), oldLogPropCN, logPropCN);
                         } catch (CanonicalNameUtils.ParseException e) {
                             startLogger.info(String.format("Cannot migrate LOG property to '%s': '%s'", logPropCN, e.getMessage()));
                         }
@@ -2055,11 +2036,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
     private void alterDBStructure(OldDBStructure oldData, NewDBStructure newData, SQLSession sql) throws SQLException {
         // Сохраним изменения имен свойств на форме и элементов навигатора для reflectionManager
-        finalPropertyDrawNameChanges = getChangesAfter(oldData.dbVersion, propertyDrawNameChanges);
-        finalNavigatorElementNameChanges = getChangesAfter(oldData.dbVersion, navigatorCNChanges);
+        finalPropertyDrawNameChanges = migrationManager.getPropertyDrawNameChangesAfter(oldData.migrationVersion);
+        finalNavigatorElementNameChanges = migrationManager.getNavigatorCNChangesAfter(oldData.migrationVersion);
 
         // Обязательно до renameMigratingProperties, потому что в storedPropertyCNChanges добавляются изменения для log-свойств 
-        addLogPropertiesToMigration(oldData, newData.dbVersion);
+        addLogPropertiesToMigration(oldData, newData.migrationVersion);
         
         // Изменяем в старой структуре свойства из скрипта миграции, переименовываем поля в таблицах
         renameMigratingProperties(sql, oldData);
@@ -2078,131 +2059,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         renameMigratingClasses(oldData);
     }
 
-    private DBVersion getCurrentDBVersion(DBVersion oldVersion) {
-        if (maxDBVersion != null && maxDBVersion.compare(oldVersion) > 0) {
-            return maxDBVersion;
-        }
-        return oldVersion;
-    }
-
-    private DBVersion maxDBVersion = null;
-    
-    public void addMigrationVersion(String version) {
-        DBVersion dbVersion = new DBVersion(version);
-        if (maxDBVersion == null || maxDBVersion.compare(dbVersion) < 0) {
-            maxDBVersion = dbVersion;
-        }
-    }
-
-    public void addPropertyCNChange(String version, String oldName, String oldSignature, String newName, String newSignature, boolean stored) {
-        if (newSignature == null) {
-            newSignature = oldSignature;
-        } 
-        addSIDChange(propertyCNChanges, version, oldName + oldSignature, newName + newSignature);
-        if (stored) {
-            addSIDChange(storedPropertyCNChanges, version, oldName + oldSignature, newName + newSignature);
-        }
-    }   
-    
-    public void addActionCNChange(String version, String oldName, String oldSignature, String newName, String newSignature) {
-        if (newSignature == null) {
-            newSignature = oldSignature;
-        } 
-        addSIDChange(actionCNChanges, version, oldName + oldSignature, newName + newSignature);
-    }   
-    
-    public void addClassSIDChange(String version, String oldSID, String newSID) {
-        addSIDChange(classSIDChanges, version, transformUSID(oldSID), transformUSID(newSID));
-    }
-
-    public void addTableSIDChange(String version, String oldCN, String newCN) {
-        DBNamingPolicy namingPolicy = getNamingPolicy();
-        addSIDChange(tableSIDChanges, version, namingPolicy.transformTableCNToDBName(oldCN), 
-                                               namingPolicy.transformTableCNToDBName(newCN));
-    }
-
-    public void addObjectSIDChange(String version, String oldSID, String newSID) {
-        addSIDChange(objectSIDChanges, version, transformObjectUSID(oldSID), transformObjectUSID(newSID));
-    }
-    
-    public void addPropertyDrawSIDChange(String version, String oldName, String newName) {
-        addSIDChange(propertyDrawNameChanges, version, oldName, newName);
-    }
-
-    public void addNavigatorElementCNChange(String version, String oldCN, String newCN) {
-        addSIDChange(navigatorCNChanges, version, oldCN, newCN);
-    }
-
-    private void addSIDChange(TreeMap<DBVersion, List<SIDChange>> sidChanges, String version, String oldSID, String newSID) {
-        DBVersion dbVersion = new DBVersion(version);
-        if (!sidChanges.containsKey(dbVersion)) {
-            sidChanges.put(dbVersion, new ArrayList<>());
-        }
-        sidChanges.get(dbVersion).add(new SIDChange(oldSID, newSID));
-    }
-
-    private String transformUSID(String userSID) {
-        return userSID.replaceFirst("\\.", "_");                            
-    }
-    
-    private String transformObjectUSID(String userSID) {
-        if (userSID.indexOf(".") != userSID.lastIndexOf(".")) {
-            return transformUSID(userSID);
-        }
-        return userSID;
-    }
-
     public Map<String, String> getPropertyDrawNamesChanges() {
         return finalPropertyDrawNameChanges;
     } 
     
     public Map<String, String> getNavigatorElementNameChanges() {
         return finalNavigatorElementNameChanges;
-    }
-
-    private Map<String, String> getChangesAfter(DBVersion versionAfter, TreeMap<DBVersion, List<SIDChange>> allChanges) {
-        Map<String, String> resultChanges = new OrderedMap<>();
-
-        for (Map.Entry<DBVersion, List<SIDChange>> changesEntry : allChanges.entrySet()) {
-            if (changesEntry.getKey().compare(versionAfter) > 0) {
-                List<SIDChange> versionChanges = changesEntry.getValue();
-                Map<String, String> versionChangesMap = new OrderedMap<>();
-
-                for (SIDChange change : versionChanges) {
-                    if (versionChangesMap.containsKey(change.oldSID)) {
-                        throw new RuntimeException(String.format("Renaming '%s' twice in version %s.", change.oldSID, changesEntry.getKey()));
-                    }
-                    versionChangesMap.put(change.oldSID, change.newSID);
-                }
-
-                // Если в текущей версии есть переименование a -> b, а в предыдущих версиях есть c -> a, то заменяем c -> a на c -> b
-                for (Map.Entry<String, String> currentChanges : resultChanges.entrySet()) {
-                    String renameTo = currentChanges.getValue();
-                    if (versionChangesMap.containsKey(renameTo)) {
-                        currentChanges.setValue(versionChangesMap.get(renameTo));
-                        versionChangesMap.remove(renameTo);
-                    }
-                }
-
-                // Добавляем оставшиеся (которые не получилось добавить к старым цепочкам) переименования из текущей версии в общий результат
-                for (Map.Entry<String, String> change : versionChangesMap.entrySet()) {
-                    if (resultChanges.containsKey(change.getKey())) {
-                        throw new RuntimeException(String.format("Renaming '%s' twice", change.getKey()));
-                    }
-                    resultChanges.put(change.getKey(), change.getValue());
-                }
-
-                // Проверяем, чтобы не было нескольких переименований в одно и то же
-                Set<String> renameToSIDs = new HashSet<>();
-                for (String renameTo : resultChanges.values()) {
-                    if (renameToSIDs.contains(renameTo)) {
-                        throw new RuntimeException(String.format("Renaming to '%s' twice.", renameTo));
-                    }
-                    renameToSIDs.add(renameTo);
-                }
-            }
-        }
-        return resultChanges;
     }
 
     @NFLazy
@@ -2300,8 +2162,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     // может вызываться до инициализации DBManager
-    private DBVersion getOldDBVersion(SQLSession sql) throws IOException, SQLException, SQLHandledException {
-        DBVersion dbVersion = new DBVersion("0.0");
+    private MigrationVersion getOldMigrationVersion(SQLSession sql) throws IOException, SQLException, SQLHandledException {
+        MigrationVersion migrationVersion = new MigrationVersion("0.0");
         
         DataInputStream inputDB;
         StructTable structTable = StructTable.instance;
@@ -2310,15 +2172,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
             inputDB = new DataInputStream(struct.getInputStream());
             //noinspection ResultOfMethodCallIgnored
             inputDB.read();
-            dbVersion = new DBVersion(inputDB.readUTF());
+            migrationVersion = new MigrationVersion(inputDB.readUTF());
         }
-        return dbVersion;
+        return migrationVersion;
     }
 
     public Map<String, String> getPropertyCNChanges(SQLSession sql) {
         runMigrationScript();
         try {
-            return getChangesAfter(getOldDBVersion(sql), propertyCNChanges);
+            return migrationManager.getPropertyCNChangesAfter(getOldMigrationVersion(sql));
         } catch (IOException | SQLException | SQLHandledException e) {
             Throwables.propagate(e);
         }
@@ -2407,7 +2269,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private abstract class DBStructure<F> {
         public int version;
-        public DBVersion dbVersion;
+        public MigrationVersion migrationVersion;
         public List<String> modulesList = new ArrayList<>();
         public Map<NamedTable, Map<List<F>, Boolean>> tables = new HashMap<>();
         public List<DBStoredProperty> storedProperties = new ArrayList<>();
@@ -2496,9 +2358,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private class NewDBStructure extends DBStructure<Field> {
         
-        public NewDBStructure(DBVersion dbVersion) {
+        public NewDBStructure(MigrationVersion migrationVersion) {
             version = 31; // need this for migration
-            this.dbVersion = dbVersion;
+            this.migrationVersion = migrationVersion;
 
             tables.putAll(getIndicesMap());
 
@@ -2514,7 +2376,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         public void write(DataOutputStream outDB) throws IOException {
             outDB.write('v' + version);  //для поддержки обратной совместимости
-            outDB.writeUTF(dbVersion.toString());
+            outDB.writeUTF(migrationVersion.toString());
 
             //записываем список подключенных модулей
             outDB.writeInt(businessLogics.getLogicModules().size());
@@ -2551,12 +2413,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class OldDBStructure extends DBStructure<String> {
 
         public OldDBStructure(DataInputStream inputDB) throws IOException {
-            dbVersion = new DBVersion("0.0");
+            migrationVersion = new MigrationVersion("0.0");
             if (inputDB == null) {
                 version = -2;
             } else {
                 version = inputDB.read() - 'v';
-                dbVersion = new DBVersion(inputDB.readUTF());
+                migrationVersion = new MigrationVersion(inputDB.readUTF());
 
                 int modulesCount = inputDB.readInt();
                 if (modulesCount > 0) {
@@ -2604,58 +2466,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public static class SIDChange {
-        public String oldSID;
-        public String newSID;
-
-        public SIDChange(String oldSID, String newSID) {
-            this.oldSID = oldSID;
-            this.newSID = newSID;
-        }
-    }
-
-    public static class DBVersion {
-        private List<Integer> version;
-
-        public DBVersion(String version) {
-            this.version = versionToList(version);
-        }
-
-        public static List<Integer> versionToList(String version) {
-            String[] splitArr = version.split("\\.");
-            List<Integer> intVersion = new ArrayList<>();
-            for (String part : splitArr) {
-                intVersion.add(Integer.parseInt(part));
-            }
-            return intVersion;
-        }
-
-        public int compare(DBVersion rhs) {
-            return compareVersions(version, rhs.version);
-        }
-
-        public static int compareVersions(List<Integer> lhs, List<Integer> rhs) {
-            for (int i = 0; i < Math.max(lhs.size(), rhs.size()); i++) {
-                int left = (i < lhs.size() ? lhs.get(i) : 0);
-                int right = (i < rhs.size() ? rhs.get(i) : 0);
-                if (left < right) return -1;
-                if (left > right) return 1;
-            }
-            return 0;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder();
-            for (int i = 0; i < version.size(); i++) {
-                if (i > 0) {
-                    buf.append(".");
-                }
-                buf.append(version.get(i));
-            }
-            return buf.toString();
-        }
-    }
 
     public void setDefaultUserLanguage(String defaultUserLanguage) {
         this.defaultUserLanguage = defaultUserLanguage;

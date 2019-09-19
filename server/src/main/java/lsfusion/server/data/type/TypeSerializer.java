@@ -65,7 +65,7 @@ public class TypeSerializer {
     }
 
     /**
-     * номер последней версии определён в {@link DBManager.DBStructure#DBStructure(DBManager.DBVersion)}
+     * номер последней версии определён в {@link DBManager.DBStructure#DBStructure(DBManager.MigrationVersion)}
      */
     public static DataClass deserializeDataClass(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();
