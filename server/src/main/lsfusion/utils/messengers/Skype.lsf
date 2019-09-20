@@ -1,6 +1,6 @@
 MODULE Skype;
 
-REQUIRE Messenger, Reflection;
+REQUIRE Messenger;
 
 EXTEND CLASS Messenger { skype 'Skype' }
 isSkype(Account a) = messenger(a) == Messenger.skype;

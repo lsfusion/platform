@@ -15,7 +15,7 @@ CLASS Account '{messenger.account}';
 TABLE account (Account);
 
 name '{messenger.account.name}' = DATA STRING (Account);
-account(LONG id) = GROUP NAGGR Account a BY LONG (a); 
+account(LONG id) = GROUP NAGGR Account a BY LONG (a) IF a IS Account; 
 messenger '{messenger.messenger}' = DATA Messenger (Account);
 captionMessenger '{messenger.messenger}' (Account a) = staticCaption(messenger(a));
 token '{messenger.token}' = DATA STRING (Account) NONULL CHARWIDTH 50;

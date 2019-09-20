@@ -12,8 +12,6 @@ setWebHookTelegram(Account account) {
     EXTERNAL HTTP POST 'https://api.telegram.org/bot' + token(account) + '/setWebhook'
         BODYURL 'url=' + webServerUrl() + '/exec/webHookTelegram?botid=' + LONG(account) TO result;
     
-    open(result());
-    
     LOCAL ok = BOOLEAN();
     LOCAL description = STRING();
     IMPORT JSON FROM result() TO() ok, description;
@@ -40,6 +38,9 @@ FORM webHookTelegram
 PROPERTIES() IN chat id, type, first_name, username, title;
 
 webHookTelegram(FILE f) {
+    fileToString(f,'UTF-8');
+    printToLog(resultString());
+    
     IMPORT webHookTelegram JSON FROM f;
     
     LOCAL chat = Chat();

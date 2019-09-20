@@ -1,6 +1,6 @@
 MODULE Viber;
 
-REQUIRE Messenger, Reflection;
+REQUIRE Messenger;
 
 EXTEND CLASS Messenger { viber 'Viber' }
 isViber(Account a) = messenger(a) == Messenger.viber;
@@ -40,6 +40,9 @@ FORM webHookViber
     PROPERTIES() IN user id, name;
 
 webHookViber(FILE f) {
+    fileToString(f,'UTF-8');
+    printToLog(resultString());
+    
     IMPORT webHookViber JSON FROM f;
     
     IF event() == 'conversation_started' THEN {
