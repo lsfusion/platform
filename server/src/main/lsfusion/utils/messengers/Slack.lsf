@@ -42,7 +42,7 @@ FORM conversationsList
     PROPERTIES(channels) IN purpose value;
 
 synchronizeChatsSlack (Account a) {
-    LOCAL result = FILE();
+    LOCAL result = JSONFILE();
     
     LOCAL httpHeaders = STRING(STRING);
     httpHeaders('Authorization') <- 'Bearer ' + token(a);
@@ -51,7 +51,7 @@ synchronizeChatsSlack (Account a) {
     LOCAL usernames = STRING(STRING);
     LOCAL realnames = STRING(STRING);
     EXTERNAL HTTP POST 'https://slack.com/api/users.list' HEADERS httpHeaders TO result;
-    IMPORT usersList JSON FROM result();
+    IMPORT usersList FROM result();
     IF ok() THEN {
         FOR userId(INTEGER user) DO {
             usernames(userId(user)) <- userName(user);
@@ -92,10 +92,10 @@ synchronizeChatsSlack (Account a) {
             }
             DELETE Chat c WHERE NOT synchronized(c) AND account(c) == a;
         } ELSE {
-           MESSAGE 'Synchronization failed (conversations.list): ' + error();
+           MESSAGE 'Synchronization failed (conversations.list): ' + error() NOWAIT;
         }
     } ELSE {
-        MESSAGE 'Synchronization failed (users.list): ' + error();
+        MESSAGE 'Synchronization failed (users.list): ' + error() NOWAIT;
     }
 }
 synchronizeChats(Account a) + { IF isSlack(a) THEN synchronizeChatsSlack(a); }
@@ -104,7 +104,7 @@ sendMessageSlackResult = DATA LOCAL STRING();
 sendMessageSlack(Chat chat, STRING message) {
     sendMessageSlackResult() <- NULL;
     
-    LOCAL result = FILE();
+    LOCAL result = JSONFILE();
     
     LOCAL httpHeaders = STRING(STRING);
     httpHeaders('Authorization') <- 'Bearer ' + token(account(chat));
@@ -114,15 +114,13 @@ sendMessageSlack(Chat chat, STRING message) {
             
     LOCAL ok = BOOLEAN();
     LOCAL error = STRING();
-    IMPORT JSON FROM result() TO() ok, error;
+    IMPORT FROM result() TO() ok, error; 
     IF NOT ok() THEN {
         sendMessageSlackResult() <- error();
     }        
 }
 
-sendMessage(Chat chat, STRING message) + {
-    IF isSlack(account(chat)) THEN {
-        sendMessageSlack(chat, message);
-        sendMessageResult() <- sendMessageSlackResult();
-    }
+sendMessage(Chat chat, STRING message) + WHEN isSlack(account(chat)) AND message IS STRING THEN {
+    sendMessageSlack(chat, message);
+    sendMessageResult() <- sendMessageSlackResult();
 }

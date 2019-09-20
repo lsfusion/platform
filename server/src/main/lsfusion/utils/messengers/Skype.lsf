@@ -20,7 +20,9 @@ FORM webHookSkype
 
 clientSecretSkype 'Client Secret' = DATA STRING (Account) CHARWIDTH 25;
 baseUrlSkype = DATA STRING (Chat);
-webHookSkype(FILE f) {
+webHookSkype(JSONFILE f) {
+    printToLog(STRING(f));
+    
     IMPORT webHookSkype JSON FROM f;
     
     IF action() == 'add' THEN {
@@ -48,12 +50,12 @@ accessTokenSkype = DATA STRING(Account);
 accessTokenDateSkype = DATA DATETIME(Account);
 getAccessTokenSkype(Account a) {
     NEWSESSION {
-        LOCAL result = FILE();
+        LOCAL result = JSONFILE();
         EXTERNAL HTTP POST 'https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token' 
             BODYURL 'grant_type=client_credentials&scope=$1&client_id=$2&client_secret=$3' PARAMS 'https://api.botframework.com/.default', token(a), clientSecretSkype(a) TO result;
             
         LOCAL access_token = STRING();
-        IMPORT JSON FROM result() TO() access_token;
+        IMPORT FROM result() TO() access_token;
         accessTokenSkype(a) <- access_token();
         accessTokenDateSkype(a) <- currentDateTime();
         APPLY;
@@ -68,7 +70,7 @@ sendMessageSkype(Chat chat, STRING message) {
         getAccessTokenSkype(account(chat));
     }
 
-    LOCAL result = FILE();
+    LOCAL result = JSONFILE();
     
     LOCAL httpHeaders = STRING(STRING);
     httpHeaders('Authorization') <- 'Bearer ' + accessTokenSkype(account(chat));
@@ -77,15 +79,13 @@ sendMessageSkype(Chat chat, STRING message) {
         PARAMS JSONFILE('\{"type": "message","text": "' + message + '"\}') TO result;
         
     LOCAL message = STRING();
-    IMPORT JSON FROM result() TO() message;
+    IMPORT FROM result() TO() message;
     sendMessageSkypeResult() <- message();     
 }
 
-sendMessage(Chat chat, STRING message) + {
-    IF isSkype(account(chat)) THEN {
-        sendMessageSkype(chat, message);
-        sendMessageResult() <- sendMessageSkypeResult();
-    }
+sendMessage(Chat chat, STRING message) + WHEN isSkype(account(chat)) AND message IS STRING THEN {
+    sendMessageSkype(chat, message);
+    sendMessageResult() <- sendMessageSkypeResult();
 }
 
 EXTEND FORM messengers

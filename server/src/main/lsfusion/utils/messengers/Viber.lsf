@@ -7,7 +7,7 @@ isViber(Account a) = messenger(a) == Messenger.viber;
 
 setWebHookViberResult = DATA LOCAL STRING();
 setWebHookViber(Account account) {
-    LOCAL result = FILE();
+    LOCAL result = JSONFILE();
     
     LOCAL httpHeaders = STRING(STRING);
     httpHeaders('X-Viber-Auth-Token') <- token(account);
@@ -17,7 +17,7 @@ setWebHookViber(Account account) {
     
     LOCAL status = INTEGER();
     LOCAL status_message = STRING();
-    IMPORT JSON FROM result() TO() status, status_message;
+    IMPORT FROM result() TO() status, status_message;
     IF status() != 0 THEN {
         setWebHookViberResult() <- status_message();
     }
@@ -25,7 +25,7 @@ setWebHookViber(Account account) {
 WHEN SET (Account a IS Account) AND isViber(a) DO {
     setWebHookViber(a);
     IF setWebHookViberResult() THEN {
-        MESSAGE setWebHookViberResult();
+        MESSAGE setWebHookViberResult() NOWAIT;
     }
 }
 
@@ -39,8 +39,7 @@ FORM webHookViber
     PROPERTIES() event, user_id
     PROPERTIES() IN user id, name;
 
-webHookViber(FILE f) {
-    fileToString(f,'UTF-8');
+webHookViber(JSONFILE f) {
     printToLog(resultString());
     
     IMPORT webHookViber JSON FROM f;
@@ -67,7 +66,7 @@ webHookViber(FILE f) {
 sendMessageViberResult = DATA LOCAL STRING();
 sendMessageViber(Chat chat, STRING message) {
     sendMessageViberResult() <- NULL;
-    LOCAL result = FILE();
+    LOCAL result = JSONFILE();
     
     LOCAL httpHeaders = STRING(STRING);
     httpHeaders('X-Viber-Auth-Token') <- token(account(chat));
@@ -77,15 +76,13 @@ sendMessageViber(Chat chat, STRING message) {
     
     LOCAL status = INTEGER();
     LOCAL status_message = STRING();
-    IMPORT JSON FROM result() TO() status, status_message;
+    IMPORT FROM result() TO() status, status_message;
     IF status() != 0 THEN {
         sendMessageViberResult() <- status_message();
     }
 }
 
-sendMessage(Chat chat, STRING message) + {
-    IF isViber(account(chat)) THEN {
-        sendMessageViber(chat, message);
-        sendMessageResult() <- sendMessageViberResult();
-    }
+sendMessage(Chat chat, STRING message) + WHEN isViber(account(chat)) AND message IS STRING THEN {
+    sendMessageViber(chat, message);
+    sendMessageResult() <- sendMessageViberResult();
 }

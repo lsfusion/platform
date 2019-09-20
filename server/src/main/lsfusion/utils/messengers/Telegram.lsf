@@ -7,14 +7,14 @@ isTelegram(Account a) = messenger(a) == Messenger.telegram;
 
 setWebHookTelegramResult = DATA LOCAL STRING();
 setWebHookTelegram(Account account) {
-    LOCAL result = FILE();
+    LOCAL result = JSONFILE();
         
     EXTERNAL HTTP POST 'https://api.telegram.org/bot' + token(account) + '/setWebhook'
         BODYURL 'url=' + webServerUrl() + '/exec/webHookTelegram?botid=' + LONG(account) TO result;
     
     LOCAL ok = BOOLEAN();
     LOCAL description = STRING();
-    IMPORT JSON FROM result() TO() ok, description;
+    IMPORT FROM result() TO() ok, description;
     IF NOT ok() THEN {
         setWebHookTelegramResult() <- description();
     }
@@ -22,7 +22,7 @@ setWebHookTelegram(Account account) {
 WHEN SET (Account a IS Account) AND isTelegram(a) DO {
     setWebHookTelegram(a);
     IF setWebHookTelegramResult() THEN {
-        MESSAGE setWebHookTelegramResult();
+        MESSAGE setWebHookTelegramResult() NOWAIT;
     }
 }
 
@@ -37,9 +37,8 @@ title = DATA LOCAL STRING();
 FORM webHookTelegram
 PROPERTIES() IN chat id, type, first_name, username, title;
 
-webHookTelegram(FILE f) {
-    fileToString(f,'UTF-8');
-    printToLog(resultString());
+webHookTelegram(JSONFILE f) {
+    printToLog(STRING(f));
     
     IMPORT webHookTelegram JSON FROM f;
     
@@ -66,21 +65,19 @@ webHookTelegram(FILE f) {
 sendMessageTelegramResult = DATA LOCAL STRING();
 sendMessageTelegram(Chat chat, STRING message) {
     sendMessageTelegramResult() <- NULL;
-    LOCAL result = FILE();
+    LOCAL result = JSONFILE();
     urlEncode(message);
     EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + urlEncoded() TO result;
     
     LOCAL ok = BOOLEAN();
     LOCAL description = STRING();
-    IMPORT JSON FROM result() TO() ok, description;
+    IMPORT FROM result() TO() ok, description;
     IF NOT ok() THEN {
         sendMessageTelegramResult() <- description();
     }
 }
 
-sendMessage(Chat chat, STRING message) + {
-    IF isTelegram(account(chat)) THEN {
-        sendMessageTelegram(chat, message);
-        sendMessageResult() <- sendMessageTelegramResult();
-    }
+sendMessage(Chat chat, STRING message) + WHEN isTelegram(account(chat)) AND message IS STRING THEN {
+    sendMessageTelegram(chat, message);
+    sendMessageResult() <- sendMessageTelegramResult();
 }

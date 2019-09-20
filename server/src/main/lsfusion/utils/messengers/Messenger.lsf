@@ -33,12 +33,12 @@ title '{messenger.chat.title}' = DATA STRING (Chat);
 newMessage '{messenger.chat.new.message}' = DATA LOCAL TEXT (Chat);
 
 sendMessageResult = DATA LOCAL STRING();
-sendMessage '{messenger.chat.send.message}' ABSTRACT LIST (Chat, STRING);
+sendMessage '{messenger.chat.send.message}' ABSTRACT CASE (Chat, STRING);
 
 sendMessage '{messenger.chat.send.message}' (Chat chat) {
     sendMessage(chat, newMessage(chat));
     IF sendMessageResult() THEN {
-        MESSAGE sendMessageResult();
+        MESSAGE sendMessageResult() NOWAIT;
     }
     newMessage(chat) <- NULL;
 }
