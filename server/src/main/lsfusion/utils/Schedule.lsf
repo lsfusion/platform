@@ -23,15 +23,6 @@ captionDateFrom 'Дата с' = DATA STRING[100] (ScheduleDetail);
 dateTo 'Дата по' = DATA DATE (ScheduleDetail);
 captionDateTo 'Дата по' = DATA STRING[100] (ScheduleDetail);
 
-CONSTRAINT (timeFrom(ScheduleDetail d) AND NOT timeTo(d)) OR (timeTo(d) AND NOT timeFrom(d))
-    MESSAGE 'Интервал должен быть закрытым';
-    
-CONSTRAINT (dowFrom(ScheduleDetail d) AND NOT dowTo(d)) OR (dowTo(d) AND NOT dowFrom(d))
-    MESSAGE 'Интервал должен быть закрытым';
-    
-CONSTRAINT (dateFrom(ScheduleDetail d) AND NOT dateTo(d)) OR (dateTo(d) AND NOT dateFrom(d))
-    MESSAGE 'Интервал должен быть закрытым';   
-    
 CLASS Holidays 'Выходные дни' {
     onlyWeekdays 'Только по будням',
     onlyHolidays 'Только по выходным'    
@@ -40,54 +31,39 @@ CLASS Holidays 'Выходные дни' {
 holidays = DATA Holidays (ScheduleDetail);
 captionHolidays 'Выходные дни' (ScheduleDetail d)= staticCaption(holidays(d));
 
-inDate (DATETIME date, ScheduleDetail d) =
-    CASE WHEN d IS ScheduleDetail AND dateFrom(d) AND dateTo(d) AND number(extractMonth(dateFrom(d)))<=number(extractMonth(dateTo(d))) AND
-              extractDay(dateFrom(d))<=extractDay(dateTo(d)) AND number(extractMonth(dateFrom(d)))<=number(extractMonth(toDate(date))) AND 
-              extractDay(dateFrom(d))<=extractDay(toDate(date)) AND number(extractMonth(dateTo(d)))>=number(extractMonth(toDate(date))) AND extractDay(dateTo(d))>=extractDay(toDate(date)) THEN TRUE
-         WHEN d IS ScheduleDetail AND dateFrom(d) AND dateTo(d) AND number(extractMonth(dateFrom(d)))>=number(extractMonth(dateTo(d))) AND extractDay(dateFrom(d))>extractDay(dateTo(d)) AND        
-              ((number(extractMonth(dateFrom(d)))<=number(extractMonth(toDate(date))) AND extractDay(dateFrom(d))<=extractDay(toDate(date)) AND number(extractMonth(dateTo(d)))<=number(extractMonth(toDate(date))) AND extractDay(dateTo(d))<=extractDay(toDate(date))) OR
-               (number(extractMonth(dateFrom(d)))>=number(extractMonth(toDate(date))) AND extractDay(dateFrom(d))>=extractDay(toDate(date)) AND number(extractMonth(dateTo(d)))>=number(extractMonth(toDate(date))) AND extractDay(dateTo(d))>=extractDay(toDate(date)))) THEN TRUE
-         WHEN d IS ScheduleDetail AND NOT (dateFrom(d) AND dateTo(d)) AND date IS DATETIME THEN TRUE
-         ELSE NULL; 
-         
-inDate =
-    GROUP SUM 1 IF inDate(DATETIME date, ScheduleDetail d) BY date, schedule(d);
+extractDOY(DATE d) = extractMonthNumber(d) * 100 + extractDay(d);
 
-inDOW (DATETIME date, ScheduleDetail d) =
-    CASE WHEN d IS ScheduleDetail AND dowFrom(d) AND dowTo(d) AND numberM(dowFrom(d))<=numberM(dowTo(d)) AND 
-              numberM(dowFrom(d))<=numberM(extractDOW(toDate(date))) AND numberM(dowTo(d))>=numberM(extractDOW(toDate(date))) THEN TRUE
-         WHEN d IS ScheduleDetail AND dowFrom(d) AND dowTo(d) AND numberM(dowFrom(d))>numberM(dowTo(d)) AND 
-              ((numberM(dowFrom(d))<=numberM(extractDOW(toDate(date))) AND numberM(dowTo(d))<=numberM(extractDOW(toDate(date)))) OR 
-               (numberM(dowFrom(d))>=numberM(extractDOW(toDate(date))) AND numberM(dowTo(d))>=numberM(extractDOW(toDate(date))))) THEN TRUE 
-         WHEN d IS ScheduleDetail AND NOT (dowFrom(d) AND dowTo(d)) AND date IS DATETIME THEN TRUE
-         ELSE NULL;       
+ndoyFrom(ScheduleDetail d) = extractDOY(dateFrom(d)) MATERIALIZED; 
+ndoyTo(ScheduleDetail d) = extractDOY(dateTo(d)) MATERIALIZED; 
+inDOY (INTEGER ndoy, ScheduleDetail d) =
+    (ndoyTo(d) < ndoyFrom(d) AND (ndoy >= ndoyFrom(d) OR ndoy <= ndoyTo(d))) OR 
+    (NOT ndoyFrom(d) OR ndoy >= ndoyFrom(d)) AND 
+    (NOT ndoyTo(d) OR ndoy <= ndoyTo(d));
+inDOY (DATETIME date, ScheduleDetail d) = inDOY(extractDOY(toDate(date)), d);
 
-inDOW =
-    GROUP SUM 1 IF inDOW(DATETIME date, ScheduleDetail d) BY date, schedule(d);
+ndowTo(ScheduleDetail d) = numberM(dowTo(d)) MATERIALIZED;
+ndowFrom(ScheduleDetail d) = numberM(dowFrom(d)) MATERIALIZED;
+inDOW (INTEGER ndow, ScheduleDetail d) =
+    (ndowTo(d) < ndowFrom(d) AND (ndow >= ndowFrom(d) OR ndow <= ndowTo(d))) OR 
+    (NOT ndowFrom(d) OR ndow >= ndowFrom(d)) AND 
+    (NOT ndowTo(d) OR ndow <= ndowTo(d));
+inDOW (DATETIME date, ScheduleDetail d) = inDOW(numberM(extractDOW(toDate(date))), d);
         
-inTime (DATETIME hour, ScheduleDetail d)=
-    CASE WHEN d IS ScheduleDetail AND timeFrom(d) AND timeTo(d) AND extractHour(timeFrom(d))<=extractHour(timeTo(d)) AND
-              extractHour(timeFrom(d))<=extractHour(hour) AND extractHour(timeTo(d))>=extractHour(hour) THEN TRUE
-         WHEN d IS ScheduleDetail AND timeFrom(d) AND timeTo(d) AND extractHour(timeFrom(d))>extractHour(timeTo(d)) AND
-              ((extractHour(timeFrom(d))<=extractHour(hour) AND extractHour(timeTo(d))<=extractHour(hour)) OR 
-               (extractHour(timeFrom(d))>=extractHour(hour) AND extractHour(timeTo(d))>=extractHour(hour))) THEN TRUE 
-         WHEN d IS ScheduleDetail AND NOT (timeFrom(d) AND timeTo(d)) AND hour IS DATETIME THEN TRUE
-         ELSE NULL;            
-
-inTime =
-    GROUP SUM 1 IF inTime(DATETIME hour, ScheduleDetail d) BY hour, schedule(d);             
+inTime (TIME time, ScheduleDetail d)=
+    (timeTo(d) < timeFrom(d) AND (time >= timeFrom(d) OR time <= timeTo(d))) OR 
+    (NOT timeFrom(d) OR time >= timeFrom(d)) AND 
+    (NOT timeTo(d) OR time <= timeTo(d));
+inTime (DATETIME date, ScheduleDetail d)= inTime(toTime(date), d);
 
 isDayOff = ABSTRACT BOOLEAN (DATE);
 inHolidays (DATETIME date, ScheduleDetail d) =
     CASE WHEN d IS ScheduleDetail AND holidays(d) AND holidays(d)==Holidays.onlyHolidays AND isDayOff(toDate(date)) THEN TRUE
          WHEN d IS ScheduleDetail AND holidays(d) AND holidays(d)==Holidays.onlyWeekdays AND NOT isDayOff(toDate(date)) THEN TRUE
          WHEN d IS ScheduleDetail AND NOT holidays(d) AND date IS DATETIME THEN TRUE
-         ELSE NULL;
-         
-inHolidays =
-    GROUP SUM 1 IF inHolidays(DATETIME hour, ScheduleDetail d) BY hour, schedule(d);             
+         ELSE NULL;         
 
-in (DATETIME dt, Schedule s) = inDate(dt,s) AND inDOW(dt,s) AND inTime(dt,s) AND inHolidays(dt,s); 
+in (DATETIME dt, ScheduleDetail s) = inDOY(dt,s) AND inDOW(dt,s) AND inTime(dt,s) AND inHolidays(dt,s); 
+in (DATETIME dt, Schedule s) = GROUP SUM 1 IF in(dt, ScheduleDetail d) BY schedule(d);
 
 dateCaption 'День' = DATA LOCAL NESTED STRING[100] (INTEGER ); 
 day = DATA LOCAL NESTED INTEGER (INTEGER );
@@ -193,6 +169,7 @@ DESIGN schedule {
 FORM dialogSchedules 'Расписания'
     OBJECTS s = Schedule  
     PROPERTIES(s) READONLY name
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
     
     OBJECTS d = ScheduleDetail
     PROPERTIES(d) READONLY captionDateFrom, captionDateTo, captionDowFrom, captionDowTo, timeFrom, timeTo, captionHolidays

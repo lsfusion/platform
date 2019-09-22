@@ -25,6 +25,7 @@ currentDate '{time.current.date}' = DATA DATE ();
 extractYear = FORMULA INTEGER PG '(extract(year from ($1)))', MS 'datepart(yy, $1)';
 extractMonthNumber = FORMULA INTEGER PG '(extract(month from ($1)))', MS 'datepart(mm, $1)';
 extractDay = FORMULA INTEGER PG '(extract(day from ($1)))', MS 'datepart(dd, $1)';
+extractDOY = FORMULA INTEGER PG '(extract(doy from ($1)))', MS 'datepart(dy, $1)';
 
 currentDay = extractDay(currentDate());
 currentMonth  = extractMonthNumber(currentDate());
