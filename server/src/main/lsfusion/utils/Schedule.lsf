@@ -171,11 +171,6 @@ FORM dialogSchedules 'Расписания'
     PROPERTIES(s) READONLY name
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
     
-    OBJECTS d = ScheduleDetail
-    PROPERTIES(d) READONLY captionDateFrom, captionDateTo, captionDowFrom, captionDowTo, timeFrom, timeTo, captionHolidays
-    
-    FILTERS schedule(d)==s
-
     LIST Schedule OBJECT s
 ;
 
