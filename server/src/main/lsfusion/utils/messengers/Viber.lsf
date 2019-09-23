@@ -50,21 +50,16 @@ webHookViber(JSONFILE f) {
     IMPORT webHookViber JSON FROM f;
     
     IF event() == 'subscribed' OR event() == 'message' THEN {        
-        LOCAL id = STRING();
-        id() <- IF event() == 'subscribed' THEN userId() ELSE senderId();
-        LOCAL name = STRING();
-        name() <- IF event() == 'subscribed' THEN userName() ELSE senderName();
-    
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(account(LONG(params('botid'))), id());
+        chat() <- chatIdAccount(account(LONG(params('botid'))), IF event() == 'subscribed' THEN userId() ELSE senderId());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
                 account(chat) <- account(LONG(params('botid')));
-                id(chat()) <- id();
+                id(chat()) <- IF event() == 'subscribed' THEN userId() ELSE senderId();
             }
         }
-        name(chat()) <-name();
+        name(chat()) <- IF event() == 'subscribed' THEN userName() ELSE senderName();
         chatType(chat()) <- ChatType.private;
     } ELSE IF event() == 'unsubscribed' THEN {
         DELETE Chat c WHERE id(c) == user_id() AND account(c) == account(LONG(params('botid')));
