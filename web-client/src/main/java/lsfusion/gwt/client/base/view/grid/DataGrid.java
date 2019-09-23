@@ -299,7 +299,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     int oldLocalSelectedRow = -1;
     int oldLocalSelectedCol = -1;
 
-    private int rowHeight = 16;
+    private int rowHeight = 19;
 
     private int pageIncrement = 30;
 
@@ -1905,6 +1905,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         int newLocalSelectedCol = getKeyboardSelectedColumn();
 
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
+        NodeList<TableRowElement> headerRows = tableHeader.tableElement.getTHead().getRows();
         int tableRowCount = rows.getLength();
 
         if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow <= tableRowCount) {
@@ -1915,7 +1916,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             }
             if (oldLocalSelectedRow != newLocalSelectedRow || oldLocalSelectedCol != newLocalSelectedCol) {
                 if (oldLocalSelectedCol >= 0 && oldLocalSelectedCol < getColumnCount()) {
-                    setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, rows, false);
+                    setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, rows, headerRows, false);
                 }
             }
         }
@@ -1924,14 +1925,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             TableRowElement newTR = rows.getItem(newLocalSelectedRow);
 
             setRowStyleName(newTR, selectedRowStyle, selectedRowCellStyle, focusable && (isFocused || !isRemoveKeyboardStylesOnBlur()));
-            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, focusable && isFocused);
+            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRows, focusable && isFocused);
 
             oldLocalSelectedRow = newLocalSelectedRow;
             oldLocalSelectedCol = newLocalSelectedCol;
         }
     }
 
-    private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, boolean focused) {
+    private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, NodeList<TableRowElement> headerRows, boolean focused) {
         int rowCount = rows.getLength();
         int columnCount = getColumnCount();
 
@@ -1953,7 +1954,15 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             }
         }
 
-        if (row > 0 && row <= rowCount) {
+        if (row == 0 && headerRows != null) {
+            TableRowElement headerTR = headerRows.getItem(0);
+            if (headerTR != null) {
+                TableCellElement headerCell = headerTR.getCells().getItem(column);
+                if (headerCell != null) {
+                    setStyleName(headerCell, topOfFocusedCellStyle, focused);
+                }
+            }
+        } else if (row > 0 && row <= rowCount) {
             TableCellElement topTD = rows.getItem(row - 1).getCells().getItem(column);
             if (topTD != null) {
                 setStyleName(topTD, topOfFocusedCellStyle, focused);

@@ -7,6 +7,10 @@ import java.util.Collection;
 import java.util.List;
 
 public class GFilterConditionListBox extends ListBox {
+    public GFilterConditionListBox() {
+        addStyleName("filterListBox");
+    }
+    
     List<Object> items = new ArrayList<>();
 
     public void add(Object item) {

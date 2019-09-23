@@ -20,11 +20,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     @Override
     public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
-        divStyle.setBackgroundColor("#F1F1F1");
-        divStyle.setBorderColor("#BBB #BBB #A0A0A0");
-        divStyle.setBorderWidth(1, Style.Unit.PX);
-        divStyle.setBorderStyle(Style.BorderStyle.SOLID);
-        divStyle.setProperty("borderRadius", 3, Style.Unit.PX);
+        cellElement.addClassName("gwt-Button");
         divStyle.setWidth(100, Style.Unit.PCT);
 
         // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой

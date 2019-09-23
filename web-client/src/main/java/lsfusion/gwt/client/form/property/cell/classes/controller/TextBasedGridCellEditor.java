@@ -173,9 +173,11 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         input.setTabIndex(-1);
         input.setValue(currentText);
         input.addClassName("boxSized");
+        input.addClassName("textBasedGridCellEditor");
 
         Style inputStyle = input.getStyle();
         inputStyle.setBorderWidth(0, Style.Unit.PX);
+        inputStyle.setOutlineStyle(Style.OutlineStyle.NONE);
         inputStyle.setMargin(0, Style.Unit.PX);
         inputStyle.setPaddingTop(0, Style.Unit.PX);
         inputStyle.setPaddingRight(4, Style.Unit.PX);

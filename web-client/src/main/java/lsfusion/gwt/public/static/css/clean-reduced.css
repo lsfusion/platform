@@ -12,12 +12,8 @@
  *    }
  */
 
-body {
-    font-family: Arial Unicode MS, Arial, sans-serif;
-}
-
 pre {
-    font-family: "courier new", courier;
+    font-family: "courier new", courier, sans-serif;
     font-size: small;
 }
 body {
@@ -61,11 +57,8 @@ select {
     cursor: pointer;
     cursor: hand;
     font-size:small;
-    background: url("../images/hborder.png") repeat-x 0px -2077px;
+    background: #F1F1F1;
     border:1px solid #bbb;
-    border-bottom: 1px solid #a0a0a0;
-    border-radius: 3px;
-    -moz-border-radius: 3px;
 }
 .gwt-Button:active {
     border: 1px inset #ccc;
@@ -157,7 +150,6 @@ select {
     background: #F1F1F1;
     padding: 4px 8px 4px 4px;
     cursor: default;
-    font-family: Arial Unicode MS, Arial, sans-serif;
     font-weight: bold;
     border-bottom: 1px solid #bbbbbb;
     border-top: 1px solid #D2D2D2;
@@ -165,7 +157,7 @@ select {
 .gwt-DialogBox .dialogContent {
 }
 .gwt-DialogBox .dialogMiddleCenter {
-    padding: 3px;
+    padding: 5px;
     background: white;
 }
 .gwt-DialogBox .dialogBottomCenter {
@@ -291,20 +283,11 @@ select {
 .gwt-Image {
 }
 
-.gwt-Label {
-    font-family: Arial Unicode MS, Arial, sans-serif;
-}
-
-.gwt-ListBox {
-    font-family: Arial Unicode MS, Arial, sans-serif;
-}
-
 .gwt-MenuBar {
     cursor: default;
 }
 .gwt-MenuBar .gwt-MenuItem {
     cursor: default;
-    font-family: Arial Unicode MS, Arial, sans-serif;
 }
 .gwt-MenuBar .gwt-MenuItem-selected {
     background: #E3E8F3;
@@ -793,7 +776,6 @@ select {
     border: 1px solid #ccc;
     border-top: 1px solid #999;
     font-size: 100%;
-    font-family: Arial Unicode MS, Arial, sans-serif;
 }
 
 .gwt-SuggestBoxPopup {
@@ -899,7 +881,6 @@ select {
 }
 
 .gwt-TabBar {
-    background: #ccc;
     padding-top: 5px;
 }
 .gwt-TabBar .gwt-TabBarFirst {
@@ -909,36 +890,43 @@ select {
 }
 .gwt-TabBar .gwt-TabBarItem {
     margin-left: 4px;
-    margin-top: 1px;
-    padding: 4px 8px 4px 8px;
+    padding: 3px 6px 2px;
     cursor: pointer;
     cursor: hand;
-    color: white;
     font-weight: normal;
     text-align: center;
-    background: #8E8E8E;
-    -moz-border-radius: 3px 3px 0px 0px;
-    border-radius: 3px 3px 0px 0px;
+    background: #F1F1F1;
+    border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
 }
 .gwt-TabBar .gwt-TabBarItem-selected {
     cursor: default;
     background: white;
-    color: #333;
-    font-weight: bold;
 }
 .gwt-TabBar .gwt-TabBarItem-disabled {
     cursor: default;
     color: #999999;
 }
+
+.gwt-TabBar .gwt-TabBarItem:hover {
+    background: #f5f5f5;
+}
+
+.gwt-TabBar .gwt-TabBarItem-selected:hover {
+    background: white;    
+}
+
 .gwt-TabPanel {
+    margin: 0 0.1em 0.1em;
 }
 .gwt-TabPanelBottom {
     border-color: #ccc;
     border-style: solid;
-    border-width: 0px 1px 1px;
+    border-width: 1px;
     /*overflow: visible; *//* вероятно помогает избежать непрерывной перерисовки в FF */
     overflow: hidden;
-    padding: 1px;
+    padding: 0.1em;
 }
 .gwt-DecoratedTabBar {
     background: #ccc;
@@ -1032,7 +1020,6 @@ select {
     border: 1px solid #ccc;
     border-top: 1px solid #666;
     font-size: 100%;
-    font-family: Arial Unicode MS, Arial, sans-serif;
 }
 .gwt-TextArea-readonly {
     color: #888;
@@ -1043,7 +1030,6 @@ select {
     border: 1px solid #ccc;
     border-top: 1px solid #999;
     font-size: small;
-    font-family: Arial Unicode MS, Arial, sans-serif;
 }
 .gwt-TextBox-readonly {
     color: #888;
@@ -1261,44 +1247,57 @@ td.datePickerMonth {
 .gwt-TabLayoutPanel {
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTabs {
-    background: #ccc;
-    padding-top: 6px;
+    padding-top: 0;
     padding-left: 5px;
+    top: 0;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContentContainer {
     border-color: #ccc;
     border-style: solid;
-    border-width: 0px 1px 1px;
+    border-width: 1px;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
     overflow: hidden;
-    padding: 6px;
+    border-top: 1px solid white;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
     margin-left: 4px;
-    padding: 4px 8px 4px 8px;
+    padding: 1px 3px 4px 5px;
     cursor: pointer;
     cursor: hand;
-    color: white;
     font-weight: normal;
     text-align: center;
-    background: #8E8E8E;
-    -moz-border-radius: 3px 3px 0px 0px;
-    border-radius: 3px 3px 0px 0px;
+    background: #F1F1F1;
+    border: 1px solid #ccc;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected {
     cursor: default;
     background: white;
     color: #333;
-    font-weight: bold;
+}
+
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab:hover {
+    background: #f5f5f5;
+}
+
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected:hover {
+    background: white;
 }
 
 .gwt-SplitLayoutPanel-HDragger {
-    background: #e7e7e7 url(../images/thumb_vertical.png) center center no-repeat;
     cursor: col-resize;
+    width: 2px !important;
+    margin: 0 2px;
+    border-left: 1px solid #a9a9a9;
+    border-right: 1px solid #a9a9a9;
+    background: #F1F1F1;
 }
 
 .gwt-SplitLayoutPanel-VDragger {
-    background: #e7e7e7 url(../images/thumb_horz.png) center center no-repeat;
     cursor: row-resize;
+    height: 2px !important;
+    margin: 2px 0;
+    border-top: 1px solid #a9a9a9;
+    border-bottom: 1px solid #a9a9a9;
+    background: #F1F1F1;
 }

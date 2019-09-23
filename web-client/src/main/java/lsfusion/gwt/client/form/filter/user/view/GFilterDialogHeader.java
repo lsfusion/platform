@@ -39,7 +39,7 @@ public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox
                 });
             }
         };
-        collapseButton.addStyleName("filterDialogHeaderButton");
+        collapseButton.addStyleName("filterDialogButton");
         collapseButton.addStyleName("flowPanelChildRightAlign");
 
         add(captionWidget);

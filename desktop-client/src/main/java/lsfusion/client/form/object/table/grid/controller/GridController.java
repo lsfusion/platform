@@ -102,8 +102,8 @@ public class GridController extends AbstractTableController {
             }
             grid.addView(formLayout);
 
-            showType = new ShowTypeController(groupObject, this, this.formController);
-            showType.addView(formLayout);
+//            showType = new ShowTypeController(groupObject, this, this.formController);
+//            showType.addView(formLayout);
 
             configureToolbar();
         }
@@ -513,7 +513,7 @@ public class GridController extends AbstractTableController {
                 objects.get(object).setVisible(grid.isVisible());
             }
 
-            showType.update(classView);
+//            showType.update(classView);
         }
 
         panel.update();

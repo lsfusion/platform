@@ -7,13 +7,13 @@
 }
 
 .dataGridHeader {
-    border-bottom: 2px solid #6f7277;
 }
 
 .dataGridHeaderCell {
     border-left: 1px solid #CCCCCC;
     padding: 0 2px;
-    color: #4b4a4a;
+    font-weight: normal;
+    border-bottom: 1px solid #ccc;
 }
 
 .dataGridFirstHeaderCell {}
@@ -42,6 +42,10 @@
 
 .dataGridCell p {
     margin: 0;
+    top: 50%;
+    transform: translate(0, -50%);
+    position: absolute;
+    white-space: pre;
 }
 
 .dataGridFirstCell {}

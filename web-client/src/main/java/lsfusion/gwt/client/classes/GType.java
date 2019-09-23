@@ -41,7 +41,7 @@ public abstract class GType implements Serializable {
 
     public abstract int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor);
     public int getDefaultHeight(GFont font) {
-        return font == null || font.size == null ? 16 : GFontMetrics.getSymbolHeight(font);
+        return font == null || font.size == null ? 19 : GFontMetrics.getSymbolHeight(font);
     }
 
     public abstract GCompare[] getFilterCompares();

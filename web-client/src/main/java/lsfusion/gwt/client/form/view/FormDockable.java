@@ -144,7 +144,8 @@ public final class FormDockable {
 
         private void addFullSizeChild(Widget child) {
             add(child);
-            setWidgetLeftRight(child, 0, Style.Unit.PX, 0, Style.Unit.PX);
+            setWidgetLeftRight(child, 0.1, Style.Unit.EM, 0.1, Style.Unit.EM);
+            setWidgetTopBottom(child, 0.1, Style.Unit.EM, 0.1, Style.Unit.EM);
         }
 
         public void setBlocked(boolean blocked) {
@@ -184,7 +185,10 @@ public final class FormDockable {
             closeButton.setStyleName("closeTabButton");
 
             add(label);
+            setCellVerticalAlignment(label, ALIGN_MIDDLE);
+            
             add(closeButton);
+            setCellVerticalAlignment(closeButton, ALIGN_MIDDLE);
 
             closeButton.addClickHandler(new ClickHandler() {
                 @Override

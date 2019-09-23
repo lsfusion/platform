@@ -31,6 +31,7 @@ public abstract class DefaultFormsController implements FormsController {
     public DefaultFormsController(String tabSID) {
         this.tabSID = tabSID;
         tabsPanel = new TabLayoutPanel(21, Style.Unit.PX);
+        tabsPanel.setVisible(false);
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
             public void onSelection(SelectionEvent<Integer> event) {
@@ -118,6 +119,9 @@ public abstract class DefaultFormsController implements FormsController {
 
     private FormDockable addDockable(FormDockable dockable, String formSID) {
         formsList.add(formSID);
+        if (tabsPanel.getWidgetCount() == 0) {
+            tabsPanel.setVisible(true);
+        }
         tabsPanel.add(dockable.getContentWidget(), dockable.getTabWidget());
         tabsPanel.selectTab(dockable.getContentWidget());
         return dockable;
@@ -127,6 +131,9 @@ public abstract class DefaultFormsController implements FormsController {
         dropCurForm(dockable.getForm());
         formsList.remove(formSID);
         tabsPanel.remove(dockable.getContentWidget());
+        if (tabsPanel.getWidgetCount() == 0) {
+            tabsPanel.setVisible(false);
+        }
     }
 
     private void setCurForm(GFormController form) {

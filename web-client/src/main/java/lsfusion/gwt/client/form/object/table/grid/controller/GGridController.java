@@ -53,9 +53,9 @@ public class GGridController extends GAbstractTableController {
             grid = new GGridTableController(groupObject.grid, formController, this, userPreferences);
             grid.addToLayout(getFormLayout());
 
-            showTypeView = new GShowTypeView(formController, groupObject);
-            showTypeView.addToLayout(getFormLayout());
-            showTypeView.setBanClassViews(groupObject.banClassView);
+//            showTypeView = new GShowTypeView(formController, groupObject);
+//            showTypeView.addToLayout(getFormLayout());
+//            showTypeView.setBanClassViews(groupObject.banClassView);
 
             configureToolbar();
         }
@@ -359,7 +359,7 @@ public class GGridController extends GAbstractTableController {
 
             formController.setFiltersVisible(groupObject, grid.isVisible());
 
-            showTypeView.update(classView);
+//            showTypeView.update(classView);
         }
 
         panel.update();

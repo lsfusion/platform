@@ -37,6 +37,8 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 
         // важно оставить множественные пробелы
         divStyle.setWhiteSpace(Style.WhiteSpace.PRE);
+        
+        divStyle.setPosition(Style.Position.RELATIVE);
 
         //нужно для эллипсиса, но подтормаживает рендеринг,
         //оставлено закомменченым просто для справки

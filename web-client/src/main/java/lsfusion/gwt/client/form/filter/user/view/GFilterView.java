@@ -52,6 +52,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
             }
         };
         applyButton.addStyleName("flowPanelChildLeftAlign");
+        applyButton.addStyleName("filterDialogButton");
 
         GToolbarButton addConditionButton = new GToolbarButton(ADD_CONDITION, messages.formQueriesFilterAddCondition() + " (alt + F2)") {
             @Override
@@ -65,6 +66,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
             }
         };
         addConditionButton.addStyleName("flowPanelChildRightAlign");
+        addConditionButton.addStyleName("filterDialogButton");
 
         FlowPanel controlPanel = new FlowPanel();
         controlPanel.add(applyButton);

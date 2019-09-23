@@ -107,7 +107,6 @@ public class DataPanelRenderer implements PanelRenderer {
             gridPanel.setWidth(preferredWidth);
         }
 
-        label.getElement().getStyle().setProperty("minHeight", property.getLabelHeight() + "px");
         gridPanel.getElement().getStyle().setProperty("minHeight", preferredHeight);
         gridPanel.getElement().getStyle().setProperty("minWidth", preferredWidth);
         gridPanel.getElement().getStyle().setProperty("maxHeight", preferredHeight);

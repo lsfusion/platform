@@ -272,6 +272,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
         });
 
         HorizontalPanel buttons = new HorizontalPanel();
+        buttons.setSpacing(3);
         buttons.add(okButton);
         buttons.add(cancelButton);
 

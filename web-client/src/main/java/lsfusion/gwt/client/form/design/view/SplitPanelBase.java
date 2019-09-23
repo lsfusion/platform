@@ -10,7 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.design.GComponent;
 
 public abstract class SplitPanelBase<P extends Panel> {
-    private final static int splitterSize = 8;
+    public final static int DEFAULT_SPLITTER_SIZE = 2;
 
     protected final P panel;
 
@@ -82,11 +82,11 @@ public abstract class SplitPanelBase<P extends Panel> {
     }
 
     protected int getAvailableSize() {
-        return (vertical ? panel.getOffsetHeight() : panel.getOffsetWidth()) - (splitter.isVisible() ? splitterSize : 0);
+        return (vertical ? panel.getOffsetHeight() : panel.getOffsetWidth()) - (splitter.isVisible() ? DEFAULT_SPLITTER_SIZE : 0);
     }
 
     public int getSplitterSize() {
-        return splitterSize;
+        return DEFAULT_SPLITTER_SIZE;
     }
 
     public P asWidget() {
@@ -174,16 +174,6 @@ public abstract class SplitPanelBase<P extends Panel> {
                 return false;
             }
 
-            if (vertical) {
-                draggerElement.getStyle().setLeft(0, Style.Unit.PX);
-                draggerElement.getStyle().setRight(0, Style.Unit.PX);
-                draggerElement.getStyle().setHeight(5, Style.Unit.PX);
-            } else {
-                draggerElement.getStyle().setTop(0, Style.Unit.PX);
-                draggerElement.getStyle().setBottom(0, Style.Unit.PX);
-                draggerElement.getStyle().setWidth(5, Style.Unit.PX);
-            }
-
             panel.getElement().appendChild(draggerElement);
             moveDragger(position);
             return true;
@@ -205,7 +195,7 @@ public abstract class SplitPanelBase<P extends Panel> {
     protected class HSplitter extends Splitter {
         public HSplitter() {
             setStyleName("gwt-SplitLayoutPanel-HDragger");
-            setWidth(splitterSize + "px");
+            setWidth(DEFAULT_SPLITTER_SIZE + "px");
         }
 
         @Override
@@ -217,7 +207,7 @@ public abstract class SplitPanelBase<P extends Panel> {
     protected class VSplitter extends Splitter {
         public VSplitter() {
             setStyleName("gwt-SplitLayoutPanel-VDragger");
-            setHeight(splitterSize + "px");
+            setHeight(DEFAULT_SPLITTER_SIZE + "px");
         }
 
         @Override

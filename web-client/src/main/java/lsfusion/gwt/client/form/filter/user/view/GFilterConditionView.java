@@ -43,6 +43,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler) {
         this.condition = iCondition;
         this.handler = handler;
+        setVerticalAlignment(ALIGN_MIDDLE);
 
         propertyView = new GFilterConditionListBox();
         propertyView.addStyleName("customFontPresenter");
@@ -149,6 +150,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
                 });
             }
         };
+        deleteButton.addStyleName("filterDialogButton");
         add(deleteButton);
 
         filterChanged();

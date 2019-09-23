@@ -60,7 +60,7 @@ public class HeaderPanel extends Panel implements RequiresResize {
         contentContainer.getStyle().setOverflow(Style.Overflow.HIDDEN);
         contentContainer.getStyle().setTop(lastContentTop, Style.Unit.PX);
         contentContainer.getStyle().setBottom(lastContentBottom, Style.Unit.PX);
-        contentContainer.getStyle().setMarginTop(lastContentTop > 0 ? 2 : 0, Style.Unit.PX);
+        contentContainer.getStyle().setMarginTop(lastContentTop > 0 ? 1 : 0, Style.Unit.PX);
         elem.appendChild(contentContainer);
     }
 
@@ -193,8 +193,8 @@ public class HeaderPanel extends Panel implements RequiresResize {
         Element container = Document.get().createDivElement().cast();
         container.getStyle().setPosition(Style.Position.ABSOLUTE);
         container.getStyle().setDisplay(Style.Display.NONE);
-        container.getStyle().setLeft(0.0, Style.Unit.PX);
-        container.getStyle().setRight(0.0, Style.Unit.PX);
+        container.getStyle().setLeft(-1.0, Style.Unit.PX);
+        container.getStyle().setRight(-1.0, Style.Unit.PX);
         return container;
     }
 
@@ -230,7 +230,7 @@ public class HeaderPanel extends Panel implements RequiresResize {
 
         if (contentTop != lastContentTop) {
             contentContainer.getStyle().setTop(contentTop, Style.Unit.PX);
-            contentContainer.getStyle().setMarginTop(contentTop > 0 ? 2 : 0, Style.Unit.PX);
+            contentContainer.getStyle().setMarginTop(contentTop > 0 ? 1 : 0, Style.Unit.PX);
             lastContentTop = contentTop;
         }
         if (contentBottom != lastContentBottom) {

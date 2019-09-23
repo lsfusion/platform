@@ -22,6 +22,8 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
 
         TextAreaElement textArea = div.appendChild(Document.get().createTextAreaElement());
         textArea.setTabIndex(-1);
+        
+        textArea.addClassName("textBasedGridCellEditor");
 
         Style textareaStyle = textArea.getStyle();
         textareaStyle.setBorderWidth(0, Style.Unit.PX);
@@ -34,6 +36,7 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
         textareaStyle.setProperty("resize", "none");
         textareaStyle.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
         textareaStyle.setProperty("wordWrap", "break-word");
+        textareaStyle.setOutlineStyle(Style.OutlineStyle.NONE);
 
         GFont font = property.font;
         if (font == null && table instanceof GGridPropertyTable) {

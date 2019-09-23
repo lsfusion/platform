@@ -158,7 +158,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     @Override
     protected void onFocus() {
         super.onFocus();
-        changeBorder("black");
+        changeBorder("#6b6b6b");
     }
 
     @Override
