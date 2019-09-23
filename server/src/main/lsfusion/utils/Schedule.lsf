@@ -156,7 +156,7 @@ DESIGN schedule {
             MOVE BOX (date);
             MOVE BOX (hour);
             PROPERTY(showIn(hour,date,s)){
-                valueWidth = 4;
+                charWidth = 4;
             }
             PROPERTY(showIn(hour,date,s)){
                 valueHeight = 4;
