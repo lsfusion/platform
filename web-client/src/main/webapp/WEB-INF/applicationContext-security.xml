@@ -12,7 +12,7 @@
     <!-- API doesn't need to redirect to login.jsp and the real authentication process is on app server-->
     <!-- unlike ant matcher, regex respects ? so we need this odd regex-->
     <!-- we're trying to avoid creating sessions (it's important for REST requests, otherwise session will be created every time with authenticated request) -->
-    <http request-matcher="regex" pattern="^/(exec|eval|eval/action|form)($|\?.*)" create-session="never">
+    <http request-matcher="regex" pattern="^/(((exec|eval)($|\?.*|/.*))|(form($|\?.*)))" create-session="never">
         <http-basic/>
         <csrf disabled="true"/>
 
