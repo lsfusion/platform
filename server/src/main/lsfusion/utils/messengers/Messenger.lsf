@@ -4,6 +4,7 @@ REQUIRE Reflection, Utils;
 
 CLASS Messenger {}
 isSynchronize = ABSTRACT CASE BOOLEAN (Messenger);
+showTitle = ABSTRACT CASE BOOLEAN (Messenger);
 
 CLASS ChatType {
     private 'Private',
@@ -25,10 +26,10 @@ TABLE chat (Chat);
 
 account = DATA Account (Chat);
 chatType = DATA ChatType (Chat);
-captionChatType '{messenger.chat.type}' (Chat c) = staticCaption(chatType(c)) CHARWIDTH 10;
+captionChatType '{messenger.chat.type}' (Chat c) = staticCaption(chatType(c)) CHARWIDTH 10 IN id;
 id '{messenger.chat.id}' = DATA STRING (Chat) CHARWIDTH 10;
 chatIdAccount = GROUP AGGR Chat c BY account(c), id(c);
-username '{messenger.chat.username}' = DATA STRING (Chat);
+name '{messenger.chat.name}' = DATA STRING (Chat) IN id;
 title '{messenger.chat.title}' = DATA STRING (Chat);
 newMessage '{messenger.chat.new.message}' = DATA LOCAL TEXT (Chat);
 
@@ -58,7 +59,7 @@ FORM messengers '{messenger.messengers}'
     PROPERTIES(a) READONLY name, captionMessenger, token 
     PROPERTIES(a) NEWSESSION synchronizeChatsAction TOOLBAR SHOWIF isSynchronize(messenger(a)), NEW, EDIT, DELETE 
     OBJECTS c = Chat
-    PROPERTIES(c) READONLY id, captionChatType, username, title
+    PROPERTIES(c) READONLY id, captionChatType, name, title SHOWIF showTitle(messenger(a))
     PROPERTIES(c) PANEL newMessage, sendMessage
     
     FILTERS account(c) == a;

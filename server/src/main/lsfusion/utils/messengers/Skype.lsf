@@ -35,7 +35,7 @@ webHookSkype(JSONFILE f) {
                 id(chat()) <- conversationId();
             }
         }
-        username(chat()) <-fromName();
+        name(chat()) <-fromName();
         baseUrlSkype(chat()) <- serviceUrl();
         chatType(chat()) <- ChatType.private;
     } ELSE IF action() == 'remove' THEN {

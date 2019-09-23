@@ -26,25 +26,35 @@ WHEN SET (Account a IS Account) AND isViber(a) DO {
     setWebHookViber(a);
     IF setWebHookViberResult() THEN {
         MESSAGE setWebHookViberResult() NOWAIT;
+        CANCEL;
     }
 }
 
 GROUP user;
+GROUP sender;
 event = DATA LOCAL STRING();
 user_id = DATA LOCAL STRING();
-id = DATA LOCAL STRING();
-name = DATA LOCAL STRING();
+userId = DATA LOCAL STRING();
+userName = DATA LOCAL STRING();
+senderId = DATA LOCAL STRING();
+senderName = DATA LOCAL STRING();
 
 FORM webHookViber
     PROPERTIES() event, user_id
-    PROPERTIES() IN user id, name;
+    PROPERTIES() IN user userId EXTID 'id', userName EXTID 'name'
+    PROPERTIES() IN sender senderId EXTID 'id', senderName EXTID 'name';
 
 webHookViber(JSONFILE f) {
     printToLog(resultString());
     
     IMPORT webHookViber JSON FROM f;
     
-    IF event() == 'conversation_started' THEN {
+    IF event() == 'subscribed' OR event() == 'message' THEN {        
+        LOCAL id = STRING();
+        id() <- IF event() == 'subscribed' THEN userId() ELSE senderId();
+        LOCAL name = STRING();
+        name() <- IF event() == 'subscribed' THEN userName() ELSE senderName();
+    
         LOCAL chat = Chat();
         chat() <- chatIdAccount(account(LONG(params('botid'))), id());
         IF NOT chat() THEN {
@@ -54,7 +64,7 @@ webHookViber(JSONFILE f) {
                 id(chat()) <- id();
             }
         }
-        username(chat()) <-name();
+        name(chat()) <-name();
         chatType(chat()) <- ChatType.private;
     } ELSE IF event() == 'unsubscribed' THEN {
         DELETE Chat c WHERE id(c) == user_id() AND account(c) == account(LONG(params('botid')));

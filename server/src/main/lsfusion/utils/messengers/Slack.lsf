@@ -7,6 +7,7 @@ REQUIRE Messenger;
 EXTEND CLASS Messenger { slack 'Slack' }
 isSlack(Account a) = messenger(a) == Messenger.slack;
 isSynchronize(Messenger m) += WHEN m == Messenger.slack THEN TRUE;
+showTitle(Messenger m) += WHEN m == Messenger.slack THEN TRUE;
 
 type = DATA LOCAL STRING();
 challenge = DATA LOCAL STRING();
@@ -77,15 +78,15 @@ synchronizeChatsSlack (Account a) {
                
                IF is_im(channel) THEN {
                    chatType(chat()) <- ChatType.private;
-                   username(chat()) <- '@' + usernames(user(channel));
+                   name(chat()) <- '@' + usernames(user(channel));
                    title(chat()) <- realnames(user(channel));
                } ELSE IF is_channel(channel) THEN {
                    chatType(chat()) <- ChatType.channel;
-                   username(chat()) <- '#' + channelName(channel);
+                   name(chat()) <- '#' + channelName(channel);
                    title(chat()) <- IF value(channel) != '' THEN value(channel) ELSE channelName(channel);
                } ELSE IF is_group(channel) THEN {
                    chatType(chat()) <- ChatType.group;
-                   username(chat()) <- '#' + channelName(channel);
+                   name(chat()) <- '#' + channelName(channel);
                    title(chat()) <- IF value(channel) != '' THEN value(channel) ELSE channelName(channel);
                }
                synchronized(chat()) <- TRUE;

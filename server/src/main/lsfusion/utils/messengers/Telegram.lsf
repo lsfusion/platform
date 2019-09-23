@@ -4,6 +4,7 @@ REQUIRE Messenger;
 
 EXTEND CLASS Messenger { telegram 'Telegram' }
 isTelegram(Account a) = messenger(a) == Messenger.telegram;
+showTitle(Messenger m) += WHEN m == Messenger.telegram THEN TRUE;
 
 setWebHookTelegramResult = DATA LOCAL STRING();
 setWebHookTelegram(Account account) {
@@ -23,19 +24,26 @@ WHEN SET (Account a IS Account) AND isTelegram(a) DO {
     setWebHookTelegram(a);
     IF setWebHookTelegramResult() THEN {
         MESSAGE setWebHookTelegramResult() NOWAIT;
+        CANCEL;
     }
 }
 
-GROUP message;
-GROUP chat : message;
+GROUP privateMessage EXTID 'message';
+GROUP privateChat EXTID 'chat': privateMessage;
+GROUP channelPost EXTID 'channel_post';
+GROUP channelChat EXTID 'chat' : channelPost;
 id = DATA LOCAL STRING();
 type = DATA LOCAL STRING();
 first_name = DATA LOCAL STRING();
 username = DATA LOCAL STRING();
 title = DATA LOCAL STRING();
+channelId = DATA LOCAL STRING();
+channelUsername = DATA LOCAL STRING();
+channelTitle = DATA LOCAL STRING();
 
 FORM webHookTelegram
-PROPERTIES() IN chat id, type, first_name, username, title;
+PROPERTIES() IN privateChat id, type, first_name, username, title
+PROPERTIES() IN channelChat channelId EXTID 'id', channelUsername EXTID 'username', channelTitle EXTID 'title';
 
 webHookTelegram(JSONFILE f) {
     printToLog(STRING(f));
@@ -43,21 +51,21 @@ webHookTelegram(JSONFILE f) {
     IMPORT webHookTelegram JSON FROM f;
     
     LOCAL chat = Chat();
-    chat() <- chatIdAccount(account(LONG(params('botid'))), id());
+    chat() <- chatIdAccount(account(LONG(params('botid'))), IF channelId() THEN channelId() ELSE id());
     IF NOT chat() THEN {
         NEW chat = Chat {
             chat() <- chat;
             account(chat) <- account(LONG(params('botid')));
-            id(chat()) <- id();
+            id(chat()) <- IF channelId() THEN channelId() ELSE id();
         }
     }
-    username(chat()) <-username();
+    name(chat()) <- IF channelId() THEN channelUsername() ELSE username();
     title(chat()) <- CASE WHEN type() == 'private' THEN first_name()
                           WHEN type() == 'group' THEN title()
-                          WHEN type() == 'channel' THEN title();
+                          WHEN channelId() THEN channelTitle();
     chatType(chat()) <- CASE WHEN type() == 'private' THEN ChatType.private 
                              WHEN type() == 'group' THEN ChatType.group
-                             WHEN type() == 'channel' THEN ChatType.channel;
+                             WHEN channelId() THEN ChatType.channel;
  
     APPLY;
 } @@noauth;
