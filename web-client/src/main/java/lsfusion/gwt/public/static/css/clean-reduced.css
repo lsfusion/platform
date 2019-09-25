@@ -57,14 +57,17 @@ select {
     cursor: pointer;
     cursor: hand;
     font-size:small;
-    background: #F1F1F1;
+    background: white;
     border:1px solid #bbb;
 }
 .gwt-Button:active {
     border: 1px inset #ccc;
 }
 .gwt-Button:hover {
-    border-color: #939393;
+    background: rgba(4, 137, 186, 0.09411764705882353);
+}
+.gwt-Button:focus {
+    border-color: #0489BA;
 }
 .gwt-Button[disabled] {
     cursor: default;
@@ -895,14 +898,14 @@ select {
     cursor: hand;
     font-weight: normal;
     text-align: center;
-    background: #F1F1F1;
+    background: white;
     border-top: 1px solid #ccc;
     border-left: 1px solid #ccc;
     border-right: 1px solid #ccc;
 }
 .gwt-TabBar .gwt-TabBarItem-selected {
     cursor: default;
-    background: white;
+    background: rgba(4, 137, 186, 0.09411764705882353);
 }
 .gwt-TabBar .gwt-TabBarItem-disabled {
     cursor: default;
@@ -910,15 +913,15 @@ select {
 }
 
 .gwt-TabBar .gwt-TabBarItem:hover {
-    background: #f5f5f5;
+    background: rgba(4, 137, 186, 0.09411764705882353);
 }
 
 .gwt-TabBar .gwt-TabBarItem-selected:hover {
-    background: white;    
+    background: rgba(4, 137, 186, 0.09411764705882353); 
 }
 
 .gwt-TabPanel {
-    margin: 0 0.1em 0.1em;
+    margin: 0 1px 1px;
 }
 .gwt-TabPanelBottom {
     border-color: #ccc;
@@ -926,7 +929,7 @@ select {
     border-width: 1px;
     /*overflow: visible; *//* вероятно помогает избежать непрерывной перерисовки в FF */
     overflow: hidden;
-    padding: 0.1em;
+    padding: 1px;
 }
 .gwt-DecoratedTabBar {
     background: #ccc;
@@ -1267,21 +1270,21 @@ td.datePickerMonth {
     cursor: hand;
     font-weight: normal;
     text-align: center;
-    background: #F1F1F1;
+    background: white;
     border: 1px solid #ccc;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected {
     cursor: default;
-    background: white;
+    background: rgba(4, 137, 186, 0.09411764705882353);
     color: #333;
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab:hover {
-    background: #f5f5f5;
+    background: rgba(4, 137, 186, 0.09411764705882353);
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected:hover {
-    background: white;
+    background: rgba(4, 137, 186, 0.09411764705882353);
 }
 
 .gwt-SplitLayoutPanel-HDragger {

@@ -42,7 +42,7 @@
 .dataGridLastCell {}
 
 .dataGridKeyboardSelectedRow {
-    background: #F0F0FF;
+    background: rgba(4, 137, 186, 0.09411764705882353);
 }
 
 .dataGridKeyboardSelectedRowCell {}

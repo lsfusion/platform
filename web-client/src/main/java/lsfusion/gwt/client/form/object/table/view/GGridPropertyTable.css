@@ -55,26 +55,26 @@
 }
 
 .dataGridKeyboardSelectedRow {
-    background: #F0F0FF;
+    background: rgba(4, 137, 186, 0.09411764705882353);
 }
 
 .dataGridKeyboardSelectedRowCell {}
 
 .dataGridFocusedCell {
-    border-bottom: 1px solid #6262FF;
-    border-left: 1px solid #6262FF;
+    border-bottom: 1px solid #0489BA;
+    border-left: 1px solid #0489BA;
 }
 
 .dataGridFocusedCellLastInRow {
-    border-bottom: 1px solid #6262FF;
-    border-left: 1px solid #6262FF;
-    border-right: 1px solid #6262FF;
+    border-bottom: 1px solid #0489BA;
+    border-left: 1px solid #0489BA;
+    border-right: 1px solid #0489BA;
 }
 
 .dataGridRightOfFocusedCell {
-    border-left: 1px solid #6262FF;
+    border-left: 1px solid #0489BA;
 }
 
 .dataGridTopOfFocusedCell {
-    border-bottom: 1px solid #6262FF;
+    border-bottom: 1px solid #0489BA;
 }

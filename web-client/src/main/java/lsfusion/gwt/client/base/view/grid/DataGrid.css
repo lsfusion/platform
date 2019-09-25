@@ -57,15 +57,15 @@
 .dataGridLastCell {}
 
 .dataGridKeyboardSelectedRow {
-  background: #ffc;
+  background: rgba(4, 137, 186, 0.09411764705882353);
 }
 
 .dataGridKeyboardSelectedRowCell {
-  border: selectionBorderWidth solid #ffc;
+  border: selectionBorderWidth solid #0489BA;
 }
 
 .dataGridFocusedCell {
-  border: selectionBorderWidth solid #d7dde8;
+  border: selectionBorderWidth solid #0489BA;
 }
 
 .dataGridFocusedCellLastInRow {
