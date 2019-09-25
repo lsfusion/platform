@@ -52,7 +52,7 @@ nameChat '{chat.chat}' (Message message) = name(chat(message)) CHARWIDTH 30;
 nameShortChat '{chat.chat}' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') CHARWIDTH 15;
 
 attachment '{chat.attachment}' = DATA FILE (Message);
-hasAttachment '{chat.has.attachment}' (Message m) = IF attachment(m) THEN TRUE CHARWIDTH 1 NOFLEX;
+hasAttachment '{chat.has.attachment}' (Message m) = TRUE IF attachment(m);
 loadAttachment '{chat.load.attachment}' (Message m)  { INPUT =attachment(m) CHANGE; }
 openAttachment '{chat.open.attachment}' (Message m)  { 
     IF attachment(m) THEN {
@@ -382,11 +382,13 @@ DESIGN fullChat {
                         NEW loadAttachment {
                             fill = 1;
                             MOVE PROPERTY(loadAttachment(c)) {
+                                fontSize = 24;
                             }
                         }
                         NEW deleteAttachment {
                             fill = 1;
                             MOVE PROPERTY(deleteAttachment(c)) {
+                                fontSize = 24;
                             }
                         }
                         NEW notificate {
