@@ -600,9 +600,12 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             if(compare != 0)
                 return compare;
 
-            compare = Integer.compare(leftCost.rows.getWeight(), b.leftCost.rows.getWeight());
-            if(compare != 0)
-                return compare;
+            if(leftCost.less(Cost.ALOT) || b.leftCost.less(Cost.ALOT)) { // if cost is ALOT, no need to push, because it can be simple keyExpr, so TRUE will be pushed, which is not efficient + will break some assertions 
+                compare = Integer.compare(leftCost.rows.getWeight(), b.leftCost.rows.getWeight());
+                if (compare != 0) 
+                    return compare;
+            }
+
             return compare;
         }
     }
@@ -708,7 +711,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             compare = a.get(pushJoin).pushCompareTo(b.get(pushJoin), pushLargeDepth);
             if(compare != 0 || pushLargeDepth)
                 return compare;
-            // бежим слева направо
+            // looking for other pushes
             int aGreater = 0;
             int bGreater = 0;
             for(int i=0,size=a.size();i<size;i++) {
