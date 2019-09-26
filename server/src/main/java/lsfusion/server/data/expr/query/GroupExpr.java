@@ -98,7 +98,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
 
         public Expr getSingleExpr() {
-            return type.getSingleExpr(exprs, orders);
+            return type.getSingleExpr(exprs, getOrderWhere());
         }
 
         public Query followFalse(Where falseWhere, boolean pack) {

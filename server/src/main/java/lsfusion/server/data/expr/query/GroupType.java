@@ -113,10 +113,11 @@ public enum GroupType implements AggrType {
         return 0;
     }
     
-    public Expr getSingleExpr(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+    public Expr getSingleExpr(ImList<Expr> exprs, Where orderWhere) {
+        Expr result = exprs.get(0);
         if(this == LAST)
-            return exprs.get(1).and(exprs.get(0).getWhere());
-        return exprs.get(0);
+            result = exprs.get(1).and(result.getWhere());
+        return result.and(orderWhere);
     }
 
     public boolean hasAdd() {
