@@ -381,6 +381,8 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
         private Image cancelButton = new Image(GWT.getModuleBaseURL() + "static/images/delete.png");
 
         public FileUploadStatusPanel(String fileName) {
+            setSpacing(2);
+            
             fileNameLabel = new Label(fileName);
             fileNameLabel.setWidth("100%");
             fileNameLabel.addStyleName("upFileNameLabel");

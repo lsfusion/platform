@@ -364,7 +364,7 @@ input[type=checkbox] {
     padding-top: 28px;
     padding-bottom: 28px;
     font-size: 13px;
-    color: #2d4b6d;
+    color: #0489BA;
     font-weight: bold;
     text-align: center;
     display: block;
@@ -387,7 +387,7 @@ input[type=checkbox] {
 }
 
 .gwt-ProgressBar-shell .gwt-ProgressBar-bar {
-    background-color: #67A7E3;
+    background-color: #0489BA;
 }
 
 .gwt-ProgressBar-shell .gwt-ProgressBar-text {
@@ -590,4 +590,8 @@ input[type=checkbox] {
     margin: 0;
     height: 21px;
     width: 21px;
+}
+
+.imageButtonWithoutCaption {
+    padding: 1px;
 }

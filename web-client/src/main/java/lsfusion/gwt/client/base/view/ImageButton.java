@@ -6,6 +6,8 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 
+import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
+
 public class ImageButton extends Button {
     private final Image image;
     private final Label label;
@@ -59,8 +61,8 @@ public class ImageButton extends Button {
         strut = vertical ? null : GwtClientUtils.createHorizontalStrut(2);
 
         label = new Label();
+        label.setVisible(false);
 
-//        panel.add(image);
         if (!vertical) {
             panel.add(strut);
         }
@@ -78,6 +80,8 @@ public class ImageButton extends Button {
         setText(caption);
         setModuleImagePath(imagePath);
 
+        updateStrut();
+        updateStyle();
         getElement().appendChild(panel.getElement());
     }
 
@@ -129,9 +133,10 @@ public class ImageButton extends Button {
         if (!GwtSharedUtils.nullEquals(this.text, text)) {
 
             label.setText(text);
-            if ((this.text == null && text != null) || (this.text != null && text == null)) {
+            if ((isRedundantString(this.text) && !isRedundantString(text)) || ((!isRedundantString(this.text) && isRedundantString(text)))) {
                 label.setVisible(text != null && !text.isEmpty());
                 updateStrut();
+                updateStyle();
             }
             this.text = text;
         }
@@ -140,6 +145,14 @@ public class ImageButton extends Button {
     private void updateStrut() {
         if (strut != null) {
             strut.setVisible(image.isVisible() && label.isVisible());
+        }
+    }
+    
+    private void updateStyle() {
+        if (label.isVisible()) {
+            removeStyleName("imageButtonWithoutCaption");
+        } else {
+            addStyleName("imageButtonWithoutCaption");
         }
     }
 

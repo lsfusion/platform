@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
@@ -266,13 +265,6 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
                 return;
             }
             super.onBrowserEvent(event);
-
-            String eventType = event.getType();
-            if (BrowserEvents.FOCUS.equals(eventType)) {
-                getElement().getStyle().setBorderColor("#4567FF");
-            } else if (BrowserEvents.BLUR.equals(eventType)) {
-                getElement().getStyle().clearBorderColor();
-            }
         }
     }
 

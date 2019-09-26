@@ -5,7 +5,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
@@ -22,6 +21,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
         Style divStyle = cellElement.getStyle();
         cellElement.addClassName("gwt-Button");
         divStyle.setWidth(100, Style.Unit.PCT);
+        divStyle.setPadding(0, Style.Unit.PX);
 
         // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
         cellElement.addClassName("boxSized");
@@ -50,8 +50,6 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
                 font.apply(label.getStyle());
             }
             
-            label.getStyle().setBottom(-GFontMetrics.getSymbolHeight(font) / 2, Style.Unit.PX);
-            
             label.setInnerText("...");
         }
     }
@@ -59,7 +57,6 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     @Override
     public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
         if (property.icon == null) {
-            
             LabelElement label = cellElement.getFirstChild().getFirstChild().cast();
             GFont font = property.font;
             if (font == null && table instanceof GGridPropertyTable) {
@@ -68,9 +65,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
             if (font != null) {
                 font.apply(label.getStyle());
             }   
-        }
-        
-        if (property.icon != null) {
+        } else {
             ImageElement img = cellElement
                     .getFirstChild()
                     .getFirstChild().cast();
@@ -86,11 +81,11 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
         int height = property.icon.height;
         if (height != -1) {
             img.setHeight(height);
-            img.getStyle().setBottom(- height / 2, Style.Unit.PX);
+            img.getStyle().setBottom(-(double) height / 2, Style.Unit.PX);
         }
         if (property.icon.width != -1) {
             img.setWidth(property.icon.width);
-            img.getStyle().setMarginLeft(- property.icon.width / 2, Style.Unit.PX);
+            img.getStyle().setMarginLeft(-(double) property.icon.width / 2, Style.Unit.PX);
         }
     }
 }
