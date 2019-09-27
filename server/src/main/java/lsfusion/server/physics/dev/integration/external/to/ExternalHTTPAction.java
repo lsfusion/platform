@@ -185,7 +185,7 @@ public class ExternalHTTPAction extends ExternalAction {
             cookieStore.addCookie(cookie);
         }
         
-        return HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(httpRequest);
+        return HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties().build().execute(httpRequest);
     }
 
     private BasicClientCookie parseRawCookie(String cookieName, String rawCookie) {
