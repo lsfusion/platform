@@ -16,6 +16,37 @@ body, html {
     margin: 0;
 }
 
+/* ------------ Scrollbars ------------ */
+body {
+    /*firefox*/
+    scrollbar-color: #e8e8e8 transparent;
+    scrollbar-width: thin;
+    /*ie*/
+    scrollbar-face-color: #e8e8e8;
+    scrollbar-arrow-color: #ccc;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #e8e8e8;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
 /*Fix buttons paddings and margins in FF*/
 button::-moz-focus-inner {
     border: 0;
@@ -472,7 +503,7 @@ input[type=checkbox] {
 
 .userPreferencesDualList .dragdrop-selected ,
 .userPreferencesDualList .dragdrop-movable-panel .draggableListBoxItem {
-    background-color: rgb(210, 222, 255);
+    background-color: rgba(4, 137, 186, 0.09411764705882353);
 }
 
 .userPreferencesDualList .dragdrop-movable-panel {
@@ -491,17 +522,20 @@ input[type=checkbox] {
 }
 
 .userPreferencesCheckBox {
-    padding-top: 3px;
     display: flex;
 }
 
+.userPreferencesCheckBox label {
+    margin: auto;
+}
+
 .userPreferencesFontLabel {
-    padding-bottom: 2px;
+    padding-bottom: 1px;
 }
 
 .userPreferencesSaveResetButton {
     width: 13em;
-    padding: 0.3em 0;
+    margin: 1px;
 }
 
 .userPreferencesRadioButton {
@@ -537,7 +571,6 @@ input[type=checkbox] {
 .toolbarButton {
     height: 20px;
     width: 20px;
-    padding: 1px;
     display: block;
     margin: 1px 4px 0 0;
 }

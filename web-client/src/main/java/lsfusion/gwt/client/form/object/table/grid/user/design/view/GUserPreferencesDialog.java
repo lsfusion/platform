@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.user.design.view;
 
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
@@ -128,6 +129,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
         italicBox = new CheckBox(messages.formGridPreferencesFontStyleItalic());
         italicBox.addStyleName("userPreferencesCheckBox");
         FlexPanel fontPanel = new FlexPanel();
+        fontPanel.getElement().getStyle().setMargin(2, Style.Unit.PX);
         Label fontLabel = new Label(messages.formGridPreferencesFontSize() + ":");
         fontLabel.addStyleName("userPreferencesFontLabel");
         fontPanel.add(fontLabel, GFlexAlignment.CENTER);

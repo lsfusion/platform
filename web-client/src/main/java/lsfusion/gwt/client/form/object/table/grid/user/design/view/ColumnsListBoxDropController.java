@@ -98,7 +98,7 @@ public class ColumnsListBoxDropController extends AbstractDropController {
     private Widget newPositioner() {
         Widget p = new SimplePanel();
         p.addStyleName(CSS_LIST_POSITIONER);
-        p.setPixelSize(mouseListBox.getOffsetWidth(), 1);
+        p.setPixelSize(mouseListBox.getParent().getOffsetWidth(), 1);
         return p;
     }
 }

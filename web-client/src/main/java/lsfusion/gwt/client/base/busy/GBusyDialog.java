@@ -344,7 +344,7 @@ public class GBusyDialog extends WindowBox {
         String messageText = "";
         for (Map.Entry<String, Boolean> stackLine : stackLines.entrySet()) {
             if (stackLine.getValue())
-                messageText += (messageText.isEmpty() ? "" : "<br/>") + "<font color=#67A7E3>" + stackLine.getKey() + "</font>";
+                messageText += (messageText.isEmpty() ? "" : "<br/>") + "<font color=#0489BA>" + stackLine.getKey() + "</font>";
             else
                 messageText += (messageText.isEmpty() ? "" : "<br/>") + stackLine.getKey();
         }
