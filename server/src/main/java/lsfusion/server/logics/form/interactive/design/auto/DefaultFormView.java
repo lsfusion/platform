@@ -8,7 +8,9 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
+import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -210,23 +212,23 @@ public class DefaultFormView extends FormView {
         setupFormButton(editFunction, KeyStrokes.getEditKeyStroke(), "editReport.png");
 
         PropertyDrawView dropFunction = get(entity.dropActionPropertyDraw);
-        setupFormButton(dropFunction, KeyStrokes.getNullKeyStroke(), null);
+        setupFormButton(dropFunction, KeyStrokes.getNullKeyStroke());
 
         PropertyDrawView refreshFunction = get(entity.refreshActionPropertyDraw);
         setupFormButton(refreshFunction, KeyStrokes.getRefreshKeyStroke(), "refresh.png");
         refreshFunction.drawAsync = true;
 
         PropertyDrawView applyFunction = get(entity.applyActionPropertyDraw);
-        setupFormButton(applyFunction, KeyStrokes.getApplyKeyStroke(), null);
+        setupFormButton(applyFunction, KeyStrokes.getApplyKeyStroke());
 
         PropertyDrawView cancelFunction = get(entity.cancelActionPropertyDraw);
-        setupFormButton(cancelFunction, KeyStrokes.getCancelKeyStroke(), null);
+        setupFormButton(cancelFunction, KeyStrokes.getCancelKeyStroke());
 
         PropertyDrawView okFunction = get(entity.okActionPropertyDraw);
-        setupFormButton(okFunction, KeyStrokes.getOkKeyStroke(), null);
+        setupFormButton(okFunction, KeyStrokes.getOkKeyStroke(), MouseInputEvent.DBLCLK, 1000);
 
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
-        setupFormButton(closeFunction, KeyStrokes.getCloseKeyStroke(), null);
+        setupFormButton(closeFunction, KeyStrokes.getCloseKeyStroke());
 
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
 
@@ -255,8 +257,19 @@ public class DefaultFormView extends FormView {
         toolbarBoxContainer.add(toolbarRightContainer, version);
     }
 
+    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, MouseInputEvent mouseInputEvent, int mousePriority) {
+        setupFormButton(action, editKey, null, mouseInputEvent, mousePriority);
+    }
+    private void setupFormButton(PropertyDrawView action, KeyStroke editKey) {
+        setupFormButton(action, editKey, (String)null);        
+    }
     private void setupFormButton(PropertyDrawView action, KeyStroke editKey, String imagePath) {
-        action.changeKey = editKey;
+        setupFormButton(action, editKey, imagePath, null, 0);
+    }
+    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, String imagePath, MouseInputEvent mouseEvent, int mousePriority) {
+        action.changeKey = editKey != null ? new KeyInputEvent(editKey) : null;
+        action.changeMouse = mouseEvent;
+        action.changeMousePriority = mousePriority;
         action.focusable = false;
         action.entity.setEditType(PropertyEditType.EDITABLE);
         action.setAlignment(FlexAlignment.STRETCH);

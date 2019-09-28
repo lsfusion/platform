@@ -2370,10 +2370,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireQueryOk(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(FormEventType.QUERYOK, stack);
-    }
-
     public void fireQueryClose(ExecutionStack stack) throws SQLException, SQLHandledException {
         fireEvent(FormEventType.QUERYCLOSE, stack);
     }
@@ -2466,11 +2462,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // close делать не надо, так как по умолчанию добавляется обработчик события formClose
     public void formQueryClose(ExecutionStack stack) throws SQLException, SQLHandledException {
         fireQueryClose(stack);
-    }
-
-    // close делать не надо, так как по умолчанию добавляется обработчик события formOk
-    public void formQueryOk(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireQueryOk(stack);
     }
 
     public void formCancel(ExecutionContext context) throws SQLException, SQLHandledException {

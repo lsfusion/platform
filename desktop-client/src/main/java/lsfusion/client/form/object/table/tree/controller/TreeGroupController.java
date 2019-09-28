@@ -205,7 +205,7 @@ public class TreeGroupController extends AbstractTableController {
 
     @Override
     public ClientPropertyDraw getSelectedProperty() {
-        return tree.getCurrentProperty();
+        return tree.getSelectedProperty();
     }
     @Override
     public ClientGroupObjectValue getSelectedColumn() {

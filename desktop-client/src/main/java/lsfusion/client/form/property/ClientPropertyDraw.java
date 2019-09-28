@@ -22,6 +22,9 @@ import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.event.InputEvent;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -78,8 +81,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean noSort;
     public Compare defaultCompare;
 
-    public KeyStroke editKey;
+    public KeyInputEvent editKey;
     public boolean showEditKey;
+    public MouseInputEvent editMouse;
+    public Integer editMousePriority;
 
     public boolean drawAsync; // рисовать асинхронность на этой кнопке
 
@@ -127,11 +132,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientPropertyDraw() {
     }
 
-    public KeyStroke getEditKey() {
+    public KeyInputEvent getEditKey() {
         return editKey;
     }
 
-    public void setEditKey(KeyStroke key) {
+    public void setEditKey(KeyInputEvent key) {
         this.editKey = key;
         updateDependency(this, "editKey");
     }
@@ -274,8 +279,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         return showEditKey && editKey != null
-               ? caption + " (" + SwingUtils.getKeyStrokeCaption(editKey) + ")"
+               ? caption + " (" + getEditKeyCaption() + ")"
                : caption;
+    }
+    
+    private String getEditKeyCaption() {
+        return SwingUtils.getKeyStrokeCaption(editKey.keyStroke);
     }
 
     public String getEditCaption() {
@@ -352,8 +361,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, valueSize);
 
         pool.writeObject(outStream, editKey);
-
         outStream.writeBoolean(showEditKey);
+        pool.writeObject(outStream, editMouse);
+        pool.writeInt(outStream, editMousePriority);
 
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
@@ -384,6 +394,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         editKey = pool.readObject(inStream);
         showEditKey = inStream.readBoolean();
+        editMouse = pool.readObject(inStream);
+        editMousePriority = pool.readInt(inStream);
+
         drawAsync = inStream.readBoolean();
 
         format = pool.readObject(inStream);
@@ -546,7 +559,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
-        String editKeyText = editKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, SwingUtils.getKeyStrokeCaption(editKey));
+        String editKeyText = editKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, getEditKeyCaption());
 
         if (!MainController.configurationAccessAllowed) {
             return String.format(TOOL_TIP_FORMAT, propCaption, editKeyText);

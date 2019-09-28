@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.ClientType;
+import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
@@ -26,6 +27,7 @@ import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispat
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.order.user.Order;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
@@ -243,21 +245,15 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
         addKeyListener(new TreeGroupQuickSearchHandler(this));
 
-        if (form.isDialog()) {
-            addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getClickCount() > 1) {
-                        RmiQueue.runAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                form.okPressed();
-                            }
-                        });
-                    }
-                }
-            });
-        }
+        addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                ClientPropertyDraw property = getSelectedProperty();
+                //игнорируем double click по editable boolean
+                boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
+                if (e.getClickCount() > 1 && !ignore)
+                    form.processBinding(MouseInputEvent.DBLCLK, () -> null);
+            }
+        });
         
         if (treeGroup.expandOnClick) {
             addMouseListener(new MouseAdapter() {
@@ -619,7 +615,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     @Override
     public boolean richTextSelected() {
-        ClientPropertyDraw property = getCurrentProperty();
+        ClientPropertyDraw property = getSelectedProperty();
         return property != null && property.baseType instanceof ClientTextClass && ((ClientTextClass) property.baseType).rich;
     }
 
@@ -686,7 +682,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return form;
     }
 
-    public ClientPropertyDraw getCurrentProperty() {
+    public ClientPropertyDraw getSelectedProperty() {
         int column = getSelectedColumn();
         int row = getSelectedRow();
 

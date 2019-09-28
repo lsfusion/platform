@@ -33,8 +33,6 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
-    ServerResponse okPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
-
     // events : group objects
 
     ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException;

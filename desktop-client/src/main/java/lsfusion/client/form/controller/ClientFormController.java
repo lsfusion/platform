@@ -51,6 +51,8 @@ import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
+import lsfusion.interop.form.event.InputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -67,10 +69,7 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import javax.swing.Timer;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -79,6 +78,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -1491,16 +1491,6 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void okPressed() {
-        commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("okPressed") {
-            @Override
-            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.okPressed(requestIndex, lastReceivedRequestIndex);
-            }
-        });
-    }
-
     public void closePressed() {
         commitOrCancelCurrentEditing();
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("closePressed") {
@@ -1652,5 +1642,59 @@ public class ClientFormController implements AsyncListener {
             this.keys = keys;
             this.oldValues = oldValues;
         }
+    }
+
+    private final Map<InputEvent, List<Binding>> bindings = new HashMap<>();
+
+    public static abstract class Binding {
+        public final ClientGroupObject groupObject;
+        public int priority;
+
+        public Binding(ClientGroupObject groupObject, int priority) {
+            this.groupObject = groupObject;
+            this.priority = priority;
+        }
+
+        public abstract boolean pressed();
+    }
+
+    public void addBinding(InputEvent ks, Binding binding) {
+        List<Binding> list = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
+        if(binding.priority == 0)
+            binding.priority = list.size();
+        list.add(binding);
+    }
+    
+    public void addPropertyBindings(ClientPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
+        if(propertyDraw.editKey != null)
+            addBinding(propertyDraw.editKey, bindingSupplier.get());
+        if(propertyDraw.editMouse != null) {
+            Binding binding = bindingSupplier.get();
+            if(propertyDraw.editMousePriority != null)
+                binding.priority = propertyDraw.editMousePriority;
+            addBinding(propertyDraw.editMouse, binding);
+        }
+    }
+
+    public boolean processBinding(InputEvent ks, Supplier<ClientGroupObject> groupObjectSupplier) {
+        List<Binding> keyBinding = bindings.get(ks);
+        if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
+            if(ks instanceof MouseInputEvent) // not sure that it should be done only for mouse events, but it's been working like this for a long time
+                commitOrCancelCurrentEditing();
+
+            TreeMap<Integer, Binding> orderedBindings = new TreeMap<>();
+
+            // increasing priority for group object
+            ClientGroupObject groupObject = groupObjectSupplier.get();
+            for(Binding binding : keyBinding) // descending sorting by priority
+                orderedBindings.put(-(binding.priority + (groupObject != null && BaseUtils.nullEquals(groupObject, binding.groupObject) ? 100 : 0)), binding);
+
+            for(Binding binding : orderedBindings.values())
+                if(binding.pressed())                    
+                    return true;
+
+            return true;
+        }
+        return false;
     }
 }

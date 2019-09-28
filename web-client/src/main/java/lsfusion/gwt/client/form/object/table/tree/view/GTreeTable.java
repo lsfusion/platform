@@ -495,6 +495,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return selectedRecord == null ? GGroupObjectValue.EMPTY : selectedRecord.getKey();
     }
 
+    public GGroupObject getGroupObject() {
+        return null;
+    }
+
     @Override
     public GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler() {
         return keyboardSelectionHandler;

@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.HTML;
@@ -15,7 +14,6 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -23,7 +21,6 @@ import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.client.form.controller.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
     public final GPropertyDraw property;
@@ -114,19 +111,17 @@ public class DataPanelRenderer implements PanelRenderer {
         finishLayoutSetup();
 
         valueTable.getElement().setPropertyObject("groupObject", property.groupObject);
-        if (property.editKey != null) {
-            form.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
-                @Override
-                public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    if (!form.isEditing() && isShowing(panel)) {
-                        focusTargetAfterEdit = event.getEventTarget();
-                        valueTable.editCellAt(0, 0, GEditBindingMap.CHANGE);
-                        return true;
-                    }
-                    return false;
+        form.addPropertyBindings(property, new GFormController.Binding(property.groupObject) {
+            @Override
+            public boolean onKeyPress(EventTarget eventTarget) {
+                if (!form.isEditing() && isShowing(panel)) {
+                    focusTargetAfterEdit = eventTarget;
+                    valueTable.editCellAt(0, 0, GEditBindingMap.CHANGE);
+                    return true;
                 }
-            });
-        }
+                return false;
+            }
+        });
     }
 
     private void finishLayoutSetup() {

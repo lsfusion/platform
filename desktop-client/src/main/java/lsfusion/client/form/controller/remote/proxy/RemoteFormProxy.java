@@ -250,13 +250,6 @@ public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse okPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-        logRemoteMethodStartCall("okPressed");
-        ServerResponse result = target.okPressed(requestIndex, lastReceivedRequestIndex);
-        logRemoteMethodEndCall("okPressed", result);
-        return result;
-    }
-
     public ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
         logRemoteMethodStartCall("closedPressed");
         ServerResponse result = target.closedPressed(requestIndex, lastReceivedRequestIndex);

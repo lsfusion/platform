@@ -39,14 +39,11 @@ public class PropertyController {
         this.panelController = panelController;
         this.property = property;
 
-        if (property.editKey != null) {
-            form.getLayout().addKeyBinding(property.editKey, property.groupObject, new ClientFormLayout.KeyBinding() {
-                @Override
-                public boolean keyPressed(KeyEvent e) {
-                    return forceEdit();
-                }
-            });
-        }
+        form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
+            public boolean pressed() {
+                return forceEdit();
+            }
+        });
 
         viewsPanel = new JComponentPanel(false, Alignment.START);
     }

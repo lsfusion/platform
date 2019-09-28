@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -12,7 +11,6 @@ import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -28,7 +26,6 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
-import static lsfusion.gwt.client.form.controller.HotkeyManager.Binding;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
@@ -132,14 +129,12 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             }
         }, KeyDownEvent.getType());
 
-        if (property.editKey != null) {
-            iform.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
-                @Override
-                public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    return isShowing(button) && enabled && click(event.getEventTarget());
-                }
-            });
-        }
+        iform.addPropertyBindings(property, new GFormController.Binding(property.groupObject) {
+            @Override
+            public boolean onKeyPress(EventTarget eventTarget) {
+                return isShowing(button) && enabled && click(eventTarget);
+            }
+        });
     }
 
     private void onContextMenuItemSelected(String actionSID) {

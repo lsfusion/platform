@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
@@ -1790,6 +1791,7 @@ public abstract class LogicsModule {
         result.setImage("edit.png");
         result.setChangeKey(KeyStrokes.getEditActionKeyStroke());
         result.setShowChangeKey(false);
+        result.setChangeMouse(MouseInputEvent.DBLCLK);
     }
 
     public LA addProp(Action prop) {

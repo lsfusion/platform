@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -98,6 +99,14 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
 
     public void setShowChangeKey(boolean showEditKey) {
         getActionOrProperty().drawOptions.setShowChangeKey(showEditKey);
+    }
+
+    public void setChangeMouse(MouseInputEvent editMouse) {
+        getActionOrProperty().drawOptions.setChangeMouse(editMouse);
+    }
+
+    public void setChangeMousePriority(Integer editMousePriority) {
+        getActionOrProperty().drawOptions.setChangeMousePriority(editMousePriority);
     }
     
     public void addProcessor(ActionOrProperty.DefaultProcessor processor) {

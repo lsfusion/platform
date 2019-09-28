@@ -1,5 +1,6 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.client.base.focus.ContainerFocusListener;
 import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.controller.ClientFormController;
@@ -7,14 +8,16 @@ import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.event.KeyInputEvent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class ClientFormLayout extends JPanel {
 
@@ -22,16 +25,11 @@ public class ClientFormLayout extends JPanel {
         return AbstractClientContainerView.getMaxPreferredSize(mainContainer,containerViews, false); // в BOX container'е берем явный size (предполагая что он используется не как базовый размер с flex > 0, а конечный)
     }
 
-    public interface KeyBinding {
-        boolean keyPressed(KeyEvent ke);
-    }
-
     private final ClientFormController form;
     private final ClientContainer mainContainer;
 
     private FormFocusTraversalPolicy policy;
-
-    private Map<KeyStroke, Map<ClientGroupObject, List<KeyBinding>>> bindings = new HashMap<>();
+    
     private Map<ClientContainer, ClientContainerView> containerViews = new HashMap<>();
     
     private boolean blocked;
@@ -199,65 +197,29 @@ public class ClientFormLayout extends JPanel {
         getActionMap().put(resultId, resultAction);
     }
 
-    public void addKeyBinding(KeyStroke ks, ClientGroupObject groupObject, KeyBinding binding) {
-        Map<ClientGroupObject, List<KeyBinding>> groupBindings = bindings.get(ks);
-        if (groupBindings == null) {
-            groupBindings = new HashMap<>();
-            bindings.put(ks, groupBindings);
-        }
-
-        List<KeyBinding> bindings = groupBindings.get(groupObject);
-        if (bindings == null) {
-            bindings = new ArrayList<>();
-            groupBindings.put(groupObject, bindings);
-        }
-
-        bindings.add(binding);
-    }
-
     @Override
     public Dimension getMinimumSize() {
         //для таблиц с большим числом колонок возвращается огромное число и тогда Docking Frames пытается всё отдать под форму
         return new Dimension(0, 0);
     }
 
-    // реализуем "обратную" обработку нажатий кнопок
+    public ClientGroupObject getGroupObject(Component comp) {
+        while (comp != null && !(comp instanceof Window) && comp != this) {
+            if (comp instanceof JComponent) {
+                ClientGroupObject groupObject = (ClientGroupObject) ((JComponent) comp).getClientProperty("groupObject");
+                if (groupObject != null)
+                    return groupObject;
+            }
+            comp = comp.getParent();
+        }
+        return null;
+    }
+
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-        Map<ClientGroupObject, List<KeyBinding>> keyBinding = bindings.get(ks);
-        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT && keyBinding != null && !keyBinding.isEmpty()) {
-            // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
-            // хотя конечно идиотизм это делать таким образом
-
-            Component comp = ke.getComponent();
-            while (comp != null && !(comp instanceof Window) && comp != this) {
-                if (comp instanceof JComponent) {
-                    ClientGroupObject groupObject = (ClientGroupObject) ((JComponent) comp).getClientProperty("groupObject");
-                    if (groupObject != null) {
-                        List<KeyBinding> groupBindings = keyBinding.get(groupObject);
-                        if (groupBindings != null) {
-                            for (KeyBinding binding : groupBindings) {
-                                if (binding.keyPressed(ke)) {
-                                    return true;
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-                comp = comp.getParent();
-            }
-
-            for (List<KeyBinding> groupBindings : keyBinding.values()) {
-                for (KeyBinding binding : groupBindings) {
-                    if (binding.keyPressed(ke)) {
-                        return true;
-                    }
-                }
-            }
-
-            return true;
-        }
+        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+            if(form.processBinding(new KeyInputEvent(ks), () -> getGroupObject(ke.getComponent())))
+                return true;
 
         return super.processKeyBinding(ks, ke, condition, pressed);
     }

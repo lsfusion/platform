@@ -231,7 +231,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.propertyShowIf = externalShowIf;
 
-        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.EMPTYREV()));
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
     }
 

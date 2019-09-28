@@ -23,7 +23,9 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.form.design.*;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -41,6 +43,8 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 
@@ -310,6 +314,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.editKey = convertOrCast(clientPropertyDraw.editKey);
         propertyDraw.showEditKey = clientPropertyDraw.showEditKey;
+        propertyDraw.editMouse = convertOrCast(clientPropertyDraw.editMouse);
+        propertyDraw.editMousePriority = clientPropertyDraw.editMousePriority;
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
 
@@ -374,6 +380,16 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         int keyCode = convertKeyCode(keyStroke.getKeyCode());
 
         return new GKeyStroke(keyCode, isAltPressed, isCtrlPressed, isShiftPressed);
+    }
+
+    @Converter(from = KeyInputEvent.class)
+    public GKeyInputEvent convertKeyInputEvent(KeyInputEvent keyInputEvent) {
+        return new GKeyInputEvent(convertOrCast(keyInputEvent.keyStroke));
+    }
+
+    @Converter(from = MouseInputEvent.class)
+    public GMouseInputEvent convertMouseInputEvent(MouseInputEvent mouseInputEvent) {
+        return new GMouseInputEvent(convertOrCast(mouseInputEvent.mouseEvent));
     }
 
     private int convertKeyCode(int keyCode) {

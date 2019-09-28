@@ -28,6 +28,7 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.order.user.Order;
@@ -302,23 +303,15 @@ public class GridTable extends ClientPropertyTable {
             }
         });
 
-        if (form.isDialog()) {
-            addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    ClientPropertyDraw property = getSelectedProperty();
-                    //игнорируем double click по editable boolean
-                    boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
-                    if (e.getClickCount() > 1 && !ignore) {
-                        RmiQueue.runAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                form.okPressed();
-                            }
-                        });
-                    }
-                }
-            });
-        }
+        addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                ClientPropertyDraw property = getSelectedProperty();
+                //игнорируем double click по editable boolean
+                boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
+                if (e.getClickCount() > 1 && !ignore)
+                    form.processBinding(MouseInputEvent.DBLCLK, () -> groupObject);
+            }
+        });
 
         //имитируем продвижение фокуса вперёд, если изначально попадаем на нефокусную ячейку
         addFocusListener(new FocusAdapter() {
@@ -557,10 +550,10 @@ public class GridTable extends ClientPropertyTable {
 
             boolean samePropAsPrevious = i != 0 && property == model.getColumnProperty(i - 1);
             final int index = i;
-            if (!samePropAsPrevious && property.editKey != null) {
-                form.getLayout().addKeyBinding(property.editKey, property.groupObject, new ClientFormLayout.KeyBinding() {
+            if (!samePropAsPrevious)
+                form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
                     @Override
-                    public boolean keyPressed(KeyEvent e) {
+                    public boolean pressed() {
                         if (isShowing()) {
                             int leadRow = getSelectionModel().getLeadSelectionIndex();
                             if (leadRow != -1 && !isEditing()) {
@@ -573,7 +566,6 @@ public class GridTable extends ClientPropertyTable {
                         return false;
                     }
                 });
-            }
         }
 
         gridPropertyTable.updateLayoutWidth();

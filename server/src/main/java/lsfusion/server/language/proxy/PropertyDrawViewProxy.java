@@ -1,5 +1,7 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
@@ -95,7 +97,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setChangeKey(KeyStroke editKey) {
-        target.changeKey = editKey;
+        target.changeKey = new KeyInputEvent(editKey);
+    }
+    public void setChangeMouse(String editKey) {
+        target.changeMouse = new MouseInputEvent(editKey);
+    }
+    public void setChangeMousePriority(int priority) {
+        target.changeMousePriority = priority;
     }
 
     public void setShowChangeKey(boolean showEditKey) {

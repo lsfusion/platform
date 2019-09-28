@@ -15,7 +15,10 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GWidthStringProcessor;
+import lsfusion.gwt.client.form.event.GInputEvent;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -35,7 +38,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class GPropertyDraw extends GComponent implements GPropertyReader {
+public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
     public int ID;
     public String sID;
     public String namespace;
@@ -81,8 +84,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public boolean noSort;
     public GCompare defaultCompare;
 
-    public GKeyStroke editKey;
+    public GKeyInputEvent editKey;
     public boolean showEditKey;
+    public GMouseInputEvent editMouse;
+    public Integer editMousePriority;
 
     public boolean drawAsync;
 

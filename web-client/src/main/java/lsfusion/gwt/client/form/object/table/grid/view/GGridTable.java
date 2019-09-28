@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -23,7 +24,6 @@ import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.controller.HotkeyManager;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -723,19 +723,17 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
         properties.add(newColumnIndex, property);
         
-        if (property.editKey != null) {
-            form.addHotkeyBinding(property.groupObject, property.editKey, new HotkeyManager.Binding() {
-                @Override
-                public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    if (!form.isEditing() && isShowing(GGridTable.this)) {
-                        selectProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
-                        editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.CHANGE);
-                        return true;
-                    }
-                    return false;
+        form.addPropertyBindings(property, new GFormController.Binding(property.groupObject) {
+            @Override
+            public boolean onKeyPress(EventTarget eventTarget) {
+                if (!form.isEditing() && isShowing(GGridTable.this)) {
+                    selectProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
+                    editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.CHANGE);
+                    return true;
                 }
-            });
-        }
+                return false;
+            }
+        });
 
         columnsUpdated = true;
     }

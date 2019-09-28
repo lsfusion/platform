@@ -18,6 +18,8 @@ import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.GMouseInputEvent;
+import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
@@ -84,11 +86,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     @Override
     protected void onBrowserEvent2(Event event) {
         if (event.getTypeInt() == Event.ONDBLCLICK) {
-            if (form.isDialog() &&
-                    getFocusHolderElement().isOrHasChild(Node.as(event.getEventTarget())) && // не включаем header, чтобы сортировка работала
+            if (getFocusHolderElement().isOrHasChild(Node.as(event.getEventTarget())) && // не включаем header, чтобы сортировка работала
                     !isEditable(getCurrentCellContext())) {
-                stopPropagation(event);
-                form.okPressed();
+                form.processBinding(GMouseInputEvent.DBLCLK, event, new GFormController.GGroupObjectSupplier() {
+                    public GGroupObject get() {
+                        return getGroupObject();
+                    }
+                });
             }
         } else if (GKeyStroke.isAddFilterEvent(event)) {
             stopPropagation(event);
@@ -217,6 +221,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public abstract GGroupObjectValue getCurrentKey();
+    public abstract GGroupObject getGroupObject();
     public abstract GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler();
     public abstract void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
     public abstract GAbstractTableController getGroupController();

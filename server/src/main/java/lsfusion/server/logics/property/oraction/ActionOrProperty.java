@@ -15,6 +15,8 @@ import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.comb.ListPermutations;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.ManualLazy;
@@ -596,6 +598,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         // для всех
         private KeyStroke changeKey;
         private Boolean showChangeKey;
+        private MouseInputEvent changeMouse;
+        private Integer changeMousePriority;
 
         // для всех
         private Boolean shouldBeLast;
@@ -635,9 +639,14 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.design.setImage(image);
             }
             if (propertyView.changeKey == null)
-                propertyView.changeKey = changeKey;
+                propertyView.changeKey = changeKey != null ? new KeyInputEvent(changeKey) : null;
             if (propertyView.showChangeKey == null)
                 propertyView.showChangeKey = BaseUtils.nvl(showChangeKey, true);
+            if (propertyView.changeMouse == null)
+                propertyView.changeMouse = changeMouse;
+            if (propertyView.changeMousePriority == null)
+                propertyView.changeMousePriority = changeMousePriority;
+
             if (propertyView.regexp == null)
                 propertyView.regexp = regexp;
             if (propertyView.regexpMessage == null)
@@ -683,6 +692,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setChangeKey(options.changeKey);
             if(showChangeKey == null)
                 setShowChangeKey(options.showChangeKey);
+            if(changeMouse == null)
+                setChangeMouse(options.changeMouse);
+            if(changeMousePriority == null)
+                setChangeMousePriority(options.changeMousePriority);
             
             if(shouldBeLast == null)
                 setShouldBeLast(options.shouldBeLast);
@@ -767,6 +780,14 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setShowChangeKey(Boolean showEditKey) {
             this.showChangeKey = showEditKey;
+        }
+
+        public void setChangeMouse(MouseInputEvent changeMouse) {
+            this.changeMouse = changeMouse;
+        }
+
+        public void setChangeMousePriority(Integer changeMousePriority) {
+            this.changeMousePriority = changeMousePriority;
         }
 
         public void setShouldBeLast(Boolean shouldBeLast) {

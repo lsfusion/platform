@@ -1,12 +1,14 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -48,6 +50,8 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
+import lsfusion.gwt.client.form.event.GInputEvent;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
@@ -81,10 +85,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
-import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
-import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.GwtSharedUtils.*;
+import static lsfusion.gwt.client.form.event.GKeyStroke.isPossibleEditKeyEvent;
 
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
     private static final int ASYNC_TIME_OUT = 50;
@@ -121,7 +125,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private Timer asyncTimer;
     private PanelRenderer asyncView;
 
-    private HotkeyManager hotkeyManager = new HotkeyManager();
     private LoadingManager loadingManager = MainFrame.busyDialog ? new GBusyDialogDisplayer(this) : new LoadingBlocker(this);
 
     private boolean blocked = false;
@@ -176,7 +179,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         initializeAutoRefresh();
 
-        hotkeyManager.install(this);
+        install(this);
     }
 
     protected void dropCurrentForm() {
@@ -224,9 +227,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         filterCheck.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
         if (filter.key != null) {
-            addHotkeyBinding(filterGroup.groupObject, filter.key, new HotkeyManager.Binding() {
+            addBinding(new GKeyInputEvent(filter.key), new GFormController.Binding(filterGroup.groupObject) {
                 @Override
-                public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
+                public boolean onKeyPress(EventTarget eventTarget) {
                     if (!isEditing() && isShowing(filterCheck)) {
                         filterCheck.setValue(!filterCheck.getValue(), true);
                         return true;
@@ -250,9 +253,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             final int filterIndex = i;
             filterBox.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
             if (filter.key != null) {
-                addHotkeyBinding(filterGroup.groupObject, filter.key, new HotkeyManager.Binding() {
+                addBinding(new GKeyInputEvent(filter.key), new GFormController.Binding(filterGroup.groupObject) {
                     @Override
-                    public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
+                    public boolean onKeyPress(EventTarget eventTarget) {
                         if (!isEditing() && isShowing(filterBox)) {
                             filterBox.setSelectedIndex(filterIndex + 1);
                             setRegularFilter(filterGroup, filterIndex);
@@ -902,10 +905,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ClosePressed(), new ServerResponseCallback());
     }
 
-    public void okPressed() {
-        syncDispatch(new OkPressed(), new ServerResponseCallback());
-    }
-
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
         syncDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new ServerResponseCallback());
     }
@@ -1296,10 +1295,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void addHotkeyBinding(GGroupObject groupObjcet, GKeyStroke key, HotkeyManager.Binding binding) {
-        hotkeyManager.addHotkeyBinding(groupObjcet, key, binding);
-    }
-    
     public void modalFormAttached() { // фильтры норовят спрятаться за диалог (например, при его перемещении). передобавляем их в конец.
         for (GGridController controller : controllers.values()) {
             controller.reattachFilter();
@@ -1311,6 +1306,105 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         @Override
         public void success(ServerResponseResult response) {
             actionDispatcher.dispatchResponse(response);
+        }
+    }
+
+    public abstract static class Binding {
+        public final GGroupObject groupObject;
+        public int priority;
+
+        public Binding(GGroupObject groupObject) {
+            this.groupObject = groupObject;
+        }
+
+        public abstract boolean onKeyPress(EventTarget eventTarget);
+    }
+
+    private final HashMap<GInputEvent, ArrayList<Binding>> bindings = new HashMap<>();
+
+    public void install(Widget rootWidget) {
+        rootWidget.addDomHandler(new KeyDownHandler() {
+            @Override
+            public void onKeyDown(KeyDownEvent event) {
+                handleKeyEvent(event.getNativeEvent());
+            }
+        }, KeyDownEvent.getType());
+    }
+    
+    public void addPropertyBindings(GPropertyDraw propertyDraw, Binding binding) {
+        if(propertyDraw.editKey != null)
+            addBinding(propertyDraw.editKey, binding);
+        if(propertyDraw.editMouse != null) {
+            if(propertyDraw.editMousePriority != null)
+                binding.priority = propertyDraw.editMousePriority;
+            addBinding(propertyDraw.editMouse, binding);
+        }
+    }
+
+    public void addBinding(GInputEvent event, Binding binding) {
+        assert event != null && binding != null;
+
+        ArrayList<Binding> groupBindings = bindings.get(event);
+        if (groupBindings == null) {
+            groupBindings = new ArrayList<>();
+            bindings.put(event, groupBindings);
+        }
+        groupBindings.add(binding);
+    }
+    
+    private GGroupObject getGroupObject(Element elementTarget) {
+        while (elementTarget != null) {     // пытаемся найти GroupObject, к которому относится элемент с фокусом
+            GGroupObject targetGO = (GGroupObject) elementTarget.getPropertyObject("groupObject");
+            if (targetGO != null)
+                return targetGO;
+            elementTarget = elementTarget.getParentElement();
+        }
+        return null;
+    }
+    
+    public interface GGroupObjectSupplier {
+        GGroupObject get();
+    }
+
+    public boolean processBinding(GInputEvent ks, NativeEvent event, GGroupObjectSupplier groupObjectSupplier) {
+        ArrayList<Binding> keyBinding = bindings.get(ks);
+        if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
+
+            TreeMap<Integer, Binding> orderedBindings = new TreeMap<>();
+
+            // increasing priority for group object
+            GGroupObject groupObject = groupObjectSupplier.get();
+            for(Binding binding : keyBinding) // descending sorting by priority
+                orderedBindings.put(-(binding.priority + (groupObject != null && groupObject.equals(binding.groupObject) ? 100 : 0)), binding);
+
+            for(Binding binding : orderedBindings.values())
+                if(binding.onKeyPress(event.getEventTarget())) {
+                    stopPropagation(event);
+                    return true;
+                }
+
+            return true;
+        }
+        return false;
+    }
+
+
+    private void handleKeyEvent(NativeEvent nativeEvent) {
+        assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
+
+        final EventTarget target = nativeEvent.getEventTarget();
+        if (!Element.is(target)) {
+            return;
+        }
+
+        if (isPossibleEditKeyEvent(nativeEvent)) {
+            GKeyStroke key = GKeyStroke.getKeyStroke(nativeEvent);
+            
+            processBinding(new GKeyInputEvent(key), nativeEvent, new GGroupObjectSupplier() {
+                public GGroupObject get() {
+                    return getGroupObject(Element.as(target));
+                }
+            });
         }
     }
 }
