@@ -3149,7 +3149,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Integer> allParams = mergeAllParams(propParams);
 
         // there is a hack when doAction is set empty instead of null
-        Boolean syncType = (doAction != null && !doAction.getLP().action.getList().isEmpty()) || elseAction != null || hasAssignProps ? true : null; // optimization
+        Boolean syncType = (doAction != null && doAction.getLP() != baseLM.getEmpty()) || elseAction != null || hasAssignProps ? true : null; // optimization
         
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
