@@ -119,6 +119,8 @@ public class ApplyAction extends KeepContextAction {
             return true;
         if (type == ChangeFlowType.READONLYCHANGE)
             return true;
+        if (type == ChangeFlowType.HASSESSIONUSAGES)
+            return true;
         return super.hasFlow(type);
     }
 }

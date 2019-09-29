@@ -132,6 +132,11 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
     }
 
     @Override
+    public boolean usesSession() {
+        return true;
+    }
+
+    @Override
     public boolean aspectDebugHasAlotKeys() { // оптимизация см. CaseUnionProperty 
         return false;
     }

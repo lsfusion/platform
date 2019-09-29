@@ -102,7 +102,7 @@ public class NewSessionAction extends AroundAspectAction {
             return false;
         if (type == ChangeFlowType.CANCEL)
             return false;
-        if (type == ChangeFlowType.FORMCHANGE && !isNested)
+        if ((type == ChangeFlowType.FORMCHANGE || type == ChangeFlowType.HASSESSIONUSAGES || type == ChangeFlowType.NEEDMORESESSIONUSAGES) && !isNested)
             return false;
         return super.hasFlow(type);
     }

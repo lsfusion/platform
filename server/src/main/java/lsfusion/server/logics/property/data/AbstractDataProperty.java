@@ -33,4 +33,8 @@ public abstract class AbstractDataProperty extends Property<ClassPropertyInterfa
 
     protected abstract ClassWhere<Object> getDataClassValueWhere();
 
+    @Override
+    public boolean usesSession() {
+        return true;
+    }
 }

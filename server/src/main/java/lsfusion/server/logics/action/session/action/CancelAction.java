@@ -30,6 +30,8 @@ public class CancelAction extends SystemExplicitAction {
             return true;
         if (type == ChangeFlowType.READONLYCHANGE)
             return true;
+        if (type == ChangeFlowType.HASSESSIONUSAGES)
+            return true;
         return super.hasFlow(type);
     }
 

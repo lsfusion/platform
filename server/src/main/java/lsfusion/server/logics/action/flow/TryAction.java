@@ -106,7 +106,8 @@ public class TryAction extends KeepContextAction {
         FlowResult catchResult = FlowResult.FINISH;
 
         try {
-            result = tryAction.execute(context);
+            // since we want to catch all exceptions
+            result = tryAction.execute(context.override(true));
         } catch(Throwable e) {
             if(catchAction != null) {
                 context.getBL().LM.messageCaughtException.change(String.valueOf(e), context);

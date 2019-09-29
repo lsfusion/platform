@@ -571,10 +571,10 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LA addIFAProp(LocalizedString caption, FormSelector<O> form, ImOrderSet<O> objectsToSet, boolean syncType, WindowFormType windowType, boolean forbidDuplicate) {
         return addIFAProp(null, caption, form, objectsToSet, ListFact.toList(false, objectsToSet.size()), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, syncType, windowType, forbidDuplicate, false, false);
     }
-    protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
+    protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ManageSessionType manageSession, Boolean noCancel, Boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
         return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.EMPTY(), ListFact.EMPTY(), ListFact.EMPTY(), manageSession, noCancel, ListFact.EMPTY(), ListFact.EMPTY(), syncType, windowType, forbidDuplicate, checkOnOk, readonly);
     }
-    protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<Property> contextProperties, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
+    protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<Property> contextProperties, Boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
         return addAction(group, new LA<>(new FormInteractiveAction<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
     }
     protected <O extends ObjectSelector> LA<?> addPFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, Property printerProperty, LP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, Property passwordProperty, LP targetProp, boolean removeNullsAndDuplicates) {
@@ -954,15 +954,14 @@ public abstract class LogicsModule {
 
     // ------------------- Request action ----------------- //
 
-    protected LA addRequestAProp(Group group, LocalizedString caption, Object... params) {
+    protected LA addRequestAProp(Group group, boolean hasDo, LocalizedString caption, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
-        assert readImplements.size() >= 2;
-
-        ActionMapImplement<?, PropertyInterface> elseAction =  readImplements.size() == 3 ? (ActionMapImplement<?, PropertyInterface>) readImplements.get(2) : null;
+        
+        ActionMapImplement<?, PropertyInterface> doAction = hasDo ? (ActionMapImplement<?, PropertyInterface>) readImplements.get(1) : null;
+        ActionMapImplement<?, PropertyInterface> elseAction =  readImplements.size() == (2 + (hasDo ? 1 : 0)) ? (ActionMapImplement<?, PropertyInterface>) readImplements.get(hasDo ? 2 : 1) : null;
         return addAction(group, new LA(new RequestAction(caption, listInterfaces,
-                (ActionMapImplement<?, PropertyInterface>) readImplements.get(0), (ActionMapImplement<?, PropertyInterface>) readImplements.get(1),
-                elseAction))
+                (ActionMapImplement<?, PropertyInterface>) readImplements.get(0), doAction, elseAction))
         );
     }
 
@@ -1725,7 +1724,7 @@ public abstract class LogicsModule {
 
         LA result = addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, 0, cls, true, false, 0, false,
                 1, //NEW x=X
-                addRequestAProp(null, caption, // REQUEST
+                addRequestAProp(null, true, caption, // REQUEST
                         baseLM.getPolyEdit(), 1, // edit(x);
                         (contextObject != null ? addOSAProp(contextObject, UpdateType.LAST, 1) : baseLM.getEmptyObject()), 1, // DO SEEK co = x
                         addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), 1 // ELSE IF seekOwners THEN delete(x)

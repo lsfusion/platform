@@ -285,6 +285,11 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     }
 
     @Override
+    public boolean usesSession() {
+        return true;
+    }
+
+    @Override
     public boolean aspectDebugHasAlotKeys() { // оптимизация см. CaseUnionProperty
         return getInterfaceClass() instanceof DataClass;
     }

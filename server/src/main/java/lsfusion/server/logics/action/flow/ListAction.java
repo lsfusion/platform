@@ -77,9 +77,14 @@ public class ListAction extends ListCaseAction {
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         FlowResult result = FlowResult.FINISH;
+        
+        int lastHasSessionUsages = 0;
+        if(!context.hasMoreSessionUsages && hasFlow(ChangeFlowType.NEEDMORESESSIONUSAGES)) // optimization
+            lastHasSessionUsages = getLastHasSessionUsages();
 
-        for (ActionMapImplement<?, PropertyInterface> action : getActions()) {
-            FlowResult actionResult = action.execute(context);
+        ImList<ActionMapImplement<?, PropertyInterface>> actions = getActions();
+        for (int i=0,size=actions.size();i<size;i++) {
+            FlowResult actionResult = actions.get(i).execute(i < lastHasSessionUsages ? context.override(true) : context);
             if (actionResult != FlowResult.FINISH) {
                 result =  actionResult;
                 break;
@@ -89,6 +94,14 @@ public class ListAction extends ListCaseAction {
         context.getSession().dropSessionChanges(localsInScope);
 
         return result;
+    }
+    
+    private int getLastHasSessionUsages() {
+        ImList<ActionMapImplement<?, PropertyInterface>> actions = getActions();
+        for(int i=actions.size()-1;i>=0;i--)
+            if(actions.get(i).hasFlow(ChangeFlowType.HASSESSIONUSAGES))
+                return i;            
+        return 0;
     }
 
     @Override

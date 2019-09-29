@@ -159,6 +159,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     private final DataObject pushedAddObject; // чисто для асинхронного добавления объектов
 
+    public final boolean hasMoreSessionUsages;
+    
     private final ExecutionEnvironment env;
 
     private final ScheduledExecutorService executorService;
@@ -186,20 +188,25 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 //    } 
 //
     public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, ExecutionStack stack) {
-        this(keys, null, env, null, null, stack);
+        this(keys, null, env, null, null, stack, false);
     }
 
-    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, DataObject pushedAddObject, ExecutionEnvironment env, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack) {
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, DataObject pushedAddObject, ExecutionEnvironment env, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack, boolean hasMoreSessionUsages) {
         this.keys = keys;
         this.pushedAddObject = pushedAddObject;
         this.env = env;
         this.executorService = executorService;
         this.form = form;
         this.stack = new ContextStack(stack);
+        this.hasMoreSessionUsages = hasMoreSessionUsages;
     }
     
     public ExecutionContext<P> override() { // для дебаггера
-        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
+    }
+    
+    public ExecutionContext<P> override(boolean hasMoreSessionUsages) { // для дебаггера
+        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
     }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
@@ -406,7 +413,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public static class NewSession<P extends PropertyInterface> extends ExecutionContext<P> implements AutoCloseable {
 
         public NewSession(ImMap<P, ? extends ObjectValue> keys, DataObject pushedAddObject, DataSession session, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack) {
-            super(keys, pushedAddObject, session, executorService, form, stack);
+            super(keys, pushedAddObject, session, executorService, form, stack, false);
         }
 
         @Override
@@ -521,15 +528,15 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ScheduledExecutorService newExecutorService) {
-        return new ExecutionContext<>(keys, pushedAddObject, env, newExecutorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, env, newExecutorService, form, stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack);
+        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends PropertyInterfaceImplement<P>> mapInterfaces) {
@@ -544,8 +551,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return override(keys, form);
     }
 
+    public ExecutionContext<P> override(ImMap<P, ? extends ObjectValue> keys, boolean hasMoreSessionUsages) {
+        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
+    }
+
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form) {
-        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack, hasMoreSessionUsages);
     }
 
     public QueryEnvironment getQueryEnv() {

@@ -2,8 +2,10 @@ package lsfusion.server.logics.action.flow;
 
 public enum ChangeFlowType {
     APPLY, CANCEL, BREAK, RETURN, SYNC, NEWSESSION, 
-    FORMCHANGE, // в той же сессии или в открываемой форме  
-    READONLYCHANGE // в любой сессии (открываемые формы не учитываются, так как там политика безопасности сработает)
+    FORMCHANGE, // has changes in this session or other opening form  
+    READONLYCHANGE, // has changes in this session (no other opening forms, because in that case security policy will work)
+    HASSESSIONUSAGES, // checks if action uses this session (used for formAction WAIT | NOWAIT heuristic)
+    NEEDMORESESSIONUSAGES // optimization, checks if action needs to fill moreSessionUsages (used for formAction WAIT | NOWAIT heuristic),
     ; 
 
     public boolean isChange() {

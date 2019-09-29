@@ -171,7 +171,9 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
             String progressCaption = toString();
             ProgressStackItem stackItem = ExecutionStackAspect.pushProgressStackItem(progressCaption, 0, rowUpdate.rows.size());
             try {
-                for (int i = 0; i < rowUpdate.rows.size(); i++) {
+                int size = rowUpdate.rows.size();
+                boolean overrideMoreSessionUsages = !context.hasMoreSessionUsages && (recursive || size > 1) && hasFlow(ChangeFlowType.NEEDMORESESSIONUSAGES) && hasFlow(ChangeFlowType.HASSESSIONUSAGES);
+                for (int i = 0; i < size; i++) {
                     ImMap<I, DataObject> row = rowUpdate.rows.get(i);
                     ImMap<I, ObjectValue> newValues = MapFact.addExcl(innerValues, row);
                     if(addObject!=null)
@@ -179,7 +181,9 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
                     ExecutionStackAspect.popProgressStackItem(stackItem);
                     stackItem = ExecutionStackAspect.pushProgressStackItem(progressCaption, i + 1, rowUpdate.rows.size());
-                    FlowResult actionResult = executeFor(context, newValues);
+
+                    FlowResult actionResult = executeFor(overrideMoreSessionUsages && (recursive || i < size - 1) // is not last 
+                                                        ? context.override(true): context, newValues);
                     if (actionResult != FlowResult.FINISH) {
                         if (actionResult != FlowResult.BREAK) {
                             result = actionResult;

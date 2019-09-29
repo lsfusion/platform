@@ -193,6 +193,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return property.getRecDepends().intersectFn(check);
     }
 
+    public static boolean dependsSet(ImSet<Property> properties, FunctionSet<Property> check) {
+        for(Property property : properties)
+            if(depends(property, check))
+                return true;
+        return false;
+    }
+
     public static boolean dependsSet(Property<?> property, FunctionSet<Property>... checks) {
         for(FunctionSet<Property> check : checks)
             if(depends(property, check))
@@ -683,6 +690,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         public CustomClass getCustomClass() {
             return customClass;
         }
+    }
+    
+    public boolean usesSession() {
+        return false;
     }
 
     private ImOrderSet<T> getOrderInterfaces(ImSet<T> filterInterfaces) {

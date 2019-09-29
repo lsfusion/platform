@@ -60,6 +60,8 @@ public class FormApplyAction extends FormFlowAction {
     public boolean hasFlow(ChangeFlowType type) {
         if (type == ChangeFlowType.READONLYCHANGE)  
             return true;
+        if (type == ChangeFlowType.HASSESSIONUSAGES)
+            return true;
         return super.hasFlow(type);
     }
 }

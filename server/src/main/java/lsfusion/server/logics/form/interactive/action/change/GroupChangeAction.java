@@ -44,7 +44,7 @@ public class GroupChangeAction extends AroundAspectAction {
 
         context.dropRequestCanceled();
 
-        FlowResult flowResult = proceed(context);// вызываем CHANGE (для текущего)
+        FlowResult flowResult = proceed(context.override(true));// вызываем CHANGE (для текущего)
         if (!flowResult.equals(FlowResult.FINISH))
             return flowResult;
 
@@ -55,7 +55,7 @@ public class GroupChangeAction extends AroundAspectAction {
             for (ImMap<ObjectInstance, DataObject> row : groupKeys) { // бежим по всем
                 ImMap<PropertyInterface, ObjectValue> override = MapFact.override(context.getKeys(), context.getObjectInstances().innerJoin(row));
                 if (!BaseUtils.hashEquals(override, context.getKeys())) { // кроме текущего
-                    proceed(context.override(override));
+                    proceed(context.override(override, true));
                 }
             }
             return FlowResult.FINISH;

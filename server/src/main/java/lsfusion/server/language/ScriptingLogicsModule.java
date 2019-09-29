@@ -94,7 +94,6 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.DefaultIcon;
 import lsfusion.server.logics.navigator.NavigatorElement;
@@ -2052,12 +2051,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedRequestAProp(LAWithParams requestAction, LAWithParams doAction, LAWithParams elseAction) {
         List<LAPWithParams> propParams = new ArrayList<>();
         propParams.add(requestAction);
-        propParams.add(doAction);
+        if(doAction != null)
+            propParams.add(doAction);
         if(elseAction != null)
             propParams.add(elseAction);
 
         List<Integer> allParams = mergeAllParams(propParams);
-        LA result = addRequestAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
+        LA result = addRequestAProp(null, doAction != null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
         return new LAWithParams(result, allParams);
     }
 
@@ -3048,15 +3048,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             assert !objectProp.out && !objectProp.constraintFilter;
         }
 
-        if(syncType == null)
-            syncType = true;
-        if(windowType == null) {
-            if(syncType)
-                windowType = WindowFormType.FLOAT;
-            else
-                windowType = WindowFormType.DOCKED;
-        }
-
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
                                  manageSession, noCancel,
                                  syncType, windowType, false, checkOnOk,
@@ -3108,6 +3099,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> contextLPs = new ArrayList<>();
 
         Set<Property> usedProps = new HashSet<>();
+        boolean hasAssignProps = false;
 
         for (int i = 0; i < allObjects.size(); i++) {
             O object = allObjects.get(i);
@@ -3137,8 +3129,10 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
 
                 Pair<LPWithParams, DebugInfo.DebugPoint> assignProp = null;
-                if(objectProp.assign)
+                if(objectProp.assign) {
                     assignProp = new Pair<>(changeProp, objectProp.assignDebugPoint);
+                    hasAssignProps = true;
+                }
                 mChangeProps.add(assignProp);
             }
         }
@@ -3151,18 +3145,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<O> contextObjects = mContextObjects.immutableList();
         ImList<Property> contextProps = mContextProps.immutableList();
 
-        if(windowType == null)
-            windowType = WindowFormType.FLOAT;
-
         List<LPWithParams> propParams = new ArrayList<>(contextLPs);
         List<Integer> allParams = mergeAllParams(propParams);
 
+        // there is a hack when doAction is set empty instead of null
+        Boolean syncType = (doAction != null && !doAction.getLP().action.getList().isEmpty()) || elseAction != null || hasAssignProps ? true : null; // optimization
+        
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                                  inputObjects, inputProps, inputNulls,
                                  manageSession, noCancel,
                                  contextObjects, contextProps,
-                true, windowType, false, checkOnOk,
+                syncType, windowType, false, checkOnOk,
                 readonly);
 
         action = addSessionScopeAProp(scope, action, inputProps.addList(baseLM.getRequestCanceledProperty()).getCol());

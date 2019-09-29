@@ -36,7 +36,7 @@ public class RequestAction extends KeepContextAction {
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.requestAction = requestAction.map(mapInterfaces);
-        this.doAction = doAction.map(mapInterfaces);
+        this.doAction = doAction != null ? doAction.map(mapInterfaces) : null;
         this.elseAction = elseAction != null ? elseAction.map(mapInterfaces) : null;
 
         finalizeInit();
@@ -47,7 +47,8 @@ public class RequestAction extends KeepContextAction {
 
         MList<ActionMapImplement<?, PropertyInterface>> actions = ListFact.mList();
         actions.add(requestAction);
-        actions.add(doAction);
+        if(doAction != null)
+            actions.add(doAction);
         if(elseAction != null)
             actions.add(elseAction);
 
@@ -59,9 +60,21 @@ public class RequestAction extends KeepContextAction {
 
 
     public ImSet<Action> getDependActions() {
-        return elseAction != null ?
-                SetFact.toSet(requestAction.action, doAction.action, elseAction.action) :
-                SetFact.toSet(requestAction.action, doAction.action);
+        ImSet<Action> result = SetFact.EMPTY();
+        result = result.merge(requestAction.action);
+
+        if (doAction != null) {
+            result = result.merge(doAction.action);
+        }
+        if (elseAction != null) {
+            result = result.merge(elseAction.action);
+        }
+        return result;
+    }
+
+    // there is a hack when doAction is set empty instead of null
+    private boolean hasDoOrElseAction() {
+        return doAction != null && !doAction.getList().isEmpty() || elseAction != null;        
     }
 
     @Override
@@ -70,17 +83,19 @@ public class RequestAction extends KeepContextAction {
 
         boolean isRequestPushed = context.isRequestPushed();
         if (!isRequestPushed)
-            result = requestAction.execute(context);
+            result = requestAction.execute(!context.hasMoreSessionUsages && hasDoOrElseAction() ? context.override(true) : context);
 
         if (result != FlowResult.FINISH)
             return result;
 
         boolean isRequestCanceled = context.isRequestCanceled();
         if (!isRequestCanceled) {
-            if (isRequestPushed) { // оптимизация
-                result = context.popRequest(() -> doAction.execute(context));
-            } else
-                result = doAction.execute(context);
+            if(doAction != null) {
+                if (isRequestPushed) { // оптимизация
+                    result = context.popRequest(() -> doAction.execute(context));
+                } else 
+                    result = doAction.execute(context);
+            }
         } else if(elseAction != null)
             result = elseAction.execute(context);
 

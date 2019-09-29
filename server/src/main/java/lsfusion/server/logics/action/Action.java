@@ -8,6 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
@@ -211,6 +212,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.HASSESSIONUSAGES) {
+            if(!getChangeProps().isEmpty())
+                return true;
+            if(Property.dependsSet(getUsedProps(), (SFunctionSet<Property>) Property::usesSession))
+                return true;                
+        }
         for(Action<?> dependAction : getDependActions())
             if(dependAction.hasFlow(type))
                 return true;

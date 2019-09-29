@@ -46,10 +46,18 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     private final ImList<LP> inputProps;    
     private final ImList<Boolean> inputNulls;
 
-    private final boolean syncType;
+    private final Boolean syncType;
     private final WindowFormType windowType;
     
-    private ModalityType getModalityType() {
+    private ModalityType getModalityType(boolean syncType) {
+        WindowFormType windowType = this.windowType;
+        if(windowType == null) {
+            if(syncType)
+                windowType = WindowFormType.FLOAT;
+            else
+                windowType = WindowFormType.DOCKED;
+        }
+
         if(syncType) {
             if (windowType == WindowFormType.FLOAT) {
                 if(!inputObjects.isEmpty())
@@ -83,13 +91,12 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                  ImList<O> contextObjects, ImList<Property> contextProperties,
                                  ManageSessionType manageSession,
                                  Boolean noCancel,
-                                 boolean syncType,
+                                 Boolean syncType,
                                  WindowFormType windowType, boolean forbidDuplicate,
                                  boolean checkOnOk,
                                  boolean readOnly) {
         super(caption, form, objectsToSet, nulls, true, contextProperties.toArray(new Property[contextProperties.size()]));
 
-        assert inputObjects.isEmpty() || syncType; // если ввод, то синхронный
         this.inputObjects = inputObjects;
         this.inputProps = inputProps;
         this.inputNulls = inputNulls;
@@ -128,13 +135,17 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
         Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
         ImSet<ContextFilter> contextFilters = getContextFilters(context, pullProps, mapRevResolvedObjects);
+
+        boolean syncType; 
+        if(this.syncType != null)
+            syncType = this.syncType;
+        else
+            syncType = context.hasMoreSessionUsages;
         
         FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, contextFilters, pullProps.result, readOnly);
-        context.requestFormUserInteraction(newFormInstance, getModalityType(), forbidDuplicate, context.stack);
+        context.requestFormUserInteraction(newFormInstance, getModalityType(syncType), forbidDuplicate, context.stack);
 
         if (syncType) {
-            //для немодальных форм следующее бессмысленно, т.к. они остаются открытыми...
-
             FormCloseType formResult = newFormInstance.getFormResult();
 
             ImList<RequestResult> result = null;
@@ -178,6 +189,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                     return true;
             }
         }
+        if(type == ChangeFlowType.NEEDMORESESSIONUSAGES && syncType == null)
+            return true;
         return super.hasFlow(type);
     }
 }
