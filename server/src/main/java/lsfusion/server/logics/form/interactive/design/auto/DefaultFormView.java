@@ -268,6 +268,7 @@ public class DefaultFormView extends FormView {
     }
     private void setupFormButton(PropertyDrawView action, KeyStroke editKey, String imagePath, MouseInputEvent mouseEvent, int mousePriority) {
         action.changeKey = editKey != null ? new KeyInputEvent(editKey) : null;
+        action.showChangeKey = false;
         action.changeMouse = mouseEvent;
         action.changeMousePriority = mousePriority;
         action.focusable = false;
@@ -275,7 +276,6 @@ public class DefaultFormView extends FormView {
         action.setAlignment(FlexAlignment.STRETCH);
 
         if (imagePath != null) {
-            action.showChangeKey = false;
             action.design.setImagePath(imagePath);
         }
     }

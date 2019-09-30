@@ -12,8 +12,6 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import java.sql.SQLException;
 
 public class CloseAction extends FormFlowAction {
-    private static LP showIf = createShowIfProperty(new Property[] {FormEntity.isSync}, new boolean[] {false});
-
     public CloseAction(BaseLogicsModule lm) {
         super(lm);
     }
@@ -27,10 +25,5 @@ public class CloseAction extends FormFlowAction {
     @Override
     protected boolean isSameSession() {
         return false;
-    }
-
-    @Override
-    protected LP getShowIf() {
-        return showIf;
     }
 }
