@@ -10,12 +10,10 @@ import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.controller.ShowTypeController;
 import lsfusion.client.form.object.panel.controller.PanelController;
 import lsfusion.client.form.object.panel.controller.PropertyController;
 import lsfusion.client.form.object.table.controller.AbstractTableController;
-import lsfusion.client.form.object.table.controller.ObjectController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.CalculationsView;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -31,8 +29,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -43,8 +43,6 @@ public class GridController extends AbstractTableController {
 
     protected CalculationsView calculationsView;
     public ShowTypeController showType;
-
-    private final Map<ClientObject, ObjectController> objects = new HashMap<>();
 
     public ClassViewType classView = ClassViewType.DEFAULT;
 
@@ -89,11 +87,6 @@ public class GridController extends AbstractTableController {
                 filter.addView(formLayout);
             }
 
-            for (ClientObject object : groupObject.objects) {
-                objects.put(object, new ObjectController(object, this.formController));
-                objects.get(object).addView(formLayout);
-            }
-
             // GRID идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
             grid = new GridTableController(this, this.formController, userPreferences);
             addGroupObjectActions(grid.getGridView());
@@ -112,14 +105,7 @@ public class GridController extends AbstractTableController {
     }
 
     private void configureToolbar() {
-        for (final ClientObject object : groupObject.grid.groupObject.objects) {
-            if (object.classChooser.visible) {
-                addToToolbar(getObjectController(object).getToolbarButton());
-            }
-        }
-
         if (filter != null) {
-            addToolbarSeparator();
             addToToolbar(filter.getToolbarButton());
         }
 
@@ -432,10 +418,6 @@ public class GridController extends AbstractTableController {
         return getGroupObject();
     }
 
-    public ObjectController getObjectController(ClientObject object) {
-        return objects.get(object);
-    }
-
     public List<ClientPropertyDraw> getGroupObjectProperties() {
         ArrayList<ClientPropertyDraw> properties = new ArrayList<>();
         for (ClientPropertyDraw property : getPropertyDraws()) {
@@ -509,10 +491,6 @@ public class GridController extends AbstractTableController {
             }
 
             formController.setFiltersVisible(groupObject, grid.isVisible());
-
-            for (ClientObject object : groupObject.objects) {
-                objects.get(object).setVisible(grid.isVisible());
-            }
 
 //            showType.update(classView);
         }
