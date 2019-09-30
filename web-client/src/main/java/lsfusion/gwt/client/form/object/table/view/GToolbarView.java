@@ -9,14 +9,16 @@ import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 
 public class GToolbarView extends ResizableHorizontalPanel {
     private int BUTTON_HEIGHT = 20;
+    private boolean isEmpty = true;
     
     public void addComponent(Widget tool) {
         add(tool);
         tool.addStyleName("toolbarItem");
+        isEmpty = false;
     }
     
     public boolean isEmpty() {
-        return getElement().getChildCount() == 0;
+        return isEmpty;
     }
     
     public void addSeparator() {
