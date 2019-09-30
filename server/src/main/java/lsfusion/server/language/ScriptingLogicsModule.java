@@ -3099,7 +3099,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> contextLPs = new ArrayList<>();
 
         Set<Property> usedProps = new HashSet<>();
-        boolean hasAssignProps = false;
 
         for (int i = 0; i < allObjects.size(); i++) {
             O object = allObjects.get(i);
@@ -3131,7 +3130,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                 Pair<LPWithParams, DebugInfo.DebugPoint> assignProp = null;
                 if(objectProp.assign) {
                     assignProp = new Pair<>(changeProp, objectProp.assignDebugPoint);
-                    hasAssignProps = true;
+                    if(doAction == null) // we will need to add change props, temporary will make this action empty to avoid extra null checks 
+                        doAction = new LAWithParams(baseLM.getEmpty(), new ArrayList<Integer>());
                 }
                 mChangeProps.add(assignProp);
             }
@@ -3148,8 +3148,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> propParams = new ArrayList<>(contextLPs);
         List<Integer> allParams = mergeAllParams(propParams);
 
-        // there is a hack when doAction is set empty instead of null
-        Boolean syncType = (doAction != null && doAction.getLP() != baseLM.getEmpty()) || elseAction != null || hasAssignProps ? true : null; // optimization
+        Boolean syncType = doAction != null || elseAction != null ? true : null; // optimization
         
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
@@ -3176,30 +3175,29 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LAWithParams proceedInputDoClause(LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<LP> inputParamProps, LAWithParams proceedAction, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps) throws ScriptingErrorLog.SemanticErrorException {
-        if (doAction != null) {
+        if (doAction != null)
             doAction = extendDoParams(doAction, newContext, oldContext.size(), false, inputParamProps, null, changeProps);
-            return addScriptedRequestAProp(proceedAction, doAction, elseAction);
-        }
-
-        return proceedAction;
+        return addScriptedRequestAProp(proceedAction, doAction, elseAction);
     }
 
     private LAWithParams proceedImportDoClause(boolean noParams, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, LP<?> whereLCP, ImList<LP> importParamProps, ImList<Boolean> nulls, LAWithParams proceedAction) throws ScriptingErrorLog.SemanticErrorException {
-        if (doAction != null) {
-            assert nulls != null;
-
-            int paramOld = oldContext.size() + (!noParams ? 1 : 0);
+        LAWithParams fillNullsAction = null;
+        int paramOld = oldContext.size() + (!noParams ? 1 : 0);
+        if(nulls != null) {
             if(paramOld == newContext.size()) // хак, потом можно будет красивее сделать
                 importParamProps = SetFact.EMPTYORDER();
-
+            fillNullsAction = fillImportNullsAction(noParams, paramOld, oldContext, newContext, whereLCP, importParamProps, nulls);
+        }
+            
+        if (doAction != null || fillNullsAction != null) {
             List<LAWithParams> actions = new ArrayList<>();
             actions.add(proceedAction);
 
-            LAWithParams fillNullsAction = fillImportNullsAction(noParams, paramOld, oldContext, newContext, whereLCP, importParamProps, nulls);
             if(fillNullsAction != null)
                 actions.add(fillNullsAction);
 
-            actions.add(extendImportDoAction(noParams, paramOld, oldContext, newContext, doAction, elseAction, whereLCP, importParamProps, nulls));
+            if(doAction != null)
+                actions.add(extendImportDoAction(noParams, paramOld, oldContext, newContext, doAction, elseAction, whereLCP, importParamProps, nulls));
 
             LAWithParams listAction = addScriptedListAProp(actions, Collections.emptyList());
             // хак - в ifAProp оборачиваем что delegationType был AFTER_DELEGATE, а не BEFORE или null, вообще по хорошему надо delegationType в момент parsing'а проставлять, а не в самих свойствах
@@ -3772,6 +3770,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             paramClasses = getValueClassesFromTypedParams(fieldParams);
             props = genLPsForImport(context, newContext, paramClasses);
         } else { // TO
+            assert doAction == null;
             paramClasses = findClasses(toParamClasses);
             props = findLPsForImport(propUsages, paramClasses);
         }

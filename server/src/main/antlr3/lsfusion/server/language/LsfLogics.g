@@ -2976,7 +2976,7 @@ noCancelClause returns [boolean result]
 doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext] returns [LAWithParams action, LAWithParams elseAction]
         // used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses inside extendDoParams, but need modifyContext flag in actionDefinitionBody to get right DelegationType
     :	(('DO' dDB=modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false, true] { $action = $dDB.action; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseAction = $eDB.action; } )?)
-	|	(';' { if(inMainParseState()) { $action = new LAWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
+	|	';'
 ;
 
 syncTypeLiteral returns [boolean val]

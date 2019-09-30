@@ -129,6 +129,10 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         return true;
     }
 
+    private boolean heuristicSyncType(ExecutionContext<ClassPropertyInterface> context) {
+        return context.hasMoreSessionUsages;
+    }
+
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
         ImRevMap<O, ObjectEntity> mapRevResolvedObjects = mapResolvedObjects.reverse();
@@ -140,7 +144,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         if(this.syncType != null)
             syncType = this.syncType;
         else
-            syncType = context.hasMoreSessionUsages;
+            syncType = heuristicSyncType(context);
         
         FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, contextFilters, pullProps.result, readOnly);
         context.requestFormUserInteraction(newFormInstance, getModalityType(syncType), forbidDuplicate, context.stack);
