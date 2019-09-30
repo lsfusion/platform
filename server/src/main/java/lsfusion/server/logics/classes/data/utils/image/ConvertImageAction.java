@@ -11,6 +11,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,8 +39,19 @@ public class ConvertImageAction extends InternalAction {
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             BufferedImage bi = ImageIO.read(inputFile.getInputStream());
-            ImageIO.write(bi, extension, os);
-            findProperty("convertedImage[]").change(new RawFileData(os), context);
+
+            if(bi.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
+                //ImageIO.write doesn't support TYPE_4BYTE_ABGR
+                BufferedImage newBi = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+                newBi.createGraphics().drawImage(bi, 0, 0, Color.WHITE, null);
+                bi = newBi;
+            }
+
+            if(ImageIO.write(bi, extension, os)) {
+                findProperty("convertedImage[]").change(new RawFileData(os), context);
+            } else {
+                throw new RuntimeException("Convert Image failed");
+            }
 
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
