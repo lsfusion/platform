@@ -93,7 +93,7 @@ defaultNotificate = DATA LOCAL NESTED BOOLEAN ();
 
 attachment '{chat.attachment}' = DATA LOCAL NESTED FILE (Chat);
 loadAttachment '{chat.load.attachment}' (Chat c)  { INPUT =attachment(c) CHANGE; }
-deleteAttachment '{chat.delete.attachment}' (Chat c)  { attachment(c) <- NULL; } IMAGE 'deleteChat.png';
+deleteAttachment '{chat.delete.attachment}' (Chat c)  { attachment(c) <- NULL; } IMAGE 'delete.png';
 showLoadAttachment (Chat c) = NOT attachment(c);
 showDeleteAttachment (Chat c) = attachment(c);
 
