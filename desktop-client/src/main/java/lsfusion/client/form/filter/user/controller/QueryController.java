@@ -39,7 +39,7 @@ public abstract class QueryController {
 
         view = createView();
 
-        toolbarButton = new ToolbarGridButton(view.getAddConditionIcon(), "") {
+        toolbarButton = new ToolbarGridButton(view.getFilterIcon(), "") {
             
             @Override
             public String getToolTipText() {
@@ -83,7 +83,7 @@ public abstract class QueryController {
 
     private Icon getStateIcon() {
         switch (state) {
-            case REMOVED: return getView().getAddConditionIcon();
+            case REMOVED: return getView().getFilterIcon();
             case COLLAPSED: return collapseIcon;
             case EXPANDED: return expandIcon;
         }

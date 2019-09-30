@@ -22,8 +22,8 @@ import java.util.Map;
 
 public class GFilterView extends ResizableFocusPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String ADD_CONDITION = "filtadd.png";
-    private static final String APPLY = "filt.png";
+    private static final String APPLY = "filtapply.png";
+    private static final String ADD = "filtadd.png";
 
     private ResizableVerticalPanel filterContainer;
 
@@ -54,7 +54,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         applyButton.addStyleName("flowPanelChildLeftAlign");
         applyButton.addStyleName("filterDialogButton");
 
-        GToolbarButton addConditionButton = new GToolbarButton(ADD_CONDITION, messages.formQueriesFilterAddCondition() + " (alt + F2)") {
+        GToolbarButton addConditionButton = new GToolbarButton(ADD, messages.formQueriesFilterAddCondition() + " (alt + F2)") {
             @Override
             public void addListener() {
                 addClickHandler(new ClickHandler() {

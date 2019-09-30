@@ -20,7 +20,7 @@ import java.util.List;
 
 public abstract class GFilterController {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String ADD_FILTER = "filtadd.png";
+    private static final String FILTER = "filt.png";
     private static final String EXPAND = "expand.png";
     private static final String FILTER_BUTTON_TOOLTIP_TEXT = messages.formQueriesFilter() + " (F2)";
 
@@ -43,7 +43,7 @@ public abstract class GFilterController {
     public GFilterController(GTableController logicsSupplier) {
         this.logicsSupplier = logicsSupplier;
 
-        toolbarButton = new GToolbarButton(ADD_FILTER) {
+        toolbarButton = new GToolbarButton(FILTER) {
             @Override
             public void addListener() {
                 addClickHandler(new ClickHandler() {
@@ -126,7 +126,7 @@ public abstract class GFilterController {
         String toolbarButtonIconPath = null;
         switch (newState) {
             case REMOVED:
-                toolbarButtonIconPath = ADD_FILTER;
+                toolbarButtonIconPath = FILTER;
                 toolbarButton.setTitle(FILTER_BUTTON_TOOLTIP_TEXT);
                 if (state != State.HIDDEN) {
                     toolbarButton.getElement().getStyle().setProperty("background", "");

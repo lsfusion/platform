@@ -29,7 +29,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
     public static final int PREFERRED_HEIGHT = 18;
 
     // Icons - загружаем один раз, для экономии
-    private static final ImageIcon deleteIcon = new ImageIcon(QueryConditionView.class.getResource("/images/delete.png"));
+    private static final ImageIcon deleteIcon = new ImageIcon(QueryConditionView.class.getResource("/images/filtdel.png"));
 
     private final ClientPropertyFilter filter;
 

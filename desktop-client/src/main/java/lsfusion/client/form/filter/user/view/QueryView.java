@@ -62,7 +62,7 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
             }
         });
 
-        addCondButton = new ToolbarGridButton(getAddConditionIcon(), ClientResourceBundle.getString("form.queries.filter.add.condition") + " (alt + F2)");
+        addCondButton = new ToolbarGridButton(getAddIcon(), ClientResourceBundle.getString("form.queries.filter.add.condition") + " (alt + F2)");
         addCondButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 controller.addConditionPressed();
@@ -274,7 +274,9 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
 
     public abstract Icon getApplyIcon();
 
-    public abstract Icon getAddConditionIcon();
+    public abstract Icon getAddIcon();
+
+    public abstract Icon getFilterIcon();
 
     protected abstract KeyStroke getKeyStroke(int modifier);
 }

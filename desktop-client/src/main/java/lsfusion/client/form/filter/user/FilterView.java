@@ -8,9 +8,11 @@ import javax.swing.*;
 
 public class FilterView extends QueryView {
 
-    private static final ImageIcon applyIcon = new ImageIcon(FilterView.class.getResource("/images/filt.png"));
+    private static final ImageIcon applyIcon = new ImageIcon(FilterView.class.getResource("/images/filtapply.png"));
 
-    private static final ImageIcon addConditionIcon = new ImageIcon(FilterView.class.getResource("/images/filtadd.png"));
+    private static final ImageIcon addIcon = new ImageIcon(FilterView.class.getResource("/images/filtadd.png"));
+
+    private static final ImageIcon filterIcon = new ImageIcon(FilterView.class.getResource("/images/filt.png"));
 
     public FilterView(QueryController controller) {
         super(controller);
@@ -20,8 +22,12 @@ public class FilterView extends QueryView {
         return applyIcon;
     }
 
-    public Icon getAddConditionIcon() {
-        return addConditionIcon;
+    public Icon getAddIcon() {
+        return addIcon;
+    }
+
+    public Icon getFilterIcon() {
+        return filterIcon;
     }
 
     protected KeyStroke getKeyStroke(int modifier) {

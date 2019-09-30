@@ -26,7 +26,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         void applyFilter();
     }
 
-    private static final String DELETE = "delete.png";
+    private static final String DELETE = "filtdel.png";
 
     private GFilterConditionListBox propertyView;
     private CheckBox negationView;
