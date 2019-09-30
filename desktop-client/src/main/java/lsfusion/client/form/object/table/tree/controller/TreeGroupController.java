@@ -20,7 +20,6 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.order.user.Order;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,7 +72,8 @@ public class TreeGroupController extends AbstractTableController {
 
             filter.getView().addActionsToInputMap(tree);
 
-            addToToolbar(Box.createHorizontalStrut(5));
+            addToolbarSeparator();
+            
             expandTreeCurrentButton = new ExpandTreeButton(this, true);
             addToToolbar(expandTreeCurrentButton);
             expandTreeButton = new ExpandTreeButton(this, false);

@@ -42,7 +42,15 @@ public abstract class AbstractTableController implements TableController {
     }
 
     public void addToToolbar(Component component) {
-        toolbarView.addComponent(component);
+        if (toolbarView != null) {
+            toolbarView.addComponent(component);
+        }
+    }
+    
+    public void addToolbarSeparator() {
+        if (toolbarView != null) {
+            toolbarView.addSeparator();
+        }
     }
 
     public boolean hasPanelProperty(ClientPropertyDraw property) {

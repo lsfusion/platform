@@ -358,6 +358,7 @@ input[type=checkbox] {
 .comboBoxFilter {
     margin: auto 2px;
     height: 21px;
+    border: 1px solid #ccc;
 }
 
 .dataFilterValueTablePanel {
@@ -572,6 +573,14 @@ input[type=checkbox] {
     height: 20px;
     width: 20px;
     display: block;
+    border: none;
+}
+
+.toolbarButton:hover {
+    border: 1px solid #ccc;
+}
+
+.toolbarItem {
     margin: 1px 4px 0 0;
 }
 
@@ -627,4 +636,8 @@ input[type=checkbox] {
 
 .imageButtonWithoutCaption {
     padding: 1px;
+}
+
+.verticalSeparator {
+    border-left: 1px solid #ccc;
 }

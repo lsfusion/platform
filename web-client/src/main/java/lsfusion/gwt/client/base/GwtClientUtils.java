@@ -161,6 +161,13 @@ public class GwtClientUtils {
         return strut;
     }
 
+    public static Widget createVerticalSeparator(int height) {
+        SimplePanel separator = new SimplePanel();
+        separator.setHeight(height + "px");
+        separator.addStyleName("verticalSeparator");
+        return separator;
+    }
+
     public static String getUserAgent() {
         return Window.Navigator.getUserAgent().toLowerCase();
     }

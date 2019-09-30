@@ -26,6 +26,18 @@ public class ToolbarView extends JComponentPanel {
 
         add(mainPanel, new FlexConstraints(FlexAlignment.CENTER, 0));
     }
+    
+    public void addSeparator() {
+        if (!isEmpty()) {
+            addComponent(Box.createHorizontalStrut(2));
+            addComponent(new JSeparator(SwingConstants.VERTICAL));
+            addComponent(Box.createHorizontalStrut(2));
+        }
+    }
+    
+    public boolean isEmpty() {
+        return mainPanel.getComponentCount() == 0;
+    }
 
     public void addComponent(Component component) {
         mainPanel.add(component);

@@ -112,24 +112,24 @@ public class GridController extends AbstractTableController {
     }
 
     private void configureToolbar() {
-        boolean hasClassChoosers = false;
         for (final ClientObject object : groupObject.grid.groupObject.objects) {
             if (object.classChooser.visible) {
                 addToToolbar(getObjectController(object).getToolbarButton());
-                hasClassChoosers = true;
             }
-        }
-        if (hasClassChoosers) {
-            addToToolbar(Box.createHorizontalStrut(5));
         }
 
         if (filter != null) {
+            addToolbarSeparator();
             addToToolbar(filter.getToolbarButton());
-            addToToolbar(Box.createHorizontalStrut(5));
         }
 
         if (groupObject.toolbar.showGroupChange) {
+            addToolbarSeparator();
             addToToolbar(grid.createGroupChangeButton());
+        }
+
+        if (groupObject.toolbar.showCountRows || groupObject.toolbar.showCalculateSum || groupObject.toolbar.showGroupReport) {
+            addToolbarSeparator();
         }
 
         if (groupObject.toolbar.showCountRows) {
@@ -144,7 +144,9 @@ public class GridController extends AbstractTableController {
             addToToolbar(grid.createGroupingButton());
         }
 
-        addToToolbar(Box.createHorizontalStrut(5));
+        if (groupObject.toolbar.showPrint || groupObject.toolbar.showXls) {
+            addToolbarSeparator();
+        }
 
         if (groupObject.toolbar.showPrint) {
             addToToolbar(grid.createPrintGroupButton());
@@ -152,12 +154,11 @@ public class GridController extends AbstractTableController {
 
         if (groupObject.toolbar.showXls) {
             addToToolbar(grid.createPrintGroupXlsButton());
-            addToToolbar(Box.createHorizontalStrut(5));
         }
 
         if (groupObject.toolbar.showSettings) {
+            addToolbarSeparator();
             addToToolbar(grid.createGridSettingsButton());
-            addToToolbar(Box.createHorizontalStrut(5));
         }
     }
 

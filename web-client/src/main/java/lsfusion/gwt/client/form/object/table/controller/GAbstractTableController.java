@@ -50,7 +50,13 @@ public abstract class GAbstractTableController implements GTableController {
 
     public void addToToolbar(Widget tool) {
         if (toolbarView != null) {
-            toolbarView.addTool(tool);
+            toolbarView.addComponent(tool);
+        }
+    }
+    
+    public void addToolbarSeparator() {
+        if (toolbarView != null) {
+            toolbarView.addSeparator();
         }
     }
 

@@ -56,12 +56,12 @@ select {
     text-decoration: none;
     cursor: pointer;
     cursor: hand;
-    font-size:small;
-    background: white;
-    border:1px solid #bbb;
+    font-size: small;
+    background: transparent;
+    border: 1px solid #ccc;
 }
 .gwt-Button:active {
-    border: 1px inset #ccc;
+    border: 1px inset #bbb;
 }
 .gwt-Button:hover {
     background: rgba(4, 137, 186, 0.09411764705882353);
@@ -75,7 +75,7 @@ select {
     color: #888;
 }
 .gwt-Button[disabled]:hover {
-    border: 1px outset #ccc;
+    border: 1px outset #bbb;
     background: white;
 }
 

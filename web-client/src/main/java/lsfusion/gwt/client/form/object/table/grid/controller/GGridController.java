@@ -4,7 +4,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -67,11 +66,10 @@ public class GGridController extends GAbstractTableController {
 
     private void configureToolbar() {
         addFilterButton();
-        if (filter != null && grid != null) {
-            addToToolbar(GwtClientUtils.createHorizontalStrut(5));
-        }
 
         if (groupObject.toolbar.showGroupChange) {
+            addToolbarSeparator();
+            
             addToToolbar(new GToolbarButton("groupchange.png", messages.formGridGroupGroupChange() + " (F12)") {
                 @Override
                 public void addListener() {
@@ -83,6 +81,10 @@ public class GGridController extends GAbstractTableController {
                     });
                 }
             });
+        }
+
+        if (groupObject.toolbar.showCountQuantity || groupObject.toolbar.showCalculateSum) {
+            addToolbarSeparator();
         }
 
         if (groupObject.toolbar.showCountQuantity) {
@@ -120,7 +122,7 @@ public class GGridController extends GAbstractTableController {
         }
 
         if (groupObject.toolbar.showPrintGroup || groupObject.toolbar.showPrintGroupXls) {
-            addToToolbar(GwtClientUtils.createHorizontalStrut(5));
+            addToolbarSeparator();
         }
 
         if (groupObject.toolbar.showPrintGroup) {
@@ -151,8 +153,8 @@ public class GGridController extends GAbstractTableController {
             });
         }
 
-        if (groupObject.toolbar.showGridSettings) {
-            addToToolbar(GwtClientUtils.createHorizontalStrut(5));
+        if ((groupObject.toolbar.showPrintGroup || groupObject.toolbar.showPrintGroupXls) && groupObject.toolbar.showGridSettings) {
+            addToolbarSeparator();
             addToToolbar(new GUserPreferencesButton(grid.getTable(), this, formController.hasCanonicalName()));
         }
     }

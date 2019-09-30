@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.object.table.tree.controller;
 import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -75,7 +74,8 @@ public class GTreeGroupController extends GAbstractTableController {
 
         addFilterButton();
 
-        addToToolbar(GwtClientUtils.createHorizontalStrut(5));
+        addToolbarSeparator();
+        
         expandTreeCurrentButton = new GExpandTreeButton(this, true);
         addToToolbar(expandTreeCurrentButton);
         expandTreeButton = new GExpandTreeButton(this, false);
