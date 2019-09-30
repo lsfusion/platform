@@ -18,7 +18,6 @@ import java.util.List;
 public abstract class QueryController {
 
     public static final ImageIcon collapseIcon = new ImageIcon(QueryView.class.getResource("/images/collapse.png"));
-    public static final ImageIcon expandIcon = new ImageIcon(QueryView.class.getResource("/images/expand.png"));
 
     private enum State {
         HIDDEN, REMOVED, COLLAPSED, EXPANDED
@@ -85,7 +84,7 @@ public abstract class QueryController {
         switch (state) {
             case REMOVED: return getView().getFilterIcon();
             case COLLAPSED: return collapseIcon;
-            case EXPANDED: return expandIcon;
+            case EXPANDED: return collapseIcon;
         }
         return null;
     }
