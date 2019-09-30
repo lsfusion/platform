@@ -341,7 +341,7 @@ DESIGN customUsersDialog { BOX { size = (1024, 768); } }
 // User profile
 forbidEditProfile = ABSTRACT BOOLEAN (CustomUser);
 
-FORM editProfile '{navigator.account.edit.profile}' IMAGE '/images/editReport.png'
+FORM editProfile '{navigator.account.edit.profile}'
     OBJECTS u = CustomUser PANEL
     PROPERTIES(u) login READONLY
     PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, fontSize
@@ -529,8 +529,8 @@ NAVIGATOR {
     }
     NEW FOLDER account '{navigator.account}' WINDOW toolbar IMAGE '/images/lock.png' {
         NEW ACTION reloginLoginUserAction '{navigator.account.relogin}' = reloginLoginUser[] IMAGE '/images/relogin.png';
-        NEW editProfile;
-        NEW ACTION changePasswordAction '{navigator.account.change.password}' = changePassword[] IMAGE '/images/change_password.png';
+        NEW editProfile IMAGE '/images/editProfile.png';
+        NEW ACTION changePasswordAction '{navigator.account.change.password}' = changePassword[] IMAGE '/images/changePassword.png';
         NEW ACTION logOutAction '{navigator.account.logout}' = restart[] IMAGE '/images/logout.png';
     }
 }
