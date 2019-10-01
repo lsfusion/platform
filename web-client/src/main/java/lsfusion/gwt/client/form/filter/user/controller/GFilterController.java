@@ -21,7 +21,7 @@ import java.util.List;
 public abstract class GFilterController {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String FILTER = "filt.png";
-    private static final String EXPAND = "expand.png";
+    private static final String COLLAPSE = "collapse.png";
     private static final String FILTER_BUTTON_TOOLTIP_TEXT = messages.formQueriesFilter() + " (F2)";
 
     private ImageButton toolbarButton;
@@ -133,7 +133,7 @@ public abstract class GFilterController {
                 }
                 break;
             case COLLAPSED:
-                toolbarButtonIconPath = EXPAND;
+                toolbarButtonIconPath = COLLAPSE;
                 toolbarButton.setTitle(messages.expandFilterWindow());
                 if (state != State.HIDDEN) {
                     toolbarButton.getElement().getStyle().setProperty("background", "#A2FFA2");
