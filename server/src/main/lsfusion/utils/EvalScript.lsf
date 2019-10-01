@@ -62,7 +62,7 @@ scriptExecution '{eval.script.script.execution}' (Script s)  {
     NEWSESSION TRY {
         EVAL text(s); 
     } CATCH {
-        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();
+        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;
     }
 }
 
@@ -71,7 +71,7 @@ actionBodyExecution '{eval.script.action.body.execution}' (Script s)  {
     NEWSESSION TRY {
         EVAL ACTION text(s);
     } CATCH {
-        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();
+        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;
     }
 }
 
@@ -80,7 +80,7 @@ formExecution '{eval.script.form.execution}' (Script s)  {
     NEWSESSION TRY {
         EVAL CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}';
     } CATCH {
-        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();    
+        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;    
     }
 }
 
@@ -89,7 +89,7 @@ javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s)  {
     NEWSESSION TRY {
         EVAL CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
     } CATCH {
-        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();
+        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;
     }
 }
 
