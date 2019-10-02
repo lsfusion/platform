@@ -15,7 +15,7 @@ public class GUserPreferencesButton extends GToolbarButton {
     private final GGridController groupController;
     
     public GUserPreferencesButton(GGridTable table, GGridController groupController, boolean canBeSaved) {
-        super(table.hasUserPreferences() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON, "");
+        super("userPreferences.png", "");
         this.table = table;
         this.groupController = groupController;
         this.canBeSaved = canBeSaved;
