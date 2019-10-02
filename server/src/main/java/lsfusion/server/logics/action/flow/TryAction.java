@@ -1,6 +1,7 @@
 package lsfusion.server.logics.action.flow;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -111,8 +112,8 @@ public class TryAction extends KeepContextAction {
         } catch(Throwable e) {
             if(catchAction != null) {
                 context.getBL().LM.messageCaughtException.change(String.valueOf(e), context);
-                context.getBL().LM.javaStackTraceCaughtException.change(String.valueOf(e) + "\n" + ThreadUtils.getJavaStack(e.getStackTrace()), context);
-                context.getBL().LM.lsfStackTraceCaughtException.change(ExecutionStackAspect.getStackString(Thread.currentThread(), true, true), context);
+                context.getBL().LM.javaStackTraceCaughtException.change(ExceptionUtils.toString(e), context);
+                context.getBL().LM.lsfStackTraceCaughtException.change(ExecutionStackAspect.getStackString(), context);
                 catchResult = catchAction.execute(context);
             }
 
