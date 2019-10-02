@@ -1,10 +1,12 @@
 package lsfusion.client.base.view;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class FlatRolloverButton extends JButton {
+    private boolean showBackground;
     private MouseAdapter mouseAdapter = new MouseAdapter() {
         @Override
         public void mouseEntered(MouseEvent e) {
@@ -14,6 +16,8 @@ public class FlatRolloverButton extends JButton {
         @Override
         public void mouseExited(MouseEvent e) {
             ((JButton) e.getSource()).setContentAreaFilled(false);
+            if(showBackground) //setContentAreaFilled(false) do setOpaque(false)
+                setOpaque(true);
         }
     };
 
@@ -38,5 +42,12 @@ public class FlatRolloverButton extends JButton {
         super(text, icon);
         setContentAreaFilled(false);
         addMouseListener(mouseAdapter);
+    }
+
+    public void showBackground(boolean showBackground) {
+        this.showBackground = showBackground;
+        setOpaque(showBackground);
+        setBackground(showBackground ? new Color(4, 137, 186, 24) : null);
+        setBorder(showBackground ? BorderFactory.createLineBorder(new Color(204,204,204)) : null);
     }
 }

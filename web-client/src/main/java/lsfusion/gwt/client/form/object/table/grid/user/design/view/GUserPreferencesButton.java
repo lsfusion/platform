@@ -9,8 +9,6 @@ import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 
 public class GUserPreferencesButton extends GToolbarButton {
     private final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String PREFERENCES_SAVED_ICON = "userPreferencesSaved.png";
-    private static final String PREFERENCES_UNSAVED_ICON = "userPreferences.png";
 
     private final boolean canBeSaved;
     private final GGridTable table;
@@ -21,6 +19,7 @@ public class GUserPreferencesButton extends GToolbarButton {
         this.table = table;
         this.groupController = groupController;
         this.canBeSaved = canBeSaved;
+        showBackground(table.hasUserPreferences());
         updateTooltip();
     }
 
@@ -32,8 +31,8 @@ public class GUserPreferencesButton extends GToolbarButton {
                 GUserPreferencesDialog dialog = new GUserPreferencesDialog(table, groupController, canBeSaved) {
                     @Override
                     public void preferencesChanged() {
+                        showBackground(table.generalPreferencesSaved() || table.userPreferencesSaved());
                         updateTooltip();
-                        setModuleImagePath(table.generalPreferencesSaved() || table.userPreferencesSaved() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON);
                     }
                 };
                 dialog.showDialog();

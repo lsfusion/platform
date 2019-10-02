@@ -1,6 +1,7 @@
 package lsfusion.client.form.filter.user.controller;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.view.FlatRolloverButton;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.view.QueryView;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -28,7 +29,7 @@ public abstract class QueryController {
     private final QueryView view;
 
     private final TableController logicsSupplier;
-    private final JButton toolbarButton;
+    private final FlatRolloverButton toolbarButton;
 
     private State state;
     private State hiddenState;
@@ -58,13 +59,17 @@ public abstract class QueryController {
         toolbarButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 switch (state) {
-                    case REMOVED: 
+                    case REMOVED:
                         replaceConditionPressed();
+                        toolbarButton.showBackground(false);
                         break;
                     case COLLAPSED: 
                         setState(State.EXPANDED);
+                        toolbarButton.showBackground(false);
                         break;
-                    case EXPANDED: setState(State.COLLAPSED);
+                    case EXPANDED:
+                        setState(State.COLLAPSED);
+                        toolbarButton.showBackground(true);
                 }
             }
         });

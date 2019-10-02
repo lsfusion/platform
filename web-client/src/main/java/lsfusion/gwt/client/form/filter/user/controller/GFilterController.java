@@ -5,7 +5,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.view.GFilterDialogHeader;
 import lsfusion.gwt.client.form.filter.user.view.GFilterView;
@@ -24,7 +23,7 @@ public abstract class GFilterController {
     private static final String COLLAPSE = "collapse.png";
     private static final String FILTER_BUTTON_TOOLTIP_TEXT = messages.formQueriesFilter() + " (F2)";
 
-    private ImageButton toolbarButton;
+    private GToolbarButton toolbarButton;
     private GFilterView filterView;
     private DialogBox filterDialog;
     private GFilterDialogHeader filterDialogHeader;
@@ -129,14 +128,14 @@ public abstract class GFilterController {
                 toolbarButtonIconPath = FILTER;
                 toolbarButton.setTitle(FILTER_BUTTON_TOOLTIP_TEXT);
                 if (state != State.HIDDEN) {
-                    toolbarButton.getElement().getStyle().setProperty("background", "");
+                    toolbarButton.showBackground(false);
                 }
                 break;
             case COLLAPSED:
                 toolbarButtonIconPath = COLLAPSE;
                 toolbarButton.setTitle(messages.expandFilterWindow());
                 if (state != State.HIDDEN) {
-                    toolbarButton.getElement().getStyle().setProperty("background", "#A2FFA2");
+                    toolbarButton.showBackground(true);
                 }
         }
         if (toolbarButtonIconPath != null) {

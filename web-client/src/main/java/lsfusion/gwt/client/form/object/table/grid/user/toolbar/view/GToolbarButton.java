@@ -17,4 +17,9 @@ public abstract class GToolbarButton extends ImageButton {
     }
 
     public abstract void addListener();
+
+    public void showBackground(boolean showBackground) {
+        getElement().getStyle().setBackgroundColor(showBackground ? "rgba(4, 137, 186, 0.09411764705882353)" : "");
+        getElement().getStyle().setProperty("border", showBackground ? "1px solid #CCCCCC" : "");
+    }
 }
