@@ -55,6 +55,10 @@ button::-moz-focus-inner {
 }
 
 /* ------------ Default gwt overrides ------------ */
+:focus {
+    outline: 0;
+}
+
 .gwt-Button {
     white-space: nowrap;
 }
@@ -66,6 +70,10 @@ button::-moz-focus-inner {
 input[type=checkbox] {
     vertical-align: middle;
     position: relative;
+}
+
+input[type=checkbox]:focus {
+    outline: 1px solid #0489BA;
 }
 
 .SplitPanelBase-hdragger {
@@ -358,11 +366,10 @@ input[type=checkbox] {
 .comboBoxFilter {
     margin: auto 2px;
     height: 21px;
-    border: 1px solid #ccc;
 }
 
 .dataFilterValueTablePanel {
-    border: 1px solid black;
+    border: 1px solid #ccc;
     margin: 2px 2px 2px 1px;
     min-height: 16px !important;
 }
@@ -485,9 +492,13 @@ input[type=checkbox] {
     background-color: white;
     overflow-y: auto;
     overflow-x: hidden;
-    border: 1px solid #d3d3d3;
+    border: 1px solid #ccc;
     padding: 2px 3px;
     margin: 1px;
+}
+
+.userPreferencesDualList .listBoxContainer:focus {
+    border: 1px solid #0489BA;
 }
 
 .dualListButtonsContainer {

@@ -36,6 +36,11 @@ a:hover {
 
 select {
     background: white;
+    border: 1px solid #ccc;
+}
+
+select:focus {
+    border: 1px solid #0489BA;
 }
 
 /**
@@ -918,6 +923,12 @@ select {
     background: rgba(4, 137, 186, 0.09411764705882353);
 }
 
+.gwt-TabBar .gwt-TabBarItem:focus {
+    border-top: 1px solid #0489BA;
+    border-left: 1px solid #0489BA;
+    border-right: 1px solid #0489BA;
+}
+
 .gwt-TabBar .gwt-TabBarItem-selected:hover {
     background: rgba(4, 137, 186, 0.09411764705882353); 
 }
@@ -1039,6 +1050,10 @@ select {
 .gwt-TextBox-readonly {
     color: #888;
 }
+.gwt-TextBox:focus {
+    border: 1px solid #0489BA;
+}
+
 .gwt-ToggleButton-up,
 .gwt-ToggleButton-up-hovering,
 .gwt-ToggleButton-up-disabled,
@@ -1278,7 +1293,6 @@ td.datePickerMonth {
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected {
     cursor: default;
     background: rgba(4, 137, 186, 0.09411764705882353);
-    color: #333;
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab:hover {
