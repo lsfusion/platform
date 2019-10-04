@@ -198,12 +198,6 @@
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-jpeg</artifactId>
         </dependency>
-        <dependency>
-            <groupId>javax.jnlp</groupId>
-            <artifactId>jnlp-api</artifactId>
-            <scope>system</scope>
-            <systemPath>${java.home}/lib/javaws.jar</systemPath>
-        </dependency>
         <!-- for html link renderer -->
         <dependency>
             <groupId>net.sf.cssbox</groupId>
