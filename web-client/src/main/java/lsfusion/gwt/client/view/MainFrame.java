@@ -150,6 +150,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void initializeFrame() {
+        currentForm = null;
+        
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
@@ -199,8 +201,13 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
 
             @Override
-            public void setCurrentForm(String formID) {
-                navigatorDispatchAsync.execute(new SetCurrentForm(formID), new ErrorHandlingCallback<VoidResult>());
+            public void setCurrentForm(GFormController form) {
+                MainFrame.this.setCurrentForm(form);
+            }
+
+            @Override
+            public void dropCurrentForm(GFormController form) {
+                MainFrame.this.dropCurrentForm(form);
             }
         };
 
@@ -264,7 +271,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                             setShouldRepeatPingRequest(true);
                             super.success(result);
                             for (Integer idNotification : result.notificationList) {
-                                GFormController form = result.currentForm == null ? null : formsController.getForm(result.currentForm);
+                                GFormController form = currentForm;
                                 if (form != null)
                                     try {
                                         form.executeNotificationAction(idNotification);
@@ -323,6 +330,17 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         Style bodyStyle = RootPanel.get().getElement().getStyle();
         bodyStyle.setHeight(Window.getClientHeight(), Style.Unit.PX);
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
+    }
+
+    public static GFormController currentForm;
+
+    public void setCurrentForm(GFormController currentForm) {
+        this.currentForm = currentForm;
+    }
+
+    public void dropCurrentForm(GFormController form) {
+        if(currentForm != null && currentForm.equals(form))
+            currentForm = null;
     }
 
     private void initializeWindows(final DefaultFormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {

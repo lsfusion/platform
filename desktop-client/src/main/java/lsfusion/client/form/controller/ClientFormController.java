@@ -1073,10 +1073,10 @@ public class ClientFormController implements AsyncListener {
 
     public void gainedFocus() {
         try {
-            rmiQueue.asyncRequest(new RmiVoidRequest("gainedFocus") {
+            rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("gainedFocus") {
                 @Override
-                protected void doExecute(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    remoteForm.gainedFocus(requestIndex, lastReceivedRequestIndex);
+                protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.gainedFocus(requestIndex, lastReceivedRequestIndex);
                 }
             });
         } catch (Exception e) {
@@ -1649,6 +1649,7 @@ public class ClientFormController implements AsyncListener {
     public static abstract class Binding {
         public final ClientGroupObject groupObject;
         public int priority;
+        public boolean onlyDialog;
 
         public Binding(ClientGroupObject groupObject, int priority) {
             this.groupObject = groupObject;
@@ -1672,6 +1673,7 @@ public class ClientFormController implements AsyncListener {
             Binding binding = bindingSupplier.get();
             if(propertyDraw.editMousePriority != null)
                 binding.priority = propertyDraw.editMousePriority;
+            binding.onlyDialog = propertyDraw.editMouseOnlyDialog;
             addBinding(propertyDraw.editMouse, binding);
         }
     }
@@ -1687,7 +1689,8 @@ public class ClientFormController implements AsyncListener {
             // increasing priority for group object
             ClientGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
-                orderedBindings.put(-(binding.priority + (groupObject != null && BaseUtils.nullEquals(groupObject, binding.groupObject) ? 100 : 0)), binding);
+                if(!binding.onlyDialog || isDialog())
+                    orderedBindings.put(-(binding.priority + (groupObject != null && BaseUtils.nullEquals(groupObject, binding.groupObject) ? 100 : 0)), binding);
 
             for(Binding binding : orderedBindings.values())
                 if(binding.pressed())                    

@@ -27,7 +27,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // events : form
 
-    void gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
+    ServerResponse gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
     ServerResponse setTabVisible(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException;
 

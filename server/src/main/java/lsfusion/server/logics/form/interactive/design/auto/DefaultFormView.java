@@ -225,7 +225,7 @@ public class DefaultFormView extends FormView {
         setupFormButton(cancelFunction, KeyStrokes.getCancelKeyStroke());
 
         PropertyDrawView okFunction = get(entity.okActionPropertyDraw);
-        setupFormButton(okFunction, KeyStrokes.getOkKeyStroke(), MouseInputEvent.DBLCLK, 1000);
+        setupFormButton(okFunction, KeyStrokes.getOkKeyStroke(), MouseInputEvent.DBLCLK, 1000, true);
 
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
         setupFormButton(closeFunction, KeyStrokes.getCloseKeyStroke());
@@ -256,21 +256,22 @@ public class DefaultFormView extends FormView {
         toolbarBoxContainer.add(toolbarLeftContainer, version);
         toolbarBoxContainer.add(toolbarRightContainer, version);
     }
-
-    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, MouseInputEvent mouseInputEvent, int mousePriority) {
-        setupFormButton(action, editKey, null, mouseInputEvent, mousePriority);
+    
+    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, MouseInputEvent mouseInputEvent, int mousePriority, boolean mouseOnlyDialog) {
+        setupFormButton(action, editKey, null, mouseInputEvent, mousePriority, mouseOnlyDialog);
     }
     private void setupFormButton(PropertyDrawView action, KeyStroke editKey) {
         setupFormButton(action, editKey, (String)null);        
     }
     private void setupFormButton(PropertyDrawView action, KeyStroke editKey, String imagePath) {
-        setupFormButton(action, editKey, imagePath, null, 0);
+        setupFormButton(action, editKey, imagePath, null, 0, false);
     }
-    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, String imagePath, MouseInputEvent mouseEvent, int mousePriority) {
+    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, String imagePath, MouseInputEvent mouseEvent, int mousePriority, boolean mouseOnlyDialog) {
         action.changeKey = editKey != null ? new KeyInputEvent(editKey) : null;
         action.showChangeKey = false;
         action.changeMouse = mouseEvent;
         action.changeMousePriority = mousePriority;
+        action.changeMouseOnlyDialog = mouseOnlyDialog;
         action.focusable = false;
         action.entity.setEditType(PropertyEditType.EDITABLE);
         action.setAlignment(FlexAlignment.STRETCH);

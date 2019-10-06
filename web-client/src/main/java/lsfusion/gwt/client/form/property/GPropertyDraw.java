@@ -88,6 +88,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean showEditKey;
     public GMouseInputEvent editMouse;
     public Integer editMousePriority;
+    public boolean editMouseOnlyDialog;
 
     public boolean drawAsync;
 

@@ -8,7 +8,6 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -41,6 +40,7 @@ import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.controller.remote.action.form.*;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
+import lsfusion.gwt.client.controller.remote.action.navigator.GainedFocus;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
@@ -182,9 +182,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         install(this);
     }
 
-    protected void dropCurrentForm() {
+    protected void unregisterForm() {
         if(formsController != null)
-        formsController.dropCurForm(this);
+            formsController.unregisterForm(this);
     }
 
     public GGridController getController(GGroupObject groupObject) {
@@ -476,6 +476,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         dispatcher.execute(new GetRemoteChanges(), new ServerResponseCallback());
     }
 
+    public void gainedFocus() {
+        dispatcher.execute(new GainedFocus(), new ServerResponseCallback());
+    }
+
     public void applyRemoteChanges(GFormChangesDTO changesDTO) {
         GFormChanges fc = GFormChanges.remap(form, changesDTO);
 
@@ -642,7 +646,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (modalityType == GModalityType.DOCKED_MODAL) {
             setBlockingWidget(blockingWidget);
         }
-        formsController.setCurrentForm(form.sID);
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -1312,6 +1315,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public abstract static class Binding {
         public final GGroupObject groupObject;
         public int priority;
+        public boolean onlyDialog;
 
         public Binding(GGroupObject groupObject) {
             this.groupObject = groupObject;
@@ -1337,6 +1341,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(propertyDraw.editMouse != null) {
             if(propertyDraw.editMousePriority != null)
                 binding.priority = propertyDraw.editMousePriority;
+            binding.onlyDialog = propertyDraw.editMouseOnlyDialog;
             addBinding(propertyDraw.editMouse, binding);
         }
     }
@@ -1375,7 +1380,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             // increasing priority for group object
             GGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
-                orderedBindings.put(-(binding.priority + (groupObject != null && groupObject.equals(binding.groupObject) ? 100 : 0)), binding);
+                if(!binding.onlyDialog || isDialog())
+                    orderedBindings.put(-(binding.priority + (groupObject != null && groupObject.equals(binding.groupObject) ? 100 : 0)), binding);
 
             for(Binding binding : orderedBindings.values())
                 if(binding.onKeyPress(event.getEventTarget())) {

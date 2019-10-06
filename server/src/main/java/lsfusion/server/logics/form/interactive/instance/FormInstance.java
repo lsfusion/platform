@@ -182,9 +182,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private final boolean checkOnOk;
 
     private final boolean isSync;
+    private final boolean isFloat;
 
     public boolean isSync() {
         return isSync;
+    }
+    public boolean isFloat() {
+        return isFloat;
     }
 
     private final boolean manageSession;
@@ -221,6 +225,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         ImSet<PullChangeProperty> pullProps,
                         boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
         this.isSync = isSync;
+        this.isFloat = isFloat;
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
 

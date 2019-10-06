@@ -170,15 +170,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public void gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-        processRMIRequest(requestIndex, lastReceivedRequestIndex, (EExecutionStackCallable<Void>) stack -> {
+    public ServerResponse gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isTraceEnabled()) {
                 logger.trace("gainedFocus Action");                    
             }
             
             form.gainedFocus(stack);
-            return null;
         });
     }
 

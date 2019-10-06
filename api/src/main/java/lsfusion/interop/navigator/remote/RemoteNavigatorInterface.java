@@ -28,8 +28,6 @@ public interface RemoteNavigatorInterface extends RemoteRequestInterface {
 
     // separate methods, because used really often (and it will be an overhead using virtual navigator actions anyway)
 
-    void setCurrentForm(String formID) throws RemoteException;
-    String getCurrentForm() throws RemoteException;
     ClientCallBackInterface getClientCallBack() throws RemoteException;
 
     // external

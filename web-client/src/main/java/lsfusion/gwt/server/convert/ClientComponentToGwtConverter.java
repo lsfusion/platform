@@ -316,6 +316,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.showEditKey = clientPropertyDraw.showEditKey;
         propertyDraw.editMouse = convertOrCast(clientPropertyDraw.editMouse);
         propertyDraw.editMousePriority = clientPropertyDraw.editMousePriority;
+        propertyDraw.editMouseOnlyDialog = clientPropertyDraw.editMouseOnlyDialog;
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
 

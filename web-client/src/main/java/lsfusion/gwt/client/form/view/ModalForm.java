@@ -31,7 +31,7 @@ public class ModalForm extends ResizableModalWindow {
             public void onFormHidden() {
                 super.onFormHidden();
                 ModalForm.this.hide();
-                dropCurrentForm();
+                unregisterForm();
             }
 
             @Override

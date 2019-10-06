@@ -91,8 +91,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<>());
 
-    private String formID = null;
-
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
     public RemoteNavigator(int port, LogicsInstance logicsInstance, AuthenticationToken token, NavigatorInfo navigatorInfo, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port, "navigator", stack);
@@ -138,15 +136,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    @Override
-    public void setCurrentForm(String formID) throws RemoteException {
-        this.formID = formID;
-    }
-
-    public String getCurrentForm() {
-        return formID;
     }
 
     @Aspect

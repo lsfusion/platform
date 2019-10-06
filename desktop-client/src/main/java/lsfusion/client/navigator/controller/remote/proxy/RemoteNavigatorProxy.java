@@ -37,19 +37,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Pe
         return target.createFormExternal(json);
     }
 
-    @Override
-    public void setCurrentForm(String formID) throws RemoteException {
-        target.setCurrentForm(formID);
-    }
-
-    @Override
-    public String getCurrentForm() throws RemoteException {
-        logRemoteMethodStartCall("getCurrentForm");
-        String result = target.getCurrentForm();
-        logRemoteMethodEndCall("getCurrentForm", result);
-        return result;
-    }
-
     public byte[] getNavigatorTree() throws RemoteException {
         try {
             return callImmutableMethod("getNavigatorTree", new Callable<byte[]>() {

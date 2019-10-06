@@ -22,7 +22,6 @@ import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.Compare;
@@ -85,6 +84,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean showEditKey;
     public MouseInputEvent editMouse;
     public Integer editMousePriority;
+    public boolean editMouseOnlyDialog;
 
     public boolean drawAsync; // рисовать асинхронность на этой кнопке
 
@@ -364,6 +364,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         outStream.writeBoolean(showEditKey);
         pool.writeObject(outStream, editMouse);
         pool.writeInt(outStream, editMousePriority);
+        pool.writeBoolean(outStream, editMouseOnlyDialog);
 
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
@@ -396,6 +397,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         showEditKey = inStream.readBoolean();
         editMouse = pool.readObject(inStream);
         editMousePriority = pool.readInt(inStream);
+        editMouseOnlyDialog = pool.readBoolean(inStream);
 
         drawAsync = inStream.readBoolean();
 

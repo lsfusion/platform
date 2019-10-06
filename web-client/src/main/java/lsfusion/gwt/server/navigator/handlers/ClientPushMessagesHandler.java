@@ -22,7 +22,7 @@ public class ClientPushMessagesHandler extends NavigatorActionHandler<ClientPush
     @Override
     public ClientMessageResult executeEx(ClientPushMessage action, ExecutionContext context) throws RemoteException {
         List<LifecycleMessage> messages = getClientCallback(action).pullMessages();
-        return getClientMessageResult(getRemoteNavigator(action), messages);
+        return getClientMessageResult(messages);
     }
 
     @Override
@@ -30,17 +30,15 @@ public class ClientPushMessagesHandler extends NavigatorActionHandler<ClientPush
         return null; // too many logs
     }
 
-    private ClientMessageResult getClientMessageResult(RemoteNavigatorInterface remoteNavigator, List<LifecycleMessage> messages) throws RemoteException {
-        String currentForm = null;
+    private ClientMessageResult getClientMessageResult(List<LifecycleMessage> messages) throws RemoteException {
         List<Integer> notificationList = new ArrayList<>();
         if(messages != null) {
-            currentForm = remoteNavigator.getCurrentForm();
             for (LifecycleMessage message : messages) {
                 if(message instanceof PushMessage) {
                     notificationList.add(((PushMessage) message).idNotification);
                 }
             }
         }
-        return new ClientMessageResult(currentForm, notificationList);
+        return new ClientMessageResult(notificationList);
     }
 }

@@ -18,8 +18,10 @@ public interface FormsController {
 
     void executeNotificationAction(String actionSID, int type);
 
-    void setCurrentForm(String formID);
+    void registerForm(GFormController form);
+    
+    void setCurrentForm(GFormController form);
 
-    void dropCurForm(GFormController form);
+    void unregisterForm(GFormController form);
 
 }

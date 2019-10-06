@@ -17,15 +17,12 @@ import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public abstract class DefaultFormsController implements FormsController {
     private final TabLayoutPanel tabsPanel;
     private List<String> formsList = new ArrayList<>();
-    private List<GFormController> gFormControllersList = new ArrayList<>();
-    private Map<String, GFormController> gFormControllersMap = new HashMap<>();
+    private List<GFormController> gFormControllersList = new ArrayList<>(); // have no idea why it is a list and not a field
     private final String tabSID;
 
     public DefaultFormsController(String tabSID) {
@@ -37,8 +34,11 @@ public abstract class DefaultFormsController implements FormsController {
             public void onSelection(SelectionEvent<Integer> event) {
                 int selected = tabsPanel.getSelectedIndex();
                 ((FormDockable.ContentWidget) tabsPanel.getWidget(selected)).setSelected(true);
-                if(gFormControllersList.size() > selected)
-                    setCurForm(gFormControllersList.get(selected));
+                if(gFormControllersList.size() > selected) {
+                    GFormController form = gFormControllersList.get(selected);
+                    form.gainedFocus();
+                    setCurrentForm(form);
+                }
             }
         });
         tabsPanel.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
@@ -81,13 +81,13 @@ public abstract class DefaultFormsController implements FormsController {
         }
         if (modalityType.isModalWindow()) {
             ModalForm modalForm = showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
-            setCurForm(modalForm.getForm());
+            registerForm(modalForm.getForm());
         } else {
             if (dockable == null) {
                 dockable = addDockable(new FormDockable(), form.sID);
             }
             dockable.initialize(this, form); // initialize should be after addDockable, otherwise offsetTop and other sizes are not recalculated in preAfterUpdateTableData, and it breaks scrolling (for example LAST option at form opening)
-            setCurForm(dockable.getForm());
+            registerForm(dockable.getForm());
 
             final FormDockable finalDockable = dockable;
             dockable.setHiddenHandler(new WindowHiddenHandler() {
@@ -128,7 +128,7 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     private void removeDockable(FormDockable dockable, String formSID) {
-        dropCurForm(dockable.getForm());
+        unregisterForm(dockable.getForm());
         formsList.remove(formSID);
         tabsPanel.remove(dockable.getContentWidget());
         if (tabsPanel.getWidgetCount() == 0) {
@@ -136,27 +136,22 @@ public abstract class DefaultFormsController implements FormsController {
         }
     }
 
-    private void setCurForm(GFormController form) {
-        if(!(gFormControllersList.contains(form))) {
-            gFormControllersList.add(form);
-            gFormControllersMap.put(form.getForm().sID, form);
-            setCurrentForm(form.getForm().sID);
-        }
+    public void registerForm(GFormController form) {
+        gFormControllersList.add(form);
+        setCurrentForm(form);
     }
 
     @Override
-    public void dropCurForm(GFormController form) {
+    public void unregisterForm(GFormController form) {
         if(form != null) {
             gFormControllersList.remove(form);
-            gFormControllersMap.remove(form.getForm().sID);
-            if (gFormControllersList.isEmpty())
-                setCurrentForm(null);
+            dropCurrentForm(form);
         }
     }
 
-    public GFormController getForm(String sid) {
-        return gFormControllersMap.get(sid);
-    }
+    public abstract void setCurrentForm(GFormController form);
+    
+    public abstract void dropCurrentForm(GFormController form);
 
     @Override
     public void select(Widget tabContent) {

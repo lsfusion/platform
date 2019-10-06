@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
-import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.Compare;
@@ -71,6 +70,7 @@ public class PropertyDrawView extends ComponentView {
     public Boolean showChangeKey;
     public MouseInputEvent changeMouse;
     public Integer changeMousePriority;
+    public boolean changeMouseOnlyDialog;
 
     public boolean drawAsync = false;
 
@@ -248,6 +248,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(showChangeKey);
         pool.writeObject(outStream, changeMouse);
         pool.writeInt(outStream, changeMousePriority);
+        pool.writeBoolean(outStream, changeMouseOnlyDialog);
 
         outStream.writeBoolean(drawAsync);
 
@@ -417,6 +418,7 @@ public class PropertyDrawView extends ComponentView {
         showChangeKey = inStream.readBoolean();
         changeMouse = pool.readObject(inStream);
         changeMousePriority = pool.readInt(inStream);
+        changeMouseOnlyDialog = pool.readBoolean(inStream);
 
         format = pool.readObject(inStream);
 

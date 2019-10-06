@@ -105,6 +105,9 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setChangeMousePriority(int priority) {
         target.changeMousePriority = priority;
     }
+    public void setChangeMouseOnlyDialog(boolean onlyDialog) {
+        target.changeMouseOnlyDialog = onlyDialog;
+    }
 
     public void setShowChangeKey(boolean showEditKey) {
         target.showChangeKey = showEditKey;

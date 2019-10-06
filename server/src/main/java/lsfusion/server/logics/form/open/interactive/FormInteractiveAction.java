@@ -130,7 +130,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     }
 
     private boolean heuristicSyncType(ExecutionContext<ClassPropertyInterface> context) {
-        return context.hasMoreSessionUsages;
+        FormInstance formInstance;
+        return context.hasMoreSessionUsages || ((formInstance = context.getFormInstance(false, false)) != null && formInstance.isFloat());
     }
 
     @Override

@@ -114,10 +114,11 @@ public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public void gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+    public ServerResponse gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
         logRemoteMethodStartVoidCall("gainedFocus");
-        target.gainedFocus(requestIndex, lastReceivedRequestIndex);
+        ServerResponse result = target.gainedFocus(requestIndex, lastReceivedRequestIndex);
         logRemoteMethodEndVoidCall("gainedFocus");
+        return result;
     }
 
     public ServerResponse setTabVisible(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException {
