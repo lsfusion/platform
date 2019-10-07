@@ -9,6 +9,7 @@ public class RemoteInternalDispatchException extends DispatchException {
     }
     
     public String lsfStack;
+    public String javaStack;
 
     public RemoteInternalDispatchException(String message, String lsfStack) {
         super(message);
@@ -22,12 +23,16 @@ public class RemoteInternalDispatchException extends DispatchException {
 
         SerializableThrowable throwable = new SerializableThrowable("", GExceptionManager.copyMessage(e));
         GExceptionManager.copyStackTraces(e, throwable);
-        String[] exStacks = getExStacks(throwable);
+        String[] exStacks = getExStacks(e);
         return new String[] {throwable.getMessage(), exStacks[0], exStacks[1]};
     }
     
     public static String[] getExStacks(Throwable e) {
-        return new String[] {GExceptionManager.getStackTrace(e), getLsfStack(e)};
+        return new String[] {getJavaStack(e), getLsfStack(e)};
+    }
+
+    public static String getJavaStack(Throwable e) {
+        return e instanceof RemoteInternalDispatchException ? ((RemoteInternalDispatchException) e).javaStack : GExceptionManager.getStackTrace(e);
     }
 
     public static String getLsfStack(Throwable e) {
