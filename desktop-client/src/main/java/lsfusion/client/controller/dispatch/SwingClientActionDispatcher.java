@@ -1,9 +1,6 @@
 package lsfusion.client.controller.dispatch;
 
 import com.google.common.base.Throwables;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileDialogUtils;
@@ -595,12 +592,14 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     private void beep(RawFileData rawFile) {
         File file = null;
         try {
+            //support only .wav files
             file = File.createTempFile("beep", getExtension(rawFile.getBytes()));
             rawFile.write(file);
-            Media hit = new Media(file.toURI().toString());
-            createJFXPanel();
-            MediaPlayer mediaPlayer = new MediaPlayer(hit);
-            mediaPlayer.play();
+
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(file.toURI().toURL());
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioIn);
+            clip.start();
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
@@ -627,12 +626,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     @Override
     public void addCleanListener(ICleanListener daemonTask) {
         MainFrame.instance.cleanListeners.add(daemonTask);
-    }
-
-    //to prevent java.lang.IllegalStateException: Toolkit not initialized
-    // https://rterp.wordpress.com/2015/04/04/javafx-toolkit-not-initialized-solved/
-    private void createJFXPanel() {
-        new JFXPanel();
     }
 
     private String getExtension(byte[] file) {
