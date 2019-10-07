@@ -2033,6 +2033,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (changeProp == null)
             changeProp = oldValue;
+
+        if(assign && doAction == null) // we will need to add change props, temporary will make this action empty to avoid extra null checks 
+            doAction = new LAWithParams(baseLM.getEmpty(), new ArrayList<Integer>());
+
         boolean hasOldValue = false;
         // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom()) 
         if (oldValue == null || getTypeByParamProperty(oldValue, oldContext) instanceof FileClass)
