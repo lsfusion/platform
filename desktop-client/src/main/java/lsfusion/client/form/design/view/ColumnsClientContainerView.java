@@ -80,46 +80,38 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
 
     @Override
     public void addImpl(int index, ClientComponent child, JComponentPanel view) {
-//        view.setBorder(SwingUtils.randomBorder());
-
-//        panel.add(view, new ColumnsConstraints(child.getAlignment()), index);
-
-        int childCount = container.children.size();
-        int childIndex = container.children.indexOf(child);
-        int colIndex = childIndex % columnsCount;
-        int rowIndex = 0;
-
-        List<ClientComponent> columnChildren = columnsChildren[colIndex];
-        if (columnChildren.size() != 0) {
-            int currentRowIndex = 0;
-            ClientComponent currentRowChild = columnChildren.get(0);
-            for (int i = colIndex; i < childCount; i += columnsCount) {
-                ClientComponent existingChild = container.children.get(i);
-                if (existingChild == child) {
-                    rowIndex = currentRowIndex;
-                    break;
-                }
-                if (currentRowChild == existingChild) {
-                    currentRowIndex++;
-                    if (currentRowIndex == columnChildren.size()) {
-                        rowIndex = currentRowIndex;
-                        break;
-                    }
-                    currentRowChild = columnChildren.get(currentRowIndex);
-                }
-            }
-        }
-
-        columns[colIndex].add(view, new FlexConstraints(child.getAlignment(), 0), rowIndex);
-        columnChildren.add(rowIndex, child);
+        rebuildColumnCollections();
     }
 
     @Override
     public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
-        int childIndex = container.children.indexOf(child);
-        int colIndex = childIndex % columnsCount;
-        columnsChildren[colIndex].remove(child);
-        columns[colIndex].remove(view);
+        rebuildColumnCollections();
+    }
+
+    private void rebuildColumnCollections() {
+        clearColumnsCollections();
+        
+        int cnt = 0;
+        for (ClientComponent child : container.children) {
+            int index = children.indexOf(child);
+            if (index >= 0) {
+                int colIndex = cnt % columnsCount;
+                int rowIndex = cnt / columnsCount;
+                columns[colIndex].add(childrenViews.get(index), new FlexConstraints(child.getAlignment(), 0), rowIndex);
+                columnsChildren[colIndex].add(rowIndex, child);
+                ++cnt;
+            }
+        }
+    }
+    
+    private void clearColumnsCollections() {
+        for (JPanel panel : columns) {
+            panel.removeAll();
+        }
+        
+        for (List<ClientComponent> components : columnsChildren) {
+            components.clear();
+        }
     }
 
     @Override
