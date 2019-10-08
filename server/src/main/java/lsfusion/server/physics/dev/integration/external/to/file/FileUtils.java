@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -149,11 +151,13 @@ public class FileUtils {
             try {
                 org.apache.commons.io.FileUtils.deleteDirectory(sourceFile);
             } catch (IOException e) {
-                throw new RuntimeException(String.format("Failed to delete file '%s'", path), e);
+                throw Throwables.propagate(e);
             }
         } else {
-            if (!sourceFile.exists() || !sourceFile.delete()) {
-                throw new RuntimeException(String.format("Failed to delete file '%s'", path));
+            try {
+                Files.delete(sourceFile.toPath());
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
         }
     }
