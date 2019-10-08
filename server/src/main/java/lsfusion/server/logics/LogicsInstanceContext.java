@@ -101,13 +101,13 @@ public class LogicsInstanceContext extends AbstractContext {
 
     // used in some deprecated actions
     @Deprecated
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         assert false;
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
                 SecurityManager.serverSecurityPolicy, getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
-                checkOnOk, showDrop, interactive, false, contextFilters, pullProps, readonly, getLocale());
+                checkOnOk, showDrop, interactive, isFloat, false, contextFilters, pullProps, readonly, getLocale());
     }
 }

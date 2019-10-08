@@ -208,16 +208,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack, boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
-                        boolean showDrop, boolean interactive,
-                        boolean isExternal, ImSet<ContextFilter> contextFilters,
-                        ImSet<PullChangeProperty> pullProps, boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, isExternal, contextFilters, pullProps, showReadOnly, locale);
-    }
-
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
-                        FocusListener focusListener, CustomClassListener classListener,
-                        ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
                         boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive, boolean isFloat,

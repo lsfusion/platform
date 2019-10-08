@@ -146,9 +146,10 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             syncType = this.syncType;
         else
             syncType = heuristicSyncType(context);
-        
-        FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, contextFilters, pullProps.result, readOnly);
-        context.requestFormUserInteraction(newFormInstance, getModalityType(syncType), forbidDuplicate, context.stack);
+        ModalityType modalityType = getModalityType(syncType);
+
+        FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, modalityType.isModal(), contextFilters, pullProps.result, readOnly);
+        context.requestFormUserInteraction(newFormInstance, modalityType, forbidDuplicate, context.stack);
 
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();
