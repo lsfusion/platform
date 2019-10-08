@@ -2,6 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.file.*;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -157,7 +158,7 @@ public class FileUtils {
             try {
                 Files.delete(sourceFile.toPath());
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw ExceptionUtils.propagateWithMessage(e, "Absolute path: " + sourceFile.getAbsolutePath());
             }
         }
     }

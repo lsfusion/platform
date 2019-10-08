@@ -113,6 +113,12 @@ public class ExceptionUtils {
         return lsfStack + '\n' + javaStack;
     }
 
+    public static RuntimeException propagateWithMessage(Throwable throwable, String message) {
+        RuntimeException propagatedMessage = new RuntimeException(copyMessage(throwable) + ' ' + message);
+        copyStackTraces(throwable, propagatedMessage);
+        throw propagatedMessage; 
+    }
+
     // the same as in GExceptionManager
     // when class of throwable changes
     public static String copyMessage(Throwable throwable) {
