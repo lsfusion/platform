@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
@@ -305,6 +306,10 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             // https://bugs.openjdk.java.net/browse/JDK-8034955
             Double javaVersion = SystemUtils.getJavaSpecificationVersion();
             if ((javaVersion == null || javaVersion < 1.8) && cellProperty.baseType instanceof ClientTextClass && ((ClientTextClass) cellProperty.baseType).rich) {
+                return null;
+            }
+            
+            if (cellProperty.baseType instanceof ClientActionClass) {
                 return null;
             }
             
