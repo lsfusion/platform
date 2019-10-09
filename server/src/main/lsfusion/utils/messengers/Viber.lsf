@@ -45,7 +45,7 @@ FORM webHookViber
     PROPERTIES() IN sender senderId EXTID 'id', senderName EXTID 'name';
 
 webHookViber(JSONFILE f) {
-    printToLog(resultString());
+    printToLog(STRING(f));
     
     IMPORT webHookViber JSON FROM f;
     
