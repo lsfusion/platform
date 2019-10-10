@@ -39,28 +39,39 @@ public class ResizeImageSizeAction extends InternalAction {
             RawFileData inputFile = (RawFileData) context.getKeyValue(fileInterface).getValue();
             Integer width = (Integer) context.getKeyValue(widthInterface).getValue();
             Integer height = (Integer) context.getKeyValue(heightInterface).getValue();
+            if(inputFile != null) {
+                if(width != null || height != null) {
 
-            BufferedImage image = ImageIO.read(inputFile.getInputStream());
-            int imageWidth = image.getWidth();
-            int imageHeight = image.getHeight();
+                    BufferedImage image = ImageIO.read(inputFile.getInputStream());
+                    int imageWidth = image.getWidth();
+                    int imageHeight = image.getHeight();
 
-            double scaleWidth = (double) width / imageWidth;
-            double scaleHeight = (double) height / imageHeight;
+                    double scaleWidth = width != null ? ((double) width / imageWidth) : (double) height / imageHeight;
+                    double scaleHeight = height != null ? (double) height / imageHeight : ((double) width / imageWidth);
 
-            File outputFile = null;
-            try {
-                outputFile = File.createTempFile("resized", ".jpg");
-                if(scaleWidth != 0 && scaleHeight != 0) {
-                    Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight).toFile(outputFile);
-                    findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
+                    File outputFile = null;
+                    try {
+                        outputFile = File.createTempFile("resized", ".jpg");
+                        if(scaleWidth != 0 && scaleHeight != 0) {
+                            Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight).toFile(outputFile);
+                            findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
+                        }
+                    } finally {
+                        if (outputFile != null && !outputFile.delete())
+                            outputFile.deleteOnExit();
+                    }
+                } else {
+                    throw new RuntimeException("No width nor height found");
                 }
-            } finally {
-                if (outputFile != null && !outputFile.delete())
-                    outputFile.deleteOnExit();
             }
 
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }

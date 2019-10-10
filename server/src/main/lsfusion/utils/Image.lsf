@@ -4,6 +4,7 @@ REQUIRE System;
 
 resizedImage = DATA LOCAL IMAGEFILE ();
 resizeImage(image, scale)  INTERNAL  'lsfusion.server.logics.classes.data.utils.image.ResizeImageScaleAction' (IMAGEFILE, DOUBLE);
+//image, width, height. Width or height can be NULL
 resizeImage(image, width, height)  INTERNAL  'lsfusion.server.logics.classes.data.utils.image.ResizeImageSizeAction' (IMAGEFILE, INTEGER, INTEGER);
 
 convertedImage = DATA LOCAL IMAGEFILE ();
