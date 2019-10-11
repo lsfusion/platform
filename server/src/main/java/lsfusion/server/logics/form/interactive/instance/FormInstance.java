@@ -1330,9 +1330,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         stack = new FormStack(stack);
 
-        BL.LM.dropRequestCanceled(this);        
+        BL.LM.dropBeforeCanceled(this);
         fireOnBeforeApply(stack);        
-        if(BL.LM.isApplyCanceled(this))
+        if(BL.LM.isBeforeCanceled(this))
             return false;
 
         boolean succeeded = session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this, applyMessage);
@@ -2527,9 +2527,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
 
-        BL.LM.dropRequestCanceled(this);
+        BL.LM.dropBeforeCanceled(this);
         fireOnBeforeOk(context.stack);
-        if(BL.LM.isRequestCanceled(this))
+        if(BL.LM.isBeforeCanceled(this))
             return;
 
         if (manageSession) {

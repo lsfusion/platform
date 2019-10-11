@@ -238,7 +238,7 @@ loadFont '{system.load.font}' (path)   {
     loadDownloadedFont(path);
 }
 
-applyCanceled() = DATA LOCAL NESTED BOOLEAN ();
+beforeCanceled() = DATA LOCAL NESTED BOOLEAN ();
 requestCanceled() = DATA LOCAL NESTED BOOLEAN ();
 requestPushed() = DATA LOCAL NESTED BOOLEAN ();
 

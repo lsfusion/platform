@@ -161,7 +161,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP statCustomObjectClass; 
 
     private LP addedObject;
-    private LP applyCanceled;
+    private LP beforeCanceled;
     private LP requestCanceled;
     private LP requestPushed;
     private LP isActiveForm;
@@ -443,7 +443,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         lsfStackTraceCaughtException = findProperty("lsfStackTraceCaughtException[]");
 
         addedObject = findProperty("addedObject[]");
-        applyCanceled = findProperty("applyCanceled[]");
+        beforeCanceled = findProperty("beforeCanceled[]");
         requestCanceled = findProperty("requestCanceled[]");
         requestPushed = findProperty("requestPushed[]");
         isActiveForm = findProperty("isActiveForm[]");
@@ -738,8 +738,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return result.iterator().next();
     }
 
-    public LP getApplyCanceledProperty() {
-        return applyCanceled;
+    public LP getBeforeCanceledProperty() {
+        return beforeCanceled;
     }
 
     public LP getRequestCanceledProperty() {
@@ -869,6 +869,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public void dropRequestCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         getRequestCanceledProperty().change((Object)null, env);
     }
+
+    public void dropBeforeCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        getBeforeCanceledProperty().change((Object)null, env);
+    }
     
     public <R> R pushRequest(ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
         dropRequestCanceled(env);
@@ -886,8 +890,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         }
     }
 
-    public boolean isApplyCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        return getApplyCanceledProperty().read(env) != null;
+    public boolean isBeforeCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return getBeforeCanceledProperty().read(env) != null;
     }
 
     public boolean isRequestPushed(ExecutionEnvironment env) throws SQLException, SQLHandledException {
