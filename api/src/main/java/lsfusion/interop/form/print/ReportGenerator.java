@@ -608,6 +608,20 @@ public class ReportGenerator {
             transformExpression(subPatExpr, i, subreportID);
             newField.setPatternExpression(subPatExpr);
         }
+
+        JRPropertyExpression[] propertyExpressions = oldField.getPropertyExpressions();
+        if(propertyExpressions != null) {
+            JRPropertyExpression[] newPropertyExpressions = newField.getPropertyExpressions();
+            for (int j = 0; j < propertyExpressions.length; j++) {
+                JRPropertyExpression propExpr = propertyExpressions[j];
+                JRPropertyExpression newPropExpr = newPropertyExpressions[j];
+                if (propExpr instanceof JRDesignPropertyExpression) {
+                    JRDesignExpression subDesignExpr = new JRDesignExpression(((JRDesignPropertyExpression) propExpr).getValueExpression().getText());
+                    transformExpression(subDesignExpr, i, subreportID);
+                    ((JRDesignPropertyExpression)newPropExpr).setValueExpression(subDesignExpr);
+                }
+            }
+        }
     }
     
     private void transformTextField(JasperDesign design, JRDesignTextField textField, Map<String, List<JRDesignTextField>> fieldsInGroup, List<JRDesignElement> toAdd, List<JRDesignElement> toDelete, Set<String> transformedStyleNames, String subreportID) {
