@@ -2,10 +2,7 @@ package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Timer;
@@ -176,6 +173,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         } else if (!initialFormChangesReceived) { // возможно уже получили в initializeDefaultOrders()
             getRemoteChanges();
         }
+
+        initializeUserOrders();
 
         initializeAutoRefresh();
 
@@ -382,7 +381,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void initializeDefaultOrders() {
         applyOrders(form.defaultOrders, null);
         defaultOrdersInitialized = true;
+    }
 
+    public void initializeUserOrders() {
         boolean hasUserOrders = false;
         Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> defaultOrders = null;
         for (GGridController controller : controllers.values()) {

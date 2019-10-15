@@ -298,6 +298,8 @@ public class ClientFormController implements AsyncListener {
             getRemoteChanges(false);
         }
 
+        initializeUserOrders();
+
         initializeAutoRefresh();
     }
 
@@ -603,13 +605,17 @@ public class ClientFormController implements AsyncListener {
         return orders;
     }
 
-    public void initializeDefaultOrders() throws IOException {
+    public void initializeDefaultOrders() {
         try {
-            //применяем все свойства по умолчанию
             applyOrders(form.defaultOrders, null);
             defaultOrdersInitialized = true;
+        } catch (IOException e) {
+            throw new RuntimeException(getString("form.error.cant.initialize.default.orders"));
+        }
+    }
 
-            //применяем пользовательские свойства
+    public void initializeUserOrders() {
+        try {
             boolean hasUserOrders = false;
             Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> defaultOrders = null;
             for (GridController controller : controllers.values()) {
