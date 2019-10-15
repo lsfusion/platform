@@ -99,7 +99,7 @@ public class MainController {
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable e) {
-                ClientExceptionManager.handle(e);
+                ClientExceptionManager.handle(e, true);
             }
         });
 

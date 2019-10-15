@@ -47,7 +47,7 @@ public class ClientExceptionManager {
         return throwable;  
     }
 
-    public static void handle(final Throwable e) {
+    public static void handle(final Throwable e, boolean ignoreException) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -56,7 +56,14 @@ public class ClientExceptionManager {
                 if(e instanceof RemoteAbandonedException || e instanceof CancellationException) // we don't need to log that exception
                     return;
 
-                reportThrowable(e);
+                if(ignoreException) {
+                    try {
+                        reportThrowable(e);
+                    } catch (Throwable ignored) {
+                    }
+                } else {
+                    reportThrowable(e);
+                }
             }
         });
     }
