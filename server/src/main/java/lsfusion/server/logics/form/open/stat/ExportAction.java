@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.FormDataManager;
@@ -27,7 +28,7 @@ public abstract class ExportAction<O extends ObjectSelector> extends FormStaticA
     protected final String charset;
 
     public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, Integer selectTop, String charset, ActionOrProperty... extraProps) {
-        super(caption, form, objectsToSet, nulls, staticType, selectTop, extraProps);
+        super(caption, form, objectsToSet, nulls, staticType, selectTop, new ValueClass[] {}, extraProps);
         this.charset = charset;
     }
     

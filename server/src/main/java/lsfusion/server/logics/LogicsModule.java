@@ -577,8 +577,15 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<Property> contextProperties, Boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
         return addAction(group, new LA<>(new FormInteractiveAction<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
     }
-    protected <O extends ObjectSelector> LA<?> addPFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, Property printerProperty, LP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, Property passwordProperty, LP targetProp, boolean removeNullsAndDuplicates) {
-        return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNullsAndDuplicates)));
+    protected <O extends ObjectSelector> LA<?> addPFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormPrintType staticType, boolean syncType, Integer selectTop, LP targetProp, boolean removeNullsAndDuplicates, ValueClass printer, ValueClass sheetName, ValueClass password) {
+        List<ValueClass> valueClasses = new ArrayList<>();
+        if(printer != null)
+            valueClasses.add(printer);
+        if(sheetName != null)
+            valueClasses.add(sheetName);
+        if(password != null)
+            valueClasses.add(password);
+        return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer != null, sheetName != null, password != null, valueClasses.toArray(new ValueClass[0]))));
     }
     protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, Integer selectTop, String charset, Property root, Property tag, LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles) {
         ExportAction<O> exportAction;
@@ -1924,7 +1931,7 @@ public abstract class LogicsModule {
         ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
 //            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.EMPTY(), ListFact.EMPTY(), null, null, FormPrintType.MESSAGE, false, 30, null, null, true).action.getImplement();
+        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.EMPTY(), ListFact.EMPTY(), FormPrintType.MESSAGE, false, 30, null, true, null, null, null).action.getImplement();
         ActionMapImplement<?, ClassPropertyInterface> constraintAction =
                 PropertyFact.createListAction(
                         SetFact.EMPTY(),

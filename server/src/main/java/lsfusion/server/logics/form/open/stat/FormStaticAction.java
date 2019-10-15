@@ -12,6 +12,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
@@ -38,8 +39,9 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                             ImList<Boolean> nulls,
                             T staticType,
                             Integer selectTop,
+                            ValueClass[] extraValueClasses,
                             ActionOrProperty... extraProps) {
-        super(caption, form, objectsToSet, nulls, false, extraProps);
+        super(caption, form, objectsToSet, nulls, false, extraValueClasses, extraProps);
 
         this.staticType = staticType;
         this.selectTop = selectTop == null ? 0 : selectTop;
