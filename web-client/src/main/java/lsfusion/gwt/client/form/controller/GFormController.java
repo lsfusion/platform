@@ -1,10 +1,8 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.dom.client.*;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Timer;
@@ -1139,6 +1137,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public boolean isEditing() {
         return editingTable != null;
+    }
+
+    public void commitEditingTable() {
+        if(isEditing()) {
+            editingTable.validateAndCommit();
+        }
     }
 
     public boolean isModal() {
