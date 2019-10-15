@@ -101,7 +101,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                click(null);
+                click(null, false);
             }
         });
         button.addDomHandler(new ContextMenuHandler() {
@@ -132,7 +132,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         iform.addPropertyBindings(property, new GFormController.Binding(property.groupObject) {
             @Override
             public boolean onKeyPress(EventTarget eventTarget) {
-                return isShowing(button) && enabled && click(eventTarget);
+                return isShowing(button) && enabled && click(eventTarget, true);
             }
         });
     }
@@ -143,7 +143,10 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         }
     }
 
-    private boolean click(EventTarget ifocusTargetAfterEdit) {
+    private boolean click(EventTarget ifocusTargetAfterEdit, boolean commitEditing) {
+        if(commitEditing) {
+            form.commitEditingTable();
+        }
         if (!form.isEditing()) {
             focusTargetAfterEdit = ifocusTargetAfterEdit;
             editDispatcher.executePropertyEditAction(property, columnKey, GEditBindingMap.CHANGE, null);

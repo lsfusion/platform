@@ -17,6 +17,7 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.controller.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.property.cell.view.GridEditableCell;
@@ -326,6 +327,12 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
             stopPropagation(event);
             line = line.replaceAll("\r\n", "\n");    // браузеры заменяют разделители строк на "\r\n"
             pasteData(GwtClientUtils.getClipboardTable(line));
+        }
+    }
+
+    public void validateAndCommit() {
+        if(cellEditor != null && cellEditor instanceof TextBasedGridCellEditor) {
+            ((TextBasedGridCellEditor) cellEditor).validateAndCommit(editCellParent, true);
         }
     }
 }

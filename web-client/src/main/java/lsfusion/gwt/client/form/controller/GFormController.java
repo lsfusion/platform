@@ -1154,6 +1154,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return editingTable != null;
     }
 
+    public void commitEditingTable() {
+        if(isEditing()) {
+            editingTable.validateAndCommit();
+        }
+    }
+
     public boolean isModal() {
         return isModal;
     }
