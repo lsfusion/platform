@@ -17,6 +17,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
@@ -87,7 +88,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                  WindowFormType windowType, boolean forbidDuplicate,
                                  boolean checkOnOk,
                                  boolean readOnly) {
-        super(caption, form, objectsToSet, nulls, true, contextProperties.toArray(new Property[contextProperties.size()]));
+        super(caption, form, objectsToSet, nulls, true, new ValueClass[] {}, contextProperties.toArray(new Property[contextProperties.size()]));
 
         assert inputObjects.isEmpty() || syncType; // если ввод, то синхронный
         this.inputObjects = inputObjects;

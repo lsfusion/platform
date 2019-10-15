@@ -3269,9 +3269,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return doAction;
     }
 
-    public <O extends ObjectSelector> LAWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                                                          LPWithParams printerProperty, FormPrintType printType, NamedPropertyUsage propUsage,
-                                                                          Boolean syncType, Integer selectTop, NamedPropertyUsage sheetNamePropUsage, LPWithParams passwordProperty) throws ScriptingErrorLog.SemanticErrorException {
+    public <O extends ObjectSelector> LAWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormPrintType printType,
+                                                                          NamedPropertyUsage propUsage, Boolean syncType, Integer selectTop,
+                                                                          LPWithParams printerProperty, LPWithParams sheetNameProperty, LPWithParams passwordProperty, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         assert printType != null;
         List<O> allObjects = mapped.objects;
         MList<O> mObjects = ListFact.mList(allObjects.size());
@@ -3290,13 +3290,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(syncType == null)
             syncType = false;
 
-        //использования printerProperty и passwordProperty не пересекаются, поэтому параметры не разделяем
         List<LPWithParams> propParams = new ArrayList<>();
         if(printerProperty != null) {
             propParams.add(printerProperty);
-        }
-        if(passwordProperty != null) {
-            propParams.add(passwordProperty);
         }
         List<Integer> allParams = mergeAllParams(propParams);
 
@@ -3304,25 +3300,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(propUsage != null)
             targetProp = findLPNoParamsByPropertyUsage(propUsage);
 
-        LP<?> sheetNameProperty = null;
-        if(sheetNamePropUsage != null)
-            sheetNameProperty = findLPNoParamsByPropertyUsage(sheetNamePropUsage);
+        ValueClass printer = printerProperty != null ? getValueClassByParamProperty(printerProperty, params) : null;
+        ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, params) : null;
+        ValueClass password = passwordProperty != null ? getValueClassByParamProperty(passwordProperty, params) : null;
 
         LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
-                printerProperty != null ? printerProperty.getLP().property : null, sheetNameProperty, printType, syncType, selectTop,
-                passwordProperty != null ? passwordProperty.getLP().property : null, targetProp, false);
+                printType, syncType, selectTop, targetProp, false, printer, sheetName, password);
 
-        if (mapping.size() > 0)  { // тут надо printerProperty просто в mapping закинуть по идее сразу
-            if(printerProperty != null) {
-                for (int usedParam : printerProperty.usedParams) {
-                    mapping.add(new LPWithParams(usedParam));
-                }
-            }
-            if(passwordProperty != null) {
-                for (int usedParam : passwordProperty.usedParams) {
-                    mapping.add(new LPWithParams(usedParam));
-                }
-            }
+        if(printerProperty != null) {
+            mapping.add(printerProperty);
+        }
+        if(sheetNameProperty != null) {
+            mapping.add(sheetNameProperty);
+        }
+        if(passwordProperty != null) {
+            mapping.add(passwordProperty);
+        }
+
+        if (mapping.size() > 0)  {
             return addScriptedJoinAProp(action, mapping);
         } else {
             return new LAWithParams(action, allParams);

@@ -15,6 +15,7 @@ import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.SQLException;
 
@@ -24,7 +25,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     public final FormSelector<O> form;
     public final ImRevMap<O, ClassPropertyInterface> mapObjects;
 
-    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, ActionOrProperty... extraProps) {
+    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, ValueClass[] extraValueClasses, ActionOrProperty... extraProps) {
         int extraPropInterfaces = 0;
         for(ActionOrProperty extraProp : extraProps)
             if(extraProp != null)
@@ -45,7 +46,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
                     valueClasses[size + i] = interfaceClasses.get(propInterfaces.get(i));
                 }
             }
-        return valueClasses;
+        return ArrayUtils.addAll(valueClasses, extraValueClasses);
     }
 
     @Override
@@ -67,8 +68,9 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
                       FormSelector<O> form,
                       final ImList<O> objectsToSet,
                       final ImList<Boolean> nulls, boolean extraNotNull,
+                      ValueClass[] extraValueClasses,
                       ActionOrProperty... extraProps) {
-        super(caption, getValueClasses(form, objectsToSet, extraProps));
+        super(caption, getValueClasses(form, objectsToSet, extraValueClasses, extraProps));
 
         ImOrderSet<ClassPropertyInterface> objectInterfaces = getOrderInterfaces()
                 .subOrder(0, objectsToSet.size());
