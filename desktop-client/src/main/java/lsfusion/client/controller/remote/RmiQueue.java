@@ -431,7 +431,7 @@ public class RmiQueue implements DispatcherListener {
                 if (rmiFutures.isEmpty() && inSyncRequest)
                     throw Throwables.propagate(t);
                 else // usually t instanceof RemoteHandledException, see RmiFuture.execCallback
-                    ClientExceptionManager.handle(t);
+                    ClientExceptionManager.handle(t, false);
             }
         }
     }

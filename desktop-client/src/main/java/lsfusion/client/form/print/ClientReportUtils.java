@@ -96,7 +96,7 @@ public class ClientReportUtils {
                 if (e instanceof JRException && e.getCause() instanceof PrinterAbortException) {
                     Log.message(ClientResourceBundle.getString("form.error.print.job.aborted"), false);
                 } else {
-                    ClientExceptionManager.handle(e);
+                    ClientExceptionManager.handle(e, false);
                 }
             }
         }
