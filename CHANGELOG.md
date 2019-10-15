@@ -1,0 +1,22 @@
+## 2.1 (2019-10-15)
+##### Implemented enhancements:
+ - Build clients on OpenJDK 8 and higher [#182](https://github.com/lsfusion/platform/issues/182)
+ - NPE instead of semantic error [#176](https://github.com/lsfusion/platform/issues/176)
+ - Wrong initial edit value in INPUT [#171](https://github.com/lsfusion/platform/issues/171)
+ - Empty static object's caption leads to NullPointerException  [#167](https://github.com/lsfusion/platform/issues/167)
+ - Need action for resizing image to specific width and height [#166](https://github.com/lsfusion/platform/issues/166)
+ - Unnecessary dependencies in Recalculate aggregations (+dependents) [#159](https://github.com/lsfusion/platform/issues/159)
+ - Action to print pdf file [#155](https://github.com/lsfusion/platform/issues/155)
+ - Unable to copy text from confirm message in desktop-client [#147](https://github.com/lsfusion/platform/issues/147)
+##### Fixed bugs:
+ - Bug with GROUP LAST when there is new parameter in ORDER [#178](https://github.com/lsfusion/platform/issues/178)
+ - Tree elements in new object dialog are not localized [#172](https://github.com/lsfusion/platform/issues/172)
+ - fileExists doesn't work with ftp directories [#164](https://github.com/lsfusion/platform/issues/164)
+ - formClose doesn't work in NEWSESSION [#163](https://github.com/lsfusion/platform/issues/163)
+ - Bug with NaN double in renderer [#161](https://github.com/lsfusion/platform/issues/161)
+ - BREAK and RETURN don't work in TRY-CATCH [#152](https://github.com/lsfusion/platform/issues/152)
+ - Incorrect import of boolean field from xlsx [#150](https://github.com/lsfusion/platform/issues/150)
+ - Unable to send mail with empty text [#149](https://github.com/lsfusion/platform/issues/149)
+ - Unable to copy text from message box in web-client [#146](https://github.com/lsfusion/platform/issues/146)
+ - Export to XML should respect the order of properties and groups on the form [#145](https://github.com/lsfusion/platform/issues/145)
+## ----- PREVIOUS RELEASES --------
