@@ -721,15 +721,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
         properties.add(newColumnIndex, property);
         
-        form.addPropertyBindings(property, new GFormController.Binding(property.groupObject) {
+        form.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
             @Override
             public boolean onKeyPress(EventTarget eventTarget) {
-                if (!form.isEditing() && isShowing(GGridTable.this)) {
-                    selectProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
-                    editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.CHANGE);
-                    return true;
-                }
-                return false;
+                selectProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
+                editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.CHANGE);
+                return true;
+            }
+            @Override
+            public boolean showing() {
+                return isShowing(GGridTable.this);
             }
         });
 

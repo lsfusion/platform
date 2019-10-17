@@ -47,6 +47,7 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
+import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -81,6 +82,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
@@ -226,16 +228,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         filterCheck.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
         if (filter.key != null) {
-            addBinding(new GKeyInputEvent(filter.key), new GFormController.Binding(filterGroup.groupObject) {
+            addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
                 @Override
                 public boolean onKeyPress(EventTarget eventTarget) {
-                    if (!isEditing() && isShowing(filterCheck)) {
-                        filterCheck.setValue(!filterCheck.getValue(), true);
-                        return true;
-                    }
-                    return false;
+                    filterCheck.setValue(!filterCheck.getValue(), true);
+                    return true;
                 }
-            });
+                @Override
+                public boolean showing() {
+                    return isShowing(filterCheck);
+                }
+            }, false);
         }
     }
 
@@ -252,17 +255,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             final int filterIndex = i;
             filterBox.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
             if (filter.key != null) {
-                addBinding(new GKeyInputEvent(filter.key), new GFormController.Binding(filterGroup.groupObject) {
+                addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
                     @Override
                     public boolean onKeyPress(EventTarget eventTarget) {
-                        if (!isEditing() && isShowing(filterBox)) {
-                            filterBox.setSelectedIndex(filterIndex + 1);
-                            setRegularFilter(filterGroup, filterIndex);
-                            return true;
-                        }
-                        return false;
+                        filterBox.setSelectedIndex(filterIndex + 1);
+                        setRegularFilter(filterGroup, filterIndex);
+                        return true;
                     }
-                });
+                    @Override
+                    public boolean showing() {
+                        return isShowing(filterBox);
+                    }
+                }, false);
             }
 
         }
@@ -1322,13 +1326,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public abstract static class Binding {
         public final GGroupObject groupObject;
         public int priority;
-        public boolean onlyDialog;
+        public GBindingMode bindDialog;
+        public GBindingMode bindGroup;
+        public GBindingMode bindEditing;
+        public GBindingMode bindShowing;
 
         public Binding(GGroupObject groupObject) {
             this.groupObject = groupObject;
         }
 
         public abstract boolean onKeyPress(EventTarget eventTarget);
+        public abstract boolean showing();
     }
 
     private final HashMap<GInputEvent, ArrayList<Binding>> bindings = new HashMap<>();
@@ -1342,18 +1350,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }, KeyDownEvent.getType());
     }
     
-    public void addPropertyBindings(GPropertyDraw propertyDraw, Binding binding) {
+    public void addPropertyBindings(GPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
         if(propertyDraw.editKey != null)
-            addBinding(propertyDraw.editKey, binding);
+            addBinding(propertyDraw.editKey, bindingSupplier.get(), false);
         if(propertyDraw.editMouse != null) {
+            Binding binding = bindingSupplier.get();
             if(propertyDraw.editMousePriority != null)
                 binding.priority = propertyDraw.editMousePriority;
-            binding.onlyDialog = propertyDraw.editMouseOnlyDialog;
-            addBinding(propertyDraw.editMouse, binding);
+            addBinding(propertyDraw.editMouse, binding, propertyDraw.editMouseOnlyDialog);
         }
     }
 
-    public void addBinding(GInputEvent event, Binding binding) {
+    public void addBinding(GInputEvent event, Binding binding, boolean overOnlyDialog) {
         assert event != null && binding != null;
 
         ArrayList<Binding> groupBindings = bindings.get(event);
@@ -1361,6 +1369,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             groupBindings = new ArrayList<>();
             bindings.put(event, groupBindings);
         }
+        binding.bindDialog = overOnlyDialog ? GBindingMode.ONLY : (event.bindingModes != null ? event.bindingModes.getOrDefault("dialog", GBindingMode.AUTO) : GBindingMode.AUTO);
+        binding.bindGroup = event.bindingModes != null ? event.bindingModes.getOrDefault("group", GBindingMode.AUTO) : GBindingMode.AUTO;
+        binding.bindEditing = event.bindingModes != null ? event.bindingModes.getOrDefault("editing", GBindingMode.AUTO) : GBindingMode.AUTO;
+        binding.bindShowing = event.bindingModes != null ? event.bindingModes.getOrDefault("showing", GBindingMode.AUTO) : GBindingMode.AUTO;
         groupBindings.add(binding);
     }
     
@@ -1387,8 +1399,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             // increasing priority for group object
             GGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
-                if(!binding.onlyDialog || isDialog())
-                    orderedBindings.put(-(binding.priority + (groupObject != null && groupObject.equals(binding.groupObject) ? 100 : 0)), binding);
+                if(bindDialog(binding) && bindGroup(groupObject, binding) && bindEditing(binding, event) && bindShowing(binding))
+                    orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
 
             for(Binding binding : orderedBindings.values())
                 if(binding.onKeyPress(event.getEventTarget())) {
@@ -1399,6 +1411,68 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             return true;
         }
         return false;
+    }
+
+    private boolean bindDialog(Binding binding) {
+        switch (binding.bindDialog) {
+            case AUTO:
+            case ALL:
+                return true;
+            case ONLY:
+                return isDialog();
+            case NO:
+                return !isDialog();
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindDialog);
+        }
+    }
+
+    private boolean bindGroup(GGroupObject groupObject, Binding binding) {
+        switch (binding.bindGroup) {
+            case AUTO:
+            case ALL:
+                return true;
+            case ONLY:
+                return equalGroup(groupObject, binding);
+            case NO:
+                return !equalGroup(groupObject, binding);
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindGroup);
+        }
+    }
+
+    private boolean equalGroup(GGroupObject groupObject, Binding binding) {
+        return groupObject != null && groupObject.equals(binding.groupObject);
+    }
+
+    private boolean bindEditing(Binding binding, NativeEvent event) {
+        switch (binding.bindEditing) {
+            case AUTO:
+                char c = (char) event.getKeyCode();
+                return !isEditing() || event.getCtrlKey() || (!Character.isLetterOrDigit(c) && c != '\r' && c != '\n');
+            case ALL:
+                return true;
+            case ONLY:
+                return isEditing();
+            case NO:
+                return !isEditing();
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindEditing);
+        }
+    }
+
+    private boolean bindShowing(Binding binding) {
+        switch (binding.bindShowing) {
+            case ALL:
+                return true;
+            case AUTO:
+            case ONLY:
+                return binding.showing();
+            case NO:
+                return !binding.showing();
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindShowing);
+        }
     }
 
 
@@ -1413,7 +1487,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (isPossibleEditKeyEvent(nativeEvent)) {
             GKeyStroke key = GKeyStroke.getKeyStroke(nativeEvent);
             
-            processBinding(new GKeyInputEvent(key), nativeEvent, new GGroupObjectSupplier() {
+            processBinding(new GKeyInputEvent(key, null), nativeEvent, new GGroupObjectSupplier() {
                 public GGroupObject get() {
                     return getGroupObject(Element.as(target));
                 }

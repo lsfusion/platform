@@ -129,10 +129,14 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             }
         }, KeyDownEvent.getType());
 
-        iform.addPropertyBindings(property, new GFormController.Binding(property.groupObject) {
+        iform.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
             @Override
             public boolean onKeyPress(EventTarget eventTarget) {
-                return isShowing(button) && enabled && click(eventTarget, true);
+                return enabled && click(eventTarget, true);
+            }
+            @Override
+            public boolean showing() {
+                return isShowing(button);
             }
         });
     }

@@ -308,8 +308,9 @@ public class GridTable extends ClientPropertyTable {
                 ClientPropertyDraw property = getSelectedProperty();
                 //игнорируем double click по editable boolean
                 boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
-                if (e.getClickCount() > 1 && !ignore)
-                    form.processBinding(MouseInputEvent.DBLCLK, () -> groupObject);
+                if (!ignore) {
+                    form.processBinding(new MouseInputEvent(e), null, () -> groupObject);
+                }
             }
         });
 
@@ -554,16 +555,17 @@ public class GridTable extends ClientPropertyTable {
                 form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
                     @Override
                     public boolean pressed() {
-                        if (isShowing()) {
-                            int leadRow = getSelectionModel().getLeadSelectionIndex();
-                            if (leadRow != -1 && !isEditing()) {
-                                keyController.stopRecording();
-                                editCellAt(leadRow, index);
-                            }
-                            //даже если редактирование не произошло, всё равно съедаем нажатие клавиши, для единообразия
-                            return true;
+                        int leadRow = getSelectionModel().getLeadSelectionIndex();
+                        if (leadRow != -1 && !isEditing()) {
+                            keyController.stopRecording();
+                            editCellAt(leadRow, index);
                         }
-                        return false;
+                        //даже если редактирование не произошло, всё равно съедаем нажатие клавиши, для единообразия
+                        return true;
+                    }
+                    @Override
+                    public boolean showing() {
+                        return isShowing();
                     }
                 });
         }

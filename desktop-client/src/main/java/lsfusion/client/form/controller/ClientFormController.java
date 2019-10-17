@@ -51,6 +51,7 @@ import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
+import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
@@ -1655,7 +1656,10 @@ public class ClientFormController implements AsyncListener {
     public static abstract class Binding {
         public final ClientGroupObject groupObject;
         public int priority;
-        public boolean onlyDialog;
+        public BindingMode bindDialog;
+        public BindingMode bindGroup;
+        public BindingMode bindEditing;
+        public BindingMode bindShowing;
 
         public Binding(ClientGroupObject groupObject, int priority) {
             this.groupObject = groupObject;
@@ -1663,28 +1667,32 @@ public class ClientFormController implements AsyncListener {
         }
 
         public abstract boolean pressed();
+        public abstract boolean showing();
     }
 
-    public void addBinding(InputEvent ks, Binding binding) {
+    public void addBinding(InputEvent ks, Binding binding, boolean overOnlyDialog) {
         List<Binding> list = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
         if(binding.priority == 0)
             binding.priority = list.size();
+        binding.bindDialog = overOnlyDialog ? BindingMode.ONLY : (ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO);
+        binding.bindGroup = ks.bindingModes != null ? ks.bindingModes.getOrDefault("group", BindingMode.AUTO) : BindingMode.AUTO;
+        binding.bindEditing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("editing", BindingMode.AUTO) : BindingMode.AUTO;
+        binding.bindShowing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("showing", BindingMode.AUTO) : BindingMode.AUTO;
         list.add(binding);
     }
     
     public void addPropertyBindings(ClientPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
         if(propertyDraw.editKey != null)
-            addBinding(propertyDraw.editKey, bindingSupplier.get());
+            addBinding(propertyDraw.editKey, bindingSupplier.get(), false);
         if(propertyDraw.editMouse != null) {
             Binding binding = bindingSupplier.get();
             if(propertyDraw.editMousePriority != null)
                 binding.priority = propertyDraw.editMousePriority;
-            binding.onlyDialog = propertyDraw.editMouseOnlyDialog;
-            addBinding(propertyDraw.editMouse, binding);
+            addBinding(propertyDraw.editMouse, binding, propertyDraw.editMouseOnlyDialog);
         }
     }
 
-    public boolean processBinding(InputEvent ks, Supplier<ClientGroupObject> groupObjectSupplier) {
+    public boolean processBinding(InputEvent ks, KeyEvent ke, Supplier<ClientGroupObject> groupObjectSupplier) {
         List<Binding> keyBinding = bindings.get(ks);
         if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
             if(ks instanceof MouseInputEvent) // not sure that it should be done only for mouse events, but it's been working like this for a long time
@@ -1695,8 +1703,8 @@ public class ClientFormController implements AsyncListener {
             // increasing priority for group object
             ClientGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
-                if(!binding.onlyDialog || isDialog())
-                    orderedBindings.put(-(binding.priority + (groupObject != null && BaseUtils.nullEquals(groupObject, binding.groupObject) ? 100 : 0)), binding);
+                if(bindDialog(binding) && bindGroup(groupObject, binding) && bindEditing(binding, ke) && bindShowing(binding))
+                    orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
 
             for(Binding binding : orderedBindings.values())
                 if(binding.pressed())                    
@@ -1705,5 +1713,65 @@ public class ClientFormController implements AsyncListener {
             return true;
         }
         return false;
+    }
+
+    private boolean bindDialog(Binding binding) {
+        switch (binding.bindDialog) {
+            case AUTO:
+            case ALL:
+                return true;
+            case ONLY:
+                return isDialog();
+            case NO:
+                return !isDialog();
+        }
+        return true;
+    }
+
+    private boolean bindGroup(ClientGroupObject groupObject, Binding binding) {
+        switch (binding.bindGroup) {
+            case AUTO:
+            case ALL:
+                return true;
+            case ONLY:
+                return equalGroup(groupObject, binding);
+            case NO:
+                return !equalGroup(groupObject, binding);
+        }
+        return true;
+    }
+
+    private boolean equalGroup(ClientGroupObject groupObject, Binding binding) {
+        return groupObject != null && groupObject.equals(binding.groupObject);
+    }
+
+    private boolean bindEditing(Binding binding, KeyEvent ke) {
+        switch (binding.bindEditing) {
+            case AUTO:
+                if(ke != null) {
+                    char c = ke.getKeyChar();
+                    return !isEditing() || ke.isControlDown() || (!Character.isLetterOrDigit(c) && c != '\r' && c != '\n');
+                } else return true;
+            case ALL:
+                return true;
+            case ONLY:
+                return isEditing();
+            case NO:
+                return !isEditing();
+        }
+        return true;
+    }
+
+    private boolean bindShowing(Binding binding) {
+        switch (binding.bindShowing) {
+            case ALL:
+                return true;
+            case AUTO:
+            case ONLY:
+                return binding.showing();
+            case NO:
+                return !binding.showing();
+        }
+        return true;
     }
 }

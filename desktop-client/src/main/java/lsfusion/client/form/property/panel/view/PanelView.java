@@ -11,6 +11,7 @@ public interface PanelView {
     void setValue(Object ivalue);
     void setReadOnly(boolean readOnly);
     boolean forceEdit();
+    boolean isShowing();
     void setCaption(String caption);
     void setToolTip(String caption);
     void setBackgroundColor(Color background);

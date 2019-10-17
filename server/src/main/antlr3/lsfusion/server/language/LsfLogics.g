@@ -2393,7 +2393,8 @@ semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString ca
 	|	forceViewTypeSetting [property]
 	|	flexCharWidthSetting [property]
 	|	charWidthSetting [property]
-	|	editKeySetting [property]
+	|	changeKeySetting [property]
+	|	changeMouseSetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
     ;
 
@@ -2570,7 +2571,7 @@ defaultCompareSetting [LAP property]
 	;
 
 
-editKeySetting [LAP property]
+changeKeySetting [LAP property]
 @init {
 	Boolean show = null;
 }
@@ -2580,6 +2581,21 @@ editKeySetting [LAP property]
 	}
 }
 	:	'CHANGEKEY' key = stringLiteral
+		(	('SHOW' { show = true; })
+		|	('HIDE' { show = false; })
+		)?
+	;
+
+changeMouseSetting [LAP property]
+@init {
+	Boolean show = null;
+}
+@after {
+	if (inMainParseState()) {
+		self.setChangeMouse(property, $key.val, show);
+	}
+}
+	:	'CHANGEMOUSE' key = stringLiteral
 		(	('SHOW' { show = true; })
 		|	('HIDE' { show = false; })
 		)?

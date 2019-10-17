@@ -111,15 +111,16 @@ public class DataPanelRenderer implements PanelRenderer {
         finishLayoutSetup();
 
         valueTable.getElement().setPropertyObject("groupObject", property.groupObject);
-        form.addPropertyBindings(property, new GFormController.Binding(property.groupObject) {
+        form.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
             @Override
             public boolean onKeyPress(EventTarget eventTarget) {
-                if (!form.isEditing() && isShowing(panel)) {
-                    focusTargetAfterEdit = eventTarget;
-                    valueTable.editCellAt(0, 0, GEditBindingMap.CHANGE);
-                    return true;
-                }
-                return false;
+                focusTargetAfterEdit = eventTarget;
+                valueTable.editCellAt(0, 0, GEditBindingMap.CHANGE);
+                return true;
+            }
+            @Override
+            public boolean showing() {
+                return isShowing(panel);
             }
         });
     }

@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -16,6 +16,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Map;
 
 public abstract class LAP<T extends PropertyInterface, P extends ActionOrProperty<T>> {
 
@@ -97,12 +98,20 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setChangeKey(editKey);
     }
 
+    public void setChangeKey(KeyStroke editKey, Map<String, BindingMode> bindingModes) {
+        getActionOrProperty().drawOptions.setChangeKey(editKey, bindingModes);
+    }
+
     public void setShowChangeKey(boolean showEditKey) {
         getActionOrProperty().drawOptions.setShowChangeKey(showEditKey);
     }
 
-    public void setChangeMouse(MouseInputEvent editMouse) {
+    public void setChangeMouse(String editMouse) {
         getActionOrProperty().drawOptions.setChangeMouse(editMouse);
+    }
+
+    public void setChangeMouse(String editMouse, Map<String, BindingMode> bindingModes) {
+        getActionOrProperty().drawOptions.setChangeMouse(editMouse, bindingModes);
     }
 
     public void setChangeMousePriority(Integer editMousePriority) {

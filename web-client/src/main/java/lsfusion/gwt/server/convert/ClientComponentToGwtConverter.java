@@ -23,6 +23,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.form.design.*;
+import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseInputEvent;
@@ -43,6 +44,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
@@ -385,12 +387,37 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     @Converter(from = KeyInputEvent.class)
     public GKeyInputEvent convertKeyInputEvent(KeyInputEvent keyInputEvent) {
-        return new GKeyInputEvent(convertOrCast(keyInputEvent.keyStroke));
+        return new GKeyInputEvent(convertOrCast(keyInputEvent.keyStroke), convertBindingModes(keyInputEvent.bindingModes));
     }
 
     @Converter(from = MouseInputEvent.class)
     public GMouseInputEvent convertMouseInputEvent(MouseInputEvent mouseInputEvent) {
-        return new GMouseInputEvent(convertOrCast(mouseInputEvent.mouseEvent));
+        return new GMouseInputEvent(convertOrCast(mouseInputEvent.mouseEvent), convertBindingModes(mouseInputEvent.bindingModes));
+    }
+
+    private Map<String, GBindingMode> convertBindingModes(Map<String, BindingMode> bindingModes) {
+        Map<String, GBindingMode> gBindingModes = new HashMap<>();
+        if(bindingModes != null) {
+            for (Map.Entry<String, BindingMode> bindingModeEntry : bindingModes.entrySet()) {
+                GBindingMode mode = null;
+                switch (bindingModeEntry.getValue()) {
+                    case AUTO:
+                        gBindingModes.put(bindingModeEntry.getKey(), GBindingMode.AUTO);
+                        break;
+                    case ALL:
+                        gBindingModes.put(bindingModeEntry.getKey(), GBindingMode.ALL);
+                        break;
+                    case ONLY:
+                        gBindingModes.put(bindingModeEntry.getKey(), GBindingMode.ONLY);
+                        break;
+                    case NO:
+                        gBindingModes.put(bindingModeEntry.getKey(), GBindingMode.NO);
+                        break;
+                }
+
+            }
+        }
+        return gBindingModes;
     }
 
     private int convertKeyCode(int keyCode) {

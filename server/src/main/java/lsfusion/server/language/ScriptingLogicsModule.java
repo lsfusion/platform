@@ -18,6 +18,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
@@ -1286,9 +1287,49 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setChangeKey(LAP property, String code, Boolean showEditKey) {
-        property.setChangeKey(KeyStroke.getKeyStroke(code));
+        Matcher m = Pattern.compile("(.*);(.*)").matcher(code);
+        if(m.matches()) {
+            property.setChangeKey(KeyStroke.getKeyStroke(m.group(1)), getBindingModesMap(m.group(2)));
+        } else {
+            property.setChangeKey(KeyStroke.getKeyStroke(code));
+        }
         if (showEditKey != null)
             property.setShowChangeKey(showEditKey);
+    }
+
+    public void setChangeMouse(LAP property, String code, Boolean showEditKey) {
+        Matcher m = Pattern.compile("(.*);(.*)").matcher(code);
+        if(m.matches()) {
+            property.setChangeMouse((m.group(1)), getBindingModesMap(m.group(2)));
+        } else {
+            property.setChangeMouse(code);
+        }
+        if (showEditKey != null)
+            property.setShowChangeKey(showEditKey);
+    }
+
+    private Map<String, BindingMode> getBindingModesMap(String values) {
+        Map<String, BindingMode> bindingModes = new HashMap<>();
+        Matcher m = Pattern.compile("([^=,]*)=([^=,]*)").matcher(values);
+        while(m.find()) {
+            BindingMode bindingMode;
+            switch (m.group(2)) {
+                case "all":
+                    bindingMode = BindingMode.ALL;
+                    break;
+                case "only":
+                    bindingMode = BindingMode.ONLY;
+                    break;
+                case "no":
+                    bindingMode = BindingMode.NO;
+                    break;
+                default:
+                    bindingMode = BindingMode.AUTO;
+                    break;
+            }
+            bindingModes.put(m.group(1), bindingMode);
+        }
+        return bindingModes;
     }
 
     public void setAutoset(LP property, boolean autoset) {

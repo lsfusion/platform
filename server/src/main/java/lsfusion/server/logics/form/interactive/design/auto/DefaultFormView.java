@@ -225,7 +225,7 @@ public class DefaultFormView extends FormView {
         setupFormButton(cancelFunction, KeyStrokes.getCancelKeyStroke());
 
         PropertyDrawView okFunction = get(entity.okActionPropertyDraw);
-        setupFormButton(okFunction, KeyStrokes.getOkKeyStroke(), MouseInputEvent.DBLCLK, 1000, true);
+        setupFormButton(okFunction, KeyStrokes.getOkKeyStroke(), new MouseInputEvent(MouseInputEvent.DBLCLK), 1000, true);
 
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
         setupFormButton(closeFunction, KeyStrokes.getCloseKeyStroke());

@@ -165,11 +165,12 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public boolean forceEdit() {
-        if (isShowing()) {
-            doClick(20);
-            return true;
-        }
-        return false;
+        doClick(20);
+        return true;
+    }
+
+    public Component getElement() {
+        return this;
     }
 
     public void setCaption(String caption) {

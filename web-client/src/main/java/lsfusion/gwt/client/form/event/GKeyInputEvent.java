@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.event;
 
+import java.util.Map;
+
 public class GKeyInputEvent extends GInputEvent {
 
     public GKeyStroke keyStroke;
@@ -7,7 +9,8 @@ public class GKeyInputEvent extends GInputEvent {
     public GKeyInputEvent() {
     }
 
-    public GKeyInputEvent(GKeyStroke keyStroke) {
+    public GKeyInputEvent(GKeyStroke keyStroke, Map<String, GBindingMode> bindingModes) {
+        super(bindingModes);
         this.keyStroke = keyStroke;
     }
 

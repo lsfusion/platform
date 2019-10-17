@@ -1,12 +1,18 @@
 package lsfusion.interop.form.event;
 
 import javax.swing.*;
+import java.util.Map;
 import java.util.Objects;
 
 public class KeyInputEvent extends InputEvent {
     public final KeyStroke keyStroke;
 
     public KeyInputEvent(KeyStroke keyStroke) {
+        this.keyStroke = keyStroke;
+    }
+
+    public KeyInputEvent(KeyStroke keyStroke, Map<String, BindingMode> bindingModes) {
+        super(bindingModes);
         this.keyStroke = keyStroke;
     }
 

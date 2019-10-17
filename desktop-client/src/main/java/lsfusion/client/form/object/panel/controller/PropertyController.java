@@ -43,6 +43,9 @@ public class PropertyController {
             public boolean pressed() {
                 return forceEdit();
             }
+            public boolean showing() {
+                return views.values().iterator().next().isShowing();
+            }
         });
 
         viewsPanel = new JComponentPanel(false, Alignment.START);

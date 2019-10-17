@@ -1,14 +1,36 @@
 package lsfusion.interop.form.event;
 
+import java.awt.event.MouseEvent;
+import java.util.Map;
 import java.util.Objects;
 
 public class MouseInputEvent extends InputEvent {
     
-    public static final MouseInputEvent DBLCLK = new MouseInputEvent("DBLCLK");
-    
+    public static final String CLK = "CLK";
+    public static final String DBLCLK = "DBLCLK";
+
     public final String mouseEvent;
 
     public MouseInputEvent(String mouseEvent) {
+        this.mouseEvent = mouseEvent;
+    }
+
+    public MouseInputEvent(MouseEvent e) {
+        String event = "";
+        if (e.isAltDown()) {
+            event += "alt ";
+        }
+        if (e.isControlDown()) {
+            event += "ctrl ";
+        }
+        if (e.isShiftDown()) {
+            event += "shift ";
+        }
+        this.mouseEvent = event + (e.getClickCount() == 1 ? CLK : DBLCLK);
+    }
+
+    public MouseInputEvent(String mouseEvent, Map<String, BindingMode> bindingModes) {
+        super(bindingModes);
         this.mouseEvent = mouseEvent;
     }
 
