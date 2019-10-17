@@ -1287,7 +1287,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setChangeKey(LAP property, String code, Boolean showEditKey) {
-        Matcher m = Pattern.compile("(.*);(.*)").matcher(code);
+        Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
         if(m.matches()) {
             property.setChangeKey(KeyStroke.getKeyStroke(m.group(1)), getBindingModesMap(m.group(2)));
         } else {
@@ -1298,7 +1298,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setChangeMouse(LAP property, String code, Boolean showEditKey) {
-        Matcher m = Pattern.compile("(.*);(.*)").matcher(code);
+        Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
         if(m.matches()) {
             property.setChangeMouse((m.group(1)), getBindingModesMap(m.group(2)));
         } else {
@@ -1310,7 +1310,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private Map<String, BindingMode> getBindingModesMap(String values) {
         Map<String, BindingMode> bindingModes = new HashMap<>();
-        Matcher m = Pattern.compile("([^=,]*)=([^=,]*)").matcher(values);
+        Matcher m = Pattern.compile("([^=;]*)=([^=;]*)").matcher(values);
         while(m.find()) {
             BindingMode bindingMode;
             switch (m.group(2)) {
