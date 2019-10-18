@@ -1750,7 +1750,7 @@ public class ClientFormController implements AsyncListener {
             case AUTO:
                 if(ke != null) {
                     char c = ke.getKeyChar();
-                    return !isEditing() || ke.isControlDown() || (!Character.isLetterOrDigit(c) && c != '\r' && c != '\n');
+                    return !isEditing() || notTextCharEvent(ke);
                 } else return true;
             case ALL:
                 return true;
@@ -1760,6 +1760,13 @@ public class ClientFormController implements AsyncListener {
                 return !isEditing();
         }
         return true;
+    }
+
+    private static List<Character> textChars = Arrays.asList(new Character[]{KeyEvent.VK_DELETE, KeyEvent.VK_BACK_SPACE, KeyEvent.VK_ENTER,
+            KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT});
+    private boolean notTextCharEvent(KeyEvent event) {
+        char c = (char) event.getKeyCode();
+        return event.isControlDown() || (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c) && !textChars.contains(c));
     }
 
     private boolean bindShowing(Binding binding) {

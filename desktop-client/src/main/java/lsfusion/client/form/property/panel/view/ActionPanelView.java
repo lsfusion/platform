@@ -169,10 +169,6 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         return true;
     }
 
-    public Component getElement() {
-        return this;
-    }
-
     public void setCaption(String caption) {
         caption = property.getEditCaption(caption);
         if (BaseUtils.isRedundantString(caption)) {

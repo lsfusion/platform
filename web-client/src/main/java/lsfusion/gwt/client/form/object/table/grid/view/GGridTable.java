@@ -723,10 +723,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         
         form.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
             @Override
-            public boolean onKeyPress(EventTarget eventTarget) {
+            public void pressed(EventTarget eventTarget) {
                 selectProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
                 editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.CHANGE);
-                return true;
             }
             @Override
             public boolean showing() {

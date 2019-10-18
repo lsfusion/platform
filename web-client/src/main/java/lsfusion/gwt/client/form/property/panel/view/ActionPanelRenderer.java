@@ -101,7 +101,8 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                click(null, false);
+                assert !form.isEditing();
+                click(null);
             }
         });
         button.addDomHandler(new ContextMenuHandler() {
@@ -131,12 +132,16 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
         iform.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
             @Override
-            public boolean onKeyPress(EventTarget eventTarget) {
-                return enabled && click(eventTarget, true);
+            public void pressed(EventTarget eventTarget) {
+                click(eventTarget);
             }
             @Override
             public boolean showing() {
                 return isShowing(button);
+            }
+            @Override
+            public boolean enabled() {
+                return enabled;
             }
         });
     }
@@ -147,16 +152,9 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         }
     }
 
-    private boolean click(EventTarget ifocusTargetAfterEdit, boolean commitEditing) {
-        if(commitEditing) {
-            form.commitEditingTable();
-        }
-        if (!form.isEditing()) {
-            focusTargetAfterEdit = ifocusTargetAfterEdit;
-            editDispatcher.executePropertyEditAction(property, columnKey, GEditBindingMap.CHANGE, null);
-            return true;
-        }
-        return false;
+    private void click(EventTarget ifocusTargetAfterEdit) {
+        focusTargetAfterEdit = ifocusTargetAfterEdit;
+        editDispatcher.executePropertyEditAction(property, columnKey, GEditBindingMap.CHANGE, null);
     }
 
     @Override

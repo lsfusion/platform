@@ -113,10 +113,9 @@ public class DataPanelRenderer implements PanelRenderer {
         valueTable.getElement().setPropertyObject("groupObject", property.groupObject);
         form.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
             @Override
-            public boolean onKeyPress(EventTarget eventTarget) {
+            public void pressed(EventTarget eventTarget) {
                 focusTargetAfterEdit = eventTarget;
                 valueTable.editCellAt(0, 0, GEditBindingMap.CHANGE);
-                return true;
             }
             @Override
             public boolean showing() {

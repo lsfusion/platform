@@ -230,9 +230,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (filter.key != null) {
             addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
                 @Override
-                public boolean onKeyPress(EventTarget eventTarget) {
+                public void pressed(EventTarget eventTarget) {
                     filterCheck.setValue(!filterCheck.getValue(), true);
-                    return true;
                 }
                 @Override
                 public boolean showing() {
@@ -257,10 +256,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if (filter.key != null) {
                 addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
                     @Override
-                    public boolean onKeyPress(EventTarget eventTarget) {
+                    public void pressed(EventTarget eventTarget) {
                         filterBox.setSelectedIndex(filterIndex + 1);
                         setRegularFilter(filterGroup, filterIndex);
-                        return true;
                     }
                     @Override
                     public boolean showing() {
@@ -1159,9 +1157,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void commitEditingTable() {
-        if(isEditing()) {
-            editingTable.validateAndCommit();
-        }
+        editingTable.validateAndCommit();
     }
 
     public boolean isModal() {
@@ -1335,8 +1331,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             this.groupObject = groupObject;
         }
 
-        public abstract boolean onKeyPress(EventTarget eventTarget);
+        public abstract void pressed(EventTarget eventTarget);
         public abstract boolean showing();
+
+        public boolean enabled() {
+            return true;
+        }
     }
 
     private final HashMap<GInputEvent, ArrayList<Binding>> bindings = new HashMap<>();
@@ -1402,11 +1402,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 if(bindDialog(binding) && bindGroup(groupObject, binding) && bindEditing(binding, event) && bindShowing(binding))
                     orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
 
-            for(Binding binding : orderedBindings.values())
-                if(binding.onKeyPress(event.getEventTarget())) {
+            for (Binding binding : orderedBindings.values()) {
+                if (binding.enabled()) {
+                    if (isEditing()) {
+                        commitEditingTable();
+                    }
+                    binding.pressed(event.getEventTarget());
                     stopPropagation(event);
                     return true;
                 }
+            }
 
             return true;
         }
@@ -1448,8 +1453,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private boolean bindEditing(Binding binding, NativeEvent event) {
         switch (binding.bindEditing) {
             case AUTO:
-                char c = (char) event.getKeyCode();
-                return !isEditing() || event.getCtrlKey() || (!Character.isLetterOrDigit(c) && c != '\r' && c != '\n');
+                return !isEditing() || notTextCharEvent(event);
             case ALL:
                 return true;
             case ONLY:
@@ -1459,6 +1463,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindEditing);
         }
+    }
+
+    private static List<Character> textChars = Arrays.asList(new Character[]{KeyCodes.KEY_DELETE, KeyCodes.KEY_BACKSPACE, KeyCodes.KEY_ENTER,
+            KeyCodes.KEY_UP, KeyCodes.KEY_DOWN, KeyCodes.KEY_LEFT, KeyCodes.KEY_RIGHT});
+    private boolean notTextCharEvent(NativeEvent event) {
+        char c = (char) event.getKeyCode();
+        return event.getCtrlKey() || (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c) && !textChars.contains(c));
     }
 
     private boolean bindShowing(Binding binding) {
