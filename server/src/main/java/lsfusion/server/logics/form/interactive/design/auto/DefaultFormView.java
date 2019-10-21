@@ -202,33 +202,27 @@ public class DefaultFormView extends FormView {
     }
 
     private void initFormButtons(Version version) {
-//        PropertyDrawView printFunction = get(entity.printActionPropertyDraw);
-//        setupFormButton(printFunction, KeyStrokes.getPrintKeyStroke(), "print.png");
-
-//        PropertyDrawView xlsFunction = get(entity.xlsActionPropertyDraw);
-//        setupFormButton(xlsFunction, KeyStrokes.getXlsKeyStroke(), "xls.png");
-
         PropertyDrawView editFunction = get(entity.editActionPropertyDraw);
-        setupFormButton(editFunction, KeyStrokes.getEditKeyStroke(), "editReport.png");
+        setupFormButton(editFunction);
 
         PropertyDrawView dropFunction = get(entity.dropActionPropertyDraw);
-        setupFormButton(dropFunction, KeyStrokes.getNullKeyStroke());
+        setupFormButton(dropFunction);
 
         PropertyDrawView refreshFunction = get(entity.refreshActionPropertyDraw);
-        setupFormButton(refreshFunction, KeyStrokes.getRefreshKeyStroke(), "refresh.png");
+        setupFormButton(refreshFunction);
         refreshFunction.drawAsync = true;
 
         PropertyDrawView applyFunction = get(entity.applyActionPropertyDraw);
-        setupFormButton(applyFunction, KeyStrokes.getApplyKeyStroke());
+        setupFormButton(applyFunction);
 
         PropertyDrawView cancelFunction = get(entity.cancelActionPropertyDraw);
-        setupFormButton(cancelFunction, KeyStrokes.getCancelKeyStroke());
+        setupFormButton(cancelFunction);
 
         PropertyDrawView okFunction = get(entity.okActionPropertyDraw);
-        setupFormButton(okFunction, KeyStrokes.getOkKeyStroke(), new MouseInputEvent(MouseInputEvent.DBLCLK), 1000, true);
+        setupFormButton(okFunction, 1000, true);
 
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
-        setupFormButton(closeFunction, KeyStrokes.getCloseKeyStroke());
+        setupFormButton(closeFunction);
 
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
 
@@ -256,29 +250,18 @@ public class DefaultFormView extends FormView {
         toolbarBoxContainer.add(toolbarLeftContainer, version);
         toolbarBoxContainer.add(toolbarRightContainer, version);
     }
-    
-    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, MouseInputEvent mouseInputEvent, int mousePriority, boolean mouseOnlyDialog) {
-        setupFormButton(action, editKey, null, mouseInputEvent, mousePriority, mouseOnlyDialog);
+
+    private void setupFormButton(PropertyDrawView action) {
+        setupFormButton(action, 0, false);
     }
-    private void setupFormButton(PropertyDrawView action, KeyStroke editKey) {
-        setupFormButton(action, editKey, (String)null);        
-    }
-    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, String imagePath) {
-        setupFormButton(action, editKey, imagePath, null, 0, false);
-    }
-    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, String imagePath, MouseInputEvent mouseEvent, int mousePriority, boolean mouseOnlyDialog) {
-        action.changeKey = editKey != null ? new KeyInputEvent(editKey) : null;
+
+    private void setupFormButton(PropertyDrawView action, int mousePriority, boolean mouseOnlyDialog) {
         action.showChangeKey = false;
-        action.changeMouse = mouseEvent;
         action.changeMousePriority = mousePriority;
         action.changeMouseOnlyDialog = mouseOnlyDialog;
         action.focusable = false;
         action.entity.setEditType(PropertyEditType.EDITABLE);
         action.setAlignment(FlexAlignment.STRETCH);
-
-        if (imagePath != null) {
-            action.design.setImagePath(imagePath);
-        }
     }
 
     private void addGroupObjectView(GroupObjectView groupObject, Version version) {
