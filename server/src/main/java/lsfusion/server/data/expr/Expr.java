@@ -62,7 +62,14 @@ import java.util.function.Function;
 abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public static int useCasesCount = Integer.MAX_VALUE;
-    public static final Expr NULL = useCasesCount == 0?new CaseExpr(new ExprCaseList(SetFact.EMPTY())):NullExpr.instance;
+
+    // converted to static method to prevent class initialization deadlocks 
+    public static Expr NULL() {
+        return NULL;
+    }
+    
+    private static final Expr NULL = (useCasesCount == 0 ? new CaseExpr(new ExprCaseList(SetFact.EMPTY())) : NullExpr.instance);
+    
     public static CaseExprInterface newCases(boolean exclusive, int size) {
         if(size >= useCasesCount || exclusive)
             return new MExprCaseList(exclusive);
@@ -200,13 +207,13 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         if(getWhere().means(where))
             return this;
 
-        return ifElse(where, Expr.NULL);
+        return ifElse(where, Expr.NULL());
     }
     public Expr ifElse(Where where, Expr elseExpr) {
         if(Expr.useCasesCount <= 2) {
             MExprCaseList mCases = new MExprCaseList(false);
             mCases.add(where,this);
-            mCases.add(Where.TRUE,elseExpr);
+            mCases.add(Where.TRUE(),elseExpr);
             return mCases.getFinal();
         } else
             return IfExpr.create(where, this, elseExpr);
@@ -237,14 +244,14 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
     
     public static Where getWhere(ImCol<? extends Expr> col) {
-        Where where = Where.TRUE;
+        Where where = Where.TRUE();
         for(Expr expr : col)
             where = where.and(expr.getWhere());
         return where;
     }
 
     public static Where getOrWhere(ImCol<? extends Expr> col) {
-        Where where = Where.FALSE;
+        Where where = Where.FALSE();
         for(Expr expr : col)
             where = where.or(expr.getWhere());
         return where;
@@ -269,18 +276,18 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
 
     public static Object readValue(SQLSession session, Expr expr, OperationOwner owner) throws SQLException, SQLHandledException { // assert что в mapExprs только values
-        return new Query<>(MapFact.EMPTYREV(), MapFact.singleton("value", expr), Where.TRUE).execute(session, owner).singleValue().singleValue();
+        return new Query<>(MapFact.EMPTYREV(), MapFact.singleton("value", expr), Where.TRUE()).execute(session, owner).singleValue().singleValue();
     }
 
     public static ObjectValue readObjectValue(SQLSession session, BaseClass baseClass, Expr expr, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values
         ObjectValue objectValue = expr.getObjectValue(env);
         if(objectValue != null)
             return objectValue;
-        return new Query<>(MapFact.EMPTYREV(), MapFact.singleton("value", expr), Where.TRUE).executeClasses(session, env, baseClass).singleValue().singleValue(); 
+        return new Query<>(MapFact.EMPTYREV(), MapFact.singleton("value", expr), Where.TRUE()).executeClasses(session, env, baseClass).singleValue().singleValue(); 
     }
 
     public static <K> ImMap<K, Object> readValues(SQLSession session, ImMap<K,Expr> mapExprs, OperationOwner owner) throws SQLException, SQLHandledException { // assert что в mapExprs только values
-        return new Query<>(MapFact.EMPTYREV(), mapExprs, Where.TRUE).execute(session, owner).singleValue();
+        return new Query<>(MapFact.EMPTYREV(), mapExprs, Where.TRUE()).execute(session, owner).singleValue();
     }
     
     public static <K> ImMap<K, ObjectValue> readObjectValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values
@@ -300,7 +307,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         if(mapExprValues.isEmpty()) // чисто для оптимизации чтобы лишний раз executeClasses не вызывать
             return mapValues;
         else
-            return mapValues.addExcl(new Query<>(MapFact.EMPTYREV(), mapExprValues, Where.TRUE).executeClasses(session, env, baseClass).singleValue());
+            return mapValues.addExcl(new Query<>(MapFact.EMPTYREV(), mapExprValues, Where.TRUE()).executeClasses(session, env, baseClass).singleValue());
     }
 
     public abstract Where getBaseWhere();

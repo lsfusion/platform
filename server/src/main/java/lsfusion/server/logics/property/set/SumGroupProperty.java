@@ -40,7 +40,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
         ImRevMap<I, KeyExpr> innerKeys = KeyExpr.getMapKeys(innerInterfaces);
 
-        Where valueWhere = Where.TRUE;
+        Where valueWhere = Where.TRUE();
         ImValueMap<I,Expr> mvMapValueKeys = innerKeys.mapItValues();// есть совместная обработка
         for(int i=0,size=innerKeys.size();i<size;i++) {
             Expr expr = changeValues.get(innerKeys.getKey(i));

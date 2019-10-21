@@ -812,7 +812,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         String newSID = (alias == null ? property.getSID() : alias);
         property.setSID(null);
         PropertyDrawEntity drawEntity;
-        if ((drawEntity = getPropertyDraw(newSID, Version.CURRENT)) != null) {
+        if ((drawEntity = getPropertyDraw(newSID, Version.current())) != null) {
             throw new AlreadyDefined(getCanonicalName(), newSID, drawEntity.getFormPath());
         }
         property.setSID(newSID);

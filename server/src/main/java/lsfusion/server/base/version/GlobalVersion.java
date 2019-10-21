@@ -10,4 +10,7 @@ public class GlobalVersion extends Version {
     public boolean canSee(Version version) {
         return version == this;
     }
+
+    // placed here to prevent class initialization deadlocks 
+    static final Version GLOBAL = new GlobalVersion();
 }

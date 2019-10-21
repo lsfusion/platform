@@ -69,7 +69,7 @@ public abstract class SingleClassExpr extends VariableClassExpr {
         if(!type.isInconsistent()) {
             // в принципе можно было бы проand'ить но нарушит инварианты конструирования внутри IsClassExpr(baseClass+ joinExpr)
             if(!intersect(set)) // если не пересекается то false
-                return Where.FALSE;
+                return Where.FALSE();
             if(!isTrueWhere())
                 if(set.getOr().containsAll(getOrSet(), true)) // если set содержит все элементы, то достаточно просто что не null (implicit cast'ы подходят)
                     return getWhere();

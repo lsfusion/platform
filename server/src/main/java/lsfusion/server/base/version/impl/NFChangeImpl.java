@@ -31,7 +31,7 @@ public abstract class NFChangeImpl<T, CH, F> extends NFImpl<TreeMap<Version, MLi
     }
     
     protected void proceedChanges(ChangeProcessor<T, CH> processor, Version version) {
-        if(version != Version.LAST) {
+        if(version != Version.last()) {
             synchronized (this) {
                 syncProceedChanges(processor, version);
             }

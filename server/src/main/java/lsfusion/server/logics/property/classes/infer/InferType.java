@@ -13,10 +13,22 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 public class InferType implements AlgType {
     public InferType() {
     }
-
-    public static InferInfoType PREVBASE = new InferInfoType();
-    public static InferType PREVSAME = new InferType();
-    public static InferType RESOLVE = new InferType(); // PREVSAME
+    
+    // converted to static methods to prevent class initialization deadlocks
+    public static InferInfoType prevBase() {
+        return InferInfoType.PREVBASE;    
+    }
+    
+    public static InferType prevSame() {
+        return PREVSAME;
+    }
+    
+    public static InferType resolve() {
+        return RESOLVE;
+    }
+    
+    private static final InferType PREVSAME = new InferType();
+    private static final InferType RESOLVE = new InferType(); // PREVSAME
 
     public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(Property<P> property) {
         return getClassValueWhere(property, null);
@@ -57,6 +69,6 @@ public class InferType implements AlgType {
 
     public AlgInfoType getAlgInfo() {
         assert this != RESOLVE;
-        return PREVBASE;
+        return prevBase();
     }
 }

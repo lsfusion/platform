@@ -30,6 +30,9 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         super(new OrObjectWhere[0], false);
     }
 
+    // placed here to prevent class initialization deadlocks 
+    static final Where TRUE_WHERE = new AndWhere();    
+    
     public OrObjectWhere[] newArray(int length) {
         return new OrObjectWhere[length];
     }
@@ -92,7 +95,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     }
 
     protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        GroupJoinsWheres result = new GroupJoinsWheres(TRUE, type);
+        GroupJoinsWheres result = new GroupJoinsWheres(Where.TRUE(), type);
         for(int i=0;i<wheres.length;i++) {
             // приходится и промежуточные группировать, так как при большом количестве операндов, complexity может до миллиона дорасти
             if(result.isExceededIntermediatePackThreshold()) {
@@ -105,13 +108,13 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return result;
     }
     public KeyEquals calculateGroupKeyEquals() {
-        KeyEquals result = new KeyEquals(TRUE, false); // потому что вызывается из calculateGroupKeyEquals, а там уже проверили что все не isSimple
+        KeyEquals result = new KeyEquals(Where.TRUE(), false); // потому что вызывается из calculateGroupKeyEquals, а там уже проверили что все не isSimple
         for(Where where : wheres)
             result = result.and(where.getKeyEquals());
         return result;
     }
     public MeanClassWheres calculateGroupMeanClassWheres(boolean useNots) {
-        MeanClassWheres result = new MeanClassWheres(MeanClassWhere.TRUE, TRUE);
+        MeanClassWheres result = new MeanClassWheres(MeanClassWhere.TRUE, Where.TRUE());
         for(int i=0;i<wheres.length;i++) {
             if(result.size() > Settings.get().getLimitClassWhereCount() || result.getComplexity(true) > Settings.get().getLimitClassWhereComplexity()) {
                 if(useNots)

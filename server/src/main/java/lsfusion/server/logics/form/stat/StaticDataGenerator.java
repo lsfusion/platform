@@ -147,7 +147,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
     }
 
     protected Where getWhere(ImSet<GroupObjectEntity> groups, ImSet<GroupObjectEntity> valueGroups, ImMap<ObjectEntity, Expr> mapExprs) throws SQLException, SQLHandledException {
-        Where where = Where.TRUE;
+        Where where = Where.TRUE();
         for(GroupObjectEntity group : groups)
             where = where.and(getWhere(group, valueGroups, mapExprs));
         return where;

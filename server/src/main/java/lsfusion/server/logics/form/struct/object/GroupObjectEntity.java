@@ -317,7 +317,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
     
     private static Where getFilterWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {
-        Where where = Where.TRUE;
+        Where where = Where.TRUE();
         for(FilterEntity filt : filters)
             where = where.and(filt.getWhere(mapKeys, modifier));
         return where;

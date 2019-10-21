@@ -489,7 +489,7 @@ public class PropertyFact {
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(Property<T> property, ImSet<PropertyInterfaceImplement<T>> partitions, ImOrderMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
-        return createOProp(LocalizedString.NONAME, PartitionType.SUM, property, partitions, orders, includeLast);
+        return createOProp(LocalizedString.NONAME, PartitionType.sum(), property, partitions, orders, includeLast);
     }
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(LocalizedString caption, PartitionType partitionType, Property<T> property, ImSet<PropertyInterfaceImplement<T>> partitions, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         if(true) {
@@ -563,7 +563,7 @@ public class PropertyFact {
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
         if(true) {
-            PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, over ? PartitionType.DISTR_RESTRICT_OVER : PartitionType.DISTR_RESTRICT, innerInterfaces, ListFact.toList(restriction, distribute), partitions, orders, ordersNotNull, true);
+            PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, over ? PartitionType.distrRestrictOver() : PartitionType.distrRestrict(), innerInterfaces, ListFact.toList(restriction, distribute), partitions, orders, ordersNotNull, true);
             return new PropertyMapImplement<>(orderProperty, orderProperty.getMapInterfaces());
         }
 
@@ -614,7 +614,7 @@ public class PropertyFact {
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
         if(roundfirst) {
-            PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, PartitionType.DISTR_CUM_PROPORTION(roundlen), innerInterfaces.getSet(), ListFact.toList(proportion, distribute), partitions, orders, ordersNotNull, false);
+            PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, PartitionType.distrCumProportion(roundlen), innerInterfaces.getSet(), ListFact.toList(proportion, distribute), partitions, orders, ordersNotNull, false);
             return new PropertyMapImplement<>(orderProperty, orderProperty.getMapInterfaces());
         }
 

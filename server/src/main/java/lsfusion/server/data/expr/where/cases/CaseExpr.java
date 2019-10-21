@@ -206,7 +206,7 @@ public class CaseExpr extends Expr {
         ExprCaseList result = new ExprCaseList();
         for(ExprCase exprCase : cases)
             result.add(exprCase.where,exprCase.props.sum(expr));
-        result.add(Where.TRUE,expr); // если null то expr
+        result.add(Where.TRUE(),expr); // если null то expr
         return result.getExpr();
     }*/
 
@@ -254,4 +254,7 @@ public class CaseExpr extends Expr {
                 return false;
         return true;
     }
+
+    // placed here to prevent class initialization deadlocks 
+    public static final CaseExpr CaseNULL = new CaseExpr(new ExprCaseList(SetFact.EMPTY()));
 }

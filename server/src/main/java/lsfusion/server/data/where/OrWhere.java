@@ -41,6 +41,9 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         super(new AndObjectWhere[0], false);
     }
 
+    // placed here to prevent class initialization deadlocks 
+    static final Where FALSE_WHERE = new OrWhere();
+
     public final static ArrayInstancer<AndObjectWhere> instancer = AndObjectWhere[]::new;
 
     public static Where or(Where where1,Where where2,boolean pack) {
@@ -55,7 +58,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             if(change.type != FollowType.WIDE && change.type != FollowType.DIFF) {
                 // если And'ы или Or'ы то они бы при упаковке внутри ушли бы
                 if(followWhere1 instanceof ObjectWhere && followWhere2 instanceof ObjectWhere && checkTrue(where1,where2))
-                    return TRUE;
+                    return Where.TRUE();
 
                 assert BaseUtils.hashEquals(followWhere1.followFalse(followWhere2, pack, new FollowChange()),followWhere1);
                 
@@ -77,7 +80,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         AndObjectWhere[] wheres2 = where2.getAnd();
 
         // пытаем вытащить скобки/decision'ы
-        Where[] pairedWheres = new Where[wheres1.length]; int pairs = 0; CheckWhere checkPaired = Where.FALSE;
+        Where[] pairedWheres = new Where[wheres1.length]; int pairs = 0; CheckWhere checkPaired = Where.FALSE();
         AndObjectWhere[] rawWheres1 = wheres1.clone();
         AndObjectWhere[] rawWheres2 = wheres2.clone();
         for(int j=0;j<rawWheres1.length;j++) {
@@ -153,7 +156,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         if(falseWhere.isFalse() && !pack) return this;
         if(falseWhere.isTrue()) {
             change.type = FollowType.NARROW;
-            return FALSE;
+            return Where.FALSE();
         }
 
         // нужно минимизировать orCheck'и
@@ -168,7 +171,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             if(i!=ilast) {
                 int Ni=N+i;
 
-                CheckWhere siblingWhere = Where.FALSE;
+                CheckWhere siblingWhere = Where.FALSE();
                 for(int j=Ni;j>1;j=j/2) // расчитываем siblings для изменившихся условий
                     siblingWhere = orCheckNull(siblingWhere,siblingNewWheres[(j%2==0?j+1:j-1)]); // берем siblings
 
@@ -184,7 +187,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 if(followChange.type!=FollowType.EQUALS) { // если шире стал, изменился, и даже если narrow'е стал (потому как может каскад вызвать)
                     if(followWhere.isTrue()) {
                         change.type = FollowType.WIDE;
-                        return TRUE; // простое ускорение
+                        return Where.TRUE(); // простое ускорение
                     }
 
                     if(siblingNewWheres[Ni]==null) in++;
@@ -213,7 +216,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         Where result = toWhere(staticWheres, check);
         if(onlyObjects && checkTrue(orCheckNull(orCheckNull(result,siblingNewWheres[2]),siblingNewWheres[3]),falseWhere)) {
             change.type = FollowType.WIDE;
-            return TRUE;
+            return Where.TRUE();
         }
         for(int j=0;j<wheres.length;j++)
             if(siblingNewWheres[N+j]!=null)
@@ -244,11 +247,11 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         // COPY PASTE с модификациями для OrWhere.orCheck(w1, w2), OrWhere.checkTrue(w[], int, boolean) - для оптимизации как самые критичные места
         if(where2 instanceof OrObjectWhere)
             if (where1.directMeansFrom(((OrObjectWhere) where2).not()))
-                return Where.TRUE;
+                return Where.TRUE();
 
         if(where1 instanceof OrObjectWhere) // если Or то проверим, если And нет смысла, все равно скобки потом отдельно будут раскрываться
             if(where2.directMeansFrom(((OrObjectWhere) where1).not()))
-                return Where.TRUE;
+                return Where.TRUE();
 
         AndObjectWhere[] wheres1 = where1.getAnd();
         AndObjectWhere[] wheres2 = where2.getAnd();
@@ -715,7 +718,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     }
     @ParamLazy
     public Where translate(ExprTranslator translator) {
-        Where result = Where.FALSE;
+        Where result = Where.FALSE();
         for(Where where : wheres)
             result = result.or(where.translateExpr(translator));
         return result;

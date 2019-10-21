@@ -27,7 +27,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         if(checkEquals(operator1,operator2))
             return operator1.getWhere();
         if(checkStaticClass(operator1, operator2) && checkStaticNotEquals(operator1, operator2))
-                return FALSE;
+                return Where.FALSE();
         return create(operator1, operator2, new EqualsWhere(operator1, operator2));
     }
 

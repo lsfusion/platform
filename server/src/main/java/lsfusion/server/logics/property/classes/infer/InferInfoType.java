@@ -23,4 +23,7 @@ public class InferInfoType extends InferType implements AlgInfoType {
     public AlgInfoType getAlgInfo() {
         return this;
     }
+
+    // placed here to prevent class initialization deadlocks 
+    static final InferInfoType PREVBASE = new InferInfoType();
 }

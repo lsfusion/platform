@@ -17,7 +17,7 @@ public abstract class MCaseList<A, D extends A,C extends Case<D>> {
     protected Where upWhere;
 
     public MCaseList(boolean exclusive) {
-        this(Where.FALSE, exclusive);
+        this(Where.FALSE(), exclusive);
     }
 
     public MCaseList(Where falseWhere, boolean exclusive) {

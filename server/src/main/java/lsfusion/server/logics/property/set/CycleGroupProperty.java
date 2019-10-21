@@ -127,7 +127,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         PropertyChanges changeModifier = toChange.getChangeModifier(propChanges, true);
         WhereBuilder newOldChangedWhere = new WhereBuilder();
 
-        Where newOldWhere = Where.FALSE;
+        Where newOldWhere = Where.FALSE();
         for(Interface<I> groupInterface : interfaces)
             newOldWhere = newOldWhere.or(groupInterface.implement.mapExpr(mapKeys,changeModifier,newOldChangedWhere).getWhere().not());
         newOldWhere = newOldWhere.and(groupProperty.mapExpr(mapKeys, propChanges).getWhere());

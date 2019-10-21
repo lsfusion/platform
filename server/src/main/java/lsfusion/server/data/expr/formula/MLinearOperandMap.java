@@ -33,7 +33,7 @@ public class MLinearOperandMap {
 
         ImMap<Expr,Integer> map = mMap.immutable().removeValues(0);
         if(map.size()==0)
-            return CaseExpr.NULL;
+            return CaseExpr.NULL();
 
         // нельзя делать эту оптимизацию так как идет проверка на 0 в логике
 //        if(size()==1) {

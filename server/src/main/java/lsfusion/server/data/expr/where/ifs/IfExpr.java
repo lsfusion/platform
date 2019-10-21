@@ -121,7 +121,7 @@ public class IfExpr extends Expr {
     }
 
     public static Expr create(Where where, Expr trueExpr, Expr falseExpr) {
-        return createPack(where, trueExpr, falseExpr, Where.FALSE, false);
+        return createPack(where, trueExpr, falseExpr, Where.FALSE(), false);
     }
 
     public Expr followFalse(Where where, boolean pack) {
@@ -176,7 +176,7 @@ public class IfExpr extends Expr {
     }
 
     public ExprCaseList getCases() {
-        return new ExprCaseList(ListFact.toList(new ExprCase(ifWhere, trueExpr), new ExprCase(Where.TRUE, falseExpr)));
+        return new ExprCaseList(ListFact.toList(new ExprCase(ifWhere, trueExpr), new ExprCase(Where.TRUE(), falseExpr)));
     }
 
     public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {

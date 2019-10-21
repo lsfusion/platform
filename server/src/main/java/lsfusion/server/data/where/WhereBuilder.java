@@ -6,7 +6,7 @@ public class WhereBuilder {
     private Where where;
 
     public WhereBuilder() {
-        where = Where.FALSE;
+        where = Where.FALSE();
     }
 
     public void add(Where add) {

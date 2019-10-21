@@ -458,7 +458,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         MExclSet<WhereJoins> mOrigs = SetFact.mExclSet();
         entry.fillOriginal(mOrigs);
 
-        Value resultValue = new Value(new UpWheres<>(SetFact.toExclSet(entry.where.wheres).toMap(UpWheres.FALSE)), Where.FALSE);
+        Value resultValue = new Value(new UpWheres<>(SetFact.toExclSet(entry.where.wheres).toMap(UpWheres.FALSE)), Where.FALSE());
         for(WhereJoins orig : mOrigs.immutable()) {
             assert orig.means(entry.where);
             Value origValue = get(orig);

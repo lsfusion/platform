@@ -303,11 +303,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void fillComponentMaps() {
         for (GroupObjectView group : getGroupObjectsIt()) {
-            addGroupObjectView(group, Version.DESCRIPTOR);
+            addGroupObjectView(group, Version.descriptor());
         }
 
         for (TreeGroupView treeGroup : getTreeGroupsIt()) {
-            addTreeGroupView(treeGroup, Version.DESCRIPTOR);
+            addTreeGroupView(treeGroup, Version.descriptor());
         }
 
         for (PropertyDrawView property : getPropertiesIt()) {
@@ -315,10 +315,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
 
         for (RegularFilterGroupView filterGroup : getRegularFiltersIt()) {
-            addRegularFilterGroupView(filterGroup, Version.DESCRIPTOR);
+            addRegularFilterGroupView(filterGroup, Version.descriptor());
         }
 
-        initButtons(Version.DESCRIPTOR);
+        initButtons(Version.descriptor());
     }
 
     private void initButtons(Version version) {

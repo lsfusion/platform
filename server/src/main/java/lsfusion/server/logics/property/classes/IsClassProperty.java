@@ -192,7 +192,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
 
     @Override
     protected boolean isClassVirtualized(CalcClassType calcType) {
-        return calcType == CalcClassType.PREVSAME;
+        return calcType == CalcClassType.prevSame();
     }
 //    
 //    // hack - need this override, because otherwise : initFullTablesTask uses Join + IsClass => calcClassValueWhere => isClass => getUpClassFields => too early caches reading
@@ -231,8 +231,8 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
 //        // changed is : !had*has OR changed*had*!has
 //
 //        ImMap<ClassDataProperty, ObjectValueClassSet> upClassDataProps = getUpClassDataProps();
-//        Where hasClass = Where.FALSE;
-//        Where dataChangedWhere = Where.FALSE;
+//        Where hasClass = Where.FALSE();
+//        Where dataChangedWhere = Where.FALSE();
 //        for(int i=0,size=upClassDataProps.size();i<size;i++) {
 //            ClassDataProperty dataProperty = upClassDataProps.getKey(i);
 //            ObjectValueClassSet classSet = upClassDataProps.getValue(i);

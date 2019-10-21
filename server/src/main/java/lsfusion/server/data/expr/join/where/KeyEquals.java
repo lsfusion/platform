@@ -105,7 +105,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                 ImMap<ParamExpr, Expr> transSameEq2 = cleanTranslator1.translate(sameEq2);
 
                 assert BaseUtils.hashEquals(sameEq1.keys(), sameEq2.keys());
-                Where extraWhere = Where.TRUE;
+                Where extraWhere = Where.TRUE();
                 for(int i=0,size=transSameEq2.size();i<size;i++) {
                     ParamExpr key = transSameEq2.getKey(i);
                     Expr value2 = transSameEq2.getValue(i);
@@ -139,7 +139,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
 
     // получает Where с учетом трансляций
     private Where getWhere() {
-        Where where = Where.FALSE;
+        Where where = Where.FALSE();
         for(int i=0,size=size();i<size;i++)
            where = where.or(getValue(i).and(getKey(i).getWhere()));
         return where;
@@ -201,7 +201,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
         // если сложность превышает порог - просто andNot'им верхние
         if(sortedWhereJoins.size() > Settings.get().getLimitExclusiveSimpleCount() || sortedComplexity > Settings.get().getLimitExclusiveSimpleComplexity()) {
             MCol<GroupJoinsWhere> exclJoins = ListFact.mCol(sortedWhereJoins.size()); // есть последействие
-            Where prevWhere = Where.FALSE;
+            Where prevWhere = Where.FALSE();
             for(GroupJoinsWhere whereJoin : sortedWhereJoins) {
                 exclJoins.add(new GroupJoinsWhere(whereJoin.keyEqual, whereJoin.joins, whereJoin.upWheres, whereJoin.where.and(prevWhere.not()), orderTop));
                 prevWhere.or(whereJoin.getFullWhere());
@@ -232,7 +232,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
         ImList<GroupSplitWhere<K>> sortedStatJoins = GroupWhere.sort(statJoins);
         if(sortedStatJoins.size() > Settings.get().getLimitExclusiveSimpleCount() || getComplexity(sortedStatJoins) > Settings.get().getLimitExclusiveSimpleComplexity()) { // если сложность превышает порог - просто andNot'им верхние, иначе по скорости будет не успевать
             MCol<GroupSplitWhere<K>> exclJoins = ListFact.mCol(sortedStatJoins.size());
-            Where prevWhere = Where.FALSE;
+            Where prevWhere = Where.FALSE();
             for(GroupSplitWhere<K> statJoin : sortedStatJoins) {
                 Where statExclWhere = statJoin.where.and(prevWhere.translateExpr(statJoin.keyEqual.getTranslator()).not());
                 if(!statExclWhere.isFalse()) { // потому как не рекурсия, могут быть ситуации когда становится false, или появляется несколько keyEqual

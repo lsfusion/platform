@@ -73,14 +73,14 @@ public class ClassChanges {
 //        if(classSet.containsAll(usedClasses, false))
 //            return expr.getWhere();
 //        
-//        Where result = Where.FALSE;
+//        Where result = Where.FALSE();
 //        for(ConcreteCustomClass usedClass : ((ObjectValueClassSet)classSet.and(usedClasses)).getSetConcreteChildren())
 //            result = result.or(expr.compare(StaticClassExpr.getClassExpr(usedClass), Compare.EQUALS));
 //        return result;
 //    }
     
     private static Where isValueClass(Expr expr, ObjectValueClassSet classSet, ImSet<ConcreteObjectClass> usedClasses) {
-        Where result = Where.FALSE;
+        Where result = Where.FALSE();
         for(ConcreteObjectClass usedClass : usedClasses)
             if(usedClass instanceof ConcreteCustomClass) {
                 ConcreteCustomClass customUsedClass = (ConcreteCustomClass) usedClass;
@@ -97,7 +97,7 @@ public class ClassChanges {
                 if(neededCustomClasses.size() < neededClasses.size()) { // есть удаление
                     if(neededCustomClasses.isEmpty()) {
                         assert expr.getWhere().isFalse();
-                        return Where.FALSE;
+                        return Where.FALSE();
                     } else
                         return expr.getWhere();
                 } else
@@ -124,7 +124,7 @@ public class ClassChanges {
             SessionRows rows = new SessionRows(SetFact.singletonOrder(classField), SetFact.<PropertyField>EMPTY(), concreteChildren.mapSetValues(value -> MapFact.singleton(classField, value.getClassObject())).toMap(MapFact.<PropertyField, ObjectValue>EMPTY()));
             return new ValuesTable(rows).join(MapFact.singleton(classField, expr)).getWhere();
         } else {
-            result = Where.FALSE;
+            result = Where.FALSE();
             for (ConcreteCustomClass customUsedClass : concreteChildren)
                 result = result.or(expr.compare(StaticClassExpr.getClassExpr(customUsedClass), Compare.EQUALS));
         }
@@ -506,8 +506,8 @@ public class ClassChanges {
 
             Where had = null;
 
-            Where has = Where.FALSE; 
-            Where changed = Where.FALSE; 
+            Where has = Where.FALSE(); 
+            Where changed = Where.FALSE(); 
             for(int i=0,size=classDataProps.size();i<size;i++) {
                 ClassDataProperty dataProperty = classDataProps.getKey(i);
                 ObjectValueClassSet classSet = classDataProps.getValue(i);
@@ -553,8 +553,8 @@ public class ClassChanges {
         ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = property.getMapKeys();
         KeyExpr key = mapKeys.singleValue();
 
-        Where changeWhere = Where.FALSE;
-        Expr changeExpr = Expr.NULL;
+        Where changeWhere = Where.FALSE();
+        Expr changeExpr = Expr.NULL();
         for(SingleKeyPropertyUsage dataNews : news.values()) {
             Join<String> join = dataNews.join(key);
             Expr newClassExpr = join.getExpr("value");
@@ -668,7 +668,7 @@ public class ClassChanges {
         // проводим "мини-паковку", то есть удаляем все записи, у которых ключем является удаляемый объект
         for(ImplementTable table : BL.LM.tableFactory.getImplementTables(remove)) {
             QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(table);
-            Where removeWhere = Where.FALSE;
+            Where removeWhere = Where.FALSE();
             ImMap<KeyField, ValueClass> mapFields = table.getMapFields();
             ImMap<KeyField, Expr> mapExprs = query.getMapExprs();
             for (int i = 0, size = mapFields.size(); i < size; i++) {
@@ -750,7 +750,7 @@ public class ClassChanges {
 
                     Where deleted = newClassExpr.getWhere().not(); // удаления
                     
-                    ClassChange classChange = new ClassChange(keyExpr, where.and(deleted).and(had), Expr.NULL);
+                    ClassChange classChange = new ClassChange(keyExpr, where.and(deleted).and(had), Expr.NULL());
 
                     // читаем удаления в отдельную таблицу
                     SingleKeyPropertyUsage splitTable = createChangeTable("split");

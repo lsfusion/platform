@@ -40,7 +40,7 @@ public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere
     public Where followFalse(CheckWhere falseWhere, boolean pack, FollowChange change) {
         if(OrWhere.checkTrue(not(),falseWhere)) {
             change.type = FollowType.NARROW;
-            return FALSE;
+            return Where.FALSE();
         }
         if(pack) {
             Where result = packFollowFalse((Where)falseWhere);
@@ -49,11 +49,11 @@ public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere
 
             if(OrWhere.checkTrue(this,falseWhere)) { // проверим на checkTrue так как упакованный where уже другой, и соответственно проверка со "старым" where "потеряется", а это может привести к бесконечному проталкиванию и т.п.
                 change.type = FollowType.WIDE;
-                return TRUE;
+                return Where.TRUE();
             }
             if(OrWhere.checkTrue(result.not(),falseWhere)) {
                 change.type = FollowType.NARROW;
-                return FALSE;
+                return Where.FALSE();
             }
 
             change.type = FollowType.DIFF;

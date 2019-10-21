@@ -196,7 +196,7 @@ public abstract class DataProperty extends AbstractDataProperty {
             ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
             ImMap<ClassPropertyInterface, Expr> mapExprs = MapFact.override(mapKeys, joinValues);
             Expr prevExpr = null;
-            Where removeWhere = Where.FALSE;
+            Where removeWhere = Where.FALSE();
             for (ClassPropertyInterface remove : interfaces) {
                 IsClassProperty classProperty = remove.interfaceClass.getProperty();
                 if (classProperty.hasChanges(changes)) {

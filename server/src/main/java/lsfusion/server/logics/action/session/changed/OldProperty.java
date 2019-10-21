@@ -55,7 +55,7 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     @Override
     public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
         ClassWhere<Object> classValueWhere = super.calcClassValueWhere(type);
-        if(type == CalcClassType.PREVBASE)
+        if(type == CalcClassType.prevBase())
             return classValueWhere.getBase();
         return classValueWhere;
 //        return super.getClassValueWhere(type);
@@ -63,13 +63,13 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
 
     public Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         Inferred<T> result = property.inferInterfaceClasses(commonValue, inferType);
-        if(inferType == InferType.PREVBASE)
+        if(inferType == InferType.prevBase())
             result = result.getBase(inferType);
         return result;
     }
     public ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         ExClassSet exClassSet = property.inferValueClass(inferred, inferType);
-        if(inferType == InferType.PREVBASE)
+        if(inferType == InferType.prevBase())
             exClassSet = ExClassSet.getBase(exClassSet);
         return exClassSet;
     }

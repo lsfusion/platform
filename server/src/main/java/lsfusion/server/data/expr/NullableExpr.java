@@ -14,14 +14,14 @@ import lsfusion.server.data.where.DataWhere;
 
 public abstract class NullableExpr extends VariableSingleClassExpr implements NullableExprInterface {
 
-//    @Override // не удалось вживую словить случай, когда при Where.TRUE не работает, но по идее при GROUP(K, UNION(Z))=X потеряются условия UNION(Z) и не будет хватать ключа Z при компиляции и статистики к примеру
+//    @Override // не удалось вживую словить случай, когда при Where.TRUE() не работает, но по идее при GROUP(K, UNION(Z))=X потеряются условия UNION(Z) и не будет хватать ключа Z при компиляции и статистики к примеру
 //    public Where calculateOrWhere() {
-//        return Where.TRUE;
+//        return Where.TRUE();
 //    }
 
 //    @Override // не правильно, так как у partition'а есть свои joins, и если их не учесть, при P(k, D(k)) - D(k) IS NOT NULL потеряется 
 //    public Where calculateNotNullWhere() { // assert result instanceof NotNull || result.isTrue()
-//        return Where.TRUE;
+//        return Where.TRUE();
 //    }
 
     public abstract class NotNull extends NotNullWhere {

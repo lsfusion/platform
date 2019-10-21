@@ -94,7 +94,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
         
         if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges))
-            return Where.FALSE;
+            return Where.FALSE();
 
         WhereBuilder initialWhere = new WhereBuilder(); // cg(Pb, b) (gN(Pb, b) - gp(Pb, b))
         Where initialChanged = initial.mapExpr(recursiveKeys, propChanges, initialWhere).getWhere().xor(initial.mapExpr(recursiveKeys).getWhere()).and(initialWhere.toWhere());
@@ -115,7 +115,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
 
         if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges))
-            return Expr.NULL;
+            return Expr.NULL();
 
         WhereBuilder initialWhere = new WhereBuilder(); // cg(Pb, b) (gN(Pb, b) - gp(Pb, b))
         Expr initialChanged = initial.mapExpr(recursiveKeys, propChanges, initialWhere).diff(initial.mapExpr(recursiveKeys)).and(initialWhere.toWhere());
@@ -147,7 +147,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
 
         if(checkPrereadNull(recursiveKeys, calcType, propChanges))
-            return Expr.NULL;
+            return Expr.NULL();
 
         return RecursiveExpr.create(mapIterate.result, initial.mapExpr(recursiveKeys, calcType, propChanges, null),
                 step.mapExpr(recursiveKeys, calcType, propChanges, null), isCyclePossible(), group.result, calcType instanceof CalcClassType);

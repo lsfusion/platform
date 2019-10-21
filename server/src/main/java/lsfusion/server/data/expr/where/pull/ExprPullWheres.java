@@ -13,7 +13,7 @@ public abstract class ExprPullWheres<K> extends AddPullWheres<K, Expr> {
     }
 
     protected Expr initEmpty() {
-        return Expr.NULL;
+        return Expr.NULL();
     }
 
     protected Expr proceedIf(Where ifWhere, Expr resultTrue, Expr resultFalse) {

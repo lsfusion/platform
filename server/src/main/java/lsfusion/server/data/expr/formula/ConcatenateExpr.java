@@ -99,7 +99,7 @@ public class ConcatenateExpr extends VariableClassExpr {
     }
 
     public Where isClass(ValueClassSet set, IsClassType type) {
-        Where where = Where.TRUE;
+        Where where = Where.TRUE();
         for(int i=0;i<exprs.size();i++)
             where = where.and(exprs.get(i).isClass((ValueClassSet)getPartClass(set, i), type), type.isInconsistent());
         return where;

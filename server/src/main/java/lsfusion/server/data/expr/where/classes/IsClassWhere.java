@@ -70,7 +70,7 @@ public class IsClassWhere extends DataWhere {
     public static Where create(SingleClassExpr expr, ValueClassSet classes, IsClassType type) {
         if(isNotVirtualObject(classes, type)) {
             boolean inconsistent = type.isInconsistent();
-            ObjectValueClassSet objectClasses = (ObjectValueClassSet) packClassSet(Where.TRUE, expr, (ObjectValueClassSet)classes, inconsistent);
+            ObjectValueClassSet objectClasses = (ObjectValueClassSet) packClassSet(Where.TRUE(), expr, (ObjectValueClassSet)classes, inconsistent);
             ImRevMap<IsClassField, ObjectValueClassSet> tables;
             if(inconsistent)
                 tables = BaseUtils.immutableCast(objectClasses.getObjectClassFields());
@@ -85,7 +85,7 @@ public class IsClassWhere extends DataWhere {
     }
 
     private static Where getTableWhere(SingleClassExpr expr, ImMap<IsClassField, ObjectValueClassSet> tables, IsClassType type) {
-        Where result = Where.FALSE;
+        Where result = Where.FALSE();
         for(int i=0,size=tables.size();i<size;i++)
             result = result.or(tables.getKey(i).getIsClassWhere(expr, tables.getValue(i), type));
         return result;

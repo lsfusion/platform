@@ -43,16 +43,16 @@ public abstract class BaseExpr extends Expr {
         Expr joinExpr = expr.getJoinExpr();
         if(!(joinExpr instanceof InnerExpr)) { 
             assert joinExpr.getWhere().isFalse();
-            return NULL;
+            return Expr.NULL();
         }
         return create((BaseExpr) expr);                
     }
     public static Expr create(BaseExpr expr) {
         if(!expr.getOrWhere().isFalse() && expr.getNotNullClassWhere().isFalse()) // (первая проверка - оптимизация) проблема, что при вычислении getWhere, если есть OrWhere вызывается calculateFollows, где assert'ся что Join.this.getWhere - DataWhere и падает ClassCast
-            return NULL;
+            return Expr.NULL();
         if(expr.getWhere().getClassWhere().isFalse()) {
             assert expr.getWhere().isFalse(); //возможно даже getOrWhere достаточно
-            return NULL;
+            return Expr.NULL();
         }
         
         return expr;
@@ -60,7 +60,7 @@ public abstract class BaseExpr extends Expr {
 
     // получает список ExprCase'ов
     public ExprCaseList getCases() {
-        return new ExprCaseList(SetFact.singleton(new ExprCase(Where.TRUE, this)));
+        return new ExprCaseList(SetFact.singleton(new ExprCase(Where.TRUE(), this)));
     }
 
     public ImSet<NullableExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
@@ -104,7 +104,7 @@ public abstract class BaseExpr extends Expr {
 
     public Expr followFalse(Where where, boolean pack) {
         if(getWhere().means(where))
-            return NULL;
+            return Expr.NULL();
         else
             if(pack)
                 return packFollowFalse(where);
@@ -180,7 +180,7 @@ public abstract class BaseExpr extends Expr {
 
         ImValueMap<K, Expr> result = mapExprs.mapItValues(); // идет обращение к предыдущим значениям
         for(int i=0,size=mapExprs.size();i<size;i++) {
-            Where siblingWhere = Where.TRUE;
+            Where siblingWhere = Where.TRUE();
             for(int j=0;j<size;j++) {
                 if(j!=i) {
                     Expr siblingExpr = result.getMapValue(j);
@@ -210,7 +210,7 @@ public abstract class BaseExpr extends Expr {
     }
 
     public Where getBaseWhere() {
-        return Where.TRUE;
+        return Where.TRUE();
     }
 
     public int getWhereDepth() {
@@ -255,7 +255,7 @@ public abstract class BaseExpr extends Expr {
 
     // для всех не TRUE реализаций, должны быть соответствующие проверки в removeJoin
     public Where calculateOrWhere() {
-        Where result = Where.TRUE;
+        Where result = Where.TRUE();
         for(BaseExpr baseExpr : ((BaseJoin<?>) getBaseJoin()).getJoins().valueIt())
             result = result.and(baseExpr.getOrWhere());
         return result;
@@ -283,7 +283,7 @@ public abstract class BaseExpr extends Expr {
     }
 
     public static Where getNotNullWhere(ImCol<? extends BaseExpr> exprs) {
-        Where result = Where.TRUE;
+        Where result = Where.TRUE();
         for(BaseExpr baseExpr : exprs)
             result = result.and(baseExpr.getNotNullWhere());
         return result;

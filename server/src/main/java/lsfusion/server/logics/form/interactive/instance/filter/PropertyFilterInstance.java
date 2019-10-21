@@ -88,13 +88,13 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
     
     protected Where getChangedWhere(CustomObjectInstance object, ImMap<PropertyObjectInterfaceInstance, KeyExpr> mapObjects, DataObject addObject) {
 
-        Where changeWhere = Where.TRUE;
+        Where changeWhere = Where.TRUE();
         for(int i=0,size=mapObjects.size();i<size;i++) {
             PropertyObjectInterfaceInstance mapObject = mapObjects.getKey(i); KeyExpr mapKey = mapObjects.getValue(i);
             Where mapWhere;
             if(mapObject.getApplyObject() != object.groupTo) {
                 if(mapObject.isNull())
-                    mapWhere = Where.FALSE;
+                    mapWhere = Where.FALSE();
                 else
                     mapWhere = mapKey.compare(mapObject.getDataObject(), Compare.EQUALS);
             } else // assert что тогда sibObject instanceof ObjectInstance потому как ApplyObject = null а object.groupTo !=null

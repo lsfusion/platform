@@ -38,8 +38,8 @@ public interface AlgType {
     boolean useInferForInfo = true;
     boolean useCalcForStored = !SystemProperties.lightStart; // for materialized properties, it's more reasonable to use "expr" (calculation) logics, because infer proceed every parameter / value separately, and calculation logics uses more complex dnf form (which is very efficient for generics, for example MULTI XA IF p IS YA, XB IF p IS YB), the problem that calculation logics is a lot more heavy, so it gives +10% per server start (depending on number of processors), so will use it only on heavy start
     boolean useClassInfer = useInfer;
-    AlgInfoType defaultType = useInfer ? InferType.PREVBASE : CalcClassType.PREVBASE;
-    AlgType caseCheckType = useInfer ? InferType.PREVSAME : CalcClassType.PREVSAME;
+    AlgInfoType defaultType = useInfer ? InferType.prevBase() : CalcClassType.prevBase();
+    AlgType caseCheckType = useInfer ? InferType.prevSame() : CalcClassType.prevSame();
     AlgInfoType checkType = defaultType;
     AlgInfoType statAlotType = defaultType;
     AlgInfoType hintType = CalcType.EXPR.getAlgInfo();
@@ -48,7 +48,7 @@ public interface AlgType {
     AlgInfoType syncType = defaultType; // тоже желательно совпадать с настройкой для classValueWhere
     AlgInfoType actionType = defaultType; // компиляция действий assign и for
 
-    AlgType storedType = useCalcForStored ? CalcClassType.PREVBASE : defaultType;
+    AlgType storedType = useCalcForStored ? CalcClassType.prevBase() : defaultType;
     AlgType storedResolveType = defaultType;
 
     boolean checkExplicitInfer = false;

@@ -32,7 +32,7 @@ public class QueryBuilder<K, V> {
 
     private final ImRevMap<K,KeyExpr> mapKeys;
     private final MExclMap<V, Expr> mProperties = MapFact.mExclMap();
-    private Where where = Where.TRUE;
+    private Where where = Where.TRUE();
 
     public void addProperty(V prop, Expr expr) {
         mProperties.exclAdd(prop, expr);
@@ -48,7 +48,7 @@ public class QueryBuilder<K, V> {
     }
     
     public QueryBuilder(ImRevMap<K,KeyExpr> mapKeys) {
-        this(mapKeys, Where.TRUE);
+        this(mapKeys, Where.TRUE());
     }
 
     public QueryBuilder(ImSet<K> mapInterface) {
@@ -56,11 +56,11 @@ public class QueryBuilder<K, V> {
     }
 
     public QueryBuilder(ImSet<K> keys, ImMap<K, DataObject> mapValues) {
-        this(KeyExpr.getMapKeys(keys), Where.TRUE, mapValues);
+        this(KeyExpr.getMapKeys(keys), Where.TRUE(), mapValues);
     }
 
     public QueryBuilder(ImRevMap<K, KeyExpr> keys, ImMap<K, DataObject> mapValues) {
-        this(keys, Where.TRUE, mapValues);
+        this(keys, Where.TRUE(), mapValues);
     }
 
     public QueryBuilder(ImRevMap<K,KeyExpr> mapKeys, Where where, ImMap<K, DataObject> mapValues) {

@@ -32,7 +32,7 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
     public static Expr classExpr(StaticClassExprInterface expr, ImSet<ObjectClassField> classTables, IsClassType type) {
         ConcreteObjectClass staticClass = (ConcreteObjectClass) expr.getStaticClass();
         if(!IsClassExpr.inSet(staticClass, classTables))
-            return Expr.NULL;
+            return Expr.NULL();
         return getClassExpr(staticClass);
     }
     public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {
@@ -46,7 +46,7 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
         // тут конечно из-за отсутствия keyType могут быть чудеса вроде f(a) <- b (+) 5 WHERE g(a) или просто (b (+) NULL) AS  NUMERIC
         if(staticClass == null && (expr instanceof LinearExpr || expr instanceof FormulaExprInterface)) // поэтому пока вставим подстраховку от таких случаев, чтобы не падала
             staticClass = defaultUnknownFormulaStaticClass;
-        return staticClass.inSet(set)?Where.TRUE:Where.FALSE;
+        return staticClass.inSet(set)?Where.TRUE():Where.FALSE();
     }
     public Where isClass(ValueClassSet set, IsClassType type) {
         return isClass(this, set, type);

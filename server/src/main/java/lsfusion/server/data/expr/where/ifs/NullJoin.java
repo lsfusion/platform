@@ -15,11 +15,11 @@ public class NullJoin<U> extends AbstractJoin<U> {
     }
 
     public Expr getExpr(U property) {
-        return Expr.NULL;
+        return Expr.NULL();
     }
 
     public Where getWhere() {
-        return Where.FALSE;
+        return Where.FALSE();
     }
 
     public ImSet<U> getProperties() {

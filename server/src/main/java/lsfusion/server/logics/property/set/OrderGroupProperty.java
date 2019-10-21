@@ -51,7 +51,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
         if(checkPrereadNull(mapKeys, calcType, propChanges))
-            return Expr.NULL;
+            return Expr.NULL();
 
         WhereBuilder changedGroupWhere = cascadeWhere(changedWhere);
 

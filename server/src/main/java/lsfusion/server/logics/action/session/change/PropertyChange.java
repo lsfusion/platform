@@ -63,7 +63,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     public final Where where;
 
     public static <T extends PropertyInterface> ImMap<T, Expr> getMapExprs(ImRevMap<T, KeyExpr> mapKeys, ImMap<T, DataObject> mapValues) {
-        return getMapExprs(mapKeys, mapValues, Where.TRUE);
+        return getMapExprs(mapKeys, mapValues, Where.TRUE());
     }
 
     public static <T extends PropertyInterface> ImMap<T, Expr> getMapExprs(ImRevMap<T, KeyExpr> mapKeys, ImMap<T, DataObject> mapValues, Where where) {
@@ -99,7 +99,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     }
 
     public PropertyChange(Expr expr, ImMap<T, DataObject> mapValues) {
-        this(mapValues, MapFact.<T, KeyExpr>EMPTYREV(), expr, Where.TRUE);
+        this(mapValues, MapFact.<T, KeyExpr>EMPTYREV(), expr, Where.TRUE());
     }
 
     public PropertyChange(ObjectValue value) {
@@ -129,8 +129,8 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         this(MapFact.<T, DataObject>EMPTYREV(), mapKeys, expr, where);
     }
 
-    private final static PropertyChange TRUE = new PropertyChange(MapFact.EMPTYREV(), ValueExpr.TRUE, Where.TRUE);
-    private final static PropertyChange FALSE = new PropertyChange(MapFact.EMPTYREV(), ValueExpr.TRUE, Where.FALSE);
+    private final static PropertyChange TRUE = new PropertyChange(MapFact.EMPTYREV(), ValueExpr.TRUE, Where.TRUE());
+    private final static PropertyChange FALSE = new PropertyChange(MapFact.EMPTYREV(), ValueExpr.TRUE, Where.FALSE());
     public static <P extends PropertyInterface> PropertyChange<P> STATIC(boolean isTrue) {
         return isTrue ? TRUE : FALSE;
     }
@@ -139,11 +139,11 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     }
 
     public PropertyChange(ImRevMap<T, KeyExpr> mapKeys, Where where) {
-        this(mapKeys, Expr.NULL, where);
+        this(mapKeys, Expr.NULL(), where);
     }
 
     public PropertyChange(ImRevMap<T, KeyExpr> mapKeys, Where where, ImMap<T, Expr> mapValues) {
-        this(mapKeys, where, Expr.NULL, mapValues);
+        this(mapKeys, where, Expr.NULL(), mapValues);
     }
 
     public PropertyChange(ImRevMap<T, KeyExpr> mapKeys, Where where, Expr expr, ImMap<T, Expr> mapValues) {
@@ -372,7 +372,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         if(where.means(exprWhere))
             return 3;
 
-        if(where.means(exprWhere.not())) // assert что Expr.NULL, но этот PropertyChange может быть не спакован
+        if(where.means(exprWhere.not())) // assert что Expr.NULL(), но этот PropertyChange может быть не спакован
             return 2;
 
         return 1;

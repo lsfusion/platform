@@ -38,6 +38,6 @@ public class CalcType {
     }
 
     public AlgInfoType getAlgInfo() {
-        return AlgType.useInferForInfo ? InferType.PREVBASE : CalcClassType.PREVBASE;
+        return AlgType.useInferForInfo ? InferType.prevBase() : CalcClassType.prevBase();
     }
 }

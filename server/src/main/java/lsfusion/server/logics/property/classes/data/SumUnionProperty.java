@@ -39,7 +39,7 @@ public class SumUnionProperty extends IncrementUnionProperty {
         // до непосредственно вычисления, для хинтов
         ImCol<Pair<Expr, Integer>> operandExprs = operands.mapColValues((key, value) -> new Pair<>(key.mapExpr(joinImplement, calcType, propChanges, changedWhere), value));
 
-        Expr result = Expr.NULL;
+        Expr result = Expr.NULL();
         for(Pair<Expr, Integer> operandExpr : operandExprs)
             result = result.sum(operandExpr.first.scale(operandExpr.second));
         return result;

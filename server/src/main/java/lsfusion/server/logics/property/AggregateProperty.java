@@ -73,7 +73,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
             return valueClass;
 
         if(valueClass == null) {
-            assert inferType == InferType.RESOLVE;
+            assert inferType == InferType.resolve();
             return null;
         }
         return ExClassSet.toExType(aggrType.getType(ExClassSet.fromExType(valueClass)));
@@ -248,10 +248,10 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     
     @IdentityStartLazy
     public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
-        Pair<ImRevMap<T, NullableKeyExpr>, Expr> query = calculateQueryExpr(calcType == CalcClassType.PREVSAME && noOld() ? CalcClassType.PREVBASE : calcType); // оптимизация
-        ClassWhere<Object> result = Query.getClassWhere(Where.TRUE, query.first, MapFact.singleton((Object) "value", query.second)); 
-        if(calcType == CalcClassType.PREVSAME) // для того чтобы докинуть orAny, собсно только из-за этого infer необходим в любом случае
-            result = result.and(inferClassValueWhere(InferType.PREVSAME));
+        Pair<ImRevMap<T, NullableKeyExpr>, Expr> query = calculateQueryExpr(calcType == CalcClassType.prevSame() && noOld() ? CalcClassType.prevBase() : calcType); // оптимизация
+        ClassWhere<Object> result = Query.getClassWhere(Where.TRUE(), query.first, MapFact.singleton((Object) "value", query.second)); 
+        if(calcType == CalcClassType.prevSame()) // для того чтобы докинуть orAny, собсно только из-за этого infer необходим в любом случае
+            result = result.and(inferClassValueWhere(InferType.prevSame()));
         return result;
     }
 

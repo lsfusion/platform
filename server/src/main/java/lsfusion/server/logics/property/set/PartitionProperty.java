@@ -124,7 +124,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         ImMap<T, ? extends Expr> mapKeys = getGroupKeys(joinImplement, mapExprs);
         
         if(checkPrereadNull(mapKeys, calcType, propChanges))
-            return Expr.NULL;
+            return Expr.NULL();
 
         WhereBuilder orderWhere = cascadeWhere(changedWhere);
         ImMap<PropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, calcType, propChanges, orderWhere);

@@ -110,7 +110,7 @@ public class ImportProperty <P extends PropertyInterface> {
 
         Where changeWhere;
         if (replaceNull)
-            changeWhere = GroupExpr.create(importKeyExprs, Where.TRUE, mapKeys).getWhere();
+            changeWhere = GroupExpr.create(importKeyExprs, Where.TRUE(), mapKeys).getWhere();
         else
             changeWhere = changeExpr.getWhere();
 

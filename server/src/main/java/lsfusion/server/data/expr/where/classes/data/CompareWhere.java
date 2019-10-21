@@ -60,13 +60,13 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
     }
 
     public static <K> Where compare(ImMap<? extends K, ? extends Expr> map1, ImMap<K, ? extends Expr> map2) {
-        Where where = TRUE;
+        Where where = Where.TRUE();
         for(int i=0,size=map1.size();i<size;i++)
             where = where.and(map1.getValue(i).compare(map2.get(map1.getKey(i)), Compare.EQUALS));
         return where;
     }
     public static <K> Where equalsNull(ImMap<? extends K, ? extends Expr> map1, ImMap<K, ? extends Expr> map2) {
-        Where where = TRUE;
+        Where where = Where.TRUE();
         for(int i=0,size=map1.size();i<size;i++)
             where = where.and(map1.getValue(i).equalsNull(map2.get(map1.getKey(i))));
         return where;
@@ -85,7 +85,7 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
     }
 
     public static <K> Where compareValues(ImMap<K,? extends Expr> map,ImMap<K, ? extends ObjectValue> mapValues) {
-        Where where = TRUE;
+        Where where = Where.TRUE();
         for(int i=0,size=map.size();i<size;i++)
             where = where.and(map.getValue(i).compare(mapValues.get(map.getKey(i)).getExpr(), Compare.EQUALS));
         return where;

@@ -129,7 +129,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     }
 
     public Where getWhere(Function<K, Expr> mapExprs, boolean onlyObject, IsClassType type) {
-        Where result = Where.FALSE;
+        Where result = Where.FALSE();
         for(And<K> andWhere : wheres)
             result = result.or(andWhere.getWhere(mapExprs, onlyObject, type));
         return result;

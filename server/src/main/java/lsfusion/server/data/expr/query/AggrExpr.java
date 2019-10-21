@@ -102,7 +102,7 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
         if(ordersNotNull)
             return Expr.getWhere(orders.keys());
         else
-            return Where.TRUE;
+            return Where.TRUE();
     }
 
     public static ImOrderMap<Expr, Boolean> fixOrders(ImOrderMap<Expr, Boolean> orders, ImRevMap<?, KeyExpr> mapKeys) {

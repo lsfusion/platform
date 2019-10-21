@@ -264,7 +264,7 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     public void include(NFOrderSet<ImplementTable> tables, Version version, boolean toAdd, Set<ImplementTable> checks, ImplementTable debugItem) {
-        ImList<ImplementTable> current = tables.getNFList(Version.CURRENT);
+        ImList<ImplementTable> current = tables.getNFList(Version.current());
         
         Iterator<ImplementTable> i = current.iterator();
         boolean wasRemove = false; // для assertiona
@@ -277,7 +277,7 @@ public class ImplementTable extends DBTable { // последний интерф
                 
                 if(toAdd) {
                     wasRemove = true;
-                    tables.remove(item, Version.CURRENT); // последняя версия нужна, так как в противном случае удаление может пойти до добавления 
+                    tables.remove(item, Version.current()); // последняя версия нужна, так как в противном случае удаление может пойти до добавления 
                 }
             } else { // сверху в дереве или никак не связаны, передаем дальше
                 if(!checks.contains(item)) { // для детерменированности эту проверку придется убрать 
@@ -299,7 +299,7 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     private boolean checkSiblings(ImplementTable item, NFOrderSet<ImplementTable> tables, ImplementTable debugItem) {
-        for(ImplementTable siblingTable : tables.getNFList(Version.CURRENT)) {
+        for(ImplementTable siblingTable : tables.getNFList(Version.current())) {
             if(BaseUtils.hashEquals(item, siblingTable))
                 return false;
             int compare = siblingTable.compare(item.getOrderMapFields(), new Result<>());
@@ -542,8 +542,8 @@ public class ImplementTable extends DBTable { // последний интерф
 
                 if (props != null ? props.containsKey(prop) : !(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat())) {
                     mResult.exclAdd(prop, readCount(session, getCountWhere(session.sql,
-                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, countKeyExpr), true),
-                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, countKeyExpr), false),
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), true),
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), false),
                             countKeyExpr, notNullCount, top), notNullCount, top));
                 }
             }
@@ -605,7 +605,7 @@ public class ImplementTable extends DBTable { // последний интерф
             ImOrderMap<Expr, Boolean> orders = MapFact.toOrderMap(quantityTopExpr, true, keyExpr, false);
             ImSet<Expr> partitions = SetFact.EMPTY();
             ImMap<KeyExpr, KeyExpr> group = MapFact.singleton(keyExpr, keyExpr);
-            Expr partitionExpr = PartitionExpr.create(PartitionType.SUM, exprs, orders, true, partitions, group);
+            Expr partitionExpr = PartitionExpr.create(PartitionType.sum(), exprs, orders, true, partitions, group);
 
             return partitionExpr.compare(new DataObject(Math.ceil((total == null ? 0 : total) * topCoefficient)), Compare.LESS_EQUALS);
         }
@@ -639,8 +639,8 @@ public class ImplementTable extends DBTable { // последний интерф
 
                 if (!(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat())) {
                     mResult.exclAdd(prop, readCount(session, getCountWhere(session.sql,
-                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, countKeyExpr), true),
-                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, countKeyExpr), false),
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), true),
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), false),
                             countKeyExpr, notNullCount, top), notNullCount, top));
                 }
             }

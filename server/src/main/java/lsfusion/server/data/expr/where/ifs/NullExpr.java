@@ -52,7 +52,7 @@ public class NullExpr extends Expr {
     }
 
     public Where calculateWhere() {
-        return Where.FALSE;
+        return Where.FALSE();
     }
 
     public ExprCaseList getCases() {
@@ -68,15 +68,15 @@ public class NullExpr extends Expr {
     }
 
     public Where isClass(ValueClassSet set, IsClassType type) {
-        return Where.FALSE;
+        return Where.FALSE();
     }
 
     public Where compareBase(BaseExpr expr, Compare compareBack) {
-        return Where.FALSE;
+        return Where.FALSE();
     }
 
     public Where compare(Expr expr, Compare compare) {
-        return Where.FALSE;
+        return Where.FALSE();
     }
 
     public Expr translate(ExprTranslator translator) {

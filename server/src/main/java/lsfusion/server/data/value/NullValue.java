@@ -32,10 +32,10 @@ public class NullValue extends ObjectValue<NullValue> {
     }
 
     public Expr getExpr() {
-        return Expr.NULL;
+        return Expr.NULL();
     }
     public Expr getStaticExpr() {
-        return Expr.NULL;
+        return Expr.NULL();
     }
 
     public Object getValue() {
