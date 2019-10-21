@@ -284,7 +284,7 @@ requestedTableLink = DATA LOCAL NESTED TABLELINK ();
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 
-edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'edit.png' CHANGEKEY 'BACK_SPACE' HIDE TOOLBAR;
+edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) TOOLBAR;
 edit(Object o) + {  DIALOG EDIT Object =o DOCKED; }
 formEdit(Object o)  { edit(o); }
 

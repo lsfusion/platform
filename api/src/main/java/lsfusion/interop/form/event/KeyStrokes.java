@@ -75,7 +75,7 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getEditActionKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
+        return KeyStroke.getKeyStroke("typed \n"); //ENTER
     }
 
     public static KeyStroke getDeleteActionKeyStroke() {
@@ -87,7 +87,7 @@ public class KeyStrokes {
     }
 
     public static boolean isEditObjectEvent(EventObject event) {
-        return isBackSpaceEvent(event);
+        return isEnterEvent(event);
     }
 
     public static boolean isKeyEvent(EventObject event, int keyCode) {

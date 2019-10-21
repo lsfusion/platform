@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.WindowFormType;
+import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.FormPrintType;
@@ -1795,9 +1796,12 @@ public abstract class LogicsModule {
         setFormActions(result);
         
         result.setImage("edit.png");
-        result.setChangeKey(KeyStrokes.getEditActionKeyStroke());
+        Map<String, BindingMode> bindingModes = new HashMap<>();
+        bindingModes.put("group", BindingMode.ONLY);
+        bindingModes.put("editing", BindingMode.NO);
+        result.setChangeKey(KeyStrokes.getEditActionKeyStroke(), bindingModes);
         result.setShowChangeKey(false);
-        result.setChangeMouse(MouseInputEvent.DBLCLK);
+        result.setChangeMouse(MouseInputEvent.DBLCLK, bindingModes);
     }
 
     public LA addProp(Action prop) {
