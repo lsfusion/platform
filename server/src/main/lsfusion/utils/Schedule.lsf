@@ -2,34 +2,34 @@ MODULE Schedule;
 
 REQUIRE Time, MasterData, Utils;
 
-CLASS Schedule 'Расписание';
+CLASS Schedule '{schedule.schedule}';
 
-name 'Наименование' = DATA STRING[100] (Schedule);
+name '{schedule.name}' = DATA STRING[100] (Schedule);
 
-CLASS ScheduleDetail 'Строка расписания';
+CLASS ScheduleDetail '{schedule.detail}';
 
 schedule = DATA Schedule (ScheduleDetail) INDEXED NONULL DELETE;
 
-timeFrom 'Время с' = DATA TIME (ScheduleDetail);
-timeTo 'Время по' = DATA TIME (ScheduleDetail);
+timeFrom '{schedule.time.from}' = DATA TIME (ScheduleDetail);
+timeTo '{schedule.time.to}' = DATA TIME (ScheduleDetail);
 
-dowFrom 'День недели с' = DATA DOW (ScheduleDetail);
-captionDowFrom 'День недели с' (ScheduleDetail d) = staticCaption(dowFrom(d));
+dowFrom '{schedule.dow.from}' = DATA DOW (ScheduleDetail);
+captionDowFrom '{schedule.dow.from}' (ScheduleDetail d) = staticCaption(dowFrom(d));
 dowTo = DATA DOW (ScheduleDetail);
-captionDowTo 'День недели по' (ScheduleDetail d) = staticCaption(dowTo(d));
+captionDowTo '{schedule.dow.to}' (ScheduleDetail d) = staticCaption(dowTo(d));
 
-dateFrom 'Дата с' = DATA DATE (ScheduleDetail);
-captionDateFrom 'Дата с' = DATA STRING[100] (ScheduleDetail);
-dateTo 'Дата по' = DATA DATE (ScheduleDetail);
-captionDateTo 'Дата по' = DATA STRING[100] (ScheduleDetail);
+dateFrom '{schedule.date.from}' = DATA DATE (ScheduleDetail);
+captionDateFrom '{schedule.date.from}' = DATA STRING[100] (ScheduleDetail);
+dateTo '{schedule.date.to}' = DATA DATE (ScheduleDetail);
+captionDateTo '{schedule.date.to}' = DATA STRING[100] (ScheduleDetail);
 
-CLASS Holidays 'Выходные дни' {
-    onlyWeekdays 'Только по будням',
-    onlyHolidays 'Только по выходным'    
+CLASS Holidays '{schedule.holidays}' {
+    onlyWeekdays '{schedule.holidays.only.weekdays}',
+    onlyHolidays '{schedule.holidays.only.holidays}'    
 }    
 
 holidays = DATA Holidays (ScheduleDetail);
-captionHolidays 'Выходные дни' (ScheduleDetail d)= staticCaption(holidays(d));
+captionHolidays '{schedule.holidays}' (ScheduleDetail d)= staticCaption(holidays(d));
 
 extractDOY(DATE d) = extractMonthNumber(d) * 100 + extractDay(d);
 
@@ -65,7 +65,7 @@ inHolidays (DATETIME date, ScheduleDetail d) =
 in (DATETIME dt, ScheduleDetail s) = inDOY(dt,s) AND inDOW(dt,s) AND inTime(dt,s) AND inHolidays(dt,s); 
 in (DATETIME dt, Schedule s) = GROUP SUM 1 IF in(dt, ScheduleDetail d) BY schedule(d);
 
-dateCaption 'День' = DATA LOCAL NESTED STRING[100] (INTEGER ); 
+dateCaption '{schedule.day}' = DATA LOCAL NESTED STRING[100] (INTEGER ); 
 day = DATA LOCAL NESTED INTEGER (INTEGER );
 month = DATA LOCAL NESTED INTEGER (INTEGER );
 dow = DATA LOCAL NESTED INTEGER (INTEGER );
@@ -76,18 +76,18 @@ showIn = DATA LOCAL NESTED INTEGER (INTEGER, INTEGER, Schedule);
 background (INTEGER h, INTEGER d, Schedule s) = IF in(h,d,s) THEN RGB(125,125,255) ;             
     
 monthName (INTEGER i) =
-    CASE WHEN i==1 THEN 'января'
-         WHEN i==2 THEN 'февраля' 
-         WHEN i==3 THEN 'марта'
-         WHEN i==4 THEN 'апреля'
-         WHEN i==5 THEN 'мая'
-         WHEN i==6 THEN 'июня'
-         WHEN i==7 THEN 'июля'
-         WHEN i==8 THEN 'августа'
-         WHEN i==9 THEN 'сентября'
-         WHEN i==10 THEN 'октября'
-         WHEN i==11 THEN 'ноября'
-         WHEN i==12 THEN 'декабря';
+    CASE WHEN i==1 THEN '{schedule.january}'
+         WHEN i==2 THEN '{schedule.february}'
+         WHEN i==3 THEN '{schedule.march}'
+         WHEN i==4 THEN '{schedule.april}'
+         WHEN i==5 THEN '{schedule.may}'
+         WHEN i==6 THEN '{schedule.june}'
+         WHEN i==7 THEN '{schedule.july}'
+         WHEN i==8 THEN '{schedule.august}'
+         WHEN i==9 THEN '{schedule.september}'
+         WHEN i==10 THEN '{schedule.october}'
+         WHEN i==11 THEN '{schedule.november}'
+         WHEN i==12 THEN '{schedule.december}';
            
     
 changeDateFrom(ScheduleDetail d) {
@@ -107,7 +107,7 @@ changeDateTo(ScheduleDetail d) {
 changeDateTimeFrom ABSTRACT (DATETIME );
 changeDateTimeTo ABSTRACT (DATETIME);
 
-FORM schedule 'Расписание'
+FORM schedule '{schedule.schedule}'
     OBJECTS s = Schedule PANEL 
     PROPERTIES(s) name     
     
@@ -118,7 +118,7 @@ FORM schedule 'Расписание'
     FILTERS schedule(d)==s
     
     OBJECTS df=DATETIME PANEL , dt=DATETIME PANEL 
-    PROPERTIES dateFrom 'Время с' =VALUE(df) ON CHANGE changeDateTimeFrom(dt), dateTo 'Время по' =VALUE(dt) ON CHANGE changeDateTimeTo(df)
+    PROPERTIES dateFrom '{schedule.time.from}' =VALUE(df) ON CHANGE changeDateTimeFrom(dt), dateTo '{schedule.time.to}' =VALUE(dt) ON CHANGE changeDateTimeTo(df)
         
     OBJECTS hour = INTEGER 
     FILTERS iterate(hour,0,23)    
@@ -139,16 +139,16 @@ DESIGN schedule {
         NEW topContainer{
             type = CONTAINERV ;
             fill=1;
-            caption = 'Параметры';
+            caption = '{schedule.params}';
             MOVE BOX(s);
             MOVE BOX(d);
         }
         NEW bottomContainer{
             type = CONTAINERV;
             fill = 1;
-            caption = 'Предпросмотр';
+            caption = '{schedule.preview}';
             NEW dateCotainer{
-                caption = 'Период';
+                caption = '{schedule.period}';
                 type = CONTAINERH;
                 MOVE PROPERTY(dateFrom);
                 MOVE PROPERTY(dateTo);
@@ -166,7 +166,7 @@ DESIGN schedule {
     MOVE TOOLBARBOX;
 }
 
-FORM dialogSchedules 'Расписания'
+FORM dialogSchedules '{schedule.schedules}'
     OBJECTS s = Schedule  
     PROPERTIES(s) READONLY name
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
@@ -177,7 +177,7 @@ FORM dialogSchedules 'Расписания'
 changeDateTimeFrom2 ABSTRACT (DATETIME );
 changeDateTimeTo2 ABSTRACT (DATETIME);
 
-FORM schedules 'Расписания'
+FORM schedules '{schedule.schedules}'
     OBJECTS s = Schedule  
     PROPERTIES(s) READONLY name
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
@@ -188,7 +188,7 @@ FORM schedules 'Расписания'
     FILTERS schedule(d)==s  
     
     OBJECTS df=DATETIME PANEL , dt=DATETIME PANEL 
-    PROPERTIES dateFrom 'Время с' =VALUE(df) ON CHANGE changeDateTimeFrom2(dt), dateTo 'Время по' =VALUE(dt) ON CHANGE changeDateTimeTo2(df)
+    PROPERTIES dateFrom '{schedule.time.from}' =VALUE(df) ON CHANGE changeDateTimeFrom2(dt), dateTo '{schedule.time.to}' =VALUE(dt) ON CHANGE changeDateTimeTo2(df)
         
     OBJECTS hour = INTEGER 
     FILTERS iterate(hour,0,23)    
@@ -211,9 +211,9 @@ DESIGN schedules{
             MOVE BOX(d);
             NEW previewContainer{
                 fill = 1;
-                caption = 'Предпросмотр';
+                caption = '{schedule.preview}';
                 NEW dateCotainer{
-                    caption = 'Период';
+                    caption = '{schedule.period}';
                     type = CONTAINERH;
                     MOVE PROPERTY(dateFrom);
                     MOVE PROPERTY(dateTo);
