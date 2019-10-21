@@ -9,6 +9,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -217,9 +218,13 @@ public class ClientFormLayout extends JPanel {
 
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT) {
+            if(ks.equals(KeyStroke.getKeyStroke("typed \n"))) { //ENTER event is receiving as 'typed \n'
+                ks = KeyStrokes.getEnter();
+            }
             if(form.processBinding(new KeyInputEvent(ks), ke, () -> getGroupObject(ke.getComponent())))
                 return true;
+            }
 
         return super.processKeyBinding(ks, ke, condition, pressed);
     }

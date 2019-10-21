@@ -75,7 +75,7 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getEditActionKeyStroke() {
-        return KeyStroke.getKeyStroke("typed \n"); //ENTER
+        return getEnter();
     }
 
     public static KeyStroke getDeleteActionKeyStroke() {
