@@ -672,7 +672,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             // вообще избыточно, если compile'ить отдельно в for() + changeClass, который сам сгруппирует, но тогда currentClass будет unknown в свойстве что вообщем то не возможно
             KeyExpr keyExpr = new KeyExpr("keyExpr");
             changeClass(new ClassChange(keyExpr, GroupExpr.create(MapFact.singleton("key", table.join(table.getMapKeys()).getExpr("value")),
-                    Where.TRUE, MapFact.singleton("key", keyExpr)).getWhere(), cls));
+                    Where.TRUE(), MapFact.singleton("key", keyExpr)).getWhere(), cls));
         } catch(Throwable t) {
             table.drop(sql, owner);
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
@@ -1246,7 +1246,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private static Query<KeyField, Object> getIncorrectQuery(ImplementTable table, BaseClass baseClass, boolean includeProps, boolean check) {
         ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
-        Where where = (includeProps && !check) ? Where.FALSE : getIncorrectWhere(table, baseClass, mapKeys);
+        Where where = (includeProps && !check) ? Where.FALSE() : getIncorrectWhere(table, baseClass, mapKeys);
         ImMap<Object, Expr> propExprs;
         if(includeProps) {
             Where keyWhere = where;
@@ -1691,7 +1691,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 /*        Where reupdateWhere = null;
         Join<PropertyField> dbJoin = null;
         if(!DBManager.PROPERTY_REUPDATE && props.size() < Settings.get().getDisablePropertyReupdateCount()) {
-            reupdateWhere = Where.TRUE;
+            reupdateWhere = Where.TRUE();
             dbJoin = implementTable.join(modifyQuery.getMapExprs());
         }*/
                     
@@ -2418,7 +2418,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     return value.needMaterialize(table);
                 });
 
-                Where removeWhere = Where.FALSE;
+                Where removeWhere = Where.FALSE();
                 ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = property.getMapKeys();
                 for (ClassPropertyInterface propertyInterface : property.interfaces)
                     if (SetFact.contains(propertyInterface.interfaceClass, remove))

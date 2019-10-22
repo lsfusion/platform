@@ -74,7 +74,7 @@ public class Query<K,V> extends IQuery<K,V> {
     public final Where where;
 
     public Query(ImRevMap<K,KeyExpr> mapKeys) {
-        this(mapKeys, Where.TRUE);
+        this(mapKeys, Where.TRUE());
     }
 
     public Query(ImSet<K> keys) {

@@ -86,7 +86,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
 
     public static final int inlineThreshold = 4;
     public static Expr create(SingleClassExpr expr, ImSet<ObjectClassField> classes, IsClassType type) {
-        classes = packTables(Where.TRUE, expr, classes, type);
+        classes = packTables(Where.TRUE(), expr, classes, type);
 
         if(classes.size()> inlineThreshold || classes.size()==1)
             return getExpr(type, BaseExpr.create(new IsClassExpr(expr, classes, type)));

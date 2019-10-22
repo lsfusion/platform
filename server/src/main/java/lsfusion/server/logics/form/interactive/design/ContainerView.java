@@ -153,7 +153,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     } 
 
     public void add(ComponentView comp) {
-        add(comp, Version.DESCRIPTOR);
+        add(comp, Version.descriptor());
     }
     
     public void add(ComponentView comp, Version version) {

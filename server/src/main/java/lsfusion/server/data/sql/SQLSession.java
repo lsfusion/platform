@@ -2345,7 +2345,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private int updateRecords(NamedTable table, boolean count, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         if(!propFields.isEmpty()) // есть запись нужно Update лупить
-            return updateRecords(new ModifyQuery(table, new Query<>(table.getMapKeys(), Where.TRUE, keyFields, ObjectValue.getMapExprs(propFields)), owner, tableOwner));
+            return updateRecords(new ModifyQuery(table, new Query<>(table.getMapKeys(), Where.TRUE(), keyFields, ObjectValue.getMapExprs(propFields)), owner, tableOwner));
         if(count)
             return isRecord(table, keyFields, owner) ? 1 : 0;
         return 0;
@@ -2365,7 +2365,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public Object readRecord(Table table, ImMap<KeyField, DataObject> keyFields, PropertyField field, OperationOwner owner) throws SQLException, SQLHandledException {
         // по сути пустое кол-во ключей
         return new Query<>(MapFact.<KeyField, KeyExpr>EMPTYREV(),
-                table.join(DataObject.getMapExprs(keyFields)).getExpr(field), "result", Where.TRUE).
+                table.join(DataObject.getMapExprs(keyFields)).getExpr(field), "result", Where.TRUE()).
                 execute(this, owner).singleValue().get("result");
     }
 

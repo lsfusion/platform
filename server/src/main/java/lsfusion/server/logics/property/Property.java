@@ -291,7 +291,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     
     public ExClassSet inferJoinValueClass(ImMap<T, ExClassSet> extContext, boolean useExtContext, InferType inferType) {
-        if(!useExtContext && inferType == InferType.RESOLVE) {
+        if(!useExtContext && inferType == InferType.resolve()) {
             assert explicitClasses != null;
             return ExClassSet.toEx(getResolveClassSet(explicitClasses));
         }
@@ -311,14 +311,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 //            if(!BaseUtils.nullEquals(oldExtContext, oldNewExtContext))
 //                oldExtContext = oldExtContext;
 //        } else {
-//            if(inferType == InferType.PREVSAME && !BaseUtils.nullEquals(ExClassSet.fromEx(newValueClass),ExClassSet.fromEx(oldExtContext))) {
+//            if(inferType == InferType.prevSame() && !BaseUtils.nullEquals(ExClassSet.fromEx(newValueClass),ExClassSet.fromEx(oldExtContext))) {
 //                ResolveClassSet resNew = ExClassSet.fromEx(newValueClass);
 //                ResolveClassSet resOld = ExClassSet.fromEx(oldExtContext);
 //                if(!(resNew instanceof StringClass && resOld instanceof StringClass) && !(resOld instanceof NumericClass && resNew instanceof NumericClass))
 //                    System.out.println((cnt++) + logCaption + " " + BaseUtils.nullToString(resOld) + " -> " + BaseUtils.nullToString(resNew));
 //            }
 //        }
-//        if(inferType == InferType.PREVSAME && !(BaseUtils.nullEquals(ExClassSet.fromEx(newValueClass), ExClassSet.fromEx(newDiffClassSet))))
+//        if(inferType == InferType.prevSame() && !(BaseUtils.nullEquals(ExClassSet.fromEx(newValueClass), ExClassSet.fromEx(newDiffClassSet))))
 //            newValueClass = newValueClass;
 //        
 //        return newValueClass;
@@ -503,7 +503,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public boolean usePrevHeur() {
-        return getExpr(getMapKeys(), CalcClassType.PREVSAME_KEEPIS).isNull();
+        return getExpr(getMapKeys(), CalcClassType.prevSameKeepIS()).isNull();
     }
 
     public ImMap<T, ValueClass> calcInterfaceClasses(CalcClassType calcClassType) {
@@ -655,7 +655,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     @IdentityInstanceLazy
     public PropertyChange<T> getNoChange() {
-        return new PropertyChange<>(getMapKeys(), CaseExpr.NULL);
+        return new PropertyChange<>(getMapKeys(), CaseExpr.NULL());
     }
     
     private static class PropCorrelation<K extends PropertyInterface, T extends PropertyInterface> implements Correlation<T> {
@@ -1000,7 +1000,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             if(isPreread()) { // вообще rightJoin, но вдруг случайно мимо AutoHint'а может пройти
                 ImMap<T, Expr> joinValues = getJoinValues(joinImplement); Pair<ObjectValue, Boolean> row;
                 if(joinValues!=null && (row = modify.preread.readValues.get(joinValues))!=null) {
-                    if(changedWhere!=null) changedWhere.add(row.second ? Where.TRUE : Where.FALSE);
+                    if(changedWhere!=null) changedWhere.add(row.second ? Where.TRUE() : Where.FALSE());
                     return row.first.getExpr();
                 }
 
@@ -1114,7 +1114,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     
     // для resolve'а
     public ResolveClassSet getResolveClassSet(ImMap<T, ResolveClassSet> classes) {
-        ExClassSet set = inferValueClass(ExClassSet.toEx(classes), InferType.RESOLVE);
+        ExClassSet set = inferValueClass(ExClassSet.toEx(classes), InferType.resolve());
         if(set != null && set.isEmpty())
             return null;
         return ExClassSet.fromEx(set);
@@ -1201,9 +1201,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         CalcClassType calcType = type.getCalc();
         InferType inferType = type.getInfer();
-//        if(calcType == CalcClassType.PREVSAME && getParseOldDepends().size() == 0) { // PREVSAME классовые свойства подменяет, а там есть очень сложные свойства
+//        if(calcType == CalcClassType.prevSame() && getParseOldDepends().size() == 0) { // PREVSAME классовые свойства подменяет, а там есть очень сложные свойства
 //            calcType = CalcType.PREVBASE;
-//            inferType = InferType.PREVBASE;
+//            inferType = InferType.prevBase();
 //        }
             
         ClassWhere<Object> calc = calcClassValueWhere(calcType);
@@ -1226,8 +1226,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     @IdentityStartLazy
     private boolean checkInferNotNull(ImSet<T> checkInterfaces) {
-        boolean calcNotNull = calcNotNull(checkInterfaces, CalcClassType.PREVBASE);
-        boolean inferNotNull = inferNotNull(checkInterfaces, InferType.PREVBASE);
+        boolean calcNotNull = calcNotNull(checkInterfaces, CalcClassType.prevBase());
+        boolean inferNotNull = inferNotNull(checkInterfaces, InferType.prevBase());
         if(calcNotNull != inferNotNull) {
             System.out.println(this + " NOTNULL, CALC : " + calcNotNull + ", INF : " + inferNotNull);
             return false;
@@ -1237,8 +1237,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     @IdentityStartLazy
     private boolean checkInferEmpty() {
-        boolean calcEmpty = calcEmpty(CalcClassType.PREVBASE);
-        boolean inferEmpty = inferEmpty(InferType.PREVBASE);
+        boolean calcEmpty = calcEmpty(CalcClassType.prevBase());
+        boolean inferEmpty = inferEmpty(InferType.prevBase());
         if(calcEmpty != inferEmpty) {
             System.out.println(this + " EMPTY, CALC : " + calcEmpty + ", INF : " + inferEmpty);
             return false;
@@ -1248,8 +1248,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     @IdentityStartLazy
     private boolean checkInferFull(ImCol<T> checkInterfaces) {
-        boolean calcFull = calcFull(checkInterfaces, CalcClassType.PREVBASE);
-        boolean inferFull = inferFull(checkInterfaces, InferType.PREVBASE);
+        boolean calcFull = calcFull(checkInterfaces, CalcClassType.prevBase());
+        boolean inferFull = inferFull(checkInterfaces, InferType.prevBase());
         if(calcFull != inferFull) {
             System.out.println(this + " FULL, CALC : " + calcFull + ", INF : " + inferFull);
             return false;
@@ -1295,8 +1295,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     protected static <T extends PropertyInterface> ImMap<T, ExClassSet> getInferExplicitCalcInterfaces(ImSet<T> interfaces, boolean noOld, InferType inferType, ImMap<T, ResolveClassSet> explicitInterfaces, Callable<ImMap<T,ExClassSet>> calcInterfaces, String caption, ActionOrProperty property, Checker<ExClassSet> checker) {
-        assert inferType != InferType.RESOLVE;
-        return getExplicitCalcInterfaces(interfaces, (inferType == InferType.PREVBASE && !noOld) || explicitInterfaces == null ? null : ExClassSet.toEx(explicitInterfaces), calcInterfaces, caption, property, checker);
+        assert inferType != InferType.resolve();
+        return getExplicitCalcInterfaces(interfaces, (inferType == InferType.prevBase() && !noOld) || explicitInterfaces == null ? null : ExClassSet.toEx(explicitInterfaces), calcInterfaces, caption, property, checker);
     }
 
     private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType) {
@@ -1408,13 +1408,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public ImSet<DataProperty> getChangeProps() { // дублирует getDataChanges, но по сложности не вытягивает нижний механизм
 //        Map<T, KeyExpr> mapKeys = getMapKeys();
-//        return getDataChanges(new PropertyChange<T>(mapKeys, toNull ? CaseExpr.NULL : changeExpr, CompareWhere.compare(mapKeys, getChangeExprs())), changes, null);
+//        return getDataChanges(new PropertyChange<T>(mapKeys, toNull ? CaseExpr.NULL() : changeExpr, CompareWhere.compare(mapKeys, getChangeExprs())), changes, null);
         return SetFact.EMPTY();
     }
 
     protected DataChanges getPullDataChanges(PropertyChanges changes, boolean toNull) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        return getDataChanges(new PropertyChange<>(mapKeys, toNull ? CaseExpr.NULL : getChangeExpr(), CompareWhere.compare(mapKeys, getChangeExprs())), changes, null);
+        return getDataChanges(new PropertyChange<>(mapKeys, toNull ? CaseExpr.NULL() : getChangeExpr(), CompareWhere.compare(mapKeys, getChangeExprs())), changes, null);
     }
 
     public DataChanges getJoinDataChanges(ImMap<T, ? extends Expr> implementExprs, Expr expr, Where where, GroupType groupType, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -1829,7 +1829,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             Expr expr = joinImplement.getValue(i);
             if(expr.isValue()) {
                 if(expr.isNull()) // пока есть глюк с isFull
-                    return Expr.NULL;
+                    return Expr.NULL();
                 mInterfaceValues.exclAdd(joinImplement.getKey(i), expr);
             } else
                 mInterfaceExprs.exclAdd(joinImplement.getKey(i), expr);
@@ -2022,7 +2022,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         
         ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
         Where where = DataSession.getIncorrectWhere(this, baseClass, mapTable.mapKeys.join(mapKeys));
-        Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL, field, where);
+        Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL(), field, where);
         sql.updateRecords(env == null ? new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global) : new ModifyQuery(mapTable.table, query, env, TableOwner.global));
     }
 

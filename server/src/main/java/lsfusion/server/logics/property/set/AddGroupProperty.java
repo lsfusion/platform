@@ -49,7 +49,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
         if(checkPrereadNull(mapKeys, CalcType.EXPR, propChanges))
-            return Expr.NULL;
+            return Expr.NULL();
 
         // новые группировочные записи
         WhereBuilder changedGroupWhere = new WhereBuilder();
@@ -69,7 +69,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement);
 
         if(checkPrereadNull(mapKeys, calcType, propChanges))
-            return Expr.NULL;
+            return Expr.NULL();
 
         return GroupExpr.create(getGroupImplements(mapKeys, calcType, propChanges), groupProperty.mapExpr(mapKeys, calcType, propChanges, null), getGroupType(), joinImplement, calcType instanceof CalcClassType);
     }

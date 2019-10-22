@@ -156,7 +156,7 @@ public class ModifyQuery {
         // делаем для этого еще один запрос
         QueryBuilder<KeyField, PropertyField> leftKeysQuery = new QueryBuilder<>(change.getMapKeys());
 
-        Where onlyNotNull = Where.FALSE;
+        Where onlyNotNull = Where.FALSE();
         if(updateProps || insertOnlyNotNull)
             for(PropertyField property : change.getProperties()) {
                 Expr expr = change.getExpr(property);

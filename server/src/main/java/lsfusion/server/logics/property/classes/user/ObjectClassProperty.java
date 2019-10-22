@@ -66,7 +66,7 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
 //        ImSet<ClassDataProperty> upClassDataProps = baseClass.getUpDataProps();
 //
 //        CaseExprInterface newExprCases = Expr.newCases(true, upClassDataProps.size());
-//        Where dataChangedWhere = Where.FALSE;
+//        Where dataChangedWhere = Where.FALSE();
 //        for(ClassDataProperty dataProperty : upClassDataProps) {            
 //            if(!dataProperty.hasChanges(propChanges)) // оптимизация
 //                continue;

@@ -596,7 +596,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (int i = 0, size = removeClasses.size(); i < size; i++) {
                 KeyExpr key = new KeyExpr("key");
                 Expr aggExpr = table.join(key).getExpr("agg");
-                Where where = Where.FALSE;
+                Where where = Where.FALSE();
                 for (String removeString : removeClasses.getValue(i))
                     where = where.or(aggExpr.compare(new DataObject(removeString, StringClass.text), Compare.EQUALS));
                 removeClasses.getKey(i).dataProperty.dropInconsistentClasses(session, LM.baseClass, key, where, OperationOwner.unknown);
@@ -1345,7 +1345,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
                 Expr keyExpr = copyObjects.getMapExprs().singleValue();
-                Where moveWhere = Where.FALSE;
+                Where moveWhere = Where.FALSE();
                 ImMap<String, ImSet<Long>> copyFrom = toCopy.getValue(i);
                 CaseExprInterface mExpr = Expr.newCases(true, copyFrom.size());
                 MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
@@ -1355,7 +1355,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     mCopyFromTables.add(oldClassProp.tableName);
 
                     Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getDBName()));
-                    Where moveExprWhere = Where.FALSE;
+                    Where moveExprWhere = Where.FALSE();
                     for (long prevID : copyFrom.getValue(j))
                         moveExprWhere = moveExprWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
                     mExpr.add(moveExprWhere, oldExpr);
@@ -1373,13 +1373,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 NamedTable table = oldDBStructure.getTable(classProp.tableName);
 
                 QueryBuilder<KeyField, PropertyField> dropClassObjects = new QueryBuilder<>(table);
-                Where moveWhere = Where.FALSE;
+                Where moveWhere = Where.FALSE();
 
                 PropertyField oldField = table.findProperty(classProp.getDBName());
                 Expr oldExpr = table.join(dropClassObjects.getMapExprs()).getExpr(oldField);
                 for (long prevID : toClean.getValue(i))
                     moveWhere = moveWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
-                dropClassObjects.addProperty(oldField, Expr.NULL);
+                dropClassObjects.addProperty(oldField, Expr.NULL());
                 dropClassObjects.and(moveWhere);
 
                 startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.removed.from.table}", classProp.tableName)));

@@ -68,8 +68,8 @@ public abstract class CaseList<A, D extends A,C extends Case<D>> implements Iter
 
     public Where getWhere(Function<D, Where> caseInterface) {
 
-        Where result = Where.FALSE;
-        Where up = Where.FALSE;
+        Where result = Where.FALSE();
+        Where up = Where.FALSE();
         for(C cCase : this) {
             Where caseWhere = cCase.where.and(caseInterface.apply(cCase.data));
             if(!exclusive) {

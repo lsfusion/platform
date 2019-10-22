@@ -1,15 +1,23 @@
 package lsfusion.server.base.version;
 
 public abstract class Version implements Comparable<Version> { // в TreeMap в NFChangeImpl используется
-
-    public static final Version LAST = new LastVersion();
-
-    public static final Version CURRENT = new LastVersion(); // в случаях когда целостность \ детерминированность гарантируется использующим алгоритмом
-
-    public static final Version GLOBAL = new GlobalVersion();
+    // converted to static methods to prevent class initialization deadlocks 
+    public static Version last() {
+        return LastVersion.LAST;
+    } 
     
-    public static final Version DESCRIPTOR = null;
+    public static Version current() {
+        return LastVersion.CURRENT; // в случаях когда целостность / детерминированность гарантируется использующим алгоритмом
+    }
     
+    public static Version global() {
+        return GlobalVersion.GLOBAL;    
+    }
+
+    public static Version descriptor() {
+        return null;
+    }
+
     public int compareTo(Version o) {
         return getOrder().compareTo(o.getOrder());
     }

@@ -55,7 +55,7 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
     }
 
     public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        Where where = Where.TRUE;
+        Where where = Where.TRUE();
         for(Interface propertyInterface : interfaces)
             if(propertyInterface!= objectInterface)
                 where = where.and(joinImplement.get(propertyInterface).getWhere());

@@ -188,7 +188,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         // до непосредственно вычисления, для хинтов
         ImList<Pair<Expr, Expr>> caseExprs = cases.mapListValues((Function<CalcCase<Interface>, Pair<Expr, Expr>>) value -> {
             if(checkPrereadNull(value, joinImplement, calcType, propChanges))
-                return new Pair<>(Expr.NULL, Expr.NULL);
+                return new Pair<>(Expr.NULL(), Expr.NULL());
                 
             return new Pair<>(
                     value.where.mapExpr(joinImplement, calcType, propChanges, changedWhere),
@@ -210,7 +210,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         // до непосредственно вычисления, для хинтов
         ImList<Pair<Pair<Expr, Where>, Pair<Expr, Where>>> caseExprs = cases.mapListValues((Function<CalcCase<Interface>, Pair<Pair<Expr, Where>, Pair<Expr, Where>>>) propCase -> {
             if(checkPrereadNull(propCase, joinImplement, CalcType.EXPR, propChanges))
-                return new Pair<>(new Pair<>(Expr.NULL, Where.FALSE), new Pair<>(Expr.NULL, Where.FALSE));
+                return new Pair<>(new Pair<>(Expr.NULL(), Where.FALSE()), new Pair<>(Expr.NULL(), Where.FALSE()));
 
             WhereBuilder changedWhereCase = new WhereBuilder();
             WhereBuilder changedExprCase = new WhereBuilder();
@@ -222,9 +222,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         int size=cases.size();
         CaseExprInterface exprCases = Expr.newCases(isExclusive, isExclusive ? size + 1 : size * 2);
 
-        Where changedUpWheres = Where.FALSE; // для не exclusive
-        Where changedAllWhere = Where.FALSE; // для exclusive
-        Where nullWhere = Where.FALSE; // для exclusive
+        Where changedUpWheres = Where.FALSE(); // для не exclusive
+        Where changedAllWhere = Where.FALSE(); // для exclusive
+        Where nullWhere = Where.FALSE(); // для exclusive
         for(int i=0;i<size;i++) {
             Pair<Pair<Expr, Where>, Pair<Expr, Where>> pCaseExpr = caseExprs.get(i);
             Where caseWhere = pCaseExpr.first.first.getWhere();

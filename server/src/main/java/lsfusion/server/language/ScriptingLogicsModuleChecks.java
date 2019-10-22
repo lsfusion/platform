@@ -472,7 +472,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkPartitionWindowConsistence(PartitionType partitionType, boolean useLast) throws ScriptingErrorLog.SemanticErrorException {
-        if (!useLast && (partitionType != PartitionType.SUM && partitionType != PartitionType.PREVIOUS)) {
+        if (!useLast && (partitionType != PartitionType.sum() && partitionType != PartitionType.previous())) {
             errLog.emitIllegalWindowPartitionError(parser);
         }
     }

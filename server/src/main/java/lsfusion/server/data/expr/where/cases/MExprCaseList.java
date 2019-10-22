@@ -57,7 +57,7 @@ public class MExprCaseList extends MCaseList<Expr, Expr, ExprCase> implements Ca
     }
 
     private Expr getExclFinal() {
-        if(size()==0) return Expr.NULL;
+        if(size()==0) return Expr.NULL();
 
         if(!exclusive) {
             ExprCase lastCase = get(size()-1); // в последнем элементе срезаем null'ы с конца
@@ -79,7 +79,7 @@ public class MExprCaseList extends MCaseList<Expr, Expr, ExprCase> implements Ca
     public Expr getFinal() {
         Expr exclResult = getExclFinal();
         if(exclusive && notExclusive!=null) {
-            notExclusive.add(Where.TRUE, exclResult);
+            notExclusive.add(Where.TRUE(), exclResult);
             return notExclusive.getFinal();
         }
         return exclResult;

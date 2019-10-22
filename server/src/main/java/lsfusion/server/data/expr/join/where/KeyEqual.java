@@ -81,7 +81,7 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
     }
 
     public Where getWhere() {
-        Where equalsWhere = Where.TRUE;
+        Where equalsWhere = Where.TRUE();
         for(int i=0,size=keyExprs.size();i<size;i++)
             equalsWhere = equalsWhere.and(EqualsWhere.create(keyExprs.getKey(i),keyExprs.getValue(i)));
         return equalsWhere;

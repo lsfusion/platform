@@ -88,7 +88,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
     public SinglePropertyTableUsage<P> synchronize(String debugInfo, DataSession session, SingleKeyTableUsage<ImportField> importTable) throws SQLException, SQLHandledException {
 
         ImRevMap<P, KeyExpr> mapKeys = implement.property.getMapKeys();
-        Where where = GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, mapKeys).getWhere().and( // в импортируемой таблице
+        Where where = GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE(), mapKeys).getWhere().and( // в импортируемой таблице
                 implement.property.getExpr(mapKeys, session.getModifier()).getWhere().not()); // для которых не определился объект
 
         return session.addObjects(debugInfo, (ConcreteCustomClass)keyClass, new PropertyOrderSet<>(mapKeys, where, MapFact.EMPTYORDER(), false));

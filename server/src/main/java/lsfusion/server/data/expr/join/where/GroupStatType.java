@@ -26,7 +26,7 @@ public enum GroupStatType {
         for(ImCol<GroupSplitWhere<K>> statJoins : statJoinsList)
             for(GroupSplitWhere<K> statJoin : statJoins)
                 mMapWhere.add(new Pair<>(statJoin.keyEqual,
-                        statJoin.stats), noWhere ? Where.TRUE : statJoin.where);
+                        statJoin.stats), noWhere ? Where.TRUE() : statJoin.where);
         ImMap<Pair<KeyEqual, StatKeys<K>>, Where> mapWhere = mMapWhere.immutable();
 
         MExclSet<GroupSplitWhere<K>> mResult = SetFact.mExclSet(mapWhere.size());
@@ -44,7 +44,7 @@ public enum GroupStatType {
         MMap<KeyEqual, StatKeys<K>> mMapStats = MapFact.mMap(StatKeys.addOr());
         for(ImCol<GroupSplitWhere<K>> statJoins : statJoinsList)
             for(GroupSplitWhere<K> statJoin : statJoins) {
-                mMapWhere.add(statJoin.keyEqual, noWhere || keyEquals!=null ? Where.TRUE : statJoin.where);
+                mMapWhere.add(statJoin.keyEqual, noWhere || keyEquals!=null ? Where.TRUE() : statJoin.where);
                 mMapStats.add(statJoin.keyEqual, statJoin.stats);
             }
         ImMap<KeyEqual, Where> mapWhere = mMapWhere.immutable();

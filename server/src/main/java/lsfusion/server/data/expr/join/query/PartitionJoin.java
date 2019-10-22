@@ -179,7 +179,7 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
     @Override
     public ImMap<Expr, ? extends Expr> getPushGroup(ImMap<KeyExpr, ? extends Expr> group, boolean newPush, Result<Where> pushExtraWhere) {
         ImSet<Expr> usedPartitions;
-        Where extraWhere = Where.TRUE;
+        Where extraWhere = Where.TRUE();
         if (newPush) {
             Result<ImSet<Expr>> rUsedPartitions = new Result<>(); Result<Boolean> rUseWhere = new Result<>();
             filterFullKeys(group.keys(), rUsedPartitions, rUseWhere, true);

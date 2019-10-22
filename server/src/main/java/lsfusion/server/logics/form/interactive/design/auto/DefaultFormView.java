@@ -507,11 +507,11 @@ public class DefaultFormView extends FormView {
             // first we'll create containers for upper groups to get right component order
             getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version), version);
 
-            propGroupContainer = createContainer(currentGroup.caption, null, getPropGroupContainerSID(currentGroup, propertyContainer), Version.GLOBAL);
+            propGroupContainer = createContainer(currentGroup.caption, null, getPropGroupContainerSID(currentGroup, propertyContainer), Version.global());
             propGroupContainer.setType(ContainerType.COLUMNS);
             propGroupContainer.columns = 4;
 
-            getPanelContainer(propertyDraw, version).add(propGroupContainer, Version.GLOBAL);
+            getPanelContainer(propertyDraw, version).add(propGroupContainer, Version.global());
 
             groupPropertyContainers.put(Optional.fromNullable(propertyContainer), currentGroup, propGroupContainer);
         }

@@ -2839,9 +2839,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> resultParams = getParamsPlainList(paramProps);
         List<Integer> usedParams = mergeAllParams(paramProps);
         LP prop;
-        if (partitionType == PartitionType.SUM || partitionType == PartitionType.PREVIOUS) {
+        if (partitionType == PartitionType.sum() || partitionType == PartitionType.previous()) {
             prop = addOProp(null, false, LocalizedString.NONAME, partitionType, isAscending, ordersNotNull, useLast, groupPropsCnt, resultParams.toArray());
-        } else if (partitionType == PartitionType.DISTR_CUM_PROPORTION) {
+        } else if (partitionType == PartitionType.distrCumProportion()) {
             List<ResolveClassSet> contextClasses = getClassesFromTypedParams(context);// для не script - временный хак
             // может быть внешний context
             List<ResolveClassSet> explicitInnerClasses = new ArrayList<>();

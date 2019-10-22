@@ -59,7 +59,7 @@ public class PropertyOrderSet<T extends PropertyInterface> {
     }
 
     public Query<T, String> getAddQuery(BaseClass baseClass) {
-        Expr exprNum = PartitionExpr.create(PartitionType.SUM,
+        Expr exprNum = PartitionExpr.create(PartitionType.sum(),
                 ListFact.singleton(new ValueExpr(1L, ObjectType.idClass).and(getFullWhere())),
                 AggrExpr.fixOrders(orders, mapKeys), ordersNotNull, SetFact.<Expr>EMPTY(), mapKeys.valuesSet().toMap());
 

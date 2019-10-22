@@ -419,7 +419,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public Where getFilterWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor filterProcessor, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
-        Where where = Where.TRUE;
+        Where where = Where.TRUE();
         for(FilterInstance filt : (filterProcessor != null ? filterProcessor.getFilters() : filters)) {
             if(filterProcessor != null) {
                 ImMap<ObjectInstance, ? extends Expr> overridedKeys = filterProcessor.process(filt, mapKeys);
@@ -570,7 +570,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     private Where getExpandWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys) {
         if(expandTable==null)
-            return Where.FALSE;
+            return Where.FALSE();
         else
             return expandTable.getWhere(mapKeys);
     }
@@ -710,12 +710,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(getUpTreeGroup()!=null)
             expandWhere = getUpTreeGroup().getExpandWhere(mapKeys); // для верхней группы брать только из expandTable'а
         else
-            expandWhere = Where.TRUE;
+            expandWhere = Where.TRUE();
 
         if (parent != null) {
             ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx((ThrowingFunction<PropertyObjectInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
-            Where nullWhere = Where.FALSE;
+            Where nullWhere = Where.FALSE();
             for (Expr parentExpr : parentExprs.valueIt()) {
                 nullWhere = nullWhere.or(parentExpr.getWhere().not());
             }
@@ -742,12 +742,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private Expr getHasSubElementsExpr(final ImRevMap<ObjectInstance, KeyExpr> outerMapKeys, final Modifier modifier, final ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
 
-        Where subGroupWhere = Where.TRUE;
+        Where subGroupWhere = Where.TRUE();
 
         if (parent != null) {
             ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx((ThrowingFunction<PropertyObjectInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
-            Where nullWhere = Where.FALSE;
+            Where nullWhere = Where.FALSE();
             for (Expr parentExpr : parentExprs.valueIt()) {
                 nullWhere = nullWhere.or(parentExpr.getWhere().not());
             }
@@ -756,7 +756,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         subGroupWhere = subGroupWhere.and(getWhere(mapKeys, modifier, reallyChanged));
 
-        Expr validSubElementExpr = IfExpr.create(subGroupWhere, ValueExpr.TRUE, ValueExpr.NULL);
+        Expr validSubElementExpr = IfExpr.create(subGroupWhere, ValueExpr.TRUE, ValueExpr.NULL());
 
         final ImMap<ObjectInstance, KeyExpr> upKeys = mapKeys.remove(objects);
         return GroupExpr.create(upKeys, validSubElementExpr, GroupType.LOGICAL(), outerMapKeys); // boolean
@@ -1135,7 +1135,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
         PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {
-            updateViewProperty(execEnv, viewProperty, keys.isEmpty() ? new PropertyChange<>(viewProperty.property.getMapKeys(), ValueExpr.TRUE, Where.FALSE) :
+            updateViewProperty(execEnv, viewProperty, keys.isEmpty() ? new PropertyChange<>(viewProperty.property.getMapKeys(), ValueExpr.TRUE, Where.FALSE()) :
                     new PropertyChange<>(ValueExpr.TRUE, viewProperty.mapping.join(keys)));
         }
     }
@@ -1283,7 +1283,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             ImMap<OrderInstance, Expr> orderExprs = orders.getMap().mapKeyValuesEx((ThrowingFunction<OrderInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
-            Where orderWhere = end?Where.FALSE:Where.TRUE; // строим условия на упорядочивание
+            Where orderWhere = end?Where.FALSE():Where.TRUE(); // строим условия на упорядочивание
             ImOrderMap<OrderInstance, Boolean> reverseOrder = orders.reverseOrder();
             for (int i=0,size=reverseOrder.size();i<size;i++) {
                 OrderInstance orderInstance = reverseOrder.getKey(i);
@@ -1300,7 +1300,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     ObjectValue freeValue = values.get(freeObject);
                     if(freeValue==null || !(freeValue instanceof DataObject))
                         freeValue = freeObject.getBaseClass().getDefaultObjectValue();
-                    orderWhere = orderWhere.and(end==!down?mapKeys.get(freeObject).compare((DataObject)freeValue, Compare.EQUALS):Where.FALSE); // seekDown==!down, чтобы и вверх и вниз не попали одни и те же ключи
+                    orderWhere = orderWhere.and(end==!down?mapKeys.get(freeObject).compare((DataObject)freeValue, Compare.EQUALS):Where.FALSE()); // seekDown==!down, чтобы и вверх и вниз не попали одни и те же ключи
                 }
             }
 

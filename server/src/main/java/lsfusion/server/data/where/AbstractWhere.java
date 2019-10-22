@@ -77,7 +77,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         Where result = followFalse(falseWhere, packExprs, change);
         if(result instanceof ObjectWhere && OrWhere.checkTrue(this,falseWhere)) {
             change.type = FollowType.WIDE;
-            result = TRUE;
+            result = Where.TRUE();
         }
         return result;
     }
@@ -120,7 +120,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             return wheres[0];
         else
         if(wheres.length==0)
-            return Where.FALSE;
+            return Where.FALSE();
         else
             return new OrWhere(wheres, ((OrWhere)siblingsWhere).check);
     }
@@ -139,7 +139,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             return wheres[0];
         else
         if(wheres.length==0)
-            return Where.TRUE;
+            return Where.TRUE();
         else
             return new AndWhere(wheres, ((AndWhere)siblingsWhere).check);
     }
@@ -253,7 +253,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         long currentComplexity = 0;
         if(!exclusive) {
             currentComplexity = hasUnionExpr() ? getComplexity(false) : Long.MAX_VALUE;
-            mRecPacks.add(Where.FALSE);
+            mRecPacks.add(Where.FALSE());
         }
         for(GroupJoinsWhere innerJoin : whereJoins) {
             if(innerJoin.isComplex())

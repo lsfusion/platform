@@ -18,7 +18,7 @@ public abstract class ExclPullWheres<R, K, W extends AndContext<W>> {
         return new PullWheres<R, K>() {
             protected R proceedCases(MapCaseList<K> cases) {
                 R aggregator = initEmpty();
-                Where upWhere = Where.FALSE;
+                Where upWhere = Where.FALSE();
                 for(MapCase<K> exprCase : cases) {
                     Where caseWhere = exprCase.where;
                     if(!cases.exclusive) {

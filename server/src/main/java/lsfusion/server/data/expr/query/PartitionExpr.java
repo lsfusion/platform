@@ -153,7 +153,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     public Where calculateOrWhere() {
         Where where = getInnerJoin().getOrWhere();
         assert BaseUtils.hashEquals(where, getInner().getFullWhere().mapWhere(group));
-        return where; //query.type.canBeNull() ? Where.TRUE : getInner().getFullWhere().map(group);
+        return where; //query.type.canBeNull() ? Where.TRUE() : getInner().getFullWhere().map(group);
     }
 
     public Where calculateNotNullWhere() {
@@ -223,7 +223,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         ImMap<BaseExpr, BaseExpr> exprValues = query.getWhere().getExprValues();// keys'ов уже очевидно нет
 
         MOrderFilterMap<Expr, Boolean> mRemovedOrders = MapFact.mOrderFilter(query.orders);
-        Where removeWhere = Where.TRUE;
+        Where removeWhere = Where.TRUE();
         for(int i=0,size=query.orders.size();i<size;i++) {
             Expr exprValue;
             Expr orderExpr = query.orders.getKey(i);

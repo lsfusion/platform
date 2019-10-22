@@ -126,7 +126,7 @@ public class IntegrationService {
         for (ImportDelete delete : deletes) {
             KeyExpr keyExpr = new KeyExpr("key");
 
-            Where deleteWhere = Where.TRUE;
+            Where deleteWhere = Where.TRUE();
 
             // выражения для полей в импортируемой таблице
             ImMap<ImportField, Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
@@ -135,7 +135,7 @@ public class IntegrationService {
             if (!delete.deleteAll)
                 deleteWhere = deleteWhere.and(GroupExpr.create(MapFact.singleton("key",
                                            delete.key.getExpr(importExprs, session.getModifier())),
-                                           Where.TRUE,
+                                           Where.TRUE(),
                                            MapFact.singleton("key", keyExpr)).getWhere().not());
 
             ImRevMap<P, KeyExpr> intraKeyExprs = delete.deleteProperty.property.getMapKeys(); // генерим ключи (использовать будем только те, что не в DataObject
@@ -156,7 +156,7 @@ public class IntegrationService {
                                        ValueExpr.get(delete.deleteProperty.property.getExpr(mvDeleteExprs.immutableValue(), session.getModifier()).getWhere()),
                                        GroupType.LOGICAL(), MapFact.singleton("key", keyExpr)).getWhere());
 
-            session.changeClass(new ClassChange(keyExpr, deleteWhere, CaseExpr.NULL));
+            session.changeClass(new ClassChange(keyExpr, deleteWhere, CaseExpr.NULL()));
         }
     }
 }

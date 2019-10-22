@@ -87,7 +87,7 @@ abstract public class DataWhere extends ObjectWhere {
 
     public static Where create(DataWhere where) {
         if(where.getClassWhere().isFalse())
-            return Where.FALSE;
+            return Where.FALSE();
         else
             return where;
     }

@@ -9,4 +9,8 @@ public class LastVersion extends Version {
     public boolean canSee(Version version) {
         return true;
     }
+    
+    // placed here to prevent class initialization deadlocks 
+    static final Version LAST = new LastVersion();
+    static final Version CURRENT = new LastVersion();
 }

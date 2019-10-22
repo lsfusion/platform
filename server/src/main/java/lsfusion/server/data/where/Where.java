@@ -108,8 +108,14 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     int getHeight();
 
-    Where TRUE = new AndWhere();
-    Where FALSE = new OrWhere();
+    // converted to static methods to prevent class initialization deadlocks 
+    public static Where TRUE()  {
+        return AndWhere.TRUE_WHERE;
+    }
+    
+    public static Where FALSE() {
+        return OrWhere.FALSE_WHERE;
+    }
 
     Where translateExpr(ExprTranslator translator);
 

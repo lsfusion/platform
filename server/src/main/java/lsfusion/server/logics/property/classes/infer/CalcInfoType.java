@@ -29,4 +29,6 @@ public class CalcInfoType extends CalcClassType implements AlgInfoType {
         return this;
     }
 
+    // placed here to prevent class initialization deadlocks 
+    final static CalcInfoType PREVBASE = new CalcInfoType("PREVBASE"); 
 }

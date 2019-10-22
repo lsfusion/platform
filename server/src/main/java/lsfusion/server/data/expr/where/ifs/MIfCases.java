@@ -16,7 +16,7 @@ public class MIfCases implements CaseExprInterface {
     }
 
     public Expr getFinal() {
-        Expr result = Expr.NULL;
+        Expr result = Expr.NULL();
         for(int i = cases.size()-1;i>=0;i--) {
             Case<Expr> exprCase = cases.get(i);
             result = exprCase.data.ifElse(exprCase.where, result);

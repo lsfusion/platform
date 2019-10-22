@@ -364,7 +364,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     private static ImSet<CompileAndQuery> getWhereSubSet(ImSet<CompileAndQuery> andWheres, Where where) {
 
         MSet<CompileAndQuery> result = SetFact.mSet();
-        CheckWhere resultWhere = Where.FALSE;
+        CheckWhere resultWhere = Where.FALSE();
         while(result.size()< andWheres.size()) {
             // ищем куда закинуть заодно считаем
             CompileAndQuery lastQuery = null;
@@ -591,7 +591,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         // получает условия следующие из логики inner join'ов SQL
         private Where getInnerWhere() {
-            Where result = Where.TRUE;
+            Where result = Where.TRUE();
             for(InnerJoin innerJoin : getInnerJoins().it()) {
                 JoinSelect joinSelect = getJoinSelect(innerJoin);
                 if(joinSelect!=null)
@@ -785,7 +785,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(costMax.equals(Cost.ONE))
                     return null;
                 if(costPerStat.lessEquals(costMax)) // здесь, как и в общем случае действуем пессимистично - если cost * stat = costMax проталкиваем 
-                    return Where.TRUE;
+                    return Where.TRUE();
                 else {
                     assert false;
                     return null;
@@ -794,7 +794,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             
             ImCol<GroupExprJoinsWhere<KeyExpr>> groupJoinsWheres = groupWhere.getGroupExprJoinsWheres(mapKeys, StatType.GROUP_SPLIT, Settings.get().isGroupStatExprWhereJoins());// не уверен, что не просто false последний параметр
 
-            Where result = Where.FALSE;
+            Where result = Where.FALSE();
             for(GroupExprJoinsWhere<KeyExpr> groupJoinsWhere : groupJoinsWheres) {
                 LastJoin lastJoin = new LastJoin(costPerStat, costMax, groupJoinsWhere.mapExprs);  
                 
@@ -940,7 +940,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 boolean isLastOpt = Settings.get().getUseGroupLastOpt() != 0; // если хоть одна не оптимизируется то и остальные тоже не оптимизируем (все равно "бежать по всем" для одного из значений)
                 
-                Where exprWhere = Where.FALSE;
+                Where exprWhere = Where.FALSE();
                 MSet<Expr> mQueryExprs = SetFact.mSet(); // так как может одновременно и SUM и MAX нужен
                 for(GroupExpr.Query query : queries.valueIt()) {
                     mQueryExprs.addAll(query.getExprs());
@@ -960,7 +960,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     if(useGroupLastOpt != 3) {
                         pushGroupWhere = new Result<>();
                         if (group.isEmpty())
-                            pushGroupWhere.set(new Pair<>(MapFact.EMPTYREV(), Where.TRUE));
+                            pushGroupWhere.set(new Pair<>(MapFact.EMPTYREV(), Where.TRUE()));
                     }
                 }
 
@@ -1004,10 +1004,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             protected Where getInnerWhere() {
                 // бежим по всем exprs'ам и проверяем что нет AggrType'а
-                Where result = Where.TRUE;
+                Where result = Where.TRUE();
                 for(int i=0,size=exprs.size();i<size;i++) {
                     if(exprs.getKey(i).type.canBeNull())
-                        return Where.TRUE;
+                        return Where.TRUE();
                     result = result.or(exprs.getValue(i).getWhere());
                 }
                 return result;
@@ -1107,7 +1107,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
             protected Where getInnerWhere() {
-                Where result = Where.TRUE;
+                Where result = Where.TRUE();
                 for(int i=0,size=exprs.size();i<size;i++)
                     if(!exprs.getKey(i).type.canBeNull())
                         result = result.and(exprs.getValue(i).getWhere());
@@ -1144,7 +1144,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
             protected Where getInnerWhere() {
-                Where result = Where.TRUE;
+                Where result = Where.TRUE();
                 for(int i=0,size=exprs.size();i<size;i++)
                     result = result.and(exprs.getValue(i).getWhere());
                 return result;
@@ -1427,7 +1427,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     if(isLogical)
                         recWhere = recJoin.getWhere().and(noNodeCycle);
                     else {
-                        recWhere = Where.TRUE;
+                        recWhere = Where.TRUE();
                         ImValueMap<String, Expr> mStepExprs = stepExprs.mapItValues(); // "совместное" заполнение
                         for(int i=0,size=stepExprs.size();i<size;i++) {
                             String key = stepExprs.getKey(i);
@@ -1473,7 +1473,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
             protected Where getInnerWhere() {
-                Where result = Where.TRUE;
+                Where result = Where.TRUE();
                 for(RecursiveExpr expr : exprs.valueIt())
                     result = result.and(expr.getWhere());
                 return result;
@@ -1638,7 +1638,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         MapWhere<FJData> joinDatas = new MapWhere<FJData>();
         for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet())
-            joinProp.getValue().fillJoinWheres(joinDatas, Where.TRUE);
+            joinProp.getValue().fillJoinWheres(joinDatas, Where.TRUE());
 
         String innerAlias = subcontext+"inalias";
         Map<String, Expr> joinProps = new HashMap<String, Expr>();
@@ -1738,7 +1738,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         MMap<FJData, Where> mJoinDataWheres = MapFact.mMap(AbstractWhere.addOr());
         for(int i=0,size=compiledProps.size();i<size;i++)
             if(!orders.containsKey(compiledProps.getKey(i)))
-                compiledProps.getValue(i).fillJoinWheres(mJoinDataWheres, Where.TRUE);
+                compiledProps.getValue(i).fillJoinWheres(mJoinDataWheres, Where.TRUE());
         ImMap<FJData, Where> joinDataWheres = mJoinDataWheres.immutable();
 
         // для JoinSelect'ов узнаем при каких условиях они нужны

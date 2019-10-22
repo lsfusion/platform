@@ -1035,7 +1035,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         ImMap<BaseJoin, TopKeep> keeps = MapFact.addExcl(mTopKeys.immutable().toMap(TopTreeKeep.instance), middleTopKeeps);
         
         boolean assertCheck = false;
-        Where upPushWhere = Where.TRUE;
+        Where upPushWhere = Where.TRUE();
         for(int i=0,size=keeps.size();i<size;i++) {
             BaseJoin join = keeps.getKey(i);
             TopKeep keep = keeps.getValue(i);
@@ -1756,7 +1756,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private static Where getUpWhere(WhereJoin join, UpWhere upWhere, JoinExprTranslator translator) {
-        Where result = Where.TRUE;
+        Where result = Where.TRUE();
         for(BaseExpr baseExpr : ((BaseJoin<?>) join).getJoins().valueIt()) {
             Expr expr = JoinExprTranslator.translateExpr(baseExpr, translator);
             Where where;

@@ -17,9 +17,9 @@ public enum ClassType {
     public InferType getInfer() {
         switch (this) {
             case ASIS_BASE:
-                return InferType.PREVBASE;
+                return InferType.prevBase();
             case FULL_SAME:
-                return InferType.PREVSAME;
+                return InferType.prevSame();
         }
         throw new UnsupportedOperationException();
     }
@@ -27,9 +27,9 @@ public enum ClassType {
     public CalcClassType getCalc() {
         switch (this) {
             case ASIS_BASE:
-                return CalcClassType.PREVBASE;
+                return CalcClassType.prevBase();
             case FULL_SAME:
-                return CalcClassType.PREVSAME;
+                return CalcClassType.prevSame();
         }
         throw new UnsupportedOperationException();
     }

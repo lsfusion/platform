@@ -82,7 +82,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         for(And<VariableSingleClassExpr> where : wheres) {
             AndClassSet keyClass = where.getPartial(keyExpr);
             if (keyClass == null || !BaseUtils.hashEquals(keyClass, keyClass.getValueClassSet())) // потому как в canbechanged например могут появляться pullExpr'ы без классов, если Unknown то нет смысла сохранять, все равно класс не дает
-                return Where.TRUE;
+                return Where.TRUE();
             ValueClassSet valueKeyClass = (ValueClassSet) keyClass;
             ValueClassSet keyKeepClass = valueKeyClass;// .getKeepClass();
             if (keepClass == null)
@@ -101,8 +101,8 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
     }
 
     public Where getPackWhere() {
-        if(isTrue()) return Where.TRUE;
-        if(isFalse()) return Where.FALSE;
+        if(isTrue()) return Where.TRUE();
+        if(isFalse()) return Where.FALSE();
         return new PackClassWhere(this);
     }
 
@@ -304,7 +304,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {
                 return op1.or(op2);
             }
-        }.proceed(Where.TRUE, outerInner);
+        }.proceed(Where.TRUE(), outerInner);
     }
 
     private class OuterContext extends AbstractOuterContext<OuterContext> {

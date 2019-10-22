@@ -83,7 +83,7 @@ public class SessionRows extends SessionData<SessionRows> {
             }
 
             public Where getWhere() {
-                Where result = Where.FALSE;
+                Where result = Where.FALSE();
                 for(int i=0,size=rows.size();i<size;i++)
                     result = result.or(CompareWhere.compareValues(joinImplement,rows.getKey(i)));
                 return result;

@@ -109,7 +109,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
 
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(calcType.isExpr() && propChanges.isEmpty()) // оптимизация для событий
-            return Expr.NULL;
+            return Expr.NULL();
         
         WhereBuilder changedIncrementWhere = new WhereBuilder();
         property.getIncrementExpr(joinImplement, changedIncrementWhere, calcType, propChanges, type, scope);
@@ -132,7 +132,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
             default:
                 return null;
         }
-        return new PropertyChange<>(mapKeys, ValueExpr.get(where), Where.TRUE);
+        return new PropertyChange<>(mapKeys, ValueExpr.get(where), Where.TRUE());
     }
 
     @Override
@@ -179,14 +179,14 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
 //    @Override
 //    public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
 //        ClassWhere<Object> result = new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(calcType)));
-//        if(calcType == CalcClassType.PREVBASE && !type.isNotNullNew())
+//        if(calcType == CalcClassType.prevBase() && !type.isNotNullNew())
 //            result = result.getBase();
 //        return result; // assert что full
 //    }
 
     public Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         Inferred<T> result = property.inferInterfaceClasses(ExClassSet.notNull(commonValue), inferType);
-        if(inferType == InferType.PREVBASE && !type.isNotNullNew())
+        if(inferType == InferType.prevBase() && !type.isNotNullNew())
             result = result.getBase(inferType);
         return result;
     }

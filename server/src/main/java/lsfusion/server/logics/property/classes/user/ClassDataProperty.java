@@ -68,7 +68,7 @@ public class ClassDataProperty extends AbstractDataProperty implements ObjectCla
     
     public void dropInconsistentClasses(SQLSession session, BaseClass baseClass, KeyExpr key, Where where, OperationOwner owner) throws SQLException, SQLHandledException {
         NamedTable table = baseClass.getInconsistentTable(mapTable.table);
-        session.modifyRecords(new ModifyQuery(table, new Query<>(MapFact.singletonRev(table.keys.single(), key), MapFact.singleton(field, Expr.NULL), where), owner, TableOwner.global));
+        session.modifyRecords(new ModifyQuery(table, new Query<>(MapFact.singletonRev(table.keys.single(), key), MapFact.singleton(field, Expr.NULL()), where), owner, TableOwner.global));
     }
 
     public Expr getStoredExpr(Expr expr) {

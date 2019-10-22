@@ -32,7 +32,7 @@ public abstract class AbstractFormDataInterface implements FormDataInterface {
 
     @Override
     public Where getValueWhere(GroupObjectEntity groupObject, ImSet<GroupObjectEntity> valueGroups, ImMap<ObjectEntity, Expr> mapExprs) {
-        Where where = Where.TRUE;
+        Where where = Where.TRUE();
         if(!valueGroups.contains(groupObject)) { // if wasn't remove from hierarchy, then use it as regular filter (otherwise will be used in getValueObjects)
             for(ObjectEntity object : getValueObjects())
                 if(object.groupTo == groupObject)

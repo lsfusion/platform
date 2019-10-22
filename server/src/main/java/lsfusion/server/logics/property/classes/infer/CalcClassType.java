@@ -12,10 +12,25 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class CalcClassType extends CalcType implements AlgType {
+    // converted to static methods to prevent class initialization deadlocks
+    
+    // определение классов, prev'ы имеют base классы (что правильно, но не удобно)
+    public static CalcInfoType prevBase() {
+        return CalcInfoType.PREVBASE;     
+    }
 
-    public final static CalcInfoType PREVBASE = new CalcInfoType("PREVBASE"); // определение классов, prev'ы имеют base классы (что правильно, но не удобно)
-    public final static CalcClassType PREVSAME = new CalcClassType("PREVSAME"); // определение классов, где prev'ы имеют те же классы (а не OBJECT)
-    public final static CalcClassType PREVSAME_KEEPIS = new CalcClassType("PREVSAME_KEEPIS"); // тоже самое что и сверху, но с IS'ами нужно для одной эвристики
+    // определение классов, где prev'ы имеют те же классы (а не OBJECT)
+    public static CalcClassType prevSame() {
+        return PREVSAME;
+    }
+
+    // тоже самое что и prevSame(), но с IS'ами нужно для одной эвристики
+    public static CalcClassType prevSameKeepIS() {
+        return PREVSAME_KEEPIS;
+    }
+    
+    private final static CalcClassType PREVSAME = new CalcClassType("PREVSAME"); 
+    private final static CalcClassType PREVSAME_KEEPIS = new CalcClassType("PREVSAME_KEEPIS"); 
 
     public CalcClassType(String caption) {
         super(caption);

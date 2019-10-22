@@ -101,7 +101,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
     public ExClassSet calcInferValueClass(final ImMap<Interface<I>, ExClassSet> inferred, final InferType inferType) {
         ImMap<I, ExClassSet> innerInferred;
-        if(inferType != InferType.RESOLVE) {
+        if(inferType != InferType.resolve()) {
             innerInferred = getInferExplicitCalcInterfaces(innerInterfaces, noOld(), inferType, explicitInnerClasses, () -> inferInnerInterfaceClasses(inferred, inferType).finishEx(inferType), "CALCINNER", this, null);
         } else {
             assert explicitInnerClasses != null;
@@ -167,7 +167,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     public ImMap<I, ValueClass> getInnerInterfaceClasses() {
-        InferType inferType = InferType.PREVSAME;
+        InferType inferType = InferType.prevSame();
         return ExClassSet.fromExValue(inferInnerInterfaceClasses((ExClassSet) null, inferType).finishEx(inferType));
 /*        ImRevMap<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
         Where w = Expr.getWhere(getGroupImplements(mapKeys, PropertyChanges.EMPTY))

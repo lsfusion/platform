@@ -29,7 +29,7 @@ public class GreaterWhere<T> extends CompareWhere<GreaterWhere<T>> {
 
     public static Where create(BaseExpr operator1, BaseExpr operator2, boolean orEquals) {
         if(checkEquals(operator1,operator2))
-            return orEquals ? operator1.getWhere() : FALSE;
+            return orEquals ? operator1.getWhere() : Where.FALSE();
         return create(operator1, operator2, new GreaterWhere(operator1, operator2, orEquals));
     }
 

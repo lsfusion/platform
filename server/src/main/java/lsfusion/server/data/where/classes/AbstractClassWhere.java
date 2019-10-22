@@ -170,7 +170,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         public Where getWhere(Function<K, Expr> mapExprs, boolean onlyObject, IsClassType type) {
             assert !type.isInconsistent() || onlyObject;
             
-            Where result = Where.TRUE;
+            Where result = Where.TRUE();
             for(int i=0,size=size();i<size;i++) {
                 AndClassSet value = getValue(i);
                 if(((value instanceof ObjectValueClassSet) || !onlyObject) && BaseUtils.hashEquals(value, value.getValueClassSet())) // если ValueClassSet, тут формально можно добавлять and Not BaseClass

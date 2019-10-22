@@ -109,7 +109,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     
     public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(checkPrereadNull(joinImplement, calcType, propChanges))
-            return Expr.NULL;
+            return Expr.NULL();
         
         return implement.property.getExpr(getJoinImplements(joinImplement, calcType, propChanges, changedWhere), calcType, propChanges, changedWhere);
     }
@@ -181,7 +181,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     private static <T extends PropertyInterface> Where getAndWhere(Property<T> property, final ImMap<T, ? extends Expr> mapExprs, final PropertyChanges propChanges) {
         if(property instanceof AndFormulaProperty) {
             AndFormulaProperty andProperty = (AndFormulaProperty)property;
-            Where where = Where.TRUE;
+            Where where = Where.TRUE();
             for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
                 if(andInterface != andProperty.objectInterface)
                     where = where.and(mapExprs.get((T)andInterface).getWhere());

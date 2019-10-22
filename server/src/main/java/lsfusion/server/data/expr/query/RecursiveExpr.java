@@ -168,7 +168,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         }
 
         if(initial.isNull()) // потому как иначе в getInnerJoin используется getType который assert'ит что не null
-            return NULL;
+            return Expr.NULL();
 
         RecursiveExpr expr = new RecursiveExpr(new Query(mapIterate, initial, step, cyclePossible, noInnerFollows), restGroup.result);
         RecursiveJoin innerJoin = expr.getInnerJoin();

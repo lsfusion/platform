@@ -1700,15 +1700,15 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 }
 	:	'PARTITION' 
 		(
-			(	'SUM'	{ type = PartitionType.SUM; } 
-			|	'PREV'	{ type = PartitionType.PREVIOUS; }
+			(	'SUM'	{ type = PartitionType.sum(); } 
+			|	'PREV'	{ type = PartitionType.previous(); }
 			)
 		|	'UNGROUP'
 			ungroupProp=propertyUsage { pUsage = $ungroupProp.propUsage; }
-			(	'PROPORTION' { type = PartitionType.DISTR_CUM_PROPORTION; } 
+			(	'PROPORTION' { type = PartitionType.distrCumProportion(); } 
 				('STRICT' { strict = true; })? 
 				'ROUND' '(' prec=intLiteral ')' { precision = $prec.val; }
-			|	'LIMIT' { type = PartitionType.DISTR_RESTRICT; } 
+			|	'LIMIT' { type = PartitionType.distrRestrict(); } 
 				('STRICT' { strict = true; })? 
 			)
 		)

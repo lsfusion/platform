@@ -41,7 +41,7 @@ public class UpWheres<J extends WhereJoin> extends WrapMap<J, UpWhere> {
         }
 
         public Where getWhere(JoinExprTranslator translator) {
-            return Where.TRUE;
+            return Where.TRUE();
         }
     };
     public static final UpWhere FALSE = new UpWhere() {
@@ -58,7 +58,7 @@ public class UpWheres<J extends WhereJoin> extends WrapMap<J, UpWhere> {
         }
 
         public Where getWhere(JoinExprTranslator translator) {
-            return Where.FALSE;
+            return Where.FALSE();
         }
     };
 }

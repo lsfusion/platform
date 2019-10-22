@@ -36,7 +36,7 @@ public class LinearOperandMap extends WrapMap<Expr,Integer> {
 //        }
 
         String source = "";
-//        Where linearWhere = Where.FALSE;
+//        Where linearWhere = Where.FALSE();
 //        Collection<String> orderWhere = new ArrayList<String>();
         for(int i=0,size=size();i<size;i++) {
             assert getValue(i)!=0;

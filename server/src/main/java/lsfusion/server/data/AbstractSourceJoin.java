@@ -24,7 +24,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
 
     protected static class ToString extends CompileSource {
         public ToString(ImSet<Value> values) {
-            super(expr -> ObjectType.instance, Where.FALSE, BaseUtils.<ImSet<ParseValue>>immutableCast(values).mapRevValues(new Function<ParseValue, String>() {
+            super(expr -> ObjectType.instance, Where.FALSE(), BaseUtils.<ImSet<ParseValue>>immutableCast(values).mapRevValues(new Function<ParseValue, String>() {
                 public String apply(ParseValue value) {
                     return value.toString();
                 }}), DataAdapter.debugSyntax, StaticExecuteEnvironmentImpl.MVOID);
@@ -57,7 +57,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
     public abstract T followFalse(Where falseWhere, boolean pack);
 
     public T calculatePack() {
-        return followFalse(Where.FALSE, true);
+        return followFalse(Where.FALSE(), true);
     }
 
     public boolean needMaterialize() {
