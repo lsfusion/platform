@@ -687,7 +687,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
 
         Where expandWhere = getWhere(mapKeys, modifier, reallyChanged).and(
-                            expandingTable != null ? expandingTable.join(mapKeys).getWhere() : Where.TRUE);
+                            expandingTable != null ? expandingTable.join(mapKeys).getWhere() : Where.TRUE());
 
         return new Query<>(mapKeys, MapFact.EMPTY(), expandWhere);
     }
