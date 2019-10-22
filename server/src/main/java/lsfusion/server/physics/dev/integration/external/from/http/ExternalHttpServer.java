@@ -178,6 +178,7 @@ public class ExternalHttpServer extends MonitorServer {
 
         private void sendResponse(HttpExchange request, byte[] response, boolean error) throws IOException {
             request.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
+            ServerLoggers.httpServerLogger.info(request.getRequestURI() + " response: " + (error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK));
             request.sendResponseHeaders(error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK, response.length);
             OutputStream os = request.getResponseBody();
             os.write(response);
@@ -218,6 +219,7 @@ public class ExternalHttpServer extends MonitorServer {
                 response.getResponseHeaders().add("Content-Type", contentType);
             if(contentDisposition != null && !hasContentDisposition)
                 response.getResponseHeaders().add("Content-Disposition", contentDisposition);
+            ServerLoggers.httpServerLogger.info(response.getRequestURI() + "response: " + HttpServletResponse.SC_OK);
             response.sendResponseHeaders(HttpServletResponse.SC_OK, responseEntity.getContentLength());
             responseEntity.writeTo(response.getResponseBody());
         }
