@@ -2427,4 +2427,14 @@ public class Settings implements Cloneable {
     public void setGroupIntegrationHierarchyOldOrder(boolean groupIntegrationHierarchyOldOrder) {
         this.groupIntegrationHierarchyOldOrder = groupIntegrationHierarchyOldOrder;
     }
+
+    private int externalHttpServerThreadCount = 10;
+
+    public int getExternalHttpServerThreadCount() {
+        return externalHttpServerThreadCount;
+    }
+
+    public void setExternalHttpServerThreadCount(int externalHttpServerThreadCount) {
+        this.externalHttpServerThreadCount = externalHttpServerThreadCount;
+    }
 }

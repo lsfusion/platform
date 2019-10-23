@@ -15,6 +15,7 @@ import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.controller.remote.RemoteLogics;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
@@ -57,7 +58,7 @@ public class ExternalHttpServer extends MonitorServer {
         try {
             httpServer = HttpServer.create(new InetSocketAddress(getLogicsInstance().getRmiManager().getHttpPort()), 0);
             httpServer.createContext("/", new HttpRequestHandler());
-            httpServer.setExecutor(Executors.newFixedThreadPool(10, new DaemonThreadFactory("externalHttpServer-daemon")));
+            httpServer.setExecutor(Executors.newFixedThreadPool(Settings.get().getExternalHttpServerThreadCount(), new DaemonThreadFactory("externalHttpServer-daemon")));
             httpServer.start();
         } catch (Exception e) {
             if (httpServer != null)
