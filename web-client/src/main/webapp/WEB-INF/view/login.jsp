@@ -25,13 +25,15 @@
                             String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
                         %>
 
+                        <div class="image-center">
+                            <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
+                        </div>
+                        
                         <form id="login-form"
                               name="loginForm"
                               method="POST"
                               action="login_check<%=queryString%>" >
                             <fieldset>
-
-                                <div class="image-center"><img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion"></div>
                                 <p>
                                     <br/>
                                     <label for="username"><%= ServerMessages.getString(request, "login") %></label>
