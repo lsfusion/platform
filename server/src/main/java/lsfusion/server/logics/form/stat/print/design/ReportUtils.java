@@ -4,6 +4,8 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.type.StretchTypeEnum;
 
+import java.math.BigDecimal;
+
 class ReportUtils {
     public static JRDesignParameter createParameter(String name, Class cls) {
         JRDesignParameter parameter = new JRDesignParameter();
@@ -48,4 +50,18 @@ class ReportUtils {
     public static String createFieldString(String fieldName) {
         return "$F{" + fieldName + "}"; 
     }
+    
+    // In MS Excel '#,##0.##' pattern shows decimal separator even if number is integer (example: "45," in russian locale) 
+    public static String createPatternExpressionForExcelSeparatorProblem(String pattern, String fieldName, Class cls) {
+        int dotPosition = pattern.lastIndexOf('.');
+        String intPattern = pattern.substring(0, dotPosition);
+        if (cls == BigDecimal.class) {
+            return String.format("$F{%s}.compareTo($F{%s}.setScale(0, BigDecimal.ROUND_HALF_UP) ) == 0 ? \"%s\" : \"%s\"", fieldName, fieldName, intPattern, pattern);
+        } else if (cls == Double.class) {
+            return String.format("$F{%s} == Math.floor($F{%s}) ? \"%s\" : \"%s\"", fieldName, fieldName, intPattern, pattern);
+        }
+        return null;
+    }
+    
+    public static final String EXCEL_SEPARATOR_PROBLEM_REGEX = ".*\\.#+";   
 }

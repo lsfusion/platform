@@ -31,11 +31,11 @@ import net.sf.jasperreports.engine.type.OrientationEnum;
 import net.sf.jasperreports.engine.type.PositionTypeEnum;
 import net.sf.jasperreports.engine.type.StretchTypeEnum;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import static lsfusion.interop.form.print.ReportConstants.*;
 import static lsfusion.server.logics.form.stat.GroupObjectHierarchy.ReportNode;
@@ -69,6 +69,8 @@ public class ReportDesignGenerator {
     private int charWidth = 8;
     private boolean toStretch = true;
     
+    private FormPrintType printType;
+    
     private Map<GroupObjectEntity, ImList<ReportDrawField>> groupFields; // optimization
     
     private Map<ReportNode, JasperDesign> designs = new HashMap<>();
@@ -86,6 +88,7 @@ public class ReportDesignGenerator {
                 groupFields.put(group, getReportDrawFields(group, hierarchy.hierarchy, types));
         this.groupFields = groupFields;
 
+        this.printType = printType;
         pageWidth = calculatePageWidth(printType);
         pageUsableWidth = pageWidth - defaultPageMargin * 2;
     }
@@ -302,11 +305,31 @@ public class ReportDesignGenerator {
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);
         dataField.setKey(reportField.columnGroupName);
-        dataField.setPattern(reportField.pattern);
+        setPattern(dataField, reportField);        
 
         layout.add(reportField, captionField, dataField);
     }
 
+    private void setPattern(JRDesignTextField dataField, ReportDrawField reportField) {
+        String pattern = reportField.pattern;
+        if (pattern != null && needToFixExcelSeparatorProblem(pattern, reportField)) {
+            JRDesignExpression expr = null;
+            pattern = ReportUtils.createPatternExpressionForExcelSeparatorProblem(pattern, reportField.sID, reportField.valueClass);
+            assert pattern != null;
+            dataField.setPatternExpression(ReportUtils.createExpression(pattern, reportField.valueClass));
+        } else {
+            dataField.setPattern(pattern);
+        }
+    }
+    
+    private boolean needToFixExcelSeparatorProblem(String pattern, ReportDrawField reportField) {
+        if (printType == FormPrintType.XLS || printType == FormPrintType.XLSX) {
+            Class cls = reportField.valueClass;
+            return (cls == Double.class || cls == BigDecimal.class) && pattern.matches(ReportUtils.EXCEL_SEPARATOR_PROBLEM_REGEX);
+        }
+        return false;
+    }
+    
     private JRDesignGroup addDesignGroup(JasperDesign design, GroupObjectEntity group, String groupName) throws JRException {
         
         JRDesignGroup designGroup = new JRDesignGroup();
