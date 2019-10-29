@@ -81,6 +81,9 @@ public class TreeGroupController extends AbstractTableController {
         }
 
         formLayout.add(treeGroup, view);
+
+        // вот так вот приходится делать, чтобы "узнавать" к какому GroupObject относится этот Component
+        view.putClientProperty("groupObject", lastGroupObject);
     }
 
     public void processFormChanges(ClientFormChanges fc,

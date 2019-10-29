@@ -27,6 +27,9 @@ import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispat
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.order.user.Order;
 import org.jdesktop.swingx.JXTableHeader;
@@ -324,6 +327,12 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     private void initializeActionMap() {
+
+        if(treeGroup != null) {
+            form.addBinding(new KeyInputEvent(KeyStrokes.getEnter()), getEnterBinding(false));
+            form.addBinding(new KeyInputEvent(KeyStrokes.getShiftEnter()), getEnterBinding(true));
+        }
+
         final Action nextColumnAction = new GoToNextCellAction(0, 1);
         final Action prevColumnAction = new GoToNextCellAction(0, -1);
         final Action nextRowAction = new GoToNextCellAction(1, 0);
@@ -356,6 +365,30 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         actionMap.put("selectLastRow", lastRowAction);
 
         this.moveToNextCellAction = nextColumnAction;
+    }
+
+    private ClientFormController.Binding getEnterBinding(boolean shiftPressed) {
+        ClientFormController.Binding binding = new ClientFormController.Binding(BaseUtils.last(treeGroup.groups), -100) {
+            @Override
+            public boolean pressed() {
+                tabAction(!shiftPressed);
+                return true;
+            }
+            @Override
+            public boolean showing() {
+                return true;
+            }
+        };
+        binding.bindEditing = BindingMode.ALL;
+        binding.bindGroup = BindingMode.ONLY;
+        return binding;
+    }
+
+    private Action tabAction = new GoToNextCellAction(0, 1);
+    private Action shiftTabAction = new GoToNextCellAction(0, -1);
+
+    protected void tabAction(boolean forward) {
+        (forward ? tabAction : shiftTabAction).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
     }
 
     private void moveToFocusableCellIfNeeded() {

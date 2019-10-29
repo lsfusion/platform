@@ -68,4 +68,8 @@ public class DataPanelViewTable extends SingleCellTable {
             SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, new Color(120, 170, 208), 0, 0, getWidth(), getHeight());
         }
     }
+
+    @Override
+    public void tabAction(boolean forward) {
+    }
 }

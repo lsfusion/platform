@@ -237,7 +237,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 public boolean showing() {
                     return isShowing(filterCheck);
                 }
-            }, false);
+            });
         }
     }
 
@@ -264,7 +264,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     public boolean showing() {
                         return isShowing(filterBox);
                     }
-                }, false);
+                });
             }
 
         }
@@ -1328,7 +1328,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         public GBindingMode bindShowing;
 
         public Binding(GGroupObject groupObject) {
+            this(groupObject, 0);
+        }
+
+        public Binding(GGroupObject groupObject, int priority) {
             this.groupObject = groupObject;
+            this.priority = priority;
         }
 
         public abstract void pressed(EventTarget eventTarget);
@@ -1352,16 +1357,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     
     public void addPropertyBindings(GPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
         if(propertyDraw.editKey != null)
-            addBinding(propertyDraw.editKey, bindingSupplier.get(), false);
+            addBinding(propertyDraw.editKey, bindingSupplier.get());
         if(propertyDraw.editMouse != null) {
             Binding binding = bindingSupplier.get();
             if(propertyDraw.editMousePriority != null)
                 binding.priority = propertyDraw.editMousePriority;
-            addBinding(propertyDraw.editMouse, binding, propertyDraw.editMouseOnlyDialog);
+            if(propertyDraw.editMouseOnlyDialog)
+                binding.bindDialog = GBindingMode.ONLY;
+            addBinding(propertyDraw.editMouse, binding);
         }
     }
 
-    public void addBinding(GInputEvent event, Binding binding, boolean overOnlyDialog) {
+    public void addBinding(GInputEvent event, Binding binding) {
         assert event != null && binding != null;
 
         ArrayList<Binding> groupBindings = bindings.get(event);
@@ -1369,10 +1376,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             groupBindings = new ArrayList<>();
             bindings.put(event, groupBindings);
         }
-        binding.bindDialog = overOnlyDialog ? GBindingMode.ONLY : (event.bindingModes != null ? event.bindingModes.getOrDefault("dialog", GBindingMode.AUTO) : GBindingMode.AUTO);
-        binding.bindGroup = event.bindingModes != null ? event.bindingModes.getOrDefault("group", GBindingMode.AUTO) : GBindingMode.AUTO;
-        binding.bindEditing = event.bindingModes != null ? event.bindingModes.getOrDefault("editing", GBindingMode.AUTO) : GBindingMode.AUTO;
-        binding.bindShowing = event.bindingModes != null ? event.bindingModes.getOrDefault("showing", GBindingMode.AUTO) : GBindingMode.AUTO;
+        if(binding.bindDialog == null)
+            binding.bindDialog = event.bindingModes != null ? event.bindingModes.getOrDefault("dialog", GBindingMode.AUTO) : GBindingMode.AUTO;
+        if(binding.bindGroup == null)
+            binding.bindGroup = event.bindingModes != null ? event.bindingModes.getOrDefault("group", GBindingMode.AUTO) : GBindingMode.AUTO;
+        if(binding.bindEditing == null)
+            binding.bindEditing = event.bindingModes != null ? event.bindingModes.getOrDefault("editing", GBindingMode.AUTO) : GBindingMode.AUTO;
+        if(binding.bindShowing == null)
+            binding.bindShowing = event.bindingModes != null ? event.bindingModes.getOrDefault("showing", GBindingMode.AUTO) : GBindingMode.AUTO;
         groupBindings.add(binding);
     }
     

@@ -32,14 +32,9 @@ public abstract class ClientFormTreeTable extends JXTreeTable implements TableTr
     }
 
     private void setupActionMap() {
-        //  Have the enter key work the same as the tab key
-        InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        ActionMap am = getActionMap();
-
-        im.put(KeyStrokes.getEnter(), im.get(KeyStrokes.getTab()));
-
-        am.put("selectNextColumn", new ExpandAction(true, am.get("selectNextColumn")));
-        am.put("selectPreviousColumn", new ExpandAction(false, am.get("selectPreviousColumn")));
+        //remove default enter and shift-enter actions
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "none");
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getShiftEnter(), "none");
     }
 
     /**

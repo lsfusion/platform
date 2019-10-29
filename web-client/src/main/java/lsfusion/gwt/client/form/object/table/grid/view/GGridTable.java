@@ -109,7 +109,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
 
     public GGridTable(GFormController iform, GGridController igroupController, GGridTableController gridController, GGridUserPreferences[] iuserPreferences, boolean autoSize) {
-        super(iform, null, igroupController.groupObject.grid.headerHeight);
+        super(iform, igroupController.groupObject, null, igroupController.groupObject.grid.headerHeight);
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;

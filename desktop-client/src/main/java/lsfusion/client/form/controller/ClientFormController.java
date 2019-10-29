@@ -70,7 +70,10 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import javax.swing.Timer;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -1670,25 +1673,31 @@ public class ClientFormController implements AsyncListener {
         public abstract boolean showing();
     }
 
-    public void addBinding(InputEvent ks, Binding binding, boolean overOnlyDialog) {
+    public void addBinding(InputEvent ks, Binding binding) {
         List<Binding> list = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
         if(binding.priority == 0)
             binding.priority = list.size();
-        binding.bindDialog = overOnlyDialog ? BindingMode.ONLY : (ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO);
-        binding.bindGroup = ks.bindingModes != null ? ks.bindingModes.getOrDefault("group", BindingMode.AUTO) : BindingMode.AUTO;
-        binding.bindEditing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("editing", BindingMode.AUTO) : BindingMode.AUTO;
-        binding.bindShowing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("showing", BindingMode.AUTO) : BindingMode.AUTO;
+        if(binding.bindDialog == null)
+            binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
+        if(binding.bindGroup == null)
+            binding.bindGroup = ks.bindingModes != null ? ks.bindingModes.getOrDefault("group", BindingMode.AUTO) : BindingMode.AUTO;
+        if(binding.bindEditing == null)
+            binding.bindEditing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("editing", BindingMode.AUTO) : BindingMode.AUTO;
+        if(binding.bindShowing == null)
+            binding.bindShowing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("showing", BindingMode.AUTO) : BindingMode.AUTO;
         list.add(binding);
     }
     
     public void addPropertyBindings(ClientPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
         if(propertyDraw.editKey != null)
-            addBinding(propertyDraw.editKey, bindingSupplier.get(), false);
+            addBinding(propertyDraw.editKey, bindingSupplier.get());
         if(propertyDraw.editMouse != null) {
             Binding binding = bindingSupplier.get();
             if(propertyDraw.editMousePriority != null)
                 binding.priority = propertyDraw.editMousePriority;
-            addBinding(propertyDraw.editMouse, binding, propertyDraw.editMouseOnlyDialog);
+            if(propertyDraw.editMouseOnlyDialog)
+                binding.bindDialog = BindingMode.ONLY;
+            addBinding(propertyDraw.editMouse, binding);
         }
     }
 
@@ -1748,10 +1757,7 @@ public class ClientFormController implements AsyncListener {
     private boolean bindEditing(Binding binding, KeyEvent ke) {
         switch (binding.bindEditing) {
             case AUTO:
-                if(ke != null) {
-                    char c = ke.getKeyChar();
-                    return !isEditing() || notTextCharEvent(ke);
-                } else return true;
+                return ke == null || (!isEditing() || notTextCharEvent(ke));
             case ALL:
                 return true;
             case ONLY:

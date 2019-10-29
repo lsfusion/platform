@@ -198,7 +198,11 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
     }
 
     @Override
-    public void selectNextCellInColumn(boolean down) {
+    public void selectNextRow(boolean down) {
+    }
+
+    @Override
+    public void selectNextCellInColumn(boolean forward) {
     }
 
     @Override

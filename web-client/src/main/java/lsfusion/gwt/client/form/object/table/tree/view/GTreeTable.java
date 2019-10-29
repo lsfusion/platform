@@ -64,7 +64,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private Column hierarchicalColumn;
 
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, boolean autoSize) {
-        super(iformController, treeGroupController.getFont());
+        super(iformController, lastGroupObject(treeGroup), treeGroupController.getFont());
 
         this.treeGroupController = treeGroupController;
         this.autoSize = autoSize;
@@ -118,6 +118,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         };
 
         setFixedHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
+
+        getElement().setPropertyObject("groupObject", groupObject);
+    }
+
+    private static GGroupObject lastGroupObject(GTreeGroup treeGroup) {
+        return treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
     }
 
     @Override

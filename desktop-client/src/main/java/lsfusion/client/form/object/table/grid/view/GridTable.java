@@ -116,7 +116,6 @@ public class GridTable extends ClientPropertyTable {
     private int selectIndex = -1;
     private boolean scrollToOldObject = true; // не скроллить при ctrl+home/ctrl+end (синхронный запрос)
 
-    private ClientGroupObject groupObject;
     private TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>> sortableHeaderManager;
 
     //для вдавливаемости кнопок
@@ -150,7 +149,7 @@ public class GridTable extends ClientPropertyTable {
     private ThreadLocal<Boolean> threadLocalIsStopCellEditing = new ThreadLocal<>();
 
     public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
-        super(new GridTableModel(), iform);
+        super(new GridTableModel(), iform, igridView.getGridController().getGroupController().getGroupObject());
 
         setTableHeader(new GridTableHeader(columnModel) {
             @Override
@@ -161,7 +160,6 @@ public class GridTable extends ClientPropertyTable {
 
         gridController = igridView.getGridController();
         groupController = gridController.getGroupController();
-        groupObject = groupController.getGroupObject();
 
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GridUserPreferences(groupObject);
         userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GridUserPreferences(groupObject);
@@ -382,7 +380,18 @@ public class GridTable extends ClientPropertyTable {
         tableHeader.repaint();
     }
 
+    private Action tabAction = new GoToNextCellAction(true);
+    private Action shiftTabAction = new GoToNextCellAction(false);
+    @Override
+    public void tabAction(boolean forward) {
+        (forward ? tabAction : shiftTabAction).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+    }
+
     private void initializeActionMap() {
+        //remove default enter and shift-enter actions
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "none");
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getShiftEnter(), "none");
+
         editBindingMap.setKeyAction(KeyStrokes.getGroupCorrectionKeyStroke(), ServerResponse.GROUP_CHANGE);
 
         final Action oldNextAction = getActionMap().get("selectNextColumnCell");

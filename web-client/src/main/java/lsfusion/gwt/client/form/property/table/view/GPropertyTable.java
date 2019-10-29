@@ -1,9 +1,7 @@
 package lsfusion.gwt.client.form.property.table.view;
 
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.dom.client.*;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
@@ -13,7 +11,10 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.HasCell;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GBindingMode;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -35,6 +36,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     private final GPropertyContextMenuPopup contextMenuPopup = new GPropertyContextMenuPopup();
 
     protected final GFormController form;
+    protected final GGroupObject groupObject;
     protected final GEditBindingMap editBindingMap;
     protected final GEditPropertyDispatcher editDispatcher;
 
@@ -48,24 +50,57 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         this(iform, resources, false);
     }
 
-    public GPropertyTable(GFormController iform, Resources resources, int initHeaderHeight) {
-        this(iform, resources, initHeaderHeight, false);    
+    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, Resources resources, int initHeaderHeight) {
+        this(iform, iGroupObject, resources, initHeaderHeight, false);
     }
 
     public GPropertyTable(GFormController iform, Resources resources, boolean nullHeader) {
-        this(iform, resources, -1, nullHeader);
+        this(iform, null, resources, -1, nullHeader);
     }
 
-    public GPropertyTable(GFormController iform, Resources resources, int initHeaderHeight, boolean nullHeader) {
+    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, Resources resources, int initHeaderHeight, boolean nullHeader) {
         super(resources, initHeaderHeight, nullHeader);
 
         this.form = iform;
+        this.groupObject = iGroupObject;
 
         this.editDispatcher = new GEditPropertyDispatcher(form, this);
         this.editBindingMap = new GEditBindingMap();
         this.editBindingMap.setMouseAction(GEditBindingMap.CHANGE);
 
         sinkEvents(Event.ONPASTE);
+
+        initializeActionMap();
+    }
+
+    private void initializeActionMap() {
+        //  Have the enter key work the same as the tab key
+        if(groupObject != null) {
+            form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER), null), getEnterBinding(false));
+            form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, true), null), getEnterBinding(true));
+        }
+    }
+
+    protected GFormController.Binding getEnterBinding(boolean shiftPressed) {
+        GFormController.Binding binding = new GFormController.Binding(groupObject, -100) {
+            @Override
+            public void pressed(EventTarget eventTarget) {
+                selectNextCellInColumn(!shiftPressed);
+            }
+
+            @Override
+            public boolean showing() {
+                return true;
+            }
+
+            @Override
+            public boolean enabled() {
+                return super.enabled();
+            }
+        };
+        binding.bindEditing = GBindingMode.ALL;
+        binding.bindGroup = GBindingMode.ONLY;
+        return binding;
     }
 
     public GPropertyDraw getProperty(Column column) {

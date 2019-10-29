@@ -8,6 +8,7 @@ import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.EditBindingMap;
@@ -16,6 +17,8 @@ import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -39,6 +42,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
     
     protected final ClientFormController form;
+    protected final ClientGroupObject groupObject;
 
     protected EventObject editEvent;
     protected int editRow;
@@ -48,10 +52,11 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     protected boolean editPerformed;
     protected boolean commitingValue;
 
-    protected ClientPropertyTable(TableModel model, ClientFormController form) {
+    protected ClientPropertyTable(TableModel model, ClientFormController form, ClientGroupObject groupObject) {
         super(model);
         
         this.form = form;
+        this.groupObject = groupObject;
 
         editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 
@@ -67,9 +72,30 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
     private void initializeActionMap() {
         //  Have the enter key work the same as the tab key
-        InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        im.put(KeyStrokes.getEnter(), im.get(KeyStrokes.getTab()));
+        if(groupObject != null) {
+            form.addBinding(new KeyInputEvent(KeyStrokes.getEnter()), getEnterBinding(false));
+            form.addBinding(new KeyInputEvent(KeyStrokes.getShiftEnter()), getEnterBinding(true));
+        }
     }
+
+    private ClientFormController.Binding getEnterBinding(boolean shiftPressed) {
+        ClientFormController.Binding binding = new ClientFormController.Binding(groupObject, -100) {
+            @Override
+            public boolean pressed() {
+                tabAction(!shiftPressed);
+                return true;
+            }
+            @Override
+            public boolean showing() {
+                return true;
+            }
+        };
+        binding.bindEditing = BindingMode.ALL;
+        binding.bindGroup = BindingMode.ONLY;
+        return binding;
+    }
+
+    protected abstract void tabAction(boolean forward);
 
     public ClientType getCurrentEditType() {
         return currentEditType;

@@ -14,6 +14,10 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, modifiers);
     }
 
+    public static KeyStroke getShiftEnter() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
+    }
+
     public static KeyStroke getCtrlEnter() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
     }
@@ -137,7 +141,8 @@ public class KeyStrokes {
             KeyEvent keyEvent = (KeyEvent) event;
             return isSuitableEditKeyEvent(event) &&
                     !isBackSpaceEvent(keyEvent) &&
-                    !isDeleteEvent(keyEvent);
+                    !isDeleteEvent(keyEvent) &&
+                    !isEnterEvent(keyEvent);
         }
         return false;
     }

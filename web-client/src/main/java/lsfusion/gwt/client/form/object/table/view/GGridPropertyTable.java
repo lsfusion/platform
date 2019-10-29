@@ -71,12 +71,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public static final GGridPropertyTableResource GGRID_RESOURCES = GWT.create(GGridPropertyTableResource.class);
 
-    public GGridPropertyTable(GFormController iform, GFont font) {
-        this(iform, font, -1);    
+    public GGridPropertyTable(GFormController iform, GGroupObject iGroupObject, GFont font) {
+        this(iform, iGroupObject, font, -1);
     }
     
-    public GGridPropertyTable(GFormController iform, GFont font, int initHeaderHeight) {
-        super(iform, GGRID_RESOURCES, initHeaderHeight);
+    public GGridPropertyTable(GFormController iform, GGroupObject iGroupObject, GFont font, int initHeaderHeight) {
+        super(iform, iGroupObject, GGRID_RESOURCES, initHeaderHeight);
         
         this.font = font;
 
@@ -277,8 +277,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
 
     @Override
-    public void selectNextCellInColumn(boolean down) {
-        getKeyboardSelectionHandler().selectNextCellInColumn(down);
+    public void selectNextRow(boolean down) {
+        getKeyboardSelectionHandler().selectNextRow(down);
+    }
+
+    @Override
+    public void selectNextCellInColumn(boolean forward) {
+        getKeyboardSelectionHandler().selectNextCellInColumn(forward);
     }
 
     public static class GridPropertyTableKeyboardSelectionHandler<T extends GridDataRecord> extends DataGridKeyboardSelectionHandler<T> {
@@ -300,19 +305,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             } else if (keyCode == KeyCodes.KEY_END && !ctrlPressed) {
                 getDisplay().setKeyboardSelectedColumn(getDisplay().getColumnCount() - 1);
                 return true;
-            } else if (!ctrlPressed && !nativeEvent.getAltKey() && keyCode == KeyCodes.KEY_ENTER) {
-                if (nativeEvent.getShiftKey()) {
-                    nextRow(false);
-                } else {
-                    nextColumn(true);
-                }
-                return true;
             }
             return super.handleKeyEvent(event);
         }
 
-        public void selectNextCellInColumn(boolean down) {
+        public void selectNextRow(boolean down) {
             nextRow(down);
+        }
+
+        public void selectNextCellInColumn(boolean forward) {
+            nextColumn(forward);
         }
     }
 

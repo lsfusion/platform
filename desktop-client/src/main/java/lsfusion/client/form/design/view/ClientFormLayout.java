@@ -1,6 +1,5 @@
 package lsfusion.client.form.design.view;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.client.base.focus.ContainerFocusListener;
 import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.controller.ClientFormController;
@@ -9,16 +8,12 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClientFormLayout extends JPanel {
 
@@ -219,12 +214,9 @@ public class ClientFormLayout extends JPanel {
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
         if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT) {
-            if(ks.equals(KeyStroke.getKeyStroke("typed \n"))) { //ENTER event is receiving as 'typed \n'
-                ks = KeyStrokes.getEnter();
-            }
             if(form.processBinding(new KeyInputEvent(ks), ke, () -> getGroupObject(ke.getComponent())))
                 return true;
-            }
+        }
 
         return super.processKeyBinding(ks, ke, condition, pressed);
     }

@@ -122,7 +122,11 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     }
 
     @Override
-    public void selectNextCellInColumn(boolean down) {
+    public void selectNextRow(boolean down) {
+    }
+
+    @Override
+    public void selectNextCellInColumn(boolean forward) {
     }
 
     public void startEditing(EditEvent event) {

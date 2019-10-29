@@ -222,7 +222,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         try {
             String value = getCurrentText(parent);
             editManager.commitEditing(tryParseInputText(value, true));
-            editManager.selectNextCellInColumn(moveDown);
+            editManager.selectNextRow(moveDown);
         } catch (ParseException ignore) {
         }
     }

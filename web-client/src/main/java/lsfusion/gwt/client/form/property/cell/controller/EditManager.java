@@ -5,5 +5,7 @@ public interface EditManager {
 
     void cancelEditing();
 
-    void selectNextCellInColumn(boolean down);
+    void selectNextRow(boolean down);
+
+    void selectNextCellInColumn(boolean forward);
 }
