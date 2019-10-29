@@ -164,7 +164,9 @@ public class PropertyDrawView extends ComponentView {
         setupHeader(reportField);
         setupFooter(reportField);
         setupShowIf(reportField);
-
+        setupBackgroundColor(reportField);    
+        setupForegroundColor(reportField);
+        
         reportField.pattern = getFormatPattern();
 
         type.fillReportDrawField(reportField);
@@ -213,6 +215,20 @@ public class PropertyDrawView extends ComponentView {
         if (entity.propertyShowIf != null && entity.propertyShowIf.property.interfaces.size() == 0) {
             field.hasShowIfProperty = true;
             field.showIfClass = getPropertyClass(entity.propertyShowIf);
+        }
+    }
+
+    private void setupBackgroundColor(ReportDrawField field) {
+        if (entity.propertyBackground != null) {
+            field.hasBackgroundProperty = true;
+            field.backgroundClass = getPropertyClass(entity.propertyBackground);
+        }
+    }
+
+    private void setupForegroundColor(ReportDrawField field) {
+        if (entity.propertyForeground != null) {
+            field.hasForegroundProperty = true;
+            field.foregroundClass = getPropertyClass(entity.propertyForeground);
         }
     }
 

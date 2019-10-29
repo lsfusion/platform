@@ -21,16 +21,11 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.physics.admin.log.ServerLoggers;
-import net.sf.jasperreports.engine.JRBand;
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
-import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
-import net.sf.jasperreports.engine.type.OrientationEnum;
-import net.sf.jasperreports.engine.type.PositionTypeEnum;
-import net.sf.jasperreports.engine.type.StretchTypeEnum;
+import net.sf.jasperreports.engine.type.*;
 
+import java.awt.*;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -284,6 +279,14 @@ public class ReportDesignGenerator {
             String fieldId = field.sID + showIfSuffix;
             addDesignField(design, fieldId, field.showIfClass.getName());
         }
+        if (field.hasBackgroundProperty) {
+            String fieldId = field.sID + backgroundSuffix;
+            addDesignField(design, fieldId, field.backgroundClass.getName());
+        }
+        if (field.hasForegroundProperty) {
+            String fieldId = field.sID + foregroundSuffix;
+            addDesignField(design, fieldId, field.foregroundClass.getName());
+        }
     }
     
     private void addReportFieldToLayout(ReportLayout layout, ReportDrawField reportField, JRDesignStyle captionStyle, JRDesignStyle style) {
@@ -306,7 +309,9 @@ public class ReportDesignGenerator {
         dataField.setBlankWhenNull(true);
         dataField.setKey(reportField.columnGroupName);
         setPattern(dataField, reportField);        
-
+        setBackground(dataField, reportField);
+        setForeground(dataField, reportField);
+        
         layout.add(reportField, captionField, dataField);
     }
 
@@ -330,8 +335,28 @@ public class ReportDesignGenerator {
         return false;
     }
     
+    private void setBackground(JRDesignTextField dataField, ReportDrawField reportField) {
+        if (reportField.hasBackgroundProperty) {
+            String designBackgroundText = String.format("\"#\" + net.sf.jasperreports.engine.util.JRColorUtil.getColorHexa(%s)",
+                    ReportUtils.createFieldString(reportField.sID + backgroundSuffix));
+
+            JRDesignPropertyExpression expr = ReportUtils.createPropertyExpression("net.sf.jasperreports.style.backcolor", designBackgroundText, Color.class);
+            dataField.setMode(ModeEnum.OPAQUE);
+            dataField.addPropertyExpression(expr);
+        }
+    }
+
+    private void setForeground(JRDesignTextField dataField, ReportDrawField reportField) {
+        if (reportField.hasForegroundProperty) {
+            String designForegroundText = String.format("\"#\" + net.sf.jasperreports.engine.util.JRColorUtil.getColorHexa(%s)",
+                    ReportUtils.createFieldString(reportField.sID + foregroundSuffix));
+
+            JRDesignPropertyExpression expr = ReportUtils.createPropertyExpression("net.sf.jasperreports.style.forecolor", designForegroundText, Color.class);
+            dataField.addPropertyExpression(expr);
+        }
+    }
+    
     private JRDesignGroup addDesignGroup(JasperDesign design, GroupObjectEntity group, String groupName) throws JRException {
-        
         JRDesignGroup designGroup = new JRDesignGroup();
         
         String groupString = "";

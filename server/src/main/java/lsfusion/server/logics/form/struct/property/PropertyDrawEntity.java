@@ -121,6 +121,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         if (propertyShowIf != null)
             mResult.exclAdd(showIfReader);
+        
+        if (propertyBackground != null) 
+            mResult.exclAdd(backgroundReader);
+        
+        if (propertyForeground != null)
+            mResult.exclAdd(foregroundReader);
     }
 
     private abstract class PropertyDrawReader implements PropertyReaderEntity {
@@ -221,7 +227,80 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     };
 
+    public final PropertyReaderEntity backgroundReader = new PropertyDrawReader() {
+        @Override
+        public byte getTypeID() {
+            return PropertyReadType.CELL_BACKGROUND;
+        }
 
+        @Override
+        public int getID() {
+            return PropertyDrawEntity.this.getID();
+        }
+
+        @Override
+        public String getSID() {
+            return PropertyDrawEntity.this.getSID();
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return PropertyDrawEntity.this.propertyBackground;
+        }
+
+        @Override
+        public PropertyObjectEntity getPropertyObjectEntity() {
+            return PropertyDrawEntity.this.propertyBackground;
+        }
+
+        @Override
+        public String toString() {
+            return ThreadLocalContext.localize("{logics.background}") + "(" + PropertyDrawEntity.this.toString() + ")";
+        }
+
+        @Override
+        protected String getReportSuffix() {
+            return ReportConstants.backgroundSuffix;
+        }
+    };
+
+    public final PropertyReaderEntity foregroundReader = new PropertyDrawReader() {
+        @Override
+        public byte getTypeID() {
+            return PropertyReadType.CELL_FOREGROUND;
+        }
+
+        @Override
+        public int getID() {
+            return PropertyDrawEntity.this.getID();
+        }
+
+        @Override
+        public String getSID() {
+            return PropertyDrawEntity.this.getSID();
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return PropertyDrawEntity.this.propertyForeground;
+        }
+
+        @Override
+        public PropertyObjectEntity getPropertyObjectEntity() {
+            return PropertyDrawEntity.this.propertyForeground;
+        }
+
+        @Override
+        public String toString() {
+            return ThreadLocalContext.localize("{logics.foreground}") + "(" + PropertyDrawEntity.this.toString() + ")";
+        }
+
+        @Override
+        protected String getReportSuffix() {
+            return ReportConstants.foregroundSuffix;
+        }
+    };
+    
     public final PropertyReaderEntity showIfReader = new PropertyDrawReader() {
         @Override
         public byte getTypeID() {

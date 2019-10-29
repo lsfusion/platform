@@ -214,6 +214,10 @@ public class ReportGenerator {
             return fieldName.substring(0, fieldName.length() - footerSuffix.length());
         } else if (isShowIfFieldName(fieldName)) {
             return fieldName.substring(0, fieldName.length() - showIfSuffix.length());
+        } else if (isBackgroundFieldName(fieldName)) { 
+            return fieldName.substring(0, fieldName.length() - backgroundSuffix.length());
+        } else if (isForegroundFieldName(fieldName)) {
+            return fieldName.substring(0, fieldName.length() - foregroundSuffix.length());
         } else {
             return fieldName;
         }

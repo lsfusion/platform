@@ -19,12 +19,20 @@ class ReportUtils {
     }
 
     public static JRDesignExpression createExpression(String text, Class cls) {
-        JRDesignExpression subreportExpr = new JRDesignExpression();
-        subreportExpr.setValueClass(cls);
-        subreportExpr.setText(text);
-        return subreportExpr;
+        JRDesignExpression expr = new JRDesignExpression();
+        expr.setValueClass(cls);
+        expr.setText(text);
+        return expr;
     }
 
+    public static JRDesignPropertyExpression createPropertyExpression(String propertyName, String text, Class cls) {
+        JRDesignExpression expr = createExpression(text, cls);
+        JRDesignPropertyExpression propertyExpr = new JRDesignPropertyExpression();
+        propertyExpr.setValueExpression(expr);
+        propertyExpr.setName(propertyName);
+        return propertyExpr;
+    }
+    
     public static JRDesignTextField createTextField(JRDesignStyle style, JRDesignExpression expr, boolean toStretch) {
         JRDesignTextField field = new JRDesignTextField();
         field.setStyle(style);

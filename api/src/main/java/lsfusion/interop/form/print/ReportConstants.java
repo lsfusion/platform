@@ -9,6 +9,8 @@ public class ReportConstants {
     public static final String headerSuffix = ".header";
     public static final String footerSuffix = ".footer";
     public static final String showIfSuffix = ".showif";
+    public static final String backgroundSuffix = ".background";
+    public static final String foregroundSuffix = ".foreground";
 
     public static final String beginIndexMarker = "[";
     public static final String endIndexMarker = "]";
@@ -23,6 +25,14 @@ public class ReportConstants {
 
     public static boolean isShowIfFieldName(String name) {
         return name != null && removeIndexMarkerIfExists(name).endsWith(showIfSuffix);
+    }
+
+    public static boolean isBackgroundFieldName(String name) {
+        return name != null && removeIndexMarkerIfExists(name).endsWith(backgroundSuffix);
+    }
+
+    public static boolean isForegroundFieldName(String name) {
+        return name != null && removeIndexMarkerIfExists(name).endsWith(foregroundSuffix);
     }
 
     public static String removeIndexMarkerIfExists(String name) {

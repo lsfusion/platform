@@ -12,6 +12,8 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public Class headerClass;
     public Class footerClass;
     public Class showIfClass;
+    public Class backgroundClass;
+    public Class foregroundClass;
 
     public int minimumWidth;
     public int preferredWidth;
@@ -27,6 +29,8 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public boolean hasHeaderProperty = false;
     public boolean hasFooterProperty = false;
     public boolean hasShowIfProperty = false;
+    public boolean hasBackgroundProperty = false;
+    public boolean hasForegroundProperty = false;
 
     private int charWidth;
 
