@@ -600,6 +600,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         // для всех
         private KeyStroke changeKey;
         private Map<String, BindingMode> keyBindingsModes;
+        private Integer changeKeyPriority;
         private Boolean showChangeKey;
         private String changeMouse;
         private Map<String, BindingMode> mouseBindingsModes;
@@ -644,6 +645,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             }
             if (propertyView.changeKey == null)
                 propertyView.changeKey = changeKey != null ? new KeyInputEvent(changeKey, keyBindingsModes) : null;
+            if (propertyView.changeKeyPriority == null)
+                propertyView.changeKeyPriority = changeKeyPriority;
             if (propertyView.showChangeKey == null)
                 propertyView.showChangeKey = BaseUtils.nvl(showChangeKey, true);
             if (propertyView.changeMouse == null)
@@ -694,6 +697,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             
             if(changeKey == null)
                 setChangeKey(options.changeKey);
+            if(changeKeyPriority == null)
+                setChangeKeyPriority(options.changeKeyPriority);
             if(showChangeKey == null)
                 setShowChangeKey(options.showChangeKey);
             if(changeMouse == null)
@@ -787,8 +792,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             this.keyBindingsModes = bindingsModes;
         }
 
-        public void setShowChangeKey(Boolean showEditKey) {
-            this.showChangeKey = showEditKey;
+        public void setChangeKeyPriority(Integer changeKeyPriority) {
+            this.changeKeyPriority = changeKeyPriority;
+        }
+
+        public void setShowChangeKey(Boolean showChangeKey) {
+            this.showChangeKey = showChangeKey;
         }
 
         public void setChangeMouse(String changeMouse) {

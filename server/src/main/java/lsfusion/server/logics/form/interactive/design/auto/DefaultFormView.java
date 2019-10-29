@@ -219,7 +219,7 @@ public class DefaultFormView extends FormView {
         setupFormButton(cancelFunction);
 
         PropertyDrawView okFunction = get(entity.okActionPropertyDraw);
-        setupFormButton(okFunction, 1000, true);
+        setupFormButton(okFunction);
 
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
         setupFormButton(closeFunction);
@@ -252,13 +252,7 @@ public class DefaultFormView extends FormView {
     }
 
     private void setupFormButton(PropertyDrawView action) {
-        setupFormButton(action, 0, false);
-    }
-
-    private void setupFormButton(PropertyDrawView action, int mousePriority, boolean mouseOnlyDialog) {
         action.showChangeKey = false;
-        action.changeMousePriority = mousePriority;
-        action.changeMouseOnlyDialog = mouseOnlyDialog;
         action.focusable = false;
         action.entity.setEditType(PropertyEditType.EDITABLE);
         action.setAlignment(FlexAlignment.STRETCH);

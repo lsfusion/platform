@@ -314,11 +314,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         if(clientPropertyDraw.defaultCompare != null)
             propertyDraw.defaultCompare = GCompare.get(clientPropertyDraw.defaultCompare.ordinal());
 
-        propertyDraw.editKey = convertOrCast(clientPropertyDraw.editKey);
-        propertyDraw.showEditKey = clientPropertyDraw.showEditKey;
-        propertyDraw.editMouse = convertOrCast(clientPropertyDraw.editMouse);
-        propertyDraw.editMousePriority = clientPropertyDraw.editMousePriority;
-        propertyDraw.editMouseOnlyDialog = clientPropertyDraw.editMouseOnlyDialog;
+        propertyDraw.changeKey = convertOrCast(clientPropertyDraw.changeKey);
+        propertyDraw.changeKeyPriority = clientPropertyDraw.changeKeyPriority;
+        propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
+        propertyDraw.changeMouse = convertOrCast(clientPropertyDraw.changeMouse);
+        propertyDraw.changeMousePriority = clientPropertyDraw.changeMousePriority;
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
 

@@ -23,7 +23,7 @@ abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat
 
     public static final EditEventFilter numberEditEventFilter = new EditEventFilter() {
         public boolean accept(EventObject e) {
-            // e = null, когда editCellAt() вызывается программно. фиксил начало редактирования по editKey
+            // e = null, когда editCellAt() вызывается программно. фиксил начало редактирования по changeKey
             return e == null || isSuitableNumberEditEvent(e);
         }
     };

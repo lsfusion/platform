@@ -1356,15 +1356,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
     
     public void addPropertyBindings(GPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
-        if(propertyDraw.editKey != null)
-            addBinding(propertyDraw.editKey, bindingSupplier.get());
-        if(propertyDraw.editMouse != null) {
+        if(propertyDraw.changeKey != null) {
             Binding binding = bindingSupplier.get();
-            if(propertyDraw.editMousePriority != null)
-                binding.priority = propertyDraw.editMousePriority;
-            if(propertyDraw.editMouseOnlyDialog)
-                binding.bindDialog = GBindingMode.ONLY;
-            addBinding(propertyDraw.editMouse, binding);
+            if(propertyDraw.changeKeyPriority != null)
+                binding.priority = propertyDraw.changeKeyPriority;
+            addBinding(propertyDraw.changeKey, binding);
+        }
+        if(propertyDraw.changeMouse != null) {
+            Binding binding = bindingSupplier.get();
+            if(propertyDraw.changeMousePriority != null)
+                binding.priority = propertyDraw.changeMousePriority;
+            addBinding(propertyDraw.changeMouse, binding);
         }
     }
 

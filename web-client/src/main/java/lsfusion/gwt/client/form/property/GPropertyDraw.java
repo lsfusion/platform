@@ -15,9 +15,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GWidthStringProcessor;
-import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -84,11 +82,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean noSort;
     public GCompare defaultCompare;
 
-    public GKeyInputEvent editKey;
-    public boolean showEditKey;
-    public GMouseInputEvent editMouse;
-    public Integer editMousePriority;
-    public boolean editMouseOnlyDialog;
+    public GKeyInputEvent changeKey;
+    public Integer changeKeyPriority;
+    public boolean showChangeKey;
+    public GMouseInputEvent changeMouse;
+    public Integer changeMousePriority;
 
     public boolean drawAsync;
 
@@ -196,7 +194,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             caption = this.caption;
         }
 
-        return showEditKey && editKey != null ? caption + " (" + editKey + ")" : caption;
+        return showChangeKey && changeKey != null ? caption + " (" + changeKey + ")" : caption;
     }
 
     public String getEditCaption() {
@@ -243,16 +241,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 "</html>";
     }
     
-    public static String getEditKeyToolTipFormat() {
+    public static String getChangeKeyToolTipFormat() {
         return "<hr><b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
     }
             
     public String getTooltipText(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
-        String editKeyText = editKey == null ? "" : GwtSharedUtils.stringFormat(getEditKeyToolTipFormat(), editKey.toString());
+        String changeKeyText = changeKey == null ? "" : GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), changeKey.toString());
 
         if (!MainFrame.configurationAccessAllowed) {
-            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, editKeyText);
+            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, changeKeyText);
         } else {
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
@@ -260,7 +258,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             
             if (baseType instanceof GActionType) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
-                        propCaption, editKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
+                        propCaption, changeKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String returnClass = this.returnClass.toString();
@@ -268,7 +266,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
                 
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedToolTipFormat(),
-                        propCaption, editKeyText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses, 
+                        propCaption, changeKeyText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,
                         script, scriptPath, propertyFormName, scriptFormPath);
             }
         }

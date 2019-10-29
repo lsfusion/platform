@@ -1689,15 +1689,17 @@ public class ClientFormController implements AsyncListener {
     }
     
     public void addPropertyBindings(ClientPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
-        if(propertyDraw.editKey != null)
-            addBinding(propertyDraw.editKey, bindingSupplier.get());
-        if(propertyDraw.editMouse != null) {
+        if(propertyDraw.changeKey != null) {
             Binding binding = bindingSupplier.get();
-            if(propertyDraw.editMousePriority != null)
-                binding.priority = propertyDraw.editMousePriority;
-            if(propertyDraw.editMouseOnlyDialog)
-                binding.bindDialog = BindingMode.ONLY;
-            addBinding(propertyDraw.editMouse, binding);
+            if(propertyDraw.changeKeyPriority != null)
+                binding.priority = propertyDraw.changeKeyPriority;
+            addBinding(propertyDraw.changeKey, binding);
+        }
+        if(propertyDraw.changeMouse != null) {
+            Binding binding = bindingSupplier.get();
+            if(propertyDraw.changeMousePriority != null)
+                binding.priority = propertyDraw.changeMousePriority;
+            addBinding(propertyDraw.changeMouse, binding);
         }
     }
 

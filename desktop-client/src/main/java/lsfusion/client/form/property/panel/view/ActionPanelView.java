@@ -59,7 +59,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         property.design.designComponent(this);
         if (property.focusable != null) {
             setFocusable(property.focusable);
-        } else if (property.editKey != null) {
+        } else if (property.changeKey != null) {
             setFocusable(false);
         }
 

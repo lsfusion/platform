@@ -67,10 +67,10 @@ public class PropertyDrawView extends ComponentView {
     private Boolean valueFlex;
 
     public KeyInputEvent changeKey;
+    public Integer changeKeyPriority;
     public Boolean showChangeKey;
     public MouseInputEvent changeMouse;
     public Integer changeMousePriority;
-    public boolean changeMouseOnlyDialog;
 
     public boolean drawAsync = false;
 
@@ -245,10 +245,10 @@ public class PropertyDrawView extends ComponentView {
         pool.writeObject(outStream, getValueSize());
 
         pool.writeObject(outStream, changeKey);
+        pool.writeInt(outStream, changeKeyPriority);
         outStream.writeBoolean(showChangeKey);
         pool.writeObject(outStream, changeMouse);
         pool.writeInt(outStream, changeMousePriority);
-        pool.writeBoolean(outStream, changeMouseOnlyDialog);
 
         outStream.writeBoolean(drawAsync);
 
@@ -415,10 +415,10 @@ public class PropertyDrawView extends ComponentView {
         setValueSize(pool.readObject(inStream));
 
         changeKey = pool.readObject(inStream);
+        changeKeyPriority = pool.readInt(inStream);
         showChangeKey = inStream.readBoolean();
         changeMouse = pool.readObject(inStream);
         changeMousePriority = pool.readInt(inStream);
-        changeMouseOnlyDialog = pool.readBoolean(inStream);
 
         format = pool.readObject(inStream);
 

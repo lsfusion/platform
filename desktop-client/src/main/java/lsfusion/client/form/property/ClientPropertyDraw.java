@@ -80,11 +80,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean noSort;
     public Compare defaultCompare;
 
-    public KeyInputEvent editKey;
-    public boolean showEditKey;
-    public MouseInputEvent editMouse;
-    public Integer editMousePriority;
-    public boolean editMouseOnlyDialog;
+    public KeyInputEvent changeKey;
+    public Integer changeKeyPriority;
+    public boolean showChangeKey;
+    public MouseInputEvent changeMouse;
+    public Integer changeMousePriority;
 
     public boolean drawAsync; // рисовать асинхронность на этой кнопке
 
@@ -132,22 +132,22 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientPropertyDraw() {
     }
 
-    public KeyInputEvent getEditKey() {
-        return editKey;
+    public KeyInputEvent getChangeKey() {
+        return changeKey;
     }
 
-    public void setEditKey(KeyInputEvent key) {
-        this.editKey = key;
-        updateDependency(this, "editKey");
+    public void setChangeKey(KeyInputEvent key) {
+        this.changeKey = key;
+        updateDependency(this, "changeKey");
     }
 
-    public boolean getShowEditKey() {
-        return showEditKey;
+    public boolean getShowChangeKey() {
+        return showChangeKey;
     }
 
-    public void setShowEditKey(boolean showKey) {
-        showEditKey = showKey;
-        updateDependency(this, "showEditKey");
+    public void setShowChangeKey(boolean showKey) {
+        showChangeKey = showKey;
+        updateDependency(this, "showChangeKey");
     }
 
     public boolean isEditableNotNull() {
@@ -278,13 +278,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             caption = this.caption;
         }
 
-        return showEditKey && editKey != null
-               ? caption + " (" + getEditKeyCaption() + ")"
+        return showChangeKey && changeKey != null
+               ? caption + " (" + getChangeKeyCaption() + ")"
                : caption;
     }
     
-    private String getEditKeyCaption() {
-        return SwingUtils.getKeyStrokeCaption(editKey.keyStroke);
+    private String getChangeKeyCaption() {
+        return SwingUtils.getKeyStrokeCaption(changeKey.keyStroke);
     }
 
     public String getEditCaption() {
@@ -360,11 +360,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         
         pool.writeObject(outStream, valueSize);
 
-        pool.writeObject(outStream, editKey);
-        outStream.writeBoolean(showEditKey);
-        pool.writeObject(outStream, editMouse);
-        pool.writeInt(outStream, editMousePriority);
-        pool.writeBoolean(outStream, editMouseOnlyDialog);
+        pool.writeObject(outStream, changeKey);
+        pool.writeInt(outStream, changeKeyPriority);
+        outStream.writeBoolean(showChangeKey);
+        pool.writeObject(outStream, changeMouse);
+        pool.writeInt(outStream, changeMousePriority);
 
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
@@ -393,11 +393,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         valueSize = pool.readObject(inStream);
 
-        editKey = pool.readObject(inStream);
-        showEditKey = inStream.readBoolean();
-        editMouse = pool.readObject(inStream);
-        editMousePriority = pool.readInt(inStream);
-        editMouseOnlyDialog = pool.readBoolean(inStream);
+        changeKey = pool.readObject(inStream);
+        changeKeyPriority = pool.readInt(inStream);
+        showChangeKey = inStream.readBoolean();
+        changeMouse = pool.readObject(inStream);
+        changeMousePriority = pool.readInt(inStream);
 
         drawAsync = inStream.readBoolean();
 
@@ -561,10 +561,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
-        String editKeyText = editKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, getEditKeyCaption());
+        String changeKeyText = changeKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, getChangeKeyCaption());
 
         if (!MainController.configurationAccessAllowed) {
-            return String.format(TOOL_TIP_FORMAT, propCaption, editKeyText);
+            return String.format(TOOL_TIP_FORMAT, propCaption, changeKeyText);
         } else {
             String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
@@ -572,7 +572,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             
             if (baseType instanceof ClientActionClass) {
                 return String.format(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
-                        propCaption, editKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
+                        propCaption, changeKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
@@ -580,7 +580,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
                 
                 return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
-                        propCaption, editKeyText, canonicalName, tableName, ifaceObjects, ifaceClasses, returnClass, 
+                        propCaption, changeKeyText, canonicalName, tableName, ifaceObjects, ifaceClasses, returnClass,
                         script, scriptPath, propertyFormName, scriptFormPath);
             }
         }

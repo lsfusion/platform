@@ -96,21 +96,22 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.setCharWidth(charWidth);
     }
 
-    public void setChangeKey(KeyStroke editKey) {
-        target.changeKey = new KeyInputEvent(editKey);
+    public void setChangeKey(KeyStroke changeKey) {
+        target.changeKey = new KeyInputEvent(changeKey);
     }
-    public void setChangeMouse(String editKey) {
-        target.changeMouse = new MouseInputEvent(editKey);
+    public void setChangeKeyPriority(int priority) {
+        target.changeKeyPriority = priority;
+    }
+
+    public void setChangeMouse(String changeMouse) {
+        target.changeMouse = new MouseInputEvent(changeMouse);
     }
     public void setChangeMousePriority(int priority) {
         target.changeMousePriority = priority;
     }
-    public void setChangeMouseOnlyDialog(boolean onlyDialog) {
-        target.changeMouseOnlyDialog = onlyDialog;
-    }
 
-    public void setShowChangeKey(boolean showEditKey) {
-        target.showChangeKey = showEditKey;
+    public void setShowChangeKey(boolean showChangeKey) {
+        target.showChangeKey = showChangeKey;
     }
 
     public void setFocusable(Boolean focusable) {

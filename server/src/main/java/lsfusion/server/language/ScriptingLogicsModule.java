@@ -1286,51 +1286,78 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setDefaultCompare(defaultCompare);
     }
 
-    public void setChangeKey(LAP property, String code, Boolean showEditKey) {
+    public void setChangeKey(LAP property, String code, Boolean showChangeKey) {
         Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
         if(m.matches()) {
-            property.setChangeKey(KeyStroke.getKeyStroke(m.group(1)), getBindingModesMap(m.group(2)));
+            Map<String, String> optionsMap = getOptionsMap(m.group(2));
+            property.setChangeKey(KeyStroke.getKeyStroke(m.group(1)), getBindingModesMap(optionsMap));
+            property.setChangeKeyPriority(getPriority(optionsMap));
         } else {
             property.setChangeKey(KeyStroke.getKeyStroke(code));
         }
-        if (showEditKey != null)
-            property.setShowChangeKey(showEditKey);
+        if (showChangeKey != null)
+            property.setShowChangeKey(showChangeKey);
     }
 
-    public void setChangeMouse(LAP property, String code, Boolean showEditKey) {
+    public void setChangeMouse(LAP property, String code, Boolean showChangeKey) {
         Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
         if(m.matches()) {
-            property.setChangeMouse((m.group(1)), getBindingModesMap(m.group(2)));
+            Map<String, String> optionsMap = getOptionsMap(m.group(2));
+            property.setChangeMouse((m.group(1)), getBindingModesMap(optionsMap));
+            property.setChangeMousePriority(getPriority(optionsMap));
         } else {
             property.setChangeMouse(code);
         }
-        if (showEditKey != null)
-            property.setShowChangeKey(showEditKey);
+        if (showChangeKey != null)
+            property.setShowChangeKey(showChangeKey);
     }
 
-    private Map<String, BindingMode> getBindingModesMap(String values) {
+    private static List<String> supportedBindings = Arrays.asList("dialog", "group", "editing", "showing");
+    private Map<String, BindingMode> getBindingModesMap(Map<String, String> optionsMap) {
         Map<String, BindingMode> bindingModes = new HashMap<>();
-        Matcher m = Pattern.compile("([^=;]*)=([^=;]*)").matcher(values);
-        while(m.find()) {
-            BindingMode bindingMode;
-            switch (m.group(2)) {
-                case "all":
-                    bindingMode = BindingMode.ALL;
-                    break;
-                case "only":
-                    bindingMode = BindingMode.ONLY;
-                    break;
-                case "no":
-                    bindingMode = BindingMode.NO;
-                    break;
-                default:
-                    bindingMode = BindingMode.AUTO;
-                    break;
+        for(Map.Entry<String, String> option : optionsMap.entrySet()) {
+            if(supportedBindings.contains(option.getKey())) {
+                BindingMode bindingMode;
+                switch (option.getValue()) {
+                    case "all":
+                        bindingMode = BindingMode.ALL;
+                        break;
+                    case "only":
+                        bindingMode = BindingMode.ONLY;
+                        break;
+                    case "no":
+                        bindingMode = BindingMode.NO;
+                        break;
+                    default:
+                        bindingMode = BindingMode.AUTO;
+                        break;
+                }
+                bindingModes.put(option.getKey(), bindingMode);
             }
-            bindingModes.put(m.group(1), bindingMode);
         }
         return bindingModes;
     }
+
+    private Integer getPriority(Map<String, String> optionsMap) {
+        String priority = optionsMap.get("priority");
+        if(priority != null) {
+            try {
+                return Integer.parseInt(optionsMap.getOrDefault("priority", null));
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    private Map<String, String> getOptionsMap(String values) {
+        Map<String, String> options = new HashMap<>();
+        Matcher m = Pattern.compile("([^=;]*)=([^=;]*)").matcher(values);
+        while(m.find()) {
+            options.put(m.group(1), m.group(2));
+        }
+        return options;
+    }
+
 
     public void setAutoset(LP property, boolean autoset) {
         property.setAutoset(autoset);

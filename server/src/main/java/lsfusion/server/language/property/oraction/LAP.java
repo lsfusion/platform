@@ -94,28 +94,32 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setDefaultCompare(defaultCompare);
     }
 
-    public void setChangeKey(KeyStroke editKey) {
-        getActionOrProperty().drawOptions.setChangeKey(editKey);
+    public void setChangeKey(KeyStroke changeKey) {
+        getActionOrProperty().drawOptions.setChangeKey(changeKey);
     }
 
-    public void setChangeKey(KeyStroke editKey, Map<String, BindingMode> bindingModes) {
-        getActionOrProperty().drawOptions.setChangeKey(editKey, bindingModes);
+    public void setChangeKey(KeyStroke changeKey, Map<String, BindingMode> bindingModes) {
+        getActionOrProperty().drawOptions.setChangeKey(changeKey, bindingModes);
     }
 
-    public void setShowChangeKey(boolean showEditKey) {
-        getActionOrProperty().drawOptions.setShowChangeKey(showEditKey);
+    public void setChangeKeyPriority(Integer changeKeyPriority) {
+        getActionOrProperty().drawOptions.setChangeKeyPriority(changeKeyPriority);
     }
 
-    public void setChangeMouse(String editMouse) {
-        getActionOrProperty().drawOptions.setChangeMouse(editMouse);
+    public void setShowChangeKey(boolean showChangeKey) {
+        getActionOrProperty().drawOptions.setShowChangeKey(showChangeKey);
     }
 
-    public void setChangeMouse(String editMouse, Map<String, BindingMode> bindingModes) {
-        getActionOrProperty().drawOptions.setChangeMouse(editMouse, bindingModes);
+    public void setChangeMouse(String changeMouse) {
+        getActionOrProperty().drawOptions.setChangeMouse(changeMouse);
     }
 
-    public void setChangeMousePriority(Integer editMousePriority) {
-        getActionOrProperty().drawOptions.setChangeMousePriority(editMousePriority);
+    public void setChangeMouse(String changeMouse, Map<String, BindingMode> bindingModes) {
+        getActionOrProperty().drawOptions.setChangeMouse(changeMouse, bindingModes);
+    }
+
+    public void setChangeMousePriority(Integer changeMousePriority) {
+        getActionOrProperty().drawOptions.setChangeMousePriority(changeMousePriority);
     }
     
     public void addProcessor(ActionOrProperty.DefaultProcessor processor) {

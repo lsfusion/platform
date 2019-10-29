@@ -223,8 +223,8 @@ public class SwingUtils {
     }
 
     // приходится писать свой toString у KeyStroke, поскольку, по умолчанию, используется абсолютно кривой
-    public static String getKeyStrokeCaption(KeyStroke editKey) {
-        return editKey.toString().replaceAll("typed ", "").replaceAll("pressed ", "").replaceAll("released ", "");
+    public static String getKeyStrokeCaption(KeyStroke changeKey) {
+        return changeKey.toString().replaceAll("typed ", "").replaceAll("pressed ", "").replaceAll("released ", "");
     }
 
     // запрашивает положение объекта, чтобы он не вылезал за экран

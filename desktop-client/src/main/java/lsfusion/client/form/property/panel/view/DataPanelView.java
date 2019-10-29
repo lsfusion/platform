@@ -61,7 +61,7 @@ public class DataPanelView extends JPanel implements PanelView {
         property.design.designHeader(label);
         if (property.focusable != null) {
             setFocusable(property.focusable);
-        } else if (property.editKey != null) {
+        } else if (property.changeKey != null) {
             setFocusable(false);
         }
 
