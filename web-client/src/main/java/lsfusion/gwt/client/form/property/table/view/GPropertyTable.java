@@ -98,7 +98,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
                 return super.enabled();
             }
         };
-        binding.bindEditing = GBindingMode.ALL;
         binding.bindGroup = GBindingMode.ONLY;
         return binding;
     }
