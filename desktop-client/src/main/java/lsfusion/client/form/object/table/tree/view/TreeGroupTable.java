@@ -370,7 +370,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     private ClientFormController.Binding getEnterBinding(boolean shiftPressed) {
         ClientFormController.Binding binding = new ClientFormController.Binding(BaseUtils.last(treeGroup.groups), -100) {
             @Override
-            public boolean pressed() {
+            public boolean pressed(KeyEvent ke) {
                 tabAction(!shiftPressed);
                 return true;
             }

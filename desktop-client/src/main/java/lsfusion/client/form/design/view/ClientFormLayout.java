@@ -214,7 +214,7 @@ public class ClientFormLayout extends JPanel {
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
         if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT) {
-            if(form.processBinding(new KeyInputEvent(ks), ke, () -> getGroupObject(ke.getComponent())))
+            if(pressed && form.processBinding(new KeyInputEvent(ks), ke, () -> getGroupObject(ke.getComponent())))
                 return true;
         }
 

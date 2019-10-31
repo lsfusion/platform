@@ -102,6 +102,10 @@ public class KeyStrokes {
         return isKeyEvent(event, KeyEvent.VK_ENTER);
     }
 
+    public static boolean isShiftEvent(EventObject event) {
+        return isKeyEvent(event, KeyEvent.VK_SHIFT);
+    }
+
     public static boolean isSpaceEvent(EventObject event) {
         return isKeyEvent(event, KeyEvent.VK_SPACE);
     }
@@ -162,6 +166,7 @@ public class KeyStrokes {
             return !keyEvent.isActionKey() &&
                    !keyEvent.isAltDown() &&
                    !keyEvent.isControlDown() &&
+                   !KeyStrokes.isShiftEvent(keyEvent) &&
                    !KeyStrokes.isCharUndefinedEvent(keyEvent) &&
                    !KeyStrokes.isEscapeEvent(keyEvent);
         }

@@ -82,6 +82,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.serializeObject;
@@ -1655,6 +1656,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private final Map<InputEvent, List<Binding>> bindings = new HashMap<>();
+    private final List<Binding> keySetBindings = new ArrayList<>();
 
     public static abstract class Binding {
         public final ClientGroupObject groupObject;
@@ -1663,13 +1665,19 @@ public class ClientFormController implements AsyncListener {
         public BindingMode bindGroup;
         public BindingMode bindEditing;
         public BindingMode bindShowing;
+        public Function<EventObject, Boolean> isSuitable;
 
         public Binding(ClientGroupObject groupObject, int priority) {
-            this.groupObject = groupObject;
-            this.priority = priority;
+            this(groupObject, priority, null);
         }
 
-        public abstract boolean pressed();
+        public Binding(ClientGroupObject groupObject, int priority, Function<EventObject, Boolean> isSuitable) {
+            this.groupObject = groupObject;
+            this.priority = priority;
+            this.isSuitable = isSuitable;
+        }
+
+        public abstract boolean pressed(KeyEvent ke);
         public abstract boolean showing();
     }
 
@@ -1686,6 +1694,14 @@ public class ClientFormController implements AsyncListener {
         if(binding.bindShowing == null)
             binding.bindShowing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("showing", BindingMode.AUTO) : BindingMode.AUTO;
         list.add(binding);
+    }
+
+    public void addKeySetBinding(Binding binding) {
+        binding.bindDialog = BindingMode.AUTO;
+        binding.bindGroup = BindingMode.AUTO;
+        binding.bindEditing = BindingMode.AUTO;
+        binding.bindShowing = BindingMode.AUTO;
+        keySetBindings.add(binding);
     }
     
     public void addPropertyBindings(ClientPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
@@ -1704,7 +1720,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public boolean processBinding(InputEvent ks, KeyEvent ke, Supplier<ClientGroupObject> groupObjectSupplier) {
-        List<Binding> keyBinding = bindings.get(ks);
+        List<Binding> keyBinding = bindings.getOrDefault(ks, keySetBindings);
         if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
             if(ks instanceof MouseInputEvent) // not sure that it should be done only for mouse events, but it's been working like this for a long time
                 commitOrCancelCurrentEditing();
@@ -1714,11 +1730,11 @@ public class ClientFormController implements AsyncListener {
             // increasing priority for group object
             ClientGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
-                if(bindDialog(binding) && bindGroup(groupObject, binding) && bindEditing(binding, ke) && bindShowing(binding))
-                    orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
+                if((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindDialog(binding) && bindGroup(groupObject, binding) && bindEditing(binding, ke) && bindShowing(binding))
+                        orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
 
             for(Binding binding : orderedBindings.values())
-                if(binding.pressed())                    
+                if(binding.pressed(ke))
                     return true;
 
             return true;

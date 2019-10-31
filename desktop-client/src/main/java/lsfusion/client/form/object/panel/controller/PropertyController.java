@@ -40,7 +40,7 @@ public class PropertyController {
         this.property = property;
 
         form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
-            public boolean pressed() {
+            public boolean pressed(KeyEvent ke) {
                 return forceEdit();
             }
             public boolean showing() {

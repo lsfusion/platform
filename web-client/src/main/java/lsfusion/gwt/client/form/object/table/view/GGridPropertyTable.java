@@ -85,16 +85,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     @Override
     protected void onBrowserEvent2(Event event) {
-        if (event.getTypeInt() == Event.ONCLICK || event.getTypeInt() == Event.ONDBLCLICK) {
-            if (getFocusHolderElement().isOrHasChild(Node.as(event.getEventTarget())) && // не включаем header, чтобы сортировка работала
-                    !isEditable(getCurrentCellContext())) {
-                form.processBinding(new GMouseInputEvent(event), event, new GFormController.GGroupObjectSupplier() {
-                    public GGroupObject get() {
-                        return getGroupObject();
-                    }
-                });
-            }
-        } else if (GKeyStroke.isAddFilterEvent(event)) {
+        if (GKeyStroke.isAddFilterEvent(event)) {
             stopPropagation(event);
             getGroupController().addFilter();
         } else if (GKeyStroke.isRemoveAllFiltersEvent(event)) {

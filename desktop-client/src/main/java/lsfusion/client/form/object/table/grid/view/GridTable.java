@@ -27,6 +27,7 @@ import lsfusion.client.form.property.table.view.ClientPropertyTable;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -426,6 +427,32 @@ public class GridTable extends ClientPropertyTable {
         InputMap inputMap = getInputMap();
         inputMap.put(KeyStrokes.getCtrlHome(), GOTO_FIRST_ACTION);
         inputMap.put(KeyStrokes.getCtrlEnd(), GOTO_LAST_ACTION);
+
+        //quickSearch / quickFilter binding
+        form.addKeySetBinding(getQuickSearchFilterBinding());
+    }
+
+    private ClientFormController.Binding getQuickSearchFilterBinding() {
+        ClientFormController.Binding binding = new ClientFormController.Binding(groupObject, -200, KeyStrokes::isSuitableStartFilteringEvent) {
+            @Override
+            public boolean pressed(KeyEvent ke) {
+                if(!editPerformed) {
+                    if (groupObject.grid.quickSearch) {
+                        quickSearch(ke);
+                    } else {
+                        quickFilter(ke);
+                    }
+                }
+                return true;
+            }
+            @Override
+            public boolean showing() {
+                return true;
+            }
+        };
+        binding.bindEditing = BindingMode.ALL;
+        binding.bindGroup = BindingMode.ONLY;
+        return binding;
     }
 
     int getID() {
@@ -563,7 +590,7 @@ public class GridTable extends ClientPropertyTable {
             if (!samePropAsPrevious)
                 form.addPropertyBindings(property, () -> new ClientFormController.Binding(property.groupObject, 0) {
                     @Override
-                    public boolean pressed() {
+                    public boolean pressed(KeyEvent ke) {
                         int leadRow = getSelectionModel().getLeadSelectionIndex();
                         if (leadRow != -1 && !isEditing()) {
                             keyController.stopRecording();
@@ -1031,23 +1058,6 @@ public class GridTable extends ClientPropertyTable {
 
     public String getSelectedTable() throws ParseException {
         return selectionController.getSelectedTableString();
-    }
-
-    public boolean editCellAt(int row, int column, EventObject editEvent) {
-        boolean edited = super.editCellAt(row, column, editEvent);
-        if (!editPerformed) {
-            assert !edited;
-
-            if (groupObject.grid.quickSearch) {
-                quickSearch(editEvent);
-            } else {
-                quickFilter(editEvent);
-            }
-
-            return false;
-        }
-
-        return edited;
     }
 
     private void quickSearch(EventObject editEvent) {

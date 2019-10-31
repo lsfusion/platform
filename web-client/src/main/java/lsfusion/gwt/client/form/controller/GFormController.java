@@ -47,10 +47,7 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
-import lsfusion.gwt.client.form.event.GBindingMode;
-import lsfusion.gwt.client.form.event.GInputEvent;
-import lsfusion.gwt.client.form.event.GKeyInputEvent;
-import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -1353,6 +1350,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 handleKeyEvent(event.getNativeEvent());
             }
         }, KeyDownEvent.getType());
+        rootWidget.addDomHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                handleMouseEvent(event.getNativeEvent());
+            }
+        }, ClickEvent.getType());
+        rootWidget.addDomHandler(new DoubleClickHandler() {
+            @Override
+            public void onDoubleClick(DoubleClickEvent event) {
+                handleMouseEvent(event.getNativeEvent());
+            }
+        }, DoubleClickEvent.getType());
     }
     
     public void addPropertyBindings(GPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
@@ -1517,5 +1526,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 }
             });
         }
+    }
+
+    private void handleMouseEvent(NativeEvent nativeEvent) {
+        final EventTarget target = nativeEvent.getEventTarget();
+        if (!Element.is(target)) {
+            return;
+        }
+
+        processBinding(new GMouseInputEvent(nativeEvent), nativeEvent, new GGroupObjectSupplier() {
+            public GGroupObject get() {
+                return getGroupObject(Element.as(target));
+            }
+        });
     }
 }

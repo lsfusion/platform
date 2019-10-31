@@ -81,7 +81,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     private ClientFormController.Binding getEnterBinding(boolean shiftPressed) {
         ClientFormController.Binding binding = new ClientFormController.Binding(groupObject, -100) {
             @Override
-            public boolean pressed() {
+            public boolean pressed(KeyEvent ke) {
                 tabAction(!shiftPressed);
                 return true;
             }

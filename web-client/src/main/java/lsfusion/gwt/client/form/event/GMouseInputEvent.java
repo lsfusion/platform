@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.event;
 
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 
 import java.util.Map;
@@ -19,17 +20,25 @@ public class GMouseInputEvent extends GInputEvent {
     }
 
     public GMouseInputEvent(Event e) {
+        this(e.getTypeInt() == Event.ONCLICK, e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
+    }
+
+    public GMouseInputEvent(NativeEvent e) {
+        this(e.getType().equals("click"), e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
+    }
+
+    private GMouseInputEvent(boolean singleClick, boolean alt, boolean ctrl, boolean shift) {
         String event = "";
-        if (e.getAltKey()) {
+        if (alt) {
             event += "alt ";
         }
-        if (e.getCtrlKey()) {
+        if (ctrl) {
             event += "ctrl ";
         }
-        if (e.getShiftKey()) {
+        if (shift) {
             event += "shift ";
         }
-        this.mouseEvent = event + (e.getTypeInt() == Event.ONCLICK ? CLK : DBLCLK);
+        this.mouseEvent = event + (singleClick ? CLK : DBLCLK);
     }
 
     public GMouseInputEvent(String mouseEvent, Map<String, GBindingMode> bindingModes) {
