@@ -247,16 +247,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         });
 
         addKeyListener(new TreeGroupQuickSearchHandler(this));
-
-        addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                ClientPropertyDraw property = getSelectedProperty();
-                //игнорируем double click по editable boolean
-                boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
-                if (!ignore)
-                    form.processBinding(new MouseInputEvent(e), null, () -> null);
-            }
-        });
         
         if (treeGroup.expandOnClick) {
             addMouseListener(new MouseAdapter() {
@@ -276,6 +266,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                                         } else {
                                             form.collapseGroupObject(node.group, node.key);
                                         }
+                                        e.consume();
                                     }
                                 });
                             }
@@ -284,6 +275,18 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 }
             });
         }
+
+        addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if(!e.isConsumed()) {
+                    ClientPropertyDraw property = getSelectedProperty();
+                    //игнорируем double click по editable boolean
+                    boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
+                    if (!ignore)
+                        form.processBinding(new MouseInputEvent(e), null, () -> null);
+                }
+            }
+        });
 
         initializeActionMap();
         currentTreePath = new TreePath(rootNode);
