@@ -1699,7 +1699,7 @@ public class ClientFormController implements AsyncListener {
     public void addKeySetBinding(Binding binding) {
         binding.bindDialog = BindingMode.AUTO;
         binding.bindGroup = BindingMode.AUTO;
-        binding.bindEditing = BindingMode.AUTO;
+        binding.bindEditing = BindingMode.NO;
         binding.bindShowing = BindingMode.AUTO;
         keySetBindings.add(binding);
     }
