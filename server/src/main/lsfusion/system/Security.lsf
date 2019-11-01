@@ -328,7 +328,7 @@ defaultForms (User user) = defaultForms(mainRole(user));
 
 defaultNumber '{security.default.forms.number}' = DATA INTEGER (UserRole, NavigatorElement);
 defaultNumber (User user, NavigatorElement navigatorElement) = 
-    GROUP MIN defaultNumber(UserRole userRole, navigatorElement) IF has(user, userRole) AND permit(userRole, navigatorElement);
+    GROUP MIN defaultNumber(UserRole userRole, navigatorElement) IF has(user, userRole);
 
 maximizeForm  INTERNAL 'lsfusion.server.logics.form.interactive.action.MaximizeFormAction' ();
 
