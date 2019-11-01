@@ -696,13 +696,13 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setEventID(options.eventID);
             
             if(changeKey == null)
-                setChangeKey(options.changeKey);
+                setChangeKey(options.changeKey, options.keyBindingsModes);
             if(changeKeyPriority == null)
                 setChangeKeyPriority(options.changeKeyPriority);
             if(showChangeKey == null)
                 setShowChangeKey(options.showChangeKey);
             if(changeMouse == null)
-                setChangeMouse(options.changeMouse);
+                setChangeMouse(options.changeMouse, options.mouseBindingsModes);
             if(changeMousePriority == null)
                 setChangeMousePriority(options.changeMousePriority);
             
