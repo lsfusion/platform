@@ -11,6 +11,7 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -33,7 +34,7 @@ public class FormApplyAction extends FormFlowAction {
 
         drawOptions.addProcessor(new DefaultProcessor() {
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
-                entity.propertyBackground = form.addPropertyObject(applyBackground);
+                entity.setPropertyExtra(form.addPropertyObject(applyBackground), PropertyDrawExtraType.BACKGROUND);
             }
             public void proceedDefaultDesign(PropertyDrawView propertyView) {
             }

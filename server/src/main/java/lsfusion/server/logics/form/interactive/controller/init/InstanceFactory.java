@@ -21,12 +21,18 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import org.apache.poi.ss.formula.functions.T;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
+
+import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
 public class InstanceFactory {
 
@@ -123,27 +129,32 @@ public class InstanceFactory {
         return (ActionObjectInstance<P>) propertyObjectInstances.get(entity);
     }
 
-    public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {
+    public PropertyDrawInstance getInstance(PropertyDrawEntity<? extends PropertyInterface> entity) {
 
         if (!propertyDrawInstances.containsKey(entity)) {
             ImOrderSet<GroupObjectInstance> columnGroupObjects = entity.getColumnGroupObjects().mapOrderSetValues(this::getInstance);
 
+            Map<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras = getPropertyExtras(entity);
             propertyDrawInstances.exclAdd(entity, new PropertyDrawInstance<>(
                     entity,
                     getInstance(entity.getValueActionOrProperty()),
                     getInstance(entity.toDraw),
                     columnGroupObjects,
-                    entity.propertyCaption == null ? null : getInstance(entity.propertyCaption),
-                    entity.propertyShowIf == null ? null : getInstance(entity.propertyShowIf),
-                    entity.propertyReadOnly == null ? null : getInstance(entity.propertyReadOnly),
-                    entity.propertyFooter == null ? null : getInstance(entity.propertyFooter),
-                    entity.propertyBackground == null ? null : getInstance(entity.propertyBackground),
-                    entity.propertyForeground == null ? null : getInstance(entity.propertyForeground)));
+                    propertyExtras
+            ));
         }
 
         return propertyDrawInstances.get(entity);
     }
 
+    private Map<PropertyDrawExtraType, PropertyObjectInstance<?>> getPropertyExtras(PropertyDrawEntity<? extends PropertyInterface> entity) {
+        Map<PropertyDrawExtraType, PropertyObjectInstance<?>> extras = new HashMap<>();
+        for (PropertyDrawExtraType type : PropertyDrawExtraType.values()) {
+            extras.put(type, entity.hasPropertyExtra(type) ? getInstance(entity.getPropertyExtra(type)) : null);
+        }
+        return extras;
+    }
+    
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {
 
         RegularFilterGroupInstance group = new RegularFilterGroupInstance(entity);

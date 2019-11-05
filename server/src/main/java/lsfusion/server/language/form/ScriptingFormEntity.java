@@ -38,6 +38,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
@@ -440,28 +441,28 @@ public class ScriptingFormEntity {
             property.setColumnGroupObjects(columns.columnsName, SetFact.fromJavaOrderSet(columns.columns));
         }
 
-        property.propertyCaption = options.getHeader();
-        property.propertyFooter = options.getFooter();
+        property.setPropertyExtra(options.getHeader(), PropertyDrawExtraType.CAPTION);
+        property.setPropertyExtra(options.getFooter(), PropertyDrawExtraType.FOOTER);
 
-        property.propertyShowIf = options.getShowIf();
+        property.setPropertyExtra(options.getShowIf(), PropertyDrawExtraType.SHOWIF);
 
         property.quickFilterProperty = options.getQuickFilterPropertyDraw();
 
         PropertyObjectEntity backgroundProperty = options.getBackground();
         if (backgroundProperty != null && !((PropertyObjectEntity<?>)backgroundProperty).property.getType().equals(ColorClass.instance)) {
-            property.propertyBackground = addGroundPropertyObject(backgroundProperty, true);
+            property.setPropertyExtra(addGroundPropertyObject(backgroundProperty, true), PropertyDrawExtraType.BACKGROUND);
         } else {
-            property.propertyBackground = backgroundProperty;
+            property.setPropertyExtra(backgroundProperty, PropertyDrawExtraType.BACKGROUND);
         }
 
         PropertyObjectEntity foregroundProperty = options.getForeground();
         if (foregroundProperty != null && !((PropertyObjectEntity<?>)foregroundProperty).property.getType().equals(ColorClass.instance)) {
-            property.propertyForeground = addGroundPropertyObject(foregroundProperty, false);
+            property.setPropertyExtra(addGroundPropertyObject(foregroundProperty, false), PropertyDrawExtraType.FOREGROUND);
         } else {
-            property.propertyForeground = foregroundProperty;
+            property.setPropertyExtra(foregroundProperty, PropertyDrawExtraType.FOREGROUND);
         }
 
-        property.propertyReadOnly = options.getReadOnlyIf();
+        property.setPropertyExtra(options.getReadOnlyIf(), PropertyDrawExtraType.READONLYIF);
         if (options.getForceViewType() != null) {
             property.forceViewType = options.getForceViewType();
         }

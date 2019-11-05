@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportConstants;
+import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -267,36 +268,22 @@ public class ReportDesignGenerator {
     }
 
     private void addSupplementalDesignFields(JasperDesign design, ReportDrawField field) throws JRException {
-        if (field.hasHeaderProperty) {
-            String fieldId = field.sID + headerSuffix;
-            addDesignField(design, fieldId, field.headerClass.getName());
-        }
-        if (field.hasFooterProperty) {
-            String fieldId = field.sID + footerSuffix;
-            addDesignField(design, fieldId, field.footerClass.getName());
-        }
-        if (field.hasShowIfProperty) {
-            String fieldId = field.sID + showIfSuffix;
-            addDesignField(design, fieldId, field.showIfClass.getName());
-        }
-        if (field.hasBackgroundProperty) {
-            String fieldId = field.sID + backgroundSuffix;
-            addDesignField(design, fieldId, field.backgroundClass.getName());
-        }
-        if (field.hasForegroundProperty) {
-            String fieldId = field.sID + foregroundSuffix;
-            addDesignField(design, fieldId, field.foregroundClass.getName());
+        for (ReportFieldExtraType type : ReportFieldExtraType.values()) {
+            if (field.hasExtraType(type)) {
+                String fieldId = field.sID + type.getReportFieldNameSuffix();
+                addDesignField(design, fieldId, field.getExtraTypeClass(type).getName());
+            }
         }
     }
     
     private void addReportFieldToLayout(ReportLayout layout, ReportDrawField reportField, JRDesignStyle captionStyle, JRDesignStyle style) {
         String designCaptionText;
-        if (reportField.hasHeaderProperty) {
+        if (reportField.hasExtraType(ReportFieldExtraType.HEADER)) {
             designCaptionText = ReportUtils.createFieldString(reportField.sID + headerSuffix);
         } else {
             designCaptionText = '"' + reportField.caption + '"';
         }
-        JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.headerClass);
+        JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.getExtraTypeClass(ReportFieldExtraType.HEADER));
         JRDesignTextField captionField = ReportUtils.createTextField(captionStyle, captionExpr, toStretch);
         captionField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);
         captionField.setBlankWhenNull(true);
@@ -336,7 +323,7 @@ public class ReportDesignGenerator {
     }
     
     private void setBackground(JRDesignTextField dataField, ReportDrawField reportField) {
-        if (reportField.hasBackgroundProperty) {
+        if (reportField.hasExtraType(ReportFieldExtraType.BACKGROUND)) {
             String designBackgroundText = String.format("\"#\" + net.sf.jasperreports.engine.util.JRColorUtil.getColorHexa(%s)",
                     ReportUtils.createFieldString(reportField.sID + backgroundSuffix));
 
@@ -347,7 +334,7 @@ public class ReportDesignGenerator {
     }
 
     private void setForeground(JRDesignTextField dataField, ReportDrawField reportField) {
-        if (reportField.hasForegroundProperty) {
+        if (reportField.hasExtraType(ReportFieldExtraType.FOREGROUND)) {
             String designForegroundText = String.format("\"#\" + net.sf.jasperreports.engine.util.JRColorUtil.getColorHexa(%s)",
                     ReportUtils.createFieldString(reportField.sID + foregroundSuffix));
 

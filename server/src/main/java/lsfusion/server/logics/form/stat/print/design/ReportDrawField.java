@@ -1,6 +1,11 @@
 package lsfusion.server.logics.form.stat.print.design;
 
+import lsfusion.interop.form.print.ReportFieldExtraType;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 // поле для отрисовки отчета
 public class ReportDrawField implements AbstractRowLayoutElement {
@@ -9,11 +14,18 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public String caption;
     
     public Class valueClass;
+    
+    private Map<ReportFieldExtraType, Class> extraTypeClass; 
+    
+    public void setExtraTypeClass(ReportFieldExtraType type, Class cls) {
+        extraTypeClass.put(type, cls);
+    }
+            
+    public Class getExtraTypeClass(ReportFieldExtraType type) {
+        return extraTypeClass.get(type);
+    }
+    
     public Class headerClass;
-    public Class footerClass;
-    public Class showIfClass;
-    public Class backgroundClass;
-    public Class foregroundClass;
 
     public int minimumWidth;
     public int preferredWidth;
@@ -26,12 +38,17 @@ public class ReportDrawField implements AbstractRowLayoutElement {
 
     public boolean hasColumnGroupObjects = false;
     public String columnGroupName;
-    public boolean hasHeaderProperty = false;
-    public boolean hasFooterProperty = false;
-    public boolean hasShowIfProperty = false;
-    public boolean hasBackgroundProperty = false;
-    public boolean hasForegroundProperty = false;
-
+    
+    private Set<ReportFieldExtraType> existingExtras = new HashSet<>();
+    
+    public void addExtraType(ReportFieldExtraType type) {
+        existingExtras.add(type);
+    }
+    
+    public boolean hasExtraType(ReportFieldExtraType type) {
+        return existingExtras.contains(type);
+    } 
+    
     private int charWidth;
 
     public ReportDrawField(String sID, String caption, int charWidth) {

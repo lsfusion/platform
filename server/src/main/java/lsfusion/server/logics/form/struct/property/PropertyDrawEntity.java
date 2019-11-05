@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.interop.form.print.ReportConstants;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -53,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.interop.action.ServerResponse.*;
+import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
 
@@ -87,13 +87,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public Object columnGroupObjects = SetFact.mOrderExclSet();
     private boolean finalizedColumnGroupObjects;
 
-    // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
-    public PropertyObjectEntity<?> propertyCaption;
-    public PropertyObjectEntity<?> propertyShowIf;
-    public PropertyObjectEntity<?> propertyReadOnly;
-    public PropertyObjectEntity<?> propertyFooter;
-    public PropertyObjectEntity<?> propertyBackground;
-    public PropertyObjectEntity<?> propertyForeground;
+    private Map<PropertyDrawExtraType, PropertyObjectEntity<?>> propertyExtras = new HashMap<>(); 
 
     public ObjectEntity applyObject; // virtual object to change apply object (now used only EXPORT FROM plain formats)
 
@@ -112,231 +106,76 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void fillQueryProps(MExclSet<PropertyReaderEntity> mResult) {
         mResult.exclAdd(this);
-
-        if (propertyCaption != null)
-            mResult.exclAdd(captionReader);
-
-        if (propertyFooter != null)
-            mResult.exclAdd(footerReader);
-
-        if (propertyShowIf != null)
-            mResult.exclAdd(showIfReader);
-        
-        if (propertyBackground != null) 
-            mResult.exclAdd(backgroundReader);
-        
-        if (propertyForeground != null)
-            mResult.exclAdd(foregroundReader);
+        PropertyDrawExtraType[] propTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND}; // READONLYIF is absent here
+        for (PropertyDrawExtraType type : propTypes) {
+            fillQueryProp(mResult, getPropertyExtra(type), extraReaders.get(type));
+        }
     }
 
-    private abstract class PropertyDrawReader implements PropertyReaderEntity {
+    private void fillQueryProp(MExclSet<PropertyReaderEntity> mResult, PropertyObjectEntity<?> property, PropertyReaderEntity reader) {
+        if (property != null) {
+            mResult.exclAdd(reader);
+        }
+    }
 
+    public class PropertyDrawReader implements PropertyReaderEntity {
+        private PropertyDrawExtraType type;
+        
+        public PropertyDrawReader(PropertyDrawExtraType type) {
+            this.type = type;    
+        }
+        
+        @Override
         public Type getType() {
             return getPropertyObjectEntity().getType();
         }
 
-        protected abstract String getReportSuffix();
-
+        @Override
         public String getReportSID() {
             return PropertyDrawEntity.this.getReportSID() + getReportSuffix();
+        }
+
+        @Override
+        public PropertyObjectEntity getPropertyObjectEntity() {
+            return propertyExtras.get(type);
+        }
+
+        @Override
+        public byte getTypeID() {
+            return type.getPropertyReadType();
+        }
+        
+        @Override
+        public int getID() {
+            return PropertyDrawEntity.this.getID();
+        }
+
+        @Override
+        public String getSID() {
+            return PropertyDrawEntity.this.getSID();
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return getPropertyObjectEntity();
         }
 
         @Override
         public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
             return PropertyDrawEntity.this.getColumnGroupObjects();
         }
+        
+        @Override
+        public String toString() {
+            return ThreadLocalContext.localize(type.getText()) + "(" + PropertyDrawEntity.this.toString() + ")";            
+        }
+        
+        protected String getReportSuffix() {
+            return type.getReportExtraType().getReportFieldNameSuffix();
+        }
     }
 
-    public final PropertyReaderEntity captionReader = new PropertyDrawReader() {
-        @Override
-        public byte getTypeID() {
-            return PropertyReadType.CAPTION;
-        }
-
-        @Override
-        public int getID() {
-            return PropertyDrawEntity.this.getID();
-        }
-
-        @Override
-        public String getSID() {
-            return PropertyDrawEntity.this.getSID();
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return PropertyDrawEntity.this.propertyCaption;
-        }
-
-        @Override
-        public Type getType() {
-            return PropertyDrawEntity.this.propertyCaption.getType();
-        }
-
-        @Override
-        public PropertyObjectEntity getPropertyObjectEntity() {
-            return PropertyDrawEntity.this.propertyCaption;
-        }
-
-        @Override
-        public String toString() {
-            return ThreadLocalContext.localize("{logics.property.caption}") + "(" + PropertyDrawEntity.this.toString() + ")";
-        }
-
-        @Override
-        protected String getReportSuffix() {
-            return ReportConstants.headerSuffix;
-        }
-    };
-    
-    
-    public final PropertyReaderEntity footerReader = new PropertyDrawReader() {
-        @Override
-        public byte getTypeID() {
-            return PropertyReadType.FOOTER;
-        }
-
-        @Override
-        public int getID() {
-            return PropertyDrawEntity.this.getID();
-        }
-
-        @Override
-        public String getSID() {
-            return PropertyDrawEntity.this.getSID();
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return PropertyDrawEntity.this.propertyFooter;
-        }
-
-        @Override
-        public PropertyObjectEntity getPropertyObjectEntity() {
-            return PropertyDrawEntity.this.propertyFooter;
-        }
-
-        @Override
-        public String toString() {
-            return ThreadLocalContext.localize("{logics.property.footer}") + "(" + PropertyDrawEntity.this.toString() + ")";
-        }
-
-        @Override
-        protected String getReportSuffix() {
-            return ReportConstants.footerSuffix;
-        }
-    };
-
-    public final PropertyReaderEntity backgroundReader = new PropertyDrawReader() {
-        @Override
-        public byte getTypeID() {
-            return PropertyReadType.CELL_BACKGROUND;
-        }
-
-        @Override
-        public int getID() {
-            return PropertyDrawEntity.this.getID();
-        }
-
-        @Override
-        public String getSID() {
-            return PropertyDrawEntity.this.getSID();
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return PropertyDrawEntity.this.propertyBackground;
-        }
-
-        @Override
-        public PropertyObjectEntity getPropertyObjectEntity() {
-            return PropertyDrawEntity.this.propertyBackground;
-        }
-
-        @Override
-        public String toString() {
-            return ThreadLocalContext.localize("{logics.background}") + "(" + PropertyDrawEntity.this.toString() + ")";
-        }
-
-        @Override
-        protected String getReportSuffix() {
-            return ReportConstants.backgroundSuffix;
-        }
-    };
-
-    public final PropertyReaderEntity foregroundReader = new PropertyDrawReader() {
-        @Override
-        public byte getTypeID() {
-            return PropertyReadType.CELL_FOREGROUND;
-        }
-
-        @Override
-        public int getID() {
-            return PropertyDrawEntity.this.getID();
-        }
-
-        @Override
-        public String getSID() {
-            return PropertyDrawEntity.this.getSID();
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return PropertyDrawEntity.this.propertyForeground;
-        }
-
-        @Override
-        public PropertyObjectEntity getPropertyObjectEntity() {
-            return PropertyDrawEntity.this.propertyForeground;
-        }
-
-        @Override
-        public String toString() {
-            return ThreadLocalContext.localize("{logics.foreground}") + "(" + PropertyDrawEntity.this.toString() + ")";
-        }
-
-        @Override
-        protected String getReportSuffix() {
-            return ReportConstants.foregroundSuffix;
-        }
-    };
-    
-    public final PropertyReaderEntity showIfReader = new PropertyDrawReader() {
-        @Override
-        public byte getTypeID() {
-            return PropertyReadType.SHOWIF;
-        }
-
-        @Override
-        public int getID() {
-            return PropertyDrawEntity.this.getID();
-        }
-
-        @Override
-        public String getSID() {
-            return PropertyDrawEntity.this.getSID();
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return PropertyDrawEntity.this.propertyShowIf;
-        }
-
-        @Override
-        public PropertyObjectEntity getPropertyObjectEntity() {
-            return PropertyDrawEntity.this.propertyShowIf;
-        }
-
-        @Override
-        public String toString() {
-            return "SHOWIF" + "(" + PropertyDrawEntity.this.toString() + ")";
-        }
-
-        @Override
-        protected String getReportSuffix() {
-            return ReportConstants.showIfSuffix;
-        }
-    };
+    public final Map<PropertyDrawExtraType, PropertyDrawReader> extraReaders;
     
     private ActionOrProperty inheritedProperty;
 
@@ -346,6 +185,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         setIntegrationSID(sID);
         this.propertyObject = propertyObject;
         this.inheritedProperty = inheritedProperty;
+        
+        this.extraReaders = new HashMap<>();
+        PropertyDrawExtraType[] extraTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND};
+        for (PropertyDrawExtraType type : extraTypes) {
+            this.extraReaders.put(type, new PropertyDrawReader(type));
+        }
     }
 
     public DataClass getRequestInputType(SecurityPolicy policy) {
@@ -580,27 +425,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).exclAdd(columnGroupObject);
     }
 
-    public void setPropertyCaption(PropertyObjectEntity propertyCaption) {
-        this.propertyCaption = propertyCaption;
+    public void setPropertyExtra(PropertyObjectEntity<?> property, PropertyDrawExtraType type) {
+        propertyExtras.put(type, property);
     }
-
-    public void setPropertyCaptionAndShowIf(PropertyObjectEntity propertyCaptionAsShowIf) {
-        this.propertyCaption = propertyCaptionAsShowIf;
-        this.propertyShowIf = propertyCaptionAsShowIf;
+    
+    public PropertyObjectEntity<?> getPropertyExtra(PropertyDrawExtraType type) {
+        return propertyExtras.get(type);
     }
-
-    public void setPropertyFooter(PropertyObjectEntity propertyFooter) {
-        this.propertyFooter = propertyFooter;
+    
+    public boolean hasPropertyExtra(PropertyDrawExtraType type) {
+        return propertyExtras.containsKey(type);
     }
-
-    public void setPropertyBackground(PropertyObjectEntity propertyBackground) {
-        this.propertyBackground = propertyBackground;
-    }
-
-    public void setPropertyForeground(PropertyObjectEntity propertyForeground) {
-        this.propertyForeground = propertyForeground;
-    }
-
+    
     public PropertyEditType getEditType() {
         return editType;
     }
@@ -642,14 +478,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     @IdentityStartLazy
-    public ImSet<ObjectEntity> getObjectInstances() {
+    public ImSet<ObjectEntity> getObjectInstances() { 
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
-        if(propertyCaption != null)
-            propertyObjects.add(propertyCaption);
-        if(propertyFooter != null)
-            propertyObjects.add(propertyFooter);
-        if(propertyShowIf != null)
-            propertyObjects.add(propertyShowIf);
+
+        // todo [dale]: READONLYIF is absent in the list, but may be it should be in some cases
+        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND};
+        for (PropertyDrawExtraType type : neededTypes) {
+            PropertyObjectEntity<?> prop = propertyExtras.get(type);
+            if (prop != null) {
+                propertyObjects.add(prop);
+            }
+        }
+        
         MSet<ObjectEntity> mObjects = SetFact.mSet();
         for(int i=0,size=propertyObjects.size();i<size;i++)
             mObjects.addAll(propertyObjects.get(i).getObjectInstances());

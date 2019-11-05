@@ -53,6 +53,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
@@ -229,7 +230,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         PropertyObjectEntity externalShowIf = addPropertyObject(FormToolbarAction.createShowIfProperty(new Property[]{FormEntity.isExternal}, new boolean[]{false}));
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
-        logMessagePropertyDraw.propertyShowIf = externalShowIf;
+        logMessagePropertyDraw.setPropertyExtra(externalShowIf, PropertyDrawExtraType.SHOWIF);
 
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
     }
@@ -1153,7 +1154,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void setReadOnlyIf(PropertyDrawEntity property, PropertyObjectEntity condition) {
-        property.propertyReadOnly = condition;
+        property.setPropertyExtra(condition, PropertyDrawExtraType.READONLYIF);
     }
 
     public void setEditType(PropertyEditType editType) {

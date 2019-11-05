@@ -208,19 +208,13 @@ public class ReportGenerator {
     // "fieldName.header" -> "fieldName"
     public static String getBaseFieldName(String fullFieldName) {
         String fieldName = removeIndexMarkerIfExists(fullFieldName);
-        if (isHeaderFieldName(fieldName)) {
-            return fieldName.substring(0, fieldName.length() - headerSuffix.length());
-        } else if (isFooterFieldName(fieldName)) {
-            return fieldName.substring(0, fieldName.length() - footerSuffix.length());
-        } else if (isShowIfFieldName(fieldName)) {
-            return fieldName.substring(0, fieldName.length() - showIfSuffix.length());
-        } else if (isBackgroundFieldName(fieldName)) { 
-            return fieldName.substring(0, fieldName.length() - backgroundSuffix.length());
-        } else if (isForegroundFieldName(fieldName)) {
-            return fieldName.substring(0, fieldName.length() - foregroundSuffix.length());
-        } else {
-            return fieldName;
+        for (ReportFieldExtraType type : ReportFieldExtraType.values()) {
+            if (isCorrespondingFieldName(fieldName, type)) {
+                String suffix = type.getReportFieldNameSuffix();
+                return fieldName.substring(0, fieldName.length() - suffix.length());
+            }
         }
+        return fieldName;
     }
 
     private String findColumnFieldName(JRExpression expr, String subreportID) {
@@ -488,7 +482,7 @@ public class ReportGenerator {
     }
     
     private boolean isActiveShowIfField(final String fieldName, String subreportID) {
-        if (isShowIfFieldName(fieldName)) {
+        if (isCorrespondingFieldName(fieldName, ReportFieldExtraType.SHOWIF)) {
             ClientKeyData clientKeyData = keyData.get(subreportID);
             if (!clientKeyData.keyRowsIsEmpty()) {
                 return propData.getFieldValue(clientKeyData.getKeyRowsFirst(), fieldName) == null;

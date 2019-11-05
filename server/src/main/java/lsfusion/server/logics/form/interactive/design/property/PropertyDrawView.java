@@ -8,6 +8,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
@@ -24,6 +25,7 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -46,6 +48,7 @@ import java.util.Map;
 
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
+import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
 public class PropertyDrawView extends ComponentView {
 
@@ -161,11 +164,11 @@ public class PropertyDrawView extends ComponentView {
         setupGeometry(reportField, scale);
         setupColumnGroupObjects(reportField);
 
-        setupHeader(reportField);
-        setupFooter(reportField);
+        PropertyDrawExtraType[] setupTypes = {CAPTION, FOOTER, BACKGROUND, FOREGROUND};
+        for (PropertyDrawExtraType setupType : setupTypes) {
+            setupExtra(reportField, setupType);
+        }
         setupShowIf(reportField);
-        setupBackgroundColor(reportField);    
-        setupForegroundColor(reportField);
         
         reportField.pattern = getFormatPattern();
 
@@ -192,43 +195,21 @@ public class PropertyDrawView extends ComponentView {
         }
     }
 
-    private void setupHeader(ReportDrawField field) {
-        if (entity.propertyCaption != null) {
-            field.hasHeaderProperty = true;
-            field.headerClass = getPropertyClass(entity.propertyCaption);
+    private void setupExtra(ReportDrawField field, PropertyDrawExtraType type) {
+        ReportFieldExtraType reportType = type.getReportExtraType();
+        if (entity.hasPropertyExtra(type)) {
+            field.addExtraType(reportType);
+            field.setExtraTypeClass(reportType, getPropertyClass(entity.getPropertyExtra(type)));
         } else {
-            field.headerClass = java.lang.String.class;
+            field.setExtraTypeClass(reportType, String.class);            
         }
     }
-
-    private void setupFooter(ReportDrawField field) {
-        if (entity.propertyFooter != null) {
-            field.hasFooterProperty = true;
-            field.footerClass = getPropertyClass(entity.propertyFooter);
-        } else {
-            field.footerClass = java.lang.String.class;
-        }
-    }
-
+    
     private void setupShowIf(ReportDrawField field) {
         // At the moment, only showif with no params is passing to the report
-        if (entity.propertyShowIf != null && entity.propertyShowIf.property.interfaces.size() == 0) {
-            field.hasShowIfProperty = true;
-            field.showIfClass = getPropertyClass(entity.propertyShowIf);
-        }
-    }
-
-    private void setupBackgroundColor(ReportDrawField field) {
-        if (entity.propertyBackground != null) {
-            field.hasBackgroundProperty = true;
-            field.backgroundClass = getPropertyClass(entity.propertyBackground);
-        }
-    }
-
-    private void setupForegroundColor(ReportDrawField field) {
-        if (entity.propertyForeground != null) {
-            field.hasForegroundProperty = true;
-            field.foregroundClass = getPropertyClass(entity.propertyForeground);
+        if (entity.hasPropertyExtra(PropertyDrawExtraType.SHOWIF) && entity.getPropertyExtra(PropertyDrawExtraType.SHOWIF).property.interfaces.size() == 0) {
+            field.addExtraType(ReportFieldExtraType.SHOWIF);
+            field.setExtraTypeClass(ReportFieldExtraType.SHOWIF, getPropertyClass(entity.getPropertyExtra(PropertyDrawExtraType.SHOWIF)));
         }
     }
 

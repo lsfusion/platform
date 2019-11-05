@@ -16,11 +16,14 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
@@ -72,44 +75,27 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return entity.getType();
     }
 
-    // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
-    public final PropertyObjectInstance<?> propertyCaption;
-    public final PropertyObjectInstance<?> propertyShowIf;
-    public final PropertyObjectInstance<?> propertyReadOnly;
-    public final PropertyObjectInstance<?> propertyFooter;
-    public final PropertyObjectInstance<?> propertyBackground;
-    public final PropertyObjectInstance<?> propertyForeground;
+    public final Map<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras;
 
-    // извращенное множественное наследование
-    public CaptionReaderInstance captionReader = new CaptionReaderInstance();
-    public ShowIfReaderInstance showIfReader = new ShowIfReaderInstance();
-    public FooterReaderInstance footerReader = new FooterReaderInstance();
-    public ReadOnlyReaderInstance readOnlyReader = new ReadOnlyReaderInstance();
-    public BackgroundReaderInstance backgroundReader = new BackgroundReaderInstance();
-    public ForegroundReaderInstance foregroundReader = new ForegroundReaderInstance();
-
+    public final Map<PropertyDrawExtraType, ExtraReaderInstance> extraReaders;
+    
     public HiddenReaderInstance hiddenReader = new HiddenReaderInstance();
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
                                 ActionOrPropertyObjectInstance<?, ?> propertyObject,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
-                                PropertyObjectInstance<?> propertyCaption,
-                                PropertyObjectInstance<?> propertyShowIf,
-                                PropertyObjectInstance<?> propertyReadOnly,
-                                PropertyObjectInstance<?> propertyFooter,
-                                PropertyObjectInstance<?> propertyBackground,
-                                PropertyObjectInstance<?> propertyForeground) {
+                                Map<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras) {
         super(entity);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
-        this.propertyCaption = propertyCaption;
-        this.propertyShowIf = propertyShowIf;
-        this.propertyReadOnly = propertyReadOnly;
-        this.propertyFooter = propertyFooter;
-        this.propertyBackground = propertyBackground;
-        this.propertyForeground = propertyForeground;
+        this.propertyExtras = propertyExtras;
+        
+        this.extraReaders = new HashMap<>(); 
+        for (PropertyDrawExtraType type : PropertyDrawExtraType.values()) {
+            extraReaders.put(type, new ExtraReaderInstance(type));
+        }
     }
 
     public PropertyObjectInstance getPropertyObjectInstance() {
@@ -166,147 +152,39 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
     }
 
-    public class ShowIfReaderInstance implements PropertyReaderInstance {
-
+    public class ExtraReaderInstance implements PropertyReaderInstance {
+        private PropertyDrawExtraType type;
+        
+        public ExtraReaderInstance(PropertyDrawExtraType type) {
+            this.type = type;
+        }
+        
+        @Override
         public PropertyObjectInstance getPropertyObjectInstance() {
-            return propertyShowIf;
+            return propertyExtras.get(type);
         }
 
+        @Override
         public byte getTypeID() {
-            return PropertyReadType.SHOWIF;
+            return type.getPropertyReadType();
         }
 
+        @Override
         public int getID() {
             return PropertyDrawInstance.this.getID();
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.getPropertyExtra(type);
+        }
+        
+        public String toString() {
+            return ThreadLocalContext.localize(type.getText()) + "(" + PropertyDrawInstance.this.toString() + ")";
         }
 
         public PropertyDrawInstance<P> getPropertyDraw() {
             return PropertyDrawInstance.this;
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyShowIf;
-        }
-    }
-
-    public class CaptionReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
-            return propertyCaption;
-        }
-
-        public byte getTypeID() {
-            return PropertyReadType.CAPTION;
-        }
-
-        public int getID() {
-            return PropertyDrawInstance.this.getID();
-        }
-
-        @Override
-        public String toString() {
-            return ThreadLocalContext.localize("{logics.property.caption}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyCaption;
-        }
-    }
-
-    public class FooterReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
-            return propertyFooter;
-        }
-
-        public byte getTypeID() {
-            return PropertyReadType.FOOTER;
-        }
-
-        public int getID() {
-            return PropertyDrawInstance.this.getID();
-        }
-
-        @Override
-        public String toString() {
-            return ThreadLocalContext.localize("{logics.property.footer}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyFooter;
-        }
-    }
-
-    public class ReadOnlyReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
-            return propertyReadOnly;
-        }
-
-        public byte getTypeID() {
-            return PropertyReadType.READONLY;
-        }
-
-        public int getID() {
-            return PropertyDrawInstance.this.getID();
-        }
-
-        @Override
-        public String toString() {
-            return ThreadLocalContext.localize("{logics.property.readonly}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyReadOnly;
-        }
-    }
-
-    public class BackgroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
-            return propertyBackground;
-        }
-
-        public byte getTypeID() {
-            return PropertyReadType.CELL_BACKGROUND;
-        }
-
-        public int getID() {
-            return PropertyDrawInstance.this.getID();
-        }
-
-        @Override
-        public String toString() {
-            return ThreadLocalContext.localize("{logics.background}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyBackground;
-        }
-    }
-
-    public class ForegroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
-            return propertyForeground;
-        }
-
-        public byte getTypeID() {
-            return PropertyReadType.CELL_FOREGROUND;
-        }
-
-        public int getID() {
-            return PropertyDrawInstance.this.getID();
-        }
-
-        @Override
-        public String toString() {
-            return ThreadLocalContext.localize("{logics.foreground}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyForeground;
         }
     }
 }

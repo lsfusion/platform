@@ -9,6 +9,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -36,7 +37,7 @@ public abstract class FormToolbarAction extends InternalAction {
         drawOptions.addProcessor(new DefaultProcessor() {
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
                 if (propertyCaption != null) {
-                    entity.propertyShowIf = form.addPropertyObject(propertyCaption);
+                    entity.setPropertyExtra(form.addPropertyObject(propertyCaption), PropertyDrawExtraType.SHOWIF);
                 }
             }
             public void proceedDefaultDesign(PropertyDrawView propertyView) {

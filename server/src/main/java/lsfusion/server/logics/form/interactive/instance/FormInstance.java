@@ -87,7 +87,6 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.*;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance.ShowIfReaderInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -133,6 +132,7 @@ import static lsfusion.base.BaseUtils.systemLogger;
 import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.interop.form.order.user.Order.*;
 import static lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance.*;
+import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
 // класс в котором лежит какие изменения произошли
 
@@ -170,7 +170,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private final ImSet<PullChangeProperty> pullProps;
 
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
-    public final ImList<PropertyDrawInstance> properties;
+    public final ImList<PropertyDrawInstance<?>> properties;
     
     public final ImMap<ContainerView, PropertyObjectInstance<?>> containerShowIfs;
 
@@ -249,7 +249,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         ImOrderSet<PropertyDrawEntity> propertyDraws = (ImOrderSet<PropertyDrawEntity>) entity.getPropertyDrawsList();
-        MList<PropertyDrawInstance> mProperties = ListFact.mListMax(propertyDraws.size());
+        MList<PropertyDrawInstance<?>> mProperties = ListFact.mListMax(propertyDraws.size());
         for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
             if (propertyDrawEntity.checkPermission(this.securityPolicy.property.view)) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
@@ -969,7 +969,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     @LogTime
     @ThisMessage
     public void executeEditAction(final PropertyDrawInstance<?> property, String editActionSID, final ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
-        SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
+        SQLCallable<Boolean> checkReadOnly = property.propertyExtras.get(READONLYIF) != null ? () -> property.propertyExtras.get(READONLYIF).getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
         ImSet<SecurityPolicy> securityPolicies = SetFact.singleton(securityPolicy);
         if(showReadOnly)
             securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);        
@@ -1688,7 +1688,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return updated.objectUpdated(groupObjects);
     }
 
-    private boolean propertyUpdated(PropertyObjectInstance updated, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
+    private boolean propertyUpdated(PropertyObjectInstance<?> updated, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
         return objectUpdated(updated, groupObjects)
                 || groupUpdated(groupObjects, UPDATED_KEYS)
                 || dataUpdated(updated, changedProps, hidden, groupObjects);
@@ -1852,7 +1852,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         MAddSet<ComponentView> hiddenButDefinitelyShownSet = SetFact.mAddSet(); // не ComponentDownSet для оптимизации
         MAddExclMap<PropertyReaderInstance, ComponentView> hiddenNotSureShown = MapFact.mAddExclMap();
         final MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
-        for (PropertyDrawInstance drawProperty : properties) {
+        for (PropertyDrawInstance<?> drawProperty : properties) {
             ClassViewType curClassView = drawProperty.getGroupClassView();
 
             ClassViewType forceViewType = drawProperty.getForceViewType();
@@ -1889,14 +1889,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             if (newInInterface != null) { // если показывается
                 ComponentView tabContainer = drawComponent.getTabContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
                 boolean hidden = tabContainer != null && isTabHidden(tabContainer);
-                boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
+                boolean isDefinitelyShown = drawProperty.propertyExtras.get(SHOWIF) == null;
                 if (!isDefinitelyShown) {
-                    ShowIfReaderInstance showIfReader = drawProperty.showIfReader;
+                    PropertyDrawInstance.ExtraReaderInstance showIfReader = drawProperty.extraReaders.get(SHOWIF);
                     boolean read = refresh
                                    || !newInInterface.equals(oldInInterface) // если изменилось представление
                                    || (!hidden && pendingHidden.contains(showIfReader)) // если стал видим, но не читался
                                    || groupUpdated(drawProperty.getColumnGroupObjects(), UPDATED_CLASSVIEW) // изменились группы в колонки (так как отбираются только GRID)
-                                   || propertyUpdated(drawProperty.propertyShowIf, propRowColumnGrids, changedProps, hidden); //изменился propertyShowIf
+                                   || propertyUpdated((PropertyObjectInstance<?>) drawProperty.propertyExtras.get(SHOWIF), propRowColumnGrids, changedProps, hidden); //изменился propertyShowIf
                     if (read) {
                         mShowIfs.exclAdd(showIfReader, propRowColumnGrids);
                         if(hidden)
@@ -1939,7 +1939,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> immShowIfs = showIfValues.immutable();
         for (int i = 0, size = immShowIfs.size(); i < size; ++i) {
-            ShowIfReaderInstance key = (ShowIfReaderInstance) immShowIfs.getKey(i);
+            PropertyDrawInstance.ExtraReaderInstance key = (PropertyDrawInstance.ExtraReaderInstance) immShowIfs.getKey(i);
             ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> values = immShowIfs.getValue(i);
 
             boolean allNull = true;
@@ -1991,7 +1991,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         forcePropertyDrawUpdates = forcePropertyDrawUpdates.merge(propertyDraw);
     }
 
-    private boolean propertyUpdated(PropertyDrawInstance propertyDraw, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
+    private boolean propertyUpdated(PropertyDrawInstance<?> propertyDraw, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
         return forcePropertyDrawUpdates.contains(propertyDraw) || propertyUpdated(propertyDraw.getDrawInstance(), groupObjects, changedProps, hidden);
     }
 
@@ -2006,7 +2006,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mReadProperties = MapFact.mOrderExclMap();
 
-        for (PropertyDrawInstance drawProperty : properties) {
+        for (PropertyDrawInstance<?> drawProperty : properties) {
             Boolean newPropIsShown = newIsShown.get(drawProperty);
             Boolean oldPropIsShown = isShown.put(drawProperty, newPropIsShown);
 
@@ -2036,9 +2036,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     }
                 }
 
-                if (showIfValues.containsKey(drawProperty.showIfReader)) {
+                if (showIfValues.containsKey(drawProperty.extraReaders.get(SHOWIF))) {
                     //используем значения showIf, зачитанные при 1м шаге
-                    result.properties.exclAdd(drawProperty.showIfReader, showIfValues.get(drawProperty.showIfReader));
+                    result.properties.exclAdd(drawProperty.extraReaders.get(SHOWIF), showIfValues.get(drawProperty.extraReaders.get(SHOWIF)));
                 } else {
                     // hidden = false, чтобы читать showIf всегда, т.к. влияет на видимость, а соответственно на наличие вкладки
                     // (с hidden'ом избыточный функционал, но небольшой, поэтому все же используем fillChangedReader)
@@ -2046,15 +2046,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 //                    fillChangedReader(drawProperty.propertyShowIf, drawProperty.showIfReader, propRowColumnGrids, false, read, mReadProperties, changedProps);
                 }
 
-                fillChangedReader(drawProperty.propertyCaption, drawProperty.captionReader, propRowColumnGrids, hidden, read, mReadProperties, changedProps);
-
-                fillChangedReader(drawProperty.propertyFooter, drawProperty.footerReader, propRowColumnGrids, hidden, read, mReadProperties, changedProps);
-
-                fillChangedReader(drawProperty.propertyReadOnly, drawProperty.readOnlyReader, propRowGrids, hidden, read, mReadProperties, changedProps);
-
-                fillChangedReader(drawProperty.propertyBackground, drawProperty.backgroundReader, propRowGrids, hidden, read, mReadProperties, changedProps);
-
-                fillChangedReader(drawProperty.propertyForeground, drawProperty.foregroundReader, propRowGrids, hidden, read, mReadProperties, changedProps);
+                fillChangedReader(drawProperty.propertyExtras.get(CAPTION), drawProperty.extraReaders.get(CAPTION), propRowColumnGrids, hidden, read, mReadProperties, changedProps);
+                fillChangedReader(drawProperty.propertyExtras.get(FOOTER), drawProperty.extraReaders.get(FOOTER), propRowColumnGrids, hidden, read, mReadProperties, changedProps);
+                fillChangedReader(drawProperty.propertyExtras.get(READONLYIF), drawProperty.extraReaders.get(READONLYIF), propRowGrids, hidden, read, mReadProperties, changedProps);
+                fillChangedReader(drawProperty.propertyExtras.get(BACKGROUND), drawProperty.extraReaders.get(BACKGROUND), propRowGrids, hidden, read, mReadProperties, changedProps);
+                fillChangedReader(drawProperty.propertyExtras.get(FOREGROUND), drawProperty.extraReaders.get(FOREGROUND), propRowGrids, hidden, read, mReadProperties, changedProps);
             } else if (oldPropIsShown != null) {
                 // говорим клиенту что свойство надо удалить
                 result.dropProperties.exclAdd(drawProperty);
@@ -2099,13 +2095,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return getFormData(getProperties(), getGroups(), orderTop);
     }
 
-    public ImSet<PropertyDrawInstance> getProperties() {
+    public ImSet<PropertyDrawInstance<?>> getProperties() {
         return properties.toOrderSet().getSet().filterFn(PropertyDrawInstance::isProperty);
     }
 
     // считывает все данные с формы
     @Deprecated
-    public FormData getFormData(ImSet<PropertyDrawInstance> propertyDraws, ImSet<GroupObjectInstance> classGroups, int orderTop) throws SQLException, SQLHandledException {
+    public FormData getFormData(ImSet<PropertyDrawInstance<?>> propertyDraws, ImSet<GroupObjectInstance> classGroups, int orderTop) throws SQLException, SQLHandledException {
 
         checkNavigatorDeactivated();
 
