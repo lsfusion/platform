@@ -407,7 +407,7 @@ FORM securityPolicy '{security.form.policy}'
     // ----- Global ------ //
     
     // Navigator elements
-    TREE navigatorElementsDefault tdf = NavigatorElement PARENT parent
+    TREE navigatorElementsDefault tdf = NavigatorElement PARENT parent(tdf)
     PROPERTIES(tdf) READONLY caption, canonicalName, number
     PROPERTIES(tdf)          permit, forbid
     ORDER number(tdf)
@@ -417,7 +417,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(df)          permit, forbid
 
     // Properties
-    TREE propertiesDefault tdprs = PropertyGroup PARENT parent, dprs = ActionOrProperty
+    TREE propertiesDefault tdprs = PropertyGroup PARENT parent(tdprs), dprs = ActionOrProperty
     PROPERTIES (tdprs) READONLY caption, SID, number 
     PROPERTIES (dprs)  READONLY caption, canonicalName, number
     PROPERTIES (tdprs)                             permitView, forbidView
@@ -450,7 +450,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur)                             nameDefaultForms, forbidDuplicateForms
     PROPERTIES(ur)                             transactTimeout
     // Navigator elements
-    TREE navigatorElements te = NavigatorElement PARENT parent
+    TREE navigatorElements te = NavigatorElement PARENT parent(te)
     PROPERTIES(te) READONLY caption, canonicalName, number
     PROPERTIES(ur, te)      permit BACKGROUND backgroundPermit(ur, te), forbid BACKGROUND backgroundForbid(ur, te)
     PROPERTIES(ur, te)      defaultNumber
@@ -461,7 +461,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur, f)      permit, forbid, defaultNumber
 
     // Properties
-    TREE properties tprs = PropertyGroup PARENT parent, prs = ActionOrProperty 
+    TREE properties tprs = PropertyGroup PARENT parent(tprs), prs = ActionOrProperty 
     PROPERTIES(tprs) READONLY caption, SID, number
     PROPERTIES(prs)  READONLY caption, canonicalName, number
     PROPERTIES(ur, tprs)                             permitView, forbidView
