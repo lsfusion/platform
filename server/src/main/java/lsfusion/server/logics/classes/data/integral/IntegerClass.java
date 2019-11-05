@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data.integral;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -114,4 +115,10 @@ public class IntegerClass extends IntClass<Integer> {
     public Number getInfiniteValue(boolean min) {
         return min ? Integer.MIN_VALUE : Integer.MAX_VALUE;
     }
+    
+    @Override
+    public ExtInt getCharLength() {
+        return new ExtInt(11);
+    }
+
 }

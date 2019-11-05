@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data.integral;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -111,5 +112,9 @@ public class DoubleClass extends IntegralClass<Double> {
     @Override
     public Number getInfiniteValue(boolean min) {
         return min ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+    }
+
+    public ExtInt getCharLength() {
+        return new ExtInt(20); // ? double has 15-16 precise digits + sign + dot
     }
 }

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.integral;
 
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -120,4 +121,10 @@ public class LongClass extends IntClass<Long> {
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }
+
+    @Override
+    public ExtInt getCharLength() {
+        return new ExtInt(20);
+    }
+
 }
