@@ -169,7 +169,7 @@ FORM processMonitor '{process.monitor.form.process.monitor}'
     FILTERGROUP idleInTransaction FILTER '{process.monitor.form.process.monitor.filter.idle}' statusSQLProcess(i) == 'idle in transaction'
     EVENTS ON INIT setDefaultProcessType()
     
-    TREE blocking i2 = STRING[10] PARENT threadOwnerProcess
+    TREE blocking i2 = STRING[10] PARENT threadOwnerProcess(i2)
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlocked,
                             activeProcess, idThreadProcess, nameComputer, nameUser, dateTimeCallProcess,
                             querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 

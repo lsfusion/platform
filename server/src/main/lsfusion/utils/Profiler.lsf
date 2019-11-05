@@ -296,7 +296,7 @@ FORM profiler '{profiler.profiler}'
 //дерево
     PROPERTIES nameSelectedTop() 
     
-    TREE pT down=ProfileObject PARENT parent
+    TREE pT down=ProfileObject PARENT parent(down)
     PROPERTIES (down) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
                         totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
     ORDER order(down) DESC
@@ -324,7 +324,7 @@ FORM profiler '{profiler.profiler}'
     
    
     
-    TREE pB up=ProfileObject PARENT child
+    TREE pB up=ProfileObject PARENT child(up)
     PROPERTIES (up) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
                              totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
     ORDER order(up) DESC
