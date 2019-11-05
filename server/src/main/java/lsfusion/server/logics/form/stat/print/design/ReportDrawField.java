@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.stat.print.design;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +16,7 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     
     public Class valueClass;
     
-    private Map<ReportFieldExtraType, Class> extraTypeClass; 
+    private Map<ReportFieldExtraType, Class> extraTypeClass = new HashMap<>(); 
     
     public void setExtraTypeClass(ReportFieldExtraType type, Class cls) {
         extraTypeClass.put(type, cls);

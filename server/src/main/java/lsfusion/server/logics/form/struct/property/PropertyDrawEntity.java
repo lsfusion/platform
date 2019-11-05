@@ -434,7 +434,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
     
     public boolean hasPropertyExtra(PropertyDrawExtraType type) {
-        return propertyExtras.containsKey(type);
+        return propertyExtras.get(type) != null;
     }
     
     public PropertyEditType getEditType() {
