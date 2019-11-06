@@ -184,6 +184,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         try {
             SQLSession sql = getThreadLocalSql();
 
+            adapter.ensure(false);
+
             if (!isFirstStart(sql)) {
                 updateReflectionStats(sql);
 
@@ -193,7 +195,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 startLogger.info("Setting user not null constraints for properties");
                 setNotNullProperties(sql);
             }
-        } catch (SQLHandledException | SQLException | IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
             LM = null;
@@ -1143,8 +1145,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void synchronizeDB() throws Exception {
-
-        adapter.ensure(false);
 
         SQLSession sql = getThreadLocalSql();
 

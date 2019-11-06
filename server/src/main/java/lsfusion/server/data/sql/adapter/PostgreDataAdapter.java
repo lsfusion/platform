@@ -74,7 +74,8 @@ public class PostgreDataAdapter extends DataAdapter {
                 connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
             } catch (PSQLException e) {
                 logger.error("EnsureDB error: ", e);
-                if (e.getSQLState() != null && e.getSQLState().equals("08001")) {
+                //08001 = connection refused (database is not started), 57P03 = the database system is starting up
+                if (e.getSQLState() != null && (e.getSQLState().equals("08001") || e.getSQLState().equals("57P03"))) {
                     Thread.sleep(connectTimeout);
                 } else throw e;
             }
