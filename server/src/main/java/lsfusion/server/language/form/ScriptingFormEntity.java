@@ -175,7 +175,6 @@ public class ScriptingFormEntity {
                 List<PropertyObjectEntity> propertyObjects = new ArrayList<>();
                 for (int i = 0; i < properties.size(); i++) {
                     LP property = properties.get(i);
-                    List<ImOrderSet<String>> propertyMapping = propertyMappings.get(i);
                     if (propertyMapping != null && property.property.getName() != null) {
                         ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(propertyMapping.get(i));
                         checkPropertyParameters(property, mappingObjects);
