@@ -166,6 +166,7 @@ public class ScriptingFormEntity {
         List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, neighbour, isRightNeighbour, version, debugPoint);
         for (ScriptingGroupObject groupObject : groupObjects) {
             List<LP> properties = parentProperties.get(groupObjects.indexOf(groupObject));
+            List<ImOrderSet<String>> propertyMapping = propertyMappings.get(groupObjects.indexOf(groupObject));
 
             if (properties != null && groupObject.objects.size() != properties.size()) {
                 LM.getErrLog().emitDifferentObjsNPropsQuantityError(LM.getParser(), groupObject.objects.size());
@@ -176,7 +177,6 @@ public class ScriptingFormEntity {
                 List<PropertyObjectEntity> propertyObjects = new ArrayList<>();
                 for (int i = 0; i < properties.size(); i++) {
                     LP property = properties.get(i);
-                    List<ImOrderSet<String>> propertyMapping = propertyMappings.get(i);
                     if (propertyMapping != null && property.property.getName() != null) {
                         ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(propertyMapping.get(i));
                         checkPropertyParameters(property, mappingObjects);
