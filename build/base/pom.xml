@@ -31,7 +31,7 @@
         <assemble.finalName>base</assemble.finalName>
         <assemble.jar>${project.build.directory}/${assemble.finalName}.${project.packaging}</assemble.jar>
         <assemble.packed>${assemble.jar}.pack.gz</assemble.packed>
-        <keystore.file>${project.basedir}/src/assemble/keystore</keystore.file>
+        <keystore.file>/usr/share/cert/keystore</keystore.file>
         <keystore.alias>luxsoft</keystore.alias>
         <keystore.pass>f7y45cnb</keystore.pass>
 
