@@ -164,7 +164,9 @@ public class ScriptingFormEntity {
         TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID());
         List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, neighbour, isRightNeighbour, version, debugPoint);
         for (ScriptingGroupObject groupObject : groupObjects) {
-            List<LP> properties = parentProperties.get(groupObjects.indexOf(groupObject));
+            int groupIndex = groupObjects.indexOf(groupObject);
+            List<LP> properties = parentProperties.get(groupIndex);
+            List<ImOrderSet<String>> propertyMapping = propertyMappings.get(groupIndex);
 
             if (properties != null && groupObject.objects.size() != properties.size()) {
                 LM.getErrLog().emitDifferentObjsNPropsQuantity(LM.getParser());
