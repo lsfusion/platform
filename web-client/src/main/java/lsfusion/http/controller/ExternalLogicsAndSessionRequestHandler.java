@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.Enumeration;
@@ -115,7 +116,9 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
                             if (bodyParams.length() > 0) {
                                 bodyParams.append("&");
                             }
-                            bodyParams.append((String) paramName).append("=").append(paramValue);
+                            // params in inputStream should be URL encoded. parameterMap contains decoded params
+                            String encodedParamValue = URLEncoder.encode(paramValue, charset.name());
+                            bodyParams.append((String) paramName).append("=").append(encodedParamValue);
                         }
                     }
                 }
