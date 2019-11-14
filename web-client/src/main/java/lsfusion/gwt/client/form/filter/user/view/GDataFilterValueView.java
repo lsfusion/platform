@@ -25,13 +25,13 @@ public class GDataFilterValueView extends GFilterValueView {
             @Override
             protected void onFocus() {
                 super.onFocus();
-                tablePanel.addStyleName("blueBorder");
+                tablePanel.addStyleName("dataFilterValueTablePanelFocused");
             }
 
             @Override
             protected void onBlur() {
                 super.onBlur();
-                tablePanel.removeStyleName("blueBorder");
+                tablePanel.removeStyleName("dataFilterValueTablePanelFocused");
             }
         };
 

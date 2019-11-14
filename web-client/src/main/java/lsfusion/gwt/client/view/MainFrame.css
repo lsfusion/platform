@@ -374,6 +374,10 @@ input[type=checkbox]:focus {
     min-height: 16px !important;
 }
 
+.dataFilterValueTablePanelFocused {
+    border: 1px solid #0489ba;
+}
+
 .filterDialogHeader {
     height: 18px;
     padding: 4px 5px 4px 4px !important;
