@@ -158,7 +158,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
         private Context context;
 
         public DataFilterValueEditableCell() {
-            super(DBLCLICK, KEYDOWN, KEYPRESS, BLUR);
+            super(CLICK, KEYDOWN, KEYPRESS, BLUR);
         }
 
         @Override
@@ -190,7 +190,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
         @Override
         public void onBrowserEvent(Context context, Element parent, Object value, NativeEvent event) {
-            if ((BrowserEvents.DBLCLICK.equals(event.getType()) || GKeyStroke.isCommonEditKeyEvent(event) &&
+            if ((BrowserEvents.CLICK.equals(event.getType()) || GKeyStroke.isCommonEditKeyEvent(event) &&
                     !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey()) &&
                     cellEditor == null &&
                     event.getKeyCode() != KeyCodes.KEY_ESCAPE &&
