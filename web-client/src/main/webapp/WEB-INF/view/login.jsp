@@ -59,6 +59,5 @@
             </tr>
             <tr></tr>
         </table>
-
-</body>
+    </body>
 </html>
