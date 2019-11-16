@@ -123,7 +123,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
         contentLayerUI.setLocked(false);
         contentLayer.updateUI();
 
-        getControl().getController().setFocusedDockable(new DefaultFocusRequest(intern(), null, true, true, true, true));
+        requestFocusInWindow();
     }
 
     public void onClosing() {
@@ -140,9 +140,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
     }
 
     public void requestFocusInWindow() {
-        if (defaultComponent != null) {
-            defaultComponent.requestFocusInWindow();
-        }
+        getControl().getController().setFocusedDockable(new DefaultFocusRequest(intern(), null, true, true, true, true));
     }
 
     public void setBlockingDockable(ClientFormDockable blockingDockable) {
