@@ -46,6 +46,14 @@ public class ClientFormDockable extends ClientDockable {
             public void setBlockingForm(ClientFormDockable blockingForm) {
                 ClientFormDockable.this.setBlockingDockable(blockingForm);
             }
+
+            @Override
+            public void setSelected(boolean newSelected) {
+                super.setSelected(newSelected);
+                if (newSelected) {
+                    requestFocusInWindow();
+                }
+            }
         };
 
         setContent(clientForm.getCaption(), clientForm.getTooltip(), clientForm.getLayout());
