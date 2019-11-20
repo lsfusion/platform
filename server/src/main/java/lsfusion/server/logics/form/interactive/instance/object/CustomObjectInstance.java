@@ -140,19 +140,6 @@ public class CustomObjectInstance extends ObjectInstance {
             updateCurrentClass(session);
     }
 
-    public void changeGridClass(long classID) {
-
-        CustomClass changeClass = baseClass.findClassID(classID);
-
-        if(gridClass != changeClass) {
-            gridClass = changeClass;
-
-            // расставляем пометки
-            updated |= ObjectInstance.UPDATED_GRIDCLASS;
-            groupTo.updated |= GroupObjectInstance.UPDATED_GRIDCLASS;
-        }
-    }
-
     public Type getType() {
         return ObjectType.instance;
     }

@@ -15,7 +15,6 @@ import java.util.*;
 
 public class ClientFormChanges {
 
-    public final Map<ClientGroupObject, ClassViewType> classViews;
     public final Map<ClientGroupObject, ClientGroupObjectValue> objects;
 
     // assertion что ObjectInstance из того же GroupObjectInstance
@@ -30,22 +29,17 @@ public class ClientFormChanges {
     public final Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties; // keys of the values in that map are "grid" objects (for panelProperties there are no "grid" objects) + "group-columns" objects 
     public final Set<ClientPropertyDraw> updateProperties; // needed for async changes, that check means that property was not changed, so async change should be dropped (old value need to be set)
 
-    public final Set<ClientPropertyDraw> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
-    
+
+    public final Map<ClientGroupObject, Boolean> updateStateObjects;
+
     public final List<ClientComponent> activateTabs;
     public final List<ClientPropertyDraw> activateProps;
 
     public ClientFormChanges(DataInputStream inStream, ClientForm clientForm) throws IOException {
 
-        classViews = new HashMap<>();
-        int count = inStream.readInt();
-        for (int i = 0; i < count; i++) {
-            classViews.put(clientForm.getGroupObject(inStream.readInt()), ClassViewType.values()[inStream.readInt()]);
-        }
-
         objects = new HashMap<>();
-        count = inStream.readInt();
+        int count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
             objects.put(clientGroupObject, new ClientGroupObjectValue(inStream, clientForm));
@@ -86,18 +80,18 @@ public class ClientFormChanges {
 
         updateProperties = new HashSet<>();
 
-        //PanelProperties
-        panelProperties = new HashSet<>();
-        count = inStream.readInt();
-        for (int i = 0; i < count; i++) {
-            panelProperties.add(clientForm.getProperty(inStream.readInt()));
-        }
-
         //DropProperties
         dropProperties = new HashSet<>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             dropProperties.add(clientForm.getProperty(inStream.readInt()));
+        }
+
+        //DropProperties
+        updateStateObjects = new HashMap<>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            updateStateObjects.put(clientForm.getGroupObject(inStream.readInt()), inStream.readBoolean());
         }
 
         //ActivateTabs

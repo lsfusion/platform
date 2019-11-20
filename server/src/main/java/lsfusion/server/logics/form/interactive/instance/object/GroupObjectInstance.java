@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.instance.object;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -10,9 +11,11 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
+import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.stack.StackMessage;
@@ -21,11 +24,15 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.formula.CastFormulaImpl;
+import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionExpr;
+import lsfusion.server.data.expr.formula.StringOverrideFormulaImpl;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.RecursiveExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.expr.where.ifs.IfExpr;
@@ -51,7 +58,10 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.action.session.table.NoPropertyTableUsage;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.OrderClass;
+import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.TextClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
@@ -63,6 +73,7 @@ import lsfusion.server.logics.form.interactive.instance.filter.AndFilterInstance
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.OrFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
@@ -151,13 +162,36 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public void setPageSize(Integer pageSize) {
-        if(entity.pageSize == null){
-            if (!pageSize.equals(this.pageSize)) {
-                updated |= UPDATED_PAGESIZE;
-            }
+        if(entity.pageSize == null && !pageSize.equals(this.pageSize)){
+            updated |= UPDATED_PAGESIZE;
             this.pageSize = pageSize;
         }
     }
+    
+    public void forceRefresh() {
+        updated |= UPDATED_FORCE;
+    }
+    public boolean toRefresh() { // hack to not keep state at client, just resend it with every view (grid / pivot) change
+        return (updated & UPDATED_FORCE) != 0;
+    }
+    
+    private boolean autoUpdateMode = true;
+    public void setUpdateMode(UpdateMode updateMode) {
+        if(updateMode == UpdateMode.FORCE)
+            updated |= UPDATED_FORCEMODE;
+        else
+            autoUpdateMode = updateMode == UpdateMode.AUTO;
+    }
+    public boolean toUpdate() {
+        return autoUpdateMode || (updated & UPDATED_FORCEMODE) != 0;
+    }
+
+    public GroupMode groupMode; // active
+
+    public GroupMode setGroupMode;
+    public void changeGroupMode(GroupMode groupMode) {
+        setGroupMode = groupMode;
+    }    
 
     public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
 
@@ -172,17 +206,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         for(ObjectInstance object : objects)
             object.groupTo = this;
 
-        // текущее состояние
-        if (this.curClassView != entity.initClassView) {
-            this.curClassView = entity.initClassView;
-            this.updated |= UPDATED_CLASSVIEW;
-        }
-        if(entity.pageSize != null) {
-            this.pageSize = entity.pageSize;
-        } else {
-            this.pageSize = Settings.get().getPageSizeDefaultValue();
-        }
-        
+        this.classView = entity.classView;
+
+        this.pageSize = entity.getDefaultPageSize();
+
         this.parent = parent;
         this.props = props;
     }
@@ -193,11 +220,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public Integer order = 0;
 
-    // классовый вид включен или нет
-    public ClassViewType curClassView = ClassViewType.DEFAULT;
+    public ClassViewType classView = ClassViewType.DEFAULT;
 
-    // закэшированные
-
+    // caches
     public ImSet<FilterInstance> setFilters = null;
     public ImSet<FilterInstance> getSetFilters() {
         if(setFilters==null) {
@@ -346,14 +371,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public final static int UPDATED_OBJECT = (1);
     public final static int UPDATED_KEYS = (1 << 2);
-    public final static int UPDATED_GRIDCLASS = (1 << 3);
-    public final static int UPDATED_CLASSVIEW = (1 << 4);
+    public final static int UPDATED_FORCEMODE = (1 << 4);
     public final static int UPDATED_ORDER = (1 << 5);
     public final static int UPDATED_FILTER = (1 << 6);
     public final static int UPDATED_EXPANDS = (1 << 7);
     public final static int UPDATED_PAGESIZE = (1 << 8);
 
-    public int updated = UPDATED_GRIDCLASS | UPDATED_ORDER | UPDATED_FILTER;
+    public final static int UPDATED_FORCE = (1 << 9);
+
+    public int updated = UPDATED_ORDER | UPDATED_FILTER;
 
     private boolean assertNull() {
         Iterator<ObjectInstance> it = objects.iterator();
@@ -699,6 +725,36 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
     }
 
+    private ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> executeGroup(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass, int readSize, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        assert !isInTree();
+
+        assert groupMode != null;
+        final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+
+        Where where = getWhere(mapKeys, modifier, reallyChanged);
+
+        // first we need exprs to group
+        ImMap<GroupColumn, Expr> groupExprs = getGroupExprs(mapKeys, modifier, reallyChanged);
+
+        // group by this exprs - max(key)
+        ImRevMap<GroupColumn, KeyExpr> groupKeys = KeyExpr.getMapKeys(groupMode.groupProps);
+        ImMap<ObjectInstance, Expr> mapExprKeys = mapKeys.mapValues(keyExpr -> GroupExpr.create(groupExprs, keyExpr, where, GroupType.MAX, groupKeys));
+
+        // group by max(key)
+        Where groupWhere = GroupExpr.create(mapExprKeys, Where.TRUE(), mapKeys).getWhere();
+
+        return castExecuteObjects(new Query<ObjectInstance, OrderInstance>(mapKeys, groupWhere).
+                executeClasses(session, env, baseClass, readSize));
+    }
+
+    public ImMap<GroupColumn, Expr> getGroupExprs(ImMap<ObjectInstance, KeyExpr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        return groupMode.groupProps.<Expr, SQLException, SQLHandledException>mapValuesEx(value -> {
+            ImMap<ObjectInstance, Expr> mapObjects = MapFact.addExcl(mapKeys, value.columnKeys.mapValues((Function<DataObject, ValueExpr>) DataObject::getExpr));
+            Expr expr = value.property.getDrawInstance().getExpr(mapObjects, modifier, reallyChanged);
+            return FormulaUnionExpr.create(StringOverrideFormulaImpl.instance, ListFact.toList(expr, ValueExpr.IMPOSSIBLESTRING)); // override to support NULLs
+        });
+    }
+
     private ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> executeTree(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         assert isInTree();
 
@@ -782,10 +838,26 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
 
-    // вообще касается всего что идет после проверки на hidden, можно было бо обобщить, но пока нет смысла
-    private boolean pendingHiddenUpdateKeys;
-    private boolean pendingHiddenUpdateObjects;
-    
+    private boolean pendingUpdateKeys;
+    private boolean pendingUpdateScroll;
+    private boolean pendingUpdateObjects;
+    private boolean pendingUpdateFilters;
+    private boolean pendingUpdateObject;
+    private boolean pendingUpdatePageSize;
+
+    public final Set<PropertyReaderInstance> pendingUpdateProps = new HashSet<>();
+    private boolean isPending() {
+        return pendingUpdateKeys || pendingUpdateScroll || !pendingUpdateProps.isEmpty();
+    }
+    // we won't check for groupMode change
+    public void checkPending(MFormChanges changes, Runnable change) {
+        boolean wasPending = isPending();
+        change.run();
+        boolean isPending = isPending();
+        if(isPending != wasPending)
+            changes.updateStateObjects.add(this, isPending);
+    }
+
     private boolean hasUpdateEnvironmentIncrementProp(GroupObjectProp propType) { // оптимизация
         return props.get(propType) != null;
     }
@@ -835,53 +907,23 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     @StackMessage("{message.form.update.group.keys}")
     @ThisMessage
-    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {
-            result.classViews.exclAdd(this, curClassView);
-        }
-
+    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, MSet<PropertyDrawInstance> mChangedDrawProps, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (keyTable == null) // в общем то только для hidden'а но может и потом понадобиться
             keyTable = createKeyTable("upktable-" + System.identityHashCode(execEnv));
 
-        boolean isGrid = curClassView.isGrid();
+        boolean updateObjects = false; // updated upper objects in filters / orders
 
-        // если изменились класс грида или представление
-        boolean updateFilters = refresh || (updated & (UPDATED_GRIDCLASS | UPDATED_CLASSVIEW)) != 0;
-        
-        boolean objectsUpdated = false;
+        // FILTERS
 
-        ImSet<FilterInstance> setFilters = getSetFilters();
+        boolean updateFilters = refresh || toRefresh() || (updated & UPDATED_FILTER) != 0;
         ImSet<GroupObjectInstance> sThis = SetFact.singleton(this);
-
-        if (FilterInstance.ignoreInInterface) {
-            updateFilters |= (updated & UPDATED_FILTER) != 0;
-            filters = setFilters;
-        } else {
-            if ((updated & UPDATED_FILTER) != 0) {
-                ImSet<FilterInstance> newFilters = setFilters.filterFn(filt -> filt.isInInterface(GroupObjectInstance.this));
-
-                updateFilters |= !BaseUtils.hashEquals(newFilters, filters);
-                filters = newFilters;
-            } else { // остались те же setFilters
-                for (FilterInstance filt : setFilters)
-                    if (refresh || filt.classUpdated(sThis)) {
-                        boolean inInterface = filt.isInInterface(this);
-                        if(inInterface != filters.contains(filt)) {
-                            if(inInterface)
-                                filters = filters.addExcl(filt);
-                            else
-                                filters = filters.removeIncl(filt);
-                            updateFilters = true;
-                        }
-                    }
-            }
-        }
+        filters = getSetFilters();
 
         if (!updateFilters) // изменились "верхние" объекты для фильтров
             for (FilterInstance filt : filters)
                 if (filt.objectUpdated(sThis)) {
                     updateFilters = true;
-                    objectsUpdated = true;
+                    updateObjects = true;
                     break;
                 }
 
@@ -901,36 +943,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(updateFilters) // изменились фильтры, надо обновить свойства созданные при помощи соответствующих операторов форм, сейчас будет определенная избыточность для dataUpdated (так как через eventChange уже должны изменится), но пока не критично
             updateEnvironmentIncrementProp(environmentIncrement, modifier, changedProps, reallyChanged, GroupObjectProp.FILTER, true, true);
 
-        boolean updateOrders = false;
-        boolean hasOrderProperty = hasUpdateEnvironmentIncrementProp(GroupObjectProp.ORDER); // оптимизация
+        // ORDERS
 
-        // порядки
-        if(OrderInstance.ignoreInInterface) {
-            updateOrders |= (updated & UPDATED_ORDER) != 0;
-            orders = getSetOrders();
-        } else {
-            ImOrderMap<OrderInstance, Boolean> setOrders = getSetOrders();
-            ImOrderMap<OrderInstance, Boolean> newOrders;
-            if ((updated & UPDATED_ORDER) != 0) {
-                newOrders = setOrders.filterOrder(orderInstance -> orderInstance.isInInterface(GroupObjectInstance.this));
-            } else { // значит setOrders не изменился
-                newOrders = setOrders.filterOrder(orderInstance -> {
-                    boolean isInInterface = orders.containsKey(orderInstance);
-                    if ((refresh || orderInstance.classUpdated(SetFact.singleton(GroupObjectInstance.this))) && !(orderInstance.isInInterface(GroupObjectInstance.this) == isInInterface)) {
-                        isInInterface = !isInInterface;
-                    }
-                    return isInInterface;
-                });
-            }
-            updateOrders |= !orders.equals(newOrders);
-            orders = newOrders;
-        }
+        boolean hasOrderProperty = hasUpdateEnvironmentIncrementProp(GroupObjectProp.ORDER); // optimization
+        boolean updateOrders = (updated & UPDATED_ORDER) != 0;
+        orders = getSetOrders();
 
         if (!updateOrders && (!updateFilters || hasOrderProperty)) // изменились "верхние" объекты для порядков
             for (OrderInstance order : orders.keyIt())
                 if (order.objectUpdated(sThis)) {
                     updateOrders = true;
-                    objectsUpdated = true;
+                    updateObjects = true;
                     break;
                 }
         if (!updateOrders && (!updateFilters || hasOrderProperty)) // изменились данные по порядкам
@@ -943,38 +966,27 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(updateOrders) // изменились порядки, надо обновить свойства созданные при помощи соответствующих операторов форм, сейчас будет определенная избыточность для dataUpdated (так как через eventChange уже должны изменится), но пока не критично
             updateEnvironmentIncrementProp(environmentIncrement, modifier, changedProps, reallyChanged, GroupObjectProp.ORDER, true, true);
 
-        boolean updateKeys = updateFilters || updateOrders;
+        boolean updateKeys = updateFilters || updateOrders || userSeeks != null;
 
-        if(hidden) {
-            pendingHiddenUpdateKeys |= updateKeys;
-            pendingHiddenUpdateObjects |= objectsUpdated;
-            return null;
-        } else {
-            updateKeys |= pendingHiddenUpdateKeys;
-            objectsUpdated |= pendingHiddenUpdateObjects;
-            pendingHiddenUpdateKeys = false;
-            pendingHiddenUpdateObjects = false;
-        }
+        boolean updatePageSize = (updated & UPDATED_PAGESIZE) != 0;
 
-        ImMap<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
-        SeekObjects seeks = null;
-        int direction = DIRECTION_CENTER;
+        // EXTRA CHECKS
 
         if(isInTree()) {
             if (!updateKeys && (getUpTreeGroup() != null && ((getUpTreeGroup().updated & UPDATED_EXPANDS) != 0))) {
                 updateKeys = true;
             }
-            if(parent != null) {
-                if(!updateKeys && (updated & UPDATED_EXPANDS) != 0)
+            if (parent != null) {
+                if (!updateKeys && (updated & UPDATED_EXPANDS) != 0)
                     updateKeys = true;
-                if(!updateKeys) {
-                    for(PropertyObjectInstance parentProp : parent.valueIt()) {
+                if (!updateKeys) {
+                    for (PropertyObjectInstance parentProp : parent.valueIt()) {
                         if (parentProp.objectUpdated(sThis)) {
                             updateKeys = true;
                             break;
                         }
                     }
-                    for(PropertyObjectInstance parentProp : parent.valueIt()) {
+                    for (PropertyObjectInstance parentProp : parent.valueIt()) {
                         if (parentProp.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
                             updateKeys = true;
                             break;
@@ -982,105 +994,173 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     }
                 }
             }
-            if (userSeeks!=null) // if there is user seek, force refresh (because delete for example uses user seeks to update view), this hack will be gone when seeks will be supported in tree
-                updateKeys = true;
-            seeks = SEEK_HOME;
         } else {
-            if (userSeeks!=null) { // пользовательский поиск
-                seeks = userSeeks;
-                updateKeys = true;
-                currentObject = MapFact.EMPTY();
-                userSeeks = null;
-            } else if (updateKeys) {
-                UpdateType updateType = getUpdateType();
-                if(!objectsUpdated) // не изменились фильтры, порядки, вид, ищем текущий объект
-                    updateType = UpdateType.PREV;
-                seeks = getSeekObjects(updateType);
-            }
-
-            if (!updateKeys && isGrid && !currentObject.isEmpty() && (updated & (UPDATED_OBJECT | UPDATED_PAGESIZE)) != 0) { // скроллирование
-                int keyNum = keys.indexOf(currentObject);
-                if (upKeys && keyNum < getPageSize()) { // если меньше PageSize осталось и сверху есть ключи
+            if (setGroupMode != null) {
+                if (updatePageSize) // if pagesize is changed there can be switch from group mode to regular and vice versa
                     updateKeys = true;
 
-                    int lowestInd = getPageSize() * 2 - 1;
-                    if (lowestInd >= keys.size()) // по сути END
-                        seeks = SEEK_END;
-                    else {
-                        direction = DIRECTION_UP;
-                        seeks = new SeekOrderObjects(keys.getValue(lowestInd), false);
-                    }
-                } else // наоборот вниз
-                    if (downKeys && keyNum >= keys.size() - getPageSize()) { // assert что pageSize не null
+                if (!updateKeys && groupMode != null) {
+                    if (!groupMode.groupProps.containsAll(setGroupMode.groupProps)) // groups added - update anyway
                         updateKeys = true;
-
-                        int highestInd = keys.size() - getPageSize() * 2;
-                        if (highestInd < 0) // по сути HOME
-                            seeks = SEEK_HOME;
-                        else {
-                            direction = DIRECTION_DOWN;
-                            seeks = new SeekOrderObjects(keys.getValue(highestInd), false);
+                    else {
+                        ImMap<PropertyDrawInstance, ImMap<ImMap<ObjectInstance, DataObject>, PropertyGroupType>> changedAggrProps = setGroupMode.aggrProps.removeEquals(groupMode.aggrProps);
+                        if (!changedAggrProps.isEmpty()) {
+                            if (BaseUtils.hashEquals(groupMode.groupProps, setGroupMode.groupProps)) { // groups are the same, so just set changed props for update
+                                mChangedDrawProps.addAll(changedAggrProps.keys());
+                                this.groupMode = new GroupMode(groupMode.groupProps, groupMode.aggrProps.override(changedAggrProps));
+                            } else {
+                                if (!changedAggrProps.isEmpty()) // if groups are changed and we need more props it makes sense to update everything
+                                    updateKeys = true;
+                            }
                         }
                     }
+                }
+            } else {
+                if (groupMode != null)
+                    updateKeys = true;
             }
         }
 
-        if (updateKeys) {
-            assert seeks != null;
+        boolean updateObject = (updated & UPDATED_OBJECT) != 0;
 
-            updated = (updated | UPDATED_KEYS);
+        if(toRefresh())
+            result.updateStateObjects.add(this, isPending());
+        if(!hidden && toUpdate()) {
+            updateKeys |= pendingUpdateKeys; updateObjects |= pendingUpdateObjects; updateObject |= pendingUpdateObject; updatePageSize |= pendingUpdatePageSize; updateFilters |= pendingUpdateFilters;
+            checkPending(result, () -> { pendingUpdateKeys = false; pendingUpdateScroll = false; } );
+            pendingUpdateObjects = false; pendingUpdateObject = false; pendingUpdatePageSize = false; pendingUpdateFilters = false;
+        } else {
+            boolean finalUpdateKeys = updateKeys; boolean changedScroll = updateObject || updatePageSize;
+            checkPending(result, () -> { pendingUpdateKeys |= finalUpdateKeys; if(changedScroll) pendingUpdateScroll = updateScroll() != null; });
+            pendingUpdateObjects |= updateObjects; pendingUpdateObject |= updateObject; pendingUpdatePageSize |= updatePageSize; pendingUpdateFilters |= updateFilters;
+            return null;
+        }
 
-            if (!isGrid) { // панель
-                ImMap<ObjectInstance, DataObject> readKeys = seeks.readKeys(sql, env, modifier, baseClass, reallyChanged);
-                updateViewProperty(execEnv, readKeys);
-                return readKeys;
-            } else {
-                int activeRow = -1; // какой ряд выбранным будем считать
-                SeekOrderObjects orderSeeks;
-                if(seeks == SEEK_NULL)
-                    orderSeeks = SEEK_HOME;
+        ImMap<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
+        SeekObjects seeks = null;
+        int direction = DIRECTION_CENTER;
+
+        if(isInTree()) {
+            if (userSeeks != null) // if there is user seek, force refresh (because delete for example uses user seeks to update view), this hack will be gone when seeks will be supported in tree
+                userSeeks = null;
+        } else {
+            if(setGroupMode == null) {
+                if (userSeeks != null) { // пользовательский поиск
+                    seeks = userSeeks;
+                    userSeeks = null;
+                    currentObject = MapFact.EMPTY();
+                } else if (updateKeys) {
+                    UpdateType updateType = getUpdateType();
+                    if (!updateObjects) // не изменились фильтры, порядки, ищем текущий объект
+                        updateType = UpdateType.PREV;
+                    seeks = getSeekObjects(updateType);
+                } else if (updateObject || updatePageSize) {
+                    Pair<SeekObjects, Integer> scroll = updateScroll();
+                    if(scroll != null) {
+                        updateKeys = true;
+                        seeks = scroll.first;
+                        if(scroll.second != null)
+                            direction = scroll.second;
+                    }
+                }
+            }
+        }
+
+        if (updateKeys)
+            return readKeys(result, updateFilters, updatePageSize, currentObject, seeks, direction, sql, env, modifier, execEnv, baseClass, reallyChanged);
+
+        return null; // ничего не изменилось
+    }
+
+    public Pair<SeekObjects, Integer> updateScroll() {
+        Pair<SeekObjects, Integer> scroll = null;
+        ImMap<ObjectInstance, DataObject> currentObject;
+        if (classView.isGrid() && !(currentObject = getGroupObjectValue()).isEmpty()) { // scrolling in grid
+            int keyNum = keys.indexOf(currentObject);
+            int pageSize = getPageSize();
+            if (upKeys && keyNum < pageSize) { // если меньше PageSize осталось и сверху есть ключи
+                int lowestInd = pageSize * 2 - 1;
+                if (lowestInd >= keys.size()) // по сути END
+                    scroll = new Pair<>(SEEK_END, null);
                 else
-                    orderSeeks = (SeekOrderObjects)seeks;
+                    scroll = new Pair<>(new SeekOrderObjects(keys.getValue(lowestInd), false), DIRECTION_UP);
+            } else // наоборот вниз
+                if (downKeys && keyNum >= keys.size() - pageSize) { // assert что pageSize не null
+                    int highestInd = keys.size() - pageSize * 2;
+                    if (highestInd < 0) // по сути HOME
+                        scroll = new Pair<>(SEEK_HOME, null);
+                    else
+                        scroll = new Pair<>(new SeekOrderObjects(keys.getValue(highestInd), false), DIRECTION_DOWN);
+                }
+        }
+        return scroll;
+    }
 
-                if (isInTree()) { // если дерево, то без поиска, но возможно с parent'ами
-                    assert orderSeeks.values.isEmpty() && !orderSeeks.end;
-                    
-//                    if(updateFilters) { // неудобно когда дерево сворачивается каждый раз
-//                        if(expandTable !=null) { // потому как могут уже скажем классы стать не актуальными после применения
-//                            expandTable.drop(sql, env.getOpOwner());
-//                            expandTable = null;
-//                        }
-//                    }
+    public ImMap<ObjectInstance, DataObject> readKeys(MFormChanges result, boolean updateFilters, boolean updatePageSize, ImMap<ObjectInstance, DataObject> currentObject, SeekObjects seeks, int direction, SQLSession sql, QueryEnvironment env, Modifier modifier, ExecutionEnvironment execEnv, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        updated = (updated | UPDATED_KEYS);
 
-                    ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> treeElements = executeTree(sql, env, modifier, baseClass, reallyChanged);
+        if (!classView.isGrid()) { // панель
+            ImMap<ObjectInstance, DataObject> readKeys = seeks.readKeys(sql, env, modifier, baseClass, reallyChanged);
+            updateViewProperty(execEnv, readKeys);
+            return readKeys;
+        } else {
+            int activeRow = -1; // какой ряд выбранным будем считать
+            if (isInTree()) { // если дерево, то без поиска, но возможно с parent'ами
+                ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> treeElements = executeTree(sql, env, modifier, baseClass, reallyChanged);
 
-                    ImList<ImMap<ObjectInstance, DataObject>> expandParents = treeElements.mapListValues(
-                            value -> immutableCast(
-                                    value.filterFn(
-                                            (key, value1) -> key instanceof ObjectInstance && value1 instanceof DataObject)));
-                    keys = treeElements.mapOrderValues(MapFact::EMPTY);
+                ImList<ImMap<ObjectInstance, DataObject>> expandParents = treeElements.mapListValues(
+                        value -> immutableCast(
+                                value.filterFn(
+                                        (key, value1) -> key instanceof ObjectInstance && value1 instanceof DataObject)));
+                keys = treeElements.mapOrderValues(MapFact::EMPTY);
 
-                    ImOrderMap<ImMap<ObjectInstance, DataObject>, Boolean> groupExpandables =
-                            treeElements
-                                    .filterOrderValuesMap(element -> element.containsKey("expandable") || element.containsKey("expandable2"))
-                                    .mapOrderValues(
-                                            (Function<ImMap<Object, ObjectValue>, Boolean>) value -> {
-                                                ObjectValue expandable1 = value.get("expandable");
-                                                ObjectValue expandable2 = value.get("expandable2");
-                                                return expandable1 instanceof DataObject || expandable2 instanceof DataObject;
-                                            });
+                ImOrderMap<ImMap<ObjectInstance, DataObject>, Boolean> groupExpandables =
+                        treeElements
+                                .filterOrderValuesMap(element -> element.containsKey("expandable") || element.containsKey("expandable2"))
+                                .mapOrderValues(
+                                        (Function<ImMap<Object, ObjectValue>, Boolean>) value -> {
+                                            ObjectValue expandable1 = value.get("expandable");
+                                            ObjectValue expandable2 = value.get("expandable2");
+                                            return expandable1 instanceof DataObject || expandable2 instanceof DataObject;
+                                        });
 
-                    result.expandables.exclAdd(this, groupExpandables.getMap());
-                    result.parentObjects.exclAdd(this, expandParents);
-                    activeRow = keys.size() == 0 ? -1 : 0;
+                result.expandables.exclAdd(this, groupExpandables.getMap());
+                result.parentObjects.exclAdd(this, expandParents);
+                activeRow = keys.size() == 0 ? -1 : 0;
+            } else {
+                keys = MapFact.EMPTYORDER();
+
+                if(setGroupMode != null) {
+                    boolean useGroupMode = groupMode != null;
+                    if(updateFilters || updatePageSize)
+                        useGroupMode = false;
+
+                    int readSize = getPageSize();
+                    if(!useGroupMode) { // we are not sure
+                        keys = SEEK_HOME.executeOrders(sql, env, modifier, baseClass, readSize, true, reallyChanged);
+                        if(keys.size() == readSize)
+                            useGroupMode = true;
+                    }
+
+                    if(useGroupMode) {
+                        this.groupMode = setGroupMode;
+                        keys = executeGroup(sql, env, modifier, baseClass, 0, reallyChanged);
+                    } else
+                        this.groupMode = null;
                 } else {
-                    keys = MapFact.EMPTYORDER();
+                    this.groupMode = null;
+
+                    SeekOrderObjects orderSeeks;
+                    if(seeks == SEEK_NULL)
+                        orderSeeks = SEEK_HOME;
+                    else
+                        orderSeeks = (SeekOrderObjects)seeks;
 
                     if (!orders.starts(orderSeeks.values.keys())) // если не "хватает" спереди ключей, дочитываем
                         orderSeeks = orderSeeks.readValues(sql, env, modifier, baseClass, reallyChanged);
 
                     if (direction == DIRECTION_CENTER) { // оптимизируем если HOME\END, то читаем одним запросом
-                        if(orderSeeks.values.isEmpty()) {
+                        if (orderSeeks.values.isEmpty()) {
                             if (orderSeeks.end) { // END
                                 direction = DIRECTION_UP;
                                 downKeys = false;
@@ -1104,34 +1184,32 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     }
                     if (direction == DIRECTION_DOWN || direction == DIRECTION_CENTER) { // затем Down
                         ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> executeList = orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true, reallyChanged);
-                        if (executeList.size() > 0 && !(orderSeeks.end && activeRow>0)) activeRow = keys.size(); // не выбираем если идет seekDown и уже выбран ряд - это то что надо
+                        if (executeList.size() > 0 && !(orderSeeks.end && activeRow > 0)) activeRow = keys.size(); // не выбираем если идет seekDown и уже выбран ряд - это то что надо
                         keys = keys.addOrderExcl(executeList);
                         downKeys = (executeList.size() == readSize);
                     }
                 }
-
-                // параллельно будем обновлять ключи чтобы JoinSelect'ить
-                keyTable.writeKeys(sql, keys.keys(), env.getOpOwner());
-                result.gridObjects.exclAdd(this, keys.keyOrderSet());
-
-                updateViewProperty(execEnv, keyTable);
-                
-                if(seeks == SEEK_NULL)
-                    return MapFact.EMPTY();
-
-                if (!keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
-                    if(getUpTreeGroup()==null) // если верхняя группа
-                        return activeRow>=0?keys.getKey(activeRow):MapFact.EMPTY();
-                    else // иначе assertion что activeRow < 0, выбираем верхнюю
-                        return keys.size()>0 && !currentObject.isEmpty()?keys.getKey(0):null;
-                } else // так как сейчас клиент требует прислать ему groupObject даже если он не изменился, если приходят ключи
-                    return currentObject;
             }
-        }
 
-        return null; // ничего не изменилось
+            // параллельно будем обновлять ключи чтобы JoinSelect'ить
+            keyTable.writeKeys(sql, keys.keys(), env.getOpOwner());
+            result.gridObjects.exclAdd(this, keys.keyOrderSet());
+
+            updateViewProperty(execEnv, keyTable);
+
+            if(seeks == SEEK_NULL)
+                return MapFact.EMPTY();
+
+            if (!keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
+                if(getUpTreeGroup()==null) // если верхняя группа
+                    return activeRow>=0?keys.getKey(activeRow):MapFact.EMPTY();
+                else // иначе assertion что activeRow < 0, выбираем верхнюю
+                    return keys.size()>0 && !currentObject.isEmpty()?keys.getKey(0):null;
+            } else // так как сейчас клиент требует прислать ему groupObject даже если он не изменился, если приходят ключи
+                return currentObject;
+        }
     }
-    
+
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
         PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {

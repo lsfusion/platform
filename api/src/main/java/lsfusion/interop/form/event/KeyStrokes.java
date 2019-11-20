@@ -66,10 +66,6 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F2, modifier);
     }
 
-    public static KeyStroke getSwitchClassViewKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK);
-    }
-
     public static KeyStroke getRemoveFiltersKeyStroke() {
         return getEscape();
     }

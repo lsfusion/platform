@@ -35,10 +35,9 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public int pageSize = -1;
     public boolean needVerticalScroll;
 
-    public List<ClassViewType> banClassView = new ArrayList<>();
+    public ClassViewType classView;
 
     public ClientGrid grid;
-    public ClientShowType showType;
     public ClientToolbar toolbar;
     public ClientFilter filter;
     public ClientCalculations calculations;
@@ -90,10 +89,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         return grid;
     }
 
-    public ClientComponent getShowType() {
-        return showType;
-    }
-
     @Override
     public ClientComponent getToolbarSystem() {
         return toolbar;
@@ -112,7 +107,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.serializeCollection(outStream, objects);
         pool.serializeObject(outStream, grid);
-        pool.serializeObject(outStream, showType);
         pool.serializeObject(outStream, toolbar);
         pool.serializeObject(outStream, filter);
         pool.serializeObject(outStream, calculations);
@@ -120,14 +114,13 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        banClassView = pool.readObject(inStream);
+        classView = pool.readObject(inStream);
 
         pool.deserializeCollection(objects, inStream);
 
         parent = pool.deserializeObject(inStream);
 
         grid = pool.deserializeObject(inStream);
-        showType = pool.deserializeObject(inStream);
         toolbar = pool.deserializeObject(inStream);
         filter = pool.deserializeObject(inStream);
         calculations = pool.deserializeObject(inStream);

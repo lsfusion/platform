@@ -80,9 +80,9 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
 
         //form
         registry.addHandler(new CalculateSumHandler(this));
-        registry.addHandler(new ChangeClassViewHandler(this));
         registry.addHandler(new ChangeGroupObjectHandler(this));
         registry.addHandler(new ChangePageSizeHandler(this));
+        registry.addHandler(new ChangeModeHandler(this));
         registry.addHandler(new ChangePropertyHandler(this));
         registry.addHandler(new ChangePropertyOrderHandler(this));
         registry.addHandler(new ClearPropertyOrdersHandler(this));

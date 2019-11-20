@@ -30,10 +30,16 @@ public class GPanelController {
         this.form = iform;
     }
 
-    public void addProperty(GPropertyDraw property) {
-        if (property.container != null && !containsProperty(property)) {
-            propertyControllers.put(property, new GPropertyController(property));
+    public void updateProperty(GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values) {
+        GPropertyController propertyController = propertyControllers.get(property);
+        if(!updateKeys) {
+            if (property.container != null && propertyController == null) {
+                propertyController = new GPropertyController(property, columnKeys);
+                propertyControllers.put(property, propertyController);
+            } else
+                propertyController.setColumnKeys(columnKeys);
         }
+        propertyController.setPropertyValues(values, updateKeys);
     }
 
     public void removeProperty(GPropertyDraw property) {
@@ -87,10 +93,6 @@ public class GPanelController {
         propertyControllers.get(property).setCellForegroundValues(cellForegroundValues);
     }
 
-    public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
-        propertyControllers.get(property).setPropertyValues(valueMap, updateKeys);
-    }
-
     public void updatePropertyCaptions(GPropertyDraw property, Map<GGroupObjectValue, Object> propertyCaptions) {
         propertyControllers.get(property).setPropertyCaptions(propertyCaptions);
     }
@@ -103,8 +105,8 @@ public class GPanelController {
         propertyControllers.get(property).setReadOnlyValues(readOnlyValues);
     }
 
-    public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
-        propertyControllers.get(property).setColumnKeys(columnKeys);
+    public void focusProperty(GPropertyDraw propertyDraw) {
+        propertyControllers.get(propertyDraw).focusFirstWidget();
     }
 
     public boolean focusFirstWidget() {
@@ -140,8 +142,9 @@ public class GPanelController {
         private Map<GGroupObjectValue, Object> cellForegroundValues;
 
 
-        public GPropertyController(GPropertyDraw property) {
+        public GPropertyController(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
             this.property = property;
+            this.columnKeys = columnKeys;
         }
 
         public Widget getView() {
@@ -272,7 +275,7 @@ public class GPanelController {
         }
 
         public void setColumnKeys(List<GGroupObjectValue> columnKeys) {
-            if (columnsUpdated || !GwtSharedUtils.nullEquals(this.columnKeys, columnKeys)) {
+            if (columnsUpdated || !this.columnKeys.equals(columnKeys)) {
                 this.columnKeys = columnKeys;
                 columnsUpdated = true;
             }

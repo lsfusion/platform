@@ -122,7 +122,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
-    public Object getInfiniteValue(boolean min) {
+    public Boolean getInfiniteValue(boolean min) {
         return true;
     }
 

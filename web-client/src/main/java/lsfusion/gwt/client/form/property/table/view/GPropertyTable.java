@@ -240,10 +240,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         }
     }
 
-    public void editCurrentCell(String actionSID) {
-        editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), actionSID);
-    }
-
     private Element getCellParent(int row, int column) {
         TableCellElement td = getChildElement(row).getCells().getItem(column);
         

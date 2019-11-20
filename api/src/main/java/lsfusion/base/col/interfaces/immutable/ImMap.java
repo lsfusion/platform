@@ -1,5 +1,6 @@
 package lsfusion.base.col.interfaces.immutable;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
@@ -95,6 +96,7 @@ public interface ImMap<K, V> {
     ImMap<K, V> removeIncl(ImSet<? extends K> keys);
     ImMap<K, V> removeValues(V value); // желательно не менять если нет
     ImMap<K, V> removeNulls();
+    ImMap<K, V> removeEquals(ImMap<K, V> map);
 
     // replaces
 

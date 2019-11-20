@@ -9,11 +9,6 @@ import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.physics.admin.Settings;
 
 public class DivideFormulaImpl extends ScaleFormulaImpl {
-
-    public DivideFormulaImpl() {
-        super(DivideTypeConversion.instance, DivideConversionSource.instance);
-    }
-
     @Override
     public String getOperationName() {
         return "division";
@@ -62,6 +57,12 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
             }
             return null;
         }
+    }
+
+    public final static DivideFormulaImpl instance = new DivideFormulaImpl();
+
+    private DivideFormulaImpl() { // private - no equals / hashcode
+        super(DivideTypeConversion.instance, DivideConversionSource.instance);
     }
 
     public boolean hasNotNull() {

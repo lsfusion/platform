@@ -56,10 +56,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
     public GroupObjectInstance toDraw; // не null, кроме когда без параметров в FormInstance проставляется
 
-    public ClassViewType getGroupClassView() {
-        return toDraw != null ? toDraw.curClassView : ClassViewType.PANEL;
-    }
-
     private final ImOrderSet<GroupObjectInstance> columnGroupObjects;
     public ImSet<GroupObjectInstance> getColumnGroupObjects() {
         return columnGroupObjects.getSet();
@@ -68,19 +64,30 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return columnGroupObjects;
     }
     public ImSet<GroupObjectInstance> getColumnGroupObjectsInGridView() {
-        return getColumnGroupObjects().filterFn(element -> element.curClassView.isGrid());
+        return getColumnGroupObjects().filterFn(element -> element.classView.isGrid());
     }
 
     public Type getType() {
         return entity.getType();
     }
 
-    public final Map<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras;
-
-    public final Map<PropertyDrawExtraType, ExtraReaderInstance> extraReaders;
-    
     public HiddenReaderInstance hiddenReader = new HiddenReaderInstance();
 
+    // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
+    public final PropertyObjectInstance<?> propertyCaption;
+    public final PropertyObjectInstance<?> propertyShowIf;
+    public final PropertyObjectInstance<?> propertyReadOnly;
+    public final PropertyObjectInstance<?> propertyFooter;
+    public final PropertyObjectInstance<?> propertyBackground;
+    public final PropertyObjectInstance<?> propertyForeground;
+
+    public ExtraReaderInstance captionReader;
+    public ShowIfReaderInstance showIfReader;
+    public ExtraReaderInstance footerReader;
+    public ExtraReaderInstance readOnlyReader;
+    public ExtraReaderInstance backgroundReader;
+    public ExtraReaderInstance foregroundReader;
+    
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
                                 ActionOrPropertyObjectInstance<?, ?> propertyObject,
                                 GroupObjectInstance toDraw,
@@ -90,12 +97,20 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
-        this.propertyExtras = propertyExtras;
-        
-        this.extraReaders = new HashMap<>(); 
-        for (PropertyDrawExtraType type : PropertyDrawExtraType.values()) {
-            extraReaders.put(type, new ExtraReaderInstance(type));
-        }
+
+        propertyCaption = propertyExtras.get(PropertyDrawExtraType.CAPTION);
+        propertyShowIf = propertyExtras.get(PropertyDrawExtraType.SHOWIF);
+        propertyReadOnly = propertyExtras.get(PropertyDrawExtraType.READONLYIF);
+        propertyFooter = propertyExtras.get(PropertyDrawExtraType.FOOTER);
+        propertyBackground = propertyExtras.get(PropertyDrawExtraType.BACKGROUND);
+        propertyForeground = propertyExtras.get(PropertyDrawExtraType.FOREGROUND);
+
+        captionReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTION, propertyCaption);
+        showIfReader = new ShowIfReaderInstance(PropertyDrawExtraType.SHOWIF, propertyShowIf);
+        footerReader = new ExtraReaderInstance(PropertyDrawExtraType.FOOTER, propertyFooter);
+        readOnlyReader = new ExtraReaderInstance(PropertyDrawExtraType.READONLYIF, propertyReadOnly);
+        backgroundReader = new ExtraReaderInstance(PropertyDrawExtraType.BACKGROUND, propertyBackground);
+        foregroundReader = new ExtraReaderInstance(PropertyDrawExtraType.FOREGROUND, propertyForeground);
     }
 
     public PropertyObjectInstance getPropertyObjectInstance() {
@@ -110,8 +125,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return PropertyReadType.DRAW;
     }
 
-    public ClassViewType getForceViewType() {
-        return entity.forceViewType;
+    public boolean isGrid() {
+        return (toDraw != null ? toDraw.classView : ClassViewType.PANEL).isGrid() && entity.forceViewType.isGrid();
     }
 
     public String toString() {
@@ -153,15 +168,17 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class ExtraReaderInstance implements PropertyReaderInstance {
-        private PropertyDrawExtraType type;
+        private final PropertyDrawExtraType type;
+        private final PropertyObjectInstance property;
         
-        public ExtraReaderInstance(PropertyDrawExtraType type) {
+        public ExtraReaderInstance(PropertyDrawExtraType type, PropertyObjectInstance property) {
             this.type = type;
+            this.property = property;
         }
         
         @Override
         public PropertyObjectInstance getPropertyObjectInstance() {
-            return propertyExtras.get(type);
+            return property;
         }
 
         @Override
@@ -185,6 +202,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public PropertyDrawInstance<P> getPropertyDraw() {
             return PropertyDrawInstance.this;
+        }
+    }
+
+    public class ShowIfReaderInstance extends ExtraReaderInstance {
+        public ShowIfReaderInstance(PropertyDrawExtraType type, PropertyObjectInstance property) {
+            super(type, property);
         }
     }
 }

@@ -126,7 +126,7 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
 
     @Override
     protected ImSet<ObjectEntity> getValueObjects() {
-        return getFormEntity().getObjects().filterFn(element -> !getInstance(element.groupTo, form).curClassView.isGrid());
+        return getFormEntity().getObjects().filterFn(element -> !getInstance(element.groupTo, form).classView.isGrid());
     }
 
     @Override

@@ -5,7 +5,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -37,7 +36,7 @@ public class GroupChangeAction extends AroundAspectAction {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         GroupObjectInstance groupObject = context.getChangingPropertyToDraw();
-        if(groupObject == null || !groupObject.curClassView.isGrid())
+        if(groupObject == null || !groupObject.classView.isGrid())
             return proceed(context);
 
         final ImOrderSet<ImMap<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(groupObject, context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты

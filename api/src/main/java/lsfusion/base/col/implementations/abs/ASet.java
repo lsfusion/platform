@@ -242,6 +242,14 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return mvResult.immutableValue();
     }
 
+    @Override
+    public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapValuesEx(ThrowingFunction<K, M, E1, E2> getter) throws E1, E2 {
+        ImValueMap<K, M> mvResult = mapItValues();
+        for(int i=0,size=size();i<size;i++)
+            mvResult.mapValue(i, getter.apply(get(i)));
+        return mvResult.immutableValue();
+    }
+
     public <M> ImMap<K, M> mapValues(Function<K, M> getter) {
         ImValueMap<K, M> mvResult = mapItValues();
         for(int i=0,size=size();i<size;i++)

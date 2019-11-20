@@ -539,7 +539,6 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type); }
-		|	initViewType=formGroupObjectInitViewType { $groupObject.setInitType($initViewType.isInitType); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
@@ -592,10 +591,6 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 formGroupObjectViewType returns [ClassViewType type]
 	:	viewType=classViewType { $type = $viewType.type; }
-	;
-
-formGroupObjectInitViewType returns [boolean isInitType]
-	: 	('INIT' {$isInitType = true;} | 'FIXED' {$isInitType = false;})
 	;
 
 classViewType returns [ClassViewType type]
@@ -4473,7 +4468,7 @@ groupObjectTreeComponentSelector returns [String sid]
 
 groupObjectTreeComponentSelectorType
     :
-    	'TOOLBARSYSTEM' | 'FILTERGROUPS' | 'USERFILTER' | 'GRIDBOX' | 'CLASSCHOOSER' | 'GRID' | 'SHOWTYPE'
+    	'TOOLBARSYSTEM' | 'FILTERGROUPS' | 'USERFILTER' | 'GRIDBOX' | 'CLASSCHOOSER' | 'GRID'
     ;
 
 propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyView = null]

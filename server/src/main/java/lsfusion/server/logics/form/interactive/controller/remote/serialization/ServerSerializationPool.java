@@ -25,7 +25,6 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
         addMapping2(ContainerView.class);
         addMapping2(GroupObjectView.class);
         addMapping2(TreeGroupView.class);
-        addMapping2(ShowTypeView.class);
         addMapping2(GridView.class);
         addMapping2(ToolbarView.class);
         addMapping2(FilterView.class);

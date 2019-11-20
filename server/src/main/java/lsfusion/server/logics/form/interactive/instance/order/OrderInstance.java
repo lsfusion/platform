@@ -6,9 +6,6 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 
 public interface OrderInstance extends CompareInstance {
 
-    // даже если не в интерфейсе все равно ставить (то есть по сути фильтр делать false)
-    boolean ignoreInInterface = true;
-
     GroupObjectInstance getApplyObject();
 
     Type getType();

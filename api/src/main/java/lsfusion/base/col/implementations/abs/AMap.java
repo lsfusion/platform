@@ -244,6 +244,14 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return ((ImMap<K, V>)imMap).filterFn((key, value) -> BaseUtils.hashEquals(get(key), value));
     }
 
+    @Override
+    public ImMap<K, V> removeEquals(ImMap<K, V> map) {
+        return filterFn((k, v) -> {
+            V rv;
+            return (rv = map.get(k)) == null || !BaseUtils.hashEquals(v, rv);         
+        });
+    }
+
     public <M> ImMap<K, M> join(ImMap<? super V, M> joinMap) {
         return mapValues(((ImMap<V, M>) joinMap).fnGetValue());
     }

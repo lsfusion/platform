@@ -2,23 +2,27 @@ package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
+import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GClassViewType;
+import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.cell.UserInputResult;
 
 import java.awt.*;
@@ -98,6 +102,16 @@ public class GwtToClientConverter extends ObjectConverter {
         return ClassViewType.valueOf(gViewType.name());
     }
 
+    @Converter(from = GPropertyGroupType.class)
+    public PropertyGroupType convertGroupType(GPropertyGroupType gViewType) {
+        return PropertyGroupType.valueOf(gViewType.name());
+    }
+
+    @Converter(from = GUpdateMode.class)
+    public UpdateMode convertGroupType(GUpdateMode gViewType) {
+        return UpdateMode.valueOf(gViewType.name());
+    }
+
     @Converter(from = GGroupObjectValue.class)
     public byte[] convertGroupObjectValue(GGroupObjectValue groupObjectValue) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
@@ -136,6 +150,9 @@ public class GwtToClientConverter extends ObjectConverter {
     
     @Converter(from = GGroupObjectUserPreferences.class)
     public GroupObjectUserPreferences convertGroupObjectPreferences(GGroupObjectUserPreferences gprefs) {
+        if(gprefs == null)
+            return null;
+
         Map<String, ColumnUserPreferences> columnUPs = new HashMap<>();
         for (Map.Entry<String, GColumnUserPreferences> entry : gprefs.getColumnUserPreferences().entrySet()) {
             columnUPs.put(entry.getKey(), convertColumnPreferences(entry.getValue()));

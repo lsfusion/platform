@@ -102,8 +102,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         sortableHeaderManager = new GGridSortableHeaderManager<GPropertyDraw>(this, true) {
             @Override
-            protected void orderChanged(GPropertyDraw columnKey, GOrder modiType) {
-                form.changePropertyOrder(columnKey, GGroupObjectValue.EMPTY, modiType);
+            protected void orderChanged(GPropertyDraw columnKey, GOrder modiType, boolean alreadySet) {
+                form.changePropertyOrder(columnKey, GGroupObjectValue.EMPTY, modiType, alreadySet);
             }
 
             @Override
@@ -146,26 +146,29 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private NativeHashMap<GPropertyDraw, Column> columnsMap = new NativeHashMap<>();
 
-    public void addProperty(GGroupObject group, GPropertyDraw property) {
+    public void updateProperty(GGroupObject group, GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values) {
         dataUpdated = true;
 
-        int index = tree.addProperty(group, property);
+        if(!updateKeys) {
+            int index = tree.updateProperty(group, property);
 
-        if (index > -1) {
-            if (!createdFields.contains(property.sID)) {
-                Column<GTreeGridRecord, Object> gridColumn = createGridColumn(property);
-                String propertyCaption = property.getCaptionOrEmpty();
-                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption));
-                header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
+            if (index > -1) {
+                if (!createdFields.contains(property.sID)) {
+                    Column<GTreeGridRecord, Object> gridColumn = createGridColumn(property);
+                    String propertyCaption = property.getCaptionOrEmpty();
+                    GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption));
+                    header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
 
-                headers.add(index, header);
-                insertColumn(index, gridColumn, header);
-                createdFields.add(index, property.sID);
+                    headers.add(index, header);
+                    insertColumn(index, gridColumn, header);
+                    createdFields.add(index, property.sID);
 
-                columnsMap.put(property, gridColumn);
-                columnsUpdated = true;
+                    columnsMap.put(property, gridColumn);
+                    columnsUpdated = true;
+                }
             }
         }
+        updatePropertyValues(property, values, updateKeys);
     }
 
     private Column<GTreeGridRecord, Object> createGridColumn(final GPropertyDraw property) {
@@ -628,14 +631,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         redrawColumns(singleton(getColumn(column)), false);
     }
 
-    public void changeOrder(GPropertyDraw property, GOrder modiType) {
-        int propertyIndex = tree.getPropertyColumnIndex(property);
-        if (propertyIndex > 0) {
-            sortableHeaderManager.changeOrder(property, modiType);
-        } else {
-            //меняем напрямую для верхних groupObjects
-            form.changePropertyOrder(property, GGroupObjectValue.EMPTY, modiType);
-        }
+    public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
+        return sortableHeaderManager.changeOrders(groupObject, orders, alreadySet);
     }
 
     public boolean keyboardNodeChangeState(boolean open) {
@@ -654,10 +651,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return true;
         }
         return false;
-    }
-
-    public void clearOrders(GGroupObject groupObject) {
-        sortableHeaderManager.clearOrders(groupObject);
     }
 
     public class TreeTableKeyboardSelectionHandler extends GridPropertyTableKeyboardSelectionHandler<GTreeGridRecord> {

@@ -112,7 +112,7 @@ public class IntegerClass extends IntClass<Integer> {
     }
 
     @Override
-    public Number getInfiniteValue(boolean min) {
+    public Integer getInfiniteValue(boolean min) {
         return min ? Integer.MIN_VALUE : Integer.MAX_VALUE;
     }
     

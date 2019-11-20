@@ -228,7 +228,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
         if(!isInTree) { // правильнее вообще не создавать компоненты, но для этого потребуется более сложный рефакторинг, поэтому пока просто сделаем так чтобы к ним нельзя было обратиться
             setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView), version);
-            setComponentSID(groupObjectView.getShowType(), getShowTypeSID(groupObjectView), version);
             setComponentSID(groupObjectView.getToolbarSystem(), getToolbarSystemSID(groupObjectView), version);
             setComponentSID(groupObjectView.getUserFilter(), getUserFilterSID(groupObjectView), version);
             setComponentSID(groupObjectView.getCalculations(), getCalculationsSID(groupObjectView), version);
@@ -620,10 +619,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     
     private static String getCalculationsSID(PropertyGroupContainerView entity) {
         return entity.getPropertyGroupContainerSID() + ".calculations";
-    }
-
-    private static String getShowTypeSID(PropertyGroupContainerView entity) {
-        return SHOWTYPE_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
 
     private static String getClassChooserSID(ObjectEntity entity) {

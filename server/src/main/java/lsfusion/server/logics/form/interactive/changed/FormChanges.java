@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
@@ -32,8 +31,6 @@ import static lsfusion.base.BaseUtils.serializeObject;
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges {
 
-    private final ImMap<GroupObjectInstance, ClassViewType> classViews;
-
     // current (panel) objects
     private final ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects;
 
@@ -47,31 +44,31 @@ public class FormChanges {
 
     // properties
     private final ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties;
-    // property in list / current objects
-    private final ImSet<PropertyDrawInstance> panelProperties;
     // property has to be hidden
     private final ImSet<PropertyDrawInstance> dropProperties;
 
     private final ImList<ComponentView> activateTabs;
     private final ImList<PropertyDrawInstance> activateProps;
 
+    // current (panel) objects
+    private final ImMap<GroupObjectInstance, Boolean> updateStateObjects;
+
     public static FormChanges EMPTY = new MFormChanges().immutable();
 
-    public FormChanges(ImMap<GroupObjectInstance, ClassViewType> classViews, ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects,
+    public FormChanges(ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects,
                        ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects,
                        ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects,
                        ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Boolean>> expandables,
                        ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties,
-                       ImSet<PropertyDrawInstance> panelProperties, ImSet<PropertyDrawInstance> dropProperties, 
-                       ImList<ComponentView> activateTabs, ImList<PropertyDrawInstance> activateProps) {
-        this.classViews = classViews;
+                       ImSet<PropertyDrawInstance> dropProperties,
+                       ImMap<GroupObjectInstance, Boolean> updateStateObjects, ImList<ComponentView> activateTabs, ImList<PropertyDrawInstance> activateProps) {
         this.objects = objects;
         this.gridObjects = gridObjects;
         this.parentObjects = parentObjects;
         this.expandables = expandables;
         this.properties = properties;
-        this.panelProperties = panelProperties;
         this.dropProperties = dropProperties;
+        this.updateStateObjects = updateStateObjects;
         this.activateTabs = activateTabs;
         this.activateProps = activateProps;
     }
@@ -100,10 +97,6 @@ public class FormChanges {
                 System.out.println(gov + " - " + propertyValues.get(gov));
         }
 
-        System.out.println(" ------- PANEL ---------------");
-        for (PropertyDrawInstance property : panelProperties)
-            System.out.println(property);
-
         System.out.println(" ------- Drop ---------------");
         for (PropertyDrawInstance property : dropProperties)
             System.out.println(property);
@@ -115,20 +108,9 @@ public class FormChanges {
         System.out.println(" ------- Activate property ---------------");
         for (PropertyDrawInstance prop : activateProps)
             System.out.println(prop);
-
-        System.out.println(" ------- CLASSVIEWS ---------------");
-        for (int i=0,size=classViews.size();i<size;i++) {
-            System.out.println(classViews.getKey(i) + " - " + classViews.getValue(i));
-        }
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-
-        outStream.writeInt(classViews.size());
-        for (int i=0,size=classViews.size();i<size;i++) {
-            outStream.writeInt(classViews.getKey(i).getID());
-            outStream.writeInt(classViews.getValue(i).ordinal());
-        }
 
         outStream.writeInt(objects.size());
         for (int i=0,size=objects.size();i<size;i++) {
@@ -170,14 +152,15 @@ public class FormChanges {
             }
         }
 
-        outStream.writeInt(panelProperties.size());
-        for (PropertyDrawInstance propertyDraw : panelProperties) {
-            outStream.writeInt(propertyDraw.getID());
-        }
-
         outStream.writeInt(dropProperties.size());
         for (PropertyDrawInstance propertyView : dropProperties) {
             outStream.writeInt(propertyView.getID());
+        }
+
+        outStream.writeInt(updateStateObjects.size());
+        for (int i=0,size=updateStateObjects.size();i<size;i++) {
+            outStream.writeInt(updateStateObjects.getKey(i).getID());
+            outStream.writeBoolean(updateStateObjects.getValue(i));
         }
 
         outStream.writeInt(activateTabs.size());
@@ -229,7 +212,7 @@ public class FormChanges {
     } 
 
     private ImSet<PropertyDrawInstance> filterPropertiesExternal(ImSet<PropertyDrawInstance> serializeProps, final boolean panel) {
-        return serializeProps.filterFn(property -> panelProperties.contains(property) == panel && property.isProperty());                
+        return serializeProps.filterFn(property -> !property.isGrid() == panel && property.isProperty());
     } 
 
     public JSONObject serializeExternal() {
@@ -338,11 +321,6 @@ public class FormChanges {
                 logger.trace("      " + propertyValues.getKey(i) + " -> " + propertyValues.getValue(i));
         }
 
-        logger.trace("   Goes to panel ---------------");
-        for (PropertyDrawInstance property : panelProperties) {
-            logger.trace("     " + property);
-        }
-
         logger.trace("   Droped ---------------");
         for (PropertyDrawInstance property : dropProperties)
             logger.trace("     " + property);
@@ -355,10 +333,5 @@ public class FormChanges {
         logger.trace("   Activate props ---------------");
         for (PropertyDrawInstance property : activateProps)
             logger.trace("     " + property);
-
-        logger.trace("  CLASSVIEWS ---------------");
-        for (int i=0,size=classViews.size();i<size;i++) {
-            logger.trace("     " + classViews.getKey(i) + " - " + classViews.getValue(i));
-        }
     }
 }

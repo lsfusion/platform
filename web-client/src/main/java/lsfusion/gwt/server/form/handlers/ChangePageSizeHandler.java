@@ -11,7 +11,7 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import java.rmi.RemoteException;
 
 public class ChangePageSizeHandler extends FormServerResponseActionHandler<ChangePageSize> {
-    public  ChangePageSizeHandler(MainDispatchServlet servlet) {
+    public ChangePageSizeHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

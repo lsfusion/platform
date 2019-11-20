@@ -34,7 +34,6 @@ import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.json.JSONException;
 
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -187,7 +186,7 @@ public class ObjectType extends AbstractType<Long> {
         return Stat.ALOT;
     }
 
-    public Object getInfiniteValue(boolean min) {
+    public Long getInfiniteValue(boolean min) {
         return idClass.getInfiniteValue(min);
     }
 }

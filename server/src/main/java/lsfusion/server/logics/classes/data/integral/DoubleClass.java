@@ -110,7 +110,7 @@ public class DoubleClass extends IntegralClass<Double> {
     }
 
     @Override
-    public Number getInfiniteValue(boolean min) {
+    public Double getInfiniteValue(boolean min) {
         return min ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
     }
 

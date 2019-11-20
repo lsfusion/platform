@@ -654,25 +654,25 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     protected LP addSumProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("sum"), 2, new SumFormulaImpl())));
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("sum"), 2, SumFormulaImpl.instance)));
     }
 
     @Override
     @IdentityStrongLazy
     protected LP addMultProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("multiply"), 2, new MultiplyFormulaImpl())));
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("multiply"), 2, MultiplyFormulaImpl.instance)));
     }
 
     @Override
     @IdentityStrongLazy
     protected LP addSubtractProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("subtract"), 2, new SubtractFormulaImpl())));
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("subtract"), 2, SubtractFormulaImpl.instance)));
     }
 
     @Override
     @IdentityStrongLazy
     protected LP addDivideProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("divide"), 2, new DivideFormulaImpl())));
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("divide"), 2, DivideFormulaImpl.instance)));
     }
 
 

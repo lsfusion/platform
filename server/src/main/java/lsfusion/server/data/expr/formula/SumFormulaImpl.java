@@ -21,7 +21,9 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
             IntegralSumConversionSource.instance
     );
 
-    public SumFormulaImpl() {
+    public final static SumFormulaImpl instance = new SumFormulaImpl();
+
+    private SumFormulaImpl() { // private - no equals / hashcode
         super(sumConversion, sumConversionSource);
     }
 

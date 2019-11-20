@@ -9,7 +9,6 @@ public interface AbstractGroupObject<T extends AbstractComponent, Str> {
     String getSID();
 
     T getGrid();
-    T getShowType();
     T getToolbarSystem();
     T getUserFilter();
     T getCalculations();

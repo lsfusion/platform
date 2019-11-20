@@ -8,9 +8,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -32,7 +29,6 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -279,7 +275,7 @@ public class DefaultFormView extends FormView {
 
             addClassChoosers(groupSet.getGridBoxContainer(), groupObject, version);
 
-            if (groupObject.entity.isForcedPanel()) { // если groupObject идет в панель, то grid'а быть не может, и если box не выставить не 0, он не будет брать весь размер
+            if (groupObject.entity.isPanel()) { // если groupObject идет в панель, то grid'а быть не может, и если box не выставить не 0, он не будет брать весь размер
                 groupSet.getBoxContainer().setFlex(0);
             }
         }

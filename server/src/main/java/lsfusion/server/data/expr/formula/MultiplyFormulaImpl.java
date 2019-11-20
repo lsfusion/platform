@@ -8,11 +8,6 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 
 public class MultiplyFormulaImpl extends ScaleFormulaImpl {
-
-    public MultiplyFormulaImpl() {
-        super(MultiplyTypeConversion.instance, MultiplyConversionSource.instance);
-    }
-
     @Override
     public String getOperationName() {
         return "multiplication";
@@ -40,5 +35,11 @@ public class MultiplyFormulaImpl extends ScaleFormulaImpl {
             }
             return null;
         }
+    }
+
+    public final static MultiplyFormulaImpl instance = new MultiplyFormulaImpl();
+
+    private MultiplyFormulaImpl() { // private - no equals / hashcode
+        super(MultiplyTypeConversion.instance, MultiplyConversionSource.instance);
     }
 }

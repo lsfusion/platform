@@ -176,7 +176,8 @@ public abstract class GFilterController {
 
         if(filterProperty == null) {
             filterProperty = logicsSupplier.getSelectedProperty();
-            filterColumnKey = logicsSupplier.getSelectedColumn();
+            if(filterProperty != null)
+                filterColumnKey = logicsSupplier.getSelectedColumn();
         }
         if (filterProperty == null) {
             //не добавляем, если нет ни одного свойства

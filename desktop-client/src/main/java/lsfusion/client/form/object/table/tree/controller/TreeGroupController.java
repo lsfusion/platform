@@ -100,7 +100,7 @@ public class TreeGroupController extends AbstractTableController {
                 if (read instanceof ClientPropertyDraw) {
                     ClientPropertyDraw property = (ClientPropertyDraw) read;
                     if (!fc.updateProperties.contains(property) && property.groupObject == group && property.shouldBeDrawn(formController)) {
-                        addDrawProperty(group, property, fc.panelProperties.contains(property));
+                        addDrawProperty(group, property);
 
                         //пока не поддерживаем группы в колонках в дереве, поэтому делаем
                         if (panel.containsProperty(property)) {
@@ -172,13 +172,11 @@ public class TreeGroupController extends AbstractTableController {
         return view.getCurrentPath();
     }
 
-    public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property, boolean toPanel) {
-        if (toPanel) {
-            panel.addProperty(property);
-            view.removeProperty(group, property);
+    public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property) {
+        if (property.grid) {
+            view.addDrawProperty(group, property);
         } else {
-            view.addDrawProperty(group, property, toPanel);
-            panel.removeProperty(property);
+            panel.addProperty(property);
         }
     }
 

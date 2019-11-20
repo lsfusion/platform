@@ -339,7 +339,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
         return result;
     }
 
-    public Object getInfiniteValue(boolean min) {
+    public Object[] getInfiniteValue(boolean min) {
         throw new UnsupportedOperationException();
     }
 }

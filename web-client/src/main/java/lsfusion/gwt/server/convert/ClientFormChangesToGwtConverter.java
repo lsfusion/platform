@@ -47,17 +47,9 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
         dto.requestIndex = requestIndex;
 
-        dto.classViewsGroupIds = new int[changes.classViews.size()];
-        dto.classViews = new GClassViewType[changes.classViews.size()];
-        int i = 0;
-        for (Map.Entry<ClientGroupObject, ClassViewType> entry : changes.classViews.entrySet()) {
-            dto.classViewsGroupIds[i] = entry.getKey().getID();
-            dto.classViews[i++] = GClassViewType.valueOf(entry.getValue().name());
-        }
-
         dto.objectsGroupIds = new int[changes.objects.size()];
         dto.objects = new GGroupObjectValue[changes.objects.size()];
-        i = 0;
+        int i = 0;
         for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> e : changes.objects.entrySet()) {
             GGroupObjectValue groupObjectValue = convertOrCast(e.getValue());
             dto.objectsGroupIds[i] = e.getKey().ID;
@@ -127,16 +119,18 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             dto.propertiesValues[i++] = propValues;
         }
 
-        dto.panelPropertiesIds = new int[changes.panelProperties.size()];
-        i = 0;
-        for (ClientPropertyDraw panelProperty : changes.panelProperties) {
-            dto.panelPropertiesIds[i++] = panelProperty.ID;
-        }
-
         dto.dropPropertiesIds = new int[changes.dropProperties.size()];
         i = 0;
         for (ClientPropertyDraw dropProperty : changes.dropProperties) {
             dto.dropPropertiesIds[i++] = dropProperty.ID;
+        }
+
+        dto.updateStateObjectsGroupIds = new int[changes.updateStateObjects.size()];
+        dto.updateStateObjectsGroupValues = new boolean[changes.updateStateObjects.size()];
+        i = 0;
+        for (Map.Entry<ClientGroupObject, Boolean> dropProperty : changes.updateStateObjects.entrySet()) {
+            dto.updateStateObjectsGroupIds[i] = dropProperty.getKey().ID;
+            dto.updateStateObjectsGroupValues[i++] = dropProperty.getValue();
         }
 
         dto.activateTabsIds = new int[changes.activateTabs.size()];

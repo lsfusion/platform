@@ -9,10 +9,6 @@ import lsfusion.server.logics.classes.data.DataClass;
 
 public class SubtractFormulaImpl extends ArithmeticFormulaImpl {
 
-    public SubtractFormulaImpl() {
-        super(IntegralTypeConversion.sumTypeConversion, SubtractConversionSource.instance);
-    }
-
     @Override
     public String getOperationName() {
         return "subtract";
@@ -33,5 +29,11 @@ public class SubtractFormulaImpl extends ArithmeticFormulaImpl {
             }
             return null;
         }
+    }
+
+    public final static SubtractFormulaImpl instance = new SubtractFormulaImpl();
+
+    private SubtractFormulaImpl() { // private - no equals / hashcode
+        super(IntegralTypeConversion.sumTypeConversion, SubtractConversionSource.instance);
     }
 }

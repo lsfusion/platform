@@ -11,8 +11,6 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayoutImpl;
 import lsfusion.gwt.client.form.design.view.ScrollContainerView;
-import lsfusion.gwt.client.form.object.table.grid.GGrid;
-import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 
@@ -47,10 +45,6 @@ public class FlexFormLayoutImpl extends GFormLayoutImpl {
     public static class GridPanel extends FlexPanel {
         private final ResizableSimplePanel panel;
 
-        private GGridPropertyTable getGridTable() {
-            return (GGridPropertyTable) panel.getWidget();
-        }
-
         public GridPanel(ResizableSimplePanel panel) {
             super(true);
 
@@ -59,29 +53,33 @@ public class FlexFormLayoutImpl extends GFormLayoutImpl {
         }
 
         public void autoSize() {
-            GGridPropertyTable gridTable = getGridTable();
+            Widget widget = panel.getWidget();
             int autoSize;
-            if (gridTable instanceof GTreeTable) {
-                autoSize = gridTable.getMaxPreferredSize().height;    
-            } else {
-                autoSize = gridTable.getAutoSize();
-                if (autoSize <= 0) // еще не было layout'а, ставим эвристичный размер
+            if(widget instanceof GGridPropertyTable) {
+                GGridPropertyTable gridTable = (GGridPropertyTable)widget;
+                if (gridTable instanceof GTreeTable) {
                     autoSize = gridTable.getMaxPreferredSize().height;
-                else {
-                    autoSize += panel.getOffsetHeight() - gridTable.getTableDataScroller().getClientHeight(); // margin'ы и border'ы учитываем
+                } else {
+                    autoSize = gridTable.getAutoSize();
+                    if (autoSize <= 0) // еще не было layout'а, ставим эвристичный размер
+                        autoSize = gridTable.getMaxPreferredSize().height;
+                    else {
+                        autoSize += panel.getOffsetHeight() - gridTable.getTableDataScroller().getClientHeight(); // margin'ы и border'ы учитываем
+                    }
                 }
-            }
+            } else
+                autoSize = GTreeTable.DEFAULT_MAX_PREFERRED_HEIGHT;
             setChildFlexBasis(panel, autoSize);
         }
     }
 
     @Override
-    public Panel createGridView(GGrid grid, ResizableSimplePanel panel) {
+    public Panel createGridView(ResizableSimplePanel panel) {
         return new GridPanel(panel);
     }
 
     @Override
-    public Panel createTreeView(GTreeGroup treeGroup, ResizableSimplePanel panel) {
+    public Panel createTreeView(ResizableSimplePanel panel) {
         return new GridPanel(panel);
     }
 }

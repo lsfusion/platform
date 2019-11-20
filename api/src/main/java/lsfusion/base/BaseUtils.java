@@ -54,7 +54,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 99;
+        return 100;
     }
 
     public static String getPlatformVersion() {
@@ -1289,8 +1289,9 @@ public class BaseUtils {
         return result;
     }
 
-    public static abstract class Group<G, K> {
-        public abstract G group(K key);
+    @FunctionalInterface
+    public interface Group<G, K> {
+        G group(K key);
     }
 
     public static <G, K> Map<G, Collection<K>> group(Group<G, K> getter, Iterable<K> keys) {
@@ -2764,4 +2765,6 @@ public class BaseUtils {
         }
         return password;
     }
+
+    public static final String impossibleString = "FDWREVSFFGFSDRSDR";
 }

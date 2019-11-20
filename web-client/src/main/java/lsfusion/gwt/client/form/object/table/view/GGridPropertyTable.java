@@ -4,7 +4,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
@@ -18,20 +17,17 @@ import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
-import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
@@ -230,7 +226,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {
-                restoreScrollPosition();
+                afterAppliedChanges();
             }
         });
     }
@@ -247,7 +243,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
-    public void restoreScrollPosition() {
+    public void groupChange() {
+        editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.GROUP_CHANGE);
+    }
+
+    public void afterAppliedChanges() {
         if (needToRestoreScrollPosition && oldKey != null && oldRowScrollTop != -1) {
             int currentInd = getKeyboardSelectedRow();
             GGroupObjectValue currentKey = getCurrentKey();
@@ -412,7 +412,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected Integer getUserWidth(int i) {
         return getUserWidth(getColumnPropertyDraw(i));
     }
-
+    
     protected int getColumnBaseWidth(int i) {
         return getColumnPropertyDraw(i).getValueWidth(font);
     }

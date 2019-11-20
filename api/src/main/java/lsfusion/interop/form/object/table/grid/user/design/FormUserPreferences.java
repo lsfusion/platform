@@ -22,7 +22,7 @@ public class FormUserPreferences implements Serializable {
     
     public GroupObjectUserPreferences getGeneralPreferences(String groupObjectSID) {
         for (GroupObjectUserPreferences groupPrefs : groupObjectGeneralPreferencesList) {
-            if (groupObjectSID.equals(groupPrefs.groupObjectSID)) {
+            if (groupPrefs != null && groupObjectSID.equals(groupPrefs.groupObjectSID)) {
                 return groupPrefs;
             }
         }
@@ -31,7 +31,7 @@ public class FormUserPreferences implements Serializable {
 
     public GroupObjectUserPreferences getUserPreferences(String groupObjectSID) {
         for (GroupObjectUserPreferences groupPrefs : groupObjectUserPreferencesList) {
-            if (groupObjectSID.equals(groupPrefs.groupObjectSID)) {
+            if (groupPrefs != null && groupObjectSID.equals(groupPrefs.groupObjectSID)) {
                 return groupPrefs;
             }
         }

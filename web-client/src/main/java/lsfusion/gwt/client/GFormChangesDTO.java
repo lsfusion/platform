@@ -11,9 +11,6 @@ import java.util.HashMap;
 public class GFormChangesDTO implements Serializable {
     public int requestIndex;
 
-    public int[] classViewsGroupIds;
-    public GClassViewType[] classViews;
-
     public int[] objectsGroupIds;
     public GGroupObjectValue[] objects;
 
@@ -29,8 +26,10 @@ public class GFormChangesDTO implements Serializable {
     public GPropertyReaderDTO[] properties;
     public HashMap<GGroupObjectValue, Object>[] propertiesValues;
 
-    public int[] panelPropertiesIds;
     public int[] dropPropertiesIds;
+
+    public int[] updateStateObjectsGroupIds;
+    public boolean[] updateStateObjectsGroupValues;
 
     public int[] activateTabsIds;
     public int[] activatePropsIds;

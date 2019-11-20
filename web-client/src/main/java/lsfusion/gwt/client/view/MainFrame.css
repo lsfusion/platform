@@ -656,3 +656,8 @@ input[type=checkbox]:focus {
 .verticalSeparator {
     border-left: 1px solid #ccc;
 }
+
+.pivotTable {
+    overflow-x: auto;
+    overflow-y: auto;
+}

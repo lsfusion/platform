@@ -172,7 +172,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     @Override
-    public Number getInfiniteValue(boolean min) {
+    public BigDecimal getInfiniteValue(boolean min) {
         return new BigDecimal((min ? "-" : "") + BaseUtils.replicate('9', getWhole()) + "." + BaseUtils.replicate('9', getPrecision()));
     }
 

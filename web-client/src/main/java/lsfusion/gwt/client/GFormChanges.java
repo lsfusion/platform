@@ -13,14 +13,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class GFormChanges {
-    public final HashMap<GGroupObject, GClassViewType> classViews = new HashMap<>();
     public final HashMap<GGroupObject, GGroupObjectValue> objects = new HashMap<>();
     public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new HashMap<>();
     public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> parentObjects = new HashMap<>();
     public final HashMap<GGroupObject, HashMap<GGroupObjectValue, Boolean>> expandables = new HashMap<>();
     public final HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>> properties = new HashMap<>();
-    public final HashSet<GPropertyReader> panelProperties = new HashSet<>();
     public final HashSet<GPropertyDraw> dropProperties = new HashSet<>();
+
+    public final HashMap<GGroupObject, Boolean> updateStateObjects = new HashMap<>();
 
     public final ArrayList<GComponent> activateTabs = new ArrayList<>();
     public final ArrayList<GPropertyDraw> activateProps = new ArrayList<>();
@@ -29,10 +29,6 @@ public class GFormChanges {
 
     public static GFormChanges remap(GForm form, GFormChangesDTO dto) {
         GFormChanges remapped = new GFormChanges();
-
-        for (int i = 0; i < dto.classViewsGroupIds.length; i++) {
-            remapped.classViews.put(form.getGroupObject(dto.classViewsGroupIds[i]), dto.classViews[i]);
-        }
 
         for (int i = 0; i < dto.objectsGroupIds.length; i++) {
             remapped.objects.put(form.getGroupObject(dto.objectsGroupIds[i]), dto.objects[i]);
@@ -54,12 +50,12 @@ public class GFormChanges {
             remapped.properties.put(remapPropertyReader(form, dto.properties[i]), dto.propertiesValues[i]);
         }
 
-        for (int propertyId : dto.panelPropertiesIds) {
-            remapped.panelProperties.add(form.getProperty(propertyId));
-        }
-
         for (Integer propertyID : dto.dropPropertiesIds) {
             remapped.dropProperties.add(form.getProperty(propertyID));
+        }
+
+        for (int i = 0; i < dto.updateStateObjectsGroupIds.length; i++) {
+            remapped.updateStateObjects.put(form.getGroupObject(dto.updateStateObjectsGroupIds[i]), dto.updateStateObjectsGroupValues[i]);
         }
 
         for (int activateTab : dto.activateTabsIds) {

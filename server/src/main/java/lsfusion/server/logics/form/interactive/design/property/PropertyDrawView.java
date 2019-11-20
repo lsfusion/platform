@@ -250,6 +250,9 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(drawAsync);
 
         pool.writeObject(outStream, format);
+
+        outStream.writeBoolean(entity.isGrid(pool.context.view.entity));
+
         pool.writeObject(outStream, focusable);
         outStream.writeByte(entity.getEditType().serialize());
 

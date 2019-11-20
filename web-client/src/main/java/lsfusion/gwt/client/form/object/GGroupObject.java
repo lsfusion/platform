@@ -4,6 +4,7 @@ import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GRowBackgroundReader;
 import lsfusion.gwt.client.form.property.GRowForegroundReader;
 
@@ -17,14 +18,13 @@ public class GGroupObject implements Serializable {
     public List<GObject> objects = new ArrayList<>();
 
     public GGrid grid;
-    public GShowType showType;
     public GToolbar toolbar;
     public GFilter filter;
 
     public int ID;
     public String sID;
 
-    public List<String> banClassView;
+    public GClassViewType classView;
 
     public boolean isRecursive;
     public GTreeGroup parent;

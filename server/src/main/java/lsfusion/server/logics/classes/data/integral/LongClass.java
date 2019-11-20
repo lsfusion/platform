@@ -113,7 +113,7 @@ public class LongClass extends IntClass<Long> {
     }
 
     @Override
-    public Number getInfiniteValue(boolean min) {
+    public Long getInfiniteValue(boolean min) {
         return min ? Long.MIN_VALUE : Long.MAX_VALUE;
     }
 

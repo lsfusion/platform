@@ -5,9 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.IntObjectFunction;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.NotFunctionSet;
 
@@ -181,6 +179,14 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         return mResult.immutableOrder();
     }
 
+    @Override
+    public <MK, MV, E1 extends Exception, E2 extends Exception> ImMap<MK, MV> mapOrderKeyValuesEx(ThrowingIntObjectFunction<K, MK, E1, E2> getterKey, IntFunction<MV> getterValue) throws E1, E2 {
+        MExclMap<MK, MV> mResult = MapFact.mExclMap(size());
+        for(int i=0,size=size();i<size;i++)
+            mResult.exclAdd(getterKey.apply(i, get(i)), getterValue.apply(i));
+        return mResult.immutable();
+    }
+
     public <M> ImOrderMap<K, M> mapOrderValues(Supplier<M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
@@ -198,6 +204,14 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     }
 
     public <M> ImMap<K, M> mapOrderValues(IntObjectFunction<K, M> getter) {
+        ImOrderValueMap<K, M> mvResult = mapItOrderValues();
+        for(int i=0,size=size();i<size;i++)
+            mvResult.mapValue(i, getter.apply(i, get(i)));
+        return mvResult.immutableValueOrder().getMap();
+    }
+
+    @Override
+    public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapOrderValuesEx(ThrowingIntObjectFunction<K, M, E1, E2> getter) throws E1, E2 {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
             mvResult.mapValue(i, getter.apply(i, get(i)));

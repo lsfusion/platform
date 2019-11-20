@@ -46,10 +46,6 @@ public class ScriptingGroupObject {
         this.viewType = viewType;
     }
 
-    public void setInitType(boolean isInitType) {
-        this.isInitType = isInitType;
-    }
-
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }

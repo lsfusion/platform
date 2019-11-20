@@ -12,7 +12,6 @@ import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
-import lsfusion.client.form.object.ClientShowType;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
@@ -33,7 +32,6 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GObject;
-import lsfusion.gwt.client.form.object.GShowType;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculations;
@@ -200,14 +198,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     }
 
     @Cached
-    @Converter(from = ClientShowType.class)
-    public GShowType convertShowType(ClientShowType clientShowType) {
-        GShowType showType = initGwtComponent(clientShowType, new GShowType());
-        showType.groupObject = convertOrCast(clientShowType.groupObject);
-        return showType;
-    }
-
-    @Cached
     @Converter(from = ClientToolbar.class)
     public GToolbar convertToolbar(ClientToolbar clientToolbar) {
         GToolbar toolbar = initGwtComponent(clientToolbar, new GToolbar());
@@ -319,6 +309,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
         propertyDraw.changeMouse = convertOrCast(clientPropertyDraw.changeMouse);
         propertyDraw.changeMousePriority = clientPropertyDraw.changeMousePriority;
+
+        propertyDraw.grid = clientPropertyDraw.grid;
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
 
@@ -507,13 +499,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             groupObject.objects.add(object);
         }
         groupObject.grid = convertOrCast(clientGroupObject.grid);
-        groupObject.showType = convertOrCast(clientGroupObject.showType);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
         groupObject.filter = convertOrCast(clientGroupObject.filter);
-        groupObject.banClassView = new ArrayList<>();
-        for (ClassViewType banView : clientGroupObject.banClassView) {
-            groupObject.banClassView.add(banView.name());
-        }
+        groupObject.classView = GClassViewType.valueOf(clientGroupObject.classView.name());
 
         groupObject.isRecursive = clientGroupObject.isRecursive;
         groupObject.parent = convertOrCast(clientGroupObject.parent);

@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.struct.object;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -43,8 +42,6 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
@@ -168,9 +165,12 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         super(ID, sID != null ? sID : "groupObj" + ID);
     }
 
-    public ClassViewType initClassView = DEFAULT;
-    public List<ClassViewType> banClassView = new ArrayList<>();
+    public ClassViewType classView = DEFAULT;
     public Integer pageSize;
+
+    public int getDefaultPageSize() {
+        return pageSize != null ? pageSize : Settings.get().getPageSizeDefaultValue();
+    }
 
     public PropertyObjectEntity<?> propertyBackground;
     public PropertyObjectEntity<?> propertyForeground;
@@ -209,39 +209,20 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         isParent = getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity<?>>) i -> properties[i]);
     }
 
-    public void setInitClassView(ClassViewType type) {
-        initClassView = type;
+    public void setClassView(ClassViewType type) {
+        classView = type;
     }
 
     public void setPanelClassView() {
-        setInitClassView(ClassViewType.PANEL);
-        setSingleClassView();
+        setClassView(ClassViewType.PANEL);
     }
     
     public void setGridClassView() {
-        setInitClassView(ClassViewType.GRID);
-        setSingleClassView();
-    }
-
-    public void setSingleClassView() {
-        banClassView.addAll(BaseUtils.toList(ClassViewType.getAllTypes()));
-        banClassView.remove(initClassView);
-    }
-
-    public boolean isAllowedClassView(ClassViewType type) {
-        return !banClassView.contains(type);
+        setClassView(ClassViewType.GRID);
     }
 
     public boolean isPanel() {
-        return initClassView.isPanel();
-    }
-    public boolean isForcedPanel() {
-        if(!isPanel())
-            return false;
-        for(ClassViewType type : ClassViewType.getAllTypes())
-            if(!type.isPanel() && isAllowedClassView(type))
-                return false;
-        return true;
+        return classView.isPanel();
     }
 
     public Pair<Integer, Integer> getScriptIndex() {

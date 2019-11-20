@@ -40,7 +40,7 @@ public class TreeView extends JComponentPanel {
         groupTree.updateDrawPropertyValues(property, values, update);
     }
 
-    public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property, boolean toPanel) {
+    public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property) {
         groupTree.addDrawProperty(group, property);
     }
 

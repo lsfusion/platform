@@ -317,7 +317,7 @@ public class StringClass extends DataClass<String> {
     }
 
     @Override
-    public Object getInfiniteValue(boolean min) {
+    public String getInfiniteValue(boolean min) {
         if(min)
             return "";
 

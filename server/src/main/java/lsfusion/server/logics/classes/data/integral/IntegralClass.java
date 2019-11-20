@@ -37,7 +37,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
 
     @Override
-    public Number getInfiniteValue(boolean min) {
+    public T getInfiniteValue(boolean min) {
         throw new RuntimeException("not supported");
     }
     

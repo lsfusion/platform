@@ -47,6 +47,40 @@
                 font: normal 13px arial, tahoma, sans-serif;
             }
         </style>
+
+        <!-- need jquery for pivot table -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+        <!-- optional: mobile support with jqueryui-touch-punch -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+        <!-- pivot table -->
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.js"></script>
+
+        <!-- subtotal.js libs : subtotal_renderers -->
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.css">
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>
+
+        <!--  plotly libs : plotly_renderers  -->
+        <script type="text/javascript" src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
+        <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
+        <%-- + horizontal moved to the end --%>
+        <script type="text/javascript" src="static/js/plotly_renderers.js"></script>
+<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"></script>--%>
+
+        <!--  c3 / d3 libs : d3_renderers -->
+<%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.css">--%>
+<%--  because d3_renderers doesn't work with v4+ d3 versions --%>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>--%>
+<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>--%>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>
+
+<%--        <!--  google charts: gchart_renderers  -->--%>
+<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/gchart_renderers.min.js"></script>--%>
+<%--        <script type="text/javascript" src="https://www.google.com/jsapi"></script>--%>
     </head>
     <body>
         <script language="JavaScript">

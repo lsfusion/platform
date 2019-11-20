@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -19,8 +20,6 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 
 public class MFormChanges {
-
-    public MExclMap<GroupObjectInstance, ClassViewType> classViews = MapFact.mExclMap();
 
     // value.keySet() из key.getUpTreeGroups
     public MExclMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects = MapFact.mExclMap();
@@ -35,8 +34,9 @@ public class MFormChanges {
 
     public MExclMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties = MapFact.mExclMap();
 
-    public MExclSet<PropertyDrawInstance> panelProperties = SetFact.mExclSet();
     public MExclSet<PropertyDrawInstance> dropProperties = SetFact.mExclSet();
+
+    public MMap<GroupObjectInstance, Boolean> updateStateObjects = MapFact.mMap(MapFact.override()); // for manual update mode, if object requires update
     
     public MList<ComponentView> activateTabs = ListFact.mList();
     public MList<PropertyDrawInstance> activateProps = ListFact.mList();
@@ -44,14 +44,13 @@ public class MFormChanges {
     public FormChanges immutable() {
 
         return new FormChanges(
-                classViews.immutable(),
                 objects.immutable(),
                 gridObjects.immutable(),
                 parentObjects.immutable(),
                 expandables.immutable(),
                 properties.immutable(),
-                panelProperties.immutable(),
                 dropProperties.immutable(),
+                updateStateObjects.immutable(),
                 activateTabs.immutableList(),
                 activateProps.immutableList()
         );

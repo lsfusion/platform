@@ -1,5 +1,6 @@
 package lsfusion.base.file;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.mutability.TwinImmutableObject;
 import org.apache.commons.io.FileUtils;
 
@@ -75,4 +76,6 @@ public class RawFileData extends TwinImmutableObject<RawFileData> implements Ser
     public int immutableHashCode() {
         return Arrays.hashCode(array);
     }
+
+    public static RawFileData impossible = new RawFileData(BaseUtils.impossibleString.getBytes());
 }

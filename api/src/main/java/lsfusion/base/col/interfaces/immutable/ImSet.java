@@ -81,5 +81,7 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     <M> ImRevMap<M, T> mapRevKeys(Function<T, M> getter);
     <M> ImRevMap<M, T> mapRevKeys(IntFunction<M> getter);
 
+    <M, E1 extends Exception, E2 extends Exception> ImMap<T,M> mapValuesEx(ThrowingFunction<T, M, E1,E2> getter) throws E1, E2;
+
     Set<T> toJavaSet();
 }

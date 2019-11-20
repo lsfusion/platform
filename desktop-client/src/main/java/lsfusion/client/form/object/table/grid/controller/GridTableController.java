@@ -331,7 +331,7 @@ public class GridTableController {
     }
 
     public boolean isVisible() {
-        return !forceHidden && groupController.classView.isGrid();
+        return !forceHidden && groupController.isGrid();
     }
 
     public void update() {

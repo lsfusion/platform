@@ -10,7 +10,6 @@ import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.controller.ShowTypeController;
 import lsfusion.client.form.object.panel.controller.PanelController;
 import lsfusion.client.form.object.panel.controller.PropertyController;
 import lsfusion.client.form.object.table.controller.AbstractTableController;
@@ -19,14 +18,11 @@ import lsfusion.client.form.object.table.grid.user.toolbar.view.CalculationsView
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.client.form.property.cell.classes.view.link.ImageLinkPropertyRenderer;
-import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.order.user.Order;
-import lsfusion.interop.form.property.ClassViewType;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,9 +38,6 @@ public class GridController extends AbstractTableController {
     public GridTableController grid;
 
     protected CalculationsView calculationsView;
-    public ShowTypeController showType;
-
-    public ClassViewType classView = ClassViewType.DEFAULT;
 
     public GridController(ClientFormController formController, ClientFormLayout formLayout) throws IOException {
         this(null, formController, formLayout, null);
@@ -56,7 +49,7 @@ public class GridController extends AbstractTableController {
 
         panel = new PanelController(GridController.this.formController, formLayout) {
             protected void addGroupObjectActions(final JComponent comp) {
-                GridController.this.addGroupObjectActions(comp);
+                GridController.this.registerGroupObject(comp);
                 if(filter != null) {
                     filter.getView().addActionsToPanelInputMap(comp);
                 }
@@ -89,14 +82,11 @@ public class GridController extends AbstractTableController {
 
             // GRID идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
             grid = new GridTableController(this, this.formController, userPreferences);
-            addGroupObjectActions(grid.getGridView());
+            registerGroupObject(grid.getGridView());
             if (filter != null) {
                 filter.getView().addActionsToInputMap(grid.table);
             }
             grid.addView(formLayout);
-
-//            showType = new ShowTypeController(groupObject, this, this.formController);
-//            showType.addView(formLayout);
 
             configureToolbar();
         }
@@ -160,7 +150,7 @@ public class GridController extends AbstractTableController {
                 if (property.groupObject == groupObject && property.shouldBeDrawn(formController) && !fc.updateProperties.contains(property)) {
                     ImageLinkPropertyRenderer.clearChache(property);
                     
-                    addDrawProperty(property, fc.panelProperties.contains(property));
+                    addDrawProperty(property);
 
                     OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<>();
                     for (ClientGroupObject columnGroupObject : property.columnGroupObjects) {
@@ -180,14 +170,6 @@ public class GridController extends AbstractTableController {
             }
         }
 
-        ClassViewType newClassView = fc.classViews.get(groupObject);
-        if (newClassView != null && classView != newClassView) {
-            setClassView(newClassView);
-//            requestFocusInWindow();
-        }
-
-        // Затем подгружаем новые данные
-
         if (isGrid()) {
             if (fc.gridObjects.containsKey(groupObject)) {
                 setRowKeysAndCurrentObject(fc.gridObjects.get(groupObject), fc.objects.get(groupObject));
@@ -205,29 +187,11 @@ public class GridController extends AbstractTableController {
         update();
     }
 
-    public void setClassView(ClassViewType classView) {
-        this.classView = classView;
-    }
-
-    public void addPanelProperty(ClientPropertyDraw property) {
-        if (grid != null) {
-            grid.removeProperty(property);
-        }
-
-        panel.addProperty(property);
-    }
-
-    public void addGridProperty(ClientPropertyDraw property) {
-        grid.addProperty(property);
-
-        panel.removeProperty(property);
-    }
-
-    public void addDrawProperty(ClientPropertyDraw property, boolean toPanel) {
-        if (toPanel) {
-            addPanelProperty(property);
+    public void addDrawProperty(ClientPropertyDraw property) {
+        if (property.grid) {
+            grid.addProperty(property);
         } else {
-            addGridProperty(property);
+            panel.addProperty(property);
         }
     }
 
@@ -244,7 +208,7 @@ public class GridController extends AbstractTableController {
     }
 
     public void modifyGroupObject(ClientGroupObjectValue gridObject, boolean add, int position) {
-        assert classView.isGrid();
+        assert isGrid();
 
         grid.modifyGridObject(gridObject, add, position); // assert что grid!=null
 
@@ -325,7 +289,7 @@ public class GridController extends AbstractTableController {
     }
 
     public boolean isGrid() {
-        return classView.isGrid();
+        return groupObject.classView.isGrid();
     }
     
     public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
@@ -382,27 +346,7 @@ public class GridController extends AbstractTableController {
         return grid.table.getGeneralGridPreferences();
     }
 
-    // приходится делать именно так, так как логика отображения одного GroupObject может не совпадать с логикой Container-Component
-    void addGroupObjectActions(JComponent comp) {
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getSwitchClassViewKeyStroke(), "switchClassView");
-        comp.getActionMap().put("switchClassView", new AbstractAction() {
-
-            public void actionPerformed(ActionEvent ae) {
-                RmiQueue.runAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            formController.switchClassView(groupObject);
-                        } catch (IOException e) {
-                            throw new RuntimeException(getString("errors.error.changing.type"), e);
-                        }
-                    }
-                });
-
-            }
-        });
-
-        // вот так вот приходится делать, чтобы "узнавать" к какому GroupObject относится этот Component
+    public void registerGroupObject(JComponent comp) {
         comp.putClientProperty("groupObject", groupObject);
     }
 
@@ -491,8 +435,6 @@ public class GridController extends AbstractTableController {
             }
 
             formController.setFiltersVisible(groupObject, grid.isVisible());
-
-//            showType.update(classView);
         }
 
         panel.update();

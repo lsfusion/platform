@@ -34,7 +34,7 @@ public class DefaultChangeObjectAction extends SystemExplicitAction {
 
         final FormInstance formInstance = context.getFormFlowInstance();
         ObjectInstance objectInstance = formInstance.instanceFactory.getInstance(object);
-        if (objectInstance.groupTo.curClassView.isPanel()) { // в grid'е диалог не имеет смысла
+        if (objectInstance.groupTo.classView.isPanel()) { // в grid'е диалог не имеет смысла
             final ObjectValue oldValue = objectInstance.getObjectValue();
             ObjectValue changeValue;
             if (objectInstance instanceof CustomObjectInstance) {

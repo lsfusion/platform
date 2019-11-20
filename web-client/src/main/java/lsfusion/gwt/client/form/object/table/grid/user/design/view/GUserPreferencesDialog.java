@@ -311,7 +311,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
         GFont designFont = grid.getDesignFont();
         return designFont == null ? new GFont(grid.font != null ? grid.font.family : DEFAULT_FONT_FAMILY, GFont.DEFAULT_FONT_SIZE, false, false) : designFont;
     }
-
+    
     private void resetPressed() {
         final GSaveResetConfirmDialog confirmDialog = new GSaveResetConfirmDialog(false);
         confirmDialog.show(new Callback() {

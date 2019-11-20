@@ -21,7 +21,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public GroupObjectEntity entity;
 
     public GridView grid;
-    public ShowTypeView showType;
     public ToolbarView toolbarSystem;
     public FilterView userFilter;
     public CalculationsView calculations;
@@ -49,7 +48,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
             add(new ObjectView(idGen, object, this));
 
         grid = new GridView(idGen.idShift(), this);
-        showType = new ShowTypeView(idGen.idShift(), this);
         toolbarSystem = new ToolbarView(idGen.idShift());
         userFilter = new FilterView(idGen.idShift());
         calculations = new CalculationsView(idGen.idShift()); 
@@ -68,10 +66,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public ComponentView getGrid() {
         return grid;
-    }
-
-    public ComponentView getShowType() {
-        return showType;
     }
 
     @Override
@@ -103,12 +97,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.writeObject(outStream, entity.banClassView);
+        pool.writeObject(outStream, entity.classView);
         pool.serializeCollection(outStream, this);
         pool.serializeObject(outStream, pool.context.view.getTreeGroup(entity.treeGroup));
 
         pool.serializeObject(outStream, grid);
-        pool.serializeObject(outStream, showType);
         pool.serializeObject(outStream, toolbarSystem);
         pool.serializeObject(outStream, userFilter);
         pool.serializeObject(outStream, calculations);
@@ -132,7 +125,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.deserializeCollection(this, inStream);
 
         grid = pool.deserializeObject(inStream);
-        showType = pool.deserializeObject(inStream);
         toolbarSystem = pool.deserializeObject(inStream);
         userFilter = pool.deserializeObject(inStream);
         calculations = pool.deserializeObject(inStream);
@@ -142,7 +134,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public void finalizeAroundInit() {
         grid.finalizeAroundInit();
-        showType.finalizeAroundInit();
         toolbarSystem.finalizeAroundInit();
         userFilter.finalizeAroundInit();
         calculations.finalizeAroundInit();

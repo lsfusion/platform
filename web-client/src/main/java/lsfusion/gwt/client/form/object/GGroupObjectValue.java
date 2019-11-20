@@ -63,6 +63,10 @@ public class GGroupObjectValue implements Serializable {
         initSingle(key, value);
     }
 
+    public static GGroupObjectValue getFullKey(GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        return columnKey.isEmpty() ? rowKey : new GGroupObjectValueBuilder(rowKey, columnKey).toGroupObjectValue();
+    }
+
     private void initSingle(Integer key, Object value) {
         size = 1;
         singleKey = key;

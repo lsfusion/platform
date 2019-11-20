@@ -3,13 +3,14 @@ package lsfusion.interop.form.remote;
 import lsfusion.base.Pair;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
+import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
-import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyGroupType;
 
 import java.rmi.RemoteException;
 import java.util.List;
@@ -44,8 +45,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values) throws RemoteException; // paste подряд
 
     ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values) throws RemoteException; // paste выборочно
-
-    ServerResponse changeClassView(long requestIndex, long lastReceivedRequestIndex, int groupID, ClassViewType classView) throws RemoteException;
+    
+    ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, PropertyGroupType[] types, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException;
 
     // events : trees
 
@@ -70,8 +71,6 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Long pushAdd) throws RemoteException;
 
     // events : filters + orders
-
-    ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, int objectID, long idClass) throws RemoteException;
 
     ServerResponse changePropertyOrder(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
 

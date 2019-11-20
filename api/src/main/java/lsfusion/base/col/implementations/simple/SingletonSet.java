@@ -285,6 +285,16 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     @Override
+    public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapOrderValuesEx(ThrowingIntObjectFunction<K, M, E1, E2> getter) throws E1, E2 {
+        return MapFact.<K, M>singleton(key, getter.apply(0, key));
+    }
+
+    @Override
+    public <MK, MV, E1 extends Exception, E2 extends Exception> ImMap<MK, MV> mapOrderKeyValuesEx(ThrowingIntObjectFunction<K, MK, E1, E2> getterKey, IntFunction<MV> getterValue) throws E1, E2 {
+        return MapFact.singleton(getterKey.apply(0, key), getterValue.apply(0));
+    }
+
+    @Override
     public <M> ImOrderMap<M, K> mapOrderKeys(Function<K, M> getter) {
         return MapFact.<M, K>singletonOrder(getter.apply(key), key);
     }
@@ -609,6 +619,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
 
     public <M> ImMap<K, M> mapValues(Supplier<M> getter) {
         return MapFact.<K, M>singleton(key, getter.get());
+    }
+
+    @Override
+    public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapValuesEx(ThrowingFunction<K, M, E1, E2> getter) throws E1, E2 {
+        return MapFact.singleton(key, getter.apply(key));
     }
 
     public <M> ImMap<K, M> mapValues(IntFunction<M> getter) {

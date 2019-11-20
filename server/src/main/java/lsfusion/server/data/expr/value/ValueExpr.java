@@ -1,5 +1,6 @@
 package lsfusion.server.data.expr.value;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
@@ -27,12 +28,14 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.math.BigInteger;
 
@@ -92,6 +95,8 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
 
     public static IntegralClass COUNTCLASS = IntegerClass.instance;
     public static StaticValueExpr COUNT = new StaticValueExpr(1, COUNTCLASS);
+
+    public static StaticValueExpr IMPOSSIBLESTRING = new StaticValueExpr(LocalizedString.create(BaseUtils.impossibleString, false), StringClass.text);
 
     public String getSource(CompileSource compile, boolean needValue) {
         String result = compile.params.get(this);

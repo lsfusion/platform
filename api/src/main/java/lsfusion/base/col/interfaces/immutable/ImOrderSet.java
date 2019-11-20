@@ -1,9 +1,7 @@
 package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.IntObjectFunction;
+import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 
@@ -69,6 +67,9 @@ public interface ImOrderSet<K> extends ImList<K> {
     <M> ImRevMap<K, M> mapOrderRevValues(IntObjectFunction<K, M> getter); // в порядке order вызывать getter
     <M> ImRevMap<M, K> mapOrderRevKeys(IntFunction<M> getter); // в порядке order вызывать getter
     <M> ImRevMap<M, K> mapOrderRevKeys(IntObjectFunction<K, M> getter); // в порядке order вызывать getter
+
+    <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapOrderValuesEx(ThrowingIntObjectFunction<K, M, E1,E2> getter) throws E1, E2;
+    <MK, MV, E1 extends Exception, E2 extends Exception> ImMap<MK, MV> mapOrderKeyValuesEx(ThrowingIntObjectFunction<K, MK, E1,E2> getterKey, IntFunction<MV> getterValue) throws E1, E2;
 
     <V> ImOrderMap<K, V> toOrderMap(V value);
 

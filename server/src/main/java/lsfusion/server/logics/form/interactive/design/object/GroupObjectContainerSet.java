@@ -24,7 +24,6 @@ public class GroupObjectContainerSet {
                 public static final String FILTERGROUPS_CONTAINER = "FILTERGROUPS";
                     public static final String FILTERGROUP_COMPONENT = "FILTERGROUP";
                 public static final String TOOLBAR_CONTAINER = "TOOLBAR";
-                public static final String SHOWTYPE_COMPONENT = "SHOWTYPE";
         public static final String USERFILTER_COMPONENT = "USERFILTER";
         public static final String PANEL_CONTAINER = "PANEL";
             public static final String GROUP_CONTAINER = "GROUP";
@@ -147,7 +146,6 @@ public class GroupObjectContainerSet {
         adder.add(set.toolbarRightContainer, group.getCalculations());
         adder.add(set.toolbarRightContainer, set.filtersContainer);
         adder.add(set.toolbarRightContainer, set.toolbarContainer);
-        adder.add(set.toolbarRightContainer, group.getShowType());
 
         set.filtersContainer.setType(ContainerType.CONTAINERH);
         set.filtersContainer.setAlignment(FlexAlignment.CENTER);
@@ -169,8 +167,6 @@ public class GroupObjectContainerSet {
         group.getUserFilter().setAlignment(FlexAlignment.STRETCH);
         group.getCalculations().setFlex(1);
         group.getCalculations().setAlignment(FlexAlignment.CENTER);
-        group.getShowType().setAlignment(FlexAlignment.CENTER);
-        group.getShowType().setMargin(2);
 
         return set;
     }

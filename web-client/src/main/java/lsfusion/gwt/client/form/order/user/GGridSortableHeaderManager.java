@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.order.user;
 
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -47,6 +48,9 @@ public abstract class GGridSortableHeaderManager<T> {
     }
 
     public final void changeOrder(T columnKey, GOrder modiType) {
+        changeOrder(columnKey, modiType, false);
+    }
+    public final void changeOrder(T columnKey, GOrder modiType, boolean alreadySet) {
         if (columnKey == null || noSort(columnKey)) {
             return;
         }
@@ -67,12 +71,26 @@ public abstract class GGridSortableHeaderManager<T> {
                 break;
         }
 
-        orderChanged(columnKey, modiType);
+        orderChanged(columnKey, modiType, alreadySet);
     }
 
-    public void clearOrders(GGroupObject groupObject) {
-        orderDirections.clear();
-        ordersCleared(groupObject);
+    public final boolean changeOrders(GGroupObject groupObject, LinkedHashMap<T, Boolean> set, boolean alreadySet) {
+        if(!GwtSharedUtils.hashEquals(orderDirections, set)) {
+            if(!alreadySet) {
+                orderDirections.clear();
+                ordersCleared(groupObject);
+            } else
+                assert orderDirections.isEmpty();
+
+            for(Map.Entry<T, Boolean> entry : set.entrySet()) {
+                changeOrder(entry.getKey(), GOrder.ADD);
+                if(!entry.getValue())
+                    changeOrder(entry.getKey(), GOrder.DIR);
+            }
+                
+            return true;
+        }
+        return false;
     }
 
     private boolean noSort(T columnKey) {
@@ -89,7 +107,7 @@ public abstract class GGridSortableHeaderManager<T> {
         return orderDirections;
     }
 
-    protected abstract void orderChanged(T columnKey, GOrder modiType);
+    protected abstract void orderChanged(T columnKey, GOrder modiType, boolean alreadySet);
 
     protected abstract void ordersCleared(GGroupObject groupObject);
 

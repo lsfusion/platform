@@ -6,11 +6,11 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public interface GTableController {
-    void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys);
     void updateBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values);
     void updateForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values);
     void updateCaptionValues(GCaptionReader reader, Map<GGroupObjectValue, Object> values);
@@ -21,8 +21,6 @@ public interface GTableController {
     void updateRowForegroundValues(Map<GGroupObjectValue, Object> values);
     boolean hasPanelProperty(GPropertyDraw property);
     GGroupObjectValue getCurrentKey();
-    void changeOrder(GPropertyDraw property, GOrder modiType);
-    void clearOrders(GGroupObject groupObject);
     GGroupObject getSelectedGroupObject();
     List<GPropertyDraw> getGroupObjectProperties();
     List<GObject> getObjects();
@@ -30,4 +28,6 @@ public interface GTableController {
     GPropertyDraw getSelectedProperty();
     GGroupObjectValue getSelectedColumn();
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
+
+    boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet);
 }

@@ -7,13 +7,17 @@ public abstract class GToolbarButton extends ImageButton {
         this(imagePath, "");
     }
 
-    public GToolbarButton(String imagePath, String tooltipText) {
-        super(null, imagePath);
+    public GToolbarButton(String caption, String imagePath, String tooltipText) {
+        super(caption, imagePath);
 
         addStyleName("toolbarButton");
         setTitle(tooltipText);
         addListener();
         setFocusable(false);
+
+    }
+    public GToolbarButton(String imagePath, String tooltipText) {
+        this(null, imagePath, tooltipText);
     }
 
     public abstract void addListener();

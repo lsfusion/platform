@@ -64,7 +64,6 @@ import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
-import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.Timer;
@@ -699,12 +698,6 @@ public class ClientFormController implements AsyncListener {
 
         ClientFormChanges formChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(bFormChanges)), form);
 
-        for (Map.Entry<ClientGroupObject, ClassViewType> entry : formChanges.classViews.entrySet()) {
-            ClassViewType classView = entry.getValue();
-            if (!classView.isGrid()) {
-                currentGridObjects.remove(entry.getKey());
-            }
-        }
         currentGridObjects.putAll(formChanges.gridObjects);
 
         modifyFormChangesWithModifyObjectAsyncs(requestIndex, formChanges);
@@ -1189,34 +1182,6 @@ public class ClientFormController implements AsyncListener {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.pasteMulticellValue(requestIndex, lastReceivedRequestIndex, mKeys, mValues);
-            }
-        });
-    }
-
-    public void changeGridClass(final ClientObject object, final ClientObjectClass cls) throws IOException {
-        commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeGridClass - " + object.getLogName()) {
-            @Override
-            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeGridClass(requestIndex, lastReceivedRequestIndex, object.getID(), cls.getID());
-            }
-        });
-    }
-
-    public void switchClassView(ClientGroupObject groupObject) throws IOException {
-        ClassViewType newClassView = ClassViewType.switchView(controllers.get(groupObject).classView);
-        changeClassView(groupObject, newClassView);
-    }
-
-    public void changeClassView(final ClientGroupObject groupObject, final ClassViewType show) throws IOException {
-        commitOrCancelCurrentEditing();
-
-        SwingUtils.commitDelayedGroupObjectChange(groupObject);
-
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeClassView - " + groupObject.getLogName()) {
-            @Override
-            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeClassView(requestIndex, lastReceivedRequestIndex, groupObject.getID(), show);
             }
         });
     }

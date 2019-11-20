@@ -6,8 +6,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.object.table.grid.GGrid;
-import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 
 public abstract class GFormLayoutImpl {
     private static GFormLayoutImpl impl;
@@ -23,7 +21,7 @@ public abstract class GFormLayoutImpl {
 
     public abstract void setupMainContainer(Widget mainContainerWidget);
 
-    public abstract Panel createGridView(GGrid grid, ResizableSimplePanel panel);
+    public abstract Panel createGridView(ResizableSimplePanel panel);
     
-    public abstract Panel createTreeView(GTreeGroup treeGroup, ResizableSimplePanel panel);
+    public abstract Panel createTreeView(ResizableSimplePanel panel);
 }

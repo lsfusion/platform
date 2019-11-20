@@ -123,9 +123,7 @@ public class ScriptingFormEntity {
 
         ClassViewType viewType = groupObject.viewType;
         if (viewType != null)
-            groupObj.setInitClassView(viewType);
-        if(!groupObject.isInitType)
-            groupObj.setSingleClassView();
+            groupObj.setClassView(viewType);
 
         if (groupObject.pageSize != null) {
             groupObj.pageSize = groupObject.pageSize;

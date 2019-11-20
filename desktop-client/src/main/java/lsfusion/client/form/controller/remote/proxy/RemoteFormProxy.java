@@ -4,13 +4,14 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.PendingRemoteObjectProxy;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
-import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.rmi.RemoteException;
@@ -142,6 +143,14 @@ public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterfac
         return result;
     }
 
+    @Override
+    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, PropertyGroupType[] types, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException {
+        logRemoteMethodStartVoidCall("changeMode");
+        ServerResponse result = target.changeMode(requestIndex, lastReceivedRequestIndex, groupObjectID, setGroup, propertyIDs, columnKeys, types, pageSize, forceRefresh, updateMode);
+        logRemoteMethodEndVoidCall("changeMode");
+        return result;
+    }
+
     public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
         ServerResponse result = target.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIDs, columnKeys, values);
@@ -153,20 +162,6 @@ public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterfac
         logRemoteMethodStartCall("pasteMulticellValue");
         ServerResponse result = target.pasteMulticellValue(requestIndex, lastReceivedRequestIndex, keys, values);
         logRemoteMethodEndCall("pasteMulticellValue", result);
-        return result;
-    }
-
-    public ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, int objectID, long idClass) throws RemoteException {
-        logRemoteMethodStartVoidCall("changeGridClass");
-        ServerResponse result = target.changeGridClass(requestIndex, lastReceivedRequestIndex, objectID, idClass);
-        logRemoteMethodEndVoidCall("changeGridClass");
-        return result;
-    }
-
-    public ServerResponse changeClassView(long requestIndex, long lastReceivedRequestIndex, int groupID, ClassViewType classView) throws RemoteException {
-        logRemoteMethodStartVoidCall("changeClassView");
-        ServerResponse result = target.changeClassView(requestIndex, lastReceivedRequestIndex, groupID, classView);
-        logRemoteMethodEndVoidCall("changeClassView");
         return result;
     }
 

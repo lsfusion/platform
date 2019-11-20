@@ -56,6 +56,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String columnsName;
     public ArrayList<GGroupObject> columnGroupObjects;
 
+    public boolean grid;
+
     public GType baseType;
     public String pattern;
     public String defaultPattern;
@@ -127,7 +129,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GPropertyDraw(){}
 
     public void update(GTableController controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
-        controller.updatePropertyDrawValues(this, values, updateKeys);
+        throw new UnsupportedOperationException();
     }
 
     public PanelRenderer createPanelRenderer(GFormController form, GGroupObjectValue columnKey) {

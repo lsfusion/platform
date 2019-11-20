@@ -689,7 +689,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(inheritedProperty == null)
             inheritedProperty = propertyImplement.property;
         final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), "propertyDraw" + version.getOrder() + propertyDraws.size(version), propertyImplement, inheritedProperty);
-
         newPropertyDraw.proceedDefaultDraw(this);
 
         if (propertySID != null) {
@@ -948,11 +947,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         eventActions.addAll(eventObject, Arrays.asList(actions), version);
     }
 
-    public ComponentView getDrawComponent(PropertyDrawEntity<?> property, boolean grid) {
+    public ComponentView getDrawComponent(PropertyDrawEntity<?> property) {
         FormView formView = getRichDesign();
         ComponentView drawComponent;
         GroupObjectEntity toDraw;
-        if(grid && (toDraw = property.getToDraw(this)) != null) {
+        if((toDraw = property.getToDraw(this)) != null && property.isGrid(this)) {
             if (toDraw.isInTree())
                 drawComponent = formView.get(toDraw.treeGroup);
             else
@@ -1124,14 +1123,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         ComponentUpSet result = new ComponentUpSet();
         for(PropertyDrawEntity<?> property : getPropertyDrawsIt())
             if(!group.getObjects().disjoint(property.getObjectInstances())) {  // для свойств "зависящих" от группы
-                for(int t=0;t<2;t++) {
-                    ComponentView drawComponent = getDrawComponent(property, t == 0); // не hidden и первый showifOrTab
-                    if(!isDesignHidden(drawComponent)) {
-                        ComponentView localHideableContainer = drawComponent.getLocalHideableContainer();
-                        if (localHideableContainer == null) // cheat \ оптимизация
-                            return null;
-                        result = result.addItem(localHideableContainer);
-                    }
+                ComponentView drawComponent = getDrawComponent(property);
+                if(!isDesignHidden(drawComponent)) {
+                    ComponentView localHideableContainer = drawComponent.getLocalHideableContainer();
+                    if (localHideableContainer == null) // cheat \ оптимизация
+                        return null;
+                    result = result.addItem(localHideableContainer);
                 }
             }
         ImSet<FilterEntity> fixedFilters = getFixedFilters();

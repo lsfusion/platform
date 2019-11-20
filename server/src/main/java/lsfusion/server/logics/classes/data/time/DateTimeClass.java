@@ -164,7 +164,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public Object getInfiniteValue(boolean min) {
+    public Timestamp getInfiniteValue(boolean min) {
         return min ? new Timestamp(0) : new Timestamp(Long.MAX_VALUE);
     }
 

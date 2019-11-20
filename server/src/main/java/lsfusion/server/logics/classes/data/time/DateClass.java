@@ -161,7 +161,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
-    public Object getInfiniteValue(boolean min) {
+    public Date getInfiniteValue(boolean min) {
         return DateConverter.dateToSql(new java.util.Date(min ? 0 : Long.MAX_VALUE));
     }
 

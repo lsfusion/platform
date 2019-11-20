@@ -5,16 +5,15 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
-import lsfusion.base.col.interfaces.mutable.MOrderMap;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.action.*;
+import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -23,7 +22,7 @@ import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
-import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
@@ -48,12 +47,11 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
-import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.object.*;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -335,6 +333,47 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
+    @Override
+    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, PropertyGroupType[] types, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
+
+            if (logger.isTraceEnabled()) {
+                logger.trace(String.format("changeMode: [ID: %1$d]", groupObject.getID()));
+            }
+
+            if(setGroup) {
+                GroupMode setGroupMode = null;
+                if(propertyIDs != null) {
+                    MExclSet<GroupColumn> mGroupProps = SetFact.mExclSet(propertyIDs.length);
+                    MExclMap<GroupColumn, PropertyGroupType> mAggrProps = MapFact.mExclMapMax(propertyIDs.length);
+                    for (int i = 0; i < propertyIDs.length; i++) {
+                        PropertyDrawInstance property = form.getPropertyDraw(propertyIDs[i]);
+                        GroupColumn column = new GroupColumn(property, deserializePropertyKeys(property, columnKeys[i]));
+                        PropertyGroupType type = types[i];
+                        if (type == PropertyGroupType.GROUP)
+                            mGroupProps.exclAdd(column);
+                        else
+                            mAggrProps.exclAdd(column, type);
+                    }
+                    ImMap<GroupColumn, PropertyGroupType> aggrProps = mAggrProps.immutable();
+                    setGroupMode = new GroupMode(mGroupProps.immutable(),
+                            GroupMode.group(aggrProps.keys(), groupColumn -> aggrProps.get(groupColumn)));
+                }
+                groupObject.changeGroupMode(setGroupMode);
+            }
+            
+            if(pageSize != null)
+                groupObject.setPageSize(pageSize < 0 ? Settings.get().getPageSizeDefaultValue() : pageSize);
+            
+            if(forceRefresh)
+                groupObject.forceRefresh();
+
+            if(updateMode != null)
+                groupObject.setUpdateMode(updateMode);
+        });
+    }
+
     public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             List<PropertyDrawInstance> properties = new ArrayList<>();
@@ -382,32 +421,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             form.pasteMulticellValue(keysValues, stack);
-        });
-    }
-
-    public ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, final int objectID, final long idClass) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("changeGridClass: [ID: %1$d]", objectID));
-                logger.trace(String.format("new grid class id: %s", idClass));
-            }
-            
-            ((CustomObjectInstance) form.getObjectInstance(objectID)).changeGridClass(idClass);
-        });
-    }
-
-    public ServerResponse changeClassView(long requestIndex, long lastReceivedRequestIndex, final int groupID, final ClassViewType classView) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-
-            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("changeClassView: [ID: %1$d]", groupObject.getID()));
-                logger.trace(String.format("new classView: %s", String.valueOf(classView)));
-            }
-            
-            form.changeClassView(form.getGroupObjectInstance(groupID), classView);
         });
     }
 
