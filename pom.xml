@@ -28,7 +28,7 @@
 
     <scm>
         <developerConnection>scm:git:https://github.com/lsfusion/platform.git</developerConnection>
-      <tag>v3</tag>
+      <tag>HEAD</tag>
     </scm>
 
     <build>
