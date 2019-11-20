@@ -289,7 +289,7 @@ public class GridController extends AbstractTableController {
     }
 
     public boolean isGrid() {
-        return groupObject.classView.isGrid();
+        return groupObject != null && groupObject.classView.isGrid();
     }
     
     public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
