@@ -114,13 +114,16 @@ public class GPanelController {
             return false;
         }
 
-        for (GPropertyController propController : propertyControllers.values()) {
-            if (propController.focusFirstWidget()) {
-                return true;
+        for (GPropertyDraw property : form.getPropertyDraws()) {
+            GPropertyController propController = propertyControllers.get(property);
+            if (propController != null) {
+                if (propController.focusFirstWidget()) {
+                    return true;
+                }
             }
         }
 
-        return true;
+        return false;
     }
 
     public class GPropertyController {
