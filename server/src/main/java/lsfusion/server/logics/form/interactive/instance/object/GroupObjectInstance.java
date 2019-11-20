@@ -1144,7 +1144,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
                     if(useGroupMode) {
                         this.groupMode = setGroupMode;
-                        keys = executeGroup(sql, env, modifier, baseClass, 0, reallyChanged);
+                        keys = executeGroup(sql, env, modifier, baseClass, readSize * 5, reallyChanged);
                     } else
                         this.groupMode = null;
                 } else {

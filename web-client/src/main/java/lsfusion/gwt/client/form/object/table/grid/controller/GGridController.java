@@ -197,7 +197,7 @@ public class GGridController extends GAbstractTableController {
 
         addToolbarSeparator();
 
-        gridTableButton = new GToolbarButton("grid.png", messages.formGridExportToXlsx()) {
+        gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
             public void addListener() {
                 addClickHandler(event -> {
                     setGridTableView();
@@ -208,7 +208,7 @@ public class GGridController extends GAbstractTableController {
         };
         addToToolbar(gridTableButton);
 
-        pivotTableButton = new GToolbarButton("pivot.png", messages.formGridExportToXlsx()) {
+        pivotTableButton = new GToolbarButton("pivot.png", messages.formGridPivotView()) {
             public void addListener() {
                 addClickHandler(event -> {
                     setPivotTableView();
@@ -235,7 +235,7 @@ public class GGridController extends GAbstractTableController {
 
         addToolbarSeparator();
 
-        manualUpdateTableButton = new GToolbarButton("update.png", messages.formGridExportToXlsx()) {
+        manualUpdateTableButton = new GToolbarButton("update.png", messages.formGridManualUpdate()) {
             public void addListener() {
                 addClickHandler(event -> {
                     setUpdateMode(!manual);
@@ -245,7 +245,7 @@ public class GGridController extends GAbstractTableController {
         };
         addToToolbar(manualUpdateTableButton);
 
-        forceUpdateTableButton = new ImageButton("Применить", "ok.png");
+        forceUpdateTableButton = new ImageButton(messages.formGridUpdate(), "ok.png");
         forceUpdateTableButton.addClickHandler(event -> {
                     formController.changeMode(groupObject, false, null, null, null, null, false, GUpdateMode.FORCE);
                 });

@@ -29,7 +29,13 @@ public interface ClientMessages extends Messages {
     String formGridExportToXlsx();
     String formGridPrintGrid();
     String formGridGroupGroupChange();
-    
+
+    String formGridTableView();
+    String formGridPivotView();
+
+    String formGridManualUpdate();
+    String formGridUpdate();
+
     String formTree();
     String formTreeExpand();
     String formTreeExpandCurrent();
