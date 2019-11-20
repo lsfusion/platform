@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
@@ -22,7 +23,6 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 
 // представление св-ва
@@ -63,8 +63,16 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ImOrderSet<GroupObjectInstance> getOrderColumnGroupObjects() {
         return columnGroupObjects;
     }
-    public ImSet<GroupObjectInstance> getColumnGroupObjectsInGridView() {
+    @IdentityLazy
+    public ImSet<GroupObjectInstance> getColumnGroupObjectsInGrid() {
         return getColumnGroupObjects().filterFn(element -> element.classView.isGrid());
+    }
+    @IdentityLazy
+    public ImSet<GroupObjectInstance> getGroupObjectsInGrid() {
+        ImSet<GroupObjectInstance> result = getColumnGroupObjectsInGrid();
+        if(isGrid())
+            result = result.addExcl(toDraw);
+        return result;
     }
 
     public Type getType() {

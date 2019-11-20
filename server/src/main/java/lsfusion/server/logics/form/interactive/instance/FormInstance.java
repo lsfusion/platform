@@ -1872,7 +1872,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ServerLoggers.assertLog(classListener == null || !classListener.isDeactivated(), "NAVIGATOR DEACTIVATED " + BaseUtils.nullToString(classListener));
     }
 
-    private Set<PropertyDrawInstance> readShowIfs(Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids, ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
+    private Set<PropertyDrawInstance> readShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
 
         Set<PropertyDrawInstance> newShown = new HashSet<>();
         
@@ -1882,18 +1882,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         MAddExclMap<PropertyReaderInstance, ComponentView> hiddenNotSureShown = MapFact.mAddExclMap();
         final MOrderExclMap<PropertyDrawInstance.ShowIfReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
         for (PropertyDrawInstance<?> drawProperty : properties) {
-
-            ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGridView();
-            ImSet<GroupObjectInstance> propRowGrids = propRowColumnGrids;
-            if(drawProperty.isGrid())
-                propRowGrids = propRowColumnGrids.addExcl(drawProperty.toDraw);
-
+            ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
             ComponentView drawComponent = getDrawComponent(drawProperty);
-            
-            boolean newStaticShown = isPropertyStaticShown(drawComponent, drawProperty);
 
-            rowGrids.put(drawProperty, propRowGrids);
-            rowColumnGrids.put(drawProperty, propRowColumnGrids);
+            // in theory this part can be optimized to check if (objects, or user preference, hidden was update) but probably it will be premature optimization
+            boolean newStaticShown = isPropertyStaticShown(drawComponent, drawProperty, propRowColumnGrids);
             boolean oldStaticShown = addShown(isStaticShown, drawProperty, newStaticShown);
             
             if (newStaticShown) {
@@ -1973,7 +1966,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return newShown;
     }
 
-    private boolean isPropertyStaticShown(ComponentView drawComponent, PropertyDrawInstance drawProperty) {
+    private boolean isPropertyStaticShown(ComponentView drawComponent, PropertyDrawInstance drawProperty, ImSet<GroupObjectInstance> propRowColumnGrids) {
+        if(!drawProperty.isInInterface(propRowColumnGrids, true)) { // don't show property if it is always null
+            return false;
+        }
+
         if (isNoTabHidden(drawComponent)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
             return false;
         } 
@@ -2030,11 +2027,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private void fillChangedDrawProps(MFormChanges result, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps) throws SQLException, SQLHandledException {
-        //1е чтение - читаем showIfs
-        Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids = new HashMap<>();
-        Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids = new HashMap<>();
-
-        Set<PropertyDrawInstance> newShown = readShowIfs(rowGrids, rowColumnGrids, changedProps, result);
+        Set<PropertyDrawInstance> newShown = readShowIfs(changedProps, result);
 
         MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mReadProperties = MapFact.mOrderExclMap();
 
@@ -2046,8 +2039,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 boolean update = drawProperty.toDraw == null || !drawProperty.isGrid() || drawProperty.toDraw.toUpdate();
                 boolean hidden = isTabHidden(drawProperty);
 
-                ImSet<GroupObjectInstance> propRowGrids = rowGrids.get(drawProperty);
-                ImSet<GroupObjectInstance> propRowColumnGrids = rowColumnGrids.get(drawProperty);
+                ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
+                ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
 
                 fillChangedReader(drawProperty, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.captionReader, drawProperty.toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
