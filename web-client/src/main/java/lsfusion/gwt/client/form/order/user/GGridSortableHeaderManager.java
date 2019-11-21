@@ -83,9 +83,9 @@ public abstract class GGridSortableHeaderManager<T> {
                 assert orderDirections.isEmpty();
 
             for(Map.Entry<T, Boolean> entry : set.entrySet()) {
-                changeOrder(entry.getKey(), GOrder.ADD);
+                changeOrder(entry.getKey(), GOrder.ADD, alreadySet);
                 if(!entry.getValue())
-                    changeOrder(entry.getKey(), GOrder.DIR);
+                    changeOrder(entry.getKey(), GOrder.DIR, alreadySet);
             }
                 
             return true;

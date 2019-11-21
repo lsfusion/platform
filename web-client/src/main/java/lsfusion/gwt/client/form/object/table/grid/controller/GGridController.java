@@ -466,8 +466,11 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
-        assert isGrid() && this.groupObject.equals(groupObject);
-        return changeOrders(orders, alreadySet);
+        assert this.groupObject.equals(groupObject);
+        if(isGrid()) {
+            return changeOrders(orders, alreadySet);
+        }
+        return false; // doesn't matter
     }
     public boolean changeOrders(LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
         assert isGrid();
