@@ -1,3 +1,8 @@
+## 2.2 (2019-11-21)
+##### Implemented enhancements:
+ - Form loses focus [#191](https://github.com/lsfusion/platform/issues/191)
+ - Downloads during installation issue [#190](https://github.com/lsfusion/platform/issues/190)
+## ----- PREVIOUS RELEASES --------
 ## 2.1 (2019-10-15)
 ##### Implemented enhancements:
  - Build clients on OpenJDK 8 and higher [#182](https://github.com/lsfusion/platform/issues/182)
@@ -19,4 +24,3 @@
  - Unable to send mail with empty text [#149](https://github.com/lsfusion/platform/issues/149)
  - Unable to copy text from message box in web-client [#146](https://github.com/lsfusion/platform/issues/146)
  - Export to XML should respect the order of properties and groups on the form [#145](https://github.com/lsfusion/platform/issues/145)
-## ----- PREVIOUS RELEASES --------
