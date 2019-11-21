@@ -164,7 +164,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public final InstanceFactory instanceFactory;
 
-    public final SecurityPolicy securityPolicy;
+    public final ImSet<SecurityPolicy> securityPolicies;
 
     private final ImOrderSet<GroupObjectInstance> groups;
 
@@ -198,21 +198,19 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private ImSet<ObjectInstance> objects;
 
-    private boolean showReadOnly = false;
-    
-    public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь 
+    public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
+    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, ImSet<SecurityPolicy> securityPolicies,
                         FocusListener focusListener, CustomClassListener classListener,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack, boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
                         boolean isExternal, ImSet<ContextFilter> contextFilters,
                         ImSet<PullChangeProperty> pullProps, boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, isExternal, contextFilters, pullProps, showReadOnly, locale);
+        this(entity, logicsInstance, session, securityPolicies, focusListener, classListener, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, isExternal, contextFilters, pullProps, showReadOnly, locale);
     }
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
+    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, ImSet<SecurityPolicy> securityPolicies,
                         FocusListener focusListener, CustomClassListener classListener,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
@@ -229,11 +227,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.entity = entity;
         this.logicsInstance = logicsInstance;
         this.BL = logicsInstance.getBusinessLogics();
-        this.securityPolicy = securityPolicy;
+
+        if(showReadOnly)
+            securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);
+        this.securityPolicies = securityPolicies;
 
         this.pullProps = pullProps;
-
-        this.showReadOnly = showReadOnly;
 
         this.locale = locale;
         
@@ -257,7 +256,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ImOrderSet<PropertyDrawEntity> propertyDraws = (ImOrderSet<PropertyDrawEntity>) entity.getPropertyDrawsList();
         MList<PropertyDrawInstance> mProperties = ListFact.mListMax(propertyDraws.size());
         for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
-            if (propertyDrawEntity.checkPermission(this.securityPolicy.property.view)) {
+            if (SecurityPolicy.checkPropertyViewPermission(securityPolicies, propertyDrawEntity.getSecurityProperty())) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
                 if (propertyDrawInstance.toDraw == null) // для Instance'ов проставляем не null, так как в runtime'е порядок меняться не будет
                     propertyDrawInstance.toDraw = instanceFactory.getInstance(propertyDrawEntity.getToDraw(entity));
@@ -974,7 +973,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (objectInstance instanceof CustomObjectInstance) {
             CustomObjectInstance object = (CustomObjectInstance) objectInstance;
 
-            if (securityPolicy.cls.edit.change.checkPermission(object.currentClass)) {
+            if (SecurityPolicy.checkClassChangePermission(securityPolicies, object.currentClass)) {
                 object.changeClass(session, dataObject, cls);
                 dataChanged = true;
             }
@@ -990,9 +989,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     @ThisMessage
     public void executeEditAction(final PropertyDrawInstance<?> property, String editActionSID, final ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
-        ImSet<SecurityPolicy> securityPolicies = SetFact.singleton(securityPolicy);
-        if(showReadOnly)
-            securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);        
         ActionObjectInstance<?> editAction = property.getEditAction(editActionSID, instanceFactory, checkReadOnly, securityPolicies);
         if(editAction == null) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
@@ -1045,7 +1041,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
-            DataClass changeType = property.entity.getWYSRequestInputType(securityPolicy);
+            DataClass changeType = property.entity.getWYSRequestInputType(securityPolicies);
             if (changeType != null) {
                 for (int i = 0, size = pasteRows.size(); i < size; i++) {
                     ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
@@ -2325,7 +2321,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
     private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue, ImSet<ContextFilter> additionalFilters, ImSet<PullChangeProperty> pullProps, ExecutionStack outerStack) throws SQLException, SQLHandledException {
         return new FormInstance(entity, this.logicsInstance,
-                                this.session, this.securityPolicy,
+                                this.session, securityPolicies,
                                 getFocusListener(), getClassListener(),
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 outerStack,
@@ -2404,7 +2400,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (actionsOnEvent != null) {
             for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
-                if (autoInstance.isInInterface(null) && securityPolicy.property.change.checkPermission(autoAction.property)) { // для проверки null'ов и политики безопасности
+                if (autoInstance.isInInterface(null) && SecurityPolicy.checkPropertyChangePermission(securityPolicies, autoAction.property)) { // для проверки null'ов и политики безопасности
                     mResult.exclAdd(autoInstance.getValueImplement(this));
                 }
             }

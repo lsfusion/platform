@@ -269,12 +269,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.inheritedProperty = inheritedProperty;
     }
 
-    public DataClass getRequestInputType(SecurityPolicy policy) {
-        return getRequestInputType(CHANGE, policy, optimisticAsync);
+    public DataClass getRequestInputType(ImSet<SecurityPolicy> policies) {
+        return getRequestInputType(CHANGE, policies, optimisticAsync);
     }
 
-    public DataClass getWYSRequestInputType(SecurityPolicy policy) {
-        return getRequestInputType(CHANGE_WYS, policy, true); // wys is optimistic by default
+    public DataClass getWYSRequestInputType(ImSet<SecurityPolicy> policies) {
+        return getRequestInputType(CHANGE_WYS, policies, true); // wys is optimistic by default
     }
     
     public boolean isProperty() {
@@ -285,9 +285,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getValueProperty();
     }
 
-    public DataClass getRequestInputType(String actionSID, SecurityPolicy policy, boolean optimistic) {
+    public DataClass getRequestInputType(String actionSID, ImSet<SecurityPolicy> securityPolicies, boolean optimistic) {
         if (isProperty()) { // optimization
-            ActionObjectEntity<?> changeAction = getEditAction(actionSID, policy);
+            ActionObjectEntity<?> changeAction = getEditAction(actionSID, securityPolicies);
 
             if (changeAction != null) {
                 return (DataClass)changeAction.property.getSimpleRequestInputType(optimistic);
@@ -296,8 +296,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, SecurityPolicy policy) {
-        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEditAction(CHANGE, policy);
+    public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, ImSet<SecurityPolicy> policies) {
+        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEditAction(CHANGE, policies);
         if(changeAction!=null)
             return changeAction.getAddRemove(form);
         return null;
@@ -322,18 +322,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         for(SecurityPolicy securityPolicy : securityPolicies)
-            if(!securityPolicy.property.change.checkPermission(securityProperty) || forbidEditObjects(editActionSID, securityPolicy))
+            if(forbidEditObjects(editActionSID, securityPolicy))
                 return false;
-        return true;
+        return SecurityPolicy.checkPropertyChangePermission(securityPolicies, securityProperty);
     }
 
     private boolean forbidEditObjects(String editActionSID, SecurityPolicy securityPolicy) {
         return EDIT_OBJECT.equals(editActionSID) && !securityPolicy.editObjects;
     }
 
-    public ActionObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy) {
+    public ActionObjectEntity<?> getEditAction(String actionId, ImSet<SecurityPolicy> securityPolicies) {
         try {
-            return getEditAction(actionId, null, securityPolicy != null ? SetFact.singleton(securityPolicy) : SetFact.EMPTY());
+            return getEditAction(actionId, null, securityPolicies);
         } catch (SQLException | SQLHandledException e) {
             assert false;
             throw Throwables.propagate(e);
@@ -661,9 +661,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getInheritedProperty().isNotNull();
     }
 
-    public boolean checkPermission(ViewPropertySecurityPolicy policy) {
-        return policy.checkPermission(getSecurityProperty());
-    }
     public void deny(ViewPropertySecurityPolicy policy) {
         policy.deny(getSecurityProperty());
     }

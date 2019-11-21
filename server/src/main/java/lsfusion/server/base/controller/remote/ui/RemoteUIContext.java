@@ -1,6 +1,7 @@
 package lsfusion.server.base.controller.remote.ui;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ChooseClassClientAction;
@@ -82,7 +83,7 @@ public abstract class RemoteUIContext extends AbstractContext {
     }
 
     public abstract FocusListener getFocusListener();
-    protected abstract SecurityPolicy getSecurityPolicy();
+    protected abstract ImSet<SecurityPolicy> getSecurityPolicies();
     protected boolean isExternal() {
         return false;
     }
@@ -90,7 +91,7 @@ public abstract class RemoteUIContext extends AbstractContext {
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
-                getSecurityPolicy(), getFocusListener(), getClassListener(),
+                getSecurityPolicies(), getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
                 checkOnOk, showDrop, interactive, isExternal(), contextFilters, pullProps, readonly, getLocale());
