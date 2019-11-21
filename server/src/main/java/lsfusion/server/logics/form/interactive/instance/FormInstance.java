@@ -1882,11 +1882,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         MAddExclMap<PropertyReaderInstance, ComponentView> hiddenNotSureShown = MapFact.mAddExclMap();
         final MOrderExclMap<PropertyDrawInstance.ShowIfReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
         for (PropertyDrawInstance<?> drawProperty : properties) {
-            ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
+            ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
             ComponentView drawComponent = getDrawComponent(drawProperty);
 
             // in theory this part can be optimized to check if (objects, or user preference, hidden was update) but probably it will be premature optimization
-            boolean newStaticShown = isPropertyStaticShown(drawComponent, drawProperty, propRowColumnGrids);
+            boolean newStaticShown = isPropertyStaticShown(drawComponent, drawProperty, propRowGrids);
             boolean oldStaticShown = addShown(isStaticShown, drawProperty, newStaticShown);
             
             if (newStaticShown) {
@@ -1896,6 +1896,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 boolean hidden = tabContainer != null && isTabHidden(tabContainer);
                 boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
                 if (!isDefinitelyShown) {
+                    ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
                     PropertyDrawInstance.ShowIfReaderInstance showIfReader = drawProperty.showIfReader;
                     boolean read = refresh // this check is pretty equivalent to fillChangedReader
                                    || !oldStaticShown
