@@ -39,7 +39,7 @@ public class GTreeGroupController extends GAbstractTableController {
     private final GExpandTreeButton expandTreeCurrentButton;
 
     public GTreeGroupController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm) {
-        super(iFormController, iTreeGroup.toolbar);
+        super(iFormController, iTreeGroup.toolbar, true);
         treeGroup = iTreeGroup;
         lastGroupObject = treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
 

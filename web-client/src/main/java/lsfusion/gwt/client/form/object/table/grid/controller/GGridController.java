@@ -44,6 +44,9 @@ public class GGridController extends GAbstractTableController {
 
     private GTableView table;
 
+    private static boolean isGrid(GGroupObject groupObject) {
+        return groupObject != null && groupObject.classView.isGrid();
+    }
     public boolean isGrid() {
         return groupObject != null && groupObject.classView.isGrid();
     }
@@ -53,7 +56,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     public GGridController(GFormController iformController, GGroupObject igroupObject, GGridUserPreferences[] userPreferences) {
-        super(iformController, igroupObject == null ? null : igroupObject.toolbar);
+        super(iformController, igroupObject == null ? null : igroupObject.toolbar, isGrid(igroupObject));
         groupObject = igroupObject;
 
         if (isGrid()) {
@@ -420,7 +423,7 @@ public class GGridController extends GAbstractTableController {
                 forceUpdateTableButton.setEnabled(updateState);
             table.update(updateState);
 
-            boolean isVisible = !table.isNoColumns() && isGrid();
+            boolean isVisible = !table.isNoColumns();
             gridView.setVisible(isVisible);
 
             if (toolbarView != null) {

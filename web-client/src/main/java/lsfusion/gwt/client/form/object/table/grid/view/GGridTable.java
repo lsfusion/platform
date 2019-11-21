@@ -750,22 +750,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         rowsUpdated = true;
     }
 
-    public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
-        if (propValues != null) {
-            NativeHashMap<GGroupObjectValue, Object> valuesMap = values.get(property);
-            if (updateKeys && valuesMap != null) {
-                valuesMap.putAll(propValues);
-            } else {
-                NativeHashMap<GGroupObjectValue, Object> pvalues = new NativeHashMap<>();
-                pvalues.putAll(propValues);
-                values.put(property, pvalues);
-            }
-            updatedProperties.put(property, TRUE);
-
-            dataUpdated = true;
-        }
-    }
-
     @Override
     public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
         super.updatePropertyCaptions(propertyDraw, values);
