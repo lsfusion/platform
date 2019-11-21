@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.controller.context;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.logics.LogicsInstance;
@@ -53,8 +54,8 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
         return form.getRemoteFormListener();
     }
 
-    public SecurityPolicy getSecurityPolicy() {
-        return form.form.securityPolicy;
+    public ImSet<SecurityPolicy> getSecurityPolicies() {
+        return form.form.securityPolicies;
     }
 
     public FocusListener getFocusListener() {
