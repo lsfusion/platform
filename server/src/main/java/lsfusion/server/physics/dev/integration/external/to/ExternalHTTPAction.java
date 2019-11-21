@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -88,7 +89,7 @@ public class ExternalHTTPAction extends ExternalAction {
                 HttpEntity responseEntity = response.getEntity();
 
                 ContentType contentType = ContentType.get(responseEntity);
-                ImList<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
+                ImList<Object> requestParams = responseEntity != null ? ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType) : ListFact.EMPTY();
                 fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
                 
                 if(headersToProperty != null) {
