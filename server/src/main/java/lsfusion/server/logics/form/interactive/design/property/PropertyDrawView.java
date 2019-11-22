@@ -4,6 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -33,6 +34,7 @@ import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
@@ -115,11 +117,11 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Type getChangeType(ServerContext context) {
-        return entity.getRequestInputType(context.securityPolicy);
+        return entity.getRequestInputType(context.securityPolicies);
     }
     
     public Type getChangeWYSType(ServerContext context) {
-        return entity.getWYSRequestInputType(context.securityPolicy);
+        return entity.getWYSRequestInputType(context.securityPolicies);
     }
 
     @Override
@@ -139,7 +141,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Pair<ObjectEntity, Boolean> getAddRemove(ServerContext context) {
-        return entity.getAddRemove(context.entity, context.securityPolicy);        
+        return entity.getAddRemove(context.entity, context.securityPolicies);
     }
 
     public LocalizedString getCaption() {
@@ -380,8 +382,9 @@ public class PropertyDrawView extends ComponentView {
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
             LocalizedString caption = contextMenuBindings.getValue(i);
-            ActionObjectEntity<?> editAction = entity.getEditAction(actionSID, context.securityPolicy);
-            if (editAction != null && context.securityPolicy.property.view.checkPermission(editAction.property)) {
+            ImSet<SecurityPolicy> securityPolicies = context.securityPolicies;
+            ActionObjectEntity<?> editAction = entity.getEditAction(actionSID, securityPolicies);
+            if (editAction != null && SecurityPolicy.checkPropertyViewPermission(securityPolicies, editAction.property)) {
                 contextMenuItems.put(actionSID, caption);
             }
         }
@@ -496,9 +499,9 @@ public class PropertyDrawView extends ComponentView {
     }
     
     public boolean hasChangeAction(ServerContext context) {
-        return entity.getEditAction(CHANGE, context.securityPolicy) != null;    
+        return entity.getEditAction(CHANGE, context.securityPolicies) != null;
     }
     public boolean hasEditObjectAction(ServerContext context) {
-        return entity.getEditAction(EDIT_OBJECT, context.securityPolicy) != null;    
+        return entity.getEditAction(EDIT_OBJECT, context.securityPolicies) != null;
     }
 }

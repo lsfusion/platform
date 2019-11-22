@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
@@ -105,7 +106,7 @@ public class LogicsInstanceContext extends AbstractContext {
         assert false;
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
-                SecurityManager.serverSecurityPolicy, getFocusListener(), getClassListener(),
+                SetFact.singleton(SecurityManager.serverSecurityPolicy), getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
                 checkOnOk, showDrop, interactive, isFloat, false, contextFilters, pullProps, readonly, getLocale());

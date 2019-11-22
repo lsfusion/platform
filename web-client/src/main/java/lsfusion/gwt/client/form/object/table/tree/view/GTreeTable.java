@@ -442,7 +442,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public boolean isCurrentPathExpanded() {
-        return selectedRecord != null && tree.getNodeByRecord(selectedRecord).isOpen();
+        GTreeTableNode node;
+        return selectedRecord != null && (node = tree.getNodeByRecord(selectedRecord)) != null && node.isOpen();
     }
 
     private void fireCollapseNode(GTreeTableNode node) {
@@ -595,7 +596,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if (event.getTypeInt() == Event.ONDBLCLICK) {
             if (treeGroupController.isExpandOnClick() && !isEditable(getCurrentCellContext()) && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {
                 GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
-                if (node.isExpandable()) {
+                if (node != null && node.isExpandable()) {
                     GwtClientUtils.stopPropagation(event);
                     if (!node.isOpen()) {
                         fireExpandNode(node);

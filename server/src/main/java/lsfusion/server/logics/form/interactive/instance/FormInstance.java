@@ -159,7 +159,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public final InstanceFactory instanceFactory;
 
-    public final SecurityPolicy securityPolicy;
+    public final ImSet<SecurityPolicy> securityPolicies;
 
     private final ImOrderSet<GroupObjectInstance> groups;
 
@@ -202,11 +202,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private ImSet<ObjectInstance> objects;
 
-    private boolean showReadOnly = false;
-    
-    public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь 
+    public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
+    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, ImSet<SecurityPolicy> securityPolicies,
                         FocusListener focusListener, CustomClassListener classListener,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
@@ -224,11 +222,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.entity = entity;
         this.logicsInstance = logicsInstance;
         this.BL = logicsInstance.getBusinessLogics();
-        this.securityPolicy = securityPolicy;
+
+        if(showReadOnly)
+            securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);
+        this.securityPolicies = securityPolicies;
 
         this.pullProps = pullProps;
-
-        this.showReadOnly = showReadOnly;
 
         this.locale = locale;
         
@@ -252,7 +251,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ImOrderSet<PropertyDrawEntity> propertyDraws = (ImOrderSet<PropertyDrawEntity>) entity.getPropertyDrawsList();
         MList<PropertyDrawInstance<?>> mProperties = ListFact.mListMax(propertyDraws.size());
         for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
-            if (propertyDrawEntity.checkPermission(this.securityPolicy.property.view)) {
+            if (SecurityPolicy.checkPropertyViewPermission(securityPolicies, propertyDrawEntity.getSecurityProperty())) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
                 if (propertyDrawInstance.toDraw == null) // для Instance'ов проставляем не null, так как в runtime'е порядок меняться не будет
                     propertyDrawInstance.toDraw = instanceFactory.getInstance(propertyDrawEntity.getToDraw(entity));
@@ -947,7 +946,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (objectInstance instanceof CustomObjectInstance) {
             CustomObjectInstance object = (CustomObjectInstance) objectInstance;
 
-            if (securityPolicy.cls.edit.change.checkPermission(object.currentClass)) {
+            if (SecurityPolicy.checkClassChangePermission(securityPolicies, object.currentClass)) {
                 object.changeClass(session, dataObject, cls);
                 dataChanged = true;
             }
@@ -963,9 +962,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     @ThisMessage
     public void executeEditAction(final PropertyDrawInstance<?> property, String editActionSID, final ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
-        ImSet<SecurityPolicy> securityPolicies = SetFact.singleton(securityPolicy);
-        if(showReadOnly)
-            securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);        
         ActionObjectInstance<?> editAction = property.getEditAction(editActionSID, instanceFactory, checkReadOnly, securityPolicies);
         if(editAction == null) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
@@ -1018,7 +1014,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
-            DataClass changeType = property.entity.getWYSRequestInputType(securityPolicy);
+            DataClass changeType = property.entity.getWYSRequestInputType(securityPolicies);
             if (changeType != null) {
                 for (int i = 0, size = pasteRows.size(); i < size; i++) {
                     ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
@@ -1573,7 +1569,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public ImOrderSet<PropertyDrawEntity> getPropertyEntitiesShownInGroup(final GroupObjectInstance group) {
         return properties.filterList(property -> {
-            return isStaticShown.contains(property) && property.isProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG 
+            return isStaticShown.contains(property) && property.isProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG
         }).toOrderExclSet().mapOrderSetValues(value -> ((PropertyDrawInstance<?>)value).entity);
     }
 
@@ -1727,7 +1723,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             ImOrderSet<R> propertySet) throws SQLException, SQLHandledException {
         queryPropertyObjectValues(propertySet, properties, keyGroupObjects, PropertyReaderInstance::getPropertyObjectInstance);
     }
-    
+
     private <T> Expr groupExpr(Expr expr, T key, Where groupModeWhere, ImMap<Object, Expr> groupModeExprs, ImSet<GroupMode> groupModes) {
         if(key instanceof PropertyDrawInstance) {
             for(GroupMode groupMode : groupModes) {
@@ -1735,7 +1731,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 if(transformedExpr != null)
                     return transformedExpr;
             }
-        }        
+        }
         return Expr.NULL();
     }
 
@@ -1758,14 +1754,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         Where groupWhere = Where.TRUE();
         for (GroupObjectInstance keyGroup : keyGroupObjects) {
-            Where where = keyGroup.keyTable.getWhere(mapKeys); // call mapExprs to optimize if where is anded 
+            Where where = keyGroup.keyTable.getWhere(mapKeys); // call mapExprs to optimize if where is anded
             groupWhere = groupWhere.and(where);
-            
+
             if(keyGroup.groupMode != null) {
                 assert !keyGroup.isInTree();
                 Where activeGroupWhere = keyGroup.getWhere(mapKeys, modifier);
-                
-                groupModes = groupModes.addExcl(keyGroup.groupMode);                
+
+                groupModes = groupModes.addExcl(keyGroup.groupMode);
                 groupModeExprs = groupModeExprs.addExcl(keyGroup.getGroupExprs(mapKeys.filter(keyGroup.objects), modifier, null)); // because active group mode is usually one, so we will not do some extra optimization
                 groupModeWhere = groupModeWhere != null ? groupModeWhere.and(activeGroupWhere) : activeGroupWhere;
                 groupModeKeys = groupModeKeys.addExcl(keyGroup.objects);
@@ -1875,7 +1871,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private Set<PropertyDrawInstance> readShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
 
         Set<PropertyDrawInstance> newShown = new HashSet<>();
-        
+
         updateContainersShowIfs(changedProps);
 
         MAddSet<ComponentView> hiddenButDefinitelyShownSet = SetFact.mAddSet(); // не ComponentDownSet для оптимизации
@@ -1888,7 +1884,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             // in theory this part can be optimized to check if (objects, or user preference, hidden was update) but probably it will be premature optimization
             boolean newStaticShown = isPropertyStaticShown(drawComponent, drawProperty, propRowGrids);
             boolean oldStaticShown = addShown(isStaticShown, drawProperty, newStaticShown);
-            
+
             if (newStaticShown) {
                 newShown.add(drawProperty);
 
@@ -1961,7 +1957,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             } else {
                 assert newShown.contains(key.getPropertyDraw());
                 result.properties.exclAdd(key, values);
-            }            
+            }
         }
 
         return newShown;
@@ -1974,12 +1970,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         if (isNoTabHidden(drawComponent)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
             return false;
-        } 
-        
+        }
+
         if (userPrefsHiddenProperties.contains(drawProperty) && drawProperty.isGrid()) { // панель показывается всегда
             return false;
         }
-        
+
         return true;
     }
 
@@ -2316,7 +2312,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
     private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue, ImSet<ContextFilter> additionalFilters, ImSet<PullChangeProperty> pullProps, ExecutionStack outerStack) throws SQLException, SQLHandledException {
         return new FormInstance(entity, this.logicsInstance,
-                                this.session, this.securityPolicy,
+                                this.session, securityPolicies,
                                 getFocusListener(), getClassListener(),
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 outerStack,
@@ -2391,7 +2387,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (actionsOnEvent != null) {
             for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
-                if (autoInstance.isInInterface(null) && securityPolicy.property.change.checkPermission(autoAction.property)) { // для проверки null'ов и политики безопасности
+                if (autoInstance.isInInterface(null) && SecurityPolicy.checkPropertyChangePermission(securityPolicies, autoAction.property)) { // для проверки null'ов и политики безопасности
                     mResult.exclAdd(autoInstance.getValueImplement(this));
                 }
             }
