@@ -160,6 +160,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         assert !isInTree();
         return pageSize;
     }
+    public int getGroupPageSize() {
+        assert !isInTree();
+        return getPageSize() * 5;
+    }
 
     public void setPageSize(Integer pageSize) {
         if(entity.pageSize == null && !pageSize.equals(this.pageSize)){
@@ -1002,7 +1006,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 if (!updateKeys && groupMode != null) {
                     if (!groupMode.groupProps.containsAll(setGroupMode.groupProps)) // groups added - update anyway
                         updateKeys = true;
-                    else {
+                    int groupPageSize = getGroupPageSize();
+                    if(groupPageSize > 0 && keys.size() == groupPageSize && !BaseUtils.hashEquals(groupMode.groupProps, setGroupMode.groupProps)) // maximum number of groups and groups changed (removed) - update anyway
+                        updateKeys = true;
+                    if(!updateKeys) {
                         ImMap<PropertyDrawInstance, ImMap<ImMap<ObjectInstance, DataObject>, PropertyGroupType>> changedAggrProps = setGroupMode.aggrProps.removeEquals(groupMode.aggrProps);
                         if (!changedAggrProps.isEmpty()) {
                             if (BaseUtils.hashEquals(groupMode.groupProps, setGroupMode.groupProps)) { // groups are the same, so just set changed props for update
@@ -1135,8 +1142,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     if(updateFilters || updatePageSize)
                         useGroupMode = false;
 
-                    int readSize = getPageSize();
                     if(!useGroupMode) { // we are not sure
+                        int readSize = getPageSize();
                         keys = SEEK_HOME.executeOrders(sql, env, modifier, baseClass, readSize, true, reallyChanged);
                         if(keys.size() == readSize)
                             useGroupMode = true;
@@ -1144,7 +1151,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
                     if(useGroupMode) {
                         this.groupMode = setGroupMode;
-                        keys = executeGroup(sql, env, modifier, baseClass, readSize * 5, reallyChanged);
+                        keys = executeGroup(sql, env, modifier, baseClass, getGroupPageSize(), reallyChanged);
                     } else
                         this.groupMode = null;
                 } else {
