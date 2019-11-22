@@ -5,6 +5,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -319,28 +320,29 @@ public class ClientFormController implements AsyncListener {
         FormUserPreferences preferences = remoteForm.getUserPreferences();
         
         for (ClientTreeGroup treeGroup : form.treeGroups) {
-            TreeGroupController controller = new TreeGroupController(treeGroup, this, formLayout);
-            treeControllers.put(treeGroup, controller);
+            initializeTreeController(treeGroup);
         }
 
         for (ClientGroupObject group : form.groupObjects) {
             if (group.parent == null) {
-                GridController controller = new GridController(group, this, formLayout, extractGridUserPreferences(preferences, group));
-                controllers.put(group, controller);
+                initializeGroupController(group, preferences);
             }
         }
-
-        for (ClientPropertyDraw properties : form.getPropertyDraws()) {
-            if (properties.groupObject == null) {
-                GridController controller = new GridController(this, formLayout);
-                controllers.put(null, controller);
-                break;
-            }
-        }
+        initializeGroupController(null, preferences);
     }
-    
+
+    private void initializeGroupController(ClientGroupObject group, FormUserPreferences preferences) throws IOException {
+        GridController controller = new GridController(group, this, formLayout, extractGridUserPreferences(preferences, group));
+        controllers.put(group, controller);
+    }
+
+    private void initializeTreeController(ClientTreeGroup treeGroup) throws IOException {
+        TreeGroupController controller = new TreeGroupController(treeGroup, this, formLayout);
+        treeControllers.put(treeGroup, controller);
+    }
+
     private GridUserPreferences[] extractGridUserPreferences(FormUserPreferences formPreferences, ClientGroupObject groupObject) {
-        if (formPreferences != null) {
+        if (groupObject != null && formPreferences != null) {
             GridUserPreferences[] gridPreferences = new GridUserPreferences[2];
             gridPreferences[0] = findGridUserPreferences(formPreferences.getGroupObjectGeneralPreferencesList(), groupObject);
             gridPreferences[1] = findGridUserPreferences(formPreferences.getGroupObjectUserPreferencesList(), groupObject);

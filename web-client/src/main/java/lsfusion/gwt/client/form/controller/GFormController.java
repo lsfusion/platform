@@ -315,26 +315,32 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private void initializeControllers() {
         for (GTreeGroup treeGroup : form.treeGroups) {
-            GTreeGroupController treeController = new GTreeGroupController(treeGroup, this, form);
-            treeControllers.put(treeGroup, treeController);
+            initializeTreeController(treeGroup);
         }
 
         for (GGroupObject group : form.groupObjects) {
             if (group.parent == null) {
-                GGridController controller = new GGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
-                controllers.put(group, controller);
+                initializeGroupController(group);
             }
         }
+        initializeGroupController(null);
 
         hasColumnGroupObjects = false;
         for (GPropertyDraw property : form.propertyDraws) {
             if (property.columnGroupObjects != null && !property.columnGroupObjects.isEmpty()) {
                 hasColumnGroupObjects = true;
             }
-            if (property.groupObject == null) {
-                controllers.put(null, new GGridController(this));
-            }
         }
+    }
+
+    private void initializeGroupController(GGroupObject group) {
+        GGridController controller = new GGridController(this, group, group != null && form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
+        controllers.put(group, controller);
+    }
+
+    private void initializeTreeController(GTreeGroup treeGroup) {
+        GTreeGroupController treeController = new GTreeGroupController(treeGroup, this, form);
+        treeControllers.put(treeGroup, treeController);
     }
 
     private GGridUserPreferences[] extractUserPreferences(GFormUserPreferences formPreferences, GGroupObject groupObject) {

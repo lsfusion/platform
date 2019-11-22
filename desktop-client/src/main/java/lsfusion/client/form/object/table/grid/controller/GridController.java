@@ -39,10 +39,6 @@ public class GridController extends AbstractTableController {
 
     protected CalculationsView calculationsView;
 
-    public GridController(ClientFormController formController, ClientFormLayout formLayout) throws IOException {
-        this(null, formController, formLayout, null);
-    }
-
     public GridController(ClientGroupObject igroupObject, ClientFormController formController, final ClientFormLayout formLayout, GridUserPreferences[] userPreferences) throws IOException {
         super(formController, formLayout, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
