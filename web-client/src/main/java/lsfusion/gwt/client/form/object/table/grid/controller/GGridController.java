@@ -84,8 +84,8 @@ public class GGridController extends GAbstractTableController {
 
             configureToolbar();
 
-            setGridTableView();
             setUpdateMode(false);
+            setGridTableView();
         }
     }
     
@@ -103,9 +103,10 @@ public class GGridController extends GAbstractTableController {
     private boolean manual;
     private void setUpdateMode(boolean manual) {
         this.manual = manual;
-        if(manual)
+        if(manual) {
             forceUpdateTableButton.setVisible(true);
-        else
+            forceUpdateTableButton.setEnabled(false);
+        } else
             forceUpdateTableButton.setVisible(false);
         manualUpdateTableButton.showBackground(manual);
     }
