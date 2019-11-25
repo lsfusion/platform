@@ -1,6 +1,7 @@
 package lsfusion.server.data.sql.syntax;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -16,6 +17,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.ClassReader;
+import lsfusion.server.data.type.reader.NullReader;
 import lsfusion.server.logics.classes.data.ArrayClass;
 
 import java.sql.*;
@@ -445,6 +447,8 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
                 break;
             case LAST:
                 fnc = getLastFunc();
+                if(readers.single() instanceof NullReader) // need to cast when type is unknown (optimizer can keep null value because it is not included in where)
+                    exprs = ListFact.singleton(resultType.getCast(exprs.single(), this, typeEnv));
                 break;
             default:
                 throw new UnsupportedOperationException();
