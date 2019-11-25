@@ -252,7 +252,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     private boolean forbidEditObjects(String editActionSID, SecurityPolicy securityPolicy) {
-        return EDIT_OBJECT.equals(editActionSID) && !securityPolicy.editObjects;
+        return EDIT_OBJECT.equals(editActionSID) && (securityPolicy.editObjects == null || securityPolicy.editObjects);
     }
 
     public ActionObjectEntity<?> getEditAction(String actionId, ImSet<SecurityPolicy> securityPolicies) {
