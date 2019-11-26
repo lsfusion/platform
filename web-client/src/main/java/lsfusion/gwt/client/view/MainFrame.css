@@ -1,10 +1,10 @@
-body, textarea, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
+body, textarea, button, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
 .messageBox-messageContainer, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
 .filterDialogHeader, .customFontPresenter {
     font-size: 8pt;
 }
 
-   body, textarea, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
+   body, textarea, select, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
 .gwt-SuggestBox, .gwt-TextArea, .gwt-TextBox, .textBasedGridCellEditor {
     font-family: Arial Unicode MS, Arial, sans-serif;
     font-family: Montserrat, Arial Unicode MS, Arial, sans-serif;
@@ -578,6 +578,100 @@ input[type=checkbox]:focus {
     bottom: 0;
 }
 
+/* ------------ Pivot Table  ------------ */
+
+.pivotTable {
+    overflow-x: auto;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    margin: 2px;
+}
+
+.pivotTable:focus {
+    border: 1px solid #0489BA;
+}
+
+.pvtAxisContainer {
+    border: 1px solid #ccc;
+    background-color: white;
+}
+
+.pvtAxisContainer li {
+    padding: 6px 3px;
+}
+
+.pvtAxisContainer li span.pvtAttr {
+    border: 1px solid #ccc;
+    border-radius: 0;
+    color: black;
+}
+
+.pvtVals {
+    border: 1px solid #ccc;
+    background-color: white;
+}
+
+.pvtTable {
+    width: 100%;
+}
+
+.pvtUi {
+    width: 100%;
+}
+
+.pvtUnused li span.pvtAttr {
+    background: white;
+}
+
+.pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
+    background: rgba(4, 137, 186, 0.09411764705882353);
+}
+
+table.pvtTable, table.pvtTable tbody tr td, table.pvtTable thead tr td {
+    border: 1px solid #ccc;
+    color: black;
+}
+
+table.pvtTable thead tr th, table.pvtTable tbody tr th {
+    background-color: white;
+}
+
+.pvtCols, .pvtRendererArea {
+    width: 100%;
+}
+
+.pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text] {
+    font-size: 8pt;
+}
+
+.pvtAggregator {
+    margin-bottom: 1px;
+}
+
+.pvtColOrder, .pvtRowOrder {
+    font-size: 10pt;
+}
+
+.pvtCheckContainer p {
+    margin: 2px;
+}
+
+.pvtFilterBox {
+    border: 1px solid #ccc;
+}
+
+.pvtFilterBox button {
+    margin: 6px;
+}
+
+.pvtFilterBox p {
+    margin: 2px auto;
+}
+
+.pvtFilterBox h4 {
+    margin: 12px auto;
+}
+
 /* ------------ Other components  ------------ */
 .gridResizePanel{
     min-height: 70px;
@@ -657,7 +751,3 @@ input[type=checkbox]:focus {
     border-left: 1px solid #ccc;
 }
 
-.pivotTable {
-    overflow-x: auto;
-    overflow-y: auto;
-}

@@ -1,7 +1,7 @@
 @def fontSize 8pt;
 
 .dataGridWidget {
-    border: 1px solid lightGrey;
+    border: 1px solid #ccc;
     margin: 2px;
     cursor: default;
 }

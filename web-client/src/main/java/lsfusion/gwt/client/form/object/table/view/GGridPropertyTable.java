@@ -27,7 +27,10 @@ import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
@@ -155,7 +158,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     @Override
     protected void onBlur() {
         super.onBlur();
-        changeBorder("lightGrey");
+        changeBorder("#ccc");
     }
 
     public void changeBorder(String color) {
