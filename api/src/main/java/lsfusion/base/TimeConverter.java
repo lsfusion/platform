@@ -1,4 +1,4 @@
-package lsfusion.server.logics.classes.data.time;
+package lsfusion.base;
 
 import org.apache.http.ParseException;
 
