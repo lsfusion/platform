@@ -98,14 +98,17 @@ public class ChangeAllDatesAction extends InternalAction {
                     int count = 1;
                     for (Map.Entry<String, List<String>> entry : tableColumnsMap.entrySet()) {
                         String table = entry.getKey();
-                        StringBuilder columns = new StringBuilder();
+                        StringBuilder columnsDown = new StringBuilder();
+                        StringBuilder columnsUp = new StringBuilder();
                         StringBuilder logColumns = new StringBuilder();
                         for (String column : entry.getValue()) {
-                            columns.append(String.format("%s%s = %s + %s*INTERVAL '1 second'", columns.length() == 0 ? "" : ", ", column, column, seconds));
+                            columnsDown.append(String.format("%s%s = %s - %s*INTERVAL '1 second'", columnsDown.length() == 0 ? "" : ", ", column, column, 86400 * 10000));
+                            columnsUp.append(String.format("%s%s = %s + %s*INTERVAL '1 second'", columnsUp.length() == 0 ? "" : ", ", column, column, seconds + 86400 * 10000));
                             logColumns.append(String.format("%s%s", (logColumns.length() == 0) ? "" : ", ", column));
                         }
                         ServerLoggers.systemLogger.info(String.format("Changing dates %s/%s: table %s, columns %s", count, tableColumnsMap.size(), table, logColumns.toString()));
-                        sql.executeDDL(String.format("UPDATE %s SET %s", table, columns.toString()));
+                        sql.executeDDL(String.format("UPDATE %s SET %s", table, columnsDown.toString()));
+                        sql.executeDDL(String.format("UPDATE %s SET %s", table, columnsUp.toString()));
                         count++;
                     }
 
