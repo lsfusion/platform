@@ -48,7 +48,13 @@ public class TimeClass extends DataClass<Time> {
 
     public Time parseString(String s) throws ParseException {
         try {
-            return new Time(((Date) getDefaultFormat().parseObject(s)).getTime());
+            Time parse;
+            try {
+                parse = new Time(((Date) getDefaultFormat().parseObject(s)).getTime());
+            } catch (java.text.ParseException e) {
+                parse = TimeConverter.smartParse(s);
+            }
+            return parse;
         } catch (Exception e) {
             throw new ParseException("error parsing time: " + s, e);
         }
