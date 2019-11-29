@@ -106,7 +106,8 @@ public class CustomDbfRecord {
             return null;
         }
 
-        return new String(bytes, actualOffset, actualLength, charset);
+        //0x00 byte is incorrect in postgre, so we replace it for space
+        return new String(bytes, actualOffset, actualLength, charset).replace((char) 0x00, ' ');
 
 		/*
         byte[] b = new byte[actualLength];
