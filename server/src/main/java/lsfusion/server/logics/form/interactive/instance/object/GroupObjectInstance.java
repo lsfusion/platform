@@ -603,7 +603,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public void expandCollapseAll(FormInstance form, boolean current, boolean expand) throws SQLException, SQLHandledException {
-        if (current) {
+        if (current && !isNull()) {
             expandCollapseAll(form, getGroupObjectValue(), expand);
         } else {
             GroupObjectInstance upTreeGroup = getUpTreeGroup();
