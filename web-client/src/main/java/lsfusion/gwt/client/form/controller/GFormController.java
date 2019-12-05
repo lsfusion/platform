@@ -1434,8 +1434,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     return true;
                 }
             }
-
-            return true;
         }
         return false;
     }
