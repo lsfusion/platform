@@ -1703,8 +1703,6 @@ public class ClientFormController implements AsyncListener {
             for(Binding binding : orderedBindings.values())
                 if(binding.pressed(ke))
                     return true;
-
-            return true;
         }
         return false;
     }
