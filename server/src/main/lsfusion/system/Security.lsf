@@ -278,6 +278,7 @@ backgroundPermit (UserRole role, NavigatorElement element)= RGB(203,203,203) IF 
 
 permit (User user, NavigatorElement navigatorElement) = 
     GROUP MAX permit(UserRole userRole, navigatorElement) IF has(user, userRole);
+permitCurrentUser (NavigatorElement e) = permit(currentUser(), e); 
 
 // - Forbid - //
 forbid '{security.forbid}' = DATA BOOLEAN (NavigatorElement) CHARWIDTH 10;
@@ -291,6 +292,7 @@ backgroundForbid (UserRole role, NavigatorElement element) = RGB(203,203,203) IF
 
 forbid (User user, NavigatorElement navigatorElement) = 
     rolesCount(user) AND NOT (GROUP SUM 1 IF NOT forbid(UserRole userRole, navigatorElement) AND has(user, userRole));
+forbidCurrentUser (NavigatorElement e) = forbidAllForms(currentUser()) OR forbid(currentUser(), e); 
 
 copy (UserRole from, UserRole to) +{
     permitAllForms(to) <- permitAllForms(from);
@@ -703,4 +705,46 @@ generateJnlpUrls () {
    } ELSE {
         exportText() <- CONCAT '', '<a href="', execURL(), '">{security.run.desktop.client}</a>';     
    }
+}
+
+// find forms
+
+FORM findNavigator '{reflection.find.navigator}'
+    TREE elements e = NavigatorElement PARENT parent(e)
+    PROPERTIES(e) READONLY BACKGROUND NOT e IS NavigatorFolder caption
+;
+
+findText '{reflection.find.text}' = DATA LOCAL STRING[100] ();
+changeFindText () {
+    INPUT s = findText() CHANGE DO {
+        EXPAND ALL TOP findNavigator.e;
+    }
+}
+
+EXTEND FORM findNavigator
+    PROPERTIES() findText ON CHANGE changeFindText()
+    FILTERS (GROUP SUM 1 IF isISubstring(caption(NavigatorElement child), findText()) AND 
+                            NOT child IS NavigatorFolder AND
+                            (permitCurrentUser(child) OR NOT forbidCurrentUser(child)) AND
+                            level(child, e)) 
+;
+
+openForm '{reflection.open.form}' (NavigatorElement e) {
+    IF NOT e IS NavigatorFolder AND canonicalName(form(e)) THEN
+        NEWSESSION EVAL 'run() \{ SHOW ' + canonicalName(form(e)) + ' NOWAIT; \};';
+} TOOLBAR CHANGEMOUSE 'DBLCLK';
+
+EXTEND FORM findNavigator
+    PROPERTIES openForm(e);
+;
+
+DESIGN findNavigator {
+    NEW params FIRST {
+        alignment = STRETCH;
+        MOVE PROPERTY(findText()) { fill = 1; fontSize = 20; }
+    }
+}
+
+NAVIGATOR {
+    NEW findNavigator IMAGE '/images/search.png';
 }
