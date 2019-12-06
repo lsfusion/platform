@@ -71,6 +71,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
 
     private void initDefaultComponent() {
         if (defaultComponent == null) {
+            defaultComponent = focusDefaultComponent();
             FocusTraversalPolicy traversalPolicy = contentContainer.getFocusTraversalPolicy();
             if (traversalPolicy != null) {
                 defaultComponent = traversalPolicy.getDefaultComponent(contentContainer);
@@ -140,7 +141,24 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
     }
 
     public void requestFocusInWindow() {
+        // to ensure dockable itself will be focused 
         getControl().getController().setFocusedDockable(new DefaultFocusRequest(intern(), null, true, true, true, true));
+
+        // When user uses desktop client theme with titles in every dockable (with tabs under dockable; other than Eclipse) 
+        // the newly opened form receives no focus. Dockable title receives it instead. 
+        focusDefaultComponent();
+    }
+
+    private Component focusDefaultComponent() {
+        FocusTraversalPolicy traversalPolicy = contentContainer.getFocusTraversalPolicy();
+        if (traversalPolicy != null) {
+            Component defaultComponent = traversalPolicy.getDefaultComponent(contentContainer);
+            if (defaultComponent != null) {
+                defaultComponent.requestFocusInWindow();
+                return defaultComponent;
+            }
+        }
+        return null;
     }
 
     public void setBlockingDockable(ClientFormDockable blockingDockable) {
