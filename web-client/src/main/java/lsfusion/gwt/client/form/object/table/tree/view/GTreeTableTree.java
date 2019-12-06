@@ -97,7 +97,7 @@ public class GTreeTableTree {
             syncChilds = new ArrayList<>();
         }
 
-        if (hasOnlyExpandningNodeAsChild(parent)) {
+        if (hasOnlyExpandingNodeAsChild(parent)) {
             parent.getChild(0).removeFromParent();
         }
 
@@ -155,6 +155,7 @@ public class GTreeTableTree {
 
         if (parent.getChildren().isEmpty() && parent.isExpandable()) {
             parent.addNode(new ExpandingTreeTableNode());
+            parent.setOpen(false);
         }
     }
 
@@ -164,7 +165,7 @@ public class GTreeTableTree {
         }
     }
 
-    public boolean hasOnlyExpandningNodeAsChild(GTreeTableNode node) {
+    public boolean hasOnlyExpandingNodeAsChild(GTreeTableNode node) {
         return node.getChildren().size() == 1 && node.getChild(0) instanceof ExpandingTreeTableNode;
     }
 
@@ -205,7 +206,7 @@ public class GTreeTableTree {
     public ArrayList<GTreeGridRecord> getUpdatedRecords() {
         nodeCounter = 0;
         ArrayList<GTreeGridRecord> result = new ArrayList<>();
-        if (!hasOnlyExpandningNodeAsChild(root)) {
+        if (!hasOnlyExpandingNodeAsChild(root)) {
             result.addAll(getNodeChildrenRecords(root, 0, null));
         }
         return result;
@@ -224,7 +225,7 @@ public class GTreeTableTree {
             }
             GTreeGridRecord record = new GTreeGridRecord(child.getGroup(), child.getKey(), valueMap);
 
-            if (child.isExpandable() && (child.getChildren().size() > 1 || (child.getChildren().size() == 1 && !(child.getChild(0) instanceof ExpandingTreeTableNode)))) {
+            if (child.isExpandable() && (child.getChildren().size() > 1 || !hasOnlyExpandingNodeAsChild(child))) {
                 child.setOpen(true);
             }
 
