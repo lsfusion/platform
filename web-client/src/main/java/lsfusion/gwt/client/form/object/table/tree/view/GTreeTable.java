@@ -477,7 +477,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     private void expandNode(GTreeTableNode node) {
-        if (expandedNodes != null && expandedNodes.contains(node) && !tree.hasOnlyExpandningNodeAsChild(node)) {
+        if (expandedNodes != null && expandedNodes.contains(node) && !tree.hasOnlyExpandingNodeAsChild(node)) {
             node.setOpen(true);
             for (GTreeTableNode child : node.getChildren()) {
                 expandNode(child);
