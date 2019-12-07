@@ -25,11 +25,14 @@ public abstract class GStateTableView extends Widget implements GTableView {
     protected final GGridController grid;
 
     protected GGroupObjectValue currentKey;
+
     protected List<GGroupObjectValue> keys;
+
     protected List<GPropertyDraw> properties = new ArrayList<>();
     protected List<List<GGroupObjectValue>> columnKeys = new ArrayList<>();
     protected List<Map<GGroupObjectValue, Object>> captions = new ArrayList<>();
     protected List<Map<GGroupObjectValue, Object>> values = new ArrayList<>();
+    protected List<List<Map<GGroupObjectValue, Object>>> lastAggrs = new ArrayList<>();
 
     public final native JsArrayString clone(JsArrayString array) /*-{
         n = array.length;
@@ -73,6 +76,10 @@ public abstract class GStateTableView extends Widget implements GTableView {
                 this.columnKeys.add(null);
                 captions.add(null);
                 this.values.add(null);
+                List<Map<GGroupObjectValue, Object>> list = new ArrayList<>();
+                for(int i=0;i<property.lastReaders.size();i++)
+                    list.add(null);
+                lastAggrs.add(list);
             }
             this.columnKeys.set(index, columnKeys);
         } else
@@ -90,11 +97,19 @@ public abstract class GStateTableView extends Widget implements GTableView {
     }
 
     @Override
+    public void updateLastValues(GPropertyDraw property, int index, Map<GGroupObjectValue, Object> values) {
+        this.lastAggrs.get(properties.indexOf(property)).set(index, values);
+
+        dataUpdated = true;
+    }
+
+    @Override
     public void removeProperty(GPropertyDraw property) {
         int index = properties.indexOf(property);
         properties.remove(index);
         columnKeys.remove(index);
         captions.remove(index);
+        lastAggrs.remove(index);
         values.remove(index);
 
         dataUpdated = true;

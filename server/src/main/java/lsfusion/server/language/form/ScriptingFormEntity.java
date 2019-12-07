@@ -3,6 +3,7 @@ package lsfusion.server.language.form;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
@@ -444,6 +445,12 @@ public class ScriptingFormEntity {
         property.setPropertyExtra(options.getFooter(), PropertyDrawExtraType.FOOTER);
 
         property.setPropertyExtra(options.getShowIf(), PropertyDrawExtraType.SHOWIF);
+
+        property.formula = options.formula;
+        property.formulaOperands = options.formulaOperands;
+        property.aggrFunc = options.aggrFunc;
+        property.lastAggrColumns = nvl(options.lastAggrColumns, ListFact.EMPTY());
+        property.lastAggrDesc = nvl(options.lastAggrDesc, false);
 
         property.quickFilterProperty = options.getQuickFilterPropertyDraw();
 

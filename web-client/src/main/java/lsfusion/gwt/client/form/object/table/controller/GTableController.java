@@ -17,6 +17,7 @@ public interface GTableController {
     void updateShowIfValues(GShowIfReader reader, Map<GGroupObjectValue, Object> values);
     void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values);
     void updateReadOnlyValues(GReadOnlyReader reader, Map<GGroupObjectValue, Object> values);
+    void updateLastValues(GLastReader reader, Map<GGroupObjectValue, Object> values);
     void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values);
     void updateRowForegroundValues(Map<GGroupObjectValue, Object> values);
     boolean hasPanelProperty(GPropertyDraw property);

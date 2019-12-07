@@ -34,6 +34,7 @@ public interface GTableView {
     void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values);
     void updateShowIfValues(GPropertyDraw property, Map<GGroupObjectValue, Object> values);
     void updateReadOnlyValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values);
+    void updateLastValues(GPropertyDraw property, int index, Map<GGroupObjectValue, Object> values);
 
     // event - FINISH SETTER
     void update(Boolean updateState);

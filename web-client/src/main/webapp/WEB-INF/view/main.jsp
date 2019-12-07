@@ -59,6 +59,10 @@
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.js"></script>
 
+        <!-- math for formulas in pivoting -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js"></script>
+        <script type="text/javascript" src="static/js/utils.js"></script>
+
         <!-- subtotal.js libs : subtotal_renderers -->
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.css">
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>

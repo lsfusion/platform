@@ -141,6 +141,8 @@ public class FormChanges {
             // сериализация PropertyReadInterface
             outStream.writeByte(propertyReadInstance.getTypeID());
             outStream.writeInt(propertyReadInstance.getID());
+            if(propertyReadInstance instanceof PropertyDrawInstance.LastReaderInstance)
+                outStream.writeInt(((PropertyDrawInstance.LastReaderInstance) propertyReadInstance).index);
 
             outStream.writeInt(rows.size());
             for (int j=0,sizeJ=rows.size();j<sizeJ;j++) {

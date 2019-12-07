@@ -334,7 +334,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, PropertyGroupType[] types, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException {
+    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
 
@@ -346,19 +346,16 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 GroupMode setGroupMode = null;
                 if(propertyIDs != null) {
                     MExclSet<GroupColumn> mGroupProps = SetFact.mExclSet(propertyIDs.length);
-                    MExclMap<GroupColumn, PropertyGroupType> mAggrProps = MapFact.mExclMapMax(propertyIDs.length);
+                    MExclSet<GroupColumn> mAggrProps = SetFact.mExclSet(propertyIDs.length);
                     for (int i = 0; i < propertyIDs.length; i++) {
                         PropertyDrawInstance property = form.getPropertyDraw(propertyIDs[i]);
                         GroupColumn column = new GroupColumn(property, deserializePropertyKeys(property, columnKeys[i]));
-                        PropertyGroupType type = types[i];
-                        if (type == PropertyGroupType.GROUP)
-                            mGroupProps.exclAdd(column);
+                        if (i >= aggrProps)
+                            mAggrProps.exclAdd(column);
                         else
-                            mAggrProps.exclAdd(column, type);
+                            mGroupProps.exclAdd(column);
                     }
-                    ImMap<GroupColumn, PropertyGroupType> aggrProps = mAggrProps.immutable();
-                    setGroupMode = new GroupMode(mGroupProps.immutable(),
-                            GroupMode.group(aggrProps.keys(), groupColumn -> aggrProps.get(groupColumn)));
+                    setGroupMode = GroupMode.create(mGroupProps.immutable(), mAggrProps.immutable(), aggrType, form.instanceFactory);
                 }
                 groupObject.changeGroupMode(setGroupMode);
             }

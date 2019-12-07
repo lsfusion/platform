@@ -99,6 +99,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
 
+    // for pivoting
+    public String formula;
+    public ArrayList<GPropertyDraw> formulaOperands;
+
+    public String aggrFunc;
+    public ArrayList<GLastReader> lastReaders;
+    public boolean lastAggrDesc;
+
     public GPropertyDraw quickFilterProperty;
 
     public int charWidth;

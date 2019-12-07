@@ -228,9 +228,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         closeActionPropertyDraw = addPropertyDraw(formClose, version);
         dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
 
-        PropertyObjectEntity externalShowIf = addPropertyObject(FormToolbarAction.createShowIfProperty(new Property[]{FormEntity.isExternal}, new boolean[]{false}));
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
-        logMessagePropertyDraw.setPropertyExtra(externalShowIf, PropertyDrawExtraType.SHOWIF);
+        logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF);
 
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
     }
@@ -239,6 +238,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 //        getNFRichDesign(version);
         setRichDesign(createDefaultRichDesign(version), version);
     }
+
+    private static LP externalShowIf = FormToolbarAction.createShowIfProperty(new Property[]{FormEntity.isExternal}, new boolean[]{false});
 
     public void addFixedFilter(FilterEntity filter, Version version) {
         fixedFilters.add(filter, version);

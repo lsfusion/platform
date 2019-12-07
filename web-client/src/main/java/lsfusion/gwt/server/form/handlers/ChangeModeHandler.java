@@ -24,19 +24,17 @@ public class ChangeModeHandler extends FormServerResponseActionHandler<ChangeMod
         return getServerResponseResult(action, new RemoteCall() {
             public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
                 byte[][] columnKeys = null;
-                PropertyGroupType[] types = null;
+                PropertyGroupType aggrType = null;
                 
                 if(action.propertyIDs != null) {
                     int size = action.propertyIDs.length;
                     columnKeys = new byte[size][];
-                    types = new PropertyGroupType[size];
-                    for (int i = 0; i < size; i++) {
+                    for (int i = 0; i < size; i++)
                         columnKeys[i] = gwtConverter.convertOrCast(action.columnKeys[i]);
-                        types[i] = gwtConverter.convertOrCast(action.types[i]);
-                    }
+                    aggrType = gwtConverter.convertOrCast(action.aggrType);
                 }
 
-                return remoteForm.changeMode(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, action.setGroup, action.propertyIDs, columnKeys, types, action.pageSize, action.forceRefresh, gwtConverter.convertOrCast(action.updateMode));
+                return remoteForm.changeMode(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, action.setGroup, action.propertyIDs, columnKeys, action.aggrProps, aggrType, action.pageSize, action.forceRefresh, gwtConverter.convertOrCast(action.updateMode));
             }
         });
     }

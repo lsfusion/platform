@@ -7,8 +7,6 @@ import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
 public interface PropertyReaderEntity extends ProfiledObject {
 
-    byte getTypeID();
-    
     Type getType();
 
     int getID(); // ID в рамках Type

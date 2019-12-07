@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.design.property;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -11,6 +12,7 @@ import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
@@ -319,6 +321,19 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(isProperty());
         outStream.writeBoolean(clearText);
         outStream.writeBoolean(notSelectAll);
+
+        // for pivoting
+        pool.writeString(outStream, entity.formula);
+        if(entity.formula != null) {
+            ImList<PropertyDrawEntity> formulaOperands = entity.formulaOperands;
+            outStream.writeInt(formulaOperands.size());
+            for (PropertyDrawEntity formulaOperand : formulaOperands)
+                pool.serializeObject(outStream, pool.context.view.get(formulaOperand));
+        }
+
+        pool.writeString(outStream, entity.aggrFunc != null ? entity.aggrFunc.toString() : null);
+        outStream.writeInt(entity.lastAggrColumns.size());
+        outStream.writeBoolean(entity.lastAggrDesc);
 
         pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
 

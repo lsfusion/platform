@@ -129,6 +129,8 @@ public class ClientFormChanges {
                 return clientForm.getGroupObject(inStream.readInt()).rowBackgroundReader;
             case PropertyReadType.ROW_FOREGROUND:
                 return clientForm.getGroupObject(inStream.readInt()).rowForegroundReader;
+            case PropertyReadType.LAST:
+                return clientForm.getProperty(inStream.readInt()).lastReaders.get(inStream.readInt());
             default:
                 throw new IOException();
         }

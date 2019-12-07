@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.instance.object;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;

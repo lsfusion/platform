@@ -39,8 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
-import static lsfusion.base.BaseUtils.nullTrim;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -52,6 +51,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ForegroundReader foregroundReader = new ForegroundReader();
     public FooterReader footerReader = new FooterReader();
     public ReadOnlyReader readOnlyReader = new ReadOnlyReader();
+
+    // for pivoting
+    public String formula;
+    public ClientPropertyDraw[] formulaOperands;
+
+    public String aggrFunc;
+    public List<LastReader> lastReaders = new ArrayList<>();
+    public boolean lastAggrDesc;
 
     public ClientPropertyDraw quickFilterProperty;
 
@@ -452,6 +459,21 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         clearText = inStream.readBoolean();
         notSelectAll = inStream.readBoolean();
 
+        // for pivoting
+        formula = pool.readString(inStream);
+        if(formula != null) {
+            int size = inStream.readInt();
+            formulaOperands = new ClientPropertyDraw[size];
+            for (int i = 0; i < size; i++)
+                formulaOperands[i] = pool.deserializeObject(inStream);
+        }
+
+        aggrFunc = pool.readString(inStream);
+        int size = inStream.readInt();
+        for (int i = 0; i < size; i++)
+            lastReaders.add(new LastReader(i));
+        lastAggrDesc = inStream.readBoolean();
+
         quickFilterProperty = pool.deserializeObject(inStream);
 
         tableName = pool.readString(inStream);
@@ -678,6 +700,35 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.READONLY;
+        }
+    }
+
+    public class LastReader implements ClientPropertyReader {
+
+        public final int index;
+
+        public LastReader(int index) {
+            this.index = index;
+        }
+
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return ClientPropertyDraw.this.shouldBeDrawn(form);
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+//            controller.updateReadOnlyValues(ClientPropertyDraw.this, readKeys);
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.LAST;
         }
     }
 

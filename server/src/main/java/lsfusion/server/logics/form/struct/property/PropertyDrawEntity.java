@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.struct.property;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
@@ -14,6 +15,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -31,6 +33,7 @@ import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.group.Group;
@@ -87,9 +90,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public Object columnGroupObjects = SetFact.mOrderExclSet();
     private boolean finalizedColumnGroupObjects;
 
-    private Map<PropertyDrawExtraType, PropertyObjectEntity<?>> propertyExtras = new HashMap<>(); 
-
-    public ObjectEntity applyObject; // virtual object to change apply object (now used only EXPORT FROM plain formats)
+    private Map<PropertyDrawExtraType, PropertyObjectEntity<?>> propertyExtras = new HashMap<>();
 
     public Group group;
     
@@ -101,6 +102,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public boolean attr;
+
+    // for pivoting
+    public String formula;
+    public ImList<PropertyDrawEntity> formulaOperands;
+
+    public PropertyGroupType aggrFunc;
+    public ImList<PropertyObjectEntity> lastAggrColumns = ListFact.EMPTY();
+    public boolean lastAggrDesc;
 
     public PropertyDrawEntity quickFilterProperty;
 
@@ -140,11 +149,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return propertyExtras.get(type);
         }
 
-        @Override
-        public byte getTypeID() {
-            return type.getPropertyReadType();
-        }
-        
         @Override
         public int getID() {
             return PropertyDrawEntity.this.getID();
@@ -559,7 +563,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return this;
     }
 
-    @Override
     public byte getTypeID() {
         return PropertyReadType.DRAW;
     }

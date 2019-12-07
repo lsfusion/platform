@@ -144,9 +144,9 @@ public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterfac
     }
 
     @Override
-    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, PropertyGroupType[] types, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException {
+    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException {
         logRemoteMethodStartVoidCall("changeMode");
-        ServerResponse result = target.changeMode(requestIndex, lastReceivedRequestIndex, groupObjectID, setGroup, propertyIDs, columnKeys, types, pageSize, forceRefresh, updateMode);
+        ServerResponse result = target.changeMode(requestIndex, lastReceivedRequestIndex, groupObjectID, setGroup, propertyIDs, columnKeys, aggrProps, aggrType, pageSize, forceRefresh, updateMode);
         logRemoteMethodEndVoidCall("changeMode");
         return result;
     }

@@ -115,7 +115,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 propValues.put(groupObjectValue, propValue);
             }
 
-            dto.properties[i] = new GPropertyReaderDTO(reader.getID(), reader.getType());
+            dto.properties[i] = new GPropertyReaderDTO(reader.getID(), reader.getType(), reader instanceof ClientPropertyDraw.LastReader ? ((ClientPropertyDraw.LastReader) reader).index : -1);
             dto.propertiesValues[i++] = propValues;
         }
 

@@ -1,23 +1,16 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GIntegralType;
-import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
+import java.util.*;
 
 public class GPivot extends GStateTableView {
     
@@ -26,7 +19,7 @@ public class GPivot extends GStateTableView {
 
         setStyleName(getElement(), "pivotTable");
 
-        config = getDefaultConfig(COLUMN, VALUE);
+        config = getDefaultConfig(COLUMN);
         rerender = true;
     }
 
@@ -54,75 +47,130 @@ public class GPivot extends GStateTableView {
         return convert;
     }
 
+    // in theory we can order all properties once, but so far there is no full list of properties
+    private void fillPropertiesOrder(List<GPropertyDraw> properties, List<GPropertyDraw> propertiesList, Set<GPropertyDraw> propertiesSet) {
+        for(GPropertyDraw property : properties) {
+            if (propertiesSet.add(property)) {
+                if (property.formula != null) {
+                    fillPropertiesOrder(property.formulaOperands, propertiesList, propertiesSet);
+                }
+                propertiesList.add(property);
+            }
+        }
+    }
+
     // depending on view, we may create regular view or key / value view
-    private JsArray<JsArrayString> getArray(Map<String, Column> columnMap, List<String> aggrCaptions) {
+    private JsArray<JsArrayString> getArray(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions) {
         JsArray<JsArrayString> array = JavaScriptObject.createArray().cast();
 
-        boolean first = true;
-        JsArrayString rowCaptions = JavaScriptObject.createArray().cast();
+        array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
+
+        // getting values
         for (GGroupObjectValue key : keys != null && !keys.isEmpty() ? keys : Collections.singleton((GGroupObjectValue)null)) { // can be null if manual update
-            List<Consumer<JsArrayString>> aggrValues = new ArrayList<>();
+            JsArrayString rowValues = getValues(key);
 
-            JsArrayString rowValues = JavaScriptObject.createArray().cast();
-            for (int i = 0; i < properties.size(); i++) {
-                GPropertyDraw property = properties.get(i);
-                Map<GGroupObjectValue, Object> propCaptions = captions.get(i);
-                Map<GGroupObjectValue, Object> propValues = values.get(i);
-                boolean isAggr = property.baseType instanceof GIntegralType;
-
-                for (GGroupObjectValue columnKey : columnKeys.get(i)) {
-                    String caption = null;
-                    if (first || isAggr) {
-                        if (propCaptions != null)
-                            caption = property.getDynamicCaption(propCaptions.get(columnKey));
-                        else
-                            caption = property.getCaptionOrEmpty();
-                    }
-
-                    if (first) {
-                        columnMap.put(caption, new Column(property, columnKey));
-                        rowCaptions.push(caption);
-                    }
-
-                    Consumer<JsArrayString> pushArray;
-                    Object value = key != null ? propValues.get(GGroupObjectValue.getFullKey(key, columnKey)) : null; // we need row of nulls (otherwise pivot table doesn't show anything)
-                    if (isAggr) {
-                        pushArray = rv -> rv.push(value != null ? Double.toString(((Number) value).doubleValue()) : null);
-
-                        if(first)
-                            aggrCaptions.add(caption);
-                        aggrValues.add(pushArray);
-                    } else {
-                        if (property.baseType instanceof GLogicalType) {
-                            pushArray = rv -> rv.push(value != null ? "true" : "false");
-                        } else
-                            pushArray = rv -> rv.push(value != null ? value.toString() : null);
-                    }
-                    pushArray.accept(rowValues);
-                }
-            }
-
-            if(first) {
-                rowCaptions.push(COLUMN);
-                rowCaptions.push(VALUE);
-                array.push(rowCaptions);
-
-                first = false;
-            }
-
-            for(int i=0,size=aggrCaptions.size();i<size;i++) {
+            for (String aggrCaption : aggrCaptions) { // putting columns to rows
                 JsArrayString aggrRowValues = clone(rowValues);
-                aggrRowValues.push(aggrCaptions.get(i));
-                aggrValues.get(i).accept(aggrRowValues);
-
+                aggrRowValues.push(aggrCaption);
                 array.push(aggrRowValues);
             }
         }
         return array;
     }
 
+    private JsArrayString getValues(GGroupObjectValue key) {
+        JsArrayString rowValues = JavaScriptObject.createArray().cast();
+        for (int i = 0; i < properties.size(); i++) {
+            List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
+            Map<GGroupObjectValue, Object> propValues = values.get(i);
+            List<Map<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(i);
+
+            for (GGroupObjectValue columnKey : propColumnKeys) {
+                GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
+
+                pushValue(rowValues, propValues, fullKey);
+                for (Map<GGroupObjectValue, Object> propLastAggr : propLastAggrs) {
+                    pushValue(rowValues, propLastAggr, fullKey);
+                }
+            }
+        }
+        return rowValues;
+    }
+
+    private JsArrayString getCaptions(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions) {
+        // we need correct formulas order
+        List<GPropertyDraw> orderedProperties = new ArrayList<>();
+        fillPropertiesOrder(properties, orderedProperties, new HashSet<>());
+        Map<GPropertyDraw, Map<GGroupObjectValue, ColumnAggregator>> aggregators = new HashMap<>();
+        Map<GPropertyDraw, List<String>> orderedColumns = new HashMap<>();
+
+        for (GPropertyDraw property : orderedProperties) {
+            ArrayList<String> propColumns = new ArrayList<>();
+            orderedColumns.put(property, propColumns);
+
+            int baseOrder = properties.indexOf(property);
+            List<GGroupObjectValue> propColumnKeys = columnKeys.get(baseOrder);
+            Map<GGroupObjectValue, Object> propCaptions = captions.get(baseOrder);
+            List<Map<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(baseOrder);
+
+            for (GGroupObjectValue columnKey : propColumnKeys) {
+                String caption = getPropertyCaption(propCaptions, property, columnKey);
+
+                columnMap.put(caption, new Column(property, columnKey));
+
+                propColumns.add(caption);
+
+                JsArrayString lastColumns = JavaScriptObject.createArray().cast();
+                for (int j = 0, size = propLastAggrs.size(); j < size; j++) {
+                    String lastCaption = caption + "$_" + j;
+                    lastColumns.push(lastCaption);
+
+                    propColumns.add(lastCaption);
+                    systemCaptions.push(lastCaption);
+                }
+
+                ColumnAggregator columnAggregator = getGroupAggregator(property, lastColumns);
+
+                if (property.formula != null) {
+                    columnAggregator.setID(caption);
+                    columnAggregator = getFormulaAggregator(property, columnKey, columnAggregator, aggregators);
+                }
+
+                columnAggregator.setID(caption);
+                aggregators.computeIfAbsent(property, p -> new HashMap<>()).put(columnKey, columnAggregator);
+
+                aggregator.setAggregator(caption, columnAggregator);
+
+                if (property.baseType instanceof GIntegralType)
+                    aggrCaptions.add(caption);
+            }
+        }
+
+        // ordering in inital order (all other lists are actually sets)
+        JsArrayString rowCaptions = JavaScriptObject.createArray().cast();
+        for (int i = 0; i < properties.size(); i++)
+            for(String column : orderedColumns.get(properties.get(i)))
+                rowCaptions.push(column);
+        rowCaptions.push(COLUMN); // putting columns to rows
+
+        return rowCaptions;
+    }
+
+    private void pushValue(JsArrayString rowValues, Map<GGroupObjectValue, Object> propValues, GGroupObjectValue fullKey) {
+        Object value = propValues.get(fullKey);
+        rowValues.push(value != null ? value.toString() : null);
+    }
+
+    private String getPropertyCaption(Map<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
+        String caption;
+        if (propCaptions != null)
+            caption = property.getDynamicCaption(propCaptions.get(columnKey));
+        else
+            caption = property.getCaptionOrEmpty();
+        return caption;
+    }
+
     private static final String COLUMN = "(Колонка)";
-    private static final String VALUE = "(Значение)";
 
     @Override
     protected void updateView(boolean dataUpdated, Boolean updateState) {
@@ -133,9 +181,13 @@ public class GPivot extends GStateTableView {
         if(dataUpdated || rerender) {
             columnMap = new NativeHashMap<>();
             aggrCaptions = new ArrayList<>();
-            JavaScriptObject data = convertToObjects(getArray(columnMap, aggrCaptions));
 
-            render(element, data, config, rerender); // we need to updateRendererState after it is painted
+            Aggregator aggregator = Aggregator.create();
+            JsArrayString systemColumns = JavaScriptObject.createArray().cast();
+            JavaScriptObject data = convertToObjects(getArray(columnMap, aggregator, aggrCaptions, systemColumns));
+            config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
+
+            render(element, data, config); // we need to updateRendererState after it is painted
             rerender = false;
         }
 
@@ -145,9 +197,9 @@ public class GPivot extends GStateTableView {
     private Map<String, Column> columnMap;
     private List<String> aggrCaptions;
 
-    boolean updateState;
-    WrapperObject config;
-    boolean rerender = false;
+    private boolean updateState;
+    private WrapperObject config;
+    private boolean rerender = false;
 
     private boolean settings = true;
     public boolean isSettings() {
@@ -230,6 +282,13 @@ public class GPivot extends GStateTableView {
         });
     }-*/;
 
+    private native WrapperObject overrideAggregators(WrapperObject config, JavaScriptObject aggregators, JsArrayString systemColumns)/*-{
+        return Object.assign({}, config, {
+            aggregators : aggregators,
+            hiddenFromDragDrop : systemColumns
+        });
+    }-*/;
+
     private List<String> createAggrColumns(WrapperObject inclusions) {
         JsArrayString columnValues = inclusions.getArrayString(COLUMN);
         if(columnValues == null)
@@ -266,15 +325,16 @@ public class GPivot extends GStateTableView {
         fillGroupColumns(rows, properties, columnKeys, types, aggrColumns);
         fillGroupColumns(cols, properties, columnKeys, types, aggrColumns);
 
+        int aggrProps = properties.size();
+
         for(String aggrColumnCaption : aggrColumns) {
             Column aggrColumn = columnMap.get(aggrColumnCaption);
             properties.add(aggrColumn.property);
             columnKeys.add(aggrColumn.columnKey);
-            types.add(GPropertyGroupType.valueOf(aggregatorName.toUpperCase()));
         }
 
         updateRendererState(true); // will wait until server will answer us if we need to change something
-        grid.changeGroupMode(properties, columnKeys, types);
+        grid.changeGroupMode(properties, columnKeys, aggrProps, GPropertyGroupType.valueOf(aggregatorName.toUpperCase()));
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
@@ -288,7 +348,7 @@ public class GPivot extends GStateTableView {
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
 
-    private native WrapperObject getDefaultConfig(String columnField, String valueField)/*-{
+    private native WrapperObject getDefaultConfig(String columnField)/*-{
         var tpl = $wnd.$.pivotUtilities.aggregatorTemplates;
         var instance = this;
 
@@ -303,28 +363,19 @@ public class GPivot extends GStateTableView {
         return {
             dataClass : $wnd.$.pivotUtilities.SubtotalPivotData,
             cols : [columnField], // inital columns since overwrite is false
-            hiddenFromDragDrop : [valueField],
             renderers : renderers,
-            aggregators: {
-                "Sum": function() { return tpl.sum()([valueField]) },
-//                "Count": function() { return tpl.sum()([valueField]) }, // doesn't work now because should be different in server and client mode
-                "Max": function() { return tpl.max()([valueField]) },
-                "Min": function() { return tpl.min()([valueField])}
-            },
             onRefresh: function(config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             }
         }
     }-*/;
 
-    protected native void render(com.google.gwt.dom.client.Element element, JavaScriptObject array, JavaScriptObject config, boolean overwrite)/*-{
+    protected native void render(com.google.gwt.dom.client.Element element, JavaScriptObject array, JavaScriptObject config)/*-{
 //        var d = element;
         var d = $doc.createElement('div');
 
-        if (true) // because we create new element every time
-            $wnd.$(d).pivotUI(array, config, true);
-        else
-            $wnd.$(d).pivotUI(array);
+        // because we create new element, aggregators every time
+        $wnd.$(d).pivotUI(array, config, true);
 
         this.@GPivot::setRendererElement(*)(d);
 
@@ -337,4 +388,385 @@ public class GPivot extends GStateTableView {
         };
         setTimeout(setChild, 15);
     }-*/;
+
+    private static class Record extends JavaScriptObject {
+
+        protected Record() {
+        }
+
+        public final native Object get(String column) /*-{
+            return this[column];
+        }-*/;
+    }
+
+    private static class GroupColumnState extends JavaScriptObject {
+
+        protected GroupColumnState() {
+        }
+
+        private static native int compare(JavaScriptObject firstArray, JavaScriptObject secondArray) /*-{
+            for(var i=0;i<firstArray.length;i++) {
+                if(firstArray[i] > secondArray[i])
+                    return 1;
+                if(firstArray[i] < secondArray[i])
+                    return -1;
+            }
+            return 0;
+        }-*/;
+
+        private native boolean checkLastValue(JsArrayString lastColumns, Record record, boolean desc) /*-{
+            if(lastColumns.length === 0)
+                return true;
+            var lastValues = new Array(lastColumns.length);
+            for(var i=0;i<lastColumns.length;i++)
+                lastValues[i] = record[lastColumns[i]];
+            var compare = this.lastValues === undefined ? -2 : @GroupColumnState::compare(*)(lastValues, this.lastValues);
+
+            if(compare !== -2 && desc)
+                desc = desc;
+
+            if(compare === -2 || (!desc && compare > 0) || (desc && compare < 0)) {
+                this.lastValues = lastValues;
+                this.value = null;
+            } else {
+                if(compare !== 0)
+                    return false;
+            }
+            return true;
+        }-*/;
+
+        private native void update(Object addValue, Object aggrFunc) /*-{
+            this.value = aggrFunc(this.value, addValue, true);
+        }-*/;
+
+        private native Object getValue() /*-{
+            return this.value;
+        }-*/;
+    }
+
+    private static class State extends JavaScriptObject {
+
+        protected State() {
+        }
+
+        public native final ColumnState getColumnState(String column)/*-{
+            var columnState = this[column];
+            if(columnState === undefined) {
+                columnState = {};
+                this[column] = columnState;
+            }
+            return columnState;
+        }-*/;
+    }
+
+    private static class ColumnState extends State {
+
+        protected ColumnState() {
+        }
+
+        public native final GroupColumnState getGroupState(String column)/*-{
+            var groupState = this[column];
+            if(groupState === undefined) {
+                groupState = {};
+                this[column] = groupState;
+            }
+            return groupState;
+        }-*/;
+    }
+
+    private static class Aggregator extends JavaScriptObject {
+
+        protected Aggregator() {
+        }
+
+        public native static Aggregator create() /*-{
+             return {};
+        }-*/;
+
+        public native final void setAggregator(String column, ColumnAggregator aggregator)/*-{
+            this[column] = aggregator;
+
+            if(this.columns === undefined)
+                this.columns = [];
+            this.columns.push(column);
+        }-*/;
+        public native final ColumnAggregator getAggregator(String column)/*-{
+            return this[column];
+        }-*/;
+        public native final JsArrayString getColumns()/*-{
+            return this.columns;
+        }-*/;
+        public native final Object aggr(Object totalAggr, Object oldValue, Object newValue)/*-{
+            return totalAggr(oldValue, newValue, false);
+        }-*/;
+
+        private void push(State state, Record record, Object defaultAggrFunc) {
+            String pushColumn = (String)record.get(COLUMN);
+            getAggregator(pushColumn).push(state.getColumnState(pushColumn), record, defaultAggrFunc);
+        }
+
+        private Object value(State state, Object totalAggr) {
+            JsArrayString columns = getColumns();
+            Object result = null;
+
+            for(int i = 0, size = columns.length(); i < size ; i++) {
+                String column = columns.get(i);
+
+                result = aggr(totalAggr, result, getAggregator(column).value(state.getColumnState(column)));
+            }
+            return result;
+        }
+    }
+
+
+    private final static String[] aggregatorNames = new String[] {"Sum", "Max", "Min"} ;
+    public static JavaScriptObject getAggregators(Aggregator aggregator) {
+        WrapperObject aggregators = JavaScriptObject.createObject().cast();
+        for(String aggregatorName : aggregatorNames)
+            aggregators.putValue(aggregatorName, getAggregator(aggregatorName.toUpperCase(), aggregator));
+        return aggregators;
+    }
+    public static JavaScriptObject getAggregator(String aggrFuncName, Aggregator aggregator) {
+        return getAggregator(aggregator, getValueAggregator(aggrFuncName));
+    }
+    public native static JavaScriptObject getAggregator(Aggregator aggregator, Object aggrFunc) /*-{
+        return function() {
+            return function () {
+                return {
+                    state: {},
+                    push: function (record) {
+//                        console.log("BEFORE " + JSON.stringify(this.state));
+//                        console.log("RECORD " + JSON.stringify(record));
+                        aggregator.@Aggregator::push(*)(this.state, record, aggrFunc);
+//                        console.log("AFTER " + JSON.stringify(this.state));
+                    },
+                    value: function () {
+//                        console.log("-----");
+//                        console.log("STATE " + JSON.stringify(this.state));
+                        var val = aggregator.@Aggregator::value(*)(this.state, aggrFunc);
+//                        console.log("VALUE " + val);
+                        return val;
+                    },
+                    format: $wnd.$.pivotUtilities.numberFormat(),
+                    numInputs: 0
+                }
+            }
+        }
+    }-*/;
+
+    private static class ColumnAggregator extends JavaScriptObject {
+
+        protected ColumnAggregator() {
+        }
+
+        public final native String getID() /*-{
+            return this.id;
+        }-*/;
+        public final native void setID(String id) /*-{
+            this.id = id;
+        }-*/;
+
+        // that's pretty tricky because overlay types don't support inheritance
+        public final native void push(ColumnState state, Record record, Object defaultAggrFunc) /*-{
+            this.pushImpl(state, record, defaultAggrFunc);
+        }-*/;
+
+        public final native JavaScriptObject value(ColumnState state) /*-{
+            return this.valueImpl(state);
+        }-*/;
+    }
+
+    private static class FormulaColumnAggregator extends ColumnAggregator {
+
+        protected FormulaColumnAggregator() {
+        }
+
+        public static native FormulaColumnAggregator create() /*-{
+            return {
+                pushImpl : function (state, record, defaultAggrFunc) {
+                    return this.@FormulaColumnAggregator::pushImpl(*)(state, record, defaultAggrFunc);
+                },
+                valueImpl : function (state) {
+                    return this.@FormulaColumnAggregator::valueImpl(*)(state);
+                }
+            }
+        }-*/;
+
+        public final native void setOperands(JsArray<ColumnAggregator> operands) /*-{
+            this.operands = operands;
+        }-*/;
+        public final native void setFormula(String formula) /*-{
+            this.formula = $wnd.math.compile(formula);
+        }-*/;
+
+        public final native JsArray<ColumnAggregator> getOperands() /*-{ return this.operands; }-*/;
+        public final native Object evaluateFormula(JsArrayMixed params) /*-{
+            var scope = $wnd.createPlainObject(); // we need to create object not from gwt, since it uses different constructor for {} and in math library there is .constructor == Object check for scope
+            for(var i=0;i<params.length;i++) {
+                var param = params[i];
+                if(param == null)
+                    return param;
+                scope['$' + (i + 1)] = param;
+            }
+            return this.formula.evaluate(scope)
+        }-*/;
+
+        public final void pushImpl(ColumnState state, Record record, Object defaultAggrFunc) {
+            ColumnState aggrState = state.getColumnState(getID());
+
+            JsArray<ColumnAggregator> aggregators = getOperands();
+            for(int i=0,size=aggregators.length();i<size;i++) {
+                ColumnAggregator aggr = aggregators.get(i);
+                aggr.push(aggrState, record, defaultAggrFunc);
+            }
+        }
+
+        public final Object valueImpl(ColumnState state) {
+            ColumnState aggrState = state.getColumnState(getID());
+
+            JsArray<ColumnAggregator> aggregators = getOperands();
+            JsArrayMixed values = JavaScriptObject.createArray().cast();
+            for(int i=0,size=aggregators.length();i<size;i++) {
+                ColumnAggregator aggr = aggregators.get(i);
+                values.push(aggr.value(aggrState));
+            }
+            return evaluateFormula(values);
+        }
+    }
+
+    private static class GroupColumnAggregator extends ColumnAggregator {
+
+        protected GroupColumnAggregator() {
+        }
+
+        public static native GroupColumnAggregator create() /*-{
+            return {
+                pushImpl : function (state, record, defaultAggrFunc) {
+                    return this.@GroupColumnAggregator::pushImpl(*)(state, record, defaultAggrFunc);
+                },
+                valueImpl : function (state) {
+                    return this.@GroupColumnAggregator::valueImpl(*)(state);
+                }
+            }
+        }-*/;
+
+        public final native void setAggrFunc(Object aggrFunc) /*-{
+            this.aggrFunc = aggrFunc;
+        }-*/;
+
+        public final native Object getAggrFunc() /*-{
+            return this.aggrFunc;
+        }-*/;
+
+        public final native void setLast(JsArrayString lastColumns, boolean lastDesc) /*-{
+            this.lastColumns = lastColumns;
+            this.lastDesc = lastDesc;
+        }-*/;
+        public final native JsArrayString getLastColumns() /*-{
+            return this.lastColumns;
+        }-*/;
+        public final native boolean getLastDesc() /*-{
+            return this.lastDesc;
+        }-*/;
+
+        protected final void pushImpl(ColumnState state, Record record, Object defaultAggrFunc) {
+            GroupColumnState groupState = state.getGroupState(getID());
+
+            if (!groupState.checkLastValue(getLastColumns(), record, getLastDesc()))
+                return;
+
+            Object aggrFunc = getAggrFunc();
+            if(aggrFunc == null)
+                aggrFunc = defaultAggrFunc;
+            groupState.update(record.get(getID()), aggrFunc);
+        }
+
+        protected final Object valueImpl(ColumnState state) {
+            GroupColumnState groupState = state.getGroupState(getID());
+
+            return groupState.getValue();
+        }
+    }
+
+    private native static Object getSumAggregator()/*-{
+        return function (oldValue, newValue) {
+            return oldValue + newValue;
+        }
+    }-*/;
+    private final static Object SUM = getSumAggregator();
+
+    private native static Object getMaxAggregator()/*-{
+        return function (oldValue, newValue) {
+            return oldValue > newValue ? oldValue : newValue;
+        }
+    }-*/;
+    private final static Object MAX = getMaxAggregator();
+
+    private native static Object getMinAggregator()/*-{
+        return function (oldValue, newValue) {
+            return oldValue < newValue ? oldValue : newValue;
+        }
+    }-*/;
+    private final static Object MIN = getMinAggregator();
+
+    private native static Object getFinalAggregator(Object aggrFunc)/*-{
+        return function (oldValue, newValue, parseNew) {
+            if(newValue == null)
+                return oldValue;
+            if(parseNew) {
+                newValue = parseFloat(newValue);
+                if(isNaN(newValue))
+                    return oldValue;
+            }
+            if(oldValue == null)
+                return newValue;
+            return aggrFunc(oldValue, newValue);
+        }
+    }-*/;
+
+    private static Object getValueAggregator(String aggrFuncName) {
+        Object baseAggrFunc;
+        switch(aggrFuncName) {
+            case "SUM":
+                baseAggrFunc = SUM;
+                break;
+            case "MAX":
+                baseAggrFunc = MAX;
+                break;
+            case "MIN":
+                baseAggrFunc = MIN;
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+        return getFinalAggregator(baseAggrFunc);
+    }
+
+    private FormulaColumnAggregator getFormulaAggregator(GPropertyDraw property, GGroupObjectValue columnKey, ColumnAggregator columnAggregator, Map<GPropertyDraw, Map<GGroupObjectValue, ColumnAggregator>> aggregators) {
+        FormulaColumnAggregator aggr = FormulaColumnAggregator.create();
+
+        // formula
+        aggr.setFormula(property.formula);
+
+        // operands
+        JsArray<ColumnAggregator> aggrOperands = JavaScriptObject.createArray().cast();
+        aggrOperands.push(columnAggregator);
+        for(GPropertyDraw formulaOperand : property.formulaOperands)
+            aggrOperands.push(aggregators.get(formulaOperand).get(columnKey));
+        aggr.setOperands(aggrOperands);
+
+        return aggr;
+    }
+
+    private GroupColumnAggregator getGroupAggregator(GPropertyDraw property, JsArrayString lastColumns) {
+        GroupColumnAggregator aggr = GroupColumnAggregator.create();
+
+        // aggr function
+        aggr.setAggrFunc(property.aggrFunc != null ? getValueAggregator(property.aggrFunc) : null);
+
+        // last values
+        aggr.setLast(lastColumns, property.lastAggrDesc);
+
+        return aggr;
+    }
 }

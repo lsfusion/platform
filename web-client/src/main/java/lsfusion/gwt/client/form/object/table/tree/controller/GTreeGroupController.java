@@ -226,6 +226,10 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
+    public void updateLastValues(GLastReader reader, Map<GGroupObjectValue, Object> values) {
+    }
+
+    @Override
     public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
         tree.updateRowBackgroundValues(values);
         if (values != null && !values.isEmpty())

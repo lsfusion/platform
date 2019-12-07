@@ -46,7 +46,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values) throws RemoteException; // paste выборочно
     
-    ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, PropertyGroupType[] types, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException;
+    ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException;
 
     // events : trees
 

@@ -42,6 +42,7 @@ import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
+import lsfusion.server.data.sql.lambda.SQLFunction;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -1724,15 +1725,18 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         queryPropertyObjectValues(propertySet, properties, keyGroupObjects, PropertyReaderInstance::getPropertyObjectInstance);
     }
 
-    private <T> Expr groupExpr(Expr expr, T key, Where groupModeWhere, ImMap<Object, Expr> groupModeExprs, ImSet<GroupMode> groupModes) {
-        if(key instanceof PropertyDrawInstance) {
+    private <T> Expr groupExpr(SQLFunction<PropertyObjectInstance<?>, Expr> getExpr, T key, Where groupModeWhere, ImMap<Object, Expr> groupModeExprs, ImSet<GroupMode> groupModes) throws SQLException, SQLHandledException {
+        if(key instanceof AggrReaderInstance) {
             for(GroupMode groupMode : groupModes) {
-                Expr transformedExpr = groupMode.transformExpr(expr, (PropertyDrawInstance) key, groupModeWhere, groupModeExprs);
+                Expr transformedExpr = groupMode.transformExpr(getExpr, (AggrReaderInstance) key, groupModeWhere, groupModeExprs);
                 if(transformedExpr != null)
                     return transformedExpr;
             }
         }
         return Expr.NULL();
+    }
+    private <T> Expr listExpr(SQLFunction<PropertyObjectInstance<?>, Expr> getExpr, T key, Function<T, PropertyObjectInstance<?>> getPropertyObject) throws SQLException, SQLHandledException {
+        return getExpr.apply(getPropertyObject.apply(key));
     }
 
     @StackMessage("{message.form.update.props}")
@@ -1769,18 +1773,22 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         QueryBuilder<ObjectInstance, T> selectProps = new QueryBuilder<>(mapKeys, groupWhere);
-        ImMap<ObjectInstance, ? extends Expr> mapExprs = selectProps.getMapExprs();
+        ImMap<ObjectInstance, ? extends Expr> mapExprs;
 
         if(groupModeWhere != null) {
             groupModeExprs = groupModeExprs.addExcl(mapKeys.removeIncl(groupModeKeys));
             mapExprs = mapKeys; // we don't need groupwhere in it, so will "disable" this optimization
-        }
+        } else
+            mapExprs = selectProps.getMapExprs();
 
         for (T key : keysSet) {
-            Expr expr = getPropertyObject.apply(key).getExpr(mapExprs, modifier, this);
+            SQLFunction<PropertyObjectInstance<?>, Expr> getExpr = value -> value.getExpr(mapExprs, modifier, this);
+            Expr expr;
 
             if(groupModeWhere != null)
-                expr = groupExpr(expr, key, groupModeWhere, groupModeExprs, groupModes);
+                expr = groupExpr(getExpr, key, groupModeWhere, groupModeExprs, groupModes);
+            else
+                expr = listExpr(getExpr, key, getPropertyObject);
 
             selectProps.addProperty(key, expr);
         }
@@ -2045,6 +2053,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.readOnlyReader, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.backgroundReader, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.foregroundReader, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                for(PropertyDrawInstance<?>.LastReaderInstance aggrLastReader : drawProperty.aggrLastReaders)
+                    fillChangedReader(aggrLastReader, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
             } else if (oldPropIsShown) {
                 result.dropProperties.exclAdd(drawProperty);
             }

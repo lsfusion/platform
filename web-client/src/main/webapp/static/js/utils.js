@@ -1,0 +1,4 @@
+
+var createPlainObject = function () {
+    return {};
+};

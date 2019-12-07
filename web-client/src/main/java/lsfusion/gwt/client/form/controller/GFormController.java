@@ -977,21 +977,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    public void changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, List<GPropertyGroupType> typesList, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode) {
+    public void changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode) {
         int[] propertyIDs = null;
         GGroupObjectValue[] columnKeys = null;
-        GPropertyGroupType[] types = null;
         if(properties != null) {
             propertyIDs = new int[properties.size()];
             columnKeys = new GGroupObjectValue[properties.size()];
-            types = new GPropertyGroupType[properties.size()];
             for(int i=0;i<propertyIDs.length;i++) {
                 propertyIDs[i] = properties.get(i).ID;
                 columnKeys[i] = columnKeysList.get(i);
-                types[i] = typesList.get(i);
             }
         }
-        dispatcher.execute(new ChangeMode(groupObject.ID, setGroup, propertyIDs, columnKeys, types, pageSize, forceRefresh, updateMode), new ServerResponseCallback());
+        dispatcher.execute(new ChangeMode(groupObject.ID, setGroup, propertyIDs, columnKeys, aggrProps, aggrType, pageSize, forceRefresh, updateMode), new ServerResponseCallback());
     }
 
     public GFormUserPreferences getUserPreferences() {

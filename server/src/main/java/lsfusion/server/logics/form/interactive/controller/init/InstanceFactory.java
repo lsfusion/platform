@@ -140,7 +140,8 @@ public class InstanceFactory {
                     getInstance(entity.getValueActionOrProperty()),
                     getInstance(entity.toDraw),
                     columnGroupObjects,
-                    propertyExtras
+                    propertyExtras,
+                    entity.lastAggrColumns.mapListValues((Function<PropertyObjectEntity, PropertyObjectInstance<?>>) this::getInstance)
             ));
         }
 

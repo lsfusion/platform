@@ -18,4 +18,6 @@ public class PropertyReadType {
     public final static byte ROW_BACKGROUND = 7;
 
     public final static byte ROW_FOREGROUND = 8;
+
+    public final static byte LAST = 9;
 }

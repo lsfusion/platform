@@ -1,8 +1,11 @@
 package lsfusion.server.language.form;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -39,6 +42,16 @@ public class FormPropertyOptions {
     private String eventId;
     private String integrationSID;
     private PropertyDrawEntity neighbourPropertyDraw;
+
+    // for pivoting
+    public String formula;
+    public ImList<PropertyDrawEntity> formulaOperands;
+
+    public PropertyGroupType aggrFunc;
+
+    public ImList<PropertyObjectEntity> lastAggrColumns;
+    public Boolean lastAggrDesc;
+
     private PropertyDrawEntity quickFilterPropertyDraw;
     private String neighbourPropertyText;
     private Boolean isRightNeighbour;
@@ -49,7 +62,21 @@ public class FormPropertyOptions {
     //integration options
     private Boolean attr;
     private String groupName;
-    
+
+    public void setAggrFunc(PropertyGroupType aggrFunc) {
+        this.aggrFunc = aggrFunc;
+    }
+
+    public void setLastAggr(List<PropertyObjectEntity> lastAggrColumns, boolean lastAggrDesc) {
+        this.lastAggrColumns = ListFact.fromJavaList(lastAggrColumns);
+        this.lastAggrDesc = lastAggrDesc;
+    }
+
+    public void setFormula(String formula, List<PropertyDrawEntity> formulaOperands) {
+        this.formula = formula;
+        this.formulaOperands = ListFact.fromJavaList(formulaOperands);
+    }
+
     public void setNewSession(Boolean newSession) {
         this.newSession = newSession;
     }
@@ -343,6 +370,13 @@ public class FormPropertyOptions {
         merged.setIntegrationSID(nvl(overrides.getIntegrationSID(), integrationSID));
         merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
         merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));
+
+        merged.formula = nvl(overrides.formula, formula);
+        merged.formulaOperands = nvl(overrides.formulaOperands, formulaOperands);
+        merged.aggrFunc = nvl(overrides.aggrFunc, aggrFunc);
+        merged.lastAggrColumns = nvl(overrides.lastAggrColumns, lastAggrColumns);
+        merged.lastAggrDesc = nvl(overrides.lastAggrDesc, lastAggrDesc);
+
         merged.setQuickFilterPropertyDraw(nvl(overrides.getQuickFilterPropertyDraw(), quickFilterPropertyDraw));
 
         merged.setAttr(nvl(overrides.getAttr(), attr));

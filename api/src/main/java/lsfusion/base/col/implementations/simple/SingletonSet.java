@@ -285,6 +285,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     @Override
+    public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapOrderValuesEx(ThrowingFunction<K, M, E1, E2> getter) throws E1, E2 {
+        return MapFact.<K, M>singleton(key, getter.apply(key));
+    }
+
+    @Override
     public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapOrderValuesEx(ThrowingIntObjectFunction<K, M, E1, E2> getter) throws E1, E2 {
         return MapFact.<K, M>singleton(key, getter.apply(0, key));
     }

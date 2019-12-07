@@ -5,5 +5,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 
 import java.sql.SQLException;
 
+@FunctionalInterface
 public interface SQLCallable<R> extends E2Callable<R, SQLException, SQLHandledException> {
 }

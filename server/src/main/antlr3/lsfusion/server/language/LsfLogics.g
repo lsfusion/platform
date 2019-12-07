@@ -15,6 +15,7 @@ grammar LsfLogics;
     import lsfusion.interop.base.view.FlexAlignment;
     import lsfusion.interop.form.property.ClassViewType;
     import lsfusion.interop.form.property.PropertyEditType;
+    import lsfusion.interop.form.property.PropertyGroupType;
     import lsfusion.interop.form.print.FormPrintType;
     import lsfusion.server.base.version.Version;
     import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -597,6 +598,31 @@ classViewType returns [ClassViewType type]
 	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'GRID' {$type = ClassViewType.GRID;} | 'TOOLBAR' {$type = ClassViewType.TOOLBAR;})
 	;
 
+propertyGroupType returns [PropertyGroupType type]
+	: 	('SUM' {$type = PropertyGroupType.SUM;} | 'MAX' {$type = PropertyGroupType.MAX;} | 'MIN' {$type = PropertyGroupType.MIN;})
+	;
+
+propertyLastAggr returns [List<PropertyObjectEntity> properties = new ArrayList<>(), Boolean desc = false]
+	: 	'LAST'
+	    ('DESC' { $desc = true; } )?
+	    '('
+        prop=formPropertyObject { $properties.add($prop.property); }
+        (',' prop=formPropertyObject { $properties.add($prop.property); })*
+        ')'
+	;
+
+// temporary it's definitely shouldn't be an option
+propertyFormula returns [String formula, List<PropertyDrawEntity> operands]
+@init {
+    $operands = new ArrayList<>();
+}
+	: 	'FORMULA' f=stringLiteral { $formula = $f.val; }
+	    '('
+	        (pd=formPropertyDraw { $operands.add($pd.property); }
+	        (',' pd=formPropertyDraw { $operands.add($pd.property); })*)?
+	    ')'
+	;
+
 formGroupObjectPageSize returns [Integer value = null]
 	:	'PAGESIZE' size=intLiteral { $value = $size.val; }
 	;
@@ -713,6 +739,9 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=classViewType { $options.setForceViewType($viewType.type); }
+		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
+		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
+		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
 		|	'DRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }

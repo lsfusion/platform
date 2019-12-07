@@ -1,6 +1,8 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.ClassViewType;
@@ -26,7 +28,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 // представление св-ва
-public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
+public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements AggrReaderInstance {
 
     public ActionObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
         ActionObjectEntity<?> editAction = entity.getEditAction(actionId, checkReadOnly, securityPolicies);
@@ -88,6 +90,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyFooter;
     public final PropertyObjectInstance<?> propertyBackground;
     public final PropertyObjectInstance<?> propertyForeground;
+    public final ImList<PropertyObjectInstance<?>> propertiesAggrLast;
 
     public ExtraReaderInstance captionReader;
     public ShowIfReaderInstance showIfReader;
@@ -95,12 +98,14 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ExtraReaderInstance readOnlyReader;
     public ExtraReaderInstance backgroundReader;
     public ExtraReaderInstance foregroundReader;
-    
+    public final ImOrderSet<LastReaderInstance> aggrLastReaders;
+
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
                                 ActionOrPropertyObjectInstance<?, ?> propertyObject,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
-                                Map<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras) {
+                                Map<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras,
+                                ImList<PropertyObjectInstance<?>> propertiesAggrLast) {
         super(entity);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
@@ -112,6 +117,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyFooter = propertyExtras.get(PropertyDrawExtraType.FOOTER);
         propertyBackground = propertyExtras.get(PropertyDrawExtraType.BACKGROUND);
         propertyForeground = propertyExtras.get(PropertyDrawExtraType.FOREGROUND);
+        this.propertiesAggrLast = propertiesAggrLast;
 
         captionReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTION, propertyCaption);
         showIfReader = new ShowIfReaderInstance(PropertyDrawExtraType.SHOWIF, propertyShowIf);
@@ -119,6 +125,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         readOnlyReader = new ExtraReaderInstance(PropertyDrawExtraType.READONLYIF, propertyReadOnly);
         backgroundReader = new ExtraReaderInstance(PropertyDrawExtraType.BACKGROUND, propertyBackground);
         foregroundReader = new ExtraReaderInstance(PropertyDrawExtraType.FOREGROUND, propertyForeground);
+        aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 
     public PropertyObjectInstance getPropertyObjectInstance() {
@@ -216,6 +223,44 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public class ShowIfReaderInstance extends ExtraReaderInstance {
         public ShowIfReaderInstance(PropertyDrawExtraType type, PropertyObjectInstance property) {
             super(type, property);
+        }
+    }
+
+    @Override
+    public PropertyDrawInstance getProperty() {
+        return this;
+    }
+
+    public class LastReaderInstance implements AggrReaderInstance {
+        public final int index;
+
+        public LastReaderInstance(int index) {
+            this.index = index;
+        }
+
+        @Override
+        public PropertyObjectInstance getPropertyObjectInstance() {
+            return propertiesAggrLast.get(index);
+        }
+
+        @Override
+        public PropertyDrawInstance getProperty() {
+            return PropertyDrawInstance.this;
+        }
+
+        @Override
+        public byte getTypeID() {
+            return PropertyReadType.LAST;
+        }
+
+        @Override
+        public int getID() {
+            return PropertyDrawInstance.this.getID();
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.lastAggrColumns.get(index);
         }
     }
 }

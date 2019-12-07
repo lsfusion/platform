@@ -771,6 +771,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
+    public void updateLastValues(GPropertyDraw property, int index, Map<GGroupObjectValue, Object> values) {
+    }
+
+    @Override
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
         super.updateCellBackgroundValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);

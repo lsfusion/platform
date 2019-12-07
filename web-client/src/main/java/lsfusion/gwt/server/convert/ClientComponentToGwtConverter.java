@@ -45,7 +45,6 @@ import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
-import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 
 import javax.swing.*;
@@ -327,6 +326,20 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
 
+        propertyDraw.formula = clientPropertyDraw.formula;
+        if(clientPropertyDraw.formula != null) {
+            ArrayList<GPropertyDraw> formulaOperands = new ArrayList<>();
+            for (ClientPropertyDraw formulaOperand : clientPropertyDraw.formulaOperands)
+                formulaOperands.add(convertOrCast(formulaOperand));
+            propertyDraw.formulaOperands = formulaOperands;
+        }
+
+        propertyDraw.aggrFunc = clientPropertyDraw.aggrFunc;
+        propertyDraw.lastAggrDesc = clientPropertyDraw.lastAggrDesc;
+        propertyDraw.lastReaders = new ArrayList<>();
+        for(ClientPropertyDraw.LastReader lastReader : clientPropertyDraw.lastReaders)
+            propertyDraw.lastReaders.add(convertLastReader(lastReader));
+
         propertyDraw.quickFilterProperty = convertOrCast(clientPropertyDraw.quickFilterProperty);
 
         propertyDraw.charWidth = clientPropertyDraw.charWidth;
@@ -441,6 +454,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GReadOnlyReader convertReadOnlyReader(ClientPropertyDraw.ReadOnlyReader reader) {
         return reader == null ? null : new GReadOnlyReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GLastReader convertLastReader(ClientPropertyDraw.LastReader reader) {
+        return reader == null ? null : new GLastReader(reader.getID(), reader.index, reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GBackgroundReader convertBackgroundReader(ClientPropertyDraw.BackgroundReader reader) {

@@ -206,7 +206,7 @@ public class GGridController extends GAbstractTableController {
                 addClickHandler(event -> {
                     setGridTableView();
 //                    setUpdateMode(false); //GUpdateMode.AUTO
-                    formController.changeMode(groupObject, true, null, null, null, -1, true, null);
+                    formController.changeMode(groupObject, true, null, null, 0, null, -1, true, null);
                 });
             }
         };
@@ -217,7 +217,7 @@ public class GGridController extends GAbstractTableController {
                 addClickHandler(event -> {
                     setPivotTableView();
 //                    setUpdateMode(true); // GUpdateMode.MANUAL
-                    formController.changeMode(groupObject, true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), 1000, true, null);
+                    formController.changeMode(groupObject, true, new ArrayList<>(), new ArrayList<>(), 0, null, 1000, true, null);
                 });
             }
         };
@@ -243,7 +243,7 @@ public class GGridController extends GAbstractTableController {
             public void addListener() {
                 addClickHandler(event -> {
                     setUpdateMode(!manual);
-                    formController.changeMode(groupObject, false, null, null, null, null, false, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
+                    formController.changeMode(groupObject, false, null, null, 0, null, null, false, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
                 });
             }
         };
@@ -251,7 +251,7 @@ public class GGridController extends GAbstractTableController {
 
         forceUpdateTableButton = new ImageButton(messages.formGridUpdate(), "ok.png");
         forceUpdateTableButton.addClickHandler(event -> {
-                    formController.changeMode(groupObject, false, null, null, null, null, false, GUpdateMode.FORCE);
+                    formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE);
                 });
         forceUpdateTableButton.addStyleName("actionPanelRenderer");
 
@@ -378,6 +378,14 @@ public class GGridController extends GAbstractTableController {
         } else {
             panel.updateReadOnlyValues(property, values);
         }
+    }
+
+    @Override
+    public void updateLastValues(GLastReader reader, Map<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        assert property.grid;
+        if(property.grid)
+            table.updateLastValues(property, reader.index, values);
     }
 
     @Override
@@ -574,8 +582,8 @@ public class GGridController extends GAbstractTableController {
         formController.changeFilter(groupObject, conditions);
     }
 
-    public void changeGroupMode(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, List<GPropertyGroupType> types) {
-        formController.changeMode(groupObject, true, properties, columnKeys, types, null, false, null);
+    public void changeGroupMode(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, GPropertyGroupType aggrType) {
+        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, null);
     }
 
     @Override

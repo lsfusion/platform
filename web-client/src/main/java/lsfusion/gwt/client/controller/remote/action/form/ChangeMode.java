@@ -11,7 +11,8 @@ public class ChangeMode extends FormRequestCountingAction<ServerResponseResult> 
     public boolean setGroup;
     public int[] propertyIDs;
     public GGroupObjectValue[] columnKeys;
-    public GPropertyGroupType[] types;
+    public int aggrProps;
+    public GPropertyGroupType aggrType;
 
     public Integer pageSize;
     public boolean forceRefresh;
@@ -19,12 +20,13 @@ public class ChangeMode extends FormRequestCountingAction<ServerResponseResult> 
 
     public ChangeMode() {}
 
-    public ChangeMode(int groupObjectID, boolean setGroup, int[] propertyIDs, GGroupObjectValue[] columnKeys, GPropertyGroupType[] types, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode) {
+    public ChangeMode(int groupObjectID, boolean setGroup, int[] propertyIDs, GGroupObjectValue[] columnKeys, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode) {
         this.groupObjectID = groupObjectID;
         this.setGroup = setGroup;
         this.propertyIDs = propertyIDs;
         this.columnKeys = columnKeys;
-        this.types = types;
+        this.aggrProps = aggrProps;
+        this.aggrType = aggrType;
         this.pageSize = pageSize;
         this.forceRefresh = forceRefresh;
         this.updateMode = updateMode;

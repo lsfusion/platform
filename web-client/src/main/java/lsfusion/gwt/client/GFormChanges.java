@@ -70,10 +70,10 @@ public class GFormChanges {
     }
 
     private static GPropertyReader remapPropertyReader(GForm form, GPropertyReaderDTO readerDTO) {
-        return remapPropertyReader(form, readerDTO.type, readerDTO.readerID);
+        return remapPropertyReader(form, readerDTO.type, readerDTO.readerID, readerDTO.index);
     }
 
-    private static GPropertyReader remapPropertyReader(GForm form, int typeId, int readerId) {
+    private static GPropertyReader remapPropertyReader(GForm form, int typeId, int readerId, int index) {
         switch (typeId) {
             case GPropertyReadType.DRAW:
                 return form.getProperty(readerId);
@@ -93,6 +93,8 @@ public class GFormChanges {
                 return form.getGroupObject(readerId).rowBackgroundReader;
             case GPropertyReadType.ROW_FOREGROUND:
                 return form.getGroupObject(readerId).rowForegroundReader;
+            case GPropertyReadType.LAST:
+                return form.getProperty(readerId).lastReaders.get(index);
             default:
                 return null;
         }
@@ -108,5 +110,6 @@ public class GFormChanges {
         public final static byte CELL_FOREGROUND = 6;
         public final static byte ROW_BACKGROUND = 7;
         public final static byte ROW_FOREGROUND = 8;
+        public final static byte LAST = 9;
     }
 }
