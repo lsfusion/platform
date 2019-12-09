@@ -18,12 +18,12 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class GroupingButton extends ToolbarGridButton {
 
-    private static final ImageIcon GROUP_ICON = new ImageIcon(FilterView.class.getResource("/images/group.png"));
+    private static final ImageIcon PIVOT_ICON = new ImageIcon(FilterView.class.getResource("/images/pivot.png"));
 
     public GroupingDialog dialog;
 
     public GroupingButton(final GridTable grid) {
-        super(GROUP_ICON, getString("form.queries.grouping"));
+        super(PIVOT_ICON, getString("form.queries.grouping"));
 
         addActionListener(new ActionListener() {
             @Override

@@ -418,7 +418,7 @@ public abstract class UserPreferencesDialog extends JDialog {
 
         initialTable.setHasUserPreferences(true);
         
-        initialTable.updateTable();
+        initialTable.update((Boolean) null);
         
         initialTable.refreshUPHiddenProps(hiddenPropSids);
 
@@ -490,7 +490,7 @@ public abstract class UserPreferencesDialog extends JDialog {
             refreshValues(font);
             initialTable.setFont(font.deriveFrom(initialTable));
 
-            initialTable.updateTable();
+            initialTable.update((Boolean) null);
 
             preferencesChanged();
         }

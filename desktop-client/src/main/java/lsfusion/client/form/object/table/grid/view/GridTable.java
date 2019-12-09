@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ReflectionUtils;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientTextClass;
@@ -16,7 +17,6 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.grid.GridTableModel;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.controller.GridSelectionController;
-import lsfusion.client.form.object.table.grid.controller.GridTableController;
 import lsfusion.client.form.object.table.grid.controller.KeyController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.object.table.view.GridPropertyTable;
@@ -24,6 +24,7 @@ import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
+import lsfusion.client.form.property.table.view.InternalEditEvent;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.design.FontInfo;
@@ -63,7 +64,7 @@ import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.base.SwingUtils.paintRightBottomCornerTriangle;
 import static lsfusion.client.form.controller.ClientFormController.PasteData;
 
-public class GridTable extends ClientPropertyTable {
+public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     public static final String GOTO_LAST_ACTION = "gotoLastRow";
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
@@ -104,8 +105,7 @@ public class GridTable extends ClientPropertyTable {
 
     private boolean isInternalNavigating = false;
 
-    private final GridTableController gridController;
-    private final GridController groupController;
+    private final GridController gridController;
 
     private boolean tabVertical = false;
 
@@ -150,7 +150,7 @@ public class GridTable extends ClientPropertyTable {
     private ThreadLocal<Boolean> threadLocalIsStopCellEditing = new ThreadLocal<>();
 
     public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
-        super(new GridTableModel(), iform, igridView.getGridController().getGroupController().getGroupObject());
+        super(new GridTableModel(), iform, igridView.getGridController().getGroupObject());
 
         setTableHeader(new GridTableHeader(columnModel) {
             @Override
@@ -160,7 +160,6 @@ public class GridTable extends ClientPropertyTable {
         });
 
         gridController = igridView.getGridController();
-        groupController = gridController.getGroupController();
 
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GridUserPreferences(groupObject);
         userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GridUserPreferences(groupObject);
@@ -185,11 +184,11 @@ public class GridTable extends ClientPropertyTable {
         setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
         sortableHeaderManager = new TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>>(this) {
-            protected void orderChanged(final Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, final Order modiType) {
+            protected void orderChanged(final Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, final Order modiType, final boolean alreadySet) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        GridTable.this.orderChanged(columnKey, modiType);
+                        GridTable.this.orderChanged(columnKey, modiType, alreadySet);
                     }
                 });
             }
@@ -359,25 +358,15 @@ public class GridTable extends ClientPropertyTable {
         return getProperty(row, col).editOnSingleClick;
     }
 
-    private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
-        try {
-            form.changePropertyOrder(columnKey.first, modiType, columnKey.second);
-            tableHeader.resizeAndRepaint();
-        } catch (IOException e) {
-            throw new RuntimeException(getString("errors.error.changing.sorting"), e);
-        }
-
+    private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType, boolean alreadySet) {
+        form.changePropertyOrder(columnKey.first, modiType, columnKey.second, alreadySet);
+        tableHeader.resizeAndRepaint();
         tableHeader.repaint();
     }
 
     private void ordersCleared(ClientGroupObject groupObject) {
-        try {
-            form.clearPropertyOrders(groupObject);
-            tableHeader.resizeAndRepaint();
-        } catch (IOException e) {
-            throw new RuntimeException(getString("errors.error.changing.sorting"), e);
-        }
-
+        form.clearPropertyOrders(groupObject);
+        tableHeader.resizeAndRepaint();
         tableHeader.repaint();
     }
 
@@ -469,7 +458,11 @@ public class GridTable extends ClientPropertyTable {
         return o instanceof GridTable && ((GridTable) o).getID() == this.getID();
     }
 
-    public void updateTable() {
+    public void update(Boolean updateState) {
+        if(updateState != null) {
+            model.setManualUpdate(updateState);
+        }
+
         model.updateColumns(getOrderedVisibleProperties(properties), columnKeys, captions, showIfs);
 
         model.updateRows(rowKeys, values, readOnlyValues, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
@@ -774,6 +767,29 @@ public class GridTable extends ClientPropertyTable {
         }
     }
 
+    @Override
+    public void groupChange() {
+        final int rowIndex = getSelectedRow();
+        final int columnIndex = getSelectedColumn();
+        if (rowIndex == -1 || columnIndex == -1)
+            JOptionPane.showMessageDialog(form.getLayout(), getString("form.grid.group.groupchange.no.column.selected"),
+                    getString("errors.error"), JOptionPane.ERROR_MESSAGE);
+        else
+            RmiQueue.runAction(() -> editCellAt(rowIndex, columnIndex, new InternalEditEvent(this, ServerResponse.GROUP_CHANGE)));
+    }
+
+    @Override
+    public boolean changePropertyOrders(LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
+        LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> setOrders = new LinkedHashMap<>();
+        for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet())
+            setOrders.put(getMinColumnKey(entry.getKey()), entry.getValue());
+        return sortableHeaderManager.changeOrders(groupObject, setOrders, alreadySet);
+    }
+
+    private Pair<ClientPropertyDraw, ClientGroupObjectValue> getMinColumnKey(ClientPropertyDraw property) {
+        return Pair.create(property, columnKeys.containsKey(property) ? columnKeys.get(property).get(0) : ClientGroupObjectValue.EMPTY);
+    }
+
     private void setCurrentObject(ClientGroupObjectValue value) {
         assert value == null || rowKeys.isEmpty() || rowKeys.contains(value);
         currentObject = value;
@@ -957,7 +973,7 @@ public class GridTable extends ClientPropertyTable {
                     selectionController.resetSelection();
                 }
             }
-            updateTable();
+            update((Boolean) null);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
@@ -1043,11 +1059,11 @@ public class GridTable extends ClientPropertyTable {
             int numbers = selectionController.getNumbersQuantity();
             if (numbers > 1) {
                 BigDecimal sum = selectionController.getSum();
-                groupController.updateSelectionInfo(quantity, format(sum), format(sum.divide(BigDecimal.valueOf(numbers), sum.scale(), RoundingMode.HALF_UP)));
+                gridController.updateSelectionInfo(quantity, format(sum), format(sum.divide(BigDecimal.valueOf(numbers), sum.scale(), RoundingMode.HALF_UP)));
                 return;
             }
         }
-        groupController.updateSelectionInfo(quantity, null, null);
+        gridController.updateSelectionInfo(quantity, null, null);
     }
 
     private String format(BigDecimal number) {
@@ -1107,7 +1123,7 @@ public class GridTable extends ClientPropertyTable {
                 }                    
             }
              
-            groupController.quickEditFilter((KeyEvent) editEvent, filterProperty, filterColumnKey);
+            gridController.quickEditFilter((KeyEvent) editEvent, filterProperty, filterColumnKey);
         }
     }
 
@@ -1130,19 +1146,19 @@ public class GridTable extends ClientPropertyTable {
         }
     }
 
-    public boolean addProperty(final ClientPropertyDraw property) {
+    public void addProperty(final ClientPropertyDraw property) {
         if (!properties.contains(property)) {
             // конечно кривовато определять порядок по номеру в листе, но потом надо будет сделать по другому
             int ins = relativePosition(property, form.getPropertyDraws(), properties);
             properties.add(ins, property);
             selectionController.addProperty(property);
-            return true;
+            //return true;
         } else {
-            return false;
+            //return false;
         }
     }
 
-    public boolean removeProperty(ClientPropertyDraw property) {
+    public void removeProperty(ClientPropertyDraw property) {
         if (properties.contains(property)) {
             selectionController.removeProperty(property, columnKeys.get(property));
             properties.remove(property);
@@ -1151,17 +1167,17 @@ public class GridTable extends ClientPropertyTable {
             captions.remove(property);
             showIfs.remove(property);
             columnKeys.remove(property);
-            return true;
+            //return true;
         }
 
-        return false;
+        //return false;
     }
 
-    public void updateColumnCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
+    public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
         this.captions.put(property, captions);
     }
 
-    public void updateShowIfs(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs) {
+    public void updateShowIfValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs) {
         this.showIfs.put(property, showIfs);
     }
 
@@ -1177,7 +1193,7 @@ public class GridTable extends ClientPropertyTable {
         this.cellForegroundValues.put(property, cellForegroundValues);
     }
 
-    public void setColumnValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
+    public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
         Map<ClientGroupObjectValue, Object> propValues = this.values.get(property);
         if (!update || propValues == null) {
             this.values.put(property, values);
@@ -1300,15 +1316,6 @@ public class GridTable extends ClientPropertyTable {
         return model.getForegroundColor(row, column);
     }
 
-    public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
-        int ind = getMinPropertyIndex(property);
-        sortableHeaderManager.changeOrder(new Pair<>(property, ind == -1 ? ClientGroupObjectValue.EMPTY : model.getColumnKey(ind)), modiType);
-    }
-
-    public void clearGridOrders(ClientGroupObject groupObject) throws IOException {
-        sortableHeaderManager.clearOrders(groupObject);
-    }
-
     public int getMinPropertyIndex(ClientPropertyDraw property) {
         return model.getPropertyIndex(property, null);
     }
@@ -1322,7 +1329,7 @@ public class GridTable extends ClientPropertyTable {
         return new GridTableHeader(columnModel);
     }*/
 
-    public void selectProperty(ClientPropertyDraw propertyDraw) {
+    public void focusProperty(ClientPropertyDraw propertyDraw) {
         if (propertyDraw == null) {
             return;
         }
@@ -1474,17 +1481,12 @@ public class GridTable extends ClientPropertyTable {
 
     public void resetCurrentPreferences(boolean initial) {
         currentGridPreferences = new GridUserPreferences(userGridPreferences.hasUserPreferences() ? userGridPreferences : generalGridPreferences);
+
         if (!initial) {
-            try {
-                gridController.clearGridOrders(groupObject);
-                if (!currentGridPreferences.hasUserPreferences()) {
-                    gridController.getGroupController().applyDefaultOrders();
-                } else {
-                    gridController.getGroupController().applyUserOrders();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            LinkedHashMap<ClientPropertyDraw, Boolean> orders = gridController.getUserOrders();
+            if(orders == null)
+                orders = gridController.getDefaultOrders();
+            changePropertyOrders(orders, false);
         }
     }
 
@@ -1967,4 +1969,16 @@ public class GridTable extends ClientPropertyTable {
             return GridTable.this;
         }
     };
+
+    public OrderedMap<ClientPropertyDraw, Boolean> getUserOrders(List<ClientPropertyDraw> propertyDrawList) {
+        OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<>();
+        Collections.sort(propertyDrawList, getUserSortComparator());
+        for (ClientPropertyDraw property : propertyDrawList) {
+            Boolean userOrderSort;
+            if (getUserSort(property) != null && (userOrderSort = getUserAscendingSort(property)) != null) {
+                userOrders.put(property, userOrderSort);
+            }
+        }
+        return userOrders;
+    }
 }

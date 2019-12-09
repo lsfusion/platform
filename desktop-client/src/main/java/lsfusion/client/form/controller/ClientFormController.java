@@ -52,6 +52,7 @@ import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
+import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -147,8 +148,6 @@ public class ClientFormController implements AsyncListener {
     private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new HashMap<>();
 
     private final Map<ClientGroupObject, List<JComponentPanel>> filterViews = new HashMap<>();
-
-    private boolean defaultOrdersInitialized = false;
 
     private final boolean isDialog;
     private final boolean isModal;
@@ -612,64 +611,28 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void initializeDefaultOrders() {
-        try {
-            applyOrders(form.defaultOrders, null);
-            defaultOrdersInitialized = true;
-        } catch (IOException e) {
-            throw new RuntimeException(getString("form.error.cant.initialize.default.orders"));
+        Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> defaultOrders = groupDefaultOrders();
+        for (Map.Entry<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> entry : defaultOrders.entrySet()) {
+            ClientGroupObject groupObject = entry.getKey();
+            TableController groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(groupObject);
+            if (groupObjectLogicsSupplier != null)
+                groupObjectLogicsSupplier.changeOrders(groupObject, entry.getValue(), true);
         }
     }
 
     public void initializeUserOrders() {
-        try {
-            boolean hasUserOrders = false;
-            Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> defaultOrders = null;
-            for (GridController controller : controllers.values()) {
-                OrderedMap<ClientPropertyDraw, Boolean> objectUserOrders = controller.getUserOrders();
-                if(objectUserOrders != null) {
-                    if(defaultOrders == null)
-                        defaultOrders = groupDefaultOrders();
-                    OrderedMap<ClientPropertyDraw, Boolean> defaultObjectOrders = defaultOrders.get(controller.getGroupObject());
-                    if(defaultObjectOrders == null)
-                        defaultObjectOrders = new OrderedMap<>();
-                    if(!BaseUtils.hashEquals(defaultObjectOrders, objectUserOrders)) {
-                        applyOrders(objectUserOrders, controller);
-                        hasUserOrders = true;
-                    }
-                }
-            }
-            if(hasUserOrders)
-                getRemoteChanges(false);
-        } catch (IOException e) {
-            throw new RuntimeException(getString("form.error.cant.initialize.default.orders"));
+        boolean changed = false;
+        for (GridController controller : controllers.values()) {
+            LinkedHashMap<ClientPropertyDraw, Boolean> objectUserOrders = controller.getUserOrders();
+            if (objectUserOrders != null)
+                changed = controller.changeOrders(objectUserOrders, false)  || changed;
         }
+        if (changed)
+            getRemoteChanges(true);
     }
 
     public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject groupObject) {
         return form.getDefaultOrders(groupObject);
-    }
-
-    public void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders, GridController gridController) throws IOException {
-        Set<ClientGroupObject> wasOrder = new HashSet<>();
-        for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
-            ClientPropertyDraw property = entry.getKey();
-            ClientGroupObject groupObject = property.getGroupObject();
-            assert gridController == null || groupObject.equals(gridController.getGroupObject());
-            TableController tableController = getGroupObjectLogicsSupplier(groupObject);
-            if (tableController != null) {
-                tableController.changeOrder(property, !wasOrder.contains(groupObject) ? REPLACE : ADD);
-                wasOrder.add(groupObject);
-                if (!entry.getValue()) {
-                    tableController.changeOrder(property, DIR);
-                }
-            }
-        }
-        if(gridController != null) {
-            ClientGroupObject groupObject = gridController.getGroupObject();
-            if(!wasOrder.contains(groupObject)) {
-                gridController.clearOrders();
-            }
-        }
     }
 
     private void processServerResponse(ServerResponse serverResponse) throws IOException {
@@ -1188,8 +1151,8 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) throws IOException {
-        if (defaultOrdersInitialized) {
+    public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey, boolean alreadySet) {
+        if (!alreadySet) {
             commitOrCancelCurrentEditing();
 
             rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changePropertyOrder - " + property.getLogName()) {
@@ -1201,17 +1164,15 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void clearPropertyOrders(final ClientGroupObject groupObject) throws IOException {
-        if (defaultOrdersInitialized) {
-            commitOrCancelCurrentEditing();
+    public void clearPropertyOrders(final ClientGroupObject groupObject) {
+        commitOrCancelCurrentEditing();
 
-            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("clearPropertyOrders - " + groupObject.getLogName()) {
-                @Override
-                protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.clearPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObject.getID());
-                }
-            });
-        }
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("clearPropertyOrders - " + groupObject.getLogName()) {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.clearPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObject.getID());
+            }
+        });
     }
 
     public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
@@ -1309,7 +1270,19 @@ public class ClientFormController implements AsyncListener {
             }
         });
     }
-    
+
+    public void changeMode(final ClientGroupObject groupObject, UpdateMode updateMode) {
+        commitOrCancelCurrentEditing();
+
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeMode") {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.changeMode(requestIndex, lastReceivedRequestIndex, groupObject.ID, false, null, null, 0, null, null, false, updateMode);
+
+            }
+        });
+    }
+
     public List<FormGrouping> readGroupings(final String groupObjectSID) {
         commitOrCancelCurrentEditing();
         
@@ -1670,7 +1643,7 @@ public class ClientFormController implements AsyncListener {
         binding.bindShowing = BindingMode.AUTO;
         keySetBindings.add(binding);
     }
-    
+
     public void addPropertyBindings(ClientPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
         if(propertyDraw.changeKey != null) {
             Binding binding = bindingSupplier.get();

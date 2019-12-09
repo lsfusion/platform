@@ -21,6 +21,7 @@ public class GridTableModel extends AbstractTableModel {
     private ClientPropertyDraw[] columnProps = new ClientPropertyDraw[0];
     private ClientGroupObjectValue[] columnKeys = new ClientGroupObjectValue[0];
     private String[] columnNames = new String[0];
+    private boolean manualUpdate;
     private Color[][] backgroundColor = new Color[0][];
     private Color[][] foregroundColor = new Color[0][];
 
@@ -226,11 +227,15 @@ public class GridTableModel extends AbstractTableModel {
         return columnKeys[index];
     }
 
+    public void setManualUpdate(boolean manualUpdate) {
+        this.manualUpdate = manualUpdate;
+    }
+
     public Color getBackgroundColor(int row, int column) {
         return backgroundColor[row][column];
     }
 
     public Color getForegroundColor(int row, int column) {
-        return foregroundColor[row][column];
+        return manualUpdate ? Color.LIGHT_GRAY : foregroundColor[row][column];
     }
 }

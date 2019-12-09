@@ -1,5 +1,6 @@
 package lsfusion.client.form.order.user;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -13,6 +14,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
@@ -106,6 +108,10 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
     }
 
     public final void changeOrder(T columnKey, Order modiType) {
+        changeOrder(columnKey, modiType, false);
+    }
+
+    public final void changeOrder(T columnKey, Order modiType, boolean alreadySet) {
         if (columnKey == null || noSort(columnKey)) {
             return;
         }
@@ -126,7 +132,26 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
                 break;
         }
 
-        orderChanged(columnKey, modiType);
+        orderChanged(columnKey, modiType, alreadySet);
+    }
+
+    public final boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<T, Boolean> set, boolean alreadySet) {
+        if(!BaseUtils.hashEquals(orderDirections, set)) {
+            if(!alreadySet) {
+                orderDirections.clear();
+                ordersCleared(groupObject);
+            } else
+                assert orderDirections.isEmpty();
+
+            for(Map.Entry<T, Boolean> entry : set.entrySet()) {
+                changeOrder(entry.getKey(), Order.ADD, alreadySet);
+                if(!entry.getValue())
+                    changeOrder(entry.getKey(), Order.DIR, alreadySet);
+            }
+
+            return true;
+        }
+        return false;
     }
 
     private boolean noSort (T columnKey) {
@@ -138,7 +163,7 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         ordersCleared(groupObject);
     }
 
-    protected abstract void orderChanged(T columnKey, Order modiType);
+    protected abstract void orderChanged(T columnKey, Order modiType, boolean alreadySet);
 
     protected abstract void ordersCleared(ClientGroupObject groupObject);
 

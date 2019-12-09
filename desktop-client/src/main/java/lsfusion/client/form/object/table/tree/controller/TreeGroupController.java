@@ -22,10 +22,8 @@ import lsfusion.interop.form.order.user.Order;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class TreeGroupController extends AbstractTableController {
     public final ClientTreeGroup treeGroup;
@@ -218,13 +216,9 @@ public class TreeGroupController extends AbstractTableController {
         return tree.getSelectedValue(property);
     }
 
-    public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
-        tree.changeOrder(property, modiType);
-    }
-
     @Override
-    public void clearOrders() throws IOException {
-        tree.clearOrders(getGroupObject());
+    public boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> value, boolean alreadySet) {
+        return tree.changeOrders(groupObject, value, alreadySet);
     }
 
     @Override

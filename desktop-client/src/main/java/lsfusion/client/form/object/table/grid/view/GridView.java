@@ -3,7 +3,7 @@ package lsfusion.client.form.object.table.grid.view;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.object.table.grid.ClientGrid;
-import lsfusion.client.form.object.table.grid.controller.GridTableController;
+import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 
 import javax.swing.*;
@@ -14,17 +14,17 @@ public class GridView extends JComponentPanel {
 
     private final ClientGrid grid;
     private final GridTable gridTable;
-    private final GridTableController gridController;
+    private final GridController gridController;
 
     @Override
     public Dimension getMaxPreferredSize() { // ради этого вся ветка maxPreferredSize и делалась
         return gridTable.getMaxPreferredSize(getPreferredSize());
     }
 
-    public GridView(GridTableController igridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {
-        gridController = igridController;
+    public GridView(GridController iGridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {
+        gridController = iGridController;
 
-        grid = gridController.getGroupController().getGroupObject().grid;
+        grid = gridController.getGroupObject().grid;
 
         gridTable = new GridTable(this, form, iuserPreferences);
 
@@ -82,7 +82,7 @@ public class GridView extends JComponentPanel {
         add(pane, BorderLayout.CENTER);
     }
 
-    public GridTableController getGridController() {
+    public GridController getGridController() {
         return gridController;
     }
 

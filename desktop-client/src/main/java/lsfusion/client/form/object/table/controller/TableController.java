@@ -5,9 +5,8 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.order.user.Order;
 
-import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,10 +26,6 @@ public interface TableController {
     
     ClientFormController getFormController();
 
-    void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException;
-
-    void clearOrders() throws IOException;
-
     ClientGroupObject getSelectedGroupObject();
 
     void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions);
@@ -48,4 +43,6 @@ public interface TableController {
     void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues);
 
     void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues);
+
+    boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> value, boolean alreadySet);
 }

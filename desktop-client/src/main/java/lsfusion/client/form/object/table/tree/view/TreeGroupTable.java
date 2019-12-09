@@ -132,11 +132,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
 
         sortableHeaderManager = new TableSortableHeaderManager<ClientPropertyDraw>(this, true) {
-            protected void orderChanged(final ClientPropertyDraw columnKey, final Order modiType) {
+            protected void orderChanged(final ClientPropertyDraw columnKey, final Order modiType, boolean alreadySet) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        TreeGroupTable.this.orderChanged(columnKey, modiType);
+                        TreeGroupTable.this.orderChanged(columnKey, modiType, alreadySet);
                     }
                 });
             }
@@ -292,14 +292,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         currentTreePath = new TreePath(rootNode);
     }
 
-    private void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
-        try {
-            form.changePropertyOrder(columnKey, modiType, ClientGroupObjectValue.EMPTY);
-            tableHeader.resizeAndRepaint();
-        } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.sorting"), e);
-        }
-
+    private void orderChanged(ClientPropertyDraw columnKey, Order modiType, boolean alreadySet) {
+        form.changePropertyOrder(columnKey, modiType, ClientGroupObjectValue.EMPTY, alreadySet);
         tableHeader.resizeAndRepaint();
     }
 
@@ -319,13 +313,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     private void ordersCleared(ClientGroupObject groupObject) {
-        try {
-            form.clearPropertyOrders(groupObject);
-            tableHeader.resizeAndRepaint();
-        } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.sorting"), e);
-        }
-
+        form.clearPropertyOrders(groupObject);
         tableHeader.resizeAndRepaint();
     }
 
@@ -929,18 +917,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         super.processKeyEvent(e);
     }
 
-    public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
-        int propertyIndex = model.getPropertyColumnIndex(property);
-        if (propertyIndex > 0) {
-            sortableHeaderManager.changeOrder(property, modiType);
-        } else {
-            //меняем напрямую для верхних groupObjects
-            form.changePropertyOrder(property, modiType, ClientGroupObjectValue.EMPTY);
-        }
-    }
-
-    public void clearOrders(ClientGroupObject groupObject) throws IOException {
-            sortableHeaderManager.clearOrders(groupObject);
+    public boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
+        return sortableHeaderManager.changeOrders(groupObject, orders, alreadySet);
     }
 
     @Override
