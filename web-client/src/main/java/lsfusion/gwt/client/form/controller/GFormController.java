@@ -995,7 +995,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<>();
         List<GGroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<>();
         for (GGridController controller : controllers.values()) {
-            if (controller.groupObject != null) {
+            if (controller.isGrid()) {
                 groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
                 groupObjectGeneralPreferencesList.add(controller.getGeneralGridPreferences());
             }
