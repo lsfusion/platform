@@ -69,25 +69,27 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     public IntegralClass getMultiply(IntegralClass operator) {
 //        if(1==1) return (IntegralClass) getCompatible(operator, true);
 
-        if(!(this instanceof NumericClass) || !(operator instanceof NumericClass))
+        if (this instanceof NumericClass || operator instanceof NumericClass) {
+            int whole = getWhole() + operator.getWhole();
+            int precision = getPrecision() + operator.getPrecision();
+
+            return NumericClass.get(whole + precision, precision);
+        } else {
             return getCompatible(operator, true);
-
-        int whole = getWhole() + operator.getWhole();
-        int precision = getPrecision() + operator.getPrecision();
-
-        return NumericClass.get(whole + precision, precision);
+        }
     }
 
     public IntegralClass getDivide(IntegralClass operator) {
 //        if(1==1) return (IntegralClass) getCompatible(operator, true);
 
-        if(!(this instanceof NumericClass) || !(operator instanceof NumericClass))
+        if (this instanceof NumericClass || operator instanceof NumericClass) {
+            int whole = getWhole() + operator.getPrecision();
+            int precision = getPrecision() + operator.getWhole();
+
+            return NumericClass.get(whole + precision, precision);
+        } else {
             return getCompatible(operator, true);
-
-        int whole = getWhole() + operator.getPrecision();
-        int precision = getPrecision() + operator.getWhole();
-
-        return NumericClass.get(whole + precision, precision);
+        }
     }
 
     public boolean isSafeString(Object value) {
