@@ -52,8 +52,4 @@ public abstract class AbstractTableController implements TableController {
             toolbarView.addSeparator();
         }
     }
-
-    public boolean hasPanelProperty(ClientPropertyDraw property) {
-        return panel.containsProperty(property);
-    }
 }

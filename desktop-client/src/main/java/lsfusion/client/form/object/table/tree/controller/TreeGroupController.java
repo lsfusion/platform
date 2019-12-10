@@ -179,8 +179,10 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     public void removeProperty(ClientGroupObject group, ClientPropertyDraw property) {
-        view.removeProperty(group, property);
-        panel.removeProperty(property);
+        if(property.grid)
+            tree.removeProperty(group, property);
+        else
+            panel.removeProperty(property);
     }
 
     @Override

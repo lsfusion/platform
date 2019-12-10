@@ -15,7 +15,7 @@ import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.panel.controller.PanelController;
-import lsfusion.client.form.object.panel.controller.PropertyController;
+import lsfusion.client.form.object.panel.controller.PropertyPanelController;
 import lsfusion.client.form.object.table.controller.AbstractTableController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.object.table.grid.user.design.view.UserPreferencesDialog;
@@ -32,13 +32,8 @@ import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPrefer
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 
 import javax.swing.*;
-import javax.swing.plaf.LayerUI;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -564,9 +559,9 @@ public class GridController extends AbstractTableController {
     }
 
     public void focusProperty(ClientPropertyDraw propertyDraw) {
-        PropertyController propertyController = panel.getPropertyController(propertyDraw);
-        if (propertyController != null) {
-            propertyController.requestFocusInWindow();
+        PropertyPanelController propertyPanelController = panel.getPropertyController(propertyDraw);
+        if (propertyPanelController != null) {
+            propertyPanelController.requestFocusInWindow();
         } else {
             table.focusProperty(propertyDraw);
             table.requestFocusInWindow();

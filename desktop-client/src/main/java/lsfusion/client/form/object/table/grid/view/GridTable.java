@@ -1159,18 +1159,13 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     public void removeProperty(ClientPropertyDraw property) {
-        if (properties.contains(property)) {
-            selectionController.removeProperty(property, columnKeys.get(property));
-            properties.remove(property);
-            readOnlyValues.remove(property);
-            values.remove(property);
-            captions.remove(property);
-            showIfs.remove(property);
-            columnKeys.remove(property);
-            //return true;
-        }
-
-        //return false;
+        selectionController.removeProperty(property, columnKeys.get(property));
+        properties.remove(property);
+        readOnlyValues.remove(property);
+        values.remove(property);
+        captions.remove(property);
+        showIfs.remove(property);
+        columnKeys.remove(property);
     }
 
     public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {

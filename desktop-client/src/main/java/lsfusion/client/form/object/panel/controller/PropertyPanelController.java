@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PropertyController {
+public class PropertyPanelController {
     private final ClientFormController form;
     private final PanelController panelController;
     private final ClientPropertyDraw property;
@@ -33,7 +33,7 @@ public class PropertyController {
 
     private JComponentPanel viewsPanel;
 
-    public PropertyController(final ClientFormController form, final PanelController panelController, ClientPropertyDraw property) {
+    public PropertyPanelController(final ClientFormController form, final PanelController panelController, ClientPropertyDraw property) {
 
         this.form = form;
         this.panelController = panelController;

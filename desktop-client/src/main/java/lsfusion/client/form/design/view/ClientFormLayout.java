@@ -43,7 +43,7 @@ public class ClientFormLayout extends JPanel {
         setFocusTraversalPolicy(policy);
 
         // создаем все контейнеры на форме
-        createContainerViews(mainContainer);
+        addContainers(mainContainer);
 
         setLayout(new BorderLayout());
         add(containerViews.get(mainContainer).getView(), BorderLayout.CENTER);
@@ -78,7 +78,7 @@ public class ClientFormLayout extends JPanel {
     }
 
     // метод рекурсивно создает для каждого ClientContainer соответствующий ContainerView
-    private void createContainerViews(ClientContainer container) {
+    private void addContainers(ClientContainer container) {
         ClientContainerView containerView;
         if (container.isLinear()) {
             containerView = new LinearClientContainerView(this, container);
@@ -98,13 +98,11 @@ public class ClientFormLayout extends JPanel {
 
         containerViews.put(container, containerView);
 
-        if (container.container != null) {
-            add(container, containerView.getView());
-        }
+        add(container, containerView.getView());
 
         for (ClientComponent child : container.children) {
             if (child instanceof ClientContainer) {
-                createContainerViews((ClientContainer) child);
+                addContainers((ClientContainer) child);
             }
         }
     }
@@ -139,7 +137,7 @@ public class ClientFormLayout extends JPanel {
 
     // добавляем визуальный компонент
     public boolean add(ClientComponent key, JComponentPanel view) {
-        if (key != null) {
+        if (key.container != null) { // container can be null when component should be layouted manually
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {
                 revalidate();
@@ -158,7 +156,7 @@ public class ClientFormLayout extends JPanel {
 
     // удаляем визуальный компонент
     public boolean remove(ClientComponent key, Component view) {
-        if (key != null) {
+        if (key.container != null) { // see add method
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && containerView.hasChild(key)) {
                 revalidate();

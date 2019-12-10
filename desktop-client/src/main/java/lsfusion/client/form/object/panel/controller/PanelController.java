@@ -15,11 +15,10 @@ public class PanelController {
     private final ClientFormController form;
     private final ClientFormLayout formLayout;
 
-    private final Map<ClientPropertyDraw, PropertyController> propertyControllers = new HashMap<>();
+    private final Map<ClientPropertyDraw, PropertyPanelController> propertyControllers = new HashMap<>();
 
     private Color rowBackground;
     private Color rowForeground;
-
 
     public PanelController(ClientFormController iform, ClientFormLayout iformLayout) {
         form = iform;
@@ -29,7 +28,7 @@ public class PanelController {
     public void requestFocusInWindow() {
         // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
         for (ClientPropertyDraw property : form.getPropertyDraws()) {
-            PropertyController propController = propertyControllers.get(property);
+            PropertyPanelController propController = propertyControllers.get(property);
             if (propController != null && propController.requestFocusInWindow()) {
                 break;
             }
@@ -38,15 +37,15 @@ public class PanelController {
 
     public void addProperty(ClientPropertyDraw property) {
         if (!containsProperty(property)) {
-            PropertyController propertyController = new PropertyController(form, this, property);
-            propertyControllers.put(property, propertyController);
-            propertyController.addView(formLayout);
+            PropertyPanelController propertyPanelController = new PropertyPanelController(form, this, property);
+            propertyControllers.put(property, propertyPanelController);
+            propertyPanelController.addView(formLayout);
         }
     }
 
     public void removeProperty(ClientPropertyDraw property) {
         if (containsProperty(property)) {
-            PropertyController propController = propertyControllers.remove(property);
+            PropertyPanelController propController = propertyControllers.remove(property);
             propController.removeView(formLayout);
         }
     }
@@ -55,12 +54,12 @@ public class PanelController {
         return propertyControllers.containsKey(property);
     }
     
-    public PropertyController getPropertyController(ClientPropertyDraw propertyDraw) {
+    public PropertyPanelController getPropertyController(ClientPropertyDraw propertyDraw) {
         return propertyControllers.get(propertyDraw);
     }
 
     public void update() {
-        for (PropertyController propController : propertyControllers.values()) {
+        for (PropertyPanelController propController : propertyControllers.values()) {
             propController.update(rowBackground, rowForeground);
         }
     }
@@ -69,8 +68,8 @@ public class PanelController {
     public void setVisible(boolean visible) {
         if (this.visible != visible) {
             this.visible = visible;
-            for (PropertyController propertyController : propertyControllers.values()) {
-                propertyController.setVisible(visible);
+            for (PropertyPanelController propertyPanelController : propertyControllers.values()) {
+                propertyPanelController.setVisible(visible);
             }
         }
     }

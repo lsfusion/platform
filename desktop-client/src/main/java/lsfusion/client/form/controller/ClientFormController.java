@@ -876,7 +876,7 @@ public class ClientFormController implements AsyncListener {
                 GridController controller = controllers.get(property.groupObject);
 
                 ClientGroupObjectValue propertyKey;
-                if (controller != null && !controller.hasPanelProperty(property)) { // if is grid
+                if (controller != null && property.grid) {
                     ClientGroupObjectValue currentObject = controller.getCurrentObject();
                     if(currentObject.isEmpty())
                         return;
