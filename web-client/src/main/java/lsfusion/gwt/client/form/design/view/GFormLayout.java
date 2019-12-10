@@ -29,7 +29,7 @@ public class GFormLayout extends ResizableSimplePanel {
 
         mainContainer = imainContainer;
 
-        createContainerViews(imainContainer);
+        addContainers(imainContainer);
 
         Widget mainContainerView = containerViews.get(imainContainer).getView();
         add(mainContainerView);
@@ -37,11 +37,8 @@ public class GFormLayout extends ResizableSimplePanel {
         layoutImpl.setupMainContainer(mainContainerView);
     }
 
-    public GContainer getMainContainer() {
-        return mainContainer;
-    }
-
-    private void createContainerViews(GContainer container) {
+    // creating containers (all other components are created when creating controllers)
+    private void addContainers(GContainer container) {
         GAbstractContainerView containerView = layoutImpl.createContainerView(form, container);
 
         containerViews.put(container, containerView);
@@ -51,23 +48,17 @@ public class GFormLayout extends ResizableSimplePanel {
             view.getElement().setAttribute("lsfusion-container-type", container.type.name());
         }
 
-        if (container.container != null) {
-            add(container, view);
-        }
+        add(container, view, null);
 
         for (GComponent child : container.children) {
             if (child instanceof GContainer) {
-                createContainerViews((GContainer) child);
+                addContainers((GContainer) child);
             }
         }
     }
 
-    public boolean add(GComponent key, Widget view) {
-        return add(key, view, null);
-    }
-
     public boolean add(GComponent key, Widget view, DefaultFocusReceiver focusReceiver) {
-        if (key != null) {
+        if(key.container != null) { // container can be null when component should be layouted manually
             GAbstractContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {
                 containerView.add(key, view);
@@ -81,7 +72,7 @@ public class GFormLayout extends ResizableSimplePanel {
     }
 
     public boolean remove(GComponent key, Widget view) {
-        if (key != null) {
+        if (key.container != null) { // see add method
             GAbstractContainerView containerView = containerViews.get(key.container);
             if (containerView != null && containerView.hasChild(key)) {
                 containerView.remove(key);

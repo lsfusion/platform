@@ -282,7 +282,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
-        formLayout.add(filterGroup, filterWidget);
+        formLayout.add(filterGroup, filterWidget, null);
 
         if (filterGroup.groupObject == null) {
             return;
@@ -770,7 +770,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GTableController controller = getGroupObjectLogicsSupplier(property.groupObject);
 
         GGroupObjectValue propertyKey;
-        if (controller != null && !controller.hasPanelProperty(property)) { // if is grid
+        if (controller != null && property.grid) {
             GGroupObjectValue currentKey = controller.getCurrentKey();
             if(currentKey.isEmpty())
                 return;

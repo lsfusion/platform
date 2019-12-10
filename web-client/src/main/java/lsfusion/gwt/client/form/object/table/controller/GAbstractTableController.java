@@ -36,16 +36,12 @@ public abstract class GAbstractTableController implements GTableController {
             toolbarView = null;
         } else {
             toolbarView = new GToolbarView();
-            getFormLayout().add(toolbar, toolbarView);
+            getFormLayout().add(toolbar, toolbarView, null);
         }
     }
 
     public GFormLayout getFormLayout() {
         return formController.formLayout;
-    }
-
-    public boolean hasPanelProperty(GPropertyDraw property) {
-        return panel.containsProperty(property);
     }
 
     public void addToToolbar(Widget tool) {

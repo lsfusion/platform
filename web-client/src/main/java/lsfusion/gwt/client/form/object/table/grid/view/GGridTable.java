@@ -399,21 +399,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             
             setCellHeight(rowHeight);
 
-            columnsMap.foreachValue(new Function<NativeHashMap<GGroupObjectValue, GridColumn>>() {
-                @Override
-                public void apply(NativeHashMap<GGroupObjectValue, GridColumn> columnsCollection) {
-                    columnsCollection.foreachValue(new Function<GridColumn>() {
-                        @Override
-                        public void apply(GridColumn column) {
-                            removeGridColumn(column);
-                        }
-                    });
-                }
-            });
-
+            // removing old columns
+            columnsMap.foreachValue(columnsCollection -> columnsCollection.foreachValue(column -> {
+                removeGridColumn(column);
+            }));
             columnsMap = newColumnsMap;
 
-            updateLayoutWidth(); // после заполнения columnsMap так как используется внутри
+            updateLayoutWidth(); // have to do after columnsmap update, because it is used inside
 
             refreshHeaders();
 
@@ -688,10 +680,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void removeProperty(GPropertyDraw property) {
-        if (!properties.contains(property)) {
-            return;
-        }
-
         values.remove(property);
         properties.remove(property);
         columnKeys.remove(property);

@@ -123,8 +123,10 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     private void removeProperty(GGroupObject group, GPropertyDraw property) {
-        panel.removeProperty(property);
-        tree.removeProperty(group, property);
+        if(property.grid)
+            tree.removeProperty(group, property);
+        else
+            panel.removeProperty(property);
     }
 
     private void updateProperty(GGroupObject group, GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values) {

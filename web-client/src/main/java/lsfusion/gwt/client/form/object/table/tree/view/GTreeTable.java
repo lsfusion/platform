@@ -133,15 +133,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void removeProperty(GGroupObject group, GPropertyDraw property) {
         dataUpdated = true;
-        int index = tree.removeProperty(group, property);
-        if (index > 0) {
-            createdFields.remove(index);
-            headers.remove(index);
-            removeColumn(index);
 
-            columnsMap.remove(property);
-            columnsUpdated = true;
-        }
+        int index = tree.removeProperty(group, property);
+        createdFields.remove(index);
+        headers.remove(index);
+        removeColumn(index);
+
+        columnsMap.remove(property);
+        columnsUpdated = true;
     }
 
     private NativeHashMap<GPropertyDraw, Column> columnsMap = new NativeHashMap<>();
