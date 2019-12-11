@@ -32,6 +32,7 @@ public abstract class AbstractTableController implements TableController {
         }
     }
 
+    @Override
     public ClientFormController getFormController() {
         return formController;
     }

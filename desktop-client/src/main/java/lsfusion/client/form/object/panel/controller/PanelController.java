@@ -101,7 +101,7 @@ public class PanelController {
         propertyControllers.get(property).setPropertyCaptions(propertyCaptions);
     }
 
-    public void updateShowIfs(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs) {
+    public void updateShowIfValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs) {
         propertyControllers.get(property).setShowIfs(showIfs);
     }
 

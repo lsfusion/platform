@@ -17,7 +17,7 @@ public class GBackgroundReader implements GPropertyReader {
     }
 
     public void update(GTableController controller, Map<GGroupObjectValue, Object> keys, boolean updateKeys) {
-        controller.updateBackgroundValues(this, keys);
+        controller.updateCellBackgroundValues(this, keys);
     }
 
     @Override

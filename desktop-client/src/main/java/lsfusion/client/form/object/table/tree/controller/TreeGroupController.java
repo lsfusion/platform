@@ -18,7 +18,6 @@ import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
 import lsfusion.client.form.object.table.tree.view.TreeView;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.interop.form.order.user.Order;
 
 import java.awt.*;
 import java.io.IOException;
@@ -186,6 +185,78 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     @Override
+    public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (property.grid) {
+            tree.updateCellBackgroundValues(property, values);
+        } else {
+            panel.updateCellBackgroundValues(property, values);
+        }
+    }
+
+    @Override
+    public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (property.grid) {
+            tree.updateCellForegroundValues(property, values);
+        } else {
+            panel.updateCellForegroundValues(property, values);
+        }
+    }
+
+    @Override
+    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
+        if (property.grid) {
+            view.updateDrawPropertyValues(property, values, update);
+        } else {
+            panel.updatePropertyValues(property, values, update);
+        }
+    }
+
+    @Override
+    public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (!property.grid) {
+            panel.updatePropertyCaptions(property, values);
+        }
+    }
+
+    @Override
+    public void updateShowIfValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (!property.grid) {
+            panel.updateShowIfValues(property, values);
+        }
+    }
+
+    @Override
+    public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (property.grid) {
+            tree.updateReadOnlyValues(property, values);
+        } else {
+            panel.updateReadOnlyValues(property, values);
+        }
+    }
+
+    @Override
+    public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> values) {
+        tree.updateRowBackgroundValues(values);
+        if (values != null && !values.isEmpty())
+            panel.updateRowBackgroundValue((Color) values.values().iterator().next());
+    }
+
+    @Override
+    public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> values) {
+        tree.updateRowForegroundValues(values);
+        if (values != null && !values.isEmpty())
+            panel.updateRowForegroundValue((Color) values.values().iterator().next());
+    }
+
+    @Override
+    public ClientGroupObject getSelectedGroupObject() {
+        Object node = tree.currentTreePath.getLastPathComponent();
+        return node instanceof TreeGroupNode
+                ? ((TreeGroupNode) node).group
+                : treeGroup.groups.get(0);
+    }
+
+    @Override
     public ClientGroupObject getGroupObject() {
         return lastGroupObject;
     }
@@ -205,6 +276,11 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     @Override
+    public List<ClientPropertyDraw> getPropertyDraws() {
+        return formController.getPropertyDraws();
+    }
+
+    @Override
     public ClientPropertyDraw getSelectedProperty() {
         return tree.getSelectedProperty();
     }
@@ -221,73 +297,6 @@ public class TreeGroupController extends AbstractTableController {
     @Override
     public boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> value, boolean alreadySet) {
         return tree.changeOrders(groupObject, value, alreadySet);
-    }
-
-    @Override
-    public List<ClientPropertyDraw> getPropertyDraws() {
-        return formController.getPropertyDraws();
-    }
-
-    @Override
-    public ClientGroupObject getSelectedGroupObject() {
-        Object node = tree.currentTreePath.getLastPathComponent();
-        return node instanceof TreeGroupNode
-               ? ((TreeGroupNode) node).group
-               : treeGroup.groups.get(0);
-    }
-
-    public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
-        if (panel.containsProperty(property)) {
-            panel.updatePropertyCaptions(property, captions);
-        }
-    }
-
-    public void updateShowIfs(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs) {
-        if (panel.containsProperty(property)) {
-            panel.updateShowIfs(property, showIfs);
-        }
-    }
-
-    @Override
-    public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (panel.containsProperty(property)) {
-            panel.updateReadOnlyValues(property, values);
-        } else {
-            tree.updateReadOnlyValues(property, values);
-        }
-    }
-
-    public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
-        tree.updateRowBackgroundValues(rowBackground);
-        panel.updateRowBackgroundValue((Color)BaseUtils.singleValue(rowBackground));
-    }
-
-    public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
-        tree.updateRowForegroundValues(rowForeground);
-        panel.updateRowForegroundValue((Color)BaseUtils.singleValue(rowForeground));
-    }
-
-    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
-        if (panel.containsProperty(property)) {
-            panel.updatePropertyValues(property, values, update);
-        } else
-            view.updateDrawPropertyValues(property, values, update);
-    }
-
-    public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
-        if (panel.containsProperty(property)) {
-            panel.updateCellBackgroundValues(property, cellBackgroundValues);
-        } else {
-            tree.updateCellBackgroundValues(property, cellBackgroundValues);
-        }
-    }
-
-    public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
-        if (panel.containsProperty(property)) {
-            panel.updateCellForegroundValues(property, cellForegroundValues);
-        } else {
-            tree.updateCellForegroundValues(property, cellForegroundValues);
-        }
     }
 
     public ClientGroupObject getCurrentGroupObject() {

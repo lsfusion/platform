@@ -61,6 +61,10 @@ public class GridController extends AbstractTableController {
 
     private boolean forceHidden = false;
 
+    public boolean isGrid() {
+        return groupObject != null && groupObject.classView.isGrid();
+    }
+
     public GridController(ClientGroupObject igroupObject, ClientFormController formController, final ClientFormLayout formLayout, GridUserPreferences[] userPreferences) {
         super(formController, formLayout, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
@@ -394,80 +398,128 @@ public class GridController extends AbstractTableController {
     }
 
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
-        if (panel.containsProperty(property)) {
-            panel.updateColumnKeys(property, groupColumnKeys);
-        } else {
+        if (property.grid) {
             table.updateColumnKeys(property, groupColumnKeys);
+        } else {
+            panel.updateColumnKeys(property, groupColumnKeys);
         }
     }
 
-    public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
-        if (panel.containsProperty(property)) {
-            panel.updatePropertyCaptions(property, captions);
+    @Override
+    public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (property.grid) {
+            table.updateCellBackgroundValues(property, values);
         } else {
-            table.updatePropertyCaptions(property, captions);
+            panel.updateCellBackgroundValues(property, values);
         }
     }
 
-    public void updateShowIfs(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs) {
-        if (panel.containsProperty(property)) {
-            panel.updateShowIfs(property, showIfs);
+    @Override
+    public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (property.grid) {
+            table.updateCellForegroundValues(property, values);
         } else {
-            table.updateShowIfValues(property, showIfs);
+            panel.updateCellForegroundValues(property, values);
+        }
+    }
+
+    @Override
+    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean updateKeys) {
+        if (property.grid) {
+            table.updatePropertyValues(property, values, updateKeys);
+        } else {
+            panel.updatePropertyValues(property, values, updateKeys);
+        }
+    }
+
+    @Override
+    public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (property.grid) {
+            table.updatePropertyCaptions(property, values);
+        } else {
+            panel.updatePropertyCaptions(property, values);
+        }
+    }
+
+    @Override
+    public void updateShowIfValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (property.grid) {
+            table.updateShowIfValues(property, values);
+        } else {
+            panel.updateShowIfValues(property, values);
         }
     }
 
     @Override
     public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (panel.containsProperty(property)) {
-            panel.updateReadOnlyValues(property, values);
-        } else {
+        if (property.grid) {
             table.updateReadOnlyValues(property, values);
-        }
-    }
-
-    public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
-        if (panel.containsProperty(property)) {
-            panel.updateCellBackgroundValues(property, cellBackgroundValues);
         } else {
-            table.updateCellBackgroundValues(property, cellBackgroundValues);
+            panel.updateReadOnlyValues(property, values);
         }
     }
 
-    public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
-        if (panel.containsProperty(property)) {
-            panel.updateCellForegroundValues(property, cellForegroundValues);
-        } else {
-            table.updateCellForegroundValues(property, cellForegroundValues);
-        }
-    }
-
-    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean updateKeys) {
-        if (panel.containsProperty(property)) {
-            panel.updatePropertyValues(property, values, updateKeys);
-        } else {
-            table.updatePropertyValues(property, values, updateKeys);
-        }
-    }
-
-    public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
+    @Override
+    public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> values) {
         if (isGrid()) {
-            table.updateRowBackgroundValues(rowBackground);
+            table.updateRowBackgroundValues(values);
         } else {
-            panel.updateRowBackgroundValue((Color)BaseUtils.singleValue(rowBackground));
+            if (values != null && !values.isEmpty()) {
+                panel.updateRowBackgroundValue((Color) values.values().iterator().next());
+            }
         }
     }
 
-    public boolean isGrid() {
-        return groupObject != null && groupObject.classView.isGrid();
-    }
-    
-    public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
+    @Override
+    public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> values) {
         if (isGrid()) {
-            table.updateRowForegroundValues(rowForeground);
+            table.updateRowForegroundValues(values);
         } else {
-            panel.updateRowForegroundValue((Color)BaseUtils.singleValue(rowForeground));
+            if (values != null && !values.isEmpty()) {
+                panel.updateRowForegroundValue((Color) values.values().iterator().next());
+            }
         }
+    }
+
+    @Override
+    public ClientGroupObject getSelectedGroupObject() {
+        return getGroupObject();
+    }
+
+    @Override
+    public ClientGroupObject getGroupObject() {
+        return groupObject;
+    }
+
+    @Override
+    public List<ClientPropertyDraw> getGroupObjectProperties() {
+        ArrayList<ClientPropertyDraw> properties = new ArrayList<>();
+        for (ClientPropertyDraw property : getPropertyDraws()) {
+            if (groupObject.equals(property.groupObject)) {
+                properties.add(property);
+            }
+        }
+        return properties;
+    }
+
+    @Override
+    public List<ClientPropertyDraw> getPropertyDraws() {
+        return formController.form.getPropertyDraws();
+    }
+
+    @Override
+    public ClientPropertyDraw getSelectedProperty() {
+        return table.getCurrentProperty();
+    }
+
+    @Override
+    public ClientGroupObjectValue getSelectedColumn() {
+        return table.getCurrentColumn();
+    }
+
+    @Override
+    public Object getSelectedValue(ClientPropertyDraw cell, ClientGroupObjectValue columnKey) {
+        return table.getSelectedValue(cell, columnKey);
     }
 
     @Override
@@ -505,29 +557,6 @@ public class GridController extends AbstractTableController {
     public void registerGroupObject(JComponent comp) {
         comp.putClientProperty("groupObject", groupObject);
     }
-
-    public List<ClientPropertyDraw> getPropertyDraws() {
-        return formController.form.getPropertyDraws();
-    }
-
-    public ClientGroupObject getGroupObject() {
-        return groupObject;
-    }
-
-    public ClientGroupObject getSelectedGroupObject() {
-        return getGroupObject();
-    }
-
-    public List<ClientPropertyDraw> getGroupObjectProperties() {
-        ArrayList<ClientPropertyDraw> properties = new ArrayList<>();
-        for (ClientPropertyDraw property : getPropertyDraws()) {
-            if (groupObject.equals(property.groupObject)) {
-                properties.add(property);
-            }
-        }
-
-        return properties;
-    }
     
     public boolean isPropertyInGrid(ClientPropertyDraw property) {
         return table != null && table.containsProperty(property);
@@ -535,17 +564,6 @@ public class GridController extends AbstractTableController {
     
     public boolean isPropertyInPanel(ClientPropertyDraw property) {
         return panel.containsProperty(property);
-    }
-
-    public ClientPropertyDraw getSelectedProperty() {
-        return table.getCurrentProperty();
-    }
-    public ClientGroupObjectValue getSelectedColumn() {
-        return table.getCurrentColumn();
-    }
-
-    public Object getSelectedValue(ClientPropertyDraw cell, ClientGroupObjectValue columnKey) {
-        return table.getSelectedValue(cell, columnKey);
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {

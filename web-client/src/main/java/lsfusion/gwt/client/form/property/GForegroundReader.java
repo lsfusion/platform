@@ -17,7 +17,7 @@ public class GForegroundReader implements GPropertyReader {
     }
 
     public void update(GTableController controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
-        controller.updateForegroundValues(this, values);
+        controller.updateCellForegroundValues(this, values);
     }
 
     @Override

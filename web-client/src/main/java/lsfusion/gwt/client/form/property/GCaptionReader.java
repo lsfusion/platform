@@ -17,7 +17,7 @@ public class GCaptionReader implements GPropertyReader {
     }
 
     public void update(GTableController controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
-        controller.updateCaptionValues(this, values);
+        controller.updatePropertyCaptions(this, values);
     }
 
     @Override

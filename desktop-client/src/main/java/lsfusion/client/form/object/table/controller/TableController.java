@@ -12,37 +12,24 @@ import java.util.Map;
 
 public interface TableController {
 
-    List<ClientObject> getObjects();
-    List<ClientPropertyDraw> getPropertyDraws();
+    void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
+    void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
+    void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update);
+    void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
+    void updateShowIfValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
+    void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
+    void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> values);
+    void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> values);
 
+    ClientFormController getFormController();
+    ClientGroupObject getSelectedGroupObject();
     ClientGroupObject getGroupObject();
     List<ClientPropertyDraw> getGroupObjectProperties();
-
-    // пока зафигачим в этот интерфейс, хотя может быть в дальнейшем выделим в отдельный
-    // данный интерфейс отвечает за получение текущих выбранных значений
+    List<ClientObject> getObjects();
+    List<ClientPropertyDraw> getPropertyDraws();
     ClientPropertyDraw getSelectedProperty();
     ClientGroupObjectValue getSelectedColumn();
     Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey);
-    
-    ClientFormController getFormController();
-
-    ClientGroupObject getSelectedGroupObject();
-
-    void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions);
-
-    void updateShowIfs(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs);
-
-    void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
-
-    void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground);
-
-    void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground);
-
-    void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update);
-
-    void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues);
-
-    void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues);
 
     boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> value, boolean alreadySet);
 }

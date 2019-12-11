@@ -180,7 +180,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public void updateBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             tree.updateCellBackgroundValues(property, values);
@@ -190,7 +190,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public void updateForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             tree.updateCellForegroundValues(property, values);
@@ -200,7 +200,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public void updateCaptionValues(GCaptionReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GCaptionReader reader, Map<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             tree.updatePropertyCaptions(property, values);

@@ -626,7 +626,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-            controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
+            controller.updatePropertyCaptions(ClientPropertyDraw.this, readKeys);
         }
 
         public int getID() {
@@ -648,7 +648,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
-            controller.updateShowIfs(ClientPropertyDraw.this, values);
+            controller.updateShowIfValues(ClientPropertyDraw.this, values);
         }
 
         public int getID() {

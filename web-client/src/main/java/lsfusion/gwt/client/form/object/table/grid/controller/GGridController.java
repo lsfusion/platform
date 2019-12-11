@@ -331,7 +331,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateCellBackgroundValues(property, values);
@@ -341,7 +341,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateCellForegroundValues(property, values);
@@ -351,7 +351,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateCaptionValues(GCaptionReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GCaptionReader reader, Map<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updatePropertyCaptions(property, values);
@@ -408,6 +408,44 @@ public class GGridController extends GAbstractTableController {
                 panel.updateRowForegroundValue(values.values().iterator().next());
             }
         }
+    }
+
+    public GGroupObjectValue getCurrentKey() {
+        GGroupObjectValue result = null;
+        if (isGrid()) {
+            result = table.getCurrentKey();
+        }
+        return result == null ? GGroupObjectValue.EMPTY : result;
+    }
+
+    @Override
+    public GGroupObject getSelectedGroupObject() {
+        return groupObject;
+    }
+
+    @Override
+    public List<GPropertyDraw> getGroupObjectProperties() {
+        ArrayList<GPropertyDraw> properties = new ArrayList<>();
+        for (GPropertyDraw property : formController.getPropertyDraws()) {
+            if (groupObject.equals(property.groupObject)) {
+                properties.add(property);
+            }
+        }
+        return properties;
+    }
+
+    @Override
+    public GPropertyDraw getSelectedProperty() {
+        return table.getCurrentProperty();
+    }
+    @Override
+    public GGroupObjectValue getSelectedColumn() {
+        return table.getCurrentColumn();
+    }
+
+    @Override
+    public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return table.getSelectedValue(property, columnKey);
     }
 
     private void removeProperty(GPropertyDraw property) {
@@ -468,14 +506,6 @@ public class GGridController extends GAbstractTableController {
         }
     }
 
-    public GGroupObjectValue getCurrentKey() {
-        GGroupObjectValue result = null;
-        if (isGrid()) {
-            result = table.getCurrentKey();
-        }
-        return result == null ? GGroupObjectValue.EMPTY : result;
-    }
-
     @Override
     public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
         assert this.groupObject.equals(groupObject);
@@ -506,22 +536,6 @@ public class GGridController extends GAbstractTableController {
     public GGroupObjectUserPreferences getGeneralGridPreferences() {
         return table.getGeneralGridPreferences();
     }
-
-    @Override
-    public GGroupObject getSelectedGroupObject() {
-        return groupObject;
-    }
-
-    @Override
-    public List<GPropertyDraw> getGroupObjectProperties() {
-        ArrayList<GPropertyDraw> properties = new ArrayList<>();
-        for (GPropertyDraw property : formController.getPropertyDraws()) {
-            if (groupObject.equals(property.groupObject)) {
-                properties.add(property);
-            }
-        }
-        return properties;
-    }
     
     public boolean isPropertyInGrid(GPropertyDraw property) {
         return isGrid() && table.containsProperty(property);
@@ -533,20 +547,6 @@ public class GGridController extends GAbstractTableController {
 
     public boolean isPropertyInPanel(GPropertyDraw property) {
         return panel.containsProperty(property);
-    }
-    
-    @Override
-    public GPropertyDraw getSelectedProperty() {
-        return table.getCurrentProperty();
-    }
-    @Override
-    public GGroupObjectValue getSelectedColumn() {
-        return table.getCurrentColumn();
-    }
-
-    @Override
-    public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
-        return table.getSelectedValue(property, columnKey);
     }
 
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
