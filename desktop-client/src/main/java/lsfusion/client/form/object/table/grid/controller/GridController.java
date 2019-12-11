@@ -332,7 +332,7 @@ public class GridController extends AbstractTableController {
 
         for (ClientPropertyDraw property : fc.dropProperties) {
             if (property.groupObject == groupObject) {
-                dropProperty(property);
+                removeProperty(property);
             }
         }
 
@@ -365,12 +365,12 @@ public class GridController extends AbstractTableController {
         }
     }
 
-    public void dropProperty(ClientPropertyDraw property) {
-        if (table != null) {
+    public void removeProperty(ClientPropertyDraw property) {
+        if (property.grid) {
             table.removeProperty(property);
+        } else {
+            panel.removeProperty(property);
         }
-
-        panel.removeProperty(property);
     }
 
     public void setRowKeysAndCurrentObject(List<ClientGroupObjectValue> gridObjects, ClientGroupObjectValue newCurrentObject) {
