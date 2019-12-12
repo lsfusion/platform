@@ -16,6 +16,8 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -63,6 +65,20 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             setFocusable(false);
         }
 
+        //we have 'ENTER' binding for tab action, so this 'ENTER' binding should have higher priority
+        form.addBinding(new KeyInputEvent(KeyStrokes.getEnter()), new ClientFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getSource() == ActionPanelView.this) {
+            @Override
+            public boolean pressed(KeyEvent ke) {
+                return form.commitCurrentEditing() && editDispatcher.executePropertyEditAction(property, columnKey, ServerResponse.CHANGE, null, null);
+            }
+
+            @Override
+            public boolean showing() {
+                return isVisible();
+            }
+        });
+
+        //listen to mouse press and all other key press events
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (form.commitCurrentEditing()) {
