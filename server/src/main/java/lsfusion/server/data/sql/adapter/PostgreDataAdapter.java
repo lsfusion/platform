@@ -170,7 +170,8 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument("-F");
         if(threadCount > 1) {
             commandLine.addArgument("directory");
-            commandLine.addArgument("-j " + threadCount);
+            commandLine.addArgument("-j");
+            commandLine.addArgument(String.valueOf(threadCount));
         } else {
             commandLine.addArgument("custom");
         }
