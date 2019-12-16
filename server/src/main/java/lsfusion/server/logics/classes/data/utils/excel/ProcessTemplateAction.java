@@ -103,7 +103,7 @@ public class ProcessTemplateAction extends InternalAction {
                 }
             }
 
-        } catch (ScriptingErrorLog.SemanticErrorException | InvalidFormatException | IOException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException | IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -117,7 +117,7 @@ public class ProcessTemplateAction extends InternalAction {
                     for (int k = row.getFirstCellNum(); k <= row.getLastCellNum(); k++) {
                         Cell cell = row.getCell(k);
                         //если вдруг понадобится заменять ячейки не строкового типа, будем думать, но пока это представляется крайне маловероятным
-                        if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING) {
+                        if (cell != null && cell.getCellType() == CellType.STRING) {
                             String cellContents = cell.getStringCellValue();
                             DataFormat dataFormat = wb.createDataFormat();
                             if (cellContents.contains(templateEntry.key)) {
@@ -153,7 +153,7 @@ public class ProcessTemplateAction extends InternalAction {
 
         if (templateEntry.isNumeric) {
             cell.setCellValue(Double.parseDouble(value));
-            cell.setCellType(XSSFCell.CELL_TYPE_NUMERIC);
+            cell.setCellType(CellType.NUMERIC);
         } else {
             cell.setCellValue(value);
         }

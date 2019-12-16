@@ -210,7 +210,7 @@ public class ProcessTemplateAction extends InternalAction {
         for (XWPFParagraph paragraph : document.getParagraphs()) {
             List<XWPFRun> runs = paragraph.getRuns();
 
-            TextSegement found = paragraph.searchText(find, new PositionInParagraph());
+            TextSegment found = paragraph.searchText(find, new PositionInParagraph());
             if (found != null) {
                 if (found.getBeginRun() == found.getEndRun()) {
                     // whole search string is in one Run

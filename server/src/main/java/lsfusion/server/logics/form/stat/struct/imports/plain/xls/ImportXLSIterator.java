@@ -109,26 +109,10 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         Cell cell = row.getCell(fieldIndex);
         if(cell == null)
             return null;
-        CellValue cellValue;
-        if (cell.getCellTypeEnum() == CellType.BOOLEAN) {
-            cellValue = getBooleanCellValue(cell);
-        } else {
-            cellValue = formulaEvaluator.evaluate(cell);
-        }
+        CellValue cellValue = formulaEvaluator.evaluate(cell);
         if(cellValue == null)
             return null;
         return type.parseXLS(cell, cellValue);
-    }
-
-    //default getBooleanCellValue of XSSFCell compares value only with "1"
-    private CellValue getBooleanCellValue(Cell cell) {
-        CellValue result = formulaEvaluator.evaluate(cell);
-        if(result == CellValue.FALSE) {
-            Object privateCell = ReflectionUtils.getPrivateFieldValue(cell, "_cell");
-            String cellValue = ReflectionUtils.getPrivateMethodValue(privateCell.getClass(), privateCell, "getV", new Class[]{}, new Object[]{});
-            result = cellValue != null && cellValue.equals("true") ? CellValue.TRUE : CellValue.FALSE;
-        }
-        return result;
     }
 
     @Override
@@ -202,8 +186,8 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         }
 
         @Override
-        public int evaluateFormulaCell(Cell cell) {
-            return 0;
+        public CellType evaluateFormulaCell(Cell cell) {
+            return CellType.NUMERIC;
         }
 
         @Override
