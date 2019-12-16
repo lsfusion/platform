@@ -79,8 +79,8 @@ public abstract class GGridSortableHeaderManager<T> {
             if(!alreadySet) {
                 orderDirections.clear();
                 ordersCleared(groupObject);
-            } else
-                assert orderDirections.isEmpty();
+            } /*else
+                assert orderDirections.isEmpty();*/
 
             for(Map.Entry<T, Boolean> entry : set.entrySet()) {
                 changeOrder(entry.getKey(), GOrder.ADD, alreadySet);

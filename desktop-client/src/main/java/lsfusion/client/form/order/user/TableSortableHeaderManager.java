@@ -140,8 +140,8 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
             if(!alreadySet) {
                 orderDirections.clear();
                 ordersCleared(groupObject);
-            } else
-                assert orderDirections.isEmpty();
+            } /*else
+                assert orderDirections.isEmpty();*/
 
             for(Map.Entry<T, Boolean> entry : set.entrySet()) {
                 changeOrder(entry.getKey(), Order.ADD, alreadySet);
