@@ -29,7 +29,7 @@ public class EditBindingMap {
                 return ServerResponse.EDIT_OBJECT;
             }
 
-            if (!KeyStrokes.isSuitableEditKeyEvent(editEvent)) {
+            if (!KeyStrokes.isSuitableEditKeyEvent(editEvent) || KeyStrokes.isEnterEvent(editEvent)) {
                 return null;
             }
         } else if (editEvent instanceof MouseEvent) {
