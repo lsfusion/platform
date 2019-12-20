@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 public class BusinessLogicsBootstrap {
     private static final Logger logger = ServerLoggers.startLogger;
 
+    private static AbstractXmlApplicationContext springContext;
     private static LogicsInstance logicsInstance;
 
     private static volatile boolean stopped = true;
@@ -39,7 +40,7 @@ public class BusinessLogicsBootstrap {
 
         boolean instanceCreated = false;
         try {
-            AbstractXmlApplicationContext springContext = new ClassPathXmlApplicationContext(getSettingsPath());
+            springContext = new ClassPathXmlApplicationContext(getSettingsPath());
             logicsInstance = (LogicsInstance) springContext.getBean("logicsInstance");
             instanceCreated = true;
         } catch (Throwable t) {
@@ -68,6 +69,10 @@ public class BusinessLogicsBootstrap {
                 stop();
             }
         }
+    }
+
+    public static Object getSpringContextBean(String name) {
+        return springContext != null && springContext.containsBean(name) ? springContext.getBean(name) : null;
     }
 
     private static String getSettingsPath() throws IOException {
