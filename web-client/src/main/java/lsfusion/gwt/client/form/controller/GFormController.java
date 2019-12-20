@@ -1382,11 +1382,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void addBinding(GInputEvent event, Binding binding) {
         assert event != null && binding != null;
 
-        ArrayList<Binding> groupBindings = bindings.get(event);
-        if (groupBindings == null) {
-            groupBindings = new ArrayList<>();
-            bindings.put(event, groupBindings);
-        }
+        ArrayList<Binding> groupBindings = bindings.computeIfAbsent(event, k -> new ArrayList<>());
+        if(binding.priority == 0)
+            binding.priority = groupBindings.size();
         if(binding.bindDialog == null)
             binding.bindDialog = event.bindingModes != null ? event.bindingModes.getOrDefault("dialog", GBindingMode.AUTO) : GBindingMode.AUTO;
         if(binding.bindGroup == null)
