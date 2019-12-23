@@ -1622,9 +1622,9 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void addBinding(InputEvent ks, Binding binding) {
-        List<Binding> list = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
+        List<Binding> groupBindings = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
         if(binding.priority == 0)
-            binding.priority = list.size();
+            binding.priority = groupBindings.size();
         if(binding.bindDialog == null)
             binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindGroup == null)
@@ -1633,7 +1633,7 @@ public class ClientFormController implements AsyncListener {
             binding.bindEditing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("editing", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindShowing == null)
             binding.bindShowing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("showing", BindingMode.AUTO) : BindingMode.AUTO;
-        list.add(binding);
+        groupBindings.add(binding);
     }
 
     public void addKeySetBinding(Binding binding) {

@@ -175,8 +175,8 @@ sendMessage '{chat.send.message.chat}' (Chat chat, TEXT message, BOOLEAN system)
     seekLastMessageInFullChat();
 }
 
-sendMessage '{chat.send.message}'  ABSTRACT LIST ( Chat, CustomUser) CHANGEKEY 'ctrl ENTER';
-saveMessage '{chat.save.message}'  ABSTRACT LIST ( Chat) CHANGEKEY 'ctrl ENTER';
+sendMessage '{chat.send.message}'  ABSTRACT LIST ( Chat, CustomUser) CHANGEKEY 'ctrl ENTER;priority=100';
+saveMessage '{chat.save.message}'  ABSTRACT LIST ( Chat) CHANGEKEY 'ctrl ENTER;priority=100';
 
 sendRestartMessage '{chat.send.restart.message}' = DATA BOOLEAN ();
 sendRestartServerMessage '{chat.send.restart.server.message}' ()  { sendMessage(chat('system'), '{chat.send.restart.server.message.message}', TRUE); }
