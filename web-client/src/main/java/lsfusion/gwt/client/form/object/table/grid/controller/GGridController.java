@@ -629,11 +629,11 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void updateSettingsButton() {
-        if(table instanceof GGridTable) {
-            GGridTable gridTable = (GGridTable) table;
-            settingsButton.showBackground(gridTable.hasUserPreferences() || gridTable.generalPreferencesSaved() || gridTable.userPreferencesSaved());
-        } else {
-            if(table instanceof GPivot) {
+        if(settingsButton != null) {
+            if (table instanceof GGridTable) {
+                GGridTable gridTable = (GGridTable) table;
+                settingsButton.showBackground(gridTable.hasUserPreferences() || gridTable.generalPreferencesSaved() || gridTable.userPreferencesSaved());
+            } else if (table instanceof GPivot) {
                 GPivot pivotTable = (GPivot) table;
                 settingsButton.showBackground(pivotTable.isSettings());
             }
