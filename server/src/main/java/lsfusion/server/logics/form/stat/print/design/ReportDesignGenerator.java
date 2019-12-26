@@ -387,7 +387,7 @@ public class ReportDesignGenerator {
 
     private JasperDesign createJasperDesignObject(ReportNode node, boolean needMargin, boolean needTopMargin) throws JRException {
         JasperDesign design = new JasperDesign();
-        design.setName(node.getName(formView));
+        design.setName(getNodeName(node));
 
         if(!needMargin) {
             design.setTopMargin(needTopMargin ? neighboursGap : 0);
@@ -408,5 +408,11 @@ public class ReportDesignGenerator {
         design.addStyle(DesignStyles.getDefaultStyle());
         designs.put(node, design);
         return design;
+    }
+
+    private String getNodeName(ReportNode node) {
+        String nodeName = node.getName(formView);
+        return nodeName != null && (printType == FormPrintType.XLS || printType == FormPrintType.XLSX) ?
+                nodeName.replaceAll("[\\\\/*?:\\[\\],]", "_") : nodeName; //forbidden characters: /\*?:[],
     }
 }
