@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -167,7 +168,7 @@ public final class FormDockable {
         }
     }
 
-    private class TabWidget extends HorizontalPanel {
+    private class TabWidget extends FlexPanel {
         private Label label;
         private Button closeButton;
 
@@ -184,11 +185,12 @@ public final class FormDockable {
             closeButton.setText(EscapeUtils.UNICODE_CROSS);
             closeButton.setStyleName("closeTabButton");
 
-            add(label);
-            setCellVerticalAlignment(label, ALIGN_MIDDLE);
+            FlexPanel labelWrapper = new FlexPanel();
+            labelWrapper.getElement().addClassName("tabLayoutPanelTabTitleWrapper");
+            labelWrapper.add(label);
+            add(labelWrapper);
             
             add(closeButton);
-            setCellVerticalAlignment(closeButton, ALIGN_MIDDLE);
 
             closeButton.addClickHandler(new ClickHandler() {
                 @Override
