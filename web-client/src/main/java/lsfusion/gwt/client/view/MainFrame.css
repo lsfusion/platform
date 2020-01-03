@@ -125,6 +125,10 @@ input[type=checkbox]:focus {
     color: #a9a9a9;
 }
 
+.tabLayoutPanelTabTitleWrapper {
+    flex-shrink: 1 !important;
+}
+
 /* ------------ Message box styles ------------ */
 .messageBox-button {
     width: 90px;
