@@ -82,7 +82,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     }
 
     protected GFormController.Binding getEnterBinding(boolean shiftPressed) {
-        GFormController.Binding binding = new GFormController.Binding(groupObject, -100) {
+        GFormController.Binding binding = new GFormController.Binding(groupObject, -100, null) {
             @Override
             public void pressed(EventTarget eventTarget) {
                 selectNextCellInColumn(!shiftPressed);
