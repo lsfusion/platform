@@ -70,6 +70,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static boolean busyDialog;
     public static long busyDialogTimeout;
     private static Boolean shouldRepeatPingRequest = true;
+    public static boolean disableConfirmDialog = false;
 
     private final String tabSID = GwtSharedUtils.randomString(25);
 
@@ -240,6 +241,12 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 } finally {
                     clean();
                 }
+            }
+        });
+
+        Window.addWindowClosingHandler(event -> {
+            if(!disableConfirmDialog) {
+                event.setMessage("confirm message"); //message is ignored, browsers show default messages
             }
         });
 

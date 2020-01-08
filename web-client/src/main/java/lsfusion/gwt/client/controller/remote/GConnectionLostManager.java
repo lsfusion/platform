@@ -248,7 +248,7 @@ public class GConnectionLostManager {
         }
 
         private void reconnectAction() {
-            Window.Location.reload();
+            GwtClientUtils.reconnect();
         }
 
         private void reloginAction() {
@@ -258,7 +258,7 @@ public class GConnectionLostManager {
         public void setFatal(boolean fatal, boolean authException) {
             if (this.fatal != fatal) {
                 if(MainFrame.devMode && fatal) {
-                    Window.Location.reload();
+                    GwtClientUtils.reconnect();
                 } else {
                     lbMessage.setHTML(authException ? messages.rmiConnectionLostAuth() : (fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal()));
                     loadingPanel.setVisible(!fatal && !authException);

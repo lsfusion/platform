@@ -11,6 +11,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
@@ -45,11 +46,18 @@ public class GwtClientUtils {
         return getPageUrlPreservingParameters("login");
     }
 
+    public static void reconnect() {
+        MainFrame.disableConfirmDialog = true;
+        Window.Location.reload();
+    }
+
     public static void relogin() {
+        MainFrame.disableConfirmDialog = true;
         Window.open(GwtClientUtils.getLoginUrl(), "_self", null);
     }
 
     public static void logout() {
+        MainFrame.disableConfirmDialog = true;
         Window.open(GwtClientUtils.getLogoutUrl(), "_self", null);
     }
 
