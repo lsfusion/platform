@@ -11,6 +11,8 @@ import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -98,6 +100,25 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     }
 
     private void initUIHandlers(GFormController iform) {
+
+        //we have 'ENTER' binding for tab action, so this 'ENTER' binding should have higher priority
+        form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, false), null), new GFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getEventTarget().cast() == button.getElement()) {
+            @Override
+            public void pressed(EventTarget eventTarget) {
+                click(eventTarget);
+            }
+
+            @Override
+            public boolean showing() {
+                return isShowing(button);
+            }
+
+            @Override
+            public boolean enabled() {
+                return enabled;
+            }
+        });
+
         button.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {

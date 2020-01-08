@@ -80,6 +80,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -1296,14 +1297,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         public GBindingMode bindGroup;
         public GBindingMode bindEditing;
         public GBindingMode bindShowing;
+        Function<NativeEvent, Boolean> isSuitable;
 
         public Binding(GGroupObject groupObject) {
-            this(groupObject, 0);
+            this(groupObject, 0, null);
         }
 
-        public Binding(GGroupObject groupObject, int priority) {
+        public Binding(GGroupObject groupObject, int priority, Function<NativeEvent, Boolean> isSuitable) {
             this.groupObject = groupObject;
             this.priority = priority;
+            this.isSuitable = isSuitable;
         }
 
         public abstract void pressed(EventTarget eventTarget);
@@ -1392,7 +1395,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             // increasing priority for group object
             GGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
-                if(bindDialog(binding) && bindGroup(groupObject, binding) && bindEditing(binding, event) && bindShowing(binding))
+                if((binding.isSuitable == null || binding.isSuitable.apply(event)) && bindDialog(binding) && bindGroup(groupObject, binding) && bindEditing(binding, event) && bindShowing(binding))
                     orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
 
             for (Binding binding : orderedBindings.values()) {
