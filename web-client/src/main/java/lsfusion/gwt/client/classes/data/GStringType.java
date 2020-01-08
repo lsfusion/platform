@@ -52,7 +52,7 @@ public class GStringType extends GDataType {
             return 15;
 
         int lengthValue = length.getValue();
-        return lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7));
+        return lengthValue <= 12 ? Math.max(lengthValue, 1) : (int) round(12 + pow(lengthValue - 12, 0.7));
     }
 
     @Override
