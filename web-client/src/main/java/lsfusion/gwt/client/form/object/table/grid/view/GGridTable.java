@@ -134,7 +134,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     validateAndCommit();
                     
                     setCurrentKey(selectedRecord.getKey());
-
                     form.changeGroupObjectLater(groupObject, selectedRecord.getKey());
                 }
             }

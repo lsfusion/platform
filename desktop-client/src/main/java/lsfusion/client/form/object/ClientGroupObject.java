@@ -35,6 +35,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public int pageSize = -1;
     public boolean needVerticalScroll;
 
+    public boolean isMap;
+
     public ClassViewType classView;
 
     public ClientGrid grid;
@@ -126,6 +128,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         calculations = pool.deserializeObject(inStream);
 
         isRecursive = inStream.readBoolean();
+        isMap = inStream.readBoolean();        
+        
         Integer ps = pool.readInt(inStream);
         if (ps != null) {
             pageSize = ps;

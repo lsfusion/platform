@@ -130,7 +130,7 @@ public class DialogBoxHelper {
                     }
                 };
                 timer.schedule(timeout);
-        }
+            }
 
             final VerticalPanel mainPane = new VerticalPanel();
             mainPane.add(contentsContainer);

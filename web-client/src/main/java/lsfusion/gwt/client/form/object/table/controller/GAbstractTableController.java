@@ -36,7 +36,7 @@ public abstract class GAbstractTableController implements GTableController {
             toolbarView = null;
         } else {
             toolbarView = new GToolbarView();
-            getFormLayout().add(toolbar, toolbarView, null);
+            getFormLayout().addBaseComponent(toolbar, toolbarView, null);
         }
     }
 
@@ -134,7 +134,7 @@ public abstract class GAbstractTableController implements GTableController {
     private void scrollToTop(GContainer container) {
         if (container != null) {
             if (container.isScroll()) {
-                Element childElement = getFormLayout().getFormContainer(container).getView().getElement().getFirstChildElement();
+                Element childElement = getFormLayout().getContainerView(container).getView().getElement().getFirstChildElement();
                 if (childElement != null && childElement.getScrollTop() != 0) {
                     childElement.setScrollTop(0);
                 }

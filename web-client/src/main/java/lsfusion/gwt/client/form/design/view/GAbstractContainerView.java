@@ -8,7 +8,7 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexCaptionPanel;
-import lsfusion.gwt.client.form.design.view.flex.FlexFormLayoutImpl;
+import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.design.view.table.TableCaptionPanel;
 
 import java.util.ArrayList;
@@ -22,7 +22,6 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public abstract class GAbstractContainerView {
     protected final GContainer container;
-    protected Widget view;
 
     protected final List<GComponent> children = new ArrayList<>();
     protected final List<Widget> childrenViews = new ArrayList<>();
@@ -41,14 +40,8 @@ public abstract class GAbstractContainerView {
 
         addImpl(index, child, view);
 
-        if(child.autoSize && view instanceof FlexFormLayoutImpl.GridPanel) {
-            updateLayoutListeners.add(new UpdateLayoutListener() {
-                @Override
-                public void updateLayout() {
-                    ((FlexFormLayoutImpl.GridPanel)view).autoSize();
-                }
-            });
-        }
+        if(child.autoSize && view instanceof GridPanel)
+            updateLayoutListeners.add(() -> ((GridPanel)view).autoSize());
     }
 
     public void remove(GComponent child) {

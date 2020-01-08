@@ -7,6 +7,8 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
+
 public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
     public ResizableSimplePanel() {
     }
@@ -33,6 +35,11 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
             this.visible = visible;
             super.setVisible(visible);
         }
+    }
+    
+    public void setFillWidget(Widget widget) { // adding element 100% fill this panel
+        setWidget(widget);
+        setupFillParent(widget.getElement());        
     }
 
     @Override

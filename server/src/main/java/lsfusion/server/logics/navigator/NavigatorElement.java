@@ -162,11 +162,17 @@ public abstract class NavigatorElement {
     }
 
     private void changeContainer(NavigatorElement comp, Version version) {
-        NavigatorElement container = comp.getNFParent(version);
-        if (container != null)
-            container.remove(comp, version);
-        
+        removeFromParent(comp, version);
         comp.setParent(this, version);
+    }
+
+    private void removeFromParent(NavigatorElement comp, Version version) {
+        NavigatorElement container = comp.getNFParent(version);
+        if (container != null) {
+            assert container.children.containsNF(comp, version);
+            container.children.remove(comp, version);
+            comp.setParent(null, version);
+        }
     }
 
     public void addFirst(NavigatorElement child, Version version) {
@@ -187,19 +193,6 @@ public abstract class NavigatorElement {
     public void addAfter(NavigatorElement child, NavigatorElement elemAfter, Version version) {
         changeContainer(child, version);
         children.addIfNotExistsToThenLast(child, elemAfter, true, version);
-    }
-
-    public boolean remove(NavigatorElement child, Version version) {
-        if(child == null)
-            return false;
-
-        if (children.containsNF(child, version)) {
-            children.remove(child, version);
-            child.setParent(null, version);
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public boolean hasChildren() {

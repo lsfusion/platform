@@ -17,6 +17,8 @@ public class ClientGrid extends ClientComponent {
 
     public ClientGroupObject groupObject;
 
+    public ClientComponent record;
+
     public ClientGrid() {
     }
 
@@ -28,6 +30,8 @@ public class ClientGrid extends ClientComponent {
         outStream.writeBoolean(quickSearch);
         outStream.writeInt(headerHeight);
 
+        pool.serializeObject(outStream, record);
+
         pool.serializeObject(outStream, groupObject);
     }
 
@@ -38,6 +42,8 @@ public class ClientGrid extends ClientComponent {
         tabVertical = inStream.readBoolean();
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
+
+        record = pool.deserializeObject(inStream);
 
         groupObject = pool.deserializeObject(inStream);
     }

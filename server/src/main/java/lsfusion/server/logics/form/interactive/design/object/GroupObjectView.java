@@ -107,6 +107,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.serializeObject(outStream, calculations);
 
         outStream.writeBoolean(entity.isParent != null);
+        outStream.writeBoolean(pool.context.view.entity.isMap(entity));
 
         boolean needVScroll;
         if (needVerticalScroll == null) {

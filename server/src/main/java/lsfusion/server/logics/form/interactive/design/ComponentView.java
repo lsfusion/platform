@@ -12,10 +12,10 @@ import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
@@ -49,7 +49,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public Dimension getSize() {
         if(size == null) {
-            ContainerView container = getContainer();
+            ContainerView container = getLayoutParamContainer();
             if(container != null && container.isScroll()) {
                 return new Dimension(-1, 1);
             }
@@ -58,7 +58,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
     
     public double getFlex(FormEntity formEntity) {
-        ContainerView container = getContainer();
+        ContainerView container = getLayoutParamContainer();
         if (container != null) {
             if (container.isScroll() || container.isSplit())
                 return flex != null && flex != 0 ? flex : 1;
@@ -71,7 +71,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public double getDefaultFlex(FormEntity formEntity) {
-        ContainerView container = getContainer();
+        ContainerView container = getLayoutParamContainer();
         if (container != null) {
             if (container.isTabbedPane())
                 return 1;
@@ -90,7 +90,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
-        ContainerView container = getContainer();
+        ContainerView container = getLayoutParamContainer();
         if (container != null) {
             if ((container.isScroll() || container.isSplit() || container.isTabbedPane()))
                 return FlexAlignment.STRETCH;
@@ -194,39 +194,68 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return container.getNF(version);
     }
 
+    // temp hack ???
+    public NFProperty<GridView> recordContainer = NFFact.property();
+    public GridView getRecordContainer() {
+        return recordContainer.get();
+    }
+    public GridView getNFRecordContainer(Version version) {
+        return recordContainer.getNF(version);
+    }
+    public ComponentView getHiddenContainer() { // when used for hidden optimization
+        ContainerView container = getContainer();
+        if(container == null)
+            return getRecordContainer();
+        return container;
+    }
+    public ContainerView getTabbedContainer() { // when it is known that component is a tab of a tabbed pane
+        ContainerView container = getContainer();
+        assert container.isTabbedPane();
+        return container;
+    }
+    public ContainerView getLayoutParamContainer() { // for using in default layouting parameters
+        return getContainer();
+    }
+
+
     @IdentityLazy
     public boolean isDesignHidden() {
-        ContainerView parent = getContainer();
+        ComponentView parent = getHiddenContainer();
         if(parent == null)
             return true;
-        if(parent.main)
+        if(parent instanceof ContainerView && ((ContainerView)parent).main)
             return false;
         return parent.isDesignHidden();
 
     }
     @IdentityLazy
     public ComponentView getLocalHideableContainer() { // show if or tabbed
-        ContainerView parent = getContainer();
+        ComponentView parent = getHiddenContainer();
         assert parent != null; // эквивалентно !isDesignHidden();
-        if(parent.main)
-            return null;
-        if(parent.showIf != null)
-            return parent;
-        if(parent.isTabbedPane())
-            return this;
+        if(parent instanceof ContainerView) {
+            ContainerView parentContainer = (ContainerView)parent;
+            if (parentContainer.main) 
+                return null;
+            if (parentContainer.showIf != null) 
+                return parent;
+            if (parentContainer.isTabbedPane()) 
+                return this;
+        }
         return parent.getLocalHideableContainer();
     }
 
     @IdentityLazy
-    public ComponentView getTabContainer() {
-        ContainerView parent = getContainer();
+    public ComponentView getTabHiddenContainer() {
+        ComponentView parent = getHiddenContainer();
         // assert !isNotTabHidden - то есть design + showif не hidden
         assert parent != null; // частный случай (!isDesignHidden) верхнего assertion'а
-        if(parent.main)
-            return null;
-        if(parent.isTabbedPane())
-            return this;
-        return parent.getTabContainer();
+        if(parent instanceof ContainerView) {
+            if (((ContainerView)parent).main)
+                return null;
+            if (((ContainerView)parent).isTabbedPane())
+                return this;
+        }
+        return parent.getTabHiddenContainer();
     }
 
     public boolean isAncestorOf(ComponentView container) {
@@ -241,9 +270,13 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.container.set(container, version);
     }
 
-    public boolean removeFromParent(Version version) {
-        ContainerView nf = container.getNF(version);
-        return nf != null && nf.remove(this, version);
+    public void removeFromParent(Version version) {
+        ContainerView nf = getNFContainer(version);
+        if(nf != null) {
+            assert nf.children.containsNF(this, version);
+            nf.children.remove(this, version);
+            setContainer(null, version);
+        }
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {

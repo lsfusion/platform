@@ -952,7 +952,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         FormView formView = getRichDesign();
         ComponentView drawComponent;
         GroupObjectEntity toDraw;
-        if((toDraw = property.getToDraw(this)) != null && property.isGrid(this)) {
+        if(property.isGrid(this) && (toDraw = property.getToDraw(this)) != null) {
             if (toDraw.isInTree())
                 drawComponent = formView.get(toDraw.treeGroup);
             else
@@ -960,6 +960,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         } else
             drawComponent = formView.get(property);
         return drawComponent;
+    }
+
+    @IdentityLazy
+    public boolean isMap(GroupObjectEntity entity) {
+        Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
+        for(PropertyDrawEntity property : propertyDrawsIt)
+            if(property.isGrid(this) && entity.equals(property.getToDraw(this))) {
+                String name = property.getSID();
+                if(name.equals("longitude") || name.equals("latitude"))
+                    return true;
+            }
+        return false;
     }
 
     public void finalizeAroundInit() {

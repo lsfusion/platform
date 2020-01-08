@@ -1,18 +1,18 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ImageButton;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
-import lsfusion.gwt.client.form.design.view.GFormLayoutImpl;
+import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -24,6 +24,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCalculateSu
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuantityButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
+import lsfusion.gwt.client.form.object.table.grid.view.GMap;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.object.table.grid.view.GTableView;
 import lsfusion.gwt.client.form.property.*;
@@ -35,12 +36,11 @@ import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 public class GGridController extends GAbstractTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
-    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
-
     public GGroupObject groupObject;
 
-    private Panel gridView;
-    private ResizableSimplePanel panelView;
+    private Widget gridView;
+    private ResizableSimplePanel gridContainerView;
+    public Widget recordView;
 
     private GTableView table;
 
@@ -62,19 +62,41 @@ public class GGridController extends GAbstractTableController {
         if (isGrid()) {
             boolean autoSize = groupObject.grid.autoSize;
             
-            ResizableSimplePanel panel = new ResizableSimplePanel();
-            panel.setStyleName("gridResizePanel");
+            ResizableSimplePanel gridContainerView = new ResizableSimplePanel();
+            gridContainerView.setStyleName("gridResizePanel");
             if(autoSize) { // убираем default'ый minHeight
-                panel.getElement().getStyle().setProperty("minHeight", "0px");
-                panel.getElement().getStyle().setProperty("minWidth", "0px");
+                gridContainerView.getElement().getStyle().setProperty("minHeight", "0px");
+                gridContainerView.getElement().getStyle().setProperty("minWidth", "0px");
             }
+            this.gridContainerView = gridContainerView;
 
-            this.panelView = panel;
-            gridView = layoutImpl.createGridView(panel);
+            Widget gridView = gridContainerView;
+
+            // proceeding recordView
+            GComponent record = groupObject.grid.record;
+            if(record != null) {
+                Widget recordView = getFormLayout().getComponentView(record);
+                this.recordView = recordView;
+
+                // we need to add recordview somewhere, to attach it (events, listeners, etc.)
+                ResizableComplexPanel virtualGridView = new ResizableComplexPanel();
+                virtualGridView.add(gridView);
+                setupFillParent(gridView.getElement());
+
+                // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
+                ResizableSimplePanel virtualRecordView = new ResizableSimplePanel();
+                virtualRecordView.add(recordView);
+                virtualRecordView.setVisible(false);
+                virtualGridView.add(virtualRecordView);
+
+                gridView = virtualGridView;
+            }
+            
+            this.gridView = new GridPanel(gridView, gridContainerView); 
 
             this.userPreferences = userPreferences;
-
-            getFormLayout().add(groupObject.grid, gridView, () -> {
+            
+            getFormLayout().addBaseComponent(groupObject.grid, gridView, () -> {
                 Scheduler.get().scheduleDeferred(() -> {
                     table.focus();
                     scrollToTop();
@@ -94,12 +116,21 @@ public class GGridController extends GAbstractTableController {
         changeTableView(new GGridTable(formController, this, userPreferences, groupObject.grid.autoSize));
         gridTableButton.showBackground(true);
         pivotTableButton.showBackground(false);
+        mapTableButton.showBackground(false);
     }
     private void setPivotTableView() {
         changeTableView(new GPivot(formController, this));
         pivotTableButton.showBackground(true);
         gridTableButton.showBackground(false);
+        mapTableButton.showBackground(false);
     }
+    private void setMapTableView() {
+        changeTableView(new GMap(formController, this));
+        mapTableButton.showBackground(true);
+        gridTableButton.showBackground(false);
+        pivotTableButton.showBackground(false);
+    }
+    
     private boolean manual;
     private void setUpdateMode(boolean manual) {
         this.manual = manual;
@@ -114,9 +145,7 @@ public class GGridController extends GAbstractTableController {
     private void changeTableView(GTableView table) {
         assert isGrid();
 
-        Widget widget = table.getThisWidget();
-        panelView.setWidget(widget);
-        setupFillParent(panelView.getElement(), widget.getElement());
+        gridContainerView.setFillWidget(table.getThisWidget());
         
         this.table = table;
         updateSettingsButton();
@@ -129,6 +158,8 @@ public class GGridController extends GAbstractTableController {
     private GToolbarButton settingsButton;
     private GToolbarButton manualUpdateTableButton;
     private ImageButton forceUpdateTableButton;
+
+    private GToolbarButton mapTableButton;
 
     private void configureToolbar() {
         assert isGrid();
@@ -205,8 +236,7 @@ public class GGridController extends GAbstractTableController {
             public void addListener() {
                 addClickHandler(event -> {
                     setGridTableView();
-//                    setUpdateMode(false); //GUpdateMode.AUTO
-                    formController.changeMode(groupObject, true, null, null, 0, null, -1, true, null);
+                    formController.changeMode(groupObject, false, -1);
                 });
             }
         };
@@ -216,12 +246,23 @@ public class GGridController extends GAbstractTableController {
             public void addListener() {
                 addClickHandler(event -> {
                     setPivotTableView();
-//                    setUpdateMode(true); // GUpdateMode.MANUAL
-                    formController.changeMode(groupObject, true, new ArrayList<>(), new ArrayList<>(), 0, null, 1000, true, null);
+                    formController.changeMode(groupObject, true, 1000);
                 });
             }
         };
         addToToolbar(pivotTableButton);
+
+        if(groupObject.isMap) {
+            mapTableButton = new GToolbarButton("map.png", messages.formGridMapView()) {
+                public void addListener() {
+                    addClickHandler(event -> {
+                        setMapTableView();
+                        formController.changeMode(groupObject, false, 1000);
+                    });
+                }
+            };
+            addToToolbar(mapTableButton);
+        }
 
         if (groupObject.toolbar.showGridSettings) {
             addToolbarSeparator();

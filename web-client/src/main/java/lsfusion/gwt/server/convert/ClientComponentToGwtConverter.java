@@ -238,6 +238,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         grid.groupObject = convertOrCast(clientGrid.groupObject);
         grid.quickSearch = clientGrid.quickSearch;
         grid.headerHeight = clientGrid.headerHeight;
+
+        grid.record = convertOrCast(clientGrid.record);
+
         return grid;
     }
 
@@ -521,6 +524,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.classView = GClassViewType.valueOf(clientGroupObject.classView.name());
 
         groupObject.isRecursive = clientGroupObject.isRecursive;
+        groupObject.isMap = clientGroupObject.isMap;
         groupObject.parent = convertOrCast(clientGroupObject.parent);
 
         for (ClientGroupObject clientUpGroup : clientGroupObject.upTreeGroups) {

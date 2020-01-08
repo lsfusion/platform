@@ -8,7 +8,7 @@ import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.view.GFormLayoutImpl;
+import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -25,8 +25,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
 public class GTreeGroupController extends GAbstractTableController {
-    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
-    
+
     private final GTreeGroup treeGroup;
 
     private final Panel treeView;
@@ -47,17 +46,16 @@ public class GTreeGroupController extends GAbstractTableController {
 
         ResizableSimplePanel resizePanel = new ResizableSimplePanel();
         resizePanel.setStyleName("gridResizePanel");
-        resizePanel.setWidget(tree);
-        setupFillParent(resizePanel.getElement(), tree.getElement());
+        resizePanel.setFillWidget(tree);
 
         if(treeGroup.autoSize) { // убираем default'ый minHeight
             resizePanel.getElement().getStyle().setProperty("minHeight", "0px");
             resizePanel.getElement().getStyle().setProperty("minWidth", "0px");
         }
 
-        treeView = layoutImpl.createTreeView(resizePanel);
+        treeView = new GridPanel(resizePanel, resizePanel);
 
-        getFormLayout().add(treeGroup, treeView, new DefaultFocusReceiver() {
+        getFormLayout().addBaseComponent(treeGroup, treeView, new DefaultFocusReceiver() {
             @Override
             public boolean focus() {
                 boolean focused = focusFirstWidget();

@@ -30,6 +30,8 @@ public class GGroupObject implements Serializable {
     public GTreeGroup parent;
     public List<GGroupObject> upTreeGroups = new ArrayList<>();
 
+    public boolean isMap;
+
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
 

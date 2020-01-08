@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.design.view;
 
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
@@ -7,39 +9,58 @@ import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.flex.*;
+import lsfusion.gwt.client.form.object.table.grid.GGrid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
+
 public class GFormLayout extends ResizableSimplePanel {
-    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
 
     private GFormController form;
 
     private GContainer mainContainer;
 
     private Map<GContainer, GAbstractContainerView> containerViews = new HashMap<>();
+    private Map<GComponent, Widget> baseComponentViews = new HashMap<>();
 
     private ArrayList<GComponent> defaultComponents = new ArrayList<>();
     private ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
 
-    public GFormLayout(GFormController iform, GContainer imainContainer) {
+    public GFormLayout(GFormController iform, GContainer mainContainer) {
         this.form = iform;
 
-        mainContainer = imainContainer;
+        this.mainContainer = mainContainer;
 
-        addContainers(imainContainer);
+        GAbstractContainerView mainContainerView = addContainers(mainContainer);
 
-        Widget mainContainerView = containerViews.get(imainContainer).getView();
-        add(mainContainerView);
+        setFillWidget(mainContainerView.getView());
+        
+        getWidget().getElement().getStyle().setOverflow(Style.Overflow.AUTO);
+    }
 
-        layoutImpl.setupMainContainer(mainContainerView);
+    private static GAbstractContainerView createContainerView(GFormController form, GContainer container) {
+        if (container.isLinear()) {
+            return new FlexLinearContainerView(container);
+        } else if (container.isSplit()) {
+            return new FlexSplitContainerView(container);
+        } else if (container.isTabbed()) {
+            return new FlexTabbedContainerView(form, container);
+        } else if (container.isColumns()) {
+            return new FlexColumnsContainerView(container);
+        } else if(container.isScroll()) {
+            return new ScrollContainerView(container);
+        } else {
+            throw new IllegalStateException("Incorrect container type");
+        }
     }
 
     // creating containers (all other components are created when creating controllers)
-    private void addContainers(GContainer container) {
-        GAbstractContainerView containerView = layoutImpl.createContainerView(form, container);
+    private GAbstractContainerView addContainers(GContainer container) {
+        GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
         Widget view = containerView.getView();
@@ -51,38 +72,43 @@ public class GFormLayout extends ResizableSimplePanel {
         add(container, view, null);
 
         for (GComponent child : container.children) {
+            if(child instanceof GGrid)
+                child = ((GGrid)child).record;
             if (child instanceof GContainer) {
                 addContainers((GContainer) child);
             }
         }
+        return containerView;
+    }
+    public void addBaseComponent(GComponent component, Widget view, DefaultFocusReceiver focusReceiver) {
+        assert !(component instanceof GContainer);
+        baseComponentViews.put(component, view);
+        add(component, view, focusReceiver);
     }
 
-    public boolean add(GComponent key, Widget view, DefaultFocusReceiver focusReceiver) {
+    public void add(GComponent key, Widget view, DefaultFocusReceiver focusReceiver) {
         if(key.container != null) { // container can be null when component should be layouted manually
             GAbstractContainerView containerView = containerViews.get(key.container);
-            if (containerView != null && !containerView.hasChild(key)) {
-                containerView.add(key, view);
+            containerView.add(key, view);
 
-                maybeAddDefaultFocusReceiver(key, focusReceiver);
-
-                return true;
-            }
+            maybeAddDefaultFocusReceiver(key, focusReceiver);
         }
-        return false;
     }
 
-    public boolean remove(GComponent key, Widget view) {
+    public void remove(GComponent key, Widget view) {
+        assert !(key instanceof GContainer);
         if (key.container != null) { // see add method
             GAbstractContainerView containerView = containerViews.get(key.container);
-            if (containerView != null && containerView.hasChild(key)) {
-                containerView.remove(key);
+            containerView.remove(key);
 
-                maybeRemoveDefaultFocusReceiver(key);
-
-                return true;
-            }
+            maybeRemoveDefaultFocusReceiver(key);
         }
-        return false;
+    }
+
+    public void removeBaseComponent(GComponent key, Widget view) {
+        assert !(key instanceof GContainer);
+        baseComponentViews.remove(key);
+        remove(key, view);
     }
 
     private void maybeAddDefaultFocusReceiver(GComponent key, DefaultFocusReceiver focusReceiver) {
@@ -109,8 +135,13 @@ public class GFormLayout extends ResizableSimplePanel {
         return false;
     }
 
-    public GAbstractContainerView getFormContainer(GContainer container) {
+    public GAbstractContainerView getContainerView(GContainer container) {
         return containerViews.get(container);
+    }
+    public Widget getComponentView(GComponent component) {
+        if(component instanceof GContainer)
+            return getContainerView((GContainer) component).getView();
+        return baseComponentViews.get(component);
     }
 
     public void hideEmptyContainerViews() {
@@ -118,7 +149,7 @@ public class GFormLayout extends ResizableSimplePanel {
     }
 
     private void autoShowHideContainers(GContainer container) {
-        GAbstractContainerView containerView = containerViews.get(container);
+        GAbstractContainerView containerView = getContainerView(container);
         int childCnt = containerView.getChildrenCount();
         boolean hasVisible = false;
         for (int i = 0; i < childCnt; ++i) {

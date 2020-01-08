@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.object.panel.controller;
 
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
-import lsfusion.gwt.client.form.design.view.GFormLayoutImpl;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 public class GPanelController {
-    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
 
     private final GFormController form;
 
@@ -35,7 +33,7 @@ public class GPanelController {
                 propertyController = new GPropertyPanelController(property, form, () -> rowBackground, () -> rowForeground);
                 propertyControllers.put(property, propertyController);
 
-                getFormLayout().add(property, propertyController.getView(), () -> focusFirstWidget());
+                getFormLayout().addBaseComponent(property, propertyController.getView(), () -> focusFirstWidget());
             }
             propertyController.setColumnKeys(columnKeys);
         }
@@ -45,7 +43,7 @@ public class GPanelController {
     public void removeProperty(GPropertyDraw property) {
         GPropertyPanelController propController = propertyControllers.remove(property);
 
-        getFormLayout().remove(property, propController.getView());
+        getFormLayout().removeBaseComponent(property, propController.getView());
     }
 
     public void update() {

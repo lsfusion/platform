@@ -1,8 +1,12 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.struct.FormEntity;
 
 import java.io.DataInputStream;
@@ -16,6 +20,18 @@ public class GridView extends ComponentView {
     public int headerHeight = -1;
 
     public GroupObjectView groupObject;
+
+    protected NFProperty<ComponentView> record = NFFact.property();
+    public ComponentView getRecord() {
+        return record.get();
+    }
+    public ComponentView getNFRecord(Version version) {
+        return record.getNF(version);
+    }
+    public void setRecord(ComponentView component, Version version) {
+        this.record.set(component, version);
+        component.recordContainer.set(this, version);
+    }
 
     public GridView() {
         
@@ -51,6 +67,8 @@ public class GridView extends ComponentView {
         outStream.writeBoolean(quickSearch);
         outStream.writeInt(headerHeight);
 
+        pool.serializeObject(outStream, getRecord());
+
         pool.serializeObject(outStream, groupObject);
     }
 
@@ -61,6 +79,8 @@ public class GridView extends ComponentView {
         tabVertical = inStream.readBoolean();
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
+
+        record = NFFact.finalProperty(pool.deserializeObject(inStream));
 
         groupObject = pool.deserializeObject(inStream);
     }

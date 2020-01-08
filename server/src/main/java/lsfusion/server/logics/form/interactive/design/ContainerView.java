@@ -133,10 +133,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     }
 
     private void changeContainer(ComponentView comp, Version version) {
-        ContainerView container = comp.getNFContainer(version);
-        if (container != null)
-            container.remove(comp, version);
-
+        comp.removeFromParent(version);
         comp.setContainer(this, version);
     }
 
@@ -176,18 +173,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         children.addIfNotExistsToThenLast(comp, compAfter, true, version);
     }
 
-    public boolean remove(ComponentView comp, Version version) {
-        if (children.containsNF(comp, version)) {
-            children.remove(comp, version);
-            comp.setContainer(null, version);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public boolean isAncestorOf(ComponentView container) {
-        return container != null && (super.isAncestorOf(container) || isAncestorOf(container.getContainer()));
+        return container != null && (super.isAncestorOf(container) || isAncestorOf(container.getHiddenContainer()));
     }
 
     public boolean isNFAncestorOf(ComponentView container, Version version) {

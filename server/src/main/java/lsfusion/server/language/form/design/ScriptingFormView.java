@@ -9,6 +9,7 @@ import lsfusion.server.language.proxy.ViewProxyUtil;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -77,10 +78,26 @@ public class ScriptingFormView {
     public void moveComponent(ComponentView component, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert component != null && parentComponent != null;
 
-        if (!(parentComponent instanceof ContainerView)) {
-            errLog.emitComponentMustBeAContainerError(parser, parentComponent.getSID());
+        if(parentComponent instanceof GridView) {
+            moveComponentToGrid(component, (GridView) parentComponent, version);
+            return;
         }
-        ContainerView parent = (ContainerView) parentComponent;
+
+        if (parentComponent instanceof ContainerView) {
+            moveComponentToContainer(component, (ContainerView) parentComponent, pos, anchorComponent, version);
+            return;
+        }
+        errLog.emitComponentMustBeAContainerError(parser, parentComponent.getSID());
+    }
+
+    public void moveComponentToGrid(ComponentView component, GridView parentComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        assert component != null && parentComponent != null;
+
+        component.removeFromParent(version);
+        parentComponent.setRecord(component, version);
+    }
+
+    public void moveComponentToContainer(ComponentView component, ContainerView parent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
 
         if (anchorComponent != null && !parent.equals(anchorComponent.getNFContainer(version))) {
             errLog.emitIllegalInsertBeforeAfterElementError(parser, component.getSID(), parent.getSID(), anchorComponent.getSID());
@@ -116,7 +133,7 @@ public class ScriptingFormView {
             errLog.emitRemoveMainContainerError(parser);
         }
 
-        component.getNFContainer(version).remove(component, version);
+        component.removeFromParent(version);
     }
 
     public GroupObjectView getGroupObject(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {

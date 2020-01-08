@@ -131,8 +131,6 @@ public class DataPanelRenderer implements PanelRenderer {
             gridPanel.getElement().getStyle().clearHeight();
             //gridPanel.getElement().getStyle().clearProperty("minHeight");
             gridPanel.getElement().getStyle().clearProperty("maxHeight");
-            gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
-
             valueTable.setupFillParent();
         }
 

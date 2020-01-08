@@ -4,22 +4,22 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.classes.data.GIntegralType;
-import lsfusion.gwt.client.classes.data.GLogicalType;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 // view with state, without incremental updates
-public abstract class GStateTableView extends Widget implements GTableView {
+public abstract class GStateTableView extends SimplePanel implements GTableView {
 
     protected final GFormController form;
     protected final GGridController grid;
@@ -47,7 +47,16 @@ public abstract class GStateTableView extends Widget implements GTableView {
         this.form = form;
         this.grid = grid;
 
-        setElement(DOM.createDiv());
+//        setElement(DOM.createDiv());
+
+        rerender = true;
+    }
+
+    protected Element getRecordElement() {
+        Widget recordView = grid.recordView;
+        if(recordView != null)
+            return recordView.getElement();
+        return null;
     }
 
     private boolean dataUpdated = false;
@@ -55,8 +64,6 @@ public abstract class GStateTableView extends Widget implements GTableView {
     @Override
     public void setCurrentKey(GGroupObjectValue currentKey) {
         this.currentKey = currentKey;
-
-        dataUpdated = true;
     }
 
     @Override
@@ -115,7 +122,25 @@ public abstract class GStateTableView extends Widget implements GTableView {
         dataUpdated = true;
     }
 
-    protected abstract void updateView(boolean dataUpdated, Boolean updateState);
+    private boolean rerender;
+    protected void rerender() {
+        rerender = true;
+    }
+    private boolean updateState;
+
+    protected void updateView(boolean dataUpdated, Boolean updateState) {
+        if(updateState != null)
+            this.updateState = updateState;
+
+        if(dataUpdated || rerender) {
+            updateView();
+            rerender = false;
+        }
+
+        updateRendererState(this.updateState); // update state with server response
+    }
+    protected abstract void updateView();
+    protected abstract void updateRendererState(boolean set);
 
     @Override
     public void update(Boolean updateState) {
@@ -248,4 +273,86 @@ public abstract class GStateTableView extends Widget implements GTableView {
     public void afterAppliedChanges() {
 
     }
+
+    protected void changeGroupObject(GGroupObjectValue value) {
+        setCurrentKey(value);
+        form.changeGroupObjectLater(grid.groupObject, value);
+    }
+
+    // utils
+
+    protected JsArray<JavaScriptObject> convertToObjectsString(JsArray<JsArrayString> array) {
+        JsArrayString columns = array.get(0);
+        JsArray<JavaScriptObject> convert = JavaScriptObject.createArray().cast();
+        for(int i=1;i<array.length();i++) {
+            WrapperObject object = JavaScriptObject.createObject().cast();
+            JsArrayString values = array.get(i);
+            for(int j=0;j<columns.length();j++) {
+                object.putValue(columns.get(j), fromString(values.get(j)));
+            }
+            convert.push(object);
+        }
+        return convert;
+    }
+
+    protected JsArray<JavaScriptObject> convertToObjectsMixed(JsArray<JsArray<JavaScriptObject>> array) {
+        JsArray<JavaScriptObject> columns = array.get(0); // actually strings
+        JsArray<JavaScriptObject> convert = JavaScriptObject.createArray().cast();
+        for(int i=1;i<array.length();i++) {
+            WrapperObject object = JavaScriptObject.createObject().cast();
+            JsArray<JavaScriptObject> values = array.get(i);
+            for(int j=0;j<columns.length();j++) {
+                object.putValue(toString(columns.get(j)), values.get(j));
+            }
+            convert.push(object);
+        }
+        return convert;
+    }
+
+    static class WrapperObject extends JavaScriptObject {
+        protected WrapperObject() {
+        }
+
+        protected native final JsArrayString getKeys() /*-{
+            return Object.keys(this);
+        }-*/;
+        protected native final JsArrayString getArrayString(String string) /*-{
+            return this[string];
+        }-*/;
+        protected native final void putValue(String key, JavaScriptObject object) /*-{
+            this[key] = object;
+        }-*/;
+        protected native final JavaScriptObject getValue(String key) /*-{
+            return this[key];
+        }-*/;
+    }
+
+    protected native final JavaScriptObject getValue(JavaScriptObject object, String key) /*-{
+            return object[key];
+    }-*/;
+
+    protected native final JavaScriptObject fromString(String string) /*-{
+        return string;
+    }-*/;
+    protected native final String toString(JavaScriptObject string) /*-{
+        return string;
+    }-*/;
+    protected native final JavaScriptObject fromNumber(double d) /*-{
+        return d;
+    }-*/;
+    protected native final double toNumber(JavaScriptObject d) /*-{
+        return d;
+    }-*/;
+    protected native final JavaScriptObject fromBoolean(boolean b) /*-{
+        return b;
+    }-*/;
+    protected native final boolean toBoolean(JavaScriptObject b) /*-{
+        return b;
+    }-*/;
+    protected native final <T> JavaScriptObject fromObject(T object) /*-{
+        return object;
+    }-*/;
+    protected native final <T> T toObject(JavaScriptObject object) /*-{
+        return object;
+    }-*/;
 }

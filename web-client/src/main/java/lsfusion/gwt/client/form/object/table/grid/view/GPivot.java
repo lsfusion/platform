@@ -20,7 +20,6 @@ public class GPivot extends GStateTableView {
         setStyleName(getElement(), "pivotTable");
 
         config = getDefaultConfig(COLUMN);
-        rerender = true;
     }
 
     private static class Column {
@@ -31,20 +30,6 @@ public class GPivot extends GStateTableView {
             this.property = property;
             this.columnKey = columnKey;
         }
-    }
-
-    private JsArray<JavaScriptObject> convertToObjects(JsArray<JsArrayString> array) {
-        JsArrayString columns = array.get(0);
-        JsArray<JavaScriptObject> convert = JavaScriptObject.createArray().cast();
-        for(int i=1;i<array.length();i++) {
-            WrapperObject object = JavaScriptObject.createObject().cast();
-            JsArrayString values = array.get(i);
-            for(int j=0;j<columns.length();j++) {
-                object.putValue(columns.get(j), values.get(j));
-            }
-            convert.push(object);
-        }
-        return convert;
     }
 
     // in theory we can order all properties once, but so far there is no full list of properties
@@ -59,8 +44,8 @@ public class GPivot extends GStateTableView {
         }
     }
 
-    // depending on view, we may create regular view or key / value view
-    private JsArray<JsArrayString> getArray(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions) {
+    // we need key / value view since pivot
+    private JsArray<JsArrayString> getData(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions) {
         JsArray<JsArrayString> array = JavaScriptObject.createArray().cast();
 
         array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
@@ -173,33 +158,21 @@ public class GPivot extends GStateTableView {
     private static final String COLUMN = "(Колонка)";
 
     @Override
-    protected void updateView(boolean dataUpdated, Boolean updateState) {
-        if(updateState != null)
-            this.updateState = updateState;
+    protected void updateView() {
+        columnMap = new NativeHashMap<>();
+        aggrCaptions = new ArrayList<>();
+        Aggregator aggregator = Aggregator.create();
+        JsArrayString systemColumns = JavaScriptObject.createArray().cast();
+        JavaScriptObject data = getData(columnMap, aggregator, aggrCaptions, systemColumns); // convertToObjects()
+        config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
 
-        com.google.gwt.dom.client.Element element = getElement();
-        if(dataUpdated || rerender) {
-            columnMap = new NativeHashMap<>();
-            aggrCaptions = new ArrayList<>();
-
-            Aggregator aggregator = Aggregator.create();
-            JsArrayString systemColumns = JavaScriptObject.createArray().cast();
-            JavaScriptObject data = convertToObjects(getArray(columnMap, aggregator, aggrCaptions, systemColumns));
-            config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
-
-            render(element, data, config); // we need to updateRendererState after it is painted
-            rerender = false;
-        }
-
-        updateRendererState(this.updateState); // update state with server response
+        render(getElement(), data, config); // we need to updateRendererState after it is painted
     }
 
     private Map<String, Column> columnMap;
     private List<String> aggrCaptions;
 
-    private boolean updateState;
     private WrapperObject config;
-    private boolean rerender = false;
 
     private boolean settings = true;
     public boolean isSettings() {
@@ -208,26 +181,9 @@ public class GPivot extends GStateTableView {
     public void switchSettings() {
         settings = !settings;
         config = overrideShowUI(config, settings);
-        rerender = true;
+        rerender();
+
         updateView(false, null);
-    }
-
-    private static class WrapperObject extends JavaScriptObject {
-        protected WrapperObject() {
-        }
-
-        protected native final JsArrayString getKeys() /*-{
-            return Object.keys(this);
-        }-*/;
-        protected native final JsArrayString getArrayString(String string) /*-{
-            return this[string];
-        }-*/;
-        protected native final void putValue(String key, Object object) /*-{
-            this[key] = object;
-        }-*/;
-        protected native final Object getValue(String key) /*-{
-            return this[key];
-        }-*/;
     }
 
     private void fillGroupColumns(JsArrayString cols, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, List<GPropertyGroupType> types, List<String> aggrColumns) {
@@ -256,7 +212,7 @@ public class GPivot extends GStateTableView {
         for(String aggrCaption : allValues)
             (include.contains(aggrCaption) ? inclusions : exclusions).push(aggrCaption);
         config = overrideFilter(config, name, inclusions, exclusions);
-        rerender = true;
+        rerender();
     }
 
     private native WrapperObject overrideFilter(WrapperObject config, String column, JsArrayString columnInclusions, JsArrayString columnExclusions)/*-{
@@ -341,7 +297,7 @@ public class GPivot extends GStateTableView {
     private void setRendererElement(Element element) {
         rendererElement = element;
     }
-    private void updateRendererState(boolean set) {
+    protected void updateRendererState(boolean set) {
         updateRendererElementState(rendererElement, set);
     }
     private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
@@ -421,9 +377,6 @@ public class GPivot extends GStateTableView {
             for(var i=0;i<lastColumns.length;i++)
                 lastValues[i] = record[lastColumns[i]];
             var compare = this.lastValues === undefined ? -2 : @GroupColumnState::compare(*)(lastValues, this.lastValues);
-
-            if(compare !== -2 && desc)
-                desc = desc;
 
             if(compare === -2 || (!desc && compare > 0) || (desc && compare < 0)) {
                 this.lastValues = lastValues;

@@ -41,7 +41,7 @@ public abstract class FormServerResponseActionHandler<A extends FormAction<Serve
                 try {
                     resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], form, realHostName, formID, servlet);
                 } catch (Exception e) {
-                    resultActions[i] = new GThrowExceptionAction(new IllegalStateException("Can't convert server action: " + e.getMessage(), e));
+                    resultActions[i] = new GThrowExceptionAction(MainDispatchServlet.fromWebServerToWebClient(e));
                 }
             }
         }

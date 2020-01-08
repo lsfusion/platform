@@ -85,6 +85,10 @@
 <%--        <!--  google charts: gchart_renderers  -->--%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/gchart_renderers.min.js"></script>--%>
 <%--        <script type="text/javascript" src="https://www.google.com/jsapi"></script>--%>
+
+        <!--  map  -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"/>
+        <script type="text/javascript" src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
     </head>
     <body>
         <script language="JavaScript">

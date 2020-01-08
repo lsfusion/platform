@@ -204,12 +204,13 @@ public class GwtClientUtils {
         return el == rootElement;
     }
 
-    public static void setupFillParent(Element parent, Element child) {
-        parent.getStyle().setPosition(Style.Position.RELATIVE);
-        setupFillParent(child);
-    }
-
+    // using absolute positioning, but because in that case it is positioned relative to first not static element, will have to set position to relative (if it's static)
     public static void setupFillParent(Element child) {
+        Element parentElement = child.getParentElement();
+        String parentPosition = parentElement.getStyle().getPosition();
+        if(parentPosition == null || parentPosition.isEmpty() || parentPosition.equals(Style.Position.STATIC.getCssName()))
+            parentElement.getStyle().setPosition(Style.Position.RELATIVE);
+
         Style childStyle = child.getStyle();
         childStyle.setPosition(Style.Position.ABSOLUTE);
         childStyle.setTop(0, Style.Unit.PX);

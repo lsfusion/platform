@@ -20,8 +20,6 @@ public class ScrollContainerView extends GAbstractContainerView {
 
         scrollPanel = new FlexPanel(vertical);
         scrollPanel.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
-
-        view = scrollPanel;
     }
 
     private FlexPanel proxyPanel;
@@ -52,7 +50,7 @@ public class ScrollContainerView extends GAbstractContainerView {
 
     @Override
     public Widget getView() {
-        return view;
+        return scrollPanel;
     }
 
     public void updateLayout() {

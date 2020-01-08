@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.base;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.shared.DateTimeFormatInfo;
@@ -248,6 +250,13 @@ public class GwtSharedUtils {
         else {
             return new java.sql.Date(date.getTime());
         }
+    }
+    
+    public static <T extends JavaScriptObject> JsArray<T> toArray(Collection<T> collection) {
+        JsArray<T> array = JavaScriptObject.createArray().cast();
+        for(T element : collection)
+            array.push(element);
+        return array;
     }
 
     public static String stringFormat(final String format, final String... args) {

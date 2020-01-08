@@ -158,8 +158,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             getElement().setAttribute("lsfusion-form", form.sID);
         }
 
-        add(formLayout);
-        setupFillParent(getElement(), formLayout.getElement());
+        setFillWidget(formLayout);
 
         initializeControllers();
 
@@ -283,7 +282,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
-        formLayout.add(filterGroup, filterWidget, null);
+        formLayout.addBaseComponent(filterGroup, filterWidget, null);
 
         if (filterGroup.groupObject == null) {
             return;
@@ -629,6 +628,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         pendingChangeCurrentObjectsRequests.put(group, requestIndex);
     }
 
+    // has to be called setCurrentKey before
     public void changeGroupObjectLater(final GGroupObject group, final GGroupObjectValue key) {
         DeferredRunner.get().scheduleDelayedGroupObjectChange(group, new DeferredRunner.AbstractCommand() {
             @Override
@@ -950,7 +950,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void activateTab(GComponent component) {
         GContainer parentContainer = component.container;
         if(parentContainer != null && parentContainer.isTabbed()) {
-            GAbstractContainerView containerView = getFormLayout().getFormContainer(parentContainer);
+            GAbstractContainerView containerView = getFormLayout().getContainerView(parentContainer);
             if(containerView instanceof TabbedContainerView) {
                 Map<Integer, Integer> tabMap = getTabMap((TabbedContainerView) containerView, parentContainer);
                 Integer index = tabMap.get(component.ID);
@@ -978,6 +978,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
+    // change group mode with force refresh
+    public void changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize) {
+        changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null);
+    }
     public void changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode) {
         int[] propertyIDs = null;
         GGroupObjectValue[] columnKeys = null;

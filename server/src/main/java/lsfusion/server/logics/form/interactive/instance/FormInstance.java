@@ -1440,7 +1440,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ImList<ComponentView> userActivateTabs = ListFact.EMPTY(); 
     // программный activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
-        setTabVisible(view.getContainer(), view);
+        setTabVisible(view.getTabbedContainer(), view);
         
         userActivateTabs = userActivateTabs.addList(view);
     }
@@ -1478,7 +1478,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private boolean isTabHidden(PropertyDrawInstance<?> property) {
         ComponentView drawComponent = getDrawComponent(property);
         assert !isNoTabHidden(drawComponent); // так как если бы был null не попалы бы в newIsShown в readShowIfs
-        ComponentView drawTabContainer = drawComponent.getTabContainer();
+        ComponentView drawTabContainer = drawComponent.getTabHiddenContainer();
         return drawTabContainer != null && isTabHidden(drawTabContainer); // первая проверка - cheat / оптимизация
     }
 
@@ -1504,11 +1504,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private boolean isLocalHidden(ComponentView component) { // showif or tab
         assert !isDesignHidden(component);
-        assert (component instanceof ContainerView && ((ContainerView)component).showIf != null) || component.getContainer().isTabbedPane();
+        assert (component instanceof ContainerView && ((ContainerView)component).showIf != null) || component.getTabbedContainer() != null;
         if (isShowIfHidden(component)) 
             return true;
 
-        ComponentView tabContainer = component.getTabContainer();
+        ComponentView tabContainer = component.getTabHiddenContainer();
         return tabContainer != null && isTabHidden(tabContainer);
     }
 
@@ -1522,16 +1522,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(containerShowIfs.isEmpty()) // оптимизация
             return false;
 
-        ContainerView parent = component.getContainer();
+        ComponentView parent = component.getHiddenContainer();
 
         while (parent != null) {
-            Boolean shown = isContainerShown.get(parent);
+            Boolean shown = parent instanceof ContainerView ? true : isContainerShown.get(parent);
 
             if (shown != null && !shown) {
                 return true;
             }
 
-            parent = parent.getContainer();
+            parent = parent.getHiddenContainer();
         }
 
         return false;
@@ -1539,8 +1539,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private boolean isTabHidden(ComponentView component) { // sublocal
         assert !isNoTabHidden(component);
-        ContainerView parent = component.getContainer();
-        assert parent.isTabbedPane(); // tabbed
+        ContainerView parent = component.getTabbedContainer();
 
         ComponentView visible = visibleTabs.get(parent);
         ImList<ComponentView> siblings = parent.getChildrenList();
@@ -1549,7 +1548,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (!component.equals(visible))
             return true;
 
-        ComponentView tabContainer = parent.getTabContainer();
+        ComponentView tabContainer = parent.getTabHiddenContainer();
         return tabContainer != null && isTabHidden(tabContainer);
     }
 
@@ -1896,7 +1895,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             if (newStaticShown) {
                 newShown.add(drawProperty);
 
-                ComponentView tabContainer = drawComponent.getTabContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
+                ComponentView tabContainer = drawComponent.getTabHiddenContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
                 boolean hidden = tabContainer != null && isTabHidden(tabContainer);
                 boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
                 if (!isDefinitelyShown) {
