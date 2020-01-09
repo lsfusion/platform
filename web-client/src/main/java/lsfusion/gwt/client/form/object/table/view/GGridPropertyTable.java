@@ -250,6 +250,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.GROUP_CHANGE);
     }
 
+    public void runGroupReport(boolean toExcel) {
+        form.runGroupReport(groupObject.ID, toExcel);
+    }
+
     public void afterAppliedChanges() {
         if (needToRestoreScrollPosition && oldKey != null && oldRowScrollTop != -1) {
             int currentInd = getKeyboardSelectedRow();

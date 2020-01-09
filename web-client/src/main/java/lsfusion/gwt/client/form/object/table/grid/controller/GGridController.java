@@ -219,7 +219,7 @@ public class GGridController extends GAbstractTableController {
             addToToolbar(new GToolbarButton("reportbw.png", messages.formGridPrintGrid()) {
                 @Override
                 public void addListener() {
-                    addClickHandler(event -> formController.runGroupReport(groupObject.ID, false));
+                    addClickHandler(event -> table.runGroupReport(false));
                 }
             });
         }
@@ -227,7 +227,7 @@ public class GGridController extends GAbstractTableController {
         if (groupObject.toolbar.showPrintGroupXls) {
             addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
                 public void addListener() {
-                    addClickHandler(event -> formController.runGroupReport(groupObject.ID, true));
+                    addClickHandler(event -> table.runGroupReport(true));
                 }
             });
         }

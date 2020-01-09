@@ -169,6 +169,25 @@ public class GPivot extends GStateTableView {
         render(getElement(), data, config); // we need to updateRendererState after it is painted
     }
 
+    @Override
+    public void runGroupReport(boolean toExcel) {
+        if(toExcel) {
+            //todo
+        } else {
+            exportToPdf(getElement());
+        }
+    }
+
+    public static native void exportToPdf(Element element)
+        /*-{
+            var docDefinition = {
+                content: [
+                    $wnd.htmlToPdfmake(element.getElementsByClassName("pvtTable")[0].outerHTML)
+                ]
+            };
+            $wnd.pdfMake.createPdf(docDefinition).download('lsfReport.pdf');
+        }-*/;
+
     private Map<String, Column> columnMap;
     private List<String> aggrCaptions;
 

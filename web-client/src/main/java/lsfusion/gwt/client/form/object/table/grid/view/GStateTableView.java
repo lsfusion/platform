@@ -230,6 +230,10 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
     }
 
     @Override
+    public void runGroupReport(boolean toExcel) {
+    }
+
+    @Override
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         return null;
     }
