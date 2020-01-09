@@ -172,15 +172,30 @@ public class GPivot extends GStateTableView {
     @Override
     public void runGroupReport(boolean toExcel) {
         if(toExcel) {
-            //todo
+            exportToExcel(getElement());
         } else {
             exportToPdf(getElement());
         }
     }
 
+    public static native void exportToExcel(Element element)
+        /*-{
+            var pvtTable = element.getElementsByClassName("pvtTable")[0];
+            var instance = new $wnd.TableExport(pvtTable, {
+                filename: 'lsfReport',
+                exportButtons: false,
+                formats: ["xlsx"],
+                sheetname: 'lsfReport'
+            });
+            var data = instance.getExportData();
+            var exportData = data[pvtTable.getAttribute('tableexport-key')]['xlsx'];
+            instance.export2file(exportData.data, exportData.mimeType, exportData.filename, exportData.fileExtension, exportData.merges, exportData.rtl, exportData.sheetname);
+        }-*/;
+
     public static native void exportToPdf(Element element)
         /*-{
             var docDefinition = {
+                pageOrientation: 'landscape',
                 content: [
                     $wnd.htmlToPdfmake(element.getElementsByClassName("pvtTable")[0].outerHTML)
                 ]
