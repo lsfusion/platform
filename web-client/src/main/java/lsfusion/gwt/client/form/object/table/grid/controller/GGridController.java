@@ -116,13 +116,15 @@ public class GGridController extends GAbstractTableController {
         changeTableView(new GGridTable(formController, this, userPreferences, groupObject.grid.autoSize));
         gridTableButton.showBackground(true);
         pivotTableButton.showBackground(false);
-        mapTableButton.showBackground(false);
+        if(mapTableButton != null)
+            mapTableButton.showBackground(false);
     }
     private void setPivotTableView() {
         changeTableView(new GPivot(formController, this));
         pivotTableButton.showBackground(true);
         gridTableButton.showBackground(false);
-        mapTableButton.showBackground(false);
+        if(mapTableButton != null)
+            mapTableButton.showBackground(false);
     }
     private void setMapTableView() {
         changeTableView(new GMap(formController, this));
