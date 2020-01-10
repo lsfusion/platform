@@ -4282,7 +4282,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setNavigatorElementImage(NavigatorElement element, NavigatorElement parent, String imagePath) {
         if (imagePath != null) {
-            element.setImage(imagePath);
+            element.setImage("/images/" + imagePath);
         } else if (element.defaultIcon != null) {
             if (baseLM.root != null && baseLM.root.equals(parent)) {
                 element.setImage(element.defaultIcon == DefaultIcon.ACTION ? "/images/actionTop.png" :
