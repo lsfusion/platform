@@ -12,7 +12,6 @@ import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
-import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -27,6 +26,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.view.GMap;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.object.table.grid.view.GTableView;
+import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 
 import java.util.*;
@@ -96,7 +96,7 @@ public class GGridController extends GAbstractTableController {
 
             this.userPreferences = userPreferences;
             
-            getFormLayout().addBaseComponent(groupObject.grid, gridView, () -> {
+            getFormLayout().addBaseComponent(groupObject.grid, this.gridView, () -> {
                 Scheduler.get().scheduleDeferred(() -> {
                     table.focus();
                     scrollToTop();
