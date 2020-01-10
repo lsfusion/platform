@@ -87,8 +87,8 @@ public class GFormLayout extends ResizableSimplePanel {
     }
 
     public void add(GComponent key, Widget view, DefaultFocusReceiver focusReceiver) {
-        if(key.container != null) { // container can be null when component should be layouted manually
-            GAbstractContainerView containerView = containerViews.get(key.container);
+        GAbstractContainerView containerView;
+        if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
             containerView.add(key, view);
 
             maybeAddDefaultFocusReceiver(key, focusReceiver);
@@ -97,8 +97,8 @@ public class GFormLayout extends ResizableSimplePanel {
 
     public void remove(GComponent key, Widget view) {
         assert !(key instanceof GContainer);
-        if (key.container != null) { // see add method
-            GAbstractContainerView containerView = containerViews.get(key.container);
+        GAbstractContainerView containerView;
+        if (key.container != null && (containerView = containerViews.get(key.container)) != null) { // see add method
             containerView.remove(key);
 
             maybeRemoveDefaultFocusReceiver(key);
