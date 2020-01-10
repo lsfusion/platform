@@ -3,7 +3,7 @@ MODULE MasterData;
 REQUIRE System;
 
 NAVIGATOR {
-    NEW FOLDER masterData '{master.data.master.data}' BEFORE administration WINDOW toolbar IMAGE '/images/catalog.png' {
+    NEW FOLDER masterData '{master.data.master.data}' BEFORE administration WINDOW toolbar IMAGE 'catalog.png' {
         NEW FOLDER regionalData '{master.data.regional.data}';
         NEW FOLDER templatesNavigator '{master.data.templates.navigator}';
     }

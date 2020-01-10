@@ -527,11 +527,11 @@ NAVIGATOR {
             NEW computers;
         }
     }
-    NEW FOLDER account '{navigator.account}' WINDOW toolbar IMAGE '/images/lock.png' {
-        NEW ACTION reloginLoginUserAction '{navigator.account.relogin}' = reloginLoginUser[] IMAGE '/images/relogin.png';
-        NEW editProfile IMAGE '/images/editProfile.png';
-        NEW ACTION changePasswordAction '{navigator.account.change.password}' = changePassword[] IMAGE '/images/changePassword.png';
-        NEW ACTION logOutAction '{navigator.account.logout}' = restart[] IMAGE '/images/logout.png';
+    NEW FOLDER account '{navigator.account}' WINDOW toolbar IMAGE 'lock.png' {
+        NEW ACTION reloginLoginUserAction '{navigator.account.relogin}' = reloginLoginUser[] IMAGE 'relogin.png';
+        NEW editProfile IMAGE 'editProfile.png';
+        NEW ACTION changePasswordAction '{navigator.account.change.password}' = changePassword[] IMAGE 'changePassword.png';
+        NEW ACTION logOutAction '{navigator.account.logout}' = restart[] IMAGE 'logout.png';
     }
 }
 
