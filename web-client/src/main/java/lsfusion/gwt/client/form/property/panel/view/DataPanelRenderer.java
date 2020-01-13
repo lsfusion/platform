@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style;
@@ -192,7 +193,11 @@ public class DataPanelRenderer implements PanelRenderer {
 
     @Override
     public void focus() {
-        valueTable.setFocus(true);
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            public void execute () {
+                valueTable.setFocus(true);
+            }
+        });
     }
 
     private class Panel extends FlexPanel {
