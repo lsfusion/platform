@@ -125,6 +125,6 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     }
 
     public void setImagePath(LocalizedString imagePath) {
-        target.design.setImagePath(imagePath.getSourceString());
+        target.design.setImage(imagePath.getSourceString());
     }
 }

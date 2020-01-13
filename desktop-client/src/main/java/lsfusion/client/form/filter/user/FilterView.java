@@ -6,13 +6,15 @@ import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 
+import static lsfusion.base.ResourceUtils.readImage;
+
 public class FilterView extends QueryView {
 
-    private static final ImageIcon applyIcon = new ImageIcon(FilterView.class.getResource("/images/filtapply.png"));
+    private static final ImageIcon applyIcon = readImage("filtapply.png");
 
-    private static final ImageIcon addIcon = new ImageIcon(FilterView.class.getResource("/images/filtadd.png"));
+    private static final ImageIcon addIcon = readImage("filtadd.png");
 
-    private static final ImageIcon filterIcon = new ImageIcon(FilterView.class.getResource("/images/filt.png"));
+    private static final ImageIcon filterIcon = readImage("filt.png");
 
     public FilterView(QueryController controller) {
         super(controller);

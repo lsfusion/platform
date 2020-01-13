@@ -18,7 +18,6 @@ package lsfusion.gwt.client.base.view.grid;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import lsfusion.gwt.client.base.view.grid.DataGrid.Style;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 /**
@@ -37,7 +36,7 @@ public class DefaultDataGridBuilder<T> extends AbstractDataGridBuilder<T> {
         super(cellTable);
 
         // Cache styles for faster access.
-        Style style = cellTable.getResources().style();
+        GridStyle style = cellTable.getStyle();
         rowStyle = style.dataGridRow();
         cellStyle = style.dataGridCell();
         firstColumnStyle = " " + style.dataGridFirstCell();

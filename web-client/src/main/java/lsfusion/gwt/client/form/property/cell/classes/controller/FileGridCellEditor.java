@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -10,6 +9,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.view.GImage;
 import lsfusion.gwt.client.base.view.ProgressBar;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -378,7 +378,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     private class FileUploadStatusPanel extends HorizontalPanel {
         private Label fileNameLabel;
         private ProgressBar progressBar;
-        private Image cancelButton = new Image(GWT.getModuleBaseURL() + "static/images/delete.png");
+        private Image cancelButton = new GImage("delete.png");
 
         public FileUploadStatusPanel(String fileName) {
             setSpacing(2);

@@ -4399,11 +4399,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setNavigatorElementImage(NavigatorElement element, NavigatorElement parent, String imagePath) {
         if (imagePath != null) {
-            element.setImage("/images/" + imagePath);
+            element.setImage(imagePath);
         } else if (element.defaultIcon != null) {
             if (baseLM.root != null && baseLM.root.equals(parent)) {
-                element.setImage(element.defaultIcon == DefaultIcon.ACTION ? "/images/actionTop.png" :
-                        element.defaultIcon == DefaultIcon.OPEN ? "/images/openTop.png" : "/images/formTop.png");
+                element.setImage(element.defaultIcon == DefaultIcon.ACTION ? "actionTop.png" :
+                        element.defaultIcon == DefaultIcon.OPEN ? "openTop.png" : "formTop.png");
             }
             element.defaultIcon = null;
         }

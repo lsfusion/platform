@@ -33,7 +33,7 @@ public class GSinglePropertyTableBuilder extends GPropertyTableBuilder<Object> {
         DivElement innerDiv = stripCellHeight
                               ? Document.get().createDivElement()
                               : super.createCellInnerDiv();
-        String innerDivStyleName = ((GSinglePropertyTable.GSinglePropertyTableStyle)table.getResources().style()).dataGridCellInnerDiv();
+        String innerDivStyleName = table.getStyle().dataGridCellInnerDiv();
         innerDiv.addClassName(innerDivStyleName);
         return innerDiv;
     }

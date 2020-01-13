@@ -1,5 +1,6 @@
 package lsfusion.client.form.filter.user.controller;
 
+import lsfusion.base.ResourceUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.FlatRolloverButton;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public abstract class QueryController {
 
-    public static final ImageIcon collapseIcon = new ImageIcon(QueryView.class.getResource("/images/collapse.png"));
+    public static final ImageIcon collapseIcon = ResourceUtils.readImage("collapse.png");
 
     private enum State {
         HIDDEN, REMOVED, COLLAPSED, EXPANDED

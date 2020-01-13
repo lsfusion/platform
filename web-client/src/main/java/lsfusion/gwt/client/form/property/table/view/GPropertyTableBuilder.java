@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
@@ -28,7 +29,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         super(table);
 
         // Cache styles for faster access.
-        DataGrid.Style style = table.getResources().style();
+        GridStyle style = table.getStyle();
         rowStyle = style.dataGridRow();
         cellStyle = style.dataGridCell();
         firstColumnStyle = " " + style.dataGridFirstCell();

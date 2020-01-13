@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.HasCell;
 import lsfusion.gwt.client.classes.GType;
@@ -46,20 +47,20 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     protected Context editContext;
     protected Element editCellParent;
 
-    public GPropertyTable(GFormController iform, Resources resources) {
-        this(iform, resources, false);
+    public GPropertyTable(GFormController iform, GridStyle style) {
+        this(iform, style, false);
     }
 
-    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, Resources resources, int initHeaderHeight) {
-        this(iform, iGroupObject, resources, initHeaderHeight, false);
+    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, GridStyle style, int initHeaderHeight) {
+        this(iform, iGroupObject, style, initHeaderHeight, false);
     }
 
-    public GPropertyTable(GFormController iform, Resources resources, boolean nullHeader) {
-        this(iform, null, resources, -1, nullHeader);
+    public GPropertyTable(GFormController iform, GridStyle style, boolean nullHeader) {
+        this(iform, null, style, -1, nullHeader);
     }
 
-    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, Resources resources, int initHeaderHeight, boolean nullHeader) {
-        super(resources, initHeaderHeight, nullHeader);
+    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, GridStyle style, int initHeaderHeight, boolean nullHeader) {
+        super(style, initHeaderHeight, nullHeader);
 
         this.form = iform;
         this.groupObject = iGroupObject;

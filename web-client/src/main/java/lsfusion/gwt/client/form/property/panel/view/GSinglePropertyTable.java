@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.grid.Column;
+import lsfusion.gwt.client.base.view.grid.SinglePropertyTableStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFontMetrics;
@@ -23,18 +23,7 @@ import static com.google.gwt.dom.client.Style.Unit;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public class GSinglePropertyTable extends GPropertyTable<Object> {
-    /**
-     * Default style's overrides
-     */
-    public interface GSinglePropertyTableResource extends Resources {
-        @Source("GSinglePropertyTable.css")
-        GSinglePropertyTableStyle style();
-    }
-    public interface GSinglePropertyTableStyle extends Style {
-        String dataGridCellInnerDiv();
-    }
-
-    public static final GSinglePropertyTableResource GSINGLE_PROPERTY_TABLE_RESOURCE = GWT.create(GSinglePropertyTableResource.class);
+    public static final SinglePropertyTableStyle SINGLE_PROPERTY_TABLE_STYLE = new SinglePropertyTableStyle();
 
     private final GPropertyDraw property;
     private GGroupObjectValue columnKey;
@@ -46,7 +35,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
     private String foreground;
 
     public GSinglePropertyTable(GFormController iform, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
-        super(iform, GSINGLE_PROPERTY_TABLE_RESOURCE, true);
+        super(iform, SINGLE_PROPERTY_TABLE_STYLE, true);
 
         this.property = iproperty;
         this.columnKey = columnKey;

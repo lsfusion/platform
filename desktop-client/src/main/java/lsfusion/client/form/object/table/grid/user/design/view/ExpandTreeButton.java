@@ -1,19 +1,19 @@
 package lsfusion.client.form.object.table.grid.user.design.view;
 
-import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 
 import javax.swing.*;
 
+import static lsfusion.base.ResourceUtils.readImage;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ExpandTreeButton extends ToolbarGridButton {
-    public static final ImageIcon EXPAND_TREE_ICON = new ImageIcon(FilterView.class.getResource("/images/expandTree.png"));
-    public static final ImageIcon COLLAPSE_TREE_ICON = new ImageIcon(FilterView.class.getResource("/images/collapseTree.png"));
-    public static final ImageIcon EXPAND_TREE_CURRENT_ICON = new ImageIcon(FilterView.class.getResource("/images/expandTreeCurrent.png"));
-    public static final ImageIcon COLLAPSE_TREE_CURRENT_ICON = new ImageIcon(FilterView.class.getResource("/images/collapseTreeCurrent.png"));
+    public static final ImageIcon EXPAND_TREE_ICON = readImage("expandTree.png");
+    public static final ImageIcon COLLAPSE_TREE_ICON = readImage("collapseTree.png");
+    public static final ImageIcon EXPAND_TREE_CURRENT_ICON = readImage("expandTreeCurrent.png");
+    public static final ImageIcon COLLAPSE_TREE_CURRENT_ICON = readImage("collapseTreeCurrent.png");
 
     private final boolean current;
     private boolean expand;

@@ -1,8 +1,8 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
+import lsfusion.base.ResourceUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.StartupProperties;
-import lsfusion.client.form.filter.user.FilterView;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 
 public abstract class CalculateSumButton extends ToolbarGridButton {
-    private static final ImageIcon sumIcon = new ImageIcon(FilterView.class.getResource("/images/sum.png"));
+    private static final ImageIcon sumIcon = ResourceUtils.readImage("sum.png");
 
     public CalculateSumButton() {
         super(sumIcon, ClientResourceBundle.getString("form.queries.calculate.sum"));

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
@@ -67,7 +66,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
         if (value instanceof String && !value.equals("null")) {
             img.setSrc(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)property.baseType).extension, false)); // form file
         } else {
-            img.setSrc(GWT.getModuleBaseURL() + ICON_EMPTY);
+            img.setSrc(GwtClientUtils.getModuleImagePath(ICON_EMPTY));
         }
     }
 

@@ -591,8 +591,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private String eventID;
 
         // для всех
-        private ImageIcon image;
-        private String iconPath;
+        private String imagePath;
 
         // для всех
         private Compare defaultCompare;
@@ -639,9 +638,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.setValueFlex(valueFlex);
             if(propertyView.getValueSize() == null)
                 propertyView.setValueSize(valueSize);
-            if (propertyView.design.imagePath == null && iconPath != null) {
-                propertyView.design.imagePath = iconPath;
-                propertyView.design.setImage(image);
+            if (propertyView.design.getImage() == null && imagePath != null) {
+                propertyView.design.setImage(imagePath);
             }
             if (propertyView.changeKey == null)
                 propertyView.changeKey = changeKey != null ? new KeyInputEvent(changeKey, keyBindingsModes) : null;
@@ -672,9 +670,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(charWidth == 0)
                 setCharWidth(options.charWidth);
 
-            if(iconPath == null) {
-                setImage(options.image);
-                setIconPath(options.iconPath);
+            if (imagePath == null) {
+                setImagePath(options.imagePath);
             }
 
             if(defaultCompare == null)
@@ -726,9 +723,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             setValueFlex(flex);
         }
 
-        public void setImage(String iconPath) {
-            this.setIconPath(iconPath);
-            setImage(new ImageIcon(ActionOrProperty.class.getResource("/images/" + iconPath)));
+        public void setImage(String imagePath) {
+            this.setImagePath(imagePath);
         }
 
         public Compare getDefaultCompare() {
@@ -775,12 +771,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             this.eventID = eventID;
         }
 
-        public void setImage(ImageIcon image) {
-            this.image = image;
-        }
-
-        public void setIconPath(String iconPath) {
-            this.iconPath = iconPath;
+        public void setImagePath(String imagePath) {
+            this.imagePath = imagePath;
         }
 
         public void setChangeKey(KeyStroke changeKey) {

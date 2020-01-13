@@ -1,20 +1,22 @@
 package lsfusion.gwt.client.form.object.table.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.base.view.grid.HeaderPanel;
+import lsfusion.gwt.client.view.MainFrame;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
+import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -150,7 +152,20 @@ public class GGridPropertyTableHeader extends Header<String> {
             img.getStyle().setMarginBottom(1, Style.Unit.PX);
             img.getStyle().setMarginLeft(2, Style.Unit.PX);
             img.getStyle().setVerticalAlign(Style.VerticalAlign.BOTTOM);
-            img.setSrc(GWT.getModuleBaseURL() + "static/images/" + (sortDir ? "arrowup.png" : "arrowdown.png"));
+            
+            String imagePath = sortDir ? "arrowup.png" : "arrowdown.png";
+            String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
+            GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
+                @Override
+                public void onFailure() {
+                    img.setSrc(getModuleImagePath(imagePath));
+                }
+
+                @Override
+                public void onSuccess() {
+                    img.setSrc(getModuleImagePath(colorThemeImagePath));
+                }
+            });
 
             SpanElement span = Document.get().createSpanElement();
             span.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);

@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.DomEvent;
+import com.google.gwt.http.client.*;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
@@ -71,6 +72,51 @@ public class GwtClientUtils {
     public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
         return getWebAppBaseURL() + GwtSharedUtils.getDownloadURL(name, displayName, extension, actionFile);
     }
+    
+    public static String getModuleImagePath(String imagePath) {
+        return imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath;
+    }
+
+    public static String getAppImagePath(String imagePath) {
+        return imagePath == null ? null : getWebAppBaseURL() + imagePath;
+    }
+    
+    private static Map<String, Boolean> imagePathCache = new HashMap<>(); 
+    public static void ensureImage(String imagePath, Callback callback) {
+        Boolean cachedResult = imagePathCache.get(imagePath);
+        if (cachedResult != null) {
+            if (cachedResult) {
+                callback.onSuccess();
+            } else {
+                callback.onFailure();
+            }
+        } else {
+            try {
+                RequestBuilder rb = new RequestBuilder(RequestBuilder.HEAD, getModuleImagePath(imagePath));
+                rb.setCallback(new RequestCallback() {
+                    @Override
+                    public void onResponseReceived(Request request, Response response) {
+                        if (response.getStatusCode() > 199 && response.getStatusCode() < 300) {
+                            imagePathCache.put(imagePath, true);
+                            callback.onSuccess();
+                        } else {
+                            imagePathCache.put(imagePath, false);
+                            callback.onFailure();
+                        }
+                    }
+
+                    @Override
+                    public void onError(Request request, Throwable exception) {
+                        imagePathCache.put(imagePath, false);
+                        callback.onFailure();
+                    }
+                });
+                rb.send();
+            } catch (RequestException ignored) {
+                callback.onFailure();
+            }
+        }
+    } 
 
     public static Map<String, String> getPageParameters() {
         Map<String, String> params = new HashMap<>();

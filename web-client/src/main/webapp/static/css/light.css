@@ -1,0 +1,22 @@
+:root {
+    --focus-color: #0489BA;
+    --selection-color: rgba(4, 137, 186, 0.09);
+    --border-color: #ccc;
+    --scrollbar-color: #e8e8e8;
+    --text-color: black;
+    --disabled-text-color: #888;
+    --background-color: white;
+    --split-border-color: #a9a9a9;
+    --split-background-color: #F1F1F1;
+    --dialog-border-color: #F1F1F1;
+    --dialog-outer-border-color: #bbb;
+    
+    --caption-panel-legend-color: #a0a0a0; 
+    --null-value-string-color: #A7A7A7;
+    --required-value-string-color: #C70D00;
+    --not-null-corner-triangle-color: #ff0000;
+    --close-tab-button-hover-color: #d8d8d8;
+    --close-tab-button-disabled-color: #a9a9a9;
+    --button-disabled-hover-border-color: #bbb;
+    --button-active-border-color: #bbb;
+}

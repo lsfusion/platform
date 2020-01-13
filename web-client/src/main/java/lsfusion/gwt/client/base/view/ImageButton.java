@@ -1,20 +1,24 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.ImageDescription;
+import lsfusion.gwt.client.view.ColorThemeChangeListener;
+import lsfusion.gwt.client.view.MainFrame;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.ensureImage;
+import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
+import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
-public class ImageButton extends Button {
-    private final Image image;
+public class ImageButton extends Button implements ColorThemeChangeListener {
+    protected final Image image;
     private final Label label;
     private final Widget strut;
     private final CellPanel panel;
 
-    private String imagePath;
+    protected String imagePath; // default
     private String text = "";
 
     private boolean focusable = true;
@@ -30,11 +34,6 @@ public class ImageButton extends Button {
 
     public ImageButton(String caption, String imagePath) {
         this(caption, imagePath, false);
-    }
-
-    public ImageButton(String caption, ImageDescription imageDescription) {
-        this(caption, null, false);
-        setImage(imageDescription);
     }
 
     public ImageButton(String caption, boolean directionBottom) {
@@ -83,33 +82,40 @@ public class ImageButton extends Button {
         updateStrut();
         updateStyle();
         getElement().appendChild(panel.getElement());
-    }
 
-    public void setImage(ImageDescription imageDescription) {
-        if (imageDescription != null) {
-            setAppImagePath(imageDescription.url);
-            if (imageDescription.width != -1) {
-                image.setWidth(imageDescription.width + "px");
-            }
-            if (imageDescription.height != -1) {
-                image.setHeight(imageDescription.height + "px");
-            }
-        }
+        MainFrame.addColorThemeChangeListener(this);
     }
 
     public void setModuleImagePath(String imagePath) {
-        setAbsoluteImagePath(imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath);
+        this.imagePath = imagePath;
+        ensureAndSet(imagePath);
+    }
+    
+    private void ensureAndSet(String imagePath) {
+        if (imagePath != null && !colorTheme.isDefault()) {
+            String colorThemeImagePath = colorTheme.getImagePath(imagePath);
+            ensureImage(colorThemeImagePath, new Callback() {
+                @Override
+                public void onFailure() {
+                    setAbsoluteImagePath(getModuleImagePath(imagePath));
+                }
+
+                @Override
+                public void onSuccess() {
+                    setAbsoluteImagePath(getModuleImagePath(colorThemeImagePath));
+                }
+            });
+        } else {
+            setAbsoluteImagePath(getModuleImagePath(imagePath));
+        }
     }
 
-    public void setAppImagePath(String imagePath) {
-        setAbsoluteImagePath(imagePath == null ? null : GwtClientUtils.getWebAppBaseURL() + imagePath);
-    }
-
-    private void setAbsoluteImagePath(String imagePath) {
-        if (!GwtSharedUtils.nullEquals(this.imagePath, imagePath)) {
+    protected void setAbsoluteImagePath(String imagePath) {
+        String oldUrl = image.getUrl();
+        if (!oldUrl.equals(imagePath == null ? "" : imagePath)) {
             image.setUrl(imagePath == null ? "" : imagePath);
 
-            if ((this.imagePath == null && imagePath != null) || (this.imagePath != null && imagePath == null)) {
+            if ((oldUrl.isEmpty() && imagePath != null) || (!oldUrl.isEmpty() && imagePath == null)) {
                 image.setVisible(imagePath != null);
                 updateStrut();
 
@@ -124,14 +130,11 @@ public class ImageButton extends Button {
                     }
                 }
             }
-
-            this.imagePath = imagePath;
         }
     }
 
     public void setText(String text) {
         if (!GwtSharedUtils.nullEquals(this.text, text)) {
-
             label.setText(text);
             if ((isRedundantString(this.text) && !isRedundantString(text)) || ((!isRedundantString(this.text) && isRedundantString(text)))) {
                 label.setVisible(text != null && !text.isEmpty());
@@ -171,5 +174,10 @@ public class ImageButton extends Button {
         if (!focusable) {
             setTabIndex(-1);
         }
+    }
+
+    @Override
+    public void colorThemeChanged() {
+        ensureAndSet(imagePath);
     }
 }

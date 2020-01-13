@@ -218,4 +218,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GMaximizeFormAction action) {
     }
+
+    @Override
+    public void execute(GChangeColorThemeAction action) {
+    }
 }

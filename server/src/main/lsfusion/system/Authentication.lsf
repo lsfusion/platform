@@ -171,6 +171,28 @@ devMode = devMode(currentUser());
 // GUI settings
 fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser); 
 
+CLASS ColorTheme '{authentication.color.theme}' {
+    light '{authentication.color.theme.light}',
+    dark '{authentication.color.theme.dark}'
+}
+TABLE colorTheme(ColorTheme);
+colorTheme '{authentication.color.theme.user}' = DATA ColorTheme (CustomUser);
+colorThemeStaticName (CustomUser user) = staticName(colorTheme(user));
+name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
+colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(colorTheme(user));
+
+changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
+WHEN CHANGED(colorTheme(CustomUser user)) DO {
+    changeColorThemeAction(colorTheme(user));    
+}
+
+FORM dialogColorThemes '{authentication.color.themes}'
+    OBJECTS o = ColorTheme
+    PROPERTIES(o) READONLY name
+    
+    LIST ColorTheme OBJECT o
+;
+
 // -------------------------- Forms ---------------------------- //
 
 // sync user logins saved on client 
@@ -344,7 +366,7 @@ forbidEditProfile = ABSTRACT BOOLEAN (CustomUser);
 FORM editProfile '{navigator.account.edit.profile}'
     OBJECTS u = CustomUser PANEL
     PROPERTIES(u) login READONLY
-    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, fontSize
+    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, fontSize, colorThemeName
 
     FILTERS u = currentUser()
 ;
@@ -357,6 +379,7 @@ DESIGN editProfile {
         PROPERTY(lastName(u)) { fontSize = 36; }
         PROPERTY(email(u)) { fontSize = 36; }
         PROPERTY(fontSize(u)) { fontSize = 36; }
+        PROPERTY(colorThemeName(u)) { fontSize = 36; }
     }
 }
 

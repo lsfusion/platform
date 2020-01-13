@@ -19,11 +19,11 @@ body, html {
 /* ------------ Scrollbars ------------ */
 body {
     /*firefox*/
-    scrollbar-color: #e8e8e8 transparent;
+    scrollbar-color: var(--scrollbar-color) transparent;
     scrollbar-width: thin;
     /*ie*/
-    scrollbar-face-color: #e8e8e8;
-    scrollbar-arrow-color: #ccc;
+    scrollbar-face-color: var(--scrollbar-color);
+    scrollbar-arrow-color: var(--border-color);
 }
 
 ::-webkit-scrollbar-track {
@@ -36,11 +36,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #e8e8e8;
+    background-color: var(--scrollbar-color);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #ccc;
+    background: var(--border-color);
 }
 
 ::-webkit-scrollbar-corner {
@@ -73,7 +73,7 @@ input[type=checkbox] {
 }
 
 input[type=checkbox]:focus {
-    outline: 1px solid #0489BA;
+    outline: 1px solid var(--focus-color);
 }
 
 .SplitPanelBase-hdragger {
@@ -109,7 +109,6 @@ input[type=checkbox]:focus {
     border: 0;
     border-radius: 3px;
     background: transparent;
-    color: #000000;
     font-size: 8pt;
     font-family: tahoma;
     font-weight: bold;
@@ -117,12 +116,12 @@ input[type=checkbox]:focus {
 }
 
 .closeTabButton:hover {
-    background: #d8d8d8;
+    background: var(--close-tab-button-hover-color);
 }
 
 .closeTabButton[disabled] {
     cursor: default;
-    color: #a9a9a9;
+    color: var(--close-tab-button-disabled-color);
 }
 
 .tabLayoutPanelTabTitleWrapper {
@@ -167,21 +166,20 @@ input[type=checkbox]:focus {
 
 .ResizableWindow {
     position: absolute;
-    background-color: #FFFFFF; /* prevent transparency */
+    background-color: var(--background-color); /* prevent transparency */
+    border: 1px solid var(--dialog-outer-border-color);
 }
 
 .ResizableWindow .ResizableWindow-header {
-    background: #F1F1F1;
-    padding: 2px 0px 2px 0px;
+    background: var(--dialog-border-color);
+    padding: 0 0 4px 0;
     cursor: default;
     font-weight: bold;
-    border-bottom: 1px solid #bbbbbb;
+    border-bottom: 1px solid var(--dialog-outer-border-color);
     overflow: hidden;
 }
 
 @sprite .ResizableWindow .resize-edge {
-    gwt-image: "dragger";
-    background-repeat: repeat;
     line-height: 1px;
     width: auto;
     height: auto;
@@ -219,6 +217,10 @@ input[type=checkbox]:focus {
     cursor: se-resize;
 }
 
+.ResizableWindow .dragdrop-handle {
+    background: var(--dialog-border-color);
+}
+
 /* ------------ Panel Renderer related styles ------------ */
 .dataPanelRendererPanel {
     white-space: nowrap;
@@ -226,7 +228,7 @@ input[type=checkbox]:focus {
 }
 
 .dataPanelRendererGridPanel {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     position: relative;
 }
 
@@ -236,7 +238,7 @@ input[type=checkbox]:focus {
     bottom: -1px;
     left: -1px;
     right: -1px;
-    border: 1px solid #0489BA;
+    border: 1px solid var(--focus-color);
 }
 
 .actionPanelRenderer {
@@ -252,7 +254,7 @@ input[type=checkbox]:focus {
 .captionPanelContainer {
     overflow: visible;
     position: relative;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--border-color);
     margin: 1em 1px 1px 1px;
     padding: 2px 1px 1px 1px;
 }
@@ -263,8 +265,8 @@ input[type=checkbox]:focus {
     left: 0.25em;
     white-space: nowrap;
     padding: 0 0.25em;
-    background-color: white;
-    color: #a0a0a0;
+    background-color: var(--background-color);
+    color: var(--caption-panel-legend-color);
 }
 
 .captionPanelLabel {
@@ -336,13 +338,13 @@ input[type=checkbox]:focus {
 }
 
 .toolbarSelectedNavigatorButton {
-    border: solid 1px #ccc;
-    background: rgba(4, 137, 186, 0.09411764705882353);
+    border: solid 1px var(--border-color);
+    background: var(--selection-color);
 }
 
 .toolbarNavigatorButton:hover {
-    border: solid 1px #ccc;
-    background: rgba(4, 137, 186, 0.09411764705882353);
+    border: solid 1px var(--border-color);
+    background: var(--selection-color);
 }
 
 .panelNavigatorView {
@@ -373,18 +375,18 @@ input[type=checkbox]:focus {
 }
 
 .dataFilterValueTablePanel {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     margin: 2px 2px 2px 1px;
     min-height: 16px !important;
 }
 
 .dataFilterValueTablePanelFocused {
-    border: 1px solid #0489ba;
+    border: 1px solid var(--focus-color);
 }
 
 .filterDialogHeader {
     height: 18px;
-    padding: 4px 5px 4px 4px !important;
+    padding: 1px 5px 4px 4px !important;
 }
 
 .filterListBox {
@@ -394,8 +396,8 @@ input[type=checkbox]:focus {
 
 /* ------------ Popups  ------------ */
 .popup {
-    background-color: #F0F0FF;
-    border: 1px outset;
+    background-color: var(--background-color);
+    border: 1px outset var(--border-color);
     padding: 2px;
 }
 
@@ -411,11 +413,11 @@ input[type=checkbox]:focus {
     padding-top: 28px;
     padding-bottom: 28px;
     font-size: 13px;
-    color: #0489BA;
+    color: var(--focus-color);
     font-weight: bold;
     text-align: center;
     display: block;
-    border: 2px dashed #888888;
+    border: 2px dashed var(--border-color);
     border-radius: 7px;
 }
 
@@ -425,16 +427,14 @@ input[type=checkbox]:focus {
 }
 
 .gwt-ProgressBar-shell {
-    border: 1px solid #faf9f7;
-    border-right: 1px solid #848280;
-    border-bottom: 1px solid #848280;
+    border: 1px solid var(--border-color);
     background-color: #AAAAAA;
     width: 50%;
     height: 12pt;
 }
 
 .gwt-ProgressBar-shell .gwt-ProgressBar-bar {
-    background-color: #0489BA;
+    background-color: var(--focus-color);
 }
 
 .gwt-ProgressBar-shell .gwt-ProgressBar-text {
@@ -472,7 +472,7 @@ input[type=checkbox]:focus {
 
 .stackMessage {
     margin: 5px 5px 5px 5px;
-    border: 1px solid gray;
+    border: 1px solid var(--border-color);
     padding: 5px;
     overflow-wrap: break-word;
     word-wrap: break-word;
@@ -492,21 +492,19 @@ input[type=checkbox]:focus {
 }
 
 .userPreferencesDualList .draggableListBox {
-    background-color: white;
 }
 
 .userPreferencesDualList .listBoxContainer {
     outline: none;
-    background-color: white;
     overflow-y: auto;
     overflow-x: hidden;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     padding: 2px 3px;
     margin: 1px;
 }
 
 .userPreferencesDualList .listBoxContainer:focus {
-    border: 1px solid #0489BA;
+    border: 1px solid var(--focus-color);
 }
 
 .dualListButtonsContainer {
@@ -523,7 +521,11 @@ input[type=checkbox]:focus {
 
 .userPreferencesDualList .dragdrop-selected ,
 .userPreferencesDualList .dragdrop-movable-panel .draggableListBoxItem {
-    background-color: rgba(4, 137, 186, 0.09411764705882353);
+    background-color: var(--selection-color);
+}
+
+.draggableListBoxItem .dragdrop-handle {
+    background-color: var(--background-color);
 }
 
 .userPreferencesDualList .dragdrop-movable-panel {
@@ -565,11 +567,11 @@ input[type=checkbox]:focus {
 
 /* ------------ Colored corner triangles  ------------ */
 .notNullCornerTriangle {
-    border-color: transparent transparent #ff0000 transparent;
+    border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
 }
 
 .changeActionCornerTriangle {
-    border-color: transparent transparent #0489BA transparent;
+    border-color: transparent transparent var(--focus-color) transparent;
 }
 
 .rightBottomCornerTriangle {
@@ -587,17 +589,17 @@ input[type=checkbox]:focus {
 .pivotTable {
     overflow-x: auto;
     overflow-y: auto;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     margin: 2px;
 }
 
 .pivotTable:focus {
-    border: 1px solid #0489BA;
+    border: 1px solid var(--focus-color);
 }
 
 .pvtAxisContainer {
-    border: 1px solid #ccc;
-    background-color: white;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
 }
 
 .pvtAxisContainer li {
@@ -605,14 +607,14 @@ input[type=checkbox]:focus {
 }
 
 .pvtAxisContainer li span.pvtAttr {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-radius: 0;
-    color: black;
+    color: var(--text-color);
 }
 
 .pvtVals {
-    border: 1px solid #ccc;
-    background-color: white;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
 }
 
 .pvtTable {
@@ -620,24 +622,30 @@ input[type=checkbox]:focus {
 }
 
 .pvtUi {
+    color: var(--text-color);
     width: 100%;
 }
 
 .pvtUnused li span.pvtAttr {
-    background: white;
+    background: transparent;
 }
 
 .pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
-    background: rgba(4, 137, 186, 0.09411764705882353);
+    background: var(--selection-color);
 }
 
 table.pvtTable, table.pvtTable tbody tr td, table.pvtTable thead tr td {
-    border: 1px solid #ccc;
-    color: black;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
 }
 
 table.pvtTable thead tr th, table.pvtTable tbody tr th {
-    background-color: white;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+}
+
+table.pvtTable tbody tr td {
+    background-color: transparent;
 }
 
 .pvtCols, .pvtRendererArea {
@@ -656,12 +664,18 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
     font-size: 10pt;
 }
 
+.pvtCheckContainer {
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
 .pvtCheckContainer p {
     margin: 2px;
 }
 
 .pvtFilterBox {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-color);
 }
 
 .pvtFilterBox button {
@@ -674,6 +688,14 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
 
 .pvtFilterBox h4 {
     margin: 12px auto;
+}
+
+.pvtFilterBox .count {
+    color: var(--disabled-text-color);
+}
+
+.pvtFilterBox input[type=text] {
+    border: 1px solid var(--border-color)
 }
 
 /* ------------ Other components  ------------ */
@@ -690,7 +712,7 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
 }
 
 .toolbarButton:hover {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
 }
 
 .toolbarItem {
@@ -726,11 +748,11 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
 }
 
 .nullValueString {
-    color: #A7A7A7;
+    color: var(--null-value-string-color);
 }
 
 .requiredValueString {
-    color: #C70D00;
+    color: var(--required-value-string-color);
 }
 
 .floatRight {
@@ -752,6 +774,6 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
 }
 
 .verticalSeparator {
-    border-left: 1px solid #ccc;
+    border-left: 1px solid var(--border-color);
 }
 

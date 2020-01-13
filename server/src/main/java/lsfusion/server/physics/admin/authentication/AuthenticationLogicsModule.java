@@ -12,7 +12,6 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.physics.admin.authentication.property.CurrentAuthTokenProperty;
 import lsfusion.server.physics.admin.authentication.property.CurrentComputerProperty;
 import lsfusion.server.physics.admin.authentication.property.CurrentUserProperty;
@@ -88,6 +87,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP serverTwoDigitYearStart;
 
     public LP userFontSize;
+    
+    public LP colorThemeStaticName;
     
     public LA deliveredNotificationAction;
     
@@ -181,6 +182,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         serverTwoDigitYearStart = findProperty("serverTwoDigitYearStart[]");
         
         userFontSize = findProperty("fontSize[CustomUser]");
+        colorThemeStaticName = findProperty("colorThemeStaticName[CustomUser]");
         
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
         

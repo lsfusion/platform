@@ -24,8 +24,7 @@ public abstract class ClientNavigatorElement {
     
     public List<ClientNavigatorElement> parents = new ArrayList<>();
     public List<ClientNavigatorElement> children = new ArrayList<>();
-    public SerializableImageIconHolder image;
-    public String imageFileName;
+    public SerializableImageIconHolder imageHolder;
 
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
@@ -38,8 +37,7 @@ public abstract class ClientNavigatorElement {
         hasChildren = inStream.readBoolean();
         window = ClientNavigatorWindow.deserialize(inStream);
 
-        image = IOUtils.readImageIcon(inStream);
-        imageFileName = inStream.readUTF();
+        imageHolder = IOUtils.readImageIcon(inStream);
     }
 
     public String getCanonicalName() {

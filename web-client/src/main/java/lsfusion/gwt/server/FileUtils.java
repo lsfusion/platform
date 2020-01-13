@@ -5,14 +5,17 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.SerializableImageIconHolder;
-import lsfusion.gwt.client.base.ImageDescription;
+import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
+import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
@@ -22,32 +25,43 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 public class FileUtils {
     // not that pretty with statics, in theory it's better to autowire LogicsHandlerProvider (or get it from servlet) and pass as a parameter here
     public static String APP_IMAGES_FOLDER_URL; // all files has to be prefixed with logicsName
     public static String APP_TEMP_FOLDER_URL; // all files hasn't to be prefixed because their names are (or prefixed with) random strings
 
-    public static ImageDescription createImage(String logicsName, SerializableImageIconHolder iconHolder, String iconPath, String imagesFolderName, boolean canBeDisabled) {
-        if (iconHolder != null) {
-            String fullPath = logicsName + "/" + imagesFolderName;
-            File imagesFolder = new File(APP_IMAGES_FOLDER_URL, fullPath);
-            imagesFolder.mkdirs(); // not mkdir because we have complex path (logics/navigator)
+    public static ImageHolder createImage(String logicsName, SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
+        if (imageHolder != null) {
+            ImageHolder imageDescription = new ImageHolder();
+            for (Map.Entry<ColorTheme, ImageIcon> imagesEntry : imageHolder.getImages().entrySet()) {
+                ColorTheme colorTheme = imagesEntry.getKey();
+                ImageIcon image = imagesEntry.getValue();
+                GColorTheme gColorTheme = GColorTheme.valueOf(colorTheme.name());
 
-            String iconFileName = iconPath.substring(0, iconPath.lastIndexOf("."));
-            String iconFileType = iconPath.substring(iconPath.lastIndexOf(".") + 1);
+                String fullPath = logicsName + "/" + imagesFolderName;
+                String imagePath = imageHolder.getImagePath(colorTheme);
+                File imagesFolder = new File(APP_IMAGES_FOLDER_URL, fullPath);
 
-            createImageFile(iconHolder.getImage().getImage(), imagesFolder, iconFileName, iconFileType, false);
-            if (canBeDisabled) {
-                createImageFile(iconHolder.getImage().getImage(), imagesFolder, iconFileName + "_Disabled", iconFileType, canBeDisabled);
+                imagesFolder.mkdirs(); // not mkdir because we have complex path (logics/navigator)
+                String imageFileName = imagePath.substring(0, imagePath.lastIndexOf("."));
+                String imageFileType = imagePath.substring(imagePath.lastIndexOf(".") + 1);
+
+                createImageFile(image.getImage(), imagesFolder, imageFileName, imageFileType, false);
+                if (canBeDisabled) {
+                    createImageFile(image.getImage(), imagesFolder, imageFileName + "_Disabled", imageFileType, true);
+                }
+                
+                imageDescription.addImage(gColorTheme, "static/images/" + fullPath + "/" + imagePath, image.getIconWidth(), image.getIconHeight());
             }
-            return new ImageDescription("static/images/" + fullPath + "/" + iconPath, iconHolder.getImage().getIconWidth(), iconHolder.getImage().getIconHeight());
+            return imageDescription;
         }
         return null;
     }
 
-    private static void createImageFile(Image image, File imagesFolder, String iconFileName, String iconFileType, boolean gray) {
-        File imageFile = new File(imagesFolder, iconFileName + "." + iconFileType);
+    private static void createImageFile(Image image, File imagesFolder, String imageFileName, String iconFileType, boolean gray) {
+        File imageFile = new File(imagesFolder, imageFileName + "." + iconFileType);
         if (!imageFile.exists()) {
             ByteArrayOutputStream byteOS = new ByteArrayOutputStream();
             try {

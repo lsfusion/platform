@@ -50,9 +50,9 @@ public class PropertyLabel extends Label {
         }
         
         if (gray) {
-            itemStyle.setColor("#a7a7a7");    
+            itemStyle.setColor("var(--disabled-text-color)");    
         } else {
-            itemStyle.setColor("black");
+            itemStyle.setColor("var(--text-color)");
         }
     }
 }

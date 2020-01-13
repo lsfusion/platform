@@ -38,7 +38,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     private DataFilterValueEditableCell cell;
 
     public GDataFilterValueViewTable(GDataFilterValueView valueView, GPropertyDraw property) {
-        super(GSinglePropertyTable.GSINGLE_PROPERTY_TABLE_RESOURCE);
+        super(GSinglePropertyTable.SINGLE_PROPERTY_TABLE_STYLE);
 
         this.valueView = valueView;
         this.property = property;

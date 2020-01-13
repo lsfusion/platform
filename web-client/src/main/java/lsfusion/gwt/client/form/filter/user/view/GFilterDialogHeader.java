@@ -25,7 +25,8 @@ public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox
         addStyleName("filterDialogHeader");
 
         captionWidget = new Label();
-        captionWidget.setStyleName("flowPanelChildLeftAlign");
+        captionWidget.addStyleName("flowPanelChildLeftAlign");
+        captionWidget.addStyleName("filterDialogCaption");
         setText(caption);
 
         GToolbarButton collapseButton = new GToolbarButton(COLLAPSE, messages.hideFilterWindow()) {

@@ -178,7 +178,7 @@ public class DataPanelRenderer implements PanelRenderer {
     }
 
     @Override
-    public void setIcon(String iconPath) {
+    public void setImage(String iconPath) {
     }
 
     @Override

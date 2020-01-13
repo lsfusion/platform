@@ -10,12 +10,8 @@ public class ImageDescription implements Serializable {
     public ImageDescription() {
     }
 
-    public ImageDescription(String url) {
-        this.url = url;
-    }
-
     public ImageDescription(String url, int width, int height) {
-        this(url);
+        this.url = url;
         this.width = width;
         this.height = height;
     }

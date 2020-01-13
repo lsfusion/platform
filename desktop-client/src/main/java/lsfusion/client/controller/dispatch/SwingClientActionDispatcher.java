@@ -619,6 +619,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
+    public void execute(ChangeColorThemeClientAction action) {
+    }
+
+    @Override
     public EventBus getEventBus() {
         return MainFrame.instance.eventBus;
     }

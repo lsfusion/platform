@@ -1,6 +1,5 @@
 package lsfusion.base.file;
 
-import javax.swing.*;
 import java.io.*;
 
 public class IOUtils {
@@ -83,16 +82,23 @@ public class IOUtils {
         return strBuf.toString();
     }
 
-    public static void writeImageIcon(DataOutputStream outStream, ImageIcon image) throws IOException {
-        new ObjectOutputStream(outStream).writeObject(new SerializableImageIconHolder(image));
+    public static void writeImageIcon(DataOutputStream outStream, SerializableImageIconHolder imageHolder) throws IOException {
+        outStream.writeBoolean(imageHolder != null);
+        if (imageHolder != null) {
+            new ObjectOutputStream(outStream).writeObject(imageHolder);
+        }
     }
 
-    public static SerializableImageIconHolder readImageIcon(InputStream inStream) throws IOException {
-        ObjectInputStream in = new ObjectInputStream(inStream);
-        try {
-            return ((SerializableImageIconHolder) in.readObject());
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+    public static SerializableImageIconHolder readImageIcon(DataInputStream inStream) throws IOException {
+        if (inStream.readBoolean()) {
+            ObjectInputStream in = new ObjectInputStream(inStream);
+            try {
+                return ((SerializableImageIconHolder) in.readObject());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return null;
         }
     }
 

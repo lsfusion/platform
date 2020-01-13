@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base.busy;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
@@ -10,6 +9,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
+import lsfusion.gwt.client.base.view.GImage;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
 import net.customware.gwt.dispatch.shared.general.StringResult;
@@ -106,7 +106,7 @@ public class LoadingBlocker extends LoadingManager {
             setGlassEnabled(true);
 
             VerticalPanel vp = new VerticalPanel();
-            vp.add(new Image(GWT.getModuleBaseURL() + "static/images/loading_bar.gif"));
+            vp.add(new GImage("loading_bar.gif"));
 
             messageLabel = new HTML();
             messageLabel.addStyleName("messageLabel");

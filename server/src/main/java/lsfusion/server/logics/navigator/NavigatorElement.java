@@ -1,10 +1,12 @@
 package lsfusion.server.logics.navigator;
 
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.IOUtils;
+import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.window.WindowType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -22,7 +24,6 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 
 import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
@@ -30,7 +31,7 @@ import static lsfusion.base.col.MapFact.singletonOrder;
 
 public abstract class NavigatorElement {
     
-    private ImageIcon image;
+    private SerializableImageIconHolder imageHolder;
     public DefaultIcon defaultIcon;
 
     public NavigatorWindow window = null;
@@ -207,18 +208,12 @@ public abstract class NavigatorElement {
         setImage(icon, null);
     }
 
-    public final void setImage(String icon, DefaultIcon defaultIcon) {
-        URL resource = NavigatorElement.class.getResource(icon);
-        if(resource != null) {
-            this.image = new ImageIcon(resource, icon.lastIndexOf("/") == -1 ? icon : icon.substring(icon.lastIndexOf("/") + 1));
+    public final void setImage(String imagePath, DefaultIcon defaultIcon) {
+        ImageIcon image = ResourceUtils.readImage(imagePath);
+        if (image != null) {
+            imageHolder = new SerializableImageIconHolder(image, imagePath);
             this.defaultIcon = defaultIcon;
-        } else {
-            throw new RuntimeException("Icon " + icon + " not found");
         }
-    }
-
-    public ImageIcon getImage() {
-        return image;
     }
 
     public void finalizeAroundInit() {
@@ -256,8 +251,7 @@ public abstract class NavigatorElement {
             window.serialize(outStream);
         }
 
-        IOUtils.writeImageIcon(outStream, getImage());
-        outStream.writeUTF(getImage().getDescription());
+        IOUtils.writeImageIcon(outStream, imageHolder);
     }
 
     public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {

@@ -45,17 +45,17 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.getResources().style().dataGridHeaderCell();
+            return grid.style.dataGridHeaderCell();
         }
 
         @Override
         public String getFirstCellStyle() {
-            return grid.getResources().style().dataGridFirstHeaderCell();
+            return grid.style.dataGridFirstHeaderCell();
         }
 
         @Override
         public String getLastCellStyle() {
-            return grid.getResources().style().dataGridLastHeaderCell();
+            return grid.style.dataGridLastHeaderCell();
         }
     }
 
@@ -78,17 +78,17 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.getResources().style().dataGridFooterCell();
+            return grid.style.dataGridFooterCell();
         }
 
         @Override
         public String getFirstCellStyle() {
-            return grid.getResources().style().dataGridFirstFooterCell();
+            return grid.style.dataGridFirstFooterCell();
         }
 
         @Override
         public String getLastCellStyle() {
-            return grid.getResources().style().dataGridLastFooterCell();
+            return grid.style.dataGridLastFooterCell();
         }
     }
 

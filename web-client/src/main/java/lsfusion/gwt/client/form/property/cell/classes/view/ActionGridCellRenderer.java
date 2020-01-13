@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
@@ -34,7 +35,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
         DivElement innerBottom = cellElement.appendChild(Document.get().createDivElement());
         innerBottom.getStyle().setHeight(50, Style.Unit.PCT);
 
-        if (property.icon != null) {
+        if (property.getImage() != null) {
             ImageElement img = innerTop.appendChild(Document.get().createImageElement());
             img.getStyle().setPosition(Style.Position.ABSOLUTE);
             img.getStyle().setLeft(50, Style.Unit.PCT);
@@ -56,7 +57,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
-        if (property.icon == null) {
+        if (property.getImage() == null) {
             LabelElement label = cellElement.getFirstChild().getFirstChild().cast();
             GFont font = property.font;
             if (font == null && table instanceof GGridPropertyTable) {
@@ -74,18 +75,20 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     private void setImage(ImageElement img, Object value) {
-        boolean disabled = value == null || !(Boolean) value;
-        String iconPath = property.getIconPath(!disabled);
-        img.setSrc(GwtClientUtils.getWebAppBaseURL() + iconPath);
+        boolean enabled = value != null && (Boolean) value;
+        ImageDescription image = property.getImage(enabled);
+        if (image != null) {
+            img.setSrc(GwtClientUtils.getAppImagePath(image.url));
 
-        int height = property.icon.height;
-        if (height != -1) {
-            img.setHeight(height);
-            img.getStyle().setBottom(-(double) height / 2, Style.Unit.PX);
-        }
-        if (property.icon.width != -1) {
-            img.setWidth(property.icon.width);
-            img.getStyle().setMarginLeft(-(double) property.icon.width / 2, Style.Unit.PX);
+            int height = image.height;
+            if (height != -1) {
+                img.setHeight(height);
+                img.getStyle().setBottom(-(double) height / 2, Style.Unit.PX);
+            }
+            if (image.width != -1) {
+                img.setWidth(image.width);
+                img.getStyle().setMarginLeft(-(double) image.width / 2, Style.Unit.PX);
+            }
         }
     }
 }

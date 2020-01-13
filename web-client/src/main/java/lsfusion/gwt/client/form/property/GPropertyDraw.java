@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
+import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.GClass;
@@ -75,7 +76,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GEditBindingMap editBindingMap;
 
-    public ImageDescription icon;
+    public ImageHolder imageHolder;
     public boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
@@ -286,19 +287,20 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return value.replace("<", "&lt;").replace(">", "&gt;");
     }
 
-    public String getIconPath(boolean enabled) {
-        if (icon == null) {
-            return null;
-        }
-        if (!enabled && icon.url != null) {
-            int dotInd = icon.url.lastIndexOf(".");
+    public ImageDescription getImage() {
+        return getImage(true);
+    }
+
+    public ImageDescription getImage(boolean enabled) {
+        ImageDescription image = imageHolder != null ? imageHolder.getImage() : null;
+        if (!enabled && image != null && image.url != null) {
+            int dotInd = image.url.lastIndexOf(".");
             if (dotInd != -1) {
-                return icon.url.substring(0, dotInd) + "_Disabled" + icon.url.substring(dotInd);
+                return new ImageDescription(image.url.substring(0, dotInd) + "_Disabled" + image.url.substring(dotInd), image.width, image.height);
             }
         }
-
-        return icon.url;
-    }
+        return image;
+    } 
 
     public boolean isReadOnly() {
         return editType == GPropertyEditType.READONLY;
@@ -371,7 +373,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 ", caption='" + caption + '\'' +
                 ", baseType=" + baseType +
                 ", changeType=" + changeType +
-                ", imagePath='" + icon + '\'' +
+                ", imagePath='" + imageHolder.getDefaultImage() + '\'' +
                 ", focusable=" + focusable +
                 ", checkEquals=" + checkEquals +
                 ", editType=" + editType +

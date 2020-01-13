@@ -17,30 +17,40 @@ pre {
     font-size: small;
 }
 body {
-    color: black;
+    color: var(--text-color);
     margin: 10px;
     border: 0px;
     padding: 0px;
-    background: #fff;
+    background: var(--background-color);
     direction: ltr;
 }
 a, a:visited {
-    color: #0066cc;
+    color: var(--focus-color);
     text-decoration:none;
 }
 
 a:hover {
-    color: #0066cc;
+    color: var(--focus-color);
     text-decoration:underline;
 }
 
 select {
-    background: white;
-    border: 1px solid #ccc;
+    background: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+select option {
+    background: var(--background-color);
 }
 
 select:focus {
-    border: 1px solid #0489BA;
+    border: 1px solid var(--focus-color);
+}
+
+input, textarea {
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 /**
@@ -62,31 +72,32 @@ select:focus {
     cursor: pointer;
     font-size: small;
     background: transparent;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
 }
 .gwt-Button:active, .button:active {
-    border: 1px inset #bbb;
+    border: 1px inset var(--button-active-border-color);
 }
 .gwt-Button:hover, button:hover {
-    background: rgba(4, 137, 186, 0.09411764705882353);
+    background: var(--selection-color);
 }
 .gwt-Button:focus, button:focus {
-    border-color: #0489BA;
+    border: 1px solid var(--focus-color);
     outline: none;
 }
 .gwt-Button[disabled], button[disabled] {
     cursor: default;
-    color: #888;
+    color: var(--disabled-text-color);
 }
 .gwt-Button[disabled]:hover, button[disabled]:hover {
-    border: 1px outset #bbb;
-    background: white;
+    border: 1px outset var(--button-disabled-hover-border-color);
+    background: var(--background-color);
 }
 
 .gwt-CheckBox {
 }
 .gwt-CheckBox-disabled {
-    color: #888;
+    color: var(--disabled-text-color);
 }
 
 .gwt-DecoratorPanel {
@@ -155,82 +166,81 @@ select:focus {
     overflow: hidden;
 }
 
+.gwt-DialogBox {
+    border: 1px solid var(--dialog-outer-border-color);
+}
+
 .gwt-DialogBox .Caption {
-    background: #F1F1F1;
-    padding: 4px 8px 4px 4px;
+    background: var(--dialog-border-color);
+    padding: 5px 8px 4px 0;
     cursor: default;
     font-weight: bold;
-    border-bottom: 1px solid #bbbbbb;
-    border-top: 1px solid #D2D2D2;
+    border-bottom: 1px solid var(--dialog-outer-border-color);
+}
+.gwt-DialogBox .filterDialogCaption {
+    padding-top: 3px;
 }
 .gwt-DialogBox .dialogContent {
 }
 .gwt-DialogBox .dialogMiddleCenter {
     padding: 5px;
-    background: white;
+    background: var(--background-color);
 }
 .gwt-DialogBox .dialogBottomCenter {
-    background: url(../images/hborder.png) repeat-x 0px -2945px;
-    -background: url(../images/hborder_ie6.png) repeat-x 0px -2144px;
+    background: var(--dialog-border-color);
 }
 .gwt-DialogBox .dialogMiddleLeft {
-    background: url(../images/vborder_cr.png) repeat-y -31px 0px;
+    background: var(--dialog-border-color);
 }
 .gwt-DialogBox .dialogMiddleRight {
-    background: url(../images/vborder_cr.png) repeat-y -32px 0px;
-    -background: url(../images/vborder_cr_ie6.png) repeat-y -32px 0px;
+    background: var(--dialog-border-color);
 }
 .gwt-DialogBox .dialogTopLeftInner {
-    width: 10px;
-    height: 8px;
+    width: 5px;
     zoom: 1;
 }
 .gwt-DialogBox .dialogTopRightInner {
-    width: 12px;
+    width: 5px;
     zoom: 1;
 }
 .gwt-DialogBox .dialogBottomLeftInner {
-    width: 10px;
-    height: 12px;
+    width: 5px;
+    height: 5px;
     zoom: 1;
 }
 .gwt-DialogBox .dialogBottomRightInner {
-    width: 12px;
-    height: 12px;
+    width: 5px;
+    height: 5px;
     zoom: 1;
 }
 .gwt-DialogBox .dialogTopLeft {
-    background: url(../images/circles.png) no-repeat -20px 0px;
-    -background: url(../images/circles_ie6.png) no-repeat -20px 0px;
+    background: var(--dialog-border-color);
 }
 .gwt-DialogBox .dialogTopRight {
-    background: url(../images/circles.png) no-repeat -28px 0px;
-    -background: url(../images/circles_ie6.png) no-repeat -28px 0px;
+    background: var(--dialog-border-color);
 }
 .gwt-DialogBox .dialogBottomLeft {
-    background: url(../images/circles.png) no-repeat 0px -36px;
-    -background: url(../images/circles_ie6.png) no-repeat 0px -36px;
+    background: var(--dialog-border-color);
 }
 .gwt-DialogBox .dialogBottomRight {
-    background: url(../images/circles.png) no-repeat -8px -36px;
-    -background: url(../images/circles_ie6.png) no-repeat -8px -36px;
+    background: var(--dialog-border-color);
 }
 * html .gwt-DialogBox .dialogTopLeftInner {
-    width: 10px;
+    width: 5px;
     overflow: hidden;
 }
 * html .gwt-DialogBox .dialogTopRightInner {
-    width: 12px;
+    width: 5px;
     overflow: hidden;
 }
 * html .gwt-DialogBox .dialogBottomLeftInner {
-    width: 10px;
-    height: 12px;
+    width: 5px;
+    height: 4px;
     overflow: hidden;
 }
 * html .gwt-DialogBox .dialogBottomRightInner {
-    width: 12px;
-    height: 12px;
+    width: 5px;
+    height: 5px;
     overflow: hidden;
 }
 
@@ -299,7 +309,7 @@ select:focus {
     cursor: default;
 }
 .gwt-MenuBar .gwt-MenuItem-selected {
-    background: #E3E8F3;
+    background: var(--selection-color);
 }
 .gwt-MenuBar-horizontal {
     background: #e3e8f3 url(../images/hborder.png) repeat-x 0px -2003px;
@@ -308,7 +318,7 @@ select:focus {
 .gwt-MenuBar-horizontal .gwt-MenuItem {
     padding: 5px 10px;
     vertical-align: bottom;
-    color: #000;
+    color: var(--text-color);
     font-weight: bold;
 }
 .gwt-MenuBar-horizontal .gwt-MenuItemSeparator {
@@ -316,18 +326,18 @@ select:focus {
     padding: 0px;
     margin: 0px;
     border: 0px;
-    border-left: 1px solid #ccc;
+    border-left: 1px solid var(--border-color);
     background: white;
 }
 .gwt-MenuBar-horizontal .gwt-MenuItemSeparator .menuSeparatorInner {
     width: 1px;
     height: 1px;
-    background: white;
+    background: var(--background-color);
 }
 .gwt-MenuBar-vertical {
     margin-top: 0px;
     margin-left: 0px;
-    background: white;
+    background: var(--background-color);
 }
 .gwt-MenuBar-vertical table {
     border-collapse: collapse;
@@ -342,7 +352,7 @@ select:focus {
     height: 1px;
     padding: 0px;
     border: 0px;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid var(--border-color);
     overflow: hidden;
 }
 .gwt-MenuBar-vertical .subMenuIcon {
@@ -428,7 +438,7 @@ select:focus {
 
 .gwt-PasswordTextBox {
     padding: 5px 4px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-top: 1px solid #999;
     font-size: 100%;
 }
@@ -437,85 +447,83 @@ select:focus {
 }
 
 .gwt-PopupPanel {
-    border: 3px solid #e7e7e7;
+    border: 1px solid var(--dialog-outer-border-color);
+    background: var(--background-color);
+}
+
+.gwt-PopupPanel .popupContent {
+    border: 3px solid var(--dialog-border-color);
     padding: 3px;
-    background: white;
 }
 
 .gwt-DecoratedPopupPanel .popupContent {
 }
 .gwt-DecoratedPopupPanel .popupMiddleCenter {
     padding: 3px;
-    background: #f1f1f1;
+    background: var(--background-color);
 }
 .gwt-DecoratedPopupPanel .popupTopCenter {
-    background: url(../images/hborder.png) 0px -2937px repeat-x;
+    background: var(--dialog-border-color);
 }
 .gwt-DecoratedPopupPanel .popupBottomCenter {
-    background:  url(../images/hborder.png) repeat-x 0px -2938px;
-    -background: url(../images/hborder_ie6.png) repeat-x 0px -2138px;
+    background: var(--dialog-border-color);
 }
 .gwt-DecoratedPopupPanel .popupMiddleLeft {
-    background: url(../images/vborder_cr.png) -21px 0px repeat-y;
+    background: var(--dialog-border-color);
 }
 .gwt-DecoratedPopupPanel .popupMiddleRight {
-    background: url(../images/vborder_cr.png) repeat-y -24px 0px;
-    -background: url(../images/vborder_cr_ie6.png) repeat-y -24px 0px;
+    background: var(--dialog-border-color);
 }
 .gwt-DecoratedPopupPanel .popupTopLeftInner {
-    width: 6px;
-    height: 5px;
+    width: 2px;
+    height: 2px;
     zoom: 1;
 }
 .gwt-DecoratedPopupPanel .popupTopRightInner {
-    width: 6px;
-    height: 5px;
+    width: 2px;
+    height: 2px;
     zoom: 1;
 }
 .gwt-DecoratedPopupPanel .popupBottomLeftInner {
-    width: 6px;
-    height: 6px;
+    width: 2px;
+    height: 2px;
     zoom: 1;
 }
 .gwt-DecoratedPopupPanel .popupBottomRightInner {
-    width: 6px;
-    height: 6px;
+    width: 2px;
+    height: 2px;
     zoom: 1;
 }
 .gwt-DecoratedPopupPanel .popupTopLeft {
-    background: url(../images/circles.png) no-repeat 0px -16px;
-    -background: url(../images/circles_ie6.png) no-repeat 0px -16px;
+    background: var(--dialog-border-color);
 }
 .gwt-DecoratedPopupPanel .popupTopRight {
-    background: url(../images/circles.png) no-repeat -6px -16px;
-    -background: url(../images/circles_ie6.png) no-repeat -6px -16px;
+    background: var(--dialog-border-color);
 }
 .gwt-DecoratedPopupPanel .popupBottomLeft {
-    background: url(../images/circles.png) no-repeat 0px -21px;
-    -background: url(../images/circles_ie6.png) no-repeat 0px -21px;
+    background: var(--dialog-border-color);
 }
 .gwt-DecoratedPopupPanel .popupBottomRight {
-    background: url(../images/circles.png) no-repeat -6px -21px;
-    -background: url(../images/circles_ie6.png) no-repeat -6px -21px;
+    background: var(--dialog-border-color);
 }
 * html .gwt-DecoratedPopupPanel .popupTopLeftInner {
-    width: 6px;
-    height: 5px;
+    width: 2px;
+    height: 2px;
     overflow: hidden;
 }
 * html .gwt-DecoratedPopupPanel .popupTopRightInner {
-    width: 6px;
-    height: 5px;
+    width: 2px;
+    height: 2px;
     overflow: hidden;
 }
 * html .gwt-DecoratedPopupPanel .popupBottomLeftInner {
-    width: 6px;
-    height: 6px;
+    width: 2px;
+    height: 2px;
     overflow: hidden;
 }
 * html .gwt-DecoratedPopupPanel .popupBottomRightInner {
-    width: 6px;
-    height: 6px;
+    width: 2px;
+    height: 2px;
     overflow: hidden;
 }
 
@@ -579,7 +587,7 @@ select:focus {
     cursor: hand;
 }
 .gwt-PushButton-down-disabled {
-    border: 1px outset #ccc;
+    border: 1px outset var(--border-color);
     cursor: default;
     opacity: 0.5;
     filter: alpha(opacity=45);
@@ -589,7 +597,7 @@ select:focus {
 .gwt-RadioButton {
 }
 .gwt-RadioButton-disabled {
-    color: #888;
+    color: var(--disabled-text-color);
 }
 
 .gwt-RichTextArea {
@@ -782,7 +790,7 @@ select:focus {
 
 .gwt-SuggestBox {
     padding: 5px 4px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-top: 1px solid #999;
     font-size: 100%;
 }
@@ -792,7 +800,7 @@ select:focus {
 
 .gwt-SuggestBoxPopup .item {
     padding: 2px 6px;
-    color: #000;
+    color: var(--text-color);
     cursor: default;
     font-size: 110%;
 }
@@ -904,14 +912,13 @@ select:focus {
     cursor: hand;
     font-weight: normal;
     text-align: center;
-    background: white;
-    border-top: 1px solid #ccc;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
+    border-top: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
 }
 .gwt-TabBar .gwt-TabBarItem-selected {
     cursor: default;
-    background: rgba(4, 137, 186, 0.09411764705882353);
+    background: var(--selection-color);
 }
 .gwt-TabBar .gwt-TabBarItem-disabled {
     cursor: default;
@@ -919,24 +926,24 @@ select:focus {
 }
 
 .gwt-TabBar .gwt-TabBarItem:hover {
-    background: rgba(4, 137, 186, 0.09411764705882353);
+    background: var(--selection-color);
 }
 
 .gwt-TabBar .gwt-TabBarItem:focus {
-    border-top: 1px solid #0489BA;
-    border-left: 1px solid #0489BA;
-    border-right: 1px solid #0489BA;
+    border-top: 1px solid var(--focus-color);
+    border-left: 1px solid var(--focus-color);
+    border-right: 1px solid var(--focus-color);
 }
 
 .gwt-TabBar .gwt-TabBarItem-selected:hover {
-    background: rgba(4, 137, 186, 0.09411764705882353); 
+    background: var(--selection-color); 
 }
 
 .gwt-TabPanel {
     margin: 0 1px 1px;
 }
 .gwt-TabPanelBottom {
-    border-color: #ccc;
+    border-color: var(--border-color);
     border-style: solid;
     border-width: 1px;
     /*overflow: visible; *//* вероятно помогает избежать непрерывной перерисовки в FF */
@@ -944,7 +951,7 @@ select:focus {
     padding: 1px;
 }
 .gwt-DecoratedTabBar {
-    background: #ccc;
+    background: var(--border-color);
     padding-top: 6px;
 }
 .gwt-DecoratedTabBar .gwt-TabBarFirst {
@@ -1032,7 +1039,7 @@ select:focus {
 
 .gwt-TextArea {
     padding: 4px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-top: 1px solid #666;
     font-size: 100%;
 }
@@ -1042,15 +1049,14 @@ select:focus {
 
 .gwt-TextBox {
     padding: 5px 4px;
-    border: 1px solid #ccc;
-    border-top: 1px solid #999;
+    border: 1px solid var(--border-color);
     font-size: small;
 }
 .gwt-TextBox-readonly {
     color: #888;
 }
 .gwt-TextBox:focus {
-    border: 1px solid #0489BA;
+    border: 1px solid var(--focus-color);
 }
 
 .gwt-ToggleButton-up,
@@ -1109,7 +1115,7 @@ select:focus {
 }
 .gwt-ToggleButton-down-disabled {
     background-position: 0 -513px;
-    border: 1px inset #ccc;
+    border: 1px inset var(--border-color);
     cursor: default;
     opacity: .5;
     zoom: 1;
@@ -1124,7 +1130,7 @@ select:focus {
     cursor: pointer;
 }
 .gwt-Tree .gwt-TreeItem-selected {
-    background: #ebeff9;
+    background: var(--selection-color);
 }
 .gwt-TreeItem .gwt-RadioButton input,
 .gwt-TreeItem .gwt-CheckBox input {
@@ -1137,7 +1143,7 @@ select:focus {
 
 .gwt-DateBox {
     padding: 5px 4px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-top: 1px solid #999;
     font-size: 100%;
 }
@@ -1151,7 +1157,7 @@ select:focus {
 }
 
 .gwt-DatePicker {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-top:1px solid #999;
     cursor: default;
 }
@@ -1271,13 +1277,13 @@ td.datePickerMonth {
     width: 100% !important;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContentContainer {
-    border-color: #ccc;
+    border-color: var(--border-color);
     border-style: solid;
     border-width: 1px;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
     overflow: hidden;
-    border-top: 1px solid white;
+    border-top: 1px solid transparent;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
     margin: 0 2px;
@@ -1286,39 +1292,38 @@ td.datePickerMonth {
     cursor: hand;
     font-weight: normal;
     text-align: center;
-    background: white;
-    border-top: 1px solid #ccc;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
+    border-top: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
     min-width: 19px;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected {
     cursor: default;
-    background: rgba(4, 137, 186, 0.09411764705882353);
+    background: var(--selection-color);
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab:hover {
-    background: rgba(4, 137, 186, 0.09411764705882353);
+    background: var(--selection-color);
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected:hover {
-    background: rgba(4, 137, 186, 0.09411764705882353);
+    background: var(--selection-color);
 }
 
 .gwt-SplitLayoutPanel-HDragger {
     cursor: col-resize;
     width: 2px !important;
     margin: 0 2px;
-    border-left: 1px solid #a9a9a9;
-    border-right: 1px solid #a9a9a9;
-    background: #F1F1F1;
+    border-left: 1px solid var(--split-border-color);
+    border-right: 1px solid var(--split-border-color);
+    background: var(--split-background-color);
 }
 
 .gwt-SplitLayoutPanel-VDragger {
     cursor: row-resize;
     height: 2px !important;
     margin: 2px 0;
-    border-top: 1px solid #a9a9a9;
-    border-bottom: 1px solid #a9a9a9;
-    background: #F1F1F1;
+    border-top: 1px solid var(--split-border-color);
+    border-bottom: 1px solid var(--split-border-color);
+    background: var(--split-background-color);
 }

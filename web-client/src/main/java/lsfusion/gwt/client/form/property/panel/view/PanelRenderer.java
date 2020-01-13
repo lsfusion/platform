@@ -8,7 +8,7 @@ public interface PanelRenderer {
     void setReadOnly(boolean readOnly);
     void setCaption(String caption);
     void setDefaultIcon();
-    void setIcon(String iconPath);
+    void setImage(String iconPath);
 
     void updateCellBackgroundValue(Object value);
     void updateCellForegroundValue(Object value);

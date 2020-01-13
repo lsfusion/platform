@@ -3,6 +3,7 @@ package lsfusion.gwt.client.navigator;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
+import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -15,7 +16,7 @@ public abstract class GNavigatorElement implements Serializable {
     public String canonicalName;
     public String caption;
     public String creationPath;
-    public ImageDescription icon;
+    public ImageHolder image;
 
     public ArrayList<GNavigatorElement> children;
     public HashSet<GNavigatorElement> parents = new HashSet<>();
@@ -27,6 +28,10 @@ public abstract class GNavigatorElement implements Serializable {
             if (set.contains(parent)) return true;
         }
         return false;
+    }
+    
+    public ImageDescription getImage() {
+        return image != null ? image.getImage() : null;
     }
 
     public String getTooltipText() {

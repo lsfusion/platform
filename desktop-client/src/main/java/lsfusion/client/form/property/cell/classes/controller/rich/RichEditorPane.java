@@ -32,6 +32,7 @@ import java.util.Vector;
 
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
+import static lsfusion.base.ResourceUtils.readImage;
 
 /**
  * based on net.atlanticbb.tantlinger.shef.HTMLEditorPane
@@ -39,31 +40,31 @@ import static java.util.Arrays.asList;
 public class RichEditorPane extends JPanel {
 
     private interface Icons {
-        ImageIcon cut = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/cut.png"));
-        ImageIcon copy = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/copy.png"));
-        ImageIcon paste = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/paste.png"));
+        ImageIcon cut = readImage("richtext/cut.png");
+        ImageIcon copy = readImage("richtext/copy.png");
+        ImageIcon paste = readImage("richtext/paste.png");
 
-        ImageIcon undo = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/undo.png"));
-        ImageIcon redo = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/redo.png"));
+        ImageIcon undo = readImage("richtext/undo.png");
+        ImageIcon redo = readImage("richtext/redo.png");
 
-        ImageIcon bold = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/bold.png"));
-        ImageIcon italic = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/italic.png"));
-        ImageIcon underline = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/underline.png"));
-        ImageIcon strike = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/strike.png"));
-        ImageIcon subscript = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/subscript.png"));
-        ImageIcon superscript = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/superscript.png"));
-        ImageIcon removeFormat = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/removeFormat.png"));
+        ImageIcon bold = readImage("richtext/bold.png");
+        ImageIcon italic = readImage("richtext/italic.png");
+        ImageIcon underline = readImage("richtext/underline.png");
+        ImageIcon strike = readImage("richtext/strike.png");
+        ImageIcon subscript = readImage("richtext/subscript.png");
+        ImageIcon superscript = readImage("richtext/superscript.png");
+        ImageIcon removeFormat = readImage("richtext/removeFormat.png");
 
-        ImageIcon alignLeft = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/alignLeft.png"));
-        ImageIcon alignCenter = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/alignCenter.png"));
-        ImageIcon alignRight = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/alignRight.png"));
-        ImageIcon alignJustify = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/alignJustify.png"));
+        ImageIcon alignLeft = readImage("richtext/alignLeft.png");
+        ImageIcon alignCenter = readImage("richtext/alignCenter.png");
+        ImageIcon alignRight = readImage("richtext/alignRight.png");
+        ImageIcon alignJustify = readImage("richtext/alignJustify.png");
 
-        ImageIcon orderedList = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/orderedList.png"));
-        ImageIcon unorderedList = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/unorderedList.png"));
+        ImageIcon orderedList = readImage("richtext/orderedList.png");
+        ImageIcon unorderedList = readImage("richtext/unorderedList.png");
 
-        ImageIcon hr = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/hr.png"));
-        ImageIcon image = new ImageIcon(RichEditorPane.class.getResource("/images/richtext/image.png"));
+        ImageIcon hr = readImage("richtext/hr.png");
+        ImageIcon image = readImage("richtext/image.png");
     }
     
     private static final String INVALID_TAGS[] = {"html", "head", "body", "title", "o", "/o", "!--EndFragment--", "!--StartFragment--", "link", "!--(?s)(.*)--"};

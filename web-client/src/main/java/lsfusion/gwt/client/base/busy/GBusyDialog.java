@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base.busy;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -63,8 +62,8 @@ public class GBusyDialog extends WindowBox {
         topPanel.setWidth("100%");
 
         topPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-        topProgressBarDynamic = new Image(GWT.getModuleBaseURL() + "static/images/loading_bar.gif");
-        topProgressBarStatic = new Image(GWT.getModuleBaseURL() + "static/images/loading_bar.png");
+        topProgressBarDynamic = new GImage("loading_bar.gif");
+        topProgressBarStatic = new GImage("loading_bar.png");
         topProgressBarStatic.setVisible(false);
         topProgressBarDynamic.addClickHandler(new ClickHandler() {
             @Override
@@ -344,7 +343,7 @@ public class GBusyDialog extends WindowBox {
         String messageText = "";
         for (Map.Entry<String, Boolean> stackLine : stackLines.entrySet()) {
             if (stackLine.getValue())
-                messageText += (messageText.isEmpty() ? "" : "<br/>") + "<font color=#0489BA>" + stackLine.getKey() + "</font>";
+                messageText += "<div style=\"color: var(--focus-color);\">" + stackLine.getKey() + "</div>";
             else
                 messageText += (messageText.isEmpty() ? "" : "<br/>") + stackLine.getKey();
         }

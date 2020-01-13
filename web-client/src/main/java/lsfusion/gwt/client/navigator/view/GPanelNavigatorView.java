@@ -5,10 +5,7 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.Panel;
-import lsfusion.gwt.client.base.view.CaptionPanel;
-import lsfusion.gwt.client.base.view.ImageButton;
-import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
-import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GPanelNavigatorWindow;
@@ -51,7 +48,7 @@ public class GPanelNavigatorView extends GNavigatorView {
     }
 
     private Button createButton(final GNavigatorElement element) {
-        ImageButton button = new ImageButton(element.caption, element.icon);
+        ImageButton button = new AppImageButton(element.image, element.caption);
         button.addStyleName("panelNavigatorView");
 
         button.addMouseDownHandler(new MouseDownHandler() {

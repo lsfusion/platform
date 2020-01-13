@@ -1,6 +1,7 @@
 package lsfusion.server.logics.navigator.controller.remote;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -12,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
+import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -27,7 +29,6 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
-import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.EnvStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
@@ -234,6 +235,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         boolean useRequestTimeout;
         boolean forbidDuplicateForms;
         boolean devMode;
+        ColorTheme colorTheme;
 
         try (DataSession session = createSession()) {
             currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
@@ -242,12 +244,16 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
             forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCustomUser.read(session, user) != null;
             devMode = SystemProperties.inDevMode || businessLogics.authenticationLM.devMode.read(session) != null;
+            
+            String colorThemeStaticName = (String) businessLogics.authenticationLM.colorThemeStaticName.read(session, user);
+            String colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null; 
+            colorTheme = BaseUtils.nvl(ColorTheme.get(colorThemeString), ColorTheme.DEFAULT);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         boolean configurationAccessAllowed = securityPolicy.configurator != null && securityPolicy.configurator;
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, devMode, configurationAccessAllowed, forbidDuplicateForms);
+                useRequestTimeout, devMode, configurationAccessAllowed, forbidDuplicateForms, colorTheme);
     }
 
     public void gainedFocus(FormInstance form) {

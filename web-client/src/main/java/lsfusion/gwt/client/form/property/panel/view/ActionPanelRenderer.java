@@ -6,9 +6,9 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.ImageDescription;
+import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.base.view.ImageButton;
+import lsfusion.gwt.client.base.view.AppImageButton;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
@@ -56,7 +56,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         this.columnKey = icolumnKey;
         this.editDispatcher = new GEditPropertyDispatcher(form, this);
 
-        button = new ActionButton(property.getEditCaption(), property.icon);
+        button = new ActionButton(property.imageHolder, property.getEditCaption());
         button.addStyleName("actionPanelRenderer");
 
         setTooltip(property.caption);
@@ -216,7 +216,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         if (enabled != newEnabled) {
             enabled = newEnabled;
             button.setEnabled(enabled);
-            button.setAppImagePath(property.getIconPath(enabled));
+            button.setImage(property.getImage(enabled));
         }
     }
 
@@ -232,11 +232,11 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void setDefaultIcon() {
-        button.setImage(property.icon);
+        button.setDefaultImage();
     }
 
     @Override
-    public void setIcon(String iconPath) {
+    public void setImage(String iconPath) {
         button.setModuleImagePath(iconPath);
     }
 
@@ -271,9 +271,9 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         }
     }
 
-    private class ActionButton extends ImageButton {
-        private ActionButton(String caption, ImageDescription imageDescription) {
-            super(caption, imageDescription);
+    private class ActionButton extends AppImageButton {
+        private ActionButton(ImageHolder imageHolder, String caption) {
+            super(imageHolder, caption);
             sinkEvents(Event.ONBLUR | Event.ONFOCUS);
         }
 

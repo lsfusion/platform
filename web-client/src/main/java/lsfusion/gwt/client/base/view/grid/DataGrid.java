@@ -16,7 +16,6 @@
  */
 package lsfusion.gwt.client.base.view.grid;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Overflow;
@@ -27,7 +26,6 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
@@ -35,6 +33,8 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.Cell.Context;
 import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
 import lsfusion.gwt.client.base.view.grid.cell.HasCell;
+import lsfusion.gwt.client.view.ColorThemeChangeListener;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
@@ -64,15 +64,15 @@ import static java.lang.Math.min;
  *
  * @param <T> the data type of each row
  */
-public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>, Focusable, KeyboardRowChangedEvent.HasKeyboardRowChangedHandlers {
+public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>, Focusable, KeyboardRowChangedEvent.HasKeyboardRowChangedHandlers, ColorThemeChangeListener {
 
-    private static Resources DEFAULT_RESOURCES;
+    private static GridStyle DEFAULT_STYLE;
 
-    private static Resources getDefaultResources() {
-        if (DEFAULT_RESOURCES == null) {
-            DEFAULT_RESOURCES = GWT.create(Resources.class);
+    protected static GridStyle getDefaultStyle() {
+        if (DEFAULT_STYLE == null) {
+            DEFAULT_STYLE = new GridTableStyle();
         }
-        return DEFAULT_RESOURCES;
+        return DEFAULT_STYLE;
     }
 
     public static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
@@ -102,110 +102,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         @Source("sortDescending.png")
         @ImageResource.ImageOptions(flipRtl = true)
         ImageResource sortDescending();
-
-        /**
-         * The styles used in this widget.
-         */
-        @Source(Style.DEFAULT_CSS)
-        Style style();
-    }
-
-    /**
-     * Styles used by this widget.
-     */
-    @CssResource.ImportedWithPrefix("gwt-CellTable")
-    public interface Style extends CssResource {
-        /**
-         * The path to the default CSS styles used by this resource.
-         */
-        String DEFAULT_CSS = "lsfusion/gwt/client/base/view/grid/DataGrid.css";
-
-        /**
-         * Applied to the table.
-         */
-        String dataGridWidget();
-
-        /**
-         * applied to the whole header
-         */
-        String dataGridHeader();
-
-        /**
-         * Applied to headers cells.
-         */
-        String dataGridHeaderCell();
-
-        /**
-         * Applied to the first column headers.
-         */
-        String dataGridFirstHeaderCell();
-
-        /**
-         * Applied to the last column headers.
-         */
-        String dataGridLastHeaderCell();
-
-        /**
-         * applied to the whole footer
-         */
-        String dataGridFooter();
-
-        /**
-         * Applied to footers cells.
-         */
-        String dataGridFooterCell();
-
-        /**
-         * Applied to the first column footers.
-         */
-        String dataGridFirstFooterCell();
-
-        /**
-         * Applied to the last column footers.
-         */
-        String dataGridLastFooterCell();
-
-
-        /**
-         * Applied to rows.
-         */
-        String dataGridRow();
-
-        /**
-         * Applied to cell.
-         */
-        String dataGridCell();
-
-        /**
-         * Applied to the first column.
-         */
-        String dataGridFirstCell();
-
-        /**
-         * Applied to the last column.
-         */
-        String dataGridLastCell();
-
-        /**
-         * Applied to the keyboard selected row.
-         */
-        String dataGridKeyboardSelectedRow();
-
-        /**
-         * Applied to the cells in the keyboard selected row.
-         */
-        String dataGridKeyboardSelectedRowCell();
-
-        /**
-         * Applied to the focused cell and rounding cells.
-         */
-        String dataGridFocusedCell();
-
-        String dataGridFocusedCellLastInRow();
-
-        String dataGridRightOfFocusedCell();
-
-        String dataGridTopOfFocusedCell();
     }
 
     /**
@@ -247,8 +143,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      */
     private boolean removeKeyboardStylesOnBlur = false;
 
-    protected final Resources resources;
-    protected final Style style;
+    protected final GridStyle style;
 
     private String selectedRowStyle;
     private String selectedRowCellStyle;
@@ -309,14 +204,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      * Constructs a table with the given page size.
      */
     public DataGrid() {
-        this(getDefaultResources());
+        this(getDefaultStyle());
     }
 
-    public DataGrid(Resources resources) {
-        this(resources, -1, false);
+    public DataGrid(GridStyle style) {
+        this(style, -1, false);
     }
 
-    public DataGrid(Resources resources, int initHeaderHeight, boolean nullHeaders) {
+    public DataGrid(GridStyle style, int initHeaderHeight, boolean nullHeaders) {
         this.nullHeaders = nullHeaders;
 
         int initialHeaderHeight = nullHeaders ? 0 : initHeaderHeight; 
@@ -326,9 +221,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         this.state = new State<>();
 
-        this.resources = resources;
-        this.style = resources.style();
-        this.style.ensureInjected();
+        this.style = style;
 
         // Create the header and footer widgets..
         tableHeader = new HeaderWidget();
@@ -419,6 +312,12 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         // Set the keyboard handler.
         setKeyboardSelectionHandler(new DataGridKeyboardSelectionHandler<>(this));
+
+        MainFrame.addColorThemeChangeListener(this);
+    }
+    
+    public GridStyle getStyle() {
+        return style;
     }
 
     public void setRowHeight(int rowHeight) {
@@ -1166,13 +1065,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      */
     public int getKeyboardSelectedColumn() {
         return getCurrentState().keyboardSelectedColumn;
-    }
-
-    /**
-     * Get the resources used by this table.
-     */
-    public Resources getResources() {
-        return resources;
     }
 
     /**
@@ -1994,6 +1886,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     public void setTableFocusable(boolean focusable) {
         this.focusable = focusable;
         setFocusable(getFocusHolderElement(), focusable);
+    }
+
+    @Override
+    public void colorThemeChanged() {
+        refreshColumnsAndRedraw();
     }
 
     /**

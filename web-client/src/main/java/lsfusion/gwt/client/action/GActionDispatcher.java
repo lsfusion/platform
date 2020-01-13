@@ -38,4 +38,6 @@ public interface GActionDispatcher {
     void execute(GActivateFormAction action);
 
     void execute(GMaximizeFormAction action);
+    
+    void execute(GChangeColorThemeAction action);
 }

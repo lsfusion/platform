@@ -13,6 +13,7 @@ import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
@@ -200,5 +201,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = MaximizeFormClientAction.class)
     public GMaximizeFormAction convertAction(MaximizeFormClientAction action) {
         return new GMaximizeFormAction();
+    }
+
+    @Converter(from = ChangeColorThemeClientAction.class)
+    public GChangeColorThemeAction convertAction(ChangeColorThemeClientAction action) {
+        return new GChangeColorThemeAction(GColorTheme.valueOf(action.colorTheme.name()));
     }
 }

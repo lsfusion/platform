@@ -2,6 +2,7 @@ package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.gwt.client.controller.remote.action.navigator.GetClientSettings;
 import lsfusion.gwt.client.controller.remote.action.navigator.GetClientSettingsResult;
+import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.interop.navigator.ClientSettings;
@@ -17,7 +18,8 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
     @Override
     public GetClientSettingsResult executeEx(GetClientSettings action, ExecutionContext context) throws RemoteException {
         ClientSettings clientSettings = getRemoteNavigator(action).getClientSettings();
+        GColorTheme colorTheme = GColorTheme.valueOf(clientSettings.colorTheme.name());
         return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout,
-                clientSettings.devMode, clientSettings.configurationAccessAllowed, clientSettings.forbidDuplicateForms);
+                clientSettings.devMode, clientSettings.configurationAccessAllowed, clientSettings.forbidDuplicateForms, colorTheme);
     }
 }

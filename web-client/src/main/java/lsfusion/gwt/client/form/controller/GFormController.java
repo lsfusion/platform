@@ -83,9 +83,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.base.GwtSharedUtils.*;
+import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
+import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isPossibleEditKeyEvent;
 
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
@@ -150,7 +151,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         asyncTimer = new Timer() {
             @Override
             public void run() {
-                asyncView.setIcon("loading.gif");
+                asyncView.setImage("loading.gif");
             }
         };
 

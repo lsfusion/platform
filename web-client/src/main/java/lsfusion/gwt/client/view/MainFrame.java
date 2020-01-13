@@ -3,6 +3,8 @@ package lsfusion.gwt.client.view;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -71,6 +73,9 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static long busyDialogTimeout;
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;
+    
+    public static GColorTheme colorTheme = GColorTheme.DEFAULT;
+    public static List<ColorThemeChangeListener> colorThemeChangeListeners = new ArrayList<>(); 
 
     private final String tabSID = GwtSharedUtils.randomString(25);
 
@@ -104,9 +109,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void onModuleLoad() {
-        // inject global styles
-        GWT.<MainFrameResources>create(MainFrameResources.class).css().ensureInjected();
-
         hackForGwtDnd();
         
         initializeLogicsAndNavigator(0);
@@ -171,6 +173,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 devMode = result.devMode;
                 configurationAccessAllowed = result.configurationAccessAllowed;
                 forbidDuplicateForms = result.forbidDuplicateForms;
+                changeColorTheme(result.colorTheme);
             }
         });
 
@@ -312,6 +315,23 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     private boolean isShouldRepeatPingRequest() {
         return shouldRepeatPingRequest;
     }
+    
+    public static void addColorThemeChangeListener(ColorThemeChangeListener listener) {
+        colorThemeChangeListeners.add(listener);
+    }
+    
+    public static void changeColorTheme(GColorTheme newColorTheme) {
+        if (colorTheme != newColorTheme) {
+            colorTheme = newColorTheme;
+
+            Element cssLink = Document.get().getElementById("themeCss");
+            cssLink.setAttribute("href", "static/css/" + colorTheme.getSid() + ".css");
+
+            for (ColorThemeChangeListener colorThemeChangeListener : colorThemeChangeListeners) {
+                colorThemeChangeListener.colorThemeChanged();
+            }
+        }
+    } 
 
     private void hackForGwtDnd() {
         RootPanel.get().getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);

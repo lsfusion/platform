@@ -207,7 +207,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         this.canonicalName = canonicalName;
         this.debugPoint = debugPoint;
         
-        this.defaultImagePath = imagePath != null ? "/images/" + imagePath : null;
+        this.defaultImagePath = imagePath;
         
         logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
 

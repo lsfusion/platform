@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.file.SerializableImageIconHolder;
-import lsfusion.gwt.client.base.ImageDescription;
+import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.server.FileUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -19,8 +19,8 @@ public class CachedObjectConverter extends ObjectConverter {
         this.logicsName = logicsName;
     }
 
-    protected ImageDescription createImage(SerializableImageIconHolder iconHolder, String iconPath, String imagesFolderName, boolean canBeDisabled) {
-        return FileUtils.createImage(logicsName, iconHolder, iconPath, imagesFolderName, canBeDisabled);
+    protected ImageHolder createImage(SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
+        return FileUtils.createImage(logicsName, imageHolder, imagesFolderName, canBeDisabled);
     }
 
     @Override

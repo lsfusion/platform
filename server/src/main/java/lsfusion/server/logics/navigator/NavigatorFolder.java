@@ -6,7 +6,7 @@ public class NavigatorFolder extends NavigatorElement {
     public NavigatorFolder(String canonicalName, LocalizedString caption) {
         super(canonicalName, caption);
 
-        setImage("/images/open.png", DefaultIcon.OPEN);
+        setImage("open.png", DefaultIcon.OPEN);
     }
 
     @Override

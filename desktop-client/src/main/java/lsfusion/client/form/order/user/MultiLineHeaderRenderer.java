@@ -6,10 +6,12 @@ import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
+import static lsfusion.base.ResourceUtils.readImage;
+
 public class MultiLineHeaderRenderer implements TableCellRenderer {
 
-    protected final static ImageIcon arrowUpIcon = new ImageIcon(MultiLineHeaderRenderer.class.getResource("/images/arrowup.png"));
-    protected final static ImageIcon arrowDownIcon = new ImageIcon(MultiLineHeaderRenderer.class.getResource("/images/arrowdown.png"));
+    protected final static ImageIcon arrowUpIcon = readImage("arrowup.png");
+    protected final static ImageIcon arrowDownIcon = readImage("arrowdown.png");
 
     private final TableCellRenderer tableCellRenderer;
     private final TableSortableHeaderManager sortableHeaderManager;

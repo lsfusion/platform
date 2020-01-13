@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.object.table.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
@@ -61,21 +60,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected int preferredWidth;
 
-    public interface GGridPropertyTableResource extends Resources {
-        @Source("GGridPropertyTable.css")
-        GGridPropertyTableStyle style();
-    }
-
-    public interface GGridPropertyTableStyle extends Style {}
-
-    public static final GGridPropertyTableResource GGRID_RESOURCES = GWT.create(GGridPropertyTableResource.class);
-
     public GGridPropertyTable(GFormController iform, GGroupObject iGroupObject, GFont font) {
         this(iform, iGroupObject, font, -1);
     }
     
     public GGridPropertyTable(GFormController iform, GGroupObject iGroupObject, GFont font, int initHeaderHeight) {
-        super(iform, iGroupObject, GGRID_RESOURCES, initHeaderHeight);
+        super(iform, iGroupObject, getDefaultStyle(), initHeaderHeight);
         
         this.font = font;
 
@@ -152,13 +142,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     @Override
     protected void onFocus() {
         super.onFocus();
-        changeBorder("#0489BA");
+        changeBorder("var(--focus-color)");
     }
 
     @Override
     protected void onBlur() {
         super.onBlur();
-        changeBorder("#ccc");
+        changeBorder("var(--border-color)");
     }
 
     public void changeBorder(String color) {

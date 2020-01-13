@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;
@@ -116,4 +117,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         return null;
     }
 
+    @Override
+    public void execute(final GChangeColorThemeAction action) {
+        MainFrame.changeColorTheme(action.colorTheme);
+    }
 }

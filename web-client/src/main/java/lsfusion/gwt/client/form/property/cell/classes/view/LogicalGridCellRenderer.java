@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -58,6 +57,6 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
 
     private String getCBImagePath(Object value) {
         boolean checked = value != null && (Boolean) value;
-        return GWT.getModuleBaseURL() + "static/images/checkbox_" + (checked ? "checked" : "unchecked") + ".png";
+        return GwtClientUtils.getModuleImagePath("checkbox_" + (checked ? "checked" : "unchecked") + ".png");
     }
 }

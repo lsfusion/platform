@@ -5,7 +5,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.ListFact;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -15,7 +15,6 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.classes.ClientActionClass;
-import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.dispatch.DispatcherListener;
 import lsfusion.client.controller.remote.AsyncListener;
@@ -88,11 +87,10 @@ import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.interop.form.order.user.Order.*;
 
 public class ClientFormController implements AsyncListener {
 
-    private static final ImageIcon loadingIcon = new ImageIcon(MainController.class.getResource("/images/loading.gif"));
+    private static final ImageIcon loadingIcon = ResourceUtils.readImage("loading.gif");
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
 

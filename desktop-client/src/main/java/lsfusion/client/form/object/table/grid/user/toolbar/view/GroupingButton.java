@@ -1,8 +1,8 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ResourceUtils;
 import lsfusion.client.controller.remote.RmiQueue;
-import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
@@ -18,7 +18,7 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class GroupingButton extends ToolbarGridButton {
 
-    private static final ImageIcon PIVOT_ICON = new ImageIcon(FilterView.class.getResource("/images/pivot.png"));
+    private static final ImageIcon PIVOT_ICON = ResourceUtils.readImage("pivot.png");
 
     public GroupingDialog dialog;
 

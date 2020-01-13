@@ -54,7 +54,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         JToggleButton button = new JToggleButton(element.toString());
         button.setToolTipText(element.getTooltip());
         button.addMouseListener(new NavigatorMouseAdapter(element));
-        button.setIcon(new IndentedIcon(element.image.getImage(), indent));
+        button.setIcon(new IndentedIcon(element.imageHolder.getImage(), indent));
         button.setVerticalTextPosition(window.verticalTextPosition);
         button.setHorizontalTextPosition(window.horizontalTextPosition);
         button.setVerticalAlignment(window.verticalAlignment);
