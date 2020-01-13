@@ -150,10 +150,6 @@ public class GridController extends AbstractTableController {
             addToolbarSeparator();
         }
 
-        if (groupObject.toolbar.showCountRows || groupObject.toolbar.showCalculateSum || groupObject.toolbar.showGroupReport) {
-            addToolbarSeparator();
-        }
-
         if (groupObject.toolbar.showCountRows) {
             addToToolbar(new CountQuantityButton() {
                 public void addListener() {
