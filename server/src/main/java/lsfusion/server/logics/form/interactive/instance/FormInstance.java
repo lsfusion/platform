@@ -1525,7 +1525,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ComponentView parent = component.getHiddenContainer();
 
         while (parent != null) {
-            Boolean shown = parent instanceof ContainerView ? true : isContainerShown.get(parent);
+            Boolean shown = parent instanceof ContainerView ? isContainerShown.get(parent) : Boolean.TRUE;
 
             if (shown != null && !shown) {
                 return true;
