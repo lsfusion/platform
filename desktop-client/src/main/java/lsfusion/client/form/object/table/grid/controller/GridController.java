@@ -562,6 +562,13 @@ public class GridController extends AbstractTableController {
         return panel.containsProperty(property);
     }
 
+    public boolean isPropertyShown(ClientPropertyDraw property) {
+        if(property.grid)
+            return table.containsProperty(property);
+        else
+            return panel.containsProperty(property);
+    }
+
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
         if (filter != null) {
             filter.quickEditFilter(initFilterKeyEvent, propertyDraw, columnKey);

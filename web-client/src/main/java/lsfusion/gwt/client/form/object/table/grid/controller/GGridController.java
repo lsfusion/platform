@@ -592,6 +592,13 @@ public class GGridController extends GAbstractTableController {
         return panel.containsProperty(property);
     }
 
+    public boolean isPropertyShown(GPropertyDraw property) {
+        if(property.grid)
+            return table.containsProperty(property);
+        else
+            return panel.containsProperty(property);
+    }
+
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
         assert isGrid();
 

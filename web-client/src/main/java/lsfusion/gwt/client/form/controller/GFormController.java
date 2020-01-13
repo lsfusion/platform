@@ -562,16 +562,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
                             removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
 
-                            HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
-                            if (propertyValues == null) {
-                                // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
-                                propertyValues = new HashMap<>();
-                                fc.properties.put(property, propertyValues);
-                                fc.updateProperties.add(property);
-                            }
+                            if(isPropertyShown(property) && !fc.dropProperties.contains(property)) {
+                                HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
+                                if (propertyValues == null) {
+                                    // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
+                                    propertyValues = new HashMap<>();
+                                    fc.properties.put(property, propertyValues);
+                                    fc.updateProperties.add(property);
+                                }
 
-                            if (fc.updateProperties.contains(property) && !propertyValues.containsKey(keys)) {
-                                propertyValues.put(keys, change.oldValue);
+                                if (fc.updateProperties.contains(property) && !propertyValues.containsKey(keys)) {
+                                    propertyValues.put(keys, change.oldValue);
+                                }
                             }
                         }
                     }
@@ -595,6 +597,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 }
             }
         });
+    }
+
+    private boolean isPropertyShown(GPropertyDraw property) {
+        if(property != null) {
+            GGridController controller = controllers.get(property.groupObject);
+            return controller != null && controller.isPropertyShown(property);
+        }
+        return false;
     }
 
     public void openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, final WindowHiddenHandler handler) {

@@ -719,18 +719,20 @@ public class ClientFormController implements AsyncListener {
             if (change.requestIndex <= currentDispatchingRequestIndex) {
                 iterator.remove();
 
-                ClientPropertyDraw propertyDraw = cell.getRowKey();
+                ClientPropertyDraw property = cell.getRowKey();
                 ClientGroupObjectValue keys = cell.getColumnKey();
 
-                Map<ClientGroupObjectValue, Object> propertyValues = formChanges.properties.get(propertyDraw);
-                if (propertyValues == null) { // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
-                    propertyValues = new HashMap<>();
-                    formChanges.properties.put(propertyDraw, propertyValues);
-                    formChanges.updateProperties.add(propertyDraw);
-                }
+                if(isPropertyShown(property) && !formChanges.dropProperties.contains(property)) {
+                    Map<ClientGroupObjectValue, Object> propertyValues = formChanges.properties.get(property);
+                    if (propertyValues == null) { // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
+                        propertyValues = new HashMap<>();
+                        formChanges.properties.put(property, propertyValues);
+                        formChanges.updateProperties.add(property);
+                    }
 
-                if (formChanges.updateProperties.contains(propertyDraw) && !propertyValues.containsKey(keys)) {
-                    propertyValues.put(keys, change.oldValue);
+                    if (formChanges.updateProperties.contains(property) && !propertyValues.containsKey(keys)) {
+                        propertyValues.put(keys, change.oldValue);
+                    }
                 }
             }
         }
@@ -746,6 +748,14 @@ public class ClientFormController implements AsyncListener {
                 }
             }
         }
+    }
+
+    private boolean isPropertyShown(ClientPropertyDraw property) {
+        if(property != null) {
+            GridController controller = controllers.get(property.groupObject);
+            return controller != null && controller.isPropertyShown(property);
+        }
+        return false;
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {
