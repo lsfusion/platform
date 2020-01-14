@@ -310,55 +310,41 @@ dataForbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (Cus
 forbidDuplicateForms (CustomUser u) = OVERRIDE dataForbidDuplicateForms(u), forbidDuplicateForms(mainRole(u));
 
 // Default forms
-CLASS DefaultForms '{security.default.forms}' {
-    none '{security.default.forms.none}',
-    default '{security.default.forms.default}'
-}
-TABLE defaultForms (DefaultForms);
-name '{security.default.forms.name}' (DefaultForms o) = staticCaption(o) IF o IS DefaultForms CHARWIDTH 15;
-
-FORM dialogDefaultForms '{security.default.forms}'
-    OBJECTS o = DefaultForms
-    PROPERTIES(o) READONLY name
-    
-    LIST DefaultForms OBJECT o
-;
-
-defaultForms = DATA DefaultForms (UserRole);
-nameDefaultForms '{security.default.forms}' (UserRole userRole) = name(defaultForms(userRole));
-defaultForms (User user) = defaultForms(mainRole(user));
-
 defaultNumber '{security.default.forms.number}' = DATA INTEGER (UserRole, NavigatorElement);
 defaultNumber (User user, NavigatorElement navigatorElement) = 
     GROUP MIN defaultNumber(UserRole userRole, navigatorElement) IF has(user, userRole);
+defaultForms '{security.default.forms}' (UserRole userRole) = GROUP CONCAT caption(NavigatorElement e) IF defaultNumber(userRole, e), ', ' ORDER defaultNumber(userRole, e) CHARWIDTH 50;
 
+maximizeDefaultForms '{security.default.forms.maximize}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
+maximizeDefaultFormsCurrentUser() = maximizeDefaultForms(mainRole(currentUser()));
 maximizeForm  INTERNAL 'lsfusion.server.logics.form.interactive.action.MaximizeFormAction' ();
 
 copy (UserRole from, UserRole to) +{
-    defaultForms(to) <- defaultForms(from);
     defaultNumber(to, NavigatorElement navigatorElement) <- defaultNumber(from, navigatorElement);
 }
 
 showDefaultForms()  { 
-    IF defaultForms(currentUser()) == DefaultForms.default THEN {
-        LOCAL firstForm = STRING[100] ();
-        FOR actionName = canonicalName(action(NavigatorAction e)) AND defaultNumber(currentUser(), e) ORDER defaultNumber(currentUser(), e) DO {
-            LOCAL NESTED action = TEXT ();
-            LOCAL NESTED maximize = BOOLEAN();
-            FOR formName = canonicalName(form(e)) DO { 
-                IF NOT firstForm() THEN {
-                    firstForm() <- formName;
-                    maximize() <- TRUE;
-                }
-                action() <- 'SHOW ' + formName + ' NOWAIT';
-            } ELSE
-                action() <- actionName + '()';
-                
-            NEWSESSION EVAL 'run() \{ ' + action() + '; \};';
-            IF maximize() THEN 
-                maximizeForm();
-        }
+    LOCAL formFound = BOOLEAN ();
+    
+    FOR actionName = canonicalName(action(NavigatorAction e)) AND defaultNumber(currentUser(), e) ORDER defaultNumber(currentUser(), e) DO {
+        LOCAL NESTED action = TEXT ();
+        LOCAL NESTED maximize = BOOLEAN();
+        FOR formName = canonicalName(form(e)) DO { 
+            IF NOT formFound() THEN {
+                formFound() <- TRUE;
+                maximize() <- TRUE;
+            }
+            action() <- 'SHOW ' + formName + ' NOWAIT';
+        } ELSE
+            action() <- actionName + '()';
+            
+        NEWSESSION EVAL 'run() \{ ' + action() + '; \};';
+        IF maximize() AND maximizeDefaultFormsCurrentUser() THEN 
+            maximizeForm();
     }
+   
+    IF NOT formFound() AND maximizeDefaultFormsCurrentUser() THEN
+        maximizeForm();
 }
 
 onDesktopClientStarted() + {  showDefaultForms(); }
@@ -449,7 +435,7 @@ FORM securityPolicy '{security.form.policy}'
 
     PROPERTIES(ur)                             forbidChangePassword, forbidEditProfile
 
-    PROPERTIES(ur)                             nameDefaultForms, forbidDuplicateForms
+    PROPERTIES(ur)                             defaultForms, maximizeDefaultForms, forbidDuplicateForms
     PROPERTIES(ur)                             transactTimeout
     // Navigator elements
     TREE navigatorElements te = NavigatorElement PARENT parent(te)
