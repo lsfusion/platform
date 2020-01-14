@@ -5,6 +5,7 @@ import com.google.code.geocoder.GeocoderRequestBuilder;
 import com.google.code.geocoder.model.GeocodeResponse;
 import com.google.code.geocoder.model.GeocoderRequest;
 import com.google.code.geocoder.model.GeocoderResult;
+import com.google.common.base.Throwables;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -49,15 +50,13 @@ public class GetCoordinatesAddressAction extends GeoAction {
                     String url = "https://geocode-maps.yandex.ru/1.x/?geocode=" + address.trim().replace(" ", "+") + "&results=1&format=json";
 
                     final JSONObject response = JsonReader.read(url);
-                    if (response != null) {
-                        JSONObject objectCollection = response.getJSONObject("response").getJSONObject("GeoObjectCollection");
-                        JSONObject featureMember = (JSONObject) objectCollection.getJSONArray("featureMember").get(0);
-                        JSONObject point = featureMember.getJSONObject("GeoObject").getJSONObject("Point");
-                        String position[] = point.getString("pos").split(" ");
+                    JSONObject objectCollection = response.getJSONObject("response").getJSONObject("GeoObjectCollection");
+                    JSONObject featureMember = (JSONObject) objectCollection.getJSONArray("featureMember").get(0);
+                    JSONObject point = featureMember.getJSONObject("GeoObject").getJSONObject("Point");
+                    String[] position = point.getString("pos").split(" ");
 
-                        longitude = new BigDecimal(position[0]);
-                        latitude = new BigDecimal(position[1]);
-                    }
+                    longitude = new BigDecimal(position[0]);
+                    latitude = new BigDecimal(position[1]);
                 } else {
 
                     final Geocoder geocoder = new Geocoder();
@@ -75,7 +74,8 @@ public class GetCoordinatesAddressAction extends GeoAction {
                 findProperty("readLatitude[]").change(latitude, session);
                 findProperty("readLongitude[]").change(longitude, session);
             }
-        } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException ignored) {
+        } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
         }
     }
 }

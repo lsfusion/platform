@@ -35,12 +35,12 @@ additionalAddress '{geo.additional.address.poi}' = ABSTRACT ISTRING[150] (POI) M
 
 address '{geo.address.poi}' (POI poi) = OVERRIDE additionalAddress(poi), mainAddress(poi); 
 
-latitude '{geo.latitude.poi}' = ABSTRACT NUMERIC[10,5] (POI);
-longitude '{geo.longitude.poi}' = ABSTRACT NUMERIC[10,5] (POI);
+latitude '{geo.latitude.poi}' = ABSTRACT NUMERIC[11,6] (POI);
+longitude '{geo.longitude.poi}' = ABSTRACT NUMERIC[11,6] (POI);
 
 // Получение координат
-readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[10,5] ();
-readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[10,5] ();
+readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
+readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
 
 getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (BPSTRING[255], MapProvider);
 getCoordinates (BPSTRING[255] address)  { getCoordinatesAddress(address, calculateMapProvider()); }
@@ -48,10 +48,12 @@ recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.Re
 
 calculateCoordinates '{geo.calculate.coordinates}'(POI POI) { 
 
-    getCoordinates (CONCAT ',', nameCountry(POI), address(POI));
-    latitude(POI) <- readLatitude();
-    longitude(POI) <- readLongitude();
-    recalculateDistance(POI);
+    TRY {
+        getCoordinates (CONCAT ',', nameCountry(POI), address(POI));
+        latitude(POI) <- readLatitude();
+        longitude(POI) <- readLongitude();
+        recalculateDistance(POI);
+    }
 
 }
 WHEN LOCAL (SETCHANGED(nameCountry(POI POI)) OR SETCHANGED(address(POI))) AND autoSynchronizeCoordinates() DO EXEC calculateCoordinates(POI);
