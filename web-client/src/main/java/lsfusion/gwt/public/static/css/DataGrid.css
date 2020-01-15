@@ -17,7 +17,6 @@
 /* ----- GGridPropertyTable ----- */
 .dataGridWidget {
     border: 1px solid var(--border-color);
-    margin: 2px;
     cursor: default;
 }
 

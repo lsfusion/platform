@@ -590,7 +590,6 @@ input[type=checkbox]:focus {
     overflow-x: auto;
     overflow-y: auto;
     border: 1px solid var(--border-color);
-    margin: 2px;
 }
 
 .pivotTable:focus {
@@ -698,10 +697,55 @@ table.pvtTable tbody tr td {
     border: 1px solid var(--border-color)
 }
 
+/* ------------ Leaflet components  ------------ */
+.leaflet-container {
+    border: 1px solid var(--border-color);
+}
+
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: var(--background-color);
+    color: var(--text-color);
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: unset;
+}
+
+.leaflet-bar {
+    border-radius: 0;
+}
+
+.leaflet-popup-content {
+    margin: 15px;
+}
+
+.leaflet-bar a, .leaflet-bar a:first-child:hover {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.leaflet-bar a:hover {
+    background-color: var(--close-tab-button-hover-color) !important;
+}
+
+.leaflet-control-zoom-in, .leaflet-control-zoom-out {
+    color: var(--text-color) !important;
+    background-color: var(--background-color) !important;
+}
+
+.leaflet-container .leaflet-control-attribution {
+    background-color: var(--leaflet-control-transparent-background);
+    color: var(--text-color);
+}
+
+.leaflet-bar a {
+    border-radius: unset !important;
+}
+
 /* ------------ Other components  ------------ */
 .gridResizePanel{
     min-height: 70px;
     min-width: 130px;
+    margin: 2px;
 }
 
 .toolbarButton {

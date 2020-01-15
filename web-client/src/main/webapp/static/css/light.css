@@ -19,4 +19,5 @@
     --close-tab-button-disabled-color: #a9a9a9;
     --button-disabled-hover-border-color: #bbb;
     --button-active-border-color: #bbb;
+    --leaflet-control-transparent-background: rgba(255, 255, 255, 0.7);
 }

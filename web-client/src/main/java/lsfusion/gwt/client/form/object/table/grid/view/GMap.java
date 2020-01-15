@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.RequiresResize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -17,7 +18,7 @@ import org.vectomatic.dom.svg.utils.OMSVGParser;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GMap extends GSimpleStateTableView {
+public class GMap extends GSimpleStateTableView implements RequiresResize {
 
     public GMap(GFormController form, GGridController grid) {
         super(form, grid);
@@ -139,5 +140,14 @@ public class GMap extends GSimpleStateTableView {
 
         if(markers.length > 0)
             map.fitBounds(new L.featureGroup(markers).getBounds());
+    }-*/;
+
+    @Override
+    public void onResize() {
+        resized(map);
+    }
+
+    protected native void resized(JavaScriptObject map)/*-{
+        map._onResize();
     }-*/;
 }
