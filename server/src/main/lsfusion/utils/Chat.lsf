@@ -271,7 +271,7 @@ away (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) 
 
 backgroundUser (CustomUser user) = IF online(user) THEN RGB(0, 255, 0) ELSE IF away(user) THEN RGB(255, 255, 0);
 
-backgroundMessage (Message m) = IF NOT own(m) THEN RGB(255, 255, 255) ELSE IF seenCount(m) < 2 THEN RGB(247, 247, 247) ELSE RGB(240, 244, 248);
+backgroundMessage (Message m) = IF NOT own(m) THEN NULL ELSE IF seenCount(m) < 2 THEN RGB(247, 247, 247) ELSE RGB(240, 244, 248);
 
 markSeenMessages (CustomUser user)  { 
     FOR in(chat(Message m)) AND status(m, user) == MessageStatus.delivered DO {
