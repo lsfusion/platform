@@ -151,6 +151,7 @@
 
     <!-- GWT browser selection -->
     <inherits name='com.bfr.client.Selection'/>
+    <inherits name="org.vectomatic.libgwtsvg"/>
 
     <stylesheet src="static/css/MainFrame.css"/>
     <stylesheet src="static/css/DataGrid.css"/>

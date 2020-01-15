@@ -2,12 +2,17 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Element;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import org.vectomatic.dom.svg.OMSVGDocument;
+import org.vectomatic.dom.svg.OMSVGFEColorMatrixElement;
+import org.vectomatic.dom.svg.OMSVGFilterElement;
+import org.vectomatic.dom.svg.OMSVGSVGElement;
+import org.vectomatic.dom.svg.utils.OMSVGParser;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +43,8 @@ public class GMap extends GSimpleStateTableView {
                 markers.put(key, marker);
             }
 
-            updateMarker(marker, object);
+            String filterID = createFilter(getMarkerColor(object));
+            updateMarker(marker, object, filterID);
         }
         for(Map.Entry<GGroupObjectValue, JavaScriptObject> oldMarker : oldMarkers.entrySet()) {
             removeMarker(oldMarker.getValue());
@@ -76,13 +82,56 @@ public class GMap extends GSimpleStateTableView {
         marker.remove();
     }-*/;
 
-    protected native void updateMarker(JavaScriptObject marker, JavaScriptObject element)/*-{
+    protected native void appentSVG(JavaScriptObject map, com.google.gwt.dom.client.Element svg)/*-{
+        map._container.appendChild(svg)
+    }-*/;
+
+    protected native String getMarkerColor(JavaScriptObject element)/*-{
+        return element.color;
+    }-*/;
+
+    protected String createFilter(String colorStr) {
+        String svgID = null;
+        if (colorStr != null) {
+            int red = Integer.valueOf(colorStr.substring(1, 3), 16);
+            int green = Integer.valueOf(colorStr.substring(3, 5), 16);
+            int blue = Integer.valueOf(colorStr.substring(5, 7), 16);
+            svgID = "svg_" + red + "_" + green + "_" + blue;
+
+            com.google.gwt.dom.client.Element svgEl = Document.get().getElementById(svgID);
+            if (svgEl == null) {
+                OMSVGDocument doc = OMSVGParser.currentDocument();
+
+                OMSVGSVGElement svgElement = doc.createSVGSVGElement();
+                OMSVGFilterElement svgFilterElement = doc.createSVGFilterElement();
+                svgFilterElement.setId(svgID);
+                svgFilterElement.setAttribute("color-interpolation-filters", "sRGB");
+
+                OMSVGFEColorMatrixElement svgfeColorMatrixElement = doc.createSVGFEColorMatrixElement();
+                svgfeColorMatrixElement.setAttribute("type", "matrix");
+                svgfeColorMatrixElement.setAttribute("values", (float) red / 256 + " 0 0 0  0 \n" +
+                        (float) green / 256 + " 0 0 0  0  \n" +
+                        (float) blue / 256 + " 0 0 0  0 \n" +
+                        "0 0 0 1  0");
+                svgFilterElement.appendChild(svgfeColorMatrixElement);
+                svgElement.appendChild(svgFilterElement);
+
+                appentSVG(map, svgElement.getElement());
+            }
+        }
+        return svgID;
+    }
+    
+    protected native void updateMarker(JavaScriptObject marker, JavaScriptObject element, String filterID)/*-{
         var L = $wnd.L;
 
         marker.setLatLng([element.latitude != null ? element.latitude : 0, element.longitude != null ? element.longitude : 0]);
         marker.setIcon(element.icon != null ? new L.Icon(Object.assign({}, L.Icon.Default.prototype.options, {
                 iconUrl : element.icon
                 })) : new L.Icon.Default());
+        if (filterID) {
+            marker.getElement().style.filter = "url(#" + filterID + ")";
+        }
     }-*/;
 
     protected native void fitBounds(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
