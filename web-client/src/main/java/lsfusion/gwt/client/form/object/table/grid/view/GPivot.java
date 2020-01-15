@@ -181,15 +181,33 @@ public class GPivot extends GStateTableView {
     public static native void exportToExcel(Element element)
         /*-{
             var pvtTable = element.getElementsByClassName("pvtTable")[0];
-            var instance = new $wnd.TableExport(pvtTable, {
-                filename: 'lsfReport',
-                exportButtons: false,
-                formats: ["xlsx"],
-                sheetname: 'lsfReport'
+
+            //set bold
+            Array.from(pvtTable.querySelectorAll("th.pvtAxisLabel, th.pvtColLabel, th.pvtTotalLabel, th.pvtTotalLabel, th.pvtRowLabel, td.pvtTotal, td.pvtRowSubtotal, td.pvtGrandTotal")).forEach(function(item){
+                item.setAttribute("data-f-bold", "true");
             });
-            var data = instance.getExportData();
-            var exportData = data[pvtTable.getAttribute('tableexport-key')]['xlsx'];
-            instance.export2file(exportData.data, exportData.mimeType, exportData.filename, exportData.fileExtension, exportData.merges, exportData.rtl, exportData.sheetname);
+
+            var workbook = $wnd.TableToExcel.tableToBook(pvtTable, {
+                sheet: {
+                    name: "lsfReport"
+                }
+            });
+
+            //set column width
+            var worksheet = workbook.getWorksheet(1);
+            for (var i = 0; i < worksheet.columns.length; i += 1) {
+                var dataMax = 0;
+                var column = worksheet.columns[i];
+                for (var j = 1; j < column.values.length; j += 1) {
+                    var columnLength = column.values[j].length;
+                    if (columnLength > dataMax) {
+                        dataMax = columnLength;
+                    }
+                }
+                column.width = (dataMax < 10 ? 10 : dataMax) * 1.2; //1.2 is magic coefficient to better fit width
+            }
+
+            $wnd.TableToExcel.save(workbook, "lsfReport.xlsx");
         }-*/;
 
     public static native void exportToPdf(Element element)

@@ -59,8 +59,7 @@
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pdfmake@0.1.57/build/vfs_fonts.js"></script>
 
         <!-- export pivot to excel -->
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.15.4/xlsx.core.min.js"></script>
-        <script type="text/javascript" src="https://unpkg.com/tableexport@5.2.0/dist/js/tableexport.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
 
         <!-- optional: mobile support with jqueryui-touch-punch -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
