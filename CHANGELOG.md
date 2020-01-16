@@ -1,8 +1,17 @@
+## 2.3 (2020-01-16)
+##### Fixed bugs:
+ - Path to image for navigator element is not relative to 'images' folder [#211](https://github.com/lsfusion/platform/issues/211)
+ - Bug with using returned (to cache) table when using FILTER operator [#206](https://github.com/lsfusion/platform/issues/206)
+ - Wrong numeric type is inferred when multiplying INTEGER and NUMERIC [#204](https://github.com/lsfusion/platform/issues/204)
+ - PSQLException on IMPORT if value read from dbf-file contains 0x00 [#202](https://github.com/lsfusion/platform/issues/202)
+ - SQL exception when LAST is used with two always NULL unions [#201](https://github.com/lsfusion/platform/issues/201)
+ - SHOW READONLY does not work for properties / actions showing (only for changing) [#198](https://github.com/lsfusion/platform/issues/198)
+ - EXTERNAL HTTP request failes when response is empty (204) [#197](https://github.com/lsfusion/platform/issues/197)
+## ----- PREVIOUS RELEASES --------
 ## 2.2 (2019-11-21)
 ##### Implemented enhancements:
  - Form loses focus [#191](https://github.com/lsfusion/platform/issues/191)
  - Downloads during installation issue [#190](https://github.com/lsfusion/platform/issues/190)
-## ----- PREVIOUS RELEASES --------
 ## 2.1 (2019-10-15)
 ##### Implemented enhancements:
  - Build clients on OpenJDK 8 and higher [#182](https://github.com/lsfusion/platform/issues/182)
