@@ -1158,7 +1158,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             runSuppressed(() -> {
                 assert sessionTablesMap.containsKey(table);
                 WeakReference<TableOwner> removed = sessionTablesMap.remove(table);
-                ServerLoggers.assertLog(removed.get()==owner, "REMOVE OWNER SHOULD BE EQUAL TO GET OWNER");
+                ServerLoggers.assertLog(removed == null || removed.get()==owner, "REMOVE OWNER SHOULD BE EQUAL TO GET OWNER");
             }, firstException);
     
             runSuppressed(() -> tryCommon(opOwner, true), firstException);
