@@ -20,4 +20,10 @@
     --button-disabled-hover-border-color: #bbb;
     --button-active-border-color: #bbb;
     --leaflet-control-transparent-background: rgba(255, 255, 255, 0.7);
+    
+    --date-picker-day-is-weekend-background-color: #f7f7f7;
+    --date-picker-day-is-filler-color: #999;
+    --date-picker-day-is-value-background-color: #d7dfe8;
+    --date-picker-day-is-today-background-color: #497bc5;
+    --date-picker-day-is-highlighted-background-color: #F0E68C;
 }

@@ -776,6 +776,7 @@ table.pvtTable tbody tr td {
     padding: 2px;
     text-align: right;
     float: right;
+    margin-bottom: 1px;
 }
 
 .boxSized {

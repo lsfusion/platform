@@ -1158,7 +1158,6 @@ input, textarea {
 
 .gwt-DatePicker {
     border: 1px solid var(--border-color);
-    border-top:1px solid #999;
     cursor: default;
 }
 .gwt-DatePicker td,
@@ -1167,7 +1166,7 @@ input, textarea {
 }
 .datePickerDays {
     width: 100%;
-    background: white;
+    background: var(--background-color);
 }
 .datePickerDay,
 .datePickerWeekdayLabel,
@@ -1177,16 +1176,24 @@ input, textarea {
     padding: 4px;
     outline: none;
     font-weight:bold;
-    color:#333;
-    border-right: 1px solid #EDEDED;
-    border-bottom: 1px solid #EDEDED;
+    color: var(--text-color);
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
 }
+.datePickerDays td:last-of-type,
+.datePickerDays td:last-of-type .datePickerDay {
+    border-right: none;
+}
+.datePickerDays tr:last-of-type .datePickerDay {
+    border-bottom: none;
+}
+
 .datePickerWeekdayLabel,
 .datePickerWeekendLabel {
-    background: #fff;
-    padding: 0px 4px 2px;
+    background: var(--background-color);
+    padding: 0 4px 2px;
     cursor: default;
-    color:#666;
+    color: var(--date-picker-day-is-filler-color);
     font-size:70%;
     font-weight:normal;
 }
@@ -1196,35 +1203,34 @@ input, textarea {
     cursor: pointer;
 }
 .datePickerDayIsWeekend {
-    background: #f7f7f7;
+    background: var(--date-picker-day-is-weekend-background-color);
 }
 .datePickerDayIsFiller {
-    color: #999;
+    color: var(--date-picker-day-is-filler-color);
     font-weight:normal;
 }
 .datePickerDayIsValue {
-    background: #d7dfe8;
+    background: var(--date-picker-day-is-value-background-color);
 }
 .datePickerDayIsDisabled {
     color: #AAAAAA;
     font-style: italic;
 }
 .datePickerDayIsHighlighted {
-    background: #F0E68C;
+    background: var(--date-picker-day-is-highlighted-background-color);
 }
 .datePickerDayIsValueAndHighlighted {
-    background: #d7dfe8;
+    background: var(--date-picker-day-is-value-background-color);
 }
 .datePickerDayIsToday {
-    padding: 3px;
     color: #fff;
-    background: url(../images/hborder.png) repeat-x 0px -2607px;
+    background-color: var(--date-picker-day-is-today-background-color);
 }
 
 .datePickerMonthSelector {
     width: 100%;
     padding: 1px 0 5px 0;
-    background: #fff;
+    background: var(--background-color);
 }
 td.datePickerMonth {
     text-align: center;
@@ -1232,13 +1238,13 @@ td.datePickerMonth {
     white-space: nowrap;
     font-size: 100%;
     font-weight: bold;
-    color: #333;
+    color: var(--text-color);
 }
 .datePickerPreviousButton,
 .datePickerNextButton {
     font-size: 120%;
     line-height: 1em;
-    color: #3a6aad;
+    color: var(--text-color);
     cursor: hand;
     cursor: pointer;
     font-weight: bold;
