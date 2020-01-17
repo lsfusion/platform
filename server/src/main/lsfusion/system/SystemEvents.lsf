@@ -106,6 +106,12 @@ disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionS
 currentLaunch = DATA Launch();
 launch = DATA Launch(Connection);
 
+shutdown '{system.events.shutdown}' (Connection connection)  { 
+    IF connectionStatus(connection) == ConnectionStatus.connectedConnection THEN {
+            NEWSESSION { NEWTHREAD shutdown(); CONNECTION connection; }
+        }
+} CONFIRM;
+
 currentRevision = DATA LOCAL STRING[10]();
 getCurrentRevision INTERNAL 'lsfusion.server.physics.admin.monitor.action.GetCurrentRevisionAction' ();
 
@@ -128,7 +134,7 @@ reconnect '{system.events.reconnect.custom.user}' (CustomUser user)  {
         }
 } CONFIRM;
 
-shutdown '{system.events.shutdown.custom.user}' (CustomUser user)  { 
+shutdown '{system.events.shutdown}' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
             NEWSESSION { NEWTHREAD shutdown(); CONNECTION conn; }
         }
@@ -256,7 +262,7 @@ FORM connections '{system.events.form.connections}'
     PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
                             javaVersion, is64Java, screenSize, processor, architecture, cores, physicalMemory,
                             totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
-                            disconnectTime
+                            disconnectTime, shutdown GRID CHANGEABLE
 
     OBJECTS n=Form
     PROPERTIES (n) READONLY caption, canonicalName
