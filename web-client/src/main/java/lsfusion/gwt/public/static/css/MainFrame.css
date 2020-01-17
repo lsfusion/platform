@@ -5,7 +5,7 @@ body, textarea, button, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .g
 }
 
    body, textarea, select, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
-.gwt-SuggestBox, .gwt-TextArea, .gwt-TextBox, .textBasedGridCellEditor {
+.gwt-SuggestBox, .gwt-TextArea, .gwt-TextBox, .textBasedGridCellEditor, .leaflet-container {
     font-family: Arial Unicode MS, Arial, sans-serif;
     font-family: Montserrat, Arial Unicode MS, Arial, sans-serif;
     font-family: Roboto, Arial Unicode MS, Arial, sans-serif;
@@ -716,7 +716,12 @@ table.pvtTable tbody tr td {
 }
 
 .leaflet-popup-content {
-    margin: 15px;
+    margin: 17px;
+}
+
+.leaflet-popup-scrolled {
+    border-bottom: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
 }
 
 .leaflet-bar a, .leaflet-bar a:first-child:hover {

@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -62,6 +62,10 @@ public class GPropertyPanelController {
                 if (showIfs == null || showIfs.get(columnKey) != null) {
                     PanelRenderer renderer = renderers.remove(columnKey);
                     if (renderer == null && !property.hide) {
+                        if (renderersPanel.getWidgetCount() > 0) {
+                            renderersPanel.add(GwtClientUtils.createHorizontalStrut(4));
+                        }
+                        
                         renderer = property.createPanelRenderer(form, columnKey);
                         renderer.setReadOnly(property.isReadOnly());
                         renderersPanel.addFill(renderer.getComponent());

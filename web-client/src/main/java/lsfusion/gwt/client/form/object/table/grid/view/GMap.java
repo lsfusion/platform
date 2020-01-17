@@ -71,7 +71,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
         var marker = L.marker([0, 0]).addTo(map);
         if (popupElement !== null)
-            marker.bindPopup(popupElement);
+            marker.bindPopup(popupElement, {maxWidth: Number.MAX_SAFE_INTEGER});
         var thisObject = this;
         marker.on('click', function (e) {
             thisObject.@GMap::changeSimpleGroupObject(*)(key);
