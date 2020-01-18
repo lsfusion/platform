@@ -52,9 +52,8 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
-import lsfusion.server.logics.form.interactive.property.checked.PullChangeProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilter;
+import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -605,8 +604,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     
     // чтение пользователя
-    public ObjectValue requestUserObject(final DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
-        return requestUser(ObjectType.instance, () -> ThreadLocalContext.requestUserObject(dialog, stack));
+    public ObjectValue inputUserObject(final DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
+        return requestUser(ObjectType.instance, () -> ThreadLocalContext.inputUserObject(dialog, stack));
     }
 
     // cannot use because of backward compatibility 
@@ -635,7 +634,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
         try { // временно для обратной совместимости
-            return requestUser(dataClass, () -> ThreadLocalContext.requestUserData(dataClass, oldValue));
+            return requestUser(dataClass, () -> ThreadLocalContext.inputUserData(dataClass, oldValue));
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -643,20 +642,20 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public ObjectValue inputUserData(DataClass dataClass, Object oldValue) {
         assertNotUserInteractionInTransaction();
-        return ThreadLocalContext.requestUserData(dataClass, oldValue);
+        return ThreadLocalContext.inputUserData(dataClass, oldValue);
     }
 
     public ObjectValue requestUserClass(final CustomClass baseClass, final CustomClass defaultValue, final boolean concrete) throws SQLException, SQLHandledException {
         return requestUser(ObjectType.instance, () -> ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete));
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, isFloat, contextFilters, pullProps, readonly);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, isFloat, contextFilters, readonly);
     }
 
     @Deprecated
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, false, null, null, false);
+        return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, false, null, false);
     }
 
     public SQLSyntax getDbSyntax() {

@@ -9,7 +9,7 @@ import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 public class DialogFormEntity extends BaseClassFormEntity {
 
     public DialogFormEntity(BaseLogicsModule LM, CustomClass cls) {
-        super(LM, cls, null, cls.caption);
+        super(LM, cls, cls.caption);
 
         object.groupTo.setGridClassView();
 

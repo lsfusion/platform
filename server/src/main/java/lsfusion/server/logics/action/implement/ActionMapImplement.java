@@ -1,5 +1,6 @@
 package lsfusion.server.logics.action.implement;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -28,19 +29,19 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 
 import java.sql.SQLException;
 
-public class ActionMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements lsfusion.server.logics.property.oraction.PropertyInterfaceImplement {
+public class ActionMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements lsfusion.server.logics.property.oraction.PropertyInterfaceImplement<T> {
 
     public Action<P> action;
     public ImRevMap<P, T> mapping;
 
     public ActionMapImplement(Action<P> action) {
-        this.action = action;
-        mapping = MapFact.EMPTYREV();
+        this(action, MapFact.EMPTYREV());
     }
 
     public ActionMapImplement(Action<P> action, ImRevMap<P, T> mapping) {
         this.action = action;
         this.mapping = mapping;
+        assert BaseUtils.hashEquals(action.interfaces, mapping.keys());
     }
 
     public <K extends PropertyInterface> ActionMapImplement<P, K> map(ImRevMap<T, K> remap) {

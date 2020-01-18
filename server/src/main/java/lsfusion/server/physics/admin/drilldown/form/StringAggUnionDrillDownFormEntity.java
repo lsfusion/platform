@@ -7,7 +7,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StringAggUnionDrillDownFormEntity<I extends PropertyInterface> extends UnionDrillDownFormEntity<StringAggUnionProperty.Interface, StringAggUnionProperty> {
 
-    public StringAggUnionDrillDownFormEntity(String sID, LocalizedString caption, StringAggUnionProperty property, LogicsModule LM) {
-        super(sID, caption, property, LM);
+    public StringAggUnionDrillDownFormEntity(LocalizedString caption, StringAggUnionProperty property, LogicsModule LM) {
+        super(caption, property, LM);
     }
 }

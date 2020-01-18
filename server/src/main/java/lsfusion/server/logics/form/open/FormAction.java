@@ -8,6 +8,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -18,6 +19,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public abstract class FormAction<O extends ObjectSelector> extends SystemExplicitAction {
@@ -25,28 +27,9 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     public final FormSelector<O> form;
     public final ImRevMap<O, ClassPropertyInterface> mapObjects;
 
-    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, ValueClass[] extraValueClasses, ActionOrProperty... extraProps) {
-        int extraPropInterfaces = 0;
-        for(ActionOrProperty extraProp : extraProps)
-            if(extraProp != null)
-                extraPropInterfaces += extraProp.interfaces.size();
-
-        int size = objects.size();
-        ValueClass[] valueClasses = new ValueClass[size
-                + extraPropInterfaces];
-        for (int i = 0; i < size; i++) {
-            valueClasses[i] = form.getBaseClass(objects.get(i));
-        }
-
-        for(ActionOrProperty extraProp : extraProps) 
-            if(extraProp != null) {
-                ImMap<PropertyInterface, ValueClass> interfaceClasses = extraProp.getInterfaceClasses(ClassType.formPolicy);
-                ImOrderSet<PropertyInterface> propInterfaces = extraProp.getFriendlyOrderInterfaces();
-                for (int i = 0; i < propInterfaces.size(); ++i) {
-                    valueClasses[size + i] = interfaceClasses.get(propInterfaces.get(i));
-                }
-            }
-        return ArrayUtils.addAll(valueClasses, extraValueClasses);
+    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, ValueClass[] extraValueClasses) {
+        ImList<ValueClass> objectClasses = objects.mapListValues((Function<O, ValueClass>) o -> form.getBaseClass(o));
+        return ArrayUtils.addAll(objectClasses.toArray(new ValueClass[objectClasses.size()]), extraValueClasses);
     }
 
     @Override
@@ -61,26 +44,22 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     
     private final ImSet<ClassPropertyInterface> notNullInterfaces;
 
-    //assert objects из form
-    //assert getProperties одинаковой длины
-    //getProperties привязаны к форме, содержащей свойство...
     public FormAction(LocalizedString caption,
                       FormSelector<O> form,
                       final ImList<O> objectsToSet,
                       final ImList<Boolean> nulls, boolean extraNotNull,
-                      ValueClass[] extraValueClasses,
-                      ActionOrProperty... extraProps) {
-        super(caption, getValueClasses(form, objectsToSet, extraValueClasses, extraProps));
-
-        ImOrderSet<ClassPropertyInterface> objectInterfaces = getOrderInterfaces()
-                .subOrder(0, objectsToSet.size());
+                      ValueClass... extraValueClasses) {
+        super(caption, getValueClasses(form, objectsToSet, extraValueClasses));
 
         this.form = form;
-        // такой же дебилизм и в SessionDataProperty
-        mapObjects = objectInterfaces.mapOrderRevKeys(objectsToSet::get);
+
+        ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();        
+        ImOrderSet<ClassPropertyInterface> objectInterfaces = orderInterfaces.subOrder(0, objectsToSet.size());
+        
+        mapObjects = objectInterfaces.mapOrderRevKeys(objectsToSet::get);        
         ImSet<ClassPropertyInterface> notNullInterfaces = objectInterfaces.mapOrderValues(nulls::get).filterFnValues(element -> !element).keys();
         if(extraNotNull)
-            notNullInterfaces = notNullInterfaces.addExcl(getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size()).getSet());
+            notNullInterfaces = notNullInterfaces.addExcl(orderInterfaces.subOrder(objectsToSet.size(), interfaces.size()).getSet());
         this.notNullInterfaces = notNullInterfaces;
     }
 

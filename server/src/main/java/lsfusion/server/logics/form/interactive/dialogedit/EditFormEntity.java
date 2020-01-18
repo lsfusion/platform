@@ -9,7 +9,7 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 public class EditFormEntity extends BaseClassFormEntity {
 
     public EditFormEntity(BaseLogicsModule LM, CustomClass cls) {
-        super(LM, cls, null, cls.caption);
+        super(LM, cls, cls.caption);
 
         object.groupTo.setPanelClassView();
 

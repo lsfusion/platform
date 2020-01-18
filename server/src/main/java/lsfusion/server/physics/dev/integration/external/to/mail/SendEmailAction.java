@@ -173,7 +173,7 @@ public class SendEmailAction extends SystemExplicitAction {
                  name = "attachment" + (i + 1);
             }
 
-            ObjectValue fileObject = attachFiles.get(i).readClasses(context, context.getKeys());
+            ObjectValue fileObject = attachFiles.get(i).readClasses(context);
             if (fileObject instanceof DataObject) {
                 Type objectType = ((DataObject)fileObject).getType();
                 String extension;
@@ -191,7 +191,7 @@ public class SendEmailAction extends SystemExplicitAction {
         }
 
         for (PropertyInterfaceImplement inlineFile : this.inlineFiles) {
-            ObjectValue inlineObject = inlineFile.readClasses(context, context.getKeys());
+            ObjectValue inlineObject = inlineFile.readClasses(context);
             if (inlineObject instanceof DataObject) {
                 Object inlineValue = inlineObject.getValue();
                 Type type = ((DataObject) inlineObject).getType();

@@ -9,6 +9,7 @@ import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
@@ -32,8 +33,15 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return instanceFactory.getInstance(this);
     }
 
-    public ActionObjectEntity<?> getGroupChange() {
-        return property.getGroupChange().mapObjects(mapping);
+    public ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity) {
+        if(entity == null || !entity.classView.isGrid())
+            return null;
+        
+        if(!mapping.valuesSet().containsAll(entity.getObjects())) // in theory it can work when there are not all objects, but for now we'll do without it  
+            return null;
+        
+        // [FILTER group]
+        return this.property.getGroupChange(entity, mapping);
     }
 
     @IdentityLazy

@@ -7,6 +7,8 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
@@ -70,10 +72,6 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         property.fillProperties(properties);
     }
 
-    public boolean isInInterface(GroupObjectInstance classGroup) {
-        return property.isInInterface(classGroup);
-    }
-    
     protected boolean hasObjectInInterface(CustomObjectInstance object) {
         // проверка на то, что в фильтре есть в качестве ключа свойства нужный ObjectInstance
         boolean inInterface = false;
@@ -93,10 +91,11 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
             PropertyObjectInterfaceInstance mapObject = mapObjects.getKey(i); KeyExpr mapKey = mapObjects.getValue(i);
             Where mapWhere;
             if(mapObject.getApplyObject() != object.groupTo) {
-                if(mapObject.isNull())
+                ObjectValue objectValue = mapObject.getObjectValue();
+                if(objectValue instanceof NullValue)
                     mapWhere = Where.FALSE();
                 else
-                    mapWhere = mapKey.compare(mapObject.getDataObject(), Compare.EQUALS);
+                    mapWhere = mapKey.compare((DataObject)objectValue, Compare.EQUALS);
             } else // assert что тогда sibObject instanceof ObjectInstance потому как ApplyObject = null а object.groupTo !=null
                 if(!mapObject.equals(object))
                     mapWhere = mapKey.isUpClass(((ObjectInstance)mapObject).getGridClass());

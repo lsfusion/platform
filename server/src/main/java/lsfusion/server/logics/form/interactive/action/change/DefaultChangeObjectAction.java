@@ -22,6 +22,8 @@ public class DefaultChangeObjectAction extends SystemExplicitAction {
     public DefaultChangeObjectAction(ValueClass baseClass, ObjectEntity object) {
         super(LocalizedString.create("CO", false), baseClass);
         this.object = object;
+        
+        finalizeInit();
     }
 
     @Override
@@ -39,7 +41,7 @@ public class DefaultChangeObjectAction extends SystemExplicitAction {
             ObjectValue changeValue;
             if (objectInstance instanceof CustomObjectInstance) {
                 final CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
-                changeValue = context.requestUserObject(
+                changeValue = context.inputUserObject(
                         formInstance.createChangeObjectDialogRequest(customObjectInstance.getBaseClass(), oldValue, customObjectInstance.groupTo, context.stack)
                 );
             } else {

@@ -1507,25 +1507,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public List<Property> getCheckConstrainedProperties() {
-        List<Property> result = new ArrayList<>();
-        for (ActionOrProperty property : getPropertyList()) {
-            if (property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO) {
-                result.add((Property) property);
-            }
-        }
-        return result;
+    public ImOrderSet<Property> getCheckConstrainedProperties() {
+        return BaseUtils.immutableCast(getPropertyList().filterOrder(property -> property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO));
     }
 
-    public List<Property> getCheckConstrainedProperties(Property<?> changingProp) {
-        List<Property> result = new ArrayList<>();
-        for (Property property : getCheckConstrainedProperties()) {
-            if (property.checkChange == Property.CheckType.CHECK_ALL ||
-                    property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)) {
-                result.add(property);
-            }
-        }
-        return result;
+    public ImOrderSet<Property> getCheckConstrainedProperties(Property<?> changingProp) {
+        return BaseUtils.immutableCast(getCheckConstrainedProperties().filterOrder(property -> property.checkChange == Property.CheckType.CHECK_ALL ||
+                property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)));
     }
 
     public List<LogicsModule> getLogicModules() {
@@ -1697,7 +1685,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutable();
     }
 
-    // в том числе и приватные
+    public ImSet<FormEntity> markFormsForFinalization() {
+        MExclSet<FormEntity> mResult = SetFact.mExclSet();
+        for(LogicsModule logicsModule : modules.all())
+            logicsModule.markFormsForFinalization();
+        return mResult.immutable();
+    }
+
     public ImSet<FormEntity> getAllForms() {
         MExclSet<FormEntity> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : modules.all()) {
@@ -1705,18 +1699,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 mResult.exclAdd(entry);
         }
         return mResult.immutable();
-    }
-    
-    // todo [dale]: Может быть можно заменить на поиск по каноническому имени
-    public FormEntity getFormEntityBySID(String formSID){
-        for (LogicsModule logicsModule : modules.all()) {
-            for (FormEntity element : logicsModule.getNamedForms()) {
-                if (formSID.equals(element.getSID())) {
-                    return element;
-                }
-            }
-        }
-        return null;
     }
 
     public void checkForDuplicateElements() {

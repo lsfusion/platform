@@ -39,9 +39,8 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                             ImList<Boolean> nulls,
                             T staticType,
                             Integer selectTop,
-                            ValueClass[] extraValueClasses,
-                            ActionOrProperty... extraProps) {
-        super(caption, form, objectsToSet, nulls, false, extraValueClasses, extraProps);
+                            ValueClass... extraValueClasses) {
+        super(caption, form, objectsToSet, nulls, false, extraValueClasses);
 
         this.staticType = staticType;
         this.selectTop = selectTop == null ? 0 : selectTop;

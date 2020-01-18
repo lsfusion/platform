@@ -11,6 +11,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
@@ -23,6 +24,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -42,11 +44,16 @@ import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.change.GroupChangeAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
+import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.action.ActionClassImplement;
+import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -63,6 +70,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.function.Supplier;
 
 public abstract class Action<P extends PropertyInterface> extends ActionOrProperty<P> {
     //просто для быстрого доступа
@@ -421,6 +429,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
+        assert interfaces.equals(context.getKeys().keys());
 //        context.actionName = toString();
         if(newDebugStack) { // самым первым, так как paramInfo
             context = context.override();
@@ -528,12 +537,31 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @IdentityStrongLazy // STRONG because of using in security policy
-    public ActionMapImplement<?, P> getGroupChange() {
-        ActionMapImplement<P, P> changeImplement = getImplement();
-        ImOrderSet<P> listInterfaces = getOrderInterfaces();
+    public <G extends PropertyInterface> ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity, ImRevMap<P, ObjectEntity> mapping) {
+        return getGroupChange(entity.getProperty(GroupObjectProp.FILTER).mapPropertyImplement(mapping.reverse())).mapObjects(mapping);        
+    }
+    public <G extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter) {
 
-        GroupChangeAction groupChangeAction = new GroupChangeAction(LocalizedString.NONAME, listInterfaces, changeImplement);
-        return groupChangeAction.getImplement(listInterfaces);
+//        lm.addGroupObjectProp();
+        MList<ActionMapImplement<?, P>> mList = ListFact.mList();
+
+        // executing action for current object
+        mList.add(getImplement()); 
+
+        // executing action for other objects
+        ImRevMap<P, PropertyInterface> context = interfaces.mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
+        ImRevMap<P, PropertyInterface> iterate = groupFilter.mapping.valuesSet().mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);        
+        ImOrderSet<P> orderedSet = iterate.keys().toOrderSet();
+
+        mList.add(PropertyFact.createPushRequestAction(interfaces, // PUSH REQUEST 
+                        PropertyFact.createForAction(context.valuesSet().addExcl(iterate.valuesSet()), context.valuesSet(), // FOR
+                                PropertyFact.createAndNot(groupFilter.map(iterate), // group() AND NOT current objects
+                                        PropertyFact.createCompareInterface(orderedSet.mapOrder(context), orderedSet.mapOrder(iterate), Compare.EQUALS)),
+                                MapFact.EMPTYORDER(), false, 
+                                getImplement().map(context.removeRev(iterate.keys()).addRevExcl(iterate)), // DO editAction 
+                      null, false, SetFact.EMPTY(), false).map(context.reverse())));
+        
+        return PropertyFact.createListAction(interfaces, mList.immutableList());
     }
 
     @IdentityLazy

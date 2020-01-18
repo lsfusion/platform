@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.base.caches.ManualLazy;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
@@ -177,8 +178,12 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     private boolean finalizedProps = false;
     private Object props = MapFact.mExclMap();
+    @NFLazy
     public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getProperty(GroupObjectProp type) {
-        assert finalizedObjects && !finalizedProps;
+        if(finalizedProps)
+            return getProperties().get(type);
+
+        assert finalizedObjects;
         MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
         PropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
         if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
@@ -191,6 +196,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return prop;
     }
 
+    @NFLazy
     public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> getProperties() {
         if(!finalizedProps) {
             props = ((MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props).immutable();

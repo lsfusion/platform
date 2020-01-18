@@ -225,10 +225,9 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
             property.setLogWhereProperty(ownerModule.addLWhereProp(logValueProperty, logDropProperty));
         }
         if (property.getLogFormAction() == null) {
-            LogFormEntity logFormEntity = new LogFormEntity(null,
-                                                            LocalizedString.create("{logics.property.log.form}"),
+            LogFormEntity logFormEntity = new LogFormEntity(LocalizedString.create("{logics.property.log.form}"),
                                                             this, property.getLogValueProperty(), property.getLogWhereProperty(), systemEventsLM);
-            systemEventsLM.addFormEntity(logFormEntity);
+            systemEventsLM.addAutoFormEntity(logFormEntity);
             property.setLogFormAction(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true));
         }
     }
@@ -280,6 +279,9 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         return new PropertyImplement<>(property, getMap(mapping));
     }
     public <U extends PropertyInterface> PropertyMapImplement<T, U> getImplement(U... mapping) {
+        return new PropertyMapImplement<>(property, getRevMap(mapping));
+    }
+    public <U extends PropertyInterface> PropertyMapImplement<T, U> getImplement(ImOrderSet<U> mapping) {
         return new PropertyMapImplement<>(property, getRevMap(mapping));
     }
 

@@ -1,20 +1,17 @@
 package lsfusion.server.logics.form.interactive.property.checked;
 
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.form.interactive.instance.filter.NotFilterInstance;
-import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
-import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
-import lsfusion.server.logics.form.struct.filter.ContextFilter;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -22,8 +19,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.function.Function;
 
-// св-во которое дает максимальное значение при изменении DataProperty для переданных ключей и значения
-public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends PullChangeProperty<T, P, MaxChangeProperty.Interface<P>> {
+public class ConstraintCheckChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends PullChangeProperty<T, P, ConstraintCheckChangeProperty.Interface<P>> {
 
     public abstract static class Interface<P extends PropertyInterface> extends PropertyInterface<Interface<P>> {
 
@@ -32,8 +28,6 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         }
 
         public abstract Expr getExpr();
-
-        public abstract PropertyObjectInterfaceInstance getInterface(ImMap<P, DataObject> mapValues, ObjectInstance valueObject);
     }
 
     public static class KeyInterface<P extends PropertyInterface> extends Interface<P> {
@@ -48,10 +42,6 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
         public Expr getExpr() {
             return propertyInterface.getChangeExpr();
-        }
-
-        public PropertyObjectInterfaceInstance getInterface(ImMap<P, DataObject> mapValues, ObjectInstance valueObject) {
-            return mapValues.get(propertyInterface);
         }
     }
 
@@ -68,17 +58,19 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         public Expr getExpr() {
             return toChange.getChangeExpr();
         }
-
-        public PropertyObjectInterfaceInstance getInterface(ImMap<P, DataObject> mapValues, ObjectInstance valueObject) {
-            return valueObject;
-        }
     }
 
     public static <P extends PropertyInterface> ImOrderSet<Interface<P>> getInterfaces(Property<P> property) {
         return property.getFriendlyOrderInterfaces().mapOrderSetValues((Function<P, Interface<P>>) KeyInterface::new).addOrderExcl(new ValueInterface<>(property));
     }
+    
+    public Pair<ImRevMap<Interface<P>, P>, Interface<P>> getMapInterfaces() {
+        Result<ImSet<Interface<P>>> valueInterfaces = new Result<>();
+        ImSet<Interface<P>> keyInterfaces = interfaces.split(interf -> interf instanceof KeyInterface, valueInterfaces);
+        return new Pair<>(keyInterfaces.mapRevValues((Function<Interface<P>, P>) interf -> ((KeyInterface<P>) interf).propertyInterface), valueInterfaces.result.single());
+    }
 
-    public MaxChangeProperty(Property<T> onChange, Property<P> toChange) {
+    public ConstraintCheckChangeProperty(Property<T> onChange, Property<P> toChange) {
         super(LocalizedString.concatList(onChange.caption, " по (", toChange.caption, ")"), getInterfaces(toChange), onChange, toChange);
 
         finalizeInit();
@@ -94,14 +86,6 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(onChange.getMapKeys(),
                 calcType, toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.LOGICAL(), joinImplement); // constraints (filters)
         if(changedWhere!=null) changedWhere.add(resultExpr.getWhere());
-        return resultExpr;
-    }
-
-    public ContextFilter getContextFilter(final ImMap<P, DataObject> mapValues, final ObjectEntity valueObject) {
-        return factory -> {
-            ImMap<Interface<P>, PropertyObjectInterfaceInstance> interfaceImplement = interfaces.mapValues((Interface<P> value) -> value.getInterface(mapValues, valueObject.getInstance(factory)));
-            return new NotFilterInstance(new NotNullFilterInstance<>(
-                    new PropertyObjectInstance<>(MaxChangeProperty.this, interfaceImplement)));
-        };
+        return ValueExpr.TRUE.and(resultExpr.getWhere().not());
     }
 }

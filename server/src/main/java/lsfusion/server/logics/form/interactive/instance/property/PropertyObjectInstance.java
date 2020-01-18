@@ -38,10 +38,6 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         return new PropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
-    public PropertyValueImplement<P> getValueImplement() {
-        return new PropertyValueImplement<>(property, getInterfaceDataObjects());
-    }
-
     public Object read(FormInstance formInstance) throws SQLException, SQLHandledException {
         return property.read(formInstance, getInterfaceObjectValues());
     }

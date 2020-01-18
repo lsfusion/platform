@@ -55,10 +55,6 @@ public class NotFilterInstance extends FilterInstance {
         return filter.getWhere(mapKeys, modifier, reallyChanged, mUsedProps).not();
     }
 
-    public boolean isInInterface(GroupObjectInstance classGroup) {
-        return filter.isInInterface(classGroup);
-    }
-
     protected void fillObjects(MSet<ObjectInstance> objects) {
         filter.fillObjects(objects);
     }

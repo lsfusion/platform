@@ -74,7 +74,7 @@ public class NewThreadAction extends AroundAspectAction {
         };
 
         if (connectionProp != null) {
-            ObjectValue connectionObject = connectionProp.readClasses(context, context.getKeys());
+            ObjectValue connectionObject = connectionProp.readClasses(context);
             if(connectionObject instanceof DataObject)
                 context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject, run);
         } else {

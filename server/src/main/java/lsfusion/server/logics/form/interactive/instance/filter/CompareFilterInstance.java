@@ -87,11 +87,6 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public boolean isInInterface(GroupObjectInstance classGroup) {
-        return super.isInInterface(classGroup) && value.isInInterface(classGroup);
-    }
-
-    @Override
     public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject, ExecutionStack stack) throws SQLException, SQLHandledException {
 
         if(!resolveAdd)

@@ -7,7 +7,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -22,13 +22,13 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.List;
 
-public class IntegrationFormEntity<P extends PropertyInterface> extends FormEntity {
+public class IntegrationFormEntity<P extends PropertyInterface> extends AutoFormEntity {
 
     public final GroupObjectEntity groupObject;
     public final ImRevMap<P, ObjectEntity> mapObjects;
             
     public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, List<String> aliases, List<Boolean> literals, ImList<PropertyInterfaceImplement<P>> properties, PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
-        super("Export.export", LocalizedString.NONAME, version);
+        super(LocalizedString.NONAME, version);
 
         final ImMap<P, ValueClass> interfaceClasses;
         if(innerClasses == null) { // export

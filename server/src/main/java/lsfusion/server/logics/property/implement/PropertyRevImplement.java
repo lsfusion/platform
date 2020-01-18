@@ -26,6 +26,7 @@ public class PropertyRevImplement<P extends PropertyInterface, T> implements Pro
         this.property = property;
         this.mapping = mapping;
         assert BaseUtils.hashEquals(property.interfaces, mapping.keys());
+        assert !mapping.containsNull();
     }
 
     public static <P extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<P, T> mapPropertyImplement(PropertyRevImplement<P, T> implement) {

@@ -79,27 +79,17 @@ public class RequestAction extends KeepContextAction {
 
     @Override
     public FlowResult aspectExecute(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        FlowResult result = FlowResult.FINISH;
+        if (!context.isRequestPushed()) {
+            FlowResult result = requestAction.execute(!context.hasMoreSessionUsages && hasDoOrElseAction() ? context.override(true) : context);
+            if (result != FlowResult.FINISH)
+                return result;
+        }
 
-        boolean isRequestPushed = context.isRequestPushed();
-        if (!isRequestPushed)
-            result = requestAction.execute(!context.hasMoreSessionUsages && hasDoOrElseAction() ? context.override(true) : context);
-
-        if (result != FlowResult.FINISH)
-            return result;
-
-        boolean isRequestCanceled = context.isRequestCanceled();
-        if (!isRequestCanceled) {
-            if(doAction != null) {
-                if (isRequestPushed) { // оптимизация
-                    result = context.popRequest(() -> doAction.execute(context));
-                } else 
-                    result = doAction.execute(context);
-            }
-        } else if(elseAction != null)
-            result = elseAction.execute(context);
-
-        return result;
+        ActionMapImplement<?, PropertyInterface> execAction = !context.isRequestCanceled() ? doAction : elseAction;
+        if(execAction != null)
+            return context.popRequest(() -> execAction.execute(context));
+        
+        return FlowResult.FINISH;
     }
 
     @Override

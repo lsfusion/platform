@@ -22,15 +22,7 @@ public class OrFilterInstance extends OpFilterInstance {
         super(op1, op2);
     }
 
-    protected OrFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        super(inStream, form);
-    }
-
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return op1.getWhere(mapKeys, modifier, reallyChanged, mUsedProps).or(op2.getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
-    }
-
-    public boolean isInInterface(GroupObjectInstance classGroup) {
-        return op1.isInInterface(classGroup) || op2.isInInterface(classGroup);
     }
 }

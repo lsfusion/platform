@@ -1,16 +1,14 @@
 package lsfusion.server.logics.form.open.interactive;
 
-import lsfusion.base.Result;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -23,17 +21,16 @@ import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.property.checked.PullChangeProperty;
 import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilter;
+import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -80,23 +77,40 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     private final Boolean forbidDuplicate;
 
     // CONTEXT
-    private final ImList<O> contextObjects;
-    private final ImList<PropertyMapImplement<PropertyInterface, ClassPropertyInterface>> contextPropertyImplements;
+    private final ImSet<ClassPropertyInterface> contextInterfaces;
+    private final ImSet<ContextFilterSelector<?, ClassPropertyInterface, O>> contextFilters;
+
     private final boolean readOnly;
     private final boolean checkOnOk;
+    
+    @Override
+    protected ImSet<ClassPropertyInterface> getNoClassesInterfaces() {
+        return super.getNoClassesInterfaces().addExcl(contextInterfaces);
+    }
 
-    public FormInteractiveAction(LocalizedString caption,
-                                 FormSelector<O> form,
-                                 final ImList<O> objectsToSet, final ImList<Boolean> nulls,
-                                 ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls,
-                                 ImList<O> contextObjects, ImList<Property> contextProperties,
-                                 ManageSessionType manageSession,
-                                 Boolean noCancel,
-                                 Boolean syncType,
-                                 WindowFormType windowType, boolean forbidDuplicate,
-                                 boolean checkOnOk,
-                                 boolean readOnly) {
-        super(caption, form, objectsToSet, nulls, true, new ValueClass[] {}, contextProperties.toArray(new Property[contextProperties.size()]));
+    @IdentityInstanceLazy
+    @Override
+    public PropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
+        PropertyMapImplement<?, ClassPropertyInterface> result = super.calcWhereProperty();
+        if(!contextFilters.isEmpty()) { // filters don't stop form from showing, however they can be used for param classes, so we're using the same hack as in SystemAction
+            PropertyMapImplement<?, ClassPropertyInterface> contextFilterWhere = PropertyFact.createUnion(interfaces, contextFilters.mapSetValues((Function<ContextFilterSelector<?, ClassPropertyInterface, O>, PropertyMapImplement<?, ClassPropertyInterface>>) filter -> filter.getWhereProperty(mapObjects)).addExcl(PropertyFact.createTrue()).toList());
+            result = PropertyFact.createAnd(result, contextFilterWhere);
+        }
+        return result;
+    }
+
+    public <C extends PropertyInterface> FormInteractiveAction(LocalizedString caption,
+                                                               FormSelector<O> form,
+                                                               final ImList<O> objectsToSet, final ImList<Boolean> nulls,
+                                                               ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls,
+                                                               ImOrderSet<C> orderInterfaces, ImList<ContextFilterSelector<?, C, O>> contextFilters,
+                                                               ManageSessionType manageSession,
+                                                               Boolean noCancel,
+                                                               Boolean syncType,
+                                                               WindowFormType windowType, boolean forbidDuplicate,
+                                                               boolean checkOnOk,
+                                                               boolean readOnly) {
+        super(caption, form, objectsToSet, nulls, false, BaseUtils.genArray(null, orderInterfaces.size(), ValueClass[]::new));
 
         this.inputObjects = inputObjects;
         this.inputProps = inputProps;
@@ -110,10 +124,10 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         this.manageSession = manageSession;
         this.noCancel = noCancel;
 
-        this.contextObjects = contextObjects;
-        this.contextPropertyImplements = contextProperties.mapListValues((Function<Property, PropertyMapImplement<PropertyInterface, ClassPropertyInterface>>) value -> value.getImplement(
-                getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
-        ));
+        ImRevMap<C, ClassPropertyInterface> mapInterfaces = getMapInterfaces(orderInterfaces, objectsToSet.size()).reverse();
+        this.contextInterfaces = mapInterfaces.valuesSet();
+        this.contextFilters = contextFilters.mapListValues((Function<ContextFilterSelector<?, C, O>, ContextFilterSelector<?, ClassPropertyInterface, O>>) 
+                                                filter -> filter.map(mapInterfaces)).toOrderExclSet().getSet();
         
         this.readOnly = readOnly;
         this.checkOnOk = checkOnOk;
@@ -136,12 +150,16 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     }
 
     @Override
-    protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
-        ImRevMap<O, ObjectEntity> mapRevResolvedObjects = mapResolvedObjects.reverse();
+    protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapObjects) throws SQLException, SQLHandledException {
+        ImRevMap<O, ObjectEntity> mapRevObjects = mapObjects.reverse();
 
-        Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
-        ImSet<ContextFilter> contextFilters = getContextFilters(context, pullProps, mapRevResolvedObjects);
+        // context filters
+        MExclSet<ContextFilterInstance> mContextFilters = SetFact.mExclSet();
+        for(ContextFilterSelector<?, ClassPropertyInterface, O> contextFilter : this.contextFilters)
+            mContextFilters.exclAddAll(contextFilter.getInstances(context.getKeys(), mapRevObjects));
+        ImSet<ContextFilterInstance> contextFilters = mContextFilters.immutable();
 
+        // sync and modality types
         boolean syncType; 
         if(this.syncType != null)
             syncType = this.syncType;
@@ -149,7 +167,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             syncType = heuristicSyncType(context);
         ModalityType modalityType = getModalityType(syncType);
 
-        FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, modalityType.isModal(), contextFilters, pullProps.result, readOnly);
+        FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, modalityType.isModal(), contextFilters, readOnly);
         context.requestFormUserInteraction(newFormInstance, modalityType, forbidDuplicate, context.stack);
 
         if (syncType) {
@@ -157,7 +175,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
             ImList<RequestResult> result = null;
             if(formResult != FormCloseType.CLOSE) {
-                ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevResolvedObjects);
+                ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
                 MList<RequestResult> mResult = ListFact.mList(resolvedInputObjects.size());
                 for (int i = 0; i < resolvedInputObjects.size(); i++) {
                     ObjectEntity inputObject = resolvedInputObjects.get(i);
@@ -170,21 +188,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             }
             context.writeRequested(result);
         }
-    }
-
-    private ImSet<ContextFilter> getContextFilters(ExecutionContext<ClassPropertyInterface> context, Result<ImSet<PullChangeProperty>> pullProps, ImRevMap<O, ObjectEntity> mapResolvedObjects) {
-        MSet<ContextFilter> mContextFilters = SetFact.mSet();
-        ImList<ObjectEntity> resolvedContextObjects = contextObjects.mapList(mapResolvedObjects);
-        for(int i=0,size=resolvedContextObjects.size();i<size;i++) {
-            ObjectEntity contextObject = resolvedContextObjects.get(i);
-            PropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement = contextPropertyImplements.get(i);
-            
-            final PropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapObjectValues(context.getKeys());
-            assert propertyValues != null; // extraNotNull - true
-            final FormInstance thisFormInstance = context.getFormInstance(false, true);
-            mContextFilters.addAll(thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps));
-        }
-        return mContextFilters.immutable();
     }
 
     @Override

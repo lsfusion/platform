@@ -12,10 +12,5 @@ public interface PropertyObjectInterfaceInstance extends OrderInstance {
 
     AndClassSet getClassSet(ImSet<GroupObjectInstance> gridGroups);
 
-    DataObject getDataObject();
     ObjectValue getObjectValue();
-
-    boolean isNull();
-
-    ConcreteClass getCurrentClass();
 }

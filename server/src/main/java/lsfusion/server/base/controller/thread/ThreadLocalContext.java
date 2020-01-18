@@ -31,9 +31,8 @@ import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
-import lsfusion.server.logics.form.interactive.property.checked.PullChangeProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilter;
+import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -200,15 +199,15 @@ public class ThreadLocalContext {
         return get().getFormInstance();
     }
 
-    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return get().createFormInstance(formEntity, mapObjects, session, isModal, noCancel, manageSession, stack, checkOnOk, showDrop, interactive, isFloat, contextFilters, pullProps, readonly);
+    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
+        return get().createFormInstance(formEntity, mapObjects, session, isModal, noCancel, manageSession, stack, checkOnOk, showDrop, interactive, isFloat, contextFilters, readonly);
     }
 
-    public static ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public static ObjectValue inputUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {
         return get().requestUserObject(dialogRequest, stack);
     }
 
-    public static ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
+    public static ObjectValue inputUserData(DataClass dataClass, Object oldValue) {
         return get().requestUserData(dataClass, oldValue);
     }
 

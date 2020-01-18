@@ -33,8 +33,8 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
     private PropertyDrawEntity implPropertyDraw;
     private GroupObjectEntity detailsGroup;
 
-    public GroupDrillDownFormEntity(String canonicalName, LocalizedString caption, GroupProperty<I> property, LogicsModule LM) {
-        super(canonicalName, caption, property, LM);
+    public GroupDrillDownFormEntity(LocalizedString caption, GroupProperty<I> property, LogicsModule LM) {
+        super(caption, property, LM);
     }
 
     @Override

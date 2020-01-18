@@ -485,15 +485,15 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         assert mapInterfaces.keys().equals(mapping.keys());
 
         // сначала and'им where и push, получаем интерфейсы I + push (T)
-        Result<ImRevMap<T, PropertyInterface>> mapPushInterfaces = new Result<>(); Result<ImRevMap<I, PropertyInterface>> mapInnerInterfaces = new Result<>();
-        createCommon(mapping.valuesSet().merge(push.mapping.valuesSet()), innerInterfaces, mapping.crossJoin(mapInterfaces), mapPushInterfaces, mapInnerInterfaces);
+        Result<ImRevMap<I, PropertyInterface>> mapInnerInterfaces = new Result<>();
+        ImRevMap<T, PropertyInterface> mapPushInterfaces = createCommon(mapping.valuesSet().merge(push.mapping.valuesSet()), innerInterfaces, mapping.crossJoin(mapInterfaces), mapInnerInterfaces);
 
-        PropertyMapImplement<?, PropertyInterface> mapPush = push.map(mapPushInterfaces.result);
+        PropertyMapImplement<?, PropertyInterface> mapPush = push.map(mapPushInterfaces);
         if(forProp!=null)
             mapPush = createAnd(mapPush, forProp.map(mapInnerInterfaces.result));
 
-        return pushFor.push(mapPushInterfaces.result.filterRev(context).valuesSet(), mapPush,
-                PropertyFact.mapImplements(orders, mapPushInterfaces.result), ordersNotNull, mapInnerInterfaces.result).map(mapPushInterfaces.result.reverse());
+        return pushFor.push(mapPushInterfaces.filterRev(context).valuesSet(), mapPush,
+                PropertyFact.mapImplements(orders, mapPushInterfaces), ordersNotNull, mapInnerInterfaces.result).map(mapPushInterfaces.reverse());
     }
 
     @Override

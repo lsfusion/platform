@@ -85,6 +85,9 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
     public <U extends PropertyInterface> ActionMapImplement<T, U> getImplement(U... mapping) {
         return new ActionMapImplement<>(action, getRevMap(mapping));
     }
+    public <U extends PropertyInterface> ActionMapImplement<T, U> getImplement(ImOrderSet<U> mapping) {
+        return new ActionMapImplement<>(action, getRevMap(mapping));
+    }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LAP<P, ActionOrProperty<P>> mainProperty, LocalizedString contextMenuCaption) {
         mainProperty.getActionOrProperty().setContextMenuAction(action.getSID(), contextMenuCaption);

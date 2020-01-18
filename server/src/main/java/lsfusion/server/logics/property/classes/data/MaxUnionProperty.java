@@ -69,9 +69,8 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new MaxUnionDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.max.union}"), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new MaxUnionDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.max.union}"), this, LM
         );
     }
 }

@@ -12,6 +12,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
@@ -39,7 +40,7 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
     }
 
     public CustomClass getDialogClass(DataSession session) throws SQLException, SQLHandledException {
-        return property.getDialogClass(mapping, session.getCurrentClasses(mapping));
+        return (CustomClass) property.getValueClass(ClassType.editValuePolicy);
     }
 
 }

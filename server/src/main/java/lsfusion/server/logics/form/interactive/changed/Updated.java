@@ -19,5 +19,4 @@ public interface Updated {
     
     void fillProperties(MSet<Property> properties);
 
-    boolean isInInterface(GroupObjectInstance classGroup);
 }

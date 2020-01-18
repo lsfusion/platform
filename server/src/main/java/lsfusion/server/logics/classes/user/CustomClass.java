@@ -1,6 +1,5 @@
 package lsfusion.server.logics.classes.user;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -42,6 +41,7 @@ import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.classes.user.set.UpClassSet;
+import lsfusion.server.logics.form.interactive.dialogedit.BaseClassFormEntity;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.dialogedit.DialogFormEntity;
 import lsfusion.server.logics.form.interactive.dialogedit.EditFormEntity;
@@ -60,7 +60,6 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
@@ -450,7 +449,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         @IdentityStrongLazy
         private ClassFormEntity addDefaultForm(BaseLogicsModule LM) {
             ClassFormEntity classForm = createDefaultForm(LM);
-            LM.addFormEntity(classForm.form);
+            LM.addAutoFormEntity((BaseClassFormEntity)classForm.form);
             return classForm;
         }
 

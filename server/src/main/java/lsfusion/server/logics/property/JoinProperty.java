@@ -18,6 +18,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAggAction;
 import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
@@ -283,12 +284,12 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         }
 
         if (implement.mapping.size() == 1 && !implementChange) {
+            ValueClass aggClass = ((PropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editValuePolicy);
+
             if (editActionSID.equals(ServerResponse.CHANGE_WYS)) {
                 ActionMapImplement<?, Interface> changeActionImplement = getEditAction(ServerResponse.CHANGE);
                 if(changeActionImplement==null)
                     return null;
-
-                ValueClass aggClass = ((PropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editValuePolicy);
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
                 DefaultChangeAggAction<T> aggChangeAction =
@@ -296,7 +297,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 return aggChangeAction.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
-                return implement.mapping.singleValue().mapEditAction(editActionSID, aggProp);
+                return implement.mapping.singleValue().mapEditAction(editActionSID, aggClass instanceof CustomClass ? aggProp : null);
             }
         }
         return super.getDefaultEditAction(editActionSID, filterProperty);
@@ -377,9 +378,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new JoinDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.join}"), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new JoinDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.join}"), this, LM
         );
     }
 

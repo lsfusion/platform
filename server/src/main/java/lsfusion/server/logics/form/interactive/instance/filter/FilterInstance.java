@@ -72,8 +72,4 @@ public abstract class FilterInstance implements Updated {
     public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject, ExecutionStack stack) throws SQLException, SQLHandledException {
     }
 
-    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
-        return new HashSet<>();
-    }
-
 }

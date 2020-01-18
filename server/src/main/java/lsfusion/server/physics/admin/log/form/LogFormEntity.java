@@ -9,7 +9,7 @@ import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -31,7 +31,7 @@ import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.rea
 /// LogFormEntity logForm = new LogFormEntity("FormSID", "FormCaption", property, logValueProperty, SomeBusinessLogics.this);
 /// addPropertyDraw(addMFAProp("Caption", logForm, logForm.params), paramObjectEntities);
 
-public class LogFormEntity extends FormEntity {
+public class LogFormEntity extends AutoFormEntity {
     public ImOrderSet<ObjectEntity> params;
     SystemEventsLogicsModule systemEventsLM;
     ImOrderSet<ObjectEntity> entities;
@@ -41,8 +41,8 @@ public class LogFormEntity extends FormEntity {
     LP<?> property;
     public boolean lazyInit;
 
-    public LogFormEntity(String canonicalName, LocalizedString caption, LP<?> property, LP<?> logValueProperty, LP<?> logWhereProperty, SystemEventsLogicsModule systemEventsLM) {
-        super(canonicalName, caption, systemEventsLM.getVersion());
+    public LogFormEntity(LocalizedString caption, LP<?> property, LP<?> logValueProperty, LP<?> logWhereProperty, SystemEventsLogicsModule systemEventsLM) {
+        super(caption, systemEventsLM.getVersion());
 
         this.systemEventsLM = systemEventsLM;
         this.logValueProperty = logValueProperty;

@@ -36,6 +36,9 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.interactive.action.change.CheckCanBeChangedAction;
+import lsfusion.server.logics.form.interactive.action.input.PushRequestAction;
+import lsfusion.server.logics.form.interactive.action.input.RequestAction;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -144,18 +147,10 @@ public class PropertyFact {
     }
 
     public static <L extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<?,T> createJoinAction(ActionImplement<L, PropertyInterfaceImplement<T>> implement) {
-        // определяем какие интерфейсы использовали
-        ImSet<T> usedInterfaces = getUsedInterfaces(implement.mapping.values());
-
-        // создаем свойство - перемаппим интерфейсы
-        ImRevMap<T,PropertyInterface> joinMap = usedInterfaces.mapRevValues(ActionOrProperty.genInterface); // строим карту
-        ImRevMap<PropertyInterface, T> revJoinMap = joinMap.reverse();
-        JoinAction<L> joinProperty = new JoinAction<>(LocalizedString.NONAME, revJoinMap.keys().toOrderSet(),
-                new ActionImplement<>(implement.action, mapImplements(implement.mapping, joinMap)));
-        return new ActionMapImplement<>(joinProperty, revJoinMap);
+        ImOrderSet<T> usedInterfaces = getUsedInterfaces(implement.mapping.values()).toOrderSet();
+        JoinAction<L> joinProperty = new JoinAction<>(LocalizedString.NONAME, usedInterfaces, implement);
+        return joinProperty.getImplement(usedInterfaces);
     }
-
-    
     
     public static <T extends PropertyInterface> PropertyMapImplement<?, T> createCompare(Compare compare, T operator1, T operator2) {
         CompareFormulaProperty compareProperty = new CompareFormulaProperty(compare);
@@ -175,6 +170,13 @@ public class PropertyFact {
     }
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(PropertyInterfaceImplement<T> propertyA, PropertyInterfaceImplement<T> propertyB, Compare compare) {
         return createCompare(getUsedInterfaces(SetFact.toSet(propertyA, propertyB)), propertyA, propertyB, compare);
+    }
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(ImList<? extends PropertyInterfaceImplement<T>> propertiesA, ImList<? extends PropertyInterfaceImplement<T>> propertiesB, Compare compare) {
+        return PropertyFact.createAnd(ListFact.toList(propertiesA.size(), i -> createCompare(propertiesA.get(i), propertiesB.get(i), compare)).getCol());
+    }
+    // needed because java cannot infer types
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompareInterface(ImList<T> propertiesA, ImList<T> propertiesB, Compare compare) {
+        return PropertyFact.createCompare(BaseUtils.<ImList<PropertyInterfaceImplement<T>>>immutableCast(propertiesA), BaseUtils.<ImList<PropertyInterfaceImplement<T>>>immutableCast(propertiesB), compare);
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?, T> createNot(ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> implement) {
@@ -233,6 +235,9 @@ public class PropertyFact {
         return new PropertyMapImplement<>(joinProperty, revJoinMap);
     }
 
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAndNot(PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> not) {
+        return createAndNot(getUsedInterfaces(SetFact.toSet(object, not)), object, not);
+    }
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAndNot(ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> not) {
         return createAnd(LocalizedString.NONAME, innerInterfaces, object, ListFact.singleton(not), ListFact.singleton(true));
     }
@@ -253,16 +258,14 @@ public class PropertyFact {
         return createAnd(getUsedInterfaces(SetFact.toSet(object, and)), object, and);
     }
 
-    public static <P extends PropertyInterface, T extends PropertyInterface, C extends PropertyInterface> void createCommon(ImSet<T> object, ImSet<P> and, final ImRevMap<T,P> map, Result<ImRevMap<T, C>> mapObject, final Result<ImRevMap<P, C>> mapAnd) {
+    public static <P extends PropertyInterface, T extends PropertyInterface, C extends PropertyInterface> ImRevMap<T, C> createCommon(ImSet<T> object, ImSet<P> and, final ImRevMap<T,P> map, final Result<ImRevMap<P, C>> mapAnd) {
         mapAnd.set(and.mapRevValues(() -> (C)new PropertyInterface()));
-        mapObject.set(object.mapRevValues(new Function<T, C>() {
-            public C apply(T value) {
-                P mp = map.get(value);
-                if (mp != null)
-                    return mapAnd.result.get(mp);
-                return (C) new PropertyInterface();
-            }
-        }));
+        return object.mapRevValues((Function<T, C>) value -> {
+            P mp = map.get(value);
+            if (mp != null)
+                return mapAnd.result.get(mp);
+            return (C) new PropertyInterface();
+        });
     }
 
     private static <T extends PropertyInterface,P extends PropertyInterface> ImOrderSet<JoinProperty.Interface> createSelfProp(ImSet<T> interfaces, Result<ImRevMap<T, JoinProperty.Interface>> map1, Result<ImRevMap<T, JoinProperty.Interface>> map2, Result<ImRevMap<T, JoinProperty.Interface>> mapCommon, ImSet<T> partInterfaces) {
@@ -472,6 +475,7 @@ public class PropertyFact {
         final Result<ImRevMap<T,JoinProperty.Interface>> map2 = new Result<>();
         final Result<ImRevMap<T,JoinProperty.Interface>> mapCommon = new Result<>();
         ImOrderSet<JoinProperty.Interface> listInterfaces = createSelfProp(interfaces, map1, map2, mapCommon, partInterfaces);
+        mapMain.set(map1.result.addRevExcl(mapCommon.result));
 
         // ставим equals'ы на partitions свойства (раздвоенные), greater на предшествие order (раздвоенное)
         AndFormulaProperty andPrevious = new AndFormulaProperty(partProperties.size() + 1);
@@ -482,8 +486,6 @@ public class PropertyFact {
                                 return i == 0 ? createCompareMap(expr, map1.result, map2.result, mapCommon.result, compare) : createCompareProp(partProperties.get(i-1), map1.result, map2.result, mapCommon.result, Compare.EQUALS);
                             }
                         }), andPrevious.objectInterface, property.map(map2.result.addRevExcl(mapCommon.result)));
-        mapMain.set(map1.result.addRevExcl(mapCommon.result));
-
         return new JoinProperty<>(LocalizedString.NONAME, listInterfaces,
                 new PropertyImplement<>(andPrevious, mapImplement));
     }
@@ -837,6 +839,22 @@ public class PropertyFact {
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createChangeClassAction(ObjectClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<W, L> whereProp, L changeInterface, BaseClass baseClass) {
         ChangeClassAction<W, L> action = new ChangeClassAction<>(cls, forceDialog, innerInterfaces, mapInterfaces, changeInterface, whereProp, baseClass);
         return action.getMapImplement();
+    }
+    
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createRequestAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> requestAction, ActionMapImplement<?, L> doAction, ActionMapImplement<?, L> elseAction) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        RequestAction setAction = new RequestAction(LocalizedString.NONAME, listInterfaces, requestAction, doAction, elseAction);
+        return setAction.getImplement(listInterfaces);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createCheckCanBeChangedAction(ImSet<L> innerInterfaces, PropertyMapImplement<?, L> changeProp) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        CheckCanBeChangedAction changeAction = new CheckCanBeChangedAction(LocalizedString.NONAME, listInterfaces, changeProp);
+        return changeAction.getImplement(listInterfaces);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createPushRequestAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        PushRequestAction changeAction = new PushRequestAction(LocalizedString.NONAME, listInterfaces, action);
+        return changeAction.getImplement(listInterfaces);
     }
 
     // расширенный интерфейс создания SetAction, который умеет группировать, если что

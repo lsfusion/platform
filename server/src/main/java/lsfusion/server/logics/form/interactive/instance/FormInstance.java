@@ -88,14 +88,12 @@ import lsfusion.server.logics.form.interactive.instance.property.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
-import lsfusion.server.logics.form.interactive.property.checked.MaxChangeProperty;
-import lsfusion.server.logics.form.interactive.property.checked.OnChangeProperty;
 import lsfusion.server.logics.form.interactive.property.checked.PullChangeProperty;
 import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilter;
+import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -106,7 +104,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
-import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -211,8 +208,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         ExecutionStack stack,
                         boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive, boolean isFloat,
-                        boolean isExternal, ImSet<ContextFilter> contextFilters,
-                        ImSet<PullChangeProperty> pullProps,
+                        boolean isExternal, ImSet<ContextFilterInstance> contextFilters,
                         boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
         this.isSync = isSync;
         this.isFloat = isFloat;
@@ -227,8 +223,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(showReadOnly)
             securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);
         this.securityPolicies = securityPolicies;
-
-        this.pullProps = pullProps;
 
         this.locale = locale;
         
@@ -265,8 +259,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         containerShowIfs = mContainerShowIfs.immutable();
 
         ImSet<FilterInstance> allFixedFilters = entity.getFixedFilters().mapSetValues(value -> value.getInstance(instanceFactory));
-        if (contextFilters != null)
+        if (contextFilters != null) {
             allFixedFilters = allFixedFilters.addExcl(contextFilters.mapSetValues(value -> value.getFilter(instanceFactory)));
+            pullProps = ContextFilterInstance.getPullProps(contextFilters);
+        } else 
+            pullProps = SetFact.EMPTY();
+            
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.group(new BaseUtils.Group<GroupObjectInstance, FilterInstance>() {
             public GroupObjectInstance group(FilterInstance key) {
                 return key.getApplyObject();
@@ -963,7 +961,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     @ThisMessage
     public void executeEditAction(final PropertyDrawInstance<?> property, String editActionSID, final ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
-        ActionObjectInstance<?> editAction = property.getEditAction(editActionSID, instanceFactory, checkReadOnly, securityPolicies);
+        ActionObjectInstance<?> editAction = property.getEditAction(editActionSID, this, checkReadOnly, securityPolicies);
         if(editAction == null) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
@@ -1015,7 +1013,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
-            DataClass changeType = property.entity.getWYSRequestInputType(securityPolicies);
+            DataClass changeType = property.entity.getWYSRequestInputType(entity, securityPolicies);
             if (changeType != null) {
                 for (int i = 0, size = pasteRows.size(); i < size; i++) {
                     ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
@@ -2199,39 +2197,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return new FormData(mResult.immutableOrder());
     }
 
-    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<ContextFilter> getEditContextFilters(ClassFormEntity editForm, PropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
-        return getContextFilters(editForm.object, implement, selectionGroupObject, pullProps);
-    }
-
-    // pullProps чтобы запретить hint'ить
-    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<ContextFilter> getContextFilters(ObjectEntity filterObject, PropertyValueImplement<P> propValues, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
-        Property<P> implementProperty = propValues.property;
-
-        MSet<ContextFilter> mContextFilters = SetFact.mSet();
-        MSet<PullChangeProperty> mPullProps = SetFact.mSet();
-        for (MaxChangeProperty<?, P> constrainedProperty : implementProperty.getMaxChangeProperties(BL.getCheckConstrainedProperties(implementProperty))) {
-            mPullProps.add(constrainedProperty);
-            mContextFilters.add(constrainedProperty.getContextFilter(propValues.mapping, filterObject));
-        }
-
-        for (FilterEntity filterEntity : entity.getFixedFilters()) {
-            FilterInstance filter = filterEntity.getInstance(instanceFactory);
-            if (filter.getApplyObject() == selectionGroupObject) {
-                for (PropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
-                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) filterImplement.property.getOnChangeProperty(propValues.property);
-                    mPullProps.add(onChangeProperty);
-                    mContextFilters.add(onChangeProperty.getContextFilter((ImMap<F, DataObject>) filterImplement.mapping, propValues.mapping, filterObject));
-                }
-            }
-        }
-        if (pullProps != null) {
-            pullProps.set(mPullProps.immutable());
-        }
-        return mContextFilters.immutable();
-    }
-
-    public ImSet<ContextFilter> getObjectFixedFilters(ClassFormEntity editForm, GroupObjectInstance selectionGroupObject) {
-        MSet<ContextFilter> mFixedFilters = SetFact.mSet();
+    public ImSet<ContextFilterInstance> getObjectFixedFilters(ClassFormEntity editForm, GroupObjectInstance selectionGroupObject) {
+        MSet<ContextFilterInstance> mFixedFilters = SetFact.mSet();
         ObjectEntity object = editForm.object;
         for (FilterEntity<?> filterEntity : entity.getFixedFilters()) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
@@ -2258,48 +2225,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             public FormInstance doCreateDialog() throws SQLException, SQLHandledException {
                 ClassFormEntity classForm = objectClass.getDialogForm(BL.LM);
                 dialogObject = classForm.object;
-                return createDialogInstance(classForm.form, dialogObject, NullValue.instance, null, null, stack);
-            }
-        };
-    }
-
-    public DialogRequest createObjectEditorDialogRequest(final PropertyValueImplement propertyValues, final ExecutionStack stack) {
-        return new DialogRequestAdapter() {
-            @Override
-            protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
-                ObjectValue currentObject = propertyValues.readClasses(FormInstance.this);
-                if(!(currentObject instanceof DataObject)) // force notnull для edit'а по сути
-                    return null;
-                
-                CustomClass objectClass = propertyValues.getDialogClass(session);
-                ClassFormEntity classForm = objectClass.getEditForm(BL.LM, getSession(), currentObject);
-                if(classForm == null)
-                    return null;                        
-
-//                if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
-//                    currentObject = addObject((ConcreteCustomClass)objectClass).object;
-//                }
-
-                dialogObject = classForm.object;
-                return createDialogInstance(classForm.form, dialogObject, currentObject, null, null, stack);
-            }
-        };
-    }
-
-    public DialogRequest createChangeEditorDialogRequest(final PropertyValueImplement propertyValues,
-                                                         final GroupObjectInstance groupObject,
-                                                         final Property filterProperty,
-                                                         final ExecutionStack stack) {
-        return new DialogRequestAdapter() {
-            @Override
-            protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
-                ClassFormEntity formEntity = propertyValues.getDialogClass(session).getDialogForm(BL.LM);
-                Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
-                ImSet<ContextFilter> additionalFilters = getEditContextFilters(formEntity, propertyValues, groupObject, pullProps);
-                
-                dialogObject = formEntity.object;
-
-                return createDialogInstance(formEntity.form, dialogObject, propertyValues.readClasses(FormInstance.this), additionalFilters, pullProps.result, stack);
+                return createDialogInstance(classForm.form, dialogObject, NullValue.instance, null, stack);
             }
         };
     }
@@ -2309,24 +2235,24 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
                 ClassFormEntity formEntity = dialogClass.getDialogForm(BL.LM);
-                ImSet<ContextFilter> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
-
+                ImSet<ContextFilterInstance> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
+                
                 dialogObject = formEntity.object;
 
-                return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, SetFact.EMPTY(), stack);
+                return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, stack);
             }
         };
     }
 
     // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
-    private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue, ImSet<ContextFilter> additionalFilters, ImSet<PullChangeProperty> pullProps, ExecutionStack outerStack) throws SQLException, SQLHandledException {
+    private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue, ImSet<ContextFilterInstance> additionalFilters, ExecutionStack outerStack) throws SQLException, SQLHandledException {
         return new FormInstance(entity, this.logicsInstance,
                                 this.session, securityPolicies,
                                 getFocusListener(), getClassListener(),
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 outerStack,
                                 true, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, true, true, true,
-                                false, additionalFilters, pullProps, false, locale);
+                                false, additionalFilters, false, locale);
     }
 
     // ---------------------------------------- Events ----------------------------------------
@@ -2396,7 +2322,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (actionsOnEvent != null) {
             for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
-                if (autoInstance.isInInterface(null) && SecurityPolicy.checkPropertyChangePermission(securityPolicies, autoAction.property)) { // для проверки null'ов и политики безопасности
+                if (SecurityPolicy.checkPropertyChangePermission(securityPolicies, autoAction.property)) { // для проверки null'ов и политики безопасности
                     mResult.exclAdd(autoInstance.getValueImplement(this));
                 }
             }

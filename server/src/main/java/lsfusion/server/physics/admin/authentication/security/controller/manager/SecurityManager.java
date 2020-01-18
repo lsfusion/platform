@@ -133,28 +133,16 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             readOnlyPolicy.cls.edit.change.defaultPermission = false;
             readOnlyPolicy.cls.edit.remove.defaultPermission = false;
 
-            ImList<String> changeEvents = ListFact.toList(ServerResponse.CHANGE, ServerResponse.CHANGE_WYS, ServerResponse.GROUP_CHANGE, ServerResponse.EDIT_OBJECT);
-            for (FormEntity formEntity : businessLogics.getAllForms()) {
-                for(PropertyDrawEntity<?> propertyDraw : formEntity.getPropertyDrawsIt()) {
-                    for(String changeEvent : BaseUtils.mergeIterables(changeEvents, propertyDraw.getContextMenuBindings().keySet())) {
-                        ActionObjectEntity<?> editAction = propertyDraw.getEditAction(changeEvent);
-                        if (editAction != null && editAction.property.ignoreReadOnlyPolicy()) {
-                            readOnlyPolicy.property.change.permit(editAction.property); // permits editAction if it doesn't change anything
-                        } else {
-                            if (changeEvent.equals(ServerResponse.CHANGE) && !propertyDraw.isProperty()) { // hiding actions that cannot be executed 
-                                propertyDraw.deny(readOnlyPolicy.property.view);
-                            }
+            for (FormEntity formEntity : businessLogics.getAllForms())
+                formEntity.proceedAllEventActions((eventAction, drawAction) -> {
+                    if (eventAction.property.ignoreReadOnlyPolicy()) {
+                        readOnlyPolicy.property.change.permit(eventAction.property); // permits editAction if it doesn't change anything
+                    } else {
+                        if (drawAction != null) { // hiding actions that cannot be executed 
+                            drawAction.deny(readOnlyPolicy.property.view);
                         }
-                    }
-                }
-                for(ImList<ActionObjectEntity<?>> eventActions : formEntity.getEventActions().valueIt()) {
-                    for(ActionObjectEntity<?> eventAction : eventActions) {
-                        if (eventAction != null && eventAction.property.ignoreReadOnlyPolicy()) {
-                            readOnlyPolicy.property.change.permit(eventAction.property); // permits eventAction if it doesn't change anything
-                        }
-                    }
-                }
-            }
+                    }                    
+                });
 
             allowConfiguratorPolicy = addPolicy("allowConfiguration", localize("{logics.policy.allow.configurator}"), localize("{logics.policy.logics.allow.configurator}"));
             allowConfiguratorPolicy.configurator = true;

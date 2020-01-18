@@ -74,7 +74,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public PropertyObjectInterfaceInstance getRemappedInstance(ObjectEntity oldObject, ObjectInstance newObject, InstanceFactory instanceFactory) {
         return this == oldObject
                 ? newObject
-                : getInstance(instanceFactory).getDataObject();
+                : getInstance(instanceFactory).getObjectValue();
     }
 
     @Override

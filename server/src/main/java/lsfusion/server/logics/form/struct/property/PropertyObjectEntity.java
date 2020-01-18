@@ -1,8 +1,10 @@
 package lsfusion.server.logics.form.struct.property;
 
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -15,6 +17,7 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
@@ -43,9 +46,11 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         return instanceFactory.getInstance(this);
     }
 
-    public PropertyObjectInstance<P> getRemappedInstance(final ObjectEntity oldObject, final ObjectInstance newObject, final InstanceFactory instanceFactory) {
-        ImMap<P, PropertyObjectInterfaceInstance> nmapping = mapping.mapValues(value -> value.getRemappedInstance(oldObject, newObject, instanceFactory));
-        return new PropertyObjectInstance<>(property, nmapping);
+    public ContextFilterInstance<P> getRemappedInstance(final ObjectEntity oldObject, final ObjectEntity newObject, InstanceFactory instanceFactory) {
+        P oldObjectInterface = mapping.reverse().get(oldObject);
+        return new ContextFilterInstance<>(property, 
+                            mapping.removeValues(oldObject).mapValues((ObjectEntity object) -> object.getInstance(instanceFactory).getObjectValue()), 
+                            oldObjectInterface != null ? MapFact.singletonRev(oldObjectInterface, newObject) : MapFact.EMPTYREV());
     }
 
     @Override

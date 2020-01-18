@@ -1,5 +1,9 @@
 package lsfusion.server.logics.form.open;
 
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -11,11 +15,11 @@ import java.util.List;
 public class MappedForm<O extends ObjectSelector> {
     public final FormSelector<O> form;
     
-    public final List<O> objects;
+    public final ImOrderSet<O> objects;
 
     public MappedForm(FormSelector<O> form, List<O> objects) {
         this.form = form;
-        this.objects = objects;
+        this.objects = SetFact.fromJavaOrderSet(objects);
     }
     
     public static MappedForm create(FormEntity form, List<ObjectEntity> objects) {

@@ -49,6 +49,9 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     boolean mapEquals(PropertyInterfaceImplement<P> implement);
 
     Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
+    default ObjectValue readClasses(ExecutionContext<P> context) throws SQLException, SQLHandledException {
+        return readClasses(context, context.getKeys());
+    }
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
     ActionMapImplement<?, P> mapEditAction(String editActionSID, Property filterProperty);

@@ -15,22 +15,22 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-public class DrillDownFormEntity<I extends PropertyInterface, P extends Property<I>> extends FormEntity {
+public class DrillDownFormEntity<I extends PropertyInterface, P extends Property<I>> extends AutoFormEntity {
     protected final P property;
     protected final LogicsModule LM;
 
     public final ImRevMap<I, ObjectEntity> interfaceObjects;
     public final ImOrderSet<ObjectEntity> paramObjects;
 
-    public DrillDownFormEntity(String canonicalName, LocalizedString caption, P property, LogicsModule LM) {
-        super(canonicalName, caption, LM.getVersion());
+    public DrillDownFormEntity(LocalizedString caption, P property, LogicsModule LM) {
+        super(caption, LM.getVersion());
 
         this.property = property;
         this.LM = LM;

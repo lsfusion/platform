@@ -633,7 +633,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             ObjectValue pushChangeObject = null;
             DataClass pushChangeType = null;
             if (pushChange != null) {
-                pushChangeType = propertyDraw.getEntity().getRequestInputType(form.securityPolicies);
+                pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicies);
                 Object objectPushChange = deserializeObject(pushChange);
                 if(pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
                     ServerLoggers.assertLog(objectPushChange == null, "PUSH CHANGE SHOULD BE NULL");
@@ -983,7 +983,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         ObjectValue pushChangeObject = null;
         DataObject pushAdd = null;
         if(propertyDraw.isProperty()) {
-            pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.securityPolicies);
+            pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.entity, form.securityPolicies);
             if (pushChangeType != null)
                 pushChangeObject = DataObject.getValue(pushChangeType.parseJSON(value), pushChangeType);
             editAction = ServerResponse.CHANGE_WYS;

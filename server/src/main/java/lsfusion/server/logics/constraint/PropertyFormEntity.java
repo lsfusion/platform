@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -18,12 +18,10 @@ import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.util.function.Function;
-
-public class PropertyFormEntity extends FormEntity {
+public class PropertyFormEntity extends AutoFormEntity {
 
     public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule LM, Property<P> property, Property<X> messageProperty, Group recognizeGroup) {
-        super(null, property.caption, LM.getVersion());
+        super(property.caption, LM.getVersion());
 
         Version version = LM.getVersion();
         

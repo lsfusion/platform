@@ -290,9 +290,8 @@ public abstract class DataProperty extends AbstractDataProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new DataDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.data}"), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new DataDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.data}"), this, LM
         );
     }
 

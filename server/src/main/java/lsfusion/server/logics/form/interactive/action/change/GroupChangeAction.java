@@ -42,7 +42,6 @@ public class GroupChangeAction extends AroundAspectAction {
         final ImOrderSet<ImMap<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(groupObject, context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты
 
         context.dropRequestCanceled();
-
         FlowResult flowResult = proceed(context.override(true));// вызываем CHANGE (для текущего)
         if (!flowResult.equals(FlowResult.FINISH))
             return flowResult;

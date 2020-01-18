@@ -8,6 +8,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -20,7 +21,6 @@ public class InputAction extends SystemExplicitAction {
 
     private final DataClass dataClass;
     private final LP<?> targetProp;
-    private final boolean hasOldValue; // fix. to tell EditPropertyDispatcher to act synchronously - ask for value of expression on edit
             
     //  используется только для событий поэтому по идее не надо, так как в событиях user activity быть не может
 //    public ImMap<Property, Boolean> aspectChangeExtProps() {
@@ -28,22 +28,22 @@ public class InputAction extends SystemExplicitAction {
 //    }
 
     public InputAction(LocalizedString caption, DataClass dataClass, LP targetProp, boolean hasOldValue) {
-        super(caption, dataClass);
+        super(caption, hasOldValue ? new ValueClass[]{dataClass} : new ValueClass[]{});
 
         this.dataClass = dataClass;
         this.targetProp = targetProp;
-        this.hasOldValue = hasOldValue;
     }
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        ObjectValue userValue = context.inputUserData(dataClass, context.getSingleKeyValue().getValue());
+        Object oldValue = interfaces.isEmpty() ? null : context.getSingleKeyValue().getValue();
+        ObjectValue userValue = context.inputUserData(dataClass, oldValue);
         context.writeRequested(RequestResult.get(userValue, dataClass, targetProp));
     }
     
     @Override
     public Type getSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        if(inRequest && !hasOldValue)
+        if(inRequest && interfaces.isEmpty())
             return dataClass;
         return null;
     }

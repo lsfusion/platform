@@ -1,7 +1,6 @@
 package lsfusion.server.base.controller.remote.ui;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ChooseClassClientAction;
@@ -25,9 +24,8 @@ import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
-import lsfusion.server.logics.form.interactive.property.checked.PullChangeProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilter;
+import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -88,13 +86,13 @@ public abstract class RemoteUIContext extends AbstractContext {
         return false;
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
                 getSecurityPolicies(), getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
-                checkOnOk, showDrop, interactive, isFloat, isExternal(), contextFilters, pullProps, readonly, getLocale());
+                checkOnOk, showDrop, interactive, isFloat, isExternal(), contextFilters, readonly, getLocale());
     }
 
     protected abstract int getExportPort();

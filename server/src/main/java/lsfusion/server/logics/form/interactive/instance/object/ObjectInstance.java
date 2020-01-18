@@ -13,6 +13,7 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
@@ -68,11 +69,6 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
         return objects.mapValues((Function<ObjectInstance, Expr>) ObjectInstance::getExpr);
     }
 
-
-    public boolean isNull() {
-        return getObjectValue() instanceof NullValue;
-    }
-
     public abstract ValueClass getGridClass();
 
     public abstract void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException, SQLHandledException;
@@ -110,6 +106,8 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) {
         return getExpr(classSource, modifier);
     }
+
+    public abstract ConcreteClass getCurrentClass();
 
     public GroupObjectInstance getApplyObject() {
         return groupTo;

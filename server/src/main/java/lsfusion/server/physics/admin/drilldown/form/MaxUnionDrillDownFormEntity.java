@@ -7,7 +7,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class MaxUnionDrillDownFormEntity<I extends PropertyInterface> extends UnionDrillDownFormEntity<MaxUnionProperty.Interface, MaxUnionProperty> {
 
-    public MaxUnionDrillDownFormEntity(String sID, LocalizedString caption, MaxUnionProperty property, LogicsModule LM) {
-        super(sID, caption, property, LM);
+    public MaxUnionDrillDownFormEntity(LocalizedString caption, MaxUnionProperty property, LogicsModule LM) {
+        super(caption, property, LM);
     }
 }

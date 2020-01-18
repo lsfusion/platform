@@ -197,12 +197,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     }
 
-    public DataClass getRequestInputType(ImSet<SecurityPolicy> policies) {
-        return getRequestInputType(CHANGE, policies, optimisticAsync);
+    public DataClass getRequestInputType(FormEntity form, ImSet<SecurityPolicy> policies) {
+        return getRequestInputType(CHANGE, form, policies, optimisticAsync);
     }
 
-    public DataClass getWYSRequestInputType(ImSet<SecurityPolicy> policies) {
-        return getRequestInputType(CHANGE_WYS, policies, true); // wys is optimistic by default
+    public DataClass getWYSRequestInputType(FormEntity form, ImSet<SecurityPolicy> policies) {
+        return getRequestInputType(CHANGE_WYS, form, policies, true); // wys is optimistic by default
     }
     
     public boolean isProperty() {
@@ -213,9 +213,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getValueProperty();
     }
 
-    public DataClass getRequestInputType(String actionSID, ImSet<SecurityPolicy> securityPolicies, boolean optimistic) {
+    public DataClass getRequestInputType(String actionSID, FormEntity form, ImSet<SecurityPolicy> securityPolicies, boolean optimistic) {
         if (isProperty()) { // optimization
-            ActionObjectEntity<?> changeAction = getEditAction(actionSID, securityPolicies);
+            ActionObjectEntity<?> changeAction = getEditAction(actionSID, form, securityPolicies);
 
             if (changeAction != null) {
                 return (DataClass)changeAction.property.getSimpleRequestInputType(optimistic);
@@ -225,7 +225,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, ImSet<SecurityPolicy> policies) {
-        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEditAction(CHANGE, policies);
+        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEditAction(CHANGE, form, policies);
         if(changeAction!=null)
             return changeAction.getAddRemove(form);
         return null;
@@ -259,17 +259,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return EDIT_OBJECT.equals(editActionSID) && (securityPolicy.editObjects == null || !securityPolicy.editObjects);
     }
 
-    public ActionObjectEntity<?> getEditAction(String actionId, ImSet<SecurityPolicy> securityPolicies) {
+    public ActionObjectEntity<?> getEditAction(String actionId, FormEntity form, ImSet<SecurityPolicy> securityPolicies) {
         try {
-            return getEditAction(actionId, null, securityPolicies);
+            return getEditAction(actionId, form, null, securityPolicies);
         } catch (SQLException | SQLHandledException e) {
             assert false;
             throw Throwables.propagate(e);
         }
     }
     
-    public ActionObjectEntity<?> getEditAction(String actionId, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
-        ActionObjectEntity<?> editAction = getEditAction(actionId);
+    public ActionObjectEntity<?> getEditAction(String actionId, FormEntity form, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
+        ActionObjectEntity<?> editAction = getEditAction(actionId, form);
 
         if (editAction != null && !checkPermission(editAction.property, actionId, checkReadOnly, securityPolicies))
             return null;
@@ -277,7 +277,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return editAction;
     }
 
-    public ActionObjectEntity<?> getEditAction(String actionId) {
+    public ActionObjectEntity<?> getEditAction(String actionId, FormEntity form) {
         if (editActions != null) {
             ActionObjectEntity editAction = editActions.get(actionId);
             if (editAction != null)
@@ -291,10 +291,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         // default implementations for group change and change wys
         if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) {
-            ActionObjectEntity<?> editAction = getEditAction(CHANGE);
+            ActionObjectEntity<?> editAction = getEditAction(CHANGE, form);
             if (editAction != null) {
                 if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
-                    return editAction.getGroupChange();
+                    return editAction.getGroupChange(getToDraw(form));
                 else { // if CHANGE action requests DataClass, then use this action
                     assert CHANGE_WYS.equals(actionId);
                     if (editAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default

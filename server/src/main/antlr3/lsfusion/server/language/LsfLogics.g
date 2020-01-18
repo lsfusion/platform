@@ -387,7 +387,7 @@ scope {
 		self.finalizeScriptedForm($formStatement::form);
 	}
 }
-	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; if(inMainParseState()) self.addScriptedForm($formStatement::form, point); }
+	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
 		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
 		)
 		(	formGroupObjectsList
@@ -2984,6 +2984,9 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams a
 	WindowFormType windowType = null;
 
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
+	
+	List<TypedParameter> objectsContext = null; 
+	List<LPWithParams> contextFilters = Collections.emptyList();
 
 	ManageSessionType manageSession = ManageSessionType.AUTO;
 	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
@@ -2995,12 +2998,15 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams a
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly, $dDB.action, $dDB.elseAction, context, newContext);
+		$action = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly, $dDB.action, $dDB.elseAction, objectsContext, contextFilters, context, newContext);
 	}
 }
 	:	'DIALOG' mf=mappedForm[context, newContext, false]
-		(    window = windowTypeLiteral { windowType = $window.val; }
-
+	    {
+            if(inMainParseState())
+        	    objectsContext = self.getTypedObjectsNames($mf.mapped); 
+        }
+		(   window = windowTypeLiteral { windowType = $window.val; }
 		|	ms=manageSessionClause { manageSession = $ms.result; }
 		|	nc=noCancelClause { noCancel = $nc.result; }
 		|	fs=formSessionScopeClause { formSessionScope = $fs.result; }
@@ -3097,7 +3103,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, !hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages);
+		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, !hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages, context);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]

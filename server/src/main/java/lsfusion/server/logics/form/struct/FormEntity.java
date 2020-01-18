@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -196,10 +197,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public int autoRefresh = 0;
 
     public PropertyObjectEntity<?> reportPathProp;
-
-    protected FormEntity(String canonicalName, LocalizedString caption, Version version) {
-        this(canonicalName, null, caption, null, version);
-    }
 
     public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, String imagePath, Version version) {
         this.ID = BaseLogicsModule.generateStaticNewID();
@@ -528,7 +525,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public boolean hasNoChange() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            ActionObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, SetFact.EMPTY()); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
+            ActionObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, this, SetFact.EMPTY()); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
             if (editAction != null && editAction.property.hasFlow(ChangeFlowType.FORMCHANGE) && !editAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
                 return false;
         }
@@ -930,14 +927,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new GroupObjectHierarchy(groupObject, Collections.singletonMap(groupObject, SetFact.EMPTYORDER()));
     }
 
-    public void addActionsOnObjectChange(ObjectEntity object, Version version, ActionObjectEntity... actions) {
-        addActionsOnObjectChange(object, false, version, actions);
-    }
-
-    public void addActionsOnObjectChange(ObjectEntity object, boolean drop, Version version, ActionObjectEntity... actions) {
-        addActionsOnEvent(object, drop, version, actions);
-    }
-
     public void addActionsOnEvent(Object eventObject, Version version, ActionObjectEntity<?>... actions) {
         addActionsOnEvent(eventObject, false, version, actions);
     }
@@ -990,6 +979,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             regularFilterGroup.finalizeAroundInit();
         
         getRichDesign().finalizeAroundInit();
+
+        proceedAllEventActions((action, drawAction) -> {
+        }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
     }
 
     public String getCanonicalName() {
@@ -1044,10 +1036,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public String getDefaultImagePath() {
         return defaultImagePath;
-    }
-
-    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
-        this.debugPoint = debugPoint;
     }
 
     // сохраняет нижние компоненты
@@ -1236,5 +1224,20 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) {
         return new Pair<>(this, getObjects().toRevMap());
+    }
+
+    private static final ImList<String> changeEvents = ListFact.toList(ServerResponse.CHANGE, ServerResponse.CHANGE_WYS, ServerResponse.GROUP_CHANGE, ServerResponse.EDIT_OBJECT);
+    public void proceedAllEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
+        for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
+            for(String changeEvent : BaseUtils.mergeIterables(changeEvents, propertyDraw.getContextMenuBindings().keySet())) {
+                ActionObjectEntity<?> editAction = propertyDraw.getEditAction(changeEvent, this);
+                if (editAction != null)
+                    consumer.accept(editAction, changeEvent.equals(ServerResponse.CHANGE) && !propertyDraw.isProperty() ? propertyDraw : null);
+            }
+        }
+        for(ImList<ActionObjectEntity<?>> eventActions : getEventActions().valueIt()) {
+            for(ActionObjectEntity<?> eventAction : eventActions)
+                consumer.accept(eventAction, null);
+        }
     }
 }

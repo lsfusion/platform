@@ -41,9 +41,8 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new StringAggUnionDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.agg.union}"), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new StringAggUnionDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.agg.union}"), this, LM
         );
     }
 }

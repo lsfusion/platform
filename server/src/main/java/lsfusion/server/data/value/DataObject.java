@@ -51,7 +51,7 @@ import lsfusion.server.physics.dev.integration.service.*;
 
 import java.sql.SQLException;
 
-public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
+public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -214,22 +214,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return objectClass;
     }
 
-    public DataObject getDataObject() {
-        return this;
-    }
-
-    public ObjectValue getObjectValue() {
-        return this;
-    }
-
-    public ConcreteClass getCurrentClass() {
-        return objectClass;
-    }
-
-    public GroupObjectInstance getApplyObject() {
-        return null;
-    }
-
     public GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects) {
         return null;
     }
@@ -277,7 +261,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public DataObject getDataObject(ImportTable.Row row) {
-        return getDataObject();
+        return this;
     }
 
     public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys) {

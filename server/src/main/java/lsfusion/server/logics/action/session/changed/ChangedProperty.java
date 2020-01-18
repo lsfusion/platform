@@ -200,9 +200,8 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new ChangedDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.data}"), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new ChangedDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.data}"), this, LM
         );
     }
 

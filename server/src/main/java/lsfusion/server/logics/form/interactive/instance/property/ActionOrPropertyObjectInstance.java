@@ -51,11 +51,6 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         objects.addAll(getObjectInstances().toSet());
     }
 
-    // в интерфейсе
-    public boolean isInInterface(GroupObjectInstance classGroup) {
-        return isInInterface(classGroup == null ? SetFact.EMPTY() : SetFact.singleton(classGroup), false);
-    }
-
     public boolean isInInterface(final ImSet<GroupObjectInstance> classGroups, boolean any) {
         // assert что classGroups все в GRID представлении
         ImMap<P, AndClassSet> classImplement = mapping.mapValues(value -> value.getClassSet(classGroups));
@@ -63,10 +58,6 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
     }
 
     public abstract PropertyObjectInstance<?> getDrawProperty();
-
-    public ImMap<P, DataObject> getInterfaceDataObjects() {
-        return mapping.mapValues(PropertyObjectInterfaceInstance::getDataObject);
-    }
 
     public ImMap<P, ObjectValue> getInterfaceObjectValues() {
         return mapping.mapValues(PropertyObjectInterfaceInstance::getObjectValue);

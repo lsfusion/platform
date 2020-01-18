@@ -10,6 +10,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
+import lsfusion.server.logics.form.struct.FormEntity;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang.StringUtils;
 
@@ -60,7 +61,11 @@ public class EvalUtils {
                     module.addWatchLocalDataProperty(local.first, local.second);
                 }
             }
-            module.runInit(ScriptingLogicsModule::initMainLogic);
+            module.runInit(ScriptingLogicsModule::initMainLogic);            
+            // finalize forms task (other elements can't be created in script)
+            module.markFormsForFinalization();
+            for(FormEntity form : module.getAllModuleForms())
+                form.finalizeAroundInit();
         } finally {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);

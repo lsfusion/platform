@@ -6,18 +6,18 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-public abstract class BaseClassFormEntity extends FormEntity {
+public abstract class BaseClassFormEntity extends AutoFormEntity {
 
     public final ObjectEntity object;
 
-    protected BaseClassFormEntity(BaseLogicsModule LM, CustomClass cls, String canonicalName, LocalizedString caption) {
-        super(canonicalName, caption, LM.getVersion());
+    protected BaseClassFormEntity(BaseLogicsModule LM, CustomClass cls, LocalizedString caption) {
+        super(caption, LM.getVersion());
         
         Version version = LM.getVersion();
 

@@ -21,7 +21,6 @@ import java.sql.SQLException;
 
 public class FilterEntity<P extends PropertyInterface> implements Instantiable<FilterInstance> {
 
-    public boolean checkChange;    
     private PropertyObjectEntity<P> property;
     public boolean resolveAdd;
 
@@ -30,28 +29,23 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
     }
 
     public FilterEntity(PropertyObjectEntity<P> property) {
-        this(property, false, false);
+        this(property, false);
     }
 
     public FilterEntity(PropertyObjectEntity<P> property, boolean resolveAdd) {
-        this(property, false, resolveAdd);
-    }
-
-    public FilterEntity(PropertyObjectEntity<P> property, boolean checkChange, boolean resolveAdd) {
         this.property = property;
         this.resolveAdd = resolveAdd;
-        this.checkChange = checkChange;
     }
 
     public FilterInstance getInstance(InstanceFactory instanceFactory) {
-        return new NotNullFilterInstance<>(instanceFactory.getInstance(property), checkChange, resolveAdd);
+        return new NotNullFilterInstance<>(instanceFactory.getInstance(property), resolveAdd);
     }
 
     public PropertyObjectEntity<P> getImportProperty() {
         return property;
     }
-    public ContextFilter getRemappedContextFilter(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceOldFactory) {
-        return instanceNewFactory -> new NotNullFilterInstance<>(property.getRemappedInstance(oldObject, newObject.getInstance(instanceNewFactory), instanceOldFactory), checkChange, resolveAdd);
+    public ContextFilterInstance getRemappedContextFilter(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceOldFactory) {
+        return property.getRemappedInstance(oldObject, newObject, instanceOldFactory);
     }
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {

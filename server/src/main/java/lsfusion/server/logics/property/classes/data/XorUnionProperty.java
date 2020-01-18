@@ -117,9 +117,8 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new XorUnionDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.xor.union}"), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new XorUnionDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.xor.union}"), this, LM
         );
     }
 

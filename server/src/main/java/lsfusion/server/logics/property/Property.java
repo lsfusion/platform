@@ -51,12 +51,14 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.*;
@@ -80,12 +82,11 @@ import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAction;
 import lsfusion.server.logics.form.interactive.action.change.DefaultWYSObjectAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.property.checked.MaxChangeProperty;
-import lsfusion.server.logics.form.interactive.property.checked.OnChangeProperty;
+import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
@@ -114,11 +115,10 @@ import lsfusion.server.physics.exec.db.table.MapKeysTable;
 import lsfusion.server.physics.exec.db.table.TableFactory;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.getBusinessLogics;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public abstract class Property<T extends PropertyInterface> extends ActionOrProperty<T> implements MapKeysInterface<T> {
@@ -761,24 +761,18 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     @IdentityStrongLazy // just in case
-    public <P extends PropertyInterface> MaxChangeProperty<T, P> getMaxChangeProperty(Property<P> change) {
-        return new MaxChangeProperty<>(this, change);
-    }
-    @IdentityStrongLazy // just in case
-    public <P extends PropertyInterface> OnChangeProperty<T, P> getOnChangeProperty(Property<P> change) {
-        return new OnChangeProperty<>(this, change);
+    private <P extends PropertyInterface> ConstraintCheckChangeProperty<T, P> getMaxChangeProperty(Property<P> change) {
+        return new ConstraintCheckChangeProperty<>(this, change);
     }
 
     public enum CheckType { CHECK_NO, CHECK_ALL, CHECK_SOME }
     public CheckType checkChange = CheckType.CHECK_NO;
     public ImSet<Property<?>> checkProperties = null;
 
-    public Collection<MaxChangeProperty<?, T>> getMaxChangeProperties(Collection<Property> properties) {
-        Collection<MaxChangeProperty<?, T>> result = new ArrayList<>();
-        for (Property<?> property : properties)
-            if (depends(property, this))
-                result.add(property.getMaxChangeProperty(this));
-        return result;
+    public ImOrderSet<ConstraintCheckChangeProperty<?, T>> getCheckProperties() {
+        return getBusinessLogics().getCheckConstrainedProperties(this).
+                    filterOrder(property -> depends(property, this)).
+                    mapOrderSetValues(property -> ((Property<?>)property).getMaxChangeProperty(Property.this));
     }
 
     public PropertyChanges getChangeModifier(PropertyChanges changes, boolean toNull) {
@@ -1580,27 +1574,87 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
-    @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
+    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> editAction, PropertyMapImplement<?, T> implement) {
+        return PropertyFact.createJoinAction(new ActionImplement<>(editAction.action, MapFact.singleton(editAction.listInterfaces.single(), implement)));
+    }
+    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> editAction) {
+        return createJoinAction(editAction, getImplement());
+    }
+    private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultEditObjectAction(BaseLogicsModule lm) {
+        // formEdit(property(...))
+        return createJoinAction(lm.getFormEdit());
+    }
+    private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultAsyncUpdateAction(BaseLogicsModule lm, Property<X> filter, PropertyMapImplement<?, T> resultValue) {
+        // IF NOT requestCanceled() ASYNCUPDATE requestedProperty(...)
+        ActionMapImplement<?, T> asyncUpdate = createJoinAction(lm.addAsyncUpdateAProp(), PropertyFact.createJoin(new PropertyImplement<>(filter, MapFact.singleton(filter.interfaces.single(), resultValue))));
+        return PropertyFact.createIfAction(SetFact.EMPTY(), PropertyFact.createNot(lm.getRequestCanceledProperty().getImplement()), asyncUpdate, null);
+    }    
+    private <X extends PropertyInterface> Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultMainInputAction(BaseLogicsModule lm) {
+        ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
+        Property targetProp = lm.getRequestedValueProperty(valueClass);
+
+        ActionMapImplement<?, T> action;
+        if(valueClass instanceof CustomClass) {
+            // DIALOG LIST valueCLass INPUT object=property(...) CONSTRAINTFILTER
+            CustomClass customClass = (CustomClass) valueClass;
+            
+            // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
+            ClassFormEntity dialogForm = customClass.getDialogForm(lm);
+            ImOrderSet<ConstraintCheckChangeProperty<?, T>> checkProperties = getCheckProperties();
+            if(checkProperties.isEmpty()) { // optimization
+                action = createJoinAction(lm.addInputAProp(dialogForm.form, dialogForm.object, targetProp));
+            } else {
+                LP<T> lp = new LP<>(this);
+                action = ((LA<X>) lm.addContextInputAProp(dialogForm.form, dialogForm.object, targetProp, lp, checkProperties)).getImplement(lp.listInterfaces);
+            }    
+        } else
+            // INPUT valueCLass
+            action = lm.addInputAProp((DataClass) valueClass, targetProp, false).action.getImplement();
+
+        return new Pair<>(action, targetProp.getImplement()); 
+    }
+    private Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultInputAction(BaseLogicsModule lm, Property filterProperty) {
+        MList<ActionMapImplement<?, T>> mList = ListFact.mList();
+
+        // adaptive canBeChanged, to provide better ergonomics for abstracts
+        mList.add(PropertyFact.createCheckCanBeChangedAction(interfaces, getImplement()));
+
+        // main input
+        Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> input = getDefaultMainInputAction(lm);
+        mList.add(input.first);
+
+        // we need to update edited value to provide WYSIWYG
+        if(filterProperty != null)
+            mList.add(getDefaultAsyncUpdateAction(lm, filterProperty, input.second));
+
+        ActionMapImplement<?, T> exInputAction = PropertyFact.createListAction(interfaces, mList.immutableList());
+        return new Pair<>(exInputAction, input.second);
+    }
+
+    @IdentityStrongLazy // STRONG for using in security policy
     public ActionMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty) {
-        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
-        if(interfaceClasses.size() < interfaces.size()) // не все классы есть
-            return null;
+//        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
+//        if(interfaceClasses.size() < interfaces.size()) // не все классы есть
+//            return null;
 
         if(editActionSID.equals(ServerResponse.CHANGE_WYS)) // like GROUP_CHANGE will be proceeded in PropertyDrawEntity
             return null;
 
+        BaseLogicsModule lm = getBusinessLogics().LM;
+
         if(editActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             if (!(getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)) 
                 return null;
-        } else {
-            if (!canBeChanged()) 
-                return null;
+
+            return getDefaultEditObjectAction(lm);
         }
 
-        ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
-        ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultChangeAction<T> changeAction = new DefaultChangeAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, editActionSID, filterProperty);
-        return changeAction.getImplement(listInterfaces);
+        if (!canBeChanged()) // optimization
+            return null;
+        
+        Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> input = getDefaultInputAction(lm, filterProperty);
+        return PropertyFact.createRequestAction(interfaces, input.first, 
+                                PropertyFact.createSetAction(interfaces, getImplement(), input.second), null); // INPUT scripted input generates FOR, but now it's not important
     }
 
     @Override
@@ -1933,15 +1987,15 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return false;
     }
 
-    public DrillDownFormEntity getDrillDownForm(LogicsModule LM, String canonicalName) {
-        DrillDownFormEntity drillDown = createDrillDownForm(LM, canonicalName);
+    public DrillDownFormEntity getDrillDownForm(LogicsModule LM) {
+        DrillDownFormEntity drillDown = createDrillDownForm(LM);
         if (drillDown != null) {
-            LM.addFormEntity(drillDown);
+            LM.addAutoFormEntity(drillDown);
         }
         return drillDown;
     }
 
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return null;
     }
 

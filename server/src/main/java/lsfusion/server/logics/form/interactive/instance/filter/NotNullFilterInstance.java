@@ -13,7 +13,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
@@ -22,43 +21,22 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Set;
 
 public class NotNullFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
 
-    private final boolean checkChange;
-
     public NotNullFilterInstance(PropertyObjectInstance<P> property) {
         this(property, false);
     }
 
-    public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean checkChange) {
-        this(property, checkChange, false);
-    }
-
-    public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean checkChange, boolean resolveAdd) {
+    public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd) {
         super(property, resolveAdd);
-        this.checkChange = checkChange;
-    }
-
-    public NotNullFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        super(inStream, form);
-        checkChange = false;
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return property.getExpr(mapKeys, modifier, reallyChanged, mUsedProps).getWhere();
-    }
-
-    @Override
-    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
-        if(checkChange && Property.depends(property.property, toChange))
-            return BaseUtils.immutableCast(Collections.singleton(property.getValueImplement()));
-        return super.getResolveChangeProperties(toChange);
     }
 
     @Override

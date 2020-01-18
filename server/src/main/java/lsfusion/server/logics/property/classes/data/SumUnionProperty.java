@@ -69,9 +69,8 @@ public class SumUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new SumUnionDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.sum.union}"), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new SumUnionDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.sum.union}"), this, LM
         );
     }
 

@@ -21,13 +21,14 @@ import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.filter.CompareInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
 
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.function.Function;
 
-public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValuesContext<T> implements CompareInstance {
+public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValuesContext<T> implements CompareInstance, PropertyObjectInterfaceInstance {
 
     public abstract String getString(SQLSyntax syntax);
 
@@ -37,6 +38,10 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     public abstract Expr getStaticExpr();
 
     public abstract Object getValue();
+
+    public GroupObjectInstance getApplyObject() {
+        return null;
+    }
 
     public static ObjectValue getValue(Object value, ConcreteClass objectClass) {
         if(value==null)
@@ -76,7 +81,10 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
         return false;
     }
 
-    
+    public ObjectValue getObjectValue() {
+        return this;
+    }
+
     public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
     public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
     public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden, ImSet<GroupObjectInstance> groupObjects) {return false;}

@@ -192,9 +192,8 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new GroupDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.group}." + getGroupType().name().toLowerCase()), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new GroupDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.group}." + getGroupType().name().toLowerCase()), this, LM
         );
     }
 

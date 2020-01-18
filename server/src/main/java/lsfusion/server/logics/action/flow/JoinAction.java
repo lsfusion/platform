@@ -34,6 +34,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
         super(caption, listInterfaces.size());
 
         action = PropertyFact.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
+        assert checkProps(action.mapping.values());
 
         finalizeInit();
     }
@@ -41,7 +42,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ImFilterValueMap<T, ObjectValue> mvReadValues = action.mapping.mapFilterValues();
         for (int i=0,size=action.mapping.size();i<size;i++)
-            mvReadValues.mapValue(i, action.mapping.getValue(i).readClasses(context, context.getKeys()));
+            mvReadValues.mapValue(i, action.mapping.getValue(i).readClasses(context));
         action.action.execute(context.override(mvReadValues.immutableValue(), action.mapping));
         return FlowResult.FINISH;
     }

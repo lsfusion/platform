@@ -8,6 +8,7 @@ import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.translate.MapValuesTranslate;
+import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.parse.AbstractParseInterface;
 import lsfusion.server.data.type.parse.ParseInterface;
@@ -15,6 +16,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 
 public class NullValue extends ObjectValue<NullValue> {
@@ -22,6 +25,16 @@ public class NullValue extends ObjectValue<NullValue> {
     private NullValue() {
     }
     public static NullValue instance = new NullValue();
+
+    @Override
+    public AndClassSet getClassSet(ImSet<GroupObjectInstance> gridGroups) {
+        return null;
+    }
+
+    @Override
+    public Type getType() {
+        return AbstractType.getUnknownTypeNull();
+    }
 
     public String getString(SQLSyntax syntax) {
         return SQLSyntax.NULL;

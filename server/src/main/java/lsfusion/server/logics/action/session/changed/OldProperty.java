@@ -85,9 +85,8 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new OldDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.old}"), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new OldDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.old}"), this, LM
         );
     }
 

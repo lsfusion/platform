@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.open.stat;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
@@ -34,9 +35,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, FormPrintType> {
-    private final boolean hasPrinter;
-    private final boolean hasSheetName;
-    private final boolean hasPassword;
+
+    private final ClassPropertyInterface printerInterface;
+    private final ClassPropertyInterface sheetNameInterface;
+    private final ClassPropertyInterface passwordInterface;
 
     private final LP formPageCount;
 
@@ -46,6 +48,16 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
 
     protected final LP<?> exportFile; // nullable
 
+    private static ValueClass[] getExtraParams(ValueClass printer, ValueClass sheetName, ValueClass password) {
+        List<ValueClass> params = new ArrayList<>();
+        if(printer != null)
+            params.add(printer);
+        if(sheetName != null)
+            params.add(sheetName);
+        if(password != null)
+            params.add(password);
+        return params.toArray(new ValueClass[params.size()]);
+    }
     public PrintAction(LocalizedString caption,
                        FormSelector<O> form,
                        final ImList<O> objectsToSet,
@@ -55,13 +67,13 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        Integer top,
                        LP exportFile,
                        LP formPageCount, boolean removeNullsAndDuplicates,
-                       boolean hasPrinter, boolean hasSheetName, boolean hasPassword,
-                       ValueClass... valueClasses) {
-        super(caption, form, objectsToSet, nulls, staticType, top, valueClasses);
+                       ValueClass printer, ValueClass sheetName, ValueClass password) {
+        super(caption, form, objectsToSet, nulls, staticType, top, getExtraParams(printer, sheetName, password));
 
-        this.hasPrinter = hasPrinter;
-        this.hasSheetName = hasSheetName;
-        this.hasPassword = hasPassword;
+        ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
+        this.passwordInterface = password != null ? orderInterfaces.get(orderInterfaces.size() - 1) : null;
+        this.sheetNameInterface = sheetName != null ? orderInterfaces.get(orderInterfaces.size() - 1 - (password != null ? 1 : 0)) : null;
+        this.printerInterface = printer != null ? orderInterfaces.get(orderInterfaces.size() - 1 - (password != null ? 1 : 0) - (sheetName != null ? 1 : 0)) : null;
 
         this.formPageCount = formPageCount;
 
@@ -89,27 +101,14 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
             StaticFormReportManager formReportManager = new StaticFormReportManager(form, mapObjectValues, context);
             ReportGenerationData reportData = formReportManager.getReportData(staticType, selectTop);
 
-            String sheetName = null;
-            if(hasSheetName) {
-                ObjectValue sheetNameObject = context.getKeys().get(getOrderInterfaces().get(context.getKeyCount() - (hasPassword ? 2 : 1)));
-                sheetName = sheetNameObject instanceof DataObject ? (String) sheetNameObject.getValue() : null;
-            }
-
-            String password = null;
-            if(hasPassword) {
-                ObjectValue passwordObject = context.getKeys().get(getOrderInterfaces().get(context.getKeyCount() - 1));
-                password = passwordObject instanceof DataObject ? (String) passwordObject.getValue() : null;
-            }
+            String sheetName = sheetNameInterface != null ? (String) context.getKeyObject(sheetNameInterface) : null;
+            String password = passwordInterface != null ? (String) context.getKeyObject(passwordInterface) : null;
 
             if (exportFile != null)
                 writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password));
             else {
                 //printer and sheet/password options doesn't intersect
-                String printer = null;
-                if(hasPrinter) {
-                    ObjectValue printerObject = context.getKeys().get(getOrderInterfaces().get(context.getKeyCount() - 1));
-                    printer = printerObject instanceof DataObject ? (String) printerObject.getValue() : null;
-                }
+                String printer = printerInterface != null ? (String)context.getKeyObject(printerInterface) : null;
                 List<ReportPath> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
                 Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, form.getSID(), syncType, reportData, staticType, printer, SystemProperties.inDevMode, password, sheetName));
                 formPageCount.change(pageCount, context);

@@ -7,7 +7,6 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -52,7 +51,7 @@ public class DefaultChangeAggAction<P extends PropertyInterface> extends AroundA
         if (type instanceof DataClass) {
             readValue = context.requestUserData((DataClass) type, null);
         } else {
-            context.requestUserObject(
+            context.inputUserObject(
                     context.getFormFlowInstance().createObjectDialogRequest((CustomClass) aggProp.getValueClass(ClassType.editValuePolicy), context.stack)
             );
         }

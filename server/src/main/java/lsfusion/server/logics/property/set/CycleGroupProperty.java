@@ -18,7 +18,7 @@ import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
-import lsfusion.server.logics.form.interactive.property.checked.MaxChangeProperty;
+import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -71,7 +71,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     @Override
     protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         if(toChange!=null)
-            return MaxChangeProperty.getUsedChanges(this,toChange, propChanges);
+            return ConstraintCheckChangeProperty.getUsedChanges(this,toChange, propChanges);
         else
             return SetFact.EMPTY();
     }

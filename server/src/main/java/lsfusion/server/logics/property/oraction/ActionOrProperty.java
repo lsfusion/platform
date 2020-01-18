@@ -45,6 +45,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -456,9 +457,13 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return getSessionCalcDepends(false).mapMergeSetValues(SessionProperty::getOldProperty);
     }
 
-    // не сильно структурно поэтому вынесено в метод
+    // hack, that's why in separate methods
     public <V> ImRevMap<T, V> getMapInterfaces(final ImOrderSet<V> list) {
         return getOrderInterfaces().mapOrderRevValues((i, value) -> list.get(i));
+    }
+    public <V> ImRevMap<T, V> getMapInterfaces(final ImOrderSet<V> list, int offset) {
+        ImOrderSet<T> orderInterfaces = getOrderInterfaces();
+        return orderInterfaces.subOrder(offset, orderInterfaces.size()).mapOrderRevValues((i, value) -> list.get(i));
     }
 
     public boolean drillDownInNewSession() {
@@ -820,5 +825,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     // важно кэшировать так как equals'ов пока нет, а они важны (в общем то только для Stored, и для RemoveClasses )
     public ApplyGlobalEvent getApplyEvent() {
         return null;        
+    }
+
+    protected boolean checkProps(ImCol<? extends PropertyInterfaceImplement<T>> col) {
+        return col.filterCol(element -> !interfaces.containsAll(element.getInterfaces().toSet())).isEmpty();
+    }
+    protected boolean checkActions(ImCol<ActionMapImplement<?, T>> col) {
+        return col.filterCol(element -> !interfaces.containsAll(element.mapping.valuesSet())).isEmpty();
     }
 }

@@ -15,8 +15,8 @@ public class OldDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyInt
     private PropertyDrawEntity propertyDraw;
     private PropertyDrawEntity oldPropertyDraw;
 
-    public OldDrillDownFormEntity(String canonicalName, LocalizedString caption, OldProperty property, LogicsModule LM) {
-        super(canonicalName, caption, property, LM);
+    public OldDrillDownFormEntity(LocalizedString caption, OldProperty property, LogicsModule LM) {
+        super(caption, property, LM);
     }
 
     @Override

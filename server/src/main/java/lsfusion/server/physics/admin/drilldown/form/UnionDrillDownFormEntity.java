@@ -25,8 +25,8 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
     protected List<PropertyDrawEntity> operandProperties;
     protected PropertyDrawEntity implPropertyDraw;
 
-    public UnionDrillDownFormEntity(String canonicalName, LocalizedString caption, UnionProperty property, LogicsModule LM) {
-        super(canonicalName, caption, property, LM);
+    public UnionDrillDownFormEntity(LocalizedString caption, UnionProperty property, LogicsModule LM) {
+        super(caption, property, LM);
     }
 
     @Override

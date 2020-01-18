@@ -50,7 +50,9 @@ public class ListAction extends ListCaseAction {
     public <I extends PropertyInterface> ListAction(LocalizedString caption, ImOrderSet<I> innerInterfaces, ImList<ActionMapImplement<?, I>> actions, ImSet<SessionDataProperty> localsInScope)  {
         super(caption, false, innerInterfaces);
 
-        this.actions = PropertyFact.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
+        ImList<ActionMapImplement<?, PropertyInterface>> mappedActions = PropertyFact.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
+        this.actions = mappedActions;
+        assert checkActions(mappedActions.getCol());
         this.localsInScope = localsInScope;
 
         finalizeInit();

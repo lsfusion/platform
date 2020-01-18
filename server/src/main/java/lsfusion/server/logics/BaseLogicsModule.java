@@ -551,7 +551,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @IdentityStrongLazy
     public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property messageProperty) { // messageProperty - nullable
         PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, getRecognizeGroup());
-        addFormEntity(form);
+        addAutoFormEntity(form);
         return form;
     }
 
@@ -879,18 +879,20 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
     
     public <R> R pushRequest(ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        dropRequestCanceled(env);
         return pushPopRequestValue(true, env, callable);
     }
 
     public <R> R pushPopRequestValue(boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        LP requestPushed = getRequestPushedProperty();
-        Object prevValue = requestPushed.read(env);
-        requestPushed.change(push ? true : null, env);
+        return pushRequestValue(getRequestPushedProperty(), push, env, callable);
+    }
+
+    public <R> R pushRequestValue(LP requestProperty, boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        Object prevValue = requestProperty.read(env);
+        requestProperty.change(push ? true : null, env);
         try {
             return callable.call();
         } finally {
-            requestPushed.change(prevValue, env);
+            requestProperty.change(prevValue, env);
         }
     }
 
@@ -908,6 +910,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public <R> R pushRequestedValue(ObjectValue value, Type type, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
         if(value != null) {
+            dropRequestCanceled(env);
             getRequestedValueProperty().write(type, value, env);
             return pushRequest(env, callable);
         } else

@@ -3,6 +3,9 @@ package lsfusion.server.logics.form.stat.struct.export.hierarchy.xml;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.TextClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
@@ -22,7 +25,7 @@ import java.io.PrintWriter;
 public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchicalAction<XMLNode, O> {
     
     public ExportXMLAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                           FormIntegrationType staticType, LP exportFile, Integer selectTop, String charset, Property root, Property tag) {
+                           FormIntegrationType staticType, LP exportFile, Integer selectTop, String charset, ValueClass root, ValueClass tag) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile, selectTop, charset, root, tag);
     }
 

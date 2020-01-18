@@ -482,9 +482,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
-        return new CaseUnionDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.case.union}"), this, LM
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return new CaseUnionDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.case.union}"), this, LM
         );
     }
 
