@@ -100,6 +100,7 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.Settings;
@@ -1826,7 +1827,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     // костыль для email
     public static <I extends PropertyInterface> ValueClass[] getCommonClasses(ImList<I> mapInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> props) {
         ValueClass[] result = new ValueClass[mapInterfaces.size()];
-        for(lsfusion.server.logics.property.oraction.PropertyInterfaceImplement prop : props) {
+        for(ActionOrPropertyInterfaceImplement prop : props) {
             ImMap<I, ValueClass> propClasses;
             if(prop instanceof PropertyMapImplement) {
                 propClasses = ((PropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);

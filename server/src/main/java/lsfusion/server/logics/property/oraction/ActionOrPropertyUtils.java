@@ -119,7 +119,7 @@ public class ActionOrPropertyUtils {
         return mResult.immutableList();
     }
 
-    private static <T extends PropertyInterface> ImList<PropertyInterfaceImplement> mapLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
+    private static <T extends PropertyInterface> ImList<ActionOrPropertyInterfaceImplement> mapLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
         return linearImpl.mapListValues((LI value) -> value.map(interfaces));
     }
 
@@ -127,7 +127,7 @@ public class ActionOrPropertyUtils {
         return linearImpl.mapListValues((Function<LI, PropertyObjectInterfaceImplement<T>>) value -> value.mapObject(interfaces));
     }
 
-    public static <T extends PropertyInterface> ImList<PropertyInterfaceImplement> readImplements(ImOrderSet<T> listInterfaces, Object... params) {
+    public static <T extends PropertyInterface> ImList<ActionOrPropertyInterfaceImplement> readImplements(ImOrderSet<T> listInterfaces, Object... params) {
         return mapLI(readLI(params), listInterfaces);
     }
 
@@ -208,7 +208,7 @@ public class ActionOrPropertyUtils {
 
     // Linear Implement
     static abstract class LI {
-        abstract <T extends PropertyInterface<T>> PropertyInterfaceImplement map(ImOrderSet<T> interfaces);
+        abstract <T extends PropertyInterface<T>> ActionOrPropertyInterfaceImplement map(ImOrderSet<T> interfaces);
 
         abstract <T> PropertyObjectInterfaceImplement<T> mapObject(ImOrderSet<T> interfaces);
 
@@ -246,7 +246,7 @@ public class ActionOrPropertyUtils {
             this.mapInt = new int[lp.listInterfaces.size()];
         }
 
-        <T extends PropertyInterface<T>> PropertyInterfaceImplement map(final ImOrderSet<T> interfaces) {
+        <T extends PropertyInterface<T>> ActionOrPropertyInterfaceImplement map(final ImOrderSet<T> interfaces) {
             ImRevMap<P, T> mapping = lp.listInterfaces.mapOrderRevValues(i -> interfaces.get(mapInt[i] - 1));
 
             if(lp.getActionOrProperty() instanceof Action)

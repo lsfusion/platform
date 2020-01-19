@@ -121,6 +121,7 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.ValueProperty;
@@ -776,7 +777,7 @@ public abstract class LogicsModule {
 
     protected LA addTryAProp(Group group, LocalizedString caption, boolean hasCatch, boolean hasFinally, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         assert readImplements.size() >= 1 && readImplements.size() <= 3;
 
         ActionMapImplement<?, PropertyInterface> tryAction = (ActionMapImplement<?, PropertyInterface>) readImplements.get(0);
@@ -797,7 +798,7 @@ public abstract class LogicsModule {
 
     protected LA addIfAProp(Group group, LocalizedString caption, boolean not, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         assert readImplements.size() >= 2 && readImplements.size() <= 3;
 
         return addAction(group, new LA(CaseAction.createIf(caption, not, listInterfaces, (PropertyInterfaceImplement<PropertyInterface>) readImplements.get(0),
@@ -808,7 +809,7 @@ public abstract class LogicsModule {
 
     protected LA addCaseAProp(boolean isExclusive, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
 
         MList<ActionCase<PropertyInterface>> mCases = ListFact.mList();
         for (int i = 0; i*2+1 < readImplements.size(); i++) {
@@ -822,7 +823,7 @@ public abstract class LogicsModule {
 
     protected LA addMultiAProp(boolean isExclusive, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
 
         MList<ActionMapImplement> mCases = ListFact.mList();
         for (int i = 0; i < readImplements.size(); i++) {
@@ -840,7 +841,7 @@ public abstract class LogicsModule {
 
     protected LA addForAProp(LocalizedString caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean autoSet, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
-        ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(innerInterfaces, params);
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(innerInterfaces, params);
 
         int implCnt = readImplements.size();
 
@@ -942,7 +943,7 @@ public abstract class LogicsModule {
 
     protected LA addNewThreadAProp(Group group, LocalizedString caption, boolean withConnection, boolean hasPeriod, boolean hasDelay, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         PropertyInterfaceImplement connection = withConnection ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement period = hasPeriod ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement delay = hasDelay ? (PropertyInterfaceImplement) readImplements.get(hasPeriod ? 2 : 1) : null;
@@ -951,7 +952,7 @@ public abstract class LogicsModule {
 
     protected LA addNewExecutorAProp(Group group, LocalizedString caption, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         return addAction(group, new LA(new NewExecutorAction(caption, listInterfaces,
                 (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1))));
     }
@@ -960,7 +961,7 @@ public abstract class LogicsModule {
 
     protected LA addRequestAProp(Group group, boolean hasDo, LocalizedString caption, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         
         ActionMapImplement<?, PropertyInterface> doAction = hasDo ? (ActionMapImplement<?, PropertyInterface>) readImplements.get(1) : null;
         ActionMapImplement<?, PropertyInterface> elseAction =  readImplements.size() == (2 + (hasDo ? 1 : 0)) ? (ActionMapImplement<?, PropertyInterface>) readImplements.get(hasDo ? 2 : 1) : null;
@@ -1974,7 +1975,7 @@ public abstract class LogicsModule {
     public <T extends PropertyInterface> void addEventAction(Event event, boolean descending, boolean ordersNotNull, int noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
 
-        ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> listImplements = readImplements(innerInterfaces, params);
+        ImList<ActionOrPropertyInterfaceImplement> listImplements = readImplements(innerInterfaces, params);
         int implCnt = listImplements.size();
 
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = BaseUtils.immutableCast(listImplements.subList(2, implCnt - noInline).toOrderSet().toOrderMap(descending));

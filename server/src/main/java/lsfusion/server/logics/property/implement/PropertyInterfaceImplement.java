@@ -28,11 +28,12 @@ import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public interface PropertyInterfaceImplement<P extends PropertyInterface> extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement {
+public interface PropertyInterfaceImplement<P extends PropertyInterface> extends ActionOrPropertyInterfaceImplement {
 
     <T extends PropertyInterface> PropertyInterfaceImplement<T> map(ImRevMap<P, T> map);
 

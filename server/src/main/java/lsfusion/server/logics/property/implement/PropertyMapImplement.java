@@ -40,6 +40,7 @@ import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
@@ -270,7 +271,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return null;
     }
     
-    public boolean equalsMap(lsfusion.server.logics.property.oraction.PropertyInterfaceImplement object) {
+    public boolean equalsMap(ActionOrPropertyInterfaceImplement object) {
         if(!(object instanceof PropertyMapImplement))
             return false;
 

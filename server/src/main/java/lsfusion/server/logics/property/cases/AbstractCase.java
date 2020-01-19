@@ -4,7 +4,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -24,13 +23,14 @@ import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.id.resolve.SignatureMatcher;
 
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class AbstractCase<P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> {
+public abstract class AbstractCase<P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, M extends ActionOrPropertyInterfaceImplement> {
     
     public final W where;    
     public final M implement;
@@ -53,22 +53,22 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
 
 
     private static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
-            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, A extends AbstractCase<P, W, M>> List<ResolveClassSet> getSignature(A aCase) {
+            M extends ActionOrPropertyInterfaceImplement, A extends AbstractCase<P, W, M>> List<ResolveClassSet> getSignature(A aCase) {
         return aCase.signature;
     }
 
     private static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
-            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, A extends AbstractCase<P, W, M>> ClassWhere<P> getClasses(A aCase) {
+            M extends ActionOrPropertyInterfaceImplement, A extends AbstractCase<P, W, M>> ClassWhere<P> getClasses(A aCase) {
         return ((PropertyMapImplement<?, P>) aCase.where).mapClassWhere(ClassType.casePolicy);
     }
 
     private static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
-            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>> ClassWhere<P> getClasses(F aCase) {
+            M extends ActionOrPropertyInterfaceImplement, F extends Case<P, W, M>> ClassWhere<P> getClasses(F aCase) {
         return ((PropertyMapImplement<?, P>) aCase.where).mapClassWhere(ClassType.casePolicy);
     }
     
     private interface AbstractWrapper<P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
-            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>> {
+            M extends ActionOrPropertyInterfaceImplement, F extends Case<P, W, M>> {
         
         F proceedSet(ImSet<F> elements);
 
@@ -76,7 +76,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
     }
     
     public static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, 
-            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, Function<A, F> translator, final AbstractWrapper<P, W, M, F> wrapper, final Function<M, Graph<F>> abstractReader, boolean areClassCases, boolean explicitExclusive) {
+            M extends ActionOrPropertyInterfaceImplement, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, Function<A, F> translator, final AbstractWrapper<P, W, M, F> wrapper, final Function<M, Graph<F>> abstractReader, boolean areClassCases, boolean explicitExclusive) {
         ImList<A> list = cases.getList();
         if(!areClassCases || explicitExclusive) { // если не делать explicitExclusive вместо ошибки, начинает работать как если бы exclusive'а не было и платформа сама бы выбирала (впрочем обратная ветка уже работает стабильно)
             return new FinalizeResult<>(list.mapListValues(translator), explicitExclusive, null);
@@ -271,7 +271,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
     }
 
     private static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
-            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>> PropertyMapImplement<?, P> createUnionWhere(ImSet<P> interfaces, ImList<F> aCase, boolean isExclusive) {
+            M extends ActionOrPropertyInterfaceImplement, F extends Case<P, W, M>> PropertyMapImplement<?, P> createUnionWhere(ImSet<P> interfaces, ImList<F> aCase, boolean isExclusive) {
         
         // собираем where и делаем их or
         return PropertyFact.createUnion(interfaces, aCase.mapListValues((F value) -> value.where), isExclusive);

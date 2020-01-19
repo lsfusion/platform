@@ -36,8 +36,6 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 
-import java.sql.SQLException;
-
 public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>, Comparable<P> {
 
     public PropertyInterface() {
@@ -175,7 +173,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return null;
     }
 
-    public boolean equalsMap(lsfusion.server.logics.property.oraction.PropertyInterfaceImplement object) {
+    public boolean equalsMap(ActionOrPropertyInterfaceImplement object) {
         return equals(object);
     }
 

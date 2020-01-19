@@ -24,12 +24,13 @@ import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 
 import java.sql.SQLException;
 
-public class ActionMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements lsfusion.server.logics.property.oraction.PropertyInterfaceImplement<T> {
+public class ActionMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements ActionOrPropertyInterfaceImplement<T> {
 
     public Action<P> action;
     public ImRevMap<P, T> mapping;
@@ -118,7 +119,7 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         return null;        
     }
 
-    public boolean equalsMap(lsfusion.server.logics.property.oraction.PropertyInterfaceImplement object) {
+    public boolean equalsMap(ActionOrPropertyInterfaceImplement object) {
         if(!(object instanceof ActionMapImplement))
             return false;
 

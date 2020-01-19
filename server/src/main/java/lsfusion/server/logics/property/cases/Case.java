@@ -1,9 +1,10 @@
 package lsfusion.server.logics.property.cases;
 
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class Case<P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> {
+public class Case<P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, M extends ActionOrPropertyInterfaceImplement> {
 
     public final W where;
     public final M implement;
