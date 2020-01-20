@@ -360,7 +360,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         this.manageSession = adjManageSession;
-        environmentIncrement = createEnvironmentIncrement(isSync, isFloat, isExternal, adjNoCancel, adjManageSession, showDrop);
+        environmentIncrement = createEnvironmentIncrement(isSync || adjManageSession, isFloat, isExternal, adjNoCancel, adjManageSession, showDrop);
 
         MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
         for (GroupObjectInstance groupObject : groupObjects) {
@@ -439,9 +439,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    private static IncrementChangeProps createEnvironmentIncrement(boolean isSync, boolean isFloat, boolean isExternal, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
+    private static IncrementChangeProps createEnvironmentIncrement(boolean showOk, boolean isFloat, boolean isExternal, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
         IncrementChangeProps environment = new IncrementChangeProps();
-        environment.add(FormEntity.isSync, PropertyChange.STATIC(isSync));
+        environment.add(FormEntity.showOk, PropertyChange.STATIC(showOk));
         environment.add(FormEntity.isFloat, PropertyChange.STATIC(isFloat));
         environment.add(FormEntity.isAdd, PropertyChange.STATIC(isAdd));
         environment.add(FormEntity.manageSession, PropertyChange.STATIC(manageSession));
