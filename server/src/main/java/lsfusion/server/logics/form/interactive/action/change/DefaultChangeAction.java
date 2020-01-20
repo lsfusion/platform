@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.AsyncGetRemoteChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.action.UpdateEditValueClientAction;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -78,22 +79,25 @@ public class DefaultChangeAction<P extends PropertyInterface> extends AbstractDe
 //                                formInstance.createObjectEditorDialogRequest(propertyValues, context.stack)
 //                        );
             } else {
-                changeValue = context.requestUserObject(
-                        formInstance.createChangeEditorDialogRequest(propertyValues, context.getChangingPropertyToDraw(), filterProperty, context.stack)
-                );
+                // null если canceled
+                changeValue = context.requestUser(ObjectType.instance, () -> {
+                    ObjectValue resultValue = ThreadLocalContext.requestUserObject(formInstance.createChangeEditorDialogRequest(propertyValues, context.getChangingPropertyToDraw(), filterProperty, context.stack), context.stack);
 
-                if (filterProperty != null && changeValue != null) {
-                    Object updatedValue = filterProperty.read(
-                            context.getSession().sql, MapFact.singleton(filterProperty.interfaces.single(), changeValue), context.getModifier(), context.getQueryEnv()
-                    );
+                    if (filterProperty != null && resultValue != null) {
+                        Object updatedValue = filterProperty.read(
+                                context.getSession().sql, MapFact.singleton(filterProperty.interfaces.single(), resultValue), context.getModifier(), context.getQueryEnv()
+                        );
 
-                    try {
-                        context.delayUserInteraction(new UpdateEditValueClientAction(BaseUtils.serializeObject(updatedValue)));
-                    } catch (IOException e) {
-                        Throwables.propagate(e);
+                        try {
+                            context.delayUserInteraction(new UpdateEditValueClientAction(BaseUtils.serializeObject(updatedValue)));
+                        } catch (IOException e) {
+                            Throwables.propagate(e);
+                        }
+                        context.delayUserInteraction(new AsyncGetRemoteChangesClientAction());
                     }
-                    context.delayUserInteraction(new AsyncGetRemoteChangesClientAction());
-                }
+                    
+                    return resultValue;
+                });
             }
         } else {
             throw new RuntimeException("not supported");
