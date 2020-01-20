@@ -45,7 +45,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             }
 
             String filterID = createFilter(getMarkerColor(object));
-            updateMarker(marker, object, filterID);
+            updateMarker(map, marker, object, filterID);
         }
         for(Map.Entry<GGroupObjectValue, JavaScriptObject> oldMarker : oldMarkers.entrySet()) {
             removeMarker(oldMarker.getValue());
@@ -83,7 +83,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         marker.remove();
     }-*/;
 
-    protected native void appentSVG(JavaScriptObject map, com.google.gwt.dom.client.Element svg)/*-{
+    protected native void appendSVG(JavaScriptObject map, com.google.gwt.dom.client.Element svg)/*-{
         map._container.appendChild(svg)
     }-*/;
 
@@ -117,13 +117,13 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
                 svgFilterElement.appendChild(svgfeColorMatrixElement);
                 svgElement.appendChild(svgFilterElement);
 
-                appentSVG(map, svgElement.getElement());
+                appendSVG(map, svgElement.getElement());
             }
         }
         return svgID;
     }
     
-    protected native void updateMarker(JavaScriptObject marker, JavaScriptObject element, String filterID)/*-{
+    protected native void updateMarker(JavaScriptObject map, JavaScriptObject marker, JavaScriptObject element, String filterID)/*-{
         var L = $wnd.L;
 
         marker.setLatLng([element.latitude != null ? element.latitude : 0, element.longitude != null ? element.longitude : 0]);
@@ -131,7 +131,14 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
                 iconUrl : element.icon
                 })) : new L.Icon.Default());
         if (filterID) {
-            marker.getElement().style.filter = "url(#" + filterID + ")";
+            var filterStyleValue = "url(#" + filterID + ")";
+            if (map._loaded) {
+                marker._icon.style.filter = filterStyleValue;
+            } else { // marker._icon is undefined when the map is not loaded
+                map.on('load', function (e) {
+                    marker._icon.style.filter = filterStyleValue;
+                });
+            }
         }
     }-*/;
 
@@ -148,6 +155,8 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
     }
 
     protected native void resized(JavaScriptObject map)/*-{
-        map._onResize();
+        if (map) {
+            map._onResize();
+        }
     }-*/;
 }
