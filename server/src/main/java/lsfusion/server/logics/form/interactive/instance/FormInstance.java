@@ -2472,12 +2472,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public List<ReportPath> getCustomReportPathList() throws SQLException, SQLHandledException {
-        FormReportManager newFormManager = new StaticFormReportManager(entity, MapFact.EMPTY(), null); // можно теоретически interactiveFormManager использовать, но он в RemoteForm, а переносить его сюда, не хочется создавать такую зависимость 
+        FormReportManager newFormManager = new StaticFormReportManager(entity, MapFact.EMPTY(), null, SetFact.EMPTY()); // можно теоретически interactiveFormManager использовать, но он в RemoteForm, а переносить его сюда, не хочется создавать такую зависимость 
         return newFormManager.getCustomReportPathList(FormPrintType.PRINT);
     }
 
     public static List<ReportPath> saveAndGetCustomReportPathList(FormEntity formEntity, boolean recreate) throws SQLException, SQLHandledException {
-        FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.EMPTY(), null);
+        FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.EMPTY(), null, SetFact.EMPTY());
         return newFormManager.saveAndGetCustomReportPathList(FormPrintType.PRINT, recreate);
     }
 }

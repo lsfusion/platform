@@ -44,6 +44,7 @@ import lsfusion.server.logics.form.stat.GroupObjectHierarchy;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
+import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
@@ -395,33 +396,30 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImSet<FilterEntity>> getGroupFixedFilters(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return getFixedFilters().group(new BaseUtils.Group<GroupObjectEntity, FilterEntity>() {
-            @Override
-            public GroupObjectEntity group(FilterEntity key) {
-                GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
-                if (groupObject == null) 
-                    return GroupObjectEntity.NULL;
-                return groupObject;
-            }
+        return getGroupFilters(getFixedFilters(), excludeGroupObjects);
+    }
+
+    public <T extends FilterEntityInstance> ImMap<GroupObjectEntity, ImSet<T>> getGroupFilters(ImSet<T> filters, ImSet<GroupObjectEntity> excludeGroupObjects) {
+        return filters.group(key -> {
+            GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
+            return applyObject == null ? GroupObjectEntity.NULL : applyObject;
         });
     }
-    
+
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects, final boolean supportGroupColumns) {
-        return getStaticPropertyDrawsList().groupOrder(new BaseUtils.Group<GroupObjectEntity, PropertyDrawEntity>() {
-            public GroupObjectEntity group(PropertyDrawEntity key) {
-                GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
-                return applyObject == null ? GroupObjectEntity.NULL : applyObject;
-            }});
+        return getStaticPropertyDrawsList().groupOrder(key -> {
+            GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
+            return applyObject == null ? GroupObjectEntity.NULL : applyObject;
+        });
     }
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getAllGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects, final boolean supportGroupColumns) {
-        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).groupOrder(new BaseUtils.Group<GroupObjectEntity, PropertyDrawEntity>() {
-            public GroupObjectEntity group(PropertyDrawEntity key) {
-                GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
-                return applyObject == null ? GroupObjectEntity.NULL : applyObject;
-            }});
+        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).groupOrder(key -> {
+            GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
+            return applyObject == null ? GroupObjectEntity.NULL : applyObject;
+        });
     }
 
     public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {

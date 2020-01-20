@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.open.interactive;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -8,14 +7,12 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
@@ -28,14 +25,11 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.function.Function;
 
 public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<O> {
 
@@ -76,29 +70,9 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     // NAVIGATOR
     private final Boolean forbidDuplicate;
 
-    // CONTEXT
-    private final ImSet<ClassPropertyInterface> contextInterfaces;
-    private final ImSet<ContextFilterSelector<?, ClassPropertyInterface, O>> contextFilters;
-
     private final boolean readOnly;
     private final boolean checkOnOk;
     
-    @Override
-    protected ImSet<ClassPropertyInterface> getNoClassesInterfaces() {
-        return super.getNoClassesInterfaces().addExcl(contextInterfaces);
-    }
-
-    @IdentityInstanceLazy
-    @Override
-    public PropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
-        PropertyMapImplement<?, ClassPropertyInterface> result = super.calcWhereProperty();
-        if(!contextFilters.isEmpty()) { // filters don't stop form from showing, however they can be used for param classes, so we're using the same hack as in SystemAction
-            PropertyMapImplement<?, ClassPropertyInterface> contextFilterWhere = PropertyFact.createUnion(interfaces, contextFilters.mapSetValues((Function<ContextFilterSelector<?, ClassPropertyInterface, O>, PropertyMapImplement<?, ClassPropertyInterface>>) filter -> filter.getWhereProperty(mapObjects)).addExcl(PropertyFact.createTrue()).toList());
-            result = PropertyFact.createAnd(result, contextFilterWhere);
-        }
-        return result;
-    }
-
     public <C extends PropertyInterface> FormInteractiveAction(LocalizedString caption,
                                                                FormSelector<O> form,
                                                                final ImList<O> objectsToSet, final ImList<Boolean> nulls,
@@ -110,7 +84,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                WindowFormType windowType, boolean forbidDuplicate,
                                                                boolean checkOnOk,
                                                                boolean readOnly) {
-        super(caption, form, objectsToSet, nulls, false, BaseUtils.genArray(null, orderInterfaces.size(), ValueClass[]::new));
+        super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters);
 
         this.inputObjects = inputObjects;
         this.inputProps = inputProps;
@@ -124,11 +98,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         this.manageSession = manageSession;
         this.noCancel = noCancel;
 
-        ImRevMap<C, ClassPropertyInterface> mapInterfaces = getMapInterfaces(orderInterfaces, objectsToSet.size()).reverse();
-        this.contextInterfaces = mapInterfaces.valuesSet();
-        this.contextFilters = contextFilters.mapListValues((Function<ContextFilterSelector<?, C, O>, ContextFilterSelector<?, ClassPropertyInterface, O>>) 
-                                                filter -> filter.map(mapInterfaces)).toOrderExclSet().getSet();
-        
         this.readOnly = readOnly;
         this.checkOnOk = checkOnOk;
     }
@@ -150,14 +119,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     }
 
     @Override
-    protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapObjects) throws SQLException, SQLHandledException {
+    protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
         ImRevMap<O, ObjectEntity> mapRevObjects = mapObjects.reverse();
-
-        // context filters
-        MExclSet<ContextFilterInstance> mContextFilters = SetFact.mExclSet();
-        for(ContextFilterSelector<?, ClassPropertyInterface, O> contextFilter : this.contextFilters)
-            mContextFilters.exclAddAll(contextFilter.getInstances(context.getKeys(), mapRevObjects));
-        ImSet<ContextFilterInstance> contextFilters = mContextFilters.immutable();
 
         // sync and modality types
         boolean syncType; 

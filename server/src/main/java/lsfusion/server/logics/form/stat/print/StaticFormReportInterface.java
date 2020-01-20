@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.stat.print;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -10,6 +11,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.stat.StaticFormDataInterface;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -19,8 +21,8 @@ import java.sql.SQLException;
 
 public class StaticFormReportInterface extends StaticFormDataInterface implements FormReportInterface {
 
-    public StaticFormReportInterface(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionContext<?> context) {
-        super(form, mapObjects, context);
+    public StaticFormReportInterface(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionContext<?> context, ImSet<ContextFilterInstance> contextFilters) {
+        super(form, mapObjects, context, contextFilters);
     }
 
     @Override

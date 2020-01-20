@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.open.stat;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -40,7 +41,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                             T staticType,
                             Integer selectTop,
                             ValueClass... extraValueClasses) {
-        super(caption, form, objectsToSet, nulls, false, extraValueClasses);
+        super(caption, form, objectsToSet, nulls, SetFact.EMPTYORDER(), ListFact.EMPTY(), extraValueClasses);
 
         this.staticType = staticType;
         this.selectTop = selectTop == null ? 0 : selectTop;

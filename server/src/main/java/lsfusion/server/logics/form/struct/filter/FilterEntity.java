@@ -19,7 +19,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class FilterEntity<P extends PropertyInterface> implements Instantiable<FilterInstance> {
+public class FilterEntity<P extends PropertyInterface> implements Instantiable<FilterInstance>, FilterEntityInstance {
 
     private PropertyObjectEntity<P> property;
     public boolean resolveAdd;
@@ -58,9 +58,5 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
 
     public GroupObjectEntity getApplyObject(FormEntity formEntity) {
         return getApplyObject(formEntity, SetFact.EMPTY());
-    }
-
-    public GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return formEntity.getApplyObject(getObjects(), excludeGroupObjects);
     }
 }

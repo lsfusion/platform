@@ -32,6 +32,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
+import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -303,9 +304,9 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return mResult.immutableOrder();
     }
     
-    private static Where getFilterWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {
+    private static Where getFilterWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<? extends FilterEntityInstance> filters) throws SQLException, SQLHandledException {
         Where where = Where.TRUE();
-        for(FilterEntity filt : filters)
+        for(FilterEntityInstance filt : filters)
             where = where.and(filt.getWhere(mapKeys, modifier));
         return where;
     }
@@ -317,7 +318,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);
     }
 
-    public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {
+    public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<? extends FilterEntityInstance> filters) throws SQLException, SQLHandledException {
         return getFilterWhere(mapKeys, modifier, filters).and(getClassWhere(mapKeys, modifier));
     }
 

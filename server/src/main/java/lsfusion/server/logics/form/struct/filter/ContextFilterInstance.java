@@ -4,7 +4,11 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
@@ -15,7 +19,9 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ContextFilterInstance<P extends PropertyInterface> {
+import java.sql.SQLException;
+
+public class ContextFilterInstance<P extends PropertyInterface> implements FilterEntityInstance {
 
     private final Property<P> property;
 
@@ -32,6 +38,14 @@ public class ContextFilterInstance<P extends PropertyInterface> {
         return new NotNullFilterInstance<>(
                 new PropertyObjectInstance<>(property, 
                         MapFact.<P, PropertyObjectInterfaceInstance>addExcl(mapValues, mapObjects.mapValues(entity -> factory.getInstance(entity)))));
+    }
+
+    public ImSet<ObjectEntity> getObjects() {
+        return mapObjects.valuesSet();
+    }
+
+    public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
+        return property.getExpr(ObjectValue.getMapExprs(mapValues).addExcl(mapObjects.join(mapKeys)), modifier).getWhere();
     }
 
     public static ImSet<PullChangeProperty> getPullProps(ImSet<ContextFilterInstance> filters) {

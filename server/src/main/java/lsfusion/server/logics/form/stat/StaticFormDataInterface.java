@@ -16,6 +16,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -30,11 +31,15 @@ public class StaticFormDataInterface extends AbstractFormDataInterface {
     protected final ImMap<ObjectEntity, ? extends ObjectValue> mapObjects;
 
     protected final ExecutionContext<?> context;
+    
+    protected final ImSet<ContextFilterInstance> contextFilters; // with values shouldn't be cached
 
-    public StaticFormDataInterface(final FormEntity form, final ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, final ExecutionContext<?> context) {
+    public StaticFormDataInterface(final FormEntity form, final ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, final ExecutionContext<?> context, ImSet<ContextFilterInstance> contextFilters) {
         this.form = form;
         this.mapObjects = mapObjects;
         this.context = context;
+        
+        this.contextFilters = contextFilters;
     }
 
     @Override
@@ -69,13 +74,16 @@ public class StaticFormDataInterface extends AbstractFormDataInterface {
             orders = MapFact.EMPTYORDER();
         return BaseUtils.immutableCast(orders);
     }
-
+    
     @Override
     public Where getWhere(GroupObjectEntity groupObjectEntity, ImSet<GroupObjectEntity> valueGroups, ImMap<ObjectEntity, Expr> mapExprs) throws SQLException, SQLHandledException {
         ImSet<FilterEntity> filters = form.getGroupFixedFilters(valueGroups).get(groupObjectEntity);
         if(filters == null)
             filters = SetFact.EMPTY();
-        return groupObjectEntity.getWhere(mapExprs, context.getModifier(), filters);
+        ImSet<ContextFilterInstance> contextGroupFilters = form.getGroupFilters(this.contextFilters, valueGroups).get(groupObjectEntity);
+        if(contextGroupFilters == null)
+            contextGroupFilters = SetFact.EMPTY();
+        return groupObjectEntity.getWhere(mapExprs, context.getModifier(), SetFact.addExclSet(filters, contextGroupFilters));
     }
 
     @Override
