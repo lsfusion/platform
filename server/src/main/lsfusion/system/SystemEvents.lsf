@@ -135,9 +135,9 @@ reconnect '{system.events.reconnect.custom.user}' (CustomUser user)  {
 } CONFIRM;
 
 shutdown '{system.events.shutdown}' (CustomUser user)  { 
-    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-            NEWSESSION { NEWTHREAD shutdown(); CONNECTION conn; }
-        }
+    FOR user(Connection conn) == user DO {
+        shutdown(conn);
+    }
 } CONFIRM;
 
 hasConnectedConnections (CustomUser user) = GROUP SUM 1 IF user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection;

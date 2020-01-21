@@ -55,7 +55,7 @@ public class RecalculatePropertyAction<P extends PropertyInterface, W extends Pr
     @Override
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
         Where exprWhere = where != null ? where.mapExpr(innerExprs, context.getModifier()).getWhere() : null;
-        context.getDbManager().runAggregationRecalculation(context.getSession(), context.getSession().sql, property, exprWhere, true);
+        context.getDbManager().runAggregationRecalculation(context.getSession(), context.getSession().sql, property, exprWhere, true, false);
         return FlowResult.FINISH;
     }
 }
