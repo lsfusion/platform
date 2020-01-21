@@ -55,7 +55,7 @@ public class GEditBindingMap implements Serializable {
         return null;
     }
 
-    public String getAction(EditEvent event, EditEventFilter editEventFilter, boolean hasEditAction) {
+    public String getEventSID(EditEvent event, EditEventFilter editEventFilter, boolean hasEditObjectAction) {
         if (event instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) event).getNativeEvent();
             String eventType = nativeEvent.getType();
@@ -66,7 +66,7 @@ public class GEditBindingMap implements Serializable {
                     return null;
                 }
 
-                if (hasEditAction && isEditObjectEvent(nativeEvent)) {
+                if (hasEditObjectAction && isEditObjectEvent(nativeEvent)) {
                     return EDIT_OBJECT;
                 }
 
@@ -126,19 +126,19 @@ public class GEditBindingMap implements Serializable {
                 || GROUP_CHANGE.equals(actionSID);
     }
 
-    public static String getPropertyEditActionSID(EditEvent e, GPropertyDraw property, GEditBindingMap overrideMap) {
+    public static String getPropertyEventActionSID(EditEvent e, GPropertyDraw property, GEditBindingMap overrideMap) {
         String actionSID = null;
         if (property != null) {
             EditEventFilter eventFilter = property.changeType == null ? null : property.changeType.getEditEventFilter();
 
             if (property.editBindingMap != null) {
-                actionSID = property.editBindingMap.getAction(e, eventFilter, property.hasEditObjectAction);
+                actionSID = property.editBindingMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
             }
 
             if (actionSID == null && overrideMap != null) {
                 actionSID = overrideMap.getKeyPressAction(e);
                 if (actionSID == null) {
-                    actionSID = overrideMap.getAction(e, eventFilter, property.hasEditObjectAction);
+                    actionSID = overrideMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
                 }
             }
         }

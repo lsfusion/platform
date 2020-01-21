@@ -523,8 +523,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public boolean hasNoChange() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            ActionObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, this, SetFact.EMPTY()); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
-            if (editAction != null && editAction.property.hasFlow(ChangeFlowType.FORMCHANGE) && !editAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
+            ActionObjectEntity<?> eventAction = property.getEventAction(ServerResponse.CHANGE, this, SetFact.EMPTY()); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
+            if (eventAction != null && eventAction.property.hasFlow(ChangeFlowType.FORMCHANGE) && !eventAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
                 return false;
         }
 
@@ -1228,7 +1228,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public void proceedAllEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
             for(String changeEvent : BaseUtils.mergeIterables(changeEvents, propertyDraw.getContextMenuBindings().keySet())) {
-                ActionObjectEntity<?> editAction = propertyDraw.getEditAction(changeEvent, this);
+                ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);
                 if (editAction != null)
                     consumer.accept(editAction, changeEvent.equals(ServerResponse.CHANGE) && !propertyDraw.isProperty() ? propertyDraw : null);
             }

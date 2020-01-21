@@ -33,7 +33,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         this.editHandler = editHandler;
     }
 
-    public void executePropertyEditAction(final GPropertyDraw editProperty, final GGroupObjectValue columnKey, String actionSID, final Object currentValue) {
+    public void executePropertyEventAction(final GPropertyDraw editProperty, final GGroupObjectValue columnKey, String actionSID, final Object currentValue) {
         valueRequested = false;
         simpleChangeProperty = null;
         readType = null;
@@ -59,7 +59,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
                 executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey, currentValue);
             }
         } else {
-            form.executeEditAction(editProperty, columnKey, actionSID, new ErrorHandlingCallback<ServerResponseResult>() {
+            form.executeEventAction(editProperty, columnKey, actionSID, new ErrorHandlingCallback<ServerResponseResult>() {
                 @Override
                 public void success(ServerResponseResult response) {
                     Log.debug("Execute edit action response received...");

@@ -33,7 +33,6 @@ import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.group.Group;
@@ -68,7 +67,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private String mouseBinding;
     private Map<KeyStroke, String> keyBindings;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
-    private Map<String, ActionObjectEntity<?>> editActions;
+    private Map<String, ActionObjectEntity<?>> eventActions;
 
     public boolean optimisticAsync;
 
@@ -215,7 +214,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public DataClass getRequestInputType(String actionSID, FormEntity form, ImSet<SecurityPolicy> securityPolicies, boolean optimistic) {
         if (isProperty()) { // optimization
-            ActionObjectEntity<?> changeAction = getEditAction(actionSID, form, securityPolicies);
+            ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, securityPolicies);
 
             if (changeAction != null) {
                 return (DataClass)changeAction.property.getSimpleRequestInputType(optimistic);
@@ -225,82 +224,82 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, ImSet<SecurityPolicy> policies) {
-        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEditAction(CHANGE, form, policies);
+        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policies);
         if(changeAction!=null)
             return changeAction.getAddRemove(form);
         return null;
     }
 
-    private boolean isEdit(String editActionSID) {
+    private boolean isEdit(String eventActionSID) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
-        boolean isEdit = CHANGE.equals(editActionSID) || CHANGE_WYS.equals(editActionSID) || EDIT_OBJECT.equals(editActionSID) || GROUP_CHANGE.equals(editActionSID);
-        assert isEdit || hasContextMenuBinding(editActionSID) || hasKeyBinding(editActionSID);
+        boolean isEdit = CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
+        assert isEdit || hasContextMenuBinding(eventActionSID) || hasKeyBinding(eventActionSID);
         return isEdit;
     }
     
-    private boolean checkPermission(Action editAction, String editActionSID, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
+    private boolean checkPermission(Action eventAction, String eventActionSID, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
         ActionOrProperty securityProperty;
-        if (isEdit(editActionSID) && !editAction.ignoreReadOnlyPolicy()) { // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit) 
+        if (isEdit(eventActionSID) && !eventAction.ignoreReadOnlyPolicy()) { // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit) 
             if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
                 return false;
 
             securityProperty = getSecurityProperty(); // will check property itself 
         } else { // menu or key binding
-            securityProperty = editAction;
+            securityProperty = eventAction;
         }
 
         for(SecurityPolicy securityPolicy : securityPolicies)
-            if(forbidEditObjects(editActionSID, securityPolicy))
+            if(forbidEditObjects(eventActionSID, securityPolicy))
                 return false;
         return SecurityPolicy.checkPropertyChangePermission(securityPolicies, securityProperty);
     }
 
-    private boolean forbidEditObjects(String editActionSID, SecurityPolicy securityPolicy) {
-        return EDIT_OBJECT.equals(editActionSID) && (securityPolicy.editObjects == null || !securityPolicy.editObjects);
+    private boolean forbidEditObjects(String eventActionSID, SecurityPolicy securityPolicy) {
+        return EDIT_OBJECT.equals(eventActionSID) && (securityPolicy.editObjects == null || !securityPolicy.editObjects);
     }
 
-    public ActionObjectEntity<?> getEditAction(String actionId, FormEntity form, ImSet<SecurityPolicy> securityPolicies) {
+    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, ImSet<SecurityPolicy> securityPolicies) {
         try {
-            return getEditAction(actionId, form, null, securityPolicies);
+            return getEventAction(actionId, form, null, securityPolicies);
         } catch (SQLException | SQLHandledException e) {
             assert false;
             throw Throwables.propagate(e);
         }
     }
     
-    public ActionObjectEntity<?> getEditAction(String actionId, FormEntity form, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
-        ActionObjectEntity<?> editAction = getEditAction(actionId, form);
+    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
+        ActionObjectEntity<?> eventAction = getEventAction(actionId, form);
 
-        if (editAction != null && !checkPermission(editAction.property, actionId, checkReadOnly, securityPolicies))
+        if (eventAction != null && !checkPermission(eventAction.property, actionId, checkReadOnly, securityPolicies))
             return null;
         
-        return editAction;
+        return eventAction;
     }
 
-    public ActionObjectEntity<?> getEditAction(String actionId, FormEntity form) {
-        if (editActions != null) {
-            ActionObjectEntity editAction = editActions.get(actionId);
-            if (editAction != null)
-                return editAction;
+    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form) {
+        if (eventActions != null) {
+            ActionObjectEntity eventAction = eventActions.get(actionId);
+            if (eventAction != null)
+                return eventAction;
         }
 
-        ActionOrProperty<P> editProperty = getEditProperty();
-        ActionMapImplement<?, P> editActionImplement = editProperty.getEditAction(actionId);
-        if(editActionImplement != null)
-            return editActionImplement.mapObjects(getEditMapping());
+        ActionOrProperty<P> eventProperty = getEventProperty();
+        ActionMapImplement<?, P> eventActionImplement = eventProperty.getEventAction(actionId);
+        if(eventActionImplement != null)
+            return eventActionImplement.mapObjects(getEditMapping());
 
         // default implementations for group change and change wys
         if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) {
-            ActionObjectEntity<?> editAction = getEditAction(CHANGE, form);
-            if (editAction != null) {
+            ActionObjectEntity<?> eventAction = getEventAction(CHANGE, form);
+            if (eventAction != null) {
                 if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
-                    return editAction.getGroupChange(getToDraw(form));
+                    return eventAction.getGroupChange(getToDraw(form));
                 else { // if CHANGE action requests DataClass, then use this action
                     assert CHANGE_WYS.equals(actionId);
-                    if (editAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default
-                        return editAction;
+                    if (eventAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default
+                        return eventAction;
                     else {
-                        ActionMapImplement<?, P> defaultWYSAction = editProperty.getDefaultWYSAction();
+                        ActionMapImplement<?, P> defaultWYSAction = eventProperty.getDefaultWYSAction();
                         if(defaultWYSAction != null) // assert getSimpleRequestInputType != null
                             return defaultWYSAction.mapObjects(getEditMapping());
                     }
@@ -349,14 +348,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void setEditAction(String actionSID, ActionObjectEntity<?> editAction) {
-        if(editActions==null) {
-            editActions = new HashMap<>();
+    public void setEventAction(String actionSID, ActionObjectEntity<?> eventAction) {
+        if(eventActions ==null) {
+            eventActions = new HashMap<>();
         }
-        editActions.put(actionSID, editAction);
+        eventActions.put(actionSID, eventAction);
     }
 
-    private ActionOrProperty<P> getEditProperty() {
+    private ActionOrProperty<P> getEventProperty() {
         return propertyObject.property;
     }     
     private ImRevMap<P, ObjectEntity> getEditMapping() {
@@ -364,7 +363,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }     
     
     public OrderedMap<String, LocalizedString> getContextMenuBindings() {
-        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getEditProperty().getContextMenuBindings(); 
+        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getEventProperty().getContextMenuBindings(); 
         if (propertyContextMenuBindings.isEmpty()) {
             return contextMenuBindings;
         }
@@ -392,7 +391,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public Map<KeyStroke, String> getKeyBindings() {
-        ImMap<KeyStroke, String> propertyKeyBindings = getEditProperty().getKeyBindings();
+        ImMap<KeyStroke, String> propertyKeyBindings = getEventProperty().getKeyBindings();
         if (propertyKeyBindings.isEmpty()) {
             return keyBindings;
         }
@@ -405,7 +404,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public String getMouseBinding() {
-        return mouseBinding != null ? mouseBinding : getEditProperty().getMouseBinding();
+        return mouseBinding != null ? mouseBinding : getEventProperty().getMouseBinding();
     }
 
     @LongMutable

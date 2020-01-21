@@ -48,7 +48,7 @@ public abstract class RemoteDispatchAsync {
         final QueuedAction queuedAction = new QueuedAction(action, callback);
         // в десктопе реализован механизм direct запросов, которые работают не через очередь, а напрямую блокируют EDT.
         // в вебе нет возможности реализовать подобный механизм. поэтому ставим direct запросы в начало очереди.
-        // иначе мог произойти deadlock, когда, к примеру, между ExecuteEditAction и continueServerInvocation вклинивался changePageSize
+        // иначе мог произойти deadlock, когда, к примеру, между ExecuteEventAction и continueServerInvocation вклинивался changePageSize
         if (direct) {
             q.add(0, queuedAction);
         } else {

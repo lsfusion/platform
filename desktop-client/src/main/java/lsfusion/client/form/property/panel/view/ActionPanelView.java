@@ -69,7 +69,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         form.addBinding(new KeyInputEvent(KeyStrokes.getEnter()), new ClientFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getSource() == ActionPanelView.this) {
             @Override
             public boolean pressed(KeyEvent ke) {
-                return form.commitCurrentEditing() && editDispatcher.executePropertyEditAction(property, columnKey, ServerResponse.CHANGE, null, null);
+                return form.commitCurrentEditing() && editDispatcher.executePropertyEventAction(property, columnKey, ServerResponse.CHANGE, null, null);
             }
 
             @Override
@@ -85,7 +85,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
                     RmiQueue.runAction(new Runnable() {
                         @Override
                         public void run() {
-                            editDispatcher.executePropertyEditAction(property, columnKey, ServerResponse.CHANGE, null, null);
+                            editDispatcher.executePropertyEventAction(property, columnKey, ServerResponse.CHANGE, null, null);
                         }
                     });
                 }
@@ -113,7 +113,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
                         RmiQueue.runAction(new Runnable() {
                             @Override
                             public void run() {
-                                editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null, null);
+                                editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null, null);
                             }
                         });
                     }
@@ -135,7 +135,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
                     RmiQueue.runAction(new Runnable() {
                         @Override
                         public void run() {
-                            editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null, null);
+                            editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null, null);
                         }
                     });
                 }

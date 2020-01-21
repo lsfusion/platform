@@ -1252,14 +1252,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage(mainPropertyUsage);
         onContextAction.addToContextMenuFor(mainProperty, contextMenuCaption);
 
-        onContextAction.setAsEditActionFor(onContextAction.action.getSID(), mainProperty);
+        onContextAction.setAsEventActionFor(onContextAction.action.getSID(), mainProperty);
     }
 
-    public void setAsEditActionFor(LA onEditAction, String editActionSID, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public void setAsEventActionFor(LA eventAction, String eventActionSID, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
         assert mainPropertyUsage != null;
 
         LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage(mainPropertyUsage);
-        onEditAction.setAsEditActionFor(editActionSID, mainProperty);
+        eventAction.setAsEventActionFor(eventActionSID, mainProperty);
     }
 
     public void setForceViewType(LAP property, ClassViewType viewType) {
@@ -1386,10 +1386,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         lp.property.setAggr(true);
     }
 
-    public void setScriptedEditAction(LAP property, String actionType, LAWithParams action) {
+    public void setScriptedEventAction(LAP property, String actionType, LAWithParams action) {
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
         ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LAP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
-        property.getActionOrProperty().setEditAction(actionType, actionImplements.get(0));
+        property.getActionOrProperty().setEventAction(actionType, actionImplements.get(0));
     }
 
     public void setScriptedContextMenuAction(LAP property, LocalizedString contextMenuCaption, LAWithParams action) {
@@ -1399,7 +1399,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         String actionSID = actionImplement.action.getSID();
         property.getActionOrProperty().setContextMenuAction(actionSID, FormPropertyOptions.getContextMenuCaption(contextMenuCaption, actionImplement.action));
-        property.getActionOrProperty().setEditAction(actionSID, actionImplement);
+        property.getActionOrProperty().setEventAction(actionSID, actionImplement);
     }
 
     public void setScriptedKeyPressAction(LAP property, String key, LAWithParams action) {
@@ -1409,7 +1409,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         String actionSID = actionImplement.action.getSID();
         property.getActionOrProperty().setKeyAction(KeyStroke.getKeyStroke(key), actionSID);
-        property.getActionOrProperty().setEditAction(actionSID, actionImplement);
+        property.getActionOrProperty().setEventAction(actionSID, actionImplement);
     }
 
     public void setEventId(LAP property, String id) {

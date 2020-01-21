@@ -33,7 +33,7 @@ public class GPanelController {
                 propertyController = new GPropertyPanelController(property, form, () -> rowBackground, () -> rowForeground);
                 propertyControllers.put(property, propertyController);
 
-                getFormLayout().addBaseComponent(property, propertyController.getView(), () -> focusFirstWidget());
+                getFormLayout().addBaseComponent(property, propertyController.getView(), this::focusFirstWidget);
             }
             propertyController.setColumnKeys(columnKeys);
         }

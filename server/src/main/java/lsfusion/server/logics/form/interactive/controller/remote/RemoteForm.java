@@ -646,7 +646,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
             }
 
-            form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
+            form.executeEventAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
 
             if (logger.isTraceEnabled()) {
                 logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
@@ -666,15 +666,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final String actionSID) throws RemoteException {
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final String actionSID) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
             ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
 
-            form.executeEditAction(propertyDraw, actionSID, keys, stack);
+            form.executeEventAction(propertyDraw, actionSID, keys, stack);
 
             if (logger.isTraceEnabled()) {
-                logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
+                logger.trace(String.format("executeEventAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                 if (keys.size() > 0) {
                     logger.trace("   columnKeys: ");
                     for (int i = 0, size = keys.size(); i < size; i++) {
@@ -978,7 +978,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, DataObject> currentObjects, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
-        String editAction;
+        String eventAction;
         DataClass pushChangeType = null;
         ObjectValue pushChangeObject = null;
         DataObject pushAdd = null;
@@ -986,7 +986,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.entity, form.securityPolicies);
             if (pushChangeType != null)
                 pushChangeObject = DataObject.getValue(pushChangeType.parseJSON(value), pushChangeType);
-            editAction = ServerResponse.CHANGE_WYS;
+            eventAction = ServerResponse.CHANGE_WYS;
 
             // it's tricky here, unlike changeGroupObject, changeProperty is cancelable, i.e. its change may be canceled, but there will be no undo change in getChanges
             // so there are 2 ways store previous values on client (just like it is done now on desktop and web-client, which is not that easy task), or just force that property reread
@@ -1001,9 +1001,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 // see comment above
                 newDelete.first.groupTo.forceUpdateKeys();
             }
-            editAction = ServerResponse.CHANGE;
+            eventAction = ServerResponse.CHANGE;
         }
-        form.executeEditAction(propertyDraw, editAction, currentObjects, pushChangeObject, pushChangeType, pushAdd, false, stack);
+        form.executeEventAction(propertyDraw, eventAction, currentObjects, pushChangeObject, pushChangeType, pushAdd, false, stack);
     }
 
     @Override

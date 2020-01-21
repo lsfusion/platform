@@ -206,9 +206,9 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
-    public ActionMapImplement<?, T> mapEditAction(String editActionSID, Property filterProperty) {
-        ActionMapImplement<?, P> editAction = property.getEditAction(editActionSID, filterProperty);
-        return editAction == null ? null : editAction.map(mapping);
+    public ActionMapImplement<?, T> mapEventAction(String eventSID, Property filterProperty) {
+        ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, filterProperty);
+        return eventAction == null ? null : eventAction.map(mapping);
     }
 
     public Inferred<T> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {

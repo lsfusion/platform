@@ -259,19 +259,19 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, Property filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         int lastNotNullAction = 0;
         ImList<CalcCase<Interface>> cases = getCases();
         MList<ActionCase<Interface>> mActionCases = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
-            ActionMapImplement<?, Interface> editAction = propCase.implement.mapEditAction(editActionSID, filterProperty);
+            ActionMapImplement<?, Interface> eventAction = propCase.implement.mapEventAction(eventActionSID, filterProperty);
             if(isExclusive) {
-                if(editAction == null)
+                if(eventAction == null)
                     continue;                                
             } else {
-                if(editAction == null)
-                    editAction = PropertyFact.createEmptyAction();                    
+                if(eventAction == null)
+                    eventAction = PropertyFact.createEmptyAction();                    
                 else
                     lastNotNullAction = mActionCases.size() + 1;
             }
@@ -281,7 +281,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 where = ((PropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
             else
                 where = (PropertyMapImplement<?, Interface>) propCase.where;
-            mActionCases.add(new ActionCase<>(where, editAction));
+            mActionCases.add(new ActionCase<>(where, eventAction));
         }
         ImList<ActionCase<Interface>> actionCases = mActionCases.immutableList();
         

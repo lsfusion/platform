@@ -58,7 +58,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, Property filterProperty) {
         return new DefaultChangeObjectAction(getInterface().interfaceClass, object).getImplement(SetFact.singletonOrder(getInterface()));
     }
 

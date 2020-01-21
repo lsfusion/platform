@@ -746,9 +746,9 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
-		|	'ON' et=formEventType prop=formActionObject { $options.addEditAction($et.type, $prop.action); }
-		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)? prop=formActionObject { $options.addContextMenuEditAction($c.val, $prop.action); }
-		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionObject { $options.addKeyPressEditAction($key.val, $prop.action); }
+		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $prop.action); }
+		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
+		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionObject { $options.addKeyPressAction($key.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
@@ -2457,7 +2457,7 @@ semiActionOption[LA action, String actionName, LocalizedString caption, ActionSe
     :	semiActionOrPropertyOption[action, actionName, caption, ps, context]
     |   imageSetting [action]
 	|	shortcutSetting [action, caption != null ? caption : LocalizedString.create(actionName)]
-	|	asonEditActionSetting [action]
+	|	asonEventActionSetting [action]
 	|	confirmSetting [action]
     ;
 
@@ -2544,13 +2544,13 @@ shortcutSetting [LA property, LocalizedString caption]
 	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteral)? usage = actionOrPropertyUsage
 	;
 
-asonEditActionSetting [LA property]
+asonEventActionSetting [LA property]
 @init {
-	String editActionSID = null;
+	String eventActionSID = null;
 }
 @after {
 	if (inMainParseState()) {
-		self.setAsEditActionFor(property, $et.type, $usage.propUsage);
+		self.setAsEventActionFor(property, $et.type, $usage.propUsage);
 	}
 }
 	:	'ASON' et=formEventType usage=actionOrPropertyUsage
@@ -2703,7 +2703,7 @@ notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
 onEditEventSetting [LAP property, List<TypedParameter> context]
 @after {
 	if (inMainParseState()) {
-		self.setScriptedEditAction(property, $et.type, $aDB.action);
+		self.setScriptedEventAction(property, $et.type, $aDB.action);
 	}
 }
 	:	'ON' et=formEventType

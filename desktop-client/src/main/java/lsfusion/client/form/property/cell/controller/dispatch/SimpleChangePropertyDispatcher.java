@@ -29,7 +29,7 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
         this.value = value;
 
         try {
-            ServerResponse serverResponse = getFormController().executeEditAction(property, columnKey, ServerResponse.CHANGE);
+            ServerResponse serverResponse = getFormController().executeEventAction(property, columnKey, ServerResponse.CHANGE);
             try {
                 dispatchResponse(serverResponse);
             } finally {

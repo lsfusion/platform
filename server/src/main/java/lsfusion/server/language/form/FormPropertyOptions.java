@@ -38,7 +38,7 @@ public class FormPropertyOptions {
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
-    private Map<String, ActionObjectEntity> editActions;
+    private Map<String, ActionObjectEntity> eventActions;
     private String eventId;
     private String integrationSID;
     private PropertyDrawEntity neighbourPropertyDraw;
@@ -209,12 +209,12 @@ public class FormPropertyOptions {
         this.optimisticAsync = optimisticAsync;
     }
 
-    public void addEditAction(String actionSID, ActionObjectEntity action) {
+    public void addEventAction(String actionSID, ActionObjectEntity action) {
         if (action != null) {
-            if (editActions == null) {
-                editActions = new HashMap<>();
+            if (eventActions == null) {
+                eventActions = new HashMap<>();
             }
-            editActions.put(actionSID, action);
+            eventActions.put(actionSID, action);
         }
     }
 
@@ -225,11 +225,11 @@ public class FormPropertyOptions {
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void addContextMenuEditAction(LocalizedString caption, ActionObjectEntity action) {
+    public void addContextMenuAction(LocalizedString caption, ActionObjectEntity action) {
         if (action != null) {
             Action property = (Action) action.property;
 
-            addEditAction(property.getSID(), action);
+            addEventAction(property.getSID(), action);
             addContextMenuBinding(property.getSID(), getContextMenuCaption(caption, property));
         }
     }
@@ -252,10 +252,10 @@ public class FormPropertyOptions {
         this.contextMenuBindings = contextMenuBindings;
     }
     
-    public void addKeyPressEditAction(String key, ActionObjectEntity action) {
+    public void addKeyPressAction(String key, ActionObjectEntity action) {
         if (action != null) {
             String propertySID = action.property.getSID();
-            addEditAction(propertySID, action);
+            addEventAction(propertySID, action);
             addKeyBinding(KeyStroke.getKeyStroke(key), propertySID);
         }
     }
@@ -275,12 +275,12 @@ public class FormPropertyOptions {
         this.keyBindings = keyBindings;
     } 
 
-    public Map<String, ActionObjectEntity> getEditActions() {
-        return editActions;
+    public Map<String, ActionObjectEntity> getEventActions() {
+        return eventActions;
     }
 
-    public void setEditActions(Map<String, ActionObjectEntity> editActions) {
-        this.editActions = editActions;
+    public void setEventActions(Map<String, ActionObjectEntity> eventActions) {
+        this.eventActions = eventActions;
     }
 
     public PropertyDrawEntity getNeighbourPropertyDraw() {
@@ -363,7 +363,7 @@ public class FormPropertyOptions {
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setForceViewType(nvl(overrides.getForceViewType(), forceViewType));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
-        merged.setEditActions(nvl(overrides.getEditActions(), editActions));
+        merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));
         merged.setKeyBindings(nvl(overrides.getKeyBindings(), keyBindings));
         merged.setEventId(nvl(overrides.getEventId(), eventId));

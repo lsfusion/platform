@@ -93,13 +93,13 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
         mainProperty.getActionOrProperty().setContextMenuAction(action.getSID(), contextMenuCaption);
     }
 
-    public <P extends PropertyInterface> void setAsEditActionFor(String actionSID, LAP<P, ActionOrProperty<P>> mainProperty) {
+    public <P extends PropertyInterface> void setAsEventActionFor(String actionSID, LAP<P, ActionOrProperty<P>> mainProperty) {
         assert listInterfaces.size() <= mainProperty.listInterfaces.size();
 
         //мэпим входы по порядку, у этого экшна входов может быть меньше
         ActionMapImplement<T, P> actionImplement = new ActionMapImplement<>(action, getRevMap(mainProperty.listInterfaces));
 
-        mainProperty.getActionOrProperty().setEditAction(actionSID, actionImplement);
+        mainProperty.getActionOrProperty().setEventAction(actionSID, actionImplement);
     }
 
     public void addOperand(boolean hasWhen, List<ResolveClassSet> signature, Version version, Object... params) {

@@ -266,13 +266,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, Property filterProperty) {
         Property<T> aggProp = implement.property;
 
         if (aggProp instanceof AndFormulaProperty) {
             final AndFormulaProperty andProperty = (AndFormulaProperty) aggProp;
             ImCol<PropertyInterfaceImplement<Interface>> ands = implement.mapping.filterFn(element -> element != andProperty.objectInterface).values();
-            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEditAction(editActionSID, filterProperty);
+            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEventAction(eventActionSID, filterProperty);
             if (implementEdit != null) {
                 return PropertyFact.createIfAction(
                         interfaces,
@@ -286,8 +286,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if (implement.mapping.size() == 1 && !implementChange) {
             ValueClass aggClass = ((PropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editValuePolicy);
 
-            if (editActionSID.equals(ServerResponse.CHANGE_WYS)) {
-                ActionMapImplement<?, Interface> changeActionImplement = getEditAction(ServerResponse.CHANGE);
+            if (eventActionSID.equals(ServerResponse.CHANGE_WYS)) {
+                ActionMapImplement<?, Interface> changeActionImplement = getEventAction(ServerResponse.CHANGE);
                 if(changeActionImplement==null)
                     return null;
 
@@ -297,10 +297,10 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 return aggChangeAction.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
-                return implement.mapping.singleValue().mapEditAction(editActionSID, aggClass instanceof CustomClass ? aggProp : null);
+                return implement.mapping.singleValue().mapEventAction(eventActionSID, aggClass instanceof CustomClass ? aggProp : null);
             }
         }
-        return super.getDefaultEditAction(editActionSID, filterProperty);
+        return super.getDefaultEventAction(eventActionSID, filterProperty);
     }
     
     public boolean checkEquals() {

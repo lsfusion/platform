@@ -987,9 +987,9 @@ public class ClientFormController implements AsyncListener {
         return fullKey;
     }
 
-    public ServerResponse executeEditAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
+    public ServerResponse executeEventAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
         // При выполнение синхронных запросов, EDT блокируется. Если перед этим синхр. запросом был послан асинхронный, который возвращает DockedModal-FormAction,
-        // то получается dead-lock: executeEditAction ждёт окончания предыдущего async-запроса и значит закрытия DockedModal формы,
+        // то получается dead-lock: executeEventAction ждёт окончания предыдущего async-запроса и значит закрытия DockedModal формы,
         // а форма не может отработать, т.к. EDT заблокирован. Модальные диалоги отрабатывают нормально, т.к. Swing специально создаёт для них новую очередь событий.
         // Поэтому применяется двойной хак:
         //  если DockedModal-FormAction пришёл после начала синхронного редактирования [canShowDockedModal()], то она показывается в модальном диалоге,
@@ -1011,10 +1011,10 @@ public class ClientFormController implements AsyncListener {
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
         
         ServerResponse result =
-                rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("executeEditAction - " + property.getLogName()) {
+                rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("executeEventAction - " + property.getLogName()) {
                     @Override
                     protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                        return remoteForm.executeEditAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
+                        return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
                     }
 
                     @Override

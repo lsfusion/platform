@@ -66,7 +66,7 @@ import static lsfusion.client.form.controller.ClientFormController.PasteData;
 import static lsfusion.client.form.controller.ClientFormController.colorPreferences;
 import static lsfusion.client.form.object.table.grid.view.GridTable.DEFAULT_HEADER_HEIGHT;
 import static lsfusion.client.form.object.table.grid.view.GridTable.DEFAULT_PREFERRED_SIZE;
-import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyEditActionSID;
+import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyEventActionSID;
 import static lsfusion.client.form.property.cell.EditBindingMap.isEditableAwareEditEvent;
 
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface, EditPropertyHandler {
@@ -778,7 +778,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return false;
         }
 
-        String actionSID = getPropertyEditActionSID(e, property, editBindingMap);
+        String actionSID = getPropertyEventActionSID(e, property, editBindingMap);
         if (actionSID == null) {
             return false;
         }
@@ -797,9 +797,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         commitingValue = false;
 
         //здесь немного запутанная схема...
-        //executePropertyEditAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
+        //executePropertyEventAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
         //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-        editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, getValueAt(row, column), editEvent);
+        editPerformed = editDispatcher.executePropertyEventAction(property, columnKey, actionSID, getValueAt(row, column), editEvent);
         return editorComp != null;
     }
 
@@ -909,7 +909,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             if (property != null && columnKey != null) {
                 String keyPressedActionSID = EditBindingMap.getPropertyKeyPressActionSID(e, property);
                 if (keyPressedActionSID != null) {
-                    editDispatcher.executePropertyEditAction(property, columnKey, keyPressedActionSID, getValueAt(row, column), editEvent);
+                    editDispatcher.executePropertyEventAction(property, columnKey, keyPressedActionSID, getValueAt(row, column), editEvent);
                 }
             }
         }

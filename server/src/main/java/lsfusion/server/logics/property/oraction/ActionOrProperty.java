@@ -212,7 +212,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     private String mouseBinding;
     private Object keyBindings;
     private Object contextMenuBindings;
-    private Object editActions;
+    private Object eventActions;
 
     public void setMouseAction(String actionSID) {
         setMouseBinding(actionSID);
@@ -250,37 +250,37 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     @NFLazy
-    public void setEditAction(String editActionSID, ActionMapImplement<?, T> editActionImplement) {
-        if (editActions == null || editActions instanceof EmptyRevMap) {
-            editActions = MapFact.mMap(MapFact.override());
+    public void setEventAction(String eventActionSID, ActionMapImplement<?, T> eventActionImplement) {
+        if (eventActions == null || eventActions instanceof EmptyRevMap) {
+            eventActions = MapFact.mMap(MapFact.override());
         }
-        ((MMap<String, ActionMapImplement<?, T>>)editActions).add(editActionSID, editActionImplement);
+        ((MMap<String, ActionMapImplement<?, T>>) eventActions).add(eventActionSID, eventActionImplement);
     }
 
     @LongMutable
-    private ImMap<String, ActionMapImplement<?, T>> getEditActions() {
-        return (ImMap<String, ActionMapImplement<?, T>>)(editActions == null ? MapFact.EMPTY() : editActions);
+    private ImMap<String, ActionMapImplement<?, T>> getEventActions() {
+        return (ImMap<String, ActionMapImplement<?, T>>)(eventActions == null ? MapFact.EMPTY() : eventActions);
     }
 
-    public ActionMapImplement<?, T> getEditAction(String editActionSID) {
-        return getEditAction(editActionSID, null);
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID) {
+        return getEventAction(eventActionSID, null);
     }
 
-    public ActionMapImplement<?, T> getEditAction(String editActionSID, Property filterProperty) {
-        ActionMapImplement<?, T> editAction = getEditActions().get(editActionSID);
-        if (editAction != null) {
-            return editAction;
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID, Property filterProperty) {
+        ActionMapImplement<?, T> eventAction = getEventActions().get(eventActionSID);
+        if (eventAction != null) {
+            return eventAction;
         }
 
-        if(GROUP_CHANGE.equals(editActionSID))
+        if(GROUP_CHANGE.equals(eventActionSID))
             return null;
 
-        assert CHANGE.equals(editActionSID) || CHANGE_WYS.equals(editActionSID) || EDIT_OBJECT.equals(editActionSID);
+        assert CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID);
 
-        return getDefaultEditAction(editActionSID, filterProperty);
+        return getDefaultEventAction(eventActionSID, filterProperty);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty);
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, Property filterProperty);
 
     public ActionMapImplement<?, T> getDefaultWYSAction() {
         return null;
@@ -424,7 +424,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
 //        notFinalized.remove(this);
         
-        editActions = editActions == null ? MapFact.EMPTY() : ((MMap)editActions).immutable();
+        eventActions = eventActions == null ? MapFact.EMPTY() : ((MMap) eventActions).immutable();
         keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();
         contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
     }

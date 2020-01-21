@@ -55,7 +55,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     }
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
-    ActionMapImplement<?, P> mapEditAction(String editActionSID, Property filterProperty);
+    ActionMapImplement<?, P> mapEventAction(String eventSID, Property filterProperty);
 
     boolean mapHasAlotKeys();
     int mapEstComplexity();

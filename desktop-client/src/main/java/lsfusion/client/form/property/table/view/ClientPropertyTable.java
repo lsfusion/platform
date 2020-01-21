@@ -117,7 +117,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         ClientPropertyDraw property = getProperty(row, column);
         ClientGroupObjectValue columnKey = getColumnKey(row, column);
 
-        String actionSID = getPropertyEditActionSID(e, property, editBindingMap);
+        String actionSID = getPropertyEventActionSID(e, property, editBindingMap);
 
         if (actionSID == null) {
             return false;
@@ -135,9 +135,9 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         commitingValue = false;
 
         //здесь немного запутанная схема...
-        //executePropertyEditAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
+        //executePropertyEventAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
         //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-        editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, getValueAt(row, column), editEvent);
+        editPerformed = editDispatcher.executePropertyEventAction(property, columnKey, actionSID, getValueAt(row, column), editEvent);
         return editorComp != null;
     }
 
@@ -297,7 +297,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
             String keyPressedActionSID = getPropertyKeyPressActionSID(e, property);
             if (keyPressedActionSID != null) {
-                editDispatcher.executePropertyEditAction(property, columnKey, keyPressedActionSID, getValueAt(row, column), editEvent);
+                editDispatcher.executePropertyEventAction(property, columnKey, keyPressedActionSID, getValueAt(row, column), editEvent);
             }
         }
         

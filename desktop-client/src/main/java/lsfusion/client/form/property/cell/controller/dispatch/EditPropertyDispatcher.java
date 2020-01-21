@@ -50,7 +50,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     /**
      * @return true, если на сервере вызван action для редактирования
      */
-    public boolean executePropertyEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, Object currentValue, EventObject editEvent) {
+    public boolean executePropertyEventAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, Object currentValue, EventObject editEvent) {
         readType = null;
         simpleChangeProperty = null;
         editColumnKey = null;
@@ -86,7 +86,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             }
 
             editPerformed = true;
-            ServerResponse response = form.executeEditAction(property, columnKey, actionSID);
+            ServerResponse response = form.executeEventAction(property, columnKey, actionSID);
             try {
                 return internalDispatchResponse(response);
             } finally {

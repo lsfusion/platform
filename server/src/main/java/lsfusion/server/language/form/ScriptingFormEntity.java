@@ -491,10 +491,10 @@ public class ScriptingFormEntity {
             property.optimisticAsync = true;
         }
 
-        Map<String, ActionObjectEntity> editActions = options.getEditActions();
-        if (editActions != null) {
-            for (Map.Entry<String, ActionObjectEntity> e : editActions.entrySet()) {
-                property.setEditAction(e.getKey(), e.getValue());
+        Map<String, ActionObjectEntity> eventActions = options.getEventActions();
+        if (eventActions != null) {
+            for (Map.Entry<String, ActionObjectEntity> e : eventActions.entrySet()) {
+                property.setEventAction(e.getKey(), e.getValue());
             }
         }
 
@@ -519,7 +519,7 @@ public class ScriptingFormEntity {
         Boolean isSelector = options.getSelector();
         ActionObjectEntity selectorAction;
         if(isSelector != null && isSelector && (selectorAction = property.getSelectorAction(form, version)) != null)
-            property.setEditAction(ServerResponse.CHANGE, selectorAction);
+            property.setEventAction(ServerResponse.CHANGE, selectorAction);
 
         String eventID = options.getEventId();
         if (eventID != null)

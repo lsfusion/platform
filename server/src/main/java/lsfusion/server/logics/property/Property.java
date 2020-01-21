@@ -1575,11 +1575,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
-    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> editAction, PropertyMapImplement<?, T> implement) {
-        return PropertyFact.createJoinAction(new ActionImplement<>(editAction.action, MapFact.singleton(editAction.listInterfaces.single(), implement)));
+    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> action, PropertyMapImplement<?, T> implement) {
+        return PropertyFact.createJoinAction(new ActionImplement<>(action.action, MapFact.singleton(action.listInterfaces.single(), implement)));
     }
-    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> editAction) {
-        return createJoinAction(editAction, getImplement());
+    private <X extends PropertyInterface> ActionMapImplement<?, T> createJoinAction(LA<X> action) {
+        return createJoinAction(action, getImplement());
     }
     private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultEditObjectAction(BaseLogicsModule lm) {
         // formEdit(property(...))
@@ -1633,17 +1633,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     @IdentityStrongLazy // STRONG for using in security policy
-    public ActionMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, Property filterProperty) {
 //        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
 //        if(interfaceClasses.size() < interfaces.size()) // не все классы есть
 //            return null;
 
-        if(editActionSID.equals(ServerResponse.CHANGE_WYS)) // like GROUP_CHANGE will be proceeded in PropertyDrawEntity
+        if(eventActionSID.equals(ServerResponse.CHANGE_WYS)) // like GROUP_CHANGE will be proceeded in PropertyDrawEntity
             return null;
 
         BaseLogicsModule lm = getBusinessLogics().LM;
 
-        if(editActionSID.equals(ServerResponse.EDIT_OBJECT)) {
+        if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             if (!(getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)) 
                 return null;
 

@@ -290,10 +290,10 @@ public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID) throws RemoteException {
-        logRemoteMethodStartCall("executeEditAction");
-        ServerResponse result = target.executeEditAction(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID);
-        logRemoteMethodEndCall("executeEditAction", result);
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID) throws RemoteException {
+        logRemoteMethodStartCall("executeEventAction");
+        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID);
+        logRemoteMethodEndCall("executeEventAction", result);
         return result;
     }
 

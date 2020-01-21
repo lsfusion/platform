@@ -12,7 +12,6 @@ import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
@@ -398,8 +397,8 @@ public class PropertyDrawView extends ComponentView {
             String actionSID = contextMenuBindings.getKey(i);
             LocalizedString caption = contextMenuBindings.getValue(i);
             ImSet<SecurityPolicy> securityPolicies = context.securityPolicies;
-            ActionObjectEntity<?> editAction = entity.getEditAction(actionSID, context.entity, securityPolicies);
-            if (editAction != null && SecurityPolicy.checkPropertyViewPermission(securityPolicies, editAction.property)) {
+            ActionObjectEntity<?> eventAction = entity.getEventAction(actionSID, context.entity, securityPolicies);
+            if (eventAction != null && SecurityPolicy.checkPropertyViewPermission(securityPolicies, eventAction.property)) {
                 contextMenuItems.put(actionSID, caption);
             }
         }
@@ -514,9 +513,9 @@ public class PropertyDrawView extends ComponentView {
     }
     
     public boolean hasChangeAction(ServerContext context) {
-        return entity.getEditAction(CHANGE, context.entity, context.securityPolicies) != null;
+        return entity.getEventAction(CHANGE, context.entity, context.securityPolicies) != null;
     }
     public boolean hasEditObjectAction(ServerContext context) {
-        return entity.getEditAction(EDIT_OBJECT, context.entity, context.securityPolicies) != null;
+        return entity.getEventAction(EDIT_OBJECT, context.entity, context.securityPolicies) != null;
     }
 }

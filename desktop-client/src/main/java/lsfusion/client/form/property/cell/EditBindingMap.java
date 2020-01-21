@@ -23,9 +23,9 @@ public class EditBindingMap {
         setMouseAction(ServerResponse.CHANGE);
     }
 
-    public String getAction(EventObject editEvent, EditEventFilter editEventFilter, boolean hasEditAction) {
+    public String getEventSID(EventObject editEvent, EditEventFilter editEventFilter, boolean hasEditObjectAction) {
         if (editEvent instanceof KeyEvent) {
-            if (hasEditAction && KeyStrokes.isEditObjectEvent(editEvent)) {
+            if (hasEditObjectAction && KeyStrokes.isEditObjectEvent(editEvent)) {
                 return ServerResponse.EDIT_OBJECT;
             }
 
@@ -87,18 +87,18 @@ public class EditBindingMap {
                 || ServerResponse.GROUP_CHANGE.equals(actionSID);
     }
 
-    public static String getPropertyEditActionSID(EventObject e, ClientPropertyDraw property, EditBindingMap overrideMap) {
+    public static String getPropertyEventActionSID(EventObject e, ClientPropertyDraw property, EditBindingMap overrideMap) {
         EditEventFilter eventFilter = property.changeType == null ? null : property.changeType.getEditEventFilter();
 
         String actionSID = null;
         if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getAction(e, eventFilter, property.hasEditObjectAction);
+            actionSID = property.editBindingMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
         }
 
         if (actionSID == null) {
             actionSID = overrideMap.getKeyPressAction(e);
             if (actionSID == null) {
-                actionSID = overrideMap.getAction(e, eventFilter, property.hasEditObjectAction);
+                actionSID = overrideMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
             }
         }
         return actionSID;

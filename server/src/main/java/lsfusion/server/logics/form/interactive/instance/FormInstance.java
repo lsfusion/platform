@@ -953,21 +953,21 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             session.changeClass(objectInstance, dataObject, cls);
     }
 
-    public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ExecutionStack stack) throws SQLException, SQLHandledException {
-        executeEditAction(property, editActionSID, keys, null, null, null, false, stack);
+    public void executeEventAction(PropertyDrawInstance property, String eventActionSID, ImMap<ObjectInstance, DataObject> keys, ExecutionStack stack) throws SQLException, SQLHandledException {
+        executeEventAction(property, eventActionSID, keys, null, null, null, false, stack);
     }
     
     @LogTime
     @ThisMessage
-    public void executeEditAction(final PropertyDrawInstance<?> property, String editActionSID, final ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
-        ActionObjectInstance<?> editAction = property.getEditAction(editActionSID, this, checkReadOnly, securityPolicies);
-        if(editAction == null) {
+        ActionObjectInstance<?> eventAction = property.getEventAction(eventActionSID, this, checkReadOnly, securityPolicies);
+        if(eventAction == null) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }
 
-        if (editActionSID.equals(CHANGE) || editActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
+        if (eventActionSID.equals(CHANGE) || eventActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
             PropertyDrawEntity propertyDraw = property.getEntity();
             if (!pushConfirm && propertyDraw.askConfirm) {
                 int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",
@@ -977,8 +977,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
         }
-        final ActionObjectInstance remappedEditAction = editAction.getRemappedPropertyObject(keys);
-        BL.LM.pushRequestedValue(pushChange, pushChangeType, this, () -> remappedEditAction.execute(FormInstance.this, stack, pushAdd, property, FormInstance.this));
+        final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys);
+        BL.LM.pushRequestedValue(pushChange, pushChangeType, this, () -> remappedEventAction.execute(FormInstance.this, stack, pushAdd, property, FormInstance.this));
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
@@ -1026,7 +1026,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     if (oValue != null) {
                         value = session.getObjectValue(changeType, oValue);
                     }
-                    executeEditAction(property, CHANGE_WYS, key, value, changeType, null, true, stack);
+                    executeEventAction(property, CHANGE_WYS, key, value, changeType, null, true, stack);
                 }
             }
         }

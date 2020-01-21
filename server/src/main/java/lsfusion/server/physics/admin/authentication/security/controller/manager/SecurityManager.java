@@ -136,7 +136,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             for (FormEntity formEntity : businessLogics.getAllForms())
                 formEntity.proceedAllEventActions((eventAction, drawAction) -> {
                     if (eventAction.property.ignoreReadOnlyPolicy()) {
-                        readOnlyPolicy.property.change.permit(eventAction.property); // permits editAction if it doesn't change anything
+                        readOnlyPolicy.property.change.permit(eventAction.property); // permits eventAction if it doesn't change anything
                     } else {
                         if (drawAction != null) { // hiding actions that cannot be executed 
                             drawAction.deny(readOnlyPolicy.property.view);

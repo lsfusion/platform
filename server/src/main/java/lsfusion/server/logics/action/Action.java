@@ -495,8 +495,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
-    public ActionMapImplement<?, P> getDefaultEditAction(String editActionSID, Property filterProperty) {
-        if(editActionSID.equals(ServerResponse.CHANGE_WYS) || editActionSID.equals(ServerResponse.EDIT_OBJECT))
+    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, Property filterProperty) {
+        if(eventActionSID.equals(ServerResponse.CHANGE_WYS) || eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return getImplement();
     }
@@ -558,7 +558,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                                 PropertyFact.createAndNot(groupFilter.map(iterate), // group() AND NOT current objects
                                         PropertyFact.createCompareInterface(orderedSet.mapOrder(context), orderedSet.mapOrder(iterate), Compare.EQUALS)),
                                 MapFact.EMPTYORDER(), false, 
-                                getImplement().map(context.removeRev(iterate.keys()).addRevExcl(iterate)), // DO editAction 
+                                getImplement().map(context.removeRev(iterate.keys()).addRevExcl(iterate)), // DO changeAction 
                       null, false, SetFact.EMPTY(), false).map(context.reverse())));
         
         return PropertyFact.createListAction(interfaces, mList.immutableList());

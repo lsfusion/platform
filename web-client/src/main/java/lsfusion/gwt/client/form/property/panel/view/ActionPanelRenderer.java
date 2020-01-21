@@ -145,7 +145,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
                 if (!form.isEditing()) {
                     final String actionSID = getPropertyKeyPressActionSID(new NativeEditEvent(event.getNativeEvent()), property);
                     if (actionSID != null) {
-                        editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null);
+                        editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null);
                     }
                 }
             }
@@ -169,13 +169,13 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     private void onContextMenuItemSelected(String actionSID) {
         if (!form.isEditing()) {
-            editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null);
+            editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null);
         }
     }
 
     private void click(EventTarget ifocusTargetAfterEdit) {
         focusTargetAfterEdit = ifocusTargetAfterEdit;
-        editDispatcher.executePropertyEditAction(property, columnKey, GEditBindingMap.CHANGE, null);
+        editDispatcher.executePropertyEventAction(property, columnKey, GEditBindingMap.CHANGE, null);
     }
 
     @Override

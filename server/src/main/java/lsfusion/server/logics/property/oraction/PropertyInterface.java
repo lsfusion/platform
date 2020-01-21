@@ -130,7 +130,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return remap.get((P)this);
     }
 
-    public ActionMapImplement<?, P> mapEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, P> mapEventAction(String eventSID, Property filterProperty) {
         return null;
     }
 
