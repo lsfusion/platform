@@ -221,11 +221,11 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     public static AggregateProperty recalculate = null;
 
     public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
-        recalculateAggregation(BL, session, sql, baseClass, null);
+        recalculateAggregation(BL, session, sql, baseClass, null, true);
     }
 
-    public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass, Where where) throws SQLException, SQLHandledException {
-        recalculateAggregation(sql, null, baseClass, where);
+    public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass, Where where, boolean recalculateClasses) throws SQLException, SQLHandledException {
+        recalculateAggregation(sql, null, baseClass, where, recalculateClasses);
 
         ObjectValue propertyObject = BL.reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(getCanonicalName()));
         if (propertyObject instanceof DataObject)
@@ -234,8 +234,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     @StackMessage("{logics.info.recalculation.of.aggregated.property}")
     @ThisMessage
-    public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass, Where where) throws SQLException, SQLHandledException {
-        boolean useRecalculate = Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr() || where != null;
+    public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass, Where where, boolean recalculateClasses) throws SQLException, SQLHandledException {
+        boolean useRecalculate = recalculateClasses && (Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr() || where != null);
         if(useRecalculate)
             recalculateClasses(session, env, baseClass);
 
