@@ -35,6 +35,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.classes.user.BaseClass;
@@ -194,10 +195,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return getRecalculateQuery(outDB, baseClass, checkInconsistence, null);
     }
 
-    private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass, boolean checkInconsistence, Where where) {
+    private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass, boolean checkInconsistence, PropertyChange<T> where) {
         assert isStored();
         
         QueryBuilder<T, String> query = new QueryBuilder<>(this);
+        if(where != null)
+            query.and(where.getWhere(query.getMapExprs()));
 
         Expr dbExpr = checkInconsistence ? getInconsistentExpr(query.getMapExprs(), baseClass) : getExpr(query.getMapExprs());
         Expr calculateExpr = isFullProperty() ? calculateInconsistentExpr(query.getMapExprs()) : calculateExpr(query.getMapExprs());  // оптимизация - только для FULL свойств, так как в остальных лучше использовать кэш по EXPR
@@ -205,9 +208,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
             query.addProperty("dbvalue", dbExpr);
         query.addProperty("calcvalue", calculateExpr);
         query.and(dbExpr.getWhere().or(calculateExpr.getWhere()));
-        if(where != null) {
-            query.and(where);
-        }
+        
         if(outDB || !DBManager.RECALC_REUPDATE)
             query.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not().and(dbExpr.getWhere().or(calculateExpr.getWhere())));
         return query.getQuery();
@@ -224,7 +225,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         recalculateAggregation(BL, session, sql, baseClass, null, true);
     }
 
-    public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass, Where where, boolean recalculateClasses) throws SQLException, SQLHandledException {
+    public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass, PropertyChange<T> where, boolean recalculateClasses) throws SQLException, SQLHandledException {
         recalculateAggregation(sql, null, baseClass, where, recalculateClasses);
 
         ObjectValue propertyObject = BL.reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(getCanonicalName()));
@@ -234,18 +235,17 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     @StackMessage("{logics.info.recalculation.of.aggregated.property}")
     @ThisMessage
-    public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass, Where where, boolean recalculateClasses) throws SQLException, SQLHandledException {
+    public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass, PropertyChange<T> where, boolean recalculateClasses) throws SQLException, SQLHandledException {
         boolean useRecalculate = recalculateClasses && (Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr() || where != null);
         if(useRecalculate)
             recalculateClasses(session, env, baseClass);
 
         session.pushVolatileStats(OperationOwner.unknown);
         try {
-            session.modifyRecords(env == null ?
+            session.modifyRecords(
                     new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate, where).map(
-                            mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown, TableOwner.global) :
-                    new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate, where).map(
-                            mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), env, TableOwner.global));
+                            mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), env == null ? DataSession.emptyEnv(OperationOwner.unknown) : env, TableOwner.global)
+                    );
         } finally {
             session.popVolatileStats(OperationOwner.unknown);
         }

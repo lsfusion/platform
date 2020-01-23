@@ -2343,20 +2343,23 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedRecalculatePropertyAProp(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        Property aggregateProperty = findLPByPropertyUsage(propertyUsage, propertyMapping, newContext).property;
-        if (aggregateProperty instanceof AggregateProperty) {
-            LPWithParams property = addScriptedJProp(findLPByPropertyUsage(propertyUsage, propertyMapping, newContext), propertyMapping);
-            List<Integer> resultInterfaces = getResultInterfaces(context.size(), property, whereProperty);
+        LP recalc = findLPByPropertyUsage(propertyUsage, propertyMapping, newContext);
+        if(recalc.property instanceof AggregateProperty) {
+            LPWithParams recalcProperty = addScriptedJProp(recalc, propertyMapping);
+            assert recalc == recalcProperty.getLP();
+            
+            List<Integer> resultInterfaces = getResultInterfaces(context.size(), recalcProperty, whereProperty);
+    
             List<LAPWithParams> paramsList = new ArrayList<>();
             for (int resI : resultInterfaces) {
                 paramsList.add(new LPWithParams(resI));
             }
-            paramsList.add(property);
+            paramsList.add(recalcProperty);
             if(whereProperty != null) {
                 paramsList.add(whereProperty);
             }
 
-            LA result = addRecalculatePropertyAProp(resultInterfaces.size(), (AggregateProperty) aggregateProperty, whereProperty != null, getParamsPlainList(paramsList).toArray());
+            LA result = addRecalculatePropertyAProp(resultInterfaces.size(), whereProperty != null, getParamsPlainList(paramsList).toArray());
             return new LAWithParams(result, resultInterfaces);
         } else {
             throw new UnsupportedOperationException("RECALCULATE is supported only for AggregateProperty");
