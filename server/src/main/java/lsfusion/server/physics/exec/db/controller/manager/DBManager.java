@@ -1785,7 +1785,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         runAggregationRecalculation(dataSession, session, aggregateProperty, where, isolatedTransaction, true);
     }
 
-    public void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty aggregateProperty, Where where, boolean isolatedTransaction, boolean recalculateClasses) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction, boolean recalculateClasses) throws SQLException, SQLHandledException {
         run(session, isolatedTransaction, sql -> aggregateProperty.recalculateAggregation(businessLogics, dataSession, sql, LM.baseClass, where, recalculateClasses));
     }
 
