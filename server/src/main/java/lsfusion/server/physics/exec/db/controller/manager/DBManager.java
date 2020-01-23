@@ -56,6 +56,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
 import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.logics.classes.ValueClass;
@@ -1780,7 +1781,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             runAggregationRecalculation(dataSession, session, property, null, isolatedTransaction);
     }
 
-    public void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty aggregateProperty, Where where, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         runAggregationRecalculation(dataSession, session, aggregateProperty, where, isolatedTransaction, true);
     }
 
