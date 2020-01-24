@@ -85,8 +85,10 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
             
         ImRevMap<ObjectInstance,KeyExpr> keys = KeyExpr.getMapKeys(getObjectInstances().toSet().filterFn(element -> element.objectInGrid(groupObjects)));
         WhereBuilder changedWhere = new WhereBuilder();
-        if(disableHint) // обработка hint'ов может занять слишком долгое время и если спрятан, это может быть неоправдано
+        if(disableHint) { // hack - needed because finding out if property really changed with hints can be a huge overhead (for example if it is hidden), so we'll disable hints
+            modifier.getPropertyChanges(); // hack - however reading propertyChanges can lead to notifySourceChange where hints can be used, so will read it before disabling
             AutoHintsAspect.pushDisabledRepeat();
+        }
         try {
             Expr result = getExpr(keys, modifier, changedWhere);
             if(result == null)
