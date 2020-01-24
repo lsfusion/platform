@@ -102,15 +102,12 @@ public abstract class InnerExpr extends NullableExpr implements FJData {
         return null;
     }
 
-    private static <K> InnerFollows<K> getInnerFollows(BaseJoin<K> join) {
+    public static <K> InnerFollows<K> getInnerFollows(BaseJoin<K> join) {
         if(join instanceof InnerJoin)
             return  ((InnerJoin<K, ?>) join).getInnerFollows();
         return InnerFollows.EMPTY();
     }
-    // множественное наследование
-    public static <K> ImSet<NullableExprInterface> getExprFollows(BaseJoin<K> join, boolean includeInnerWithoutNotNull, boolean recursive) { // куда-то надо же положить
-        return getInnerFollows(join).getExprFollows(join.getJoins(), includeInnerWithoutNotNull, recursive);
-    }
+
     public static <K> boolean hasExprFollowsWithoutNotNull(BaseJoin<K> join) { // куда-то надо же положить, проверяет "нужен" ли параметр includeInnerWithoutNotNull или можно считать его равным false
         return getInnerFollows(join).hasExprFollowsWithoutNotNull(join.getJoins());
     }
@@ -118,21 +115,6 @@ public abstract class InnerExpr extends NullableExpr implements FJData {
     // множественное наследование
     public static InnerJoins getInnerJoins(InnerJoin join) { // куда-то надо же положить
         return new InnerJoins(join);
-    }
-
-    // множественное наследование
-    public static InnerJoins getJoinFollows(BaseJoin<?> join, Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) { // куда-то надо же положить
-        InnerJoins result = InnerJoins.EMPTY;
-        UpWheres<InnerJoin> upResult = UpWheres.EMPTY();
-        ImSet<InnerExpr> innerExprs = getInnerExprs(join.getExprFollows(NullableExpr.INNERJOINS, false), mUnionJoins);
-        for(int i=0,size=innerExprs.size();i<size;i++) {
-            InnerExpr innerExpr = innerExprs.get(i);
-            InnerJoin innerJoin = innerExpr.getInnerJoin();
-            result = result.and(new InnerJoins(innerJoin));
-            upResult = result.andUpWheres(upResult, new UpWheres<>(innerJoin, innerExpr.getUpNotNullWhere()));
-        }
-        upWheres.set(upResult);
-        return result;
     }
 
     private Stat getInnerStatRows(StatType type) {

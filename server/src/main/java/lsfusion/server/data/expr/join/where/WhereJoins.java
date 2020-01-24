@@ -58,6 +58,7 @@ import lsfusion.server.physics.admin.Settings;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins>, OuterContext<WhereJoins> {
 
@@ -1788,16 +1789,17 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return getStatKeys(groups, keyStat, type);
     }
 
+    // there is an optimization if nothing was removed return null
     public static <T extends WhereJoin, K extends Expr> WhereJoins removeJoin(QueryJoin<K, ?, ?, ?> removeJoin, WhereJoin[] wheres, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
         WhereJoins result = null;
         UpWheres<WhereJoin> resultUpWheres = null;
         MExclSet<WhereJoin> mKeepWheres = SetFact.mExclSetMax(wheres.length); // массивы
-        for(WhereJoin whereJoin : wheres) {
+        for(WhereJoin<?, ?> whereJoin : wheres) {
             WhereJoins removeJoins;
             Result<UpWheres<WhereJoin>> removeUpWheres = new Result<>();
 
             boolean remove = BaseUtils.hashEquals(removeJoin, whereJoin);
-            InnerJoins joinFollows = null; Result<UpWheres<InnerJoin>> joinUpWheres = null;
+            InnerJoins joinFollows = null;
             if (!remove && whereJoin instanceof ExprStatJoin && ((ExprStatJoin) whereJoin).depends(removeJoin)) // без этой проверки может бесконечно проталкивать
                 remove = true;
 
@@ -1808,28 +1810,31 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 if(givesNoKeys(removeJoin, keyExpr))
                     remove = true;
             }
-            // нижние проверки должны соответствовать calculateOrWhere 
-            if(!remove && whereJoin instanceof PartitionJoin) {
+            // all lower checks should match calculateOrWhere 
+            if(!remove && whereJoin instanceof PartitionJoin) { // we don't need to check it in joinFollows, since PartitionExpr is InnerExpr
                 if(UnionJoin.depends(((PartitionJoin) whereJoin).getOrWhere(), removeJoin))
                     remove = true;
             }
             if(!remove) {
-                MSet<UnionJoin> mUnionJoins = SetFact.mSet();
-                joinUpWheres = new Result<>();
-                joinFollows = whereJoin.getJoinFollows(joinUpWheres, mUnionJoins);
-                for(UnionJoin unionJoin : mUnionJoins.immutable()) // без этой проверки может бесконечно проталкивать
-                    if(unionJoin.depends(removeJoin)) {
-                        remove = true;
-                        break;
+                Result<UpWheres<InnerJoin>> rJoinUpWheres = new Result<>();
+                Result<Boolean> unionRemoved = new Result<>(false); // need this because of null optimization
+                joinFollows = whereJoin.getJoinFollows(rJoinUpWheres, unionJoin -> {
+                    if (unionJoin.depends(removeJoin)) { // without this check there can be infinite push down, so we just eliminate union join branches that depends on removeJoin (but only branches, to avoid removing significant branches)
+                        unionRemoved.set(true);
+                        return true;
                     }
-            }
-
-            if(remove) {
+                    return false;
+                });
+                UpWheres<WhereJoin> joinUpWheres = BaseUtils.immutableCast(rJoinUpWheres.result);
+                removeJoins = joinFollows.removeJoin(removeJoin, joinUpWheres, removeUpWheres);
+                if(removeJoins == null && unionRemoved.result) {
+                    removeJoins = joinFollows.getWhereJoins();
+                    removeUpWheres.set(joinUpWheres);
+                }
+            } else {
                 removeJoins = WhereJoins.EMPTY;
                 removeUpWheres.set(UpWheres.EMPTY());
-            } else
-                removeJoins = joinFollows.removeJoin(removeJoin,
-                        BaseUtils.immutableCast(joinUpWheres.result), removeUpWheres);
+            }
 
             if(removeJoins!=null) { // вырезали, придется выкидывать целиком join, оставлять sibling'ом
                 if(result==null) {
@@ -1883,7 +1888,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private <K extends Expr> WhereJoins getWhereJoins(QueryJoin<K, ?, ?, ?> pushJoin, boolean isInner, Result<UpWheres<WhereJoin>> upWheres) {
-        WhereJoins adjWhereJoins = this;
         if(isInner) {
             if(pushJoin.isValue()) { // проблема что queryJoin может быть в ExprStatJoin.valueJoins, тогда он будет Inner, а в WhereJoins его не будет и начнут падать assertion'ы появлятся висячие ключи, другое дело, что потом надо убрать в EqualsWhere ExprStatJoin = значение, тогда это проверка не нужно
                 upWheres.set(UpWheres.EMPTY());
@@ -1891,6 +1895,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             }
         }
         
+        WhereJoins adjWhereJoins = this;
         // recursion guard, иначе бесконечные проталкивания могут быть (проблема с проталкиванием скажем SubQuery.v=5 должна в принципе решаться другим механищзмом)
         // в том числе и left приходится проверять так как может проталкиваться скажем UnionJoin, а он дает left join'ы 
         WhereJoins removedWhereJoins = removeJoin(pushJoin, upWheres.result, upWheres);

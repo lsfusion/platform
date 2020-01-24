@@ -665,20 +665,12 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return lsfusion.server.data.expr.BaseExpr.getNotNullClassWhere(joins);
         }
 
-        public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-            return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
-        }
-
         public boolean hasExprFollowsWithoutNotNull() {
             return InnerExpr.hasExprFollowsWithoutNotNull(this);
         }
 
         public InnerJoins getInnerJoins() {
             return InnerExpr.getInnerJoins(this);
-        }
-
-        public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) {
-            return InnerExpr.getJoinFollows(this, upWheres, mUnionJoins);
         }
 
         @TwinLazy

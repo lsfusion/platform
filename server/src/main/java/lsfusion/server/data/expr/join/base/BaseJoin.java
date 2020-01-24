@@ -5,11 +5,14 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
+import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.stat.*;
 
 public interface BaseJoin<K> {
 
-    ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive);
+    default ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        return InnerExpr.getInnerFollows(this).getExprFollows(getJoins(), includeInnerWithoutNotNull, recursive);
+    }
 
     ImMap<K, BaseExpr> getJoins();
 

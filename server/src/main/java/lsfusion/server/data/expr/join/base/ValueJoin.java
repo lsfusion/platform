@@ -48,10 +48,6 @@ public class ValueJoin extends TwinImmutableObject implements InnerBaseJoin<Obje
         return Cost.ONE;
     }
 
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
-    }
-
     public boolean hasExprFollowsWithoutNotNull() {
         return InnerExpr.hasExprFollowsWithoutNotNull(this);
     }
