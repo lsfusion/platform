@@ -39,14 +39,6 @@ public class StatKeysJoin<K extends BaseExpr> extends AbstractOuterContext<StatK
         return StatKeys.hashOuter(stat, hash);
     }
 
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) { // все равно использует getExprFollows
-        return InnerExpr.getJoinFollows(this, upWheres, mUnionJoins);
-    }
-
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
-    }
-
     public ImMap<K, BaseExpr> getJoins() {
         return BaseUtils.immutableCast(stat.getKeys().toMap());
     }

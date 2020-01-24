@@ -12,6 +12,8 @@ import lsfusion.server.data.expr.join.base.UnionJoin;
 import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.where.DataWhere;
 
+import java.util.function.Predicate;
+
 public abstract class NullableExpr extends VariableSingleClassExpr implements NullableExprInterface {
 
 //    @Override // не удалось вживую словить случай, когда при Where.TRUE() не работает, но по идее при GROUP(K, UNION(Z))=X потеряются условия UNION(Z) и не будет хватать ключа Z при компиляции и статистики к примеру
@@ -99,7 +101,7 @@ public abstract class NullableExpr extends VariableSingleClassExpr implements Nu
         return result.immutable();
     }
 
-    public static ImSet<InnerExpr> getInnerExprs(ImSet<NullableExprInterface> set, MSet<UnionJoin> mUnionJoins) {
+    public static ImSet<InnerExpr> getInnerExprs(ImSet<NullableExprInterface> set, Predicate<UnionJoin> removeUnionJoins) {
         boolean hasNotInner = false;
         for(int i=0,size=set.size();i<size;i++) // оптимизация
             if(!(set.get(i) instanceof InnerExpr)) {
@@ -114,10 +116,10 @@ public abstract class NullableExpr extends VariableSingleClassExpr implements Nu
             NullableExprInterface expr = set.get(i);
             if(expr instanceof InnerExpr)
                 mResult.add((InnerExpr)expr);
-            else {
-                if(mUnionJoins!=null && expr instanceof UnionExpr)
-                    mUnionJoins.add(((UnionExpr)expr).getBaseJoin());
-                mResult.addAll(getInnerExprs(expr.getExprFollows(NullableExpr.INNERJOINS, false), mUnionJoins));
+            else if(removeUnionJoins != null && expr instanceof UnionExpr && removeUnionJoins.test(((UnionExpr) expr).getBaseJoin())) {
+                // removing union joins
+            } else { // we need recursion for all other exprs
+                mResult.addAll(getInnerExprs(expr.getExprFollows(NullableExpr.INNERJOINS, false), removeUnionJoins));
             }
         }
         return mResult.immutable();

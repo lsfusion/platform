@@ -34,10 +34,6 @@ public abstract class CalculateJoin<K> extends TwinImmutableObject implements In
         return pushCost; // иначе cost равен cost'у контекста
     }
 
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
-    }
-
     public boolean hasExprFollowsWithoutNotNull() {
         return InnerExpr.hasExprFollowsWithoutNotNull(this);
     }
