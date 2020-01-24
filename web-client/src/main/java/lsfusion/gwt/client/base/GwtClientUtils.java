@@ -263,6 +263,30 @@ public class GwtClientUtils {
         }
     }
 
+    public static void showPopupInWindow(PopupPanel popup, int mouseX, int mouseY) {
+        // special minimum offset for Firefox, where PopupPanel swallows MOUSEOVER event 
+        popup.setPopupPosition(mouseX + 1, mouseY + 1);
+        popup.show();
+
+        int popupWidth = popup.getOffsetWidth();
+        int popupHeight = popup.getOffsetHeight();
+        int xCorrection = popupWidth - (Window.getClientWidth() - mouseX);
+        int yCorrection = popupHeight - (Window.getClientHeight() - mouseY);
+
+        if (xCorrection > 0 || yCorrection > 0) {
+            if (xCorrection > 0 && yCorrection > 0) {
+                // For the same reason with a lack of space on both sides (right and bottom) we show popup on the opposite side of the cursor. 
+                // Otherwise, in Firefox we won't see the popup at all.
+                popup.setPopupPosition(mouseX - popupWidth, mouseY - popupHeight);
+            } else {
+                popup.setPopupPosition(
+                        xCorrection > 0 ? max(mouseX - xCorrection, 0) : mouseX + 1,
+                        yCorrection > 0 ? max(mouseY - yCorrection, 0) : mouseY + 1
+                );
+            }
+        }
+    }
+
     /**
      * should always be consistent with lsfusion.client.form.property.table.view.TableTransferHandler#getClipboardTable(java.lang.String)
      */
