@@ -2,7 +2,6 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
@@ -75,27 +74,7 @@ public class TooltipManager {
                         tooltip.hide();
                     }
                     tooltip = new Tooltip(tooltipText);
-                    tooltip.setPopupPosition(mouseX + 1, mouseY + 1);   // минимальный сдвиг специально для Firefox, где
-                                                                        // PopupPanel забирает себе MOUSEOVER event
-                    tooltip.show();
-
-                    int tooltipWidth = tooltip.getOffsetWidth();
-                    int tooltipHeight = tooltip.getOffsetHeight();
-                    int tooltipXCorrection = tooltipWidth - (Window.getClientWidth() - mouseX);
-                    int tooltipYCorrection = tooltipHeight - (Window.getClientHeight() - mouseY);
-
-                    if (tooltipXCorrection > 0 || tooltipYCorrection > 0) {
-                        if (tooltipXCorrection > 0 && tooltipYCorrection > 0) {
-                            // по этой же причине при недостатке места с обеих сторон вместо сдвига на нужное расстояние
-                            // показываем тултип по другую сторону от курсора. иначе в правом нижнем углу в Firefox тултип не увидим вообще
-                            tooltip.setPopupPosition(mouseX - tooltipWidth, mouseY - tooltipHeight);
-                        } else {
-                            tooltip.setPopupPosition(
-                                    tooltipXCorrection > 0 ? Math.max(mouseX - tooltipXCorrection, 0) : mouseX + 1,
-                                    tooltipYCorrection > 0 ? Math.max(mouseY - tooltipYCorrection, 0) : mouseY + 1
-                            );
-                        }
-                    }
+                    GwtClientUtils.showPopupInWindow(tooltip, mouseX, mouseY);
                 }
                 return false;
             }
