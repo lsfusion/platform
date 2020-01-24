@@ -111,17 +111,12 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
         public InnerExpr getInnerExpr(WhereJoin join) {
             return QueryJoin.getInnerExpr(thisObj, join);
         }
-        public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-            return InnerExpr.getExprFollows(thisObj, includeInnerWithoutNotNull, recursive);
-        }
+
         public boolean hasExprFollowsWithoutNotNull() {
             return InnerExpr.hasExprFollowsWithoutNotNull(thisObj);
         }
         public InnerJoins getInnerJoins() {
             return InnerExpr.getInnerJoins(thisObj);
-        }
-        public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) {
-            return InnerExpr.getJoinFollows(thisObj, upWheres, mUnionJoins);
         }
 
         public abstract T translateThis(MapTranslate translate);
@@ -165,17 +160,11 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     public boolean isValue() {
         return getOuter().isValue();
     }
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-        return getOuter().getExprFollows(includeInnerWithoutNotNull, recursive);
-    }
     public boolean hasExprFollowsWithoutNotNull() {
         return getOuter().hasExprFollowsWithoutNotNull();
     }
     public InnerJoins getInnerJoins() {
         return getOuter().getInnerJoins();
-    }
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) {
-        return getOuter().getJoinFollows(upWheres, mUnionJoins);
     }
 
     public ImMap<K, BaseExpr> getJoins() {

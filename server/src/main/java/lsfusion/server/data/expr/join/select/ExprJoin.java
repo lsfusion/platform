@@ -43,14 +43,6 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return baseExpr.equals(((ExprJoin) o).baseExpr);
     }
 
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) { // все равно использует getExprFollows
-        return InnerExpr.getJoinFollows(this, upWheres, mUnionJoins);
-    }
-
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
-    }
-
     // может ли при замене выражения на ключ сохранить информацию о join'е (или все же неявно использует семантику выражения) - хак в определенной степени
     public boolean canBeKeyJoined() {
         return true;

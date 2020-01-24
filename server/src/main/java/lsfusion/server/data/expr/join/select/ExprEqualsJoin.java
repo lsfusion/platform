@@ -47,14 +47,6 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         return ExprJoin.getInnerJoins(expr1).and(ExprJoin.getInnerJoins(expr2));
     }
 
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) {
-        return InnerExpr.getJoinFollows(this, upWheres, mUnionJoins);
-    }
-
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
-    }
-
     public ImMap<Integer, BaseExpr> getJoins() {
         return MapFact.toMap(0, expr1, 1, expr2);
     }

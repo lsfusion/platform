@@ -81,7 +81,7 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
 
     @Override
     public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
+        return SetFact.EMPTY(); // to prevent infinite recursion
     }
 
     @Override
