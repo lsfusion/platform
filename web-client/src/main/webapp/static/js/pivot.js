@@ -1196,7 +1196,7 @@
         Pivot Table UI: calls Pivot Table core above with options set by user
          */
         $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-            var a, aggregator, attr, attrLength, attrValues, c, colOrderArrow, defaults, e, existingOpts, fn1, i, initialRender, l, len1, len2, len3, localeDefaults, localeStrings, materializedInput, n, o, opts, ordering, pivotTable, recordsProcessed, ref, ref1, ref2, ref3, refresh, refreshDelayed, renderer, rendererControl, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, x;
+            var a, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotTable, pvtColumns, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, x;
             if (overwrite == null) {
                 overwrite = false;
             }
@@ -1513,9 +1513,17 @@
                     return refresh();
                 });
                 $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
-                $("<td>").addClass('pvtAxisContainer pvtHorizList pvtCols pvtUiCell').appendTo(tr1);
+                pvtColumns = $("<td>").addClass('pvtHorizList pvtCols pvtUiCell');
+                tr1.append(pvtColumns);
+                pvtColumnsTable = $("<table>").addClass('pvtColumnsTable');
+                pvtColumns.append(pvtColumnsTable);
+                pvtColumnsRow = $("<tr>");
+                pvtColumnsTable.append(pvtColumnsRow);
                 tr2 = $("<tr>").appendTo(uiTable);
-                tr2.append($("<td>").addClass('pvtAxisContainer pvtRows pvtUiCell').attr("valign", "top"));
+                pvtRows = $("<td>").addClass('pvtRows pvtUiCell').attr("valign", "top");
+                tr2.append(pvtRows);
+                pvtRowsTable = $("<table>").addClass('pvtRowsTable');
+                pvtRows.append(pvtRowsTable);
                 pivotTable = $("<td>").attr("valign", "top").addClass('pvtRendererArea').appendTo(tr2);
                 if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
                     uiTable.find('tr:nth-child(1)').prepend(rendererControl);
@@ -1524,16 +1532,41 @@
                     uiTable.prepend($("<tr>").append(rendererControl).append(unused));
                 }
                 this.html(uiTable);
-                ref2 = opts.cols;
-                for (n = 0, len2 = ref2.length; n < len2; n++) {
-                    x = ref2[n];
-                    this.find(".pvtCols").append(this.find(".axis_" + ($.inArray(x, shownInDragDrop))));
-                }
-                ref3 = opts.rows;
-                for (o = 0, len3 = ref3.length; o < len3; o++) {
-                    x = ref3[o];
-                    this.find(".pvtRows").append(this.find(".axis_" + ($.inArray(x, shownInDragDrop))));
-                }
+                createPaxis = function(columns) {
+                    var paxis;
+                    if (columns) {
+                        paxis = $("<td>").addClass("paxis pvtAxisContainer").addClass('pvtVertList');
+                    } else {
+                        paxis = $("<tr>").append($("<td>").addClass("paxis pvtAxisContainer").addClass('pvtHorizList'));
+                    }
+                    return paxis;
+                };
+                fillPaxis = (function(_this) {
+                    return function(columns) {
+                        var currentPaxis, initData, itemsContainer, n, paxisCount, ref2, results, splitData;
+                        paxisCount = 0;
+                        currentPaxis = void 0;
+                        initData = columns ? opts.cols : opts.rows;
+                        splitData = columns ? opts.splitCols : opts.splitRows;
+                        itemsContainer = columns ? pvtColumnsRow : pvtRowsTable;
+                        results = [];
+                        for (i = n = 0, ref2 = initData.length; 0 <= ref2 ? n < ref2 : n > ref2; i = 0 <= ref2 ? ++n : --n) {
+                            if (!splitData || i > splitData[paxisCount]) {
+                                paxisCount++;
+                                currentPaxis = void 0;
+                            }
+                            if (currentPaxis === void 0) {
+                                createPaxis(columns).appendTo(itemsContainer);
+                                currentPaxis = createPaxis(columns);
+                                currentPaxis.appendTo(itemsContainer);
+                            }
+                            results.push((columns ? currentPaxis : currentPaxis.find("td")).append(_this.find(".axis_" + ($.inArray(initData[i], shownInDragDrop)))));
+                        }
+                        return results;
+                    };
+                })(this);
+                fillPaxis(true);
+                fillPaxis(false);
                 if (opts.aggregatorName != null) {
                     this.find(".pvtAggregator").val(opts.aggregatorName);
                 }
@@ -1544,9 +1577,54 @@
                     this.find(".pvtUiCell").hide();
                 }
                 initialRender = true;
+                refreshPaxis = (function(_this) {
+                    return function(columns) {
+                        var axisCount, child, childContainer, children, itemsContainer, n, newSplitPaxis, paxis, paxisCount, prevEmpty, ref2;
+                        itemsContainer = columns ? pvtColumnsRow : pvtRowsTable;
+                        newSplitPaxis = [];
+                        axisCount = -1;
+                        paxisCount = 0;
+                        prevEmpty = false;
+                        children = itemsContainer.find("td");
+                        for (i = n = 0, ref2 = children.length; 0 <= ref2 ? n < ref2 : n > ref2; i = 0 <= ref2 ? ++n : --n) {
+                            child = children[i];
+                            if (child.classList.contains("paxis")) {
+                                child.classList.remove("stretch");
+                                childContainer = columns ? child : child.parentElement;
+                                if (child.children.length === 0) {
+                                    if (prevEmpty) {
+                                        childContainer.remove();
+                                    }
+                                    prevEmpty = true;
+                                } else {
+                                    if (!prevEmpty) {
+                                        createPaxis(columns).insertBefore(childContainer);
+                                    }
+                                    prevEmpty = false;
+                                    axisCount += child.children.length;
+                                    newSplitPaxis[paxisCount++] = axisCount;
+                                }
+                            } else {
+                                paxis = createPaxis(columns);
+                                paxis.find("td").append(child);
+                                itemsContainer.append(paxis);
+                                newSplitPaxis[paxisCount++] = ++axisCount;
+                            }
+                        }
+                        if (!prevEmpty) {
+                            itemsContainer.append(createPaxis(columns));
+                        }
+                        itemsContainer.find(".paxis").last().addClass("stretch");
+                        if (columns) {
+                            return opts.splitCols = newSplitPaxis;
+                        } else {
+                            return opts.splitRows = newSplitPaxis;
+                        }
+                    };
+                })(this);
                 refreshDelayed = (function(_this) {
                     return function() {
-                        var exclusions, inclusions, len4, newDropdown, numInputsToProcess, pivotUIOptions, pvtVals, ref4, ref5, subopts, t, u, unusedAttrsContainer, vals;
+                        var exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, subopts, unusedAttrsContainer, vals;
                         subopts = {
                             derivedAttributes: opts.derivedAttributes,
                             localeStrings: opts.localeStrings,
@@ -1556,7 +1634,19 @@
                             rows: [],
                             dataClass: opts.dataClass
                         };
-                        numInputsToProcess = (ref4 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref4 : 0;
+                        numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
+                        refreshPaxis(true);
+                        refreshPaxis(false);
+                        _this.find(".pvtAxisContainer").sortable({
+                            update: function(e, ui) {
+                                if (ui.sender == null) {
+                                    return refresh();
+                                }
+                            },
+                            connectWith: _this.find(".pvtAxisContainer"),
+                            items: 'li',
+                            placeholder: 'pvtPlaceholder'
+                        });
                         vals = [];
                         _this.find(".pvtRows li span.pvtAttr").each(function() {
                             return subopts.rows.push($(this).data("attrName"));
@@ -1576,12 +1666,12 @@
                         });
                         if (numInputsToProcess !== 0) {
                             pvtVals = _this.find(".pvtVals");
-                            for (x = t = 0, ref5 = numInputsToProcess; 0 <= ref5 ? t < ref5 : t > ref5; x = 0 <= ref5 ? ++t : --t) {
+                            for (x = n = 0, ref3 = numInputsToProcess; 0 <= ref3 ? n < ref3 : n > ref3; x = 0 <= ref3 ? ++n : --n) {
                                 newDropdown = $("<select>").addClass('pvtAttrDropdown').append($("<option>")).bind("change", function() {
                                     return refresh();
                                 });
-                                for (u = 0, len4 = shownInAggregators.length; u < len4; u++) {
-                                    attr = shownInAggregators[u];
+                                for (o = 0, len2 = shownInAggregators.length; o < len2; o++) {
+                                    attr = shownInAggregators[o];
                                     newDropdown.append($("<option>").val(attr).text(attr));
                                 }
                                 pvtVals.append(newDropdown);
@@ -1625,13 +1715,13 @@
                             }
                         });
                         subopts.filter = function(record) {
-                            var excludedItems, k, ref6, ref7;
+                            var excludedItems, k, ref4, ref5;
                             if (!opts.filter(record)) {
                                 return false;
                             }
                             for (k in exclusions) {
                                 excludedItems = exclusions[k];
-                                if (ref6 = "" + ((ref7 = record[k]) != null ? ref7 : 'null'), indexOf.call(excludedItems, ref6) >= 0) {
+                                if (ref4 = "" + ((ref5 = record[k]) != null ? ref5 : 'null'), indexOf.call(excludedItems, ref4) >= 0) {
                                     return false;
                                 }
                             }
@@ -1837,4 +1927,4 @@
 
 }).call(this);
 
-//# sourceMappingURL=pivot2.js.map
+//# sourceMappingURL=pivot.js.map
