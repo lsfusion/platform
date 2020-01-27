@@ -185,6 +185,7 @@ public final class ClassCanonicalNameUtils {
         put("BPISTRING", StringClass.get(true, ExtInt.UNLIMITED));
         put("STRING", StringClass.getv(ExtInt.UNLIMITED));
         put("ISTRING", StringClass.getv(true, ExtInt.UNLIMITED));
+        put("NUMERIC", NumericClass.defaultNumeric);
     }};
 
     public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {

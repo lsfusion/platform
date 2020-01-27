@@ -40,7 +40,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientNumericClass.class)
     public GNumericType convertNumericClass(ClientNumericClass clientNumericClass) {
-        return new GNumericType(clientNumericClass.length, clientNumericClass.precision);
+        return new GNumericType(new GExtInt(clientNumericClass.length.value), new GExtInt(clientNumericClass.precision.value));
     }
 
     @Converter(from = ClientLongClass.class)

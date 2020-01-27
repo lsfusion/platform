@@ -2,6 +2,7 @@ package lsfusion.server.data.sql.syntax;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.compile.CompileOrder;
@@ -63,7 +64,7 @@ public interface SQLSyntax {
     String getVarStringType(int length);
     int getVarStringSQL();
 
-    String getNumericType(int length,int precision);
+    String getNumericType(ExtInt length, ExtInt precision);
     int getNumericSQL();
 
     String getIntegerType();

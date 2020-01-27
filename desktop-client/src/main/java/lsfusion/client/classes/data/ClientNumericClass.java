@@ -6,6 +6,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.DoublePropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.form.property.ExtInt;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class ClientNumericClass extends ClientDoubleClass {
         }
 
         public ClientNumericClass getDefaultType() {
-            return new ClientNumericClass(10, 2);
+            return new ClientNumericClass(new ExtInt(10), new ExtInt(2));
         }
 
         @Override
@@ -29,18 +30,23 @@ public class ClientNumericClass extends ClientDoubleClass {
             return ClientResourceBundle.getString("logics.classes.number");
         }
     };
+    public final ExtInt length;
+    public final ExtInt precision;
+
+    public ClientNumericClass(ExtInt length, ExtInt precision) {
+        this.length = length;
+        this.precision = precision;
+    }
 
     @Override
     protected int getLength() {
-        return length;
+        //as in server Settings
+        return length.isUnlimited() ? 127 : length.value;
     }
 
-    public final int length;
-    public final int precision;
-
-    public ClientNumericClass(int length, int precision) {
-        this.length = length;
-        this.precision = precision;
+    protected int getPrecision() {
+        //as in server Settings
+        return precision.isUnlimited() ? 32 : precision.value;
     }
 
     @Override
@@ -52,20 +58,20 @@ public class ClientNumericClass extends ClientDoubleClass {
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
 
-        outStream.writeInt(length);
-        outStream.writeInt(precision);
+        length.serialize(outStream);
+        precision.serialize(outStream);
     }
 
     public NumberFormat getDefaultFormat() {
         NumberFormat format = super.getDefaultFormat();
-        format.setMaximumIntegerDigits(length - precision);
-        format.setMaximumFractionDigits(precision);
+        format.setMaximumIntegerDigits(getLength() - getPrecision());
+        format.setMaximumFractionDigits(getPrecision());
         return format;
     }
 
     @Override
     public String toString() {
-        return ClientResourceBundle.getString("logics.classes.number") + '[' + length + ',' + precision + ']';
+        return ClientResourceBundle.getString("logics.classes.number") + (length.isUnlimited() ? "" : ('[' + length.value + ',' + precision.value + ']'));
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {

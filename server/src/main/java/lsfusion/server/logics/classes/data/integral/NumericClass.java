@@ -24,13 +24,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class NumericClass extends IntegralClass<BigDecimal> {
-    final byte length;
-    final byte precision;
+    public final static NumericClass defaultNumeric = new NumericClass(ExtInt.UNLIMITED, ExtInt.UNLIMITED);
+    ExtInt length;
+    ExtInt precision;
 
-    private NumericClass(byte length, byte precision) {
+    private NumericClass(ExtInt length, ExtInt precision) {
         super(LocalizedString.create("{classes.numeric}"));
         this.length = length;
         this.precision = precision;
+    }
+
+    public static NumericClass get(int length, int precision) {
+        return get(new ExtInt(length), new ExtInt(precision));
     }
 
     public Class getReportJavaClass() {
@@ -41,24 +46,40 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return DataType.NUMERIC; 
     }
 
+    public static NumericClass get(ExtInt length, ExtInt precision) {
+        int maxLength = Settings.get().getMaxNumericLength();
+        if(length.value >= maxLength)
+            length = new ExtInt(maxLength);
+        int maxPrecision = Settings.get().getMaxNumericPrecision();
+        if(precision.value >= maxPrecision)
+            precision = new ExtInt(maxPrecision);
+        return get((byte)length.value, (byte)precision.value);
+    }
+
+    @NFStaticLazy
+    public static NumericClass get(byte length, byte precision) {
+        synchronized (instances) {
+            for(NumericClass instance : instances)
+                if(instance.length.value == length && instance.precision.value==precision)
+                    return instance;
+
+            NumericClass instance = new NumericClass(new ExtInt(length), new ExtInt(precision));
+            instances.add(instance);
+            DataClass.storeClass(instance);
+            return instance;
+        }
+    }
+
+    private boolean isUnlimited() {
+        return length.isUnlimited();
+    }
+
     public void serialize(DataOutputStream outStream) throws IOException {
 
         super.serialize(outStream);
 
-        outStream.writeInt(length);
-        outStream.writeInt(precision);
-    }
-
-    public int getWhole() {
-        return length-precision;
-    }
-
-    public byte getLength() {
-        return length;
-    }
-
-    public int getPrecision() {
-        return precision;
+        length.serialize(outStream);
+        precision.serialize(outStream);
     }
 
     @Override
@@ -70,8 +91,8 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return value.compareTo(BigDecimal.ZERO) > 0;
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getNumericType(length,precision);
+    public int getWhole() {
+        return getLength() - getPrecision();
     }
 
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
@@ -94,18 +115,8 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return syntax.getNumericSQL();
     }
 
-    public BigDecimal read(Object value) {
-        if(value==null) return null;
-        BigDecimal bigDec;
-        if (value instanceof BigDecimal) {
-            bigDec = (BigDecimal) value;
-        } else {
-            bigDec = BigDecimal.valueOf(((Number) value).doubleValue());
-        }
-        
-        if(bigDec.scale()!=precision) // важно, так как у BigDecimal'а очень странный equals
-            bigDec = bigDec.setScale(precision, BigDecimal.ROUND_HALF_UP);
-        return bigDec;
+    public int getLength() {
+        return isUnlimited() ? Settings.get().getMaxNumericLength() : length.value;
     }
 
     @Override
@@ -117,35 +128,33 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         statement.setBigDecimal(num, (BigDecimal) value);
     }
 
-    public static NumericClass get(int length, int precision) {
-        int maxLength = Settings.get().getMaxNumericLength();
-        if(length >= maxLength)
-            length = maxLength;
-        int maxPrecision = Settings.get().getMaxNumericPrecision();
-        if(precision >= maxPrecision)
-            precision = maxPrecision;
-        return get((byte)length, (byte)precision);
+    public int getPrecision() {
+        return isUnlimited() ? Settings.get().getMaxNumericPrecision() : precision.value;
+    }
+
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return syntax.getNumericType(length, precision);
     }
 
     private final static Collection<NumericClass> instances = new ArrayList<>();
 
-    @NFStaticLazy
-    public static NumericClass get(byte length, byte precision) {
-        synchronized (instances) {
-            for(NumericClass instance : instances)
-                if(instance.length == length && instance.precision==precision)
-                    return instance;
-    
-            NumericClass instance = new NumericClass(length,precision);
-            instances.add(instance);
-            DataClass.storeClass(instance);
-            return instance;
+    public BigDecimal read(Object value) {
+        if(value==null) return null;
+        BigDecimal bigDec;
+        if (value instanceof BigDecimal) {
+            bigDec = (BigDecimal) value;
+        } else {
+            bigDec = BigDecimal.valueOf(((Number) value).doubleValue());
         }
+
+        if(!isUnlimited() && bigDec.scale()!=getPrecision()) // важно, так как у BigDecimal'а очень странный equals
+            bigDec = bigDec.setScale(getPrecision(), BigDecimal.ROUND_HALF_UP);
+        return bigDec;
     }
 
     @Override
     public ExtInt getCharLength() {
-        return new ExtInt(length);
+        return length;
     }
 
     public BigDecimal getDefaultValue() {
@@ -162,13 +171,13 @@ public class NumericClass extends IntegralClass<BigDecimal> {
 
     @Override
     public String getSID() {
-        return "NUMERIC" + "_" + length + "_" + precision;
+        return "NUMERIC" + (isUnlimited() ? "" : ("_" + length + "_" + precision));
     }
     
     @Override
     public String getCanonicalName() {
         String userSID = getSID();
-        return userSID.replaceFirst("_", "[").replaceFirst("_", ",") + "]";
+        return isUnlimited() ? userSID : (userSID.replaceFirst("_", "[").replaceFirst("_", ",") + "]");
     }
 
     @Override
@@ -178,11 +187,11 @@ public class NumericClass extends IntegralClass<BigDecimal> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'N', Math.min(getLength(), 253), getPrecision());
+        return new OverJDBField(fieldName, 'N', Math.min(getLength(), 253), Math.min(getPrecision(), 253));
     }
 
     @Override
     public Stat getTypeStat() {
-        return new Stat(10, length);
+        return new Stat(10, isUnlimited() ? Settings.get().getMaxNumericLength() : length.value);
     }
 }

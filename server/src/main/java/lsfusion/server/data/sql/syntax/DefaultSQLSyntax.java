@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.formula.SumFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
@@ -92,8 +93,8 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return Types.VARCHAR;
     }
 
-    public String getNumericType(int length, int precision) {
-        return "numeric(" + length + "," + precision + ")";
+    public String getNumericType(ExtInt length, ExtInt precision) {
+        return length.isUnlimited() ? "numeric" : ("numeric(" + length + "," + precision + ")");
     }
 
     public int getNumericSQL() {

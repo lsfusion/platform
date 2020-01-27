@@ -73,7 +73,7 @@ public class TypeSerializer {
         if (type == DataType.INTEGER) return IntegerClass.instance;
         if (type == DataType.LONG) return LongClass.instance;
         if (type == DataType.DOUBLE) return DoubleClass.instance;
-        if (type == DataType.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
+        if (type == DataType.NUMERIC) return NumericClass.get(ExtInt.deserialize(inStream), ExtInt.deserialize(inStream));
         if (type == DataType.LOGICAL) return LogicalClass.instance;
         if (type == DataType.DATE) return DateClass.instance;
         if (type == DataType.YEAR) return YearClass.instance;
