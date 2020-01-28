@@ -895,7 +895,7 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        ApplyAction applyAction = new ApplyAction(baseLM, actionImplement, caption, listInterfaces, keepSessionProps, serializable);
+        ApplyAction applyAction = new ApplyAction(caption, listInterfaces, actionImplement, keepSessionProps, serializable, baseLM.getCanceled().property, baseLM.getApplyMessage().property);
         actionImplement.action.singleApply = singleApply;
         return addAction(group, new LA<>(applyAction));
     }

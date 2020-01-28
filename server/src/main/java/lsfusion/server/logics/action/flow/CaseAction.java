@@ -40,6 +40,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static lsfusion.server.logics.property.PropertyFact.createForAction;
@@ -95,13 +96,28 @@ public class CaseAction extends ListCaseAction {
         return ((ImList<ActionCase<PropertyInterface>>)cases);
     }
 
+    @Override
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        ImList<ActionCase<PropertyInterface>> cases = getCases();
+        ImList<ActionCase<PropertyInterface>> replacedCases = cases.mapListValues((ActionCase<PropertyInterface> aCase) -> {
+            ActionMapImplement<?, PropertyInterface> implementReplace = aCase.implement.mapReplaceExtend(replacer);
+            if (implementReplace == null) 
+                return null;
+            return new ActionCase<>(aCase.where, implementReplace);
+        });
+        
+        if(replacedCases.filterList(Objects::nonNull).isEmpty())
+            return null;
+        
+        return PropertyFact.createCaseAction(interfaces, isExclusive, replacedCases.mapListValues((i, aCase) -> {
+            if(aCase == null)
+                return cases.get(i);
+            return aCase;
+        }));        
+    }
+
     public <I extends PropertyInterface> CaseAction(LocalizedString caption, boolean isExclusive, ImList<ActionMapImplement> impls, ImOrderSet<I> innerInterfaces) {
-        this(caption, isExclusive, innerInterfaces, impls.mapListValues(new Function<ActionMapImplement, ActionCase<I>>() {
-            @Override
-            public ActionCase<I> apply(ActionMapImplement value) {
-                return new ActionCase<>(value.mapWhereProperty().mapClassProperty(), value);
-            }
-        }));
+        this(caption, isExclusive, innerInterfaces, impls.mapListValues((ActionMapImplement value) -> new ActionCase<>(value.mapWhereProperty().mapClassProperty(), value)));
     }
 
     // explicit конструктор

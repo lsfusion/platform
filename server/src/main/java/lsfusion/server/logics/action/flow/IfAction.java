@@ -23,7 +23,7 @@ import static lsfusion.server.logics.property.PropertyFact.createForAction;
 
 public class IfAction extends KeepContextAction {
 
-    private final PropertyInterfaceImplement<PropertyInterface> ifProp;
+    private final PropertyMapImplement<?, PropertyInterface> ifProp;
     private final ActionMapImplement<?, PropertyInterface> trueAction;
     private final ActionMapImplement<?, PropertyInterface> falseAction;
 
@@ -133,5 +133,19 @@ public class IfAction extends KeepContextAction {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         return ForAction.pushFor(interfaces, ifProp, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, (context1, where, orders1, ordersNotNull1, mapInnerInterfaces) -> createForAction(context1, where, orders1, ordersNotNull1, trueAction.map(mapInnerInterfaces), null, false, SetFact.EMPTY(), false));
+    }
+
+    @Override
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        ActionMapImplement<?, PropertyInterface> replacedTrueAction = trueAction != null ? trueAction.mapReplaceExtend(replacer) : null;
+        ActionMapImplement<?, PropertyInterface> replacedFalseAction = falseAction != null ? falseAction.mapReplaceExtend(replacer) : null;
+        if(replacedTrueAction == null && replacedFalseAction == null)
+            return null;
+
+        if(replacedTrueAction == null)
+            replacedTrueAction = trueAction;
+        if(replacedFalseAction == null)
+            replacedFalseAction = falseAction;
+        return PropertyFact.createIfAction(interfaces, ifProp, replacedTrueAction, replacedFalseAction);
     }
 }

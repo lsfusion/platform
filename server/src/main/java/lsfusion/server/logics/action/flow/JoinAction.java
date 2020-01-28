@@ -122,6 +122,15 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
         return PropertyFact.mapActionImplements(identityMap, action.action.getList());
     }
 
+    @Override
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        ActionMapImplement<?, T> replacedAction = action.action.replace(replacer);
+        if(replacedAction == null)
+            return null;
+
+        return PropertyFact.createJoinAction(replacedAction.map(action.mapping));
+    }
+
     private boolean isRecursive;
     // пока исходим из того что рекурсивными могут быть только abstract'ы
     @Override

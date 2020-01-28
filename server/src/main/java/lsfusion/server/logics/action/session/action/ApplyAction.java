@@ -10,14 +10,12 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.KeepContextAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -39,16 +37,14 @@ public class ApplyAction extends KeepContextAction {
     private final FunctionSet<SessionDataProperty> keepSessionProperties;
     private final boolean serializable;
 
-    public <I extends PropertyInterface> ApplyAction(BaseLogicsModule LM, ActionMapImplement<?, I> action,
-                                                     LocalizedString caption, ImOrderSet<I> innerInterfaces,
-                                                     FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable) {
+    public <I extends PropertyInterface> ApplyAction(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionMapImplement<?, I> action, FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable, Property canceled, Property applyMessage) {
         super(caption, innerInterfaces.size());
         this.keepSessionProperties = keepSessionProperties;
         this.serializable = serializable;
 
         this.action = action.map(getMapInterfaces(innerInterfaces).reverse());
-        this.canceled = LM.getCanceled().property;
-        this.applyMessage = LM.getApplyMessage().property;
+        this.canceled = canceled;
+        this.applyMessage = applyMessage;
         
         finalizeInit();
     }
@@ -122,5 +118,14 @@ public class ApplyAction extends KeepContextAction {
         if (type == ChangeFlowType.HASSESSIONUSAGES)
             return true;
         return super.hasFlow(type);
+    }
+
+    @Override
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        ActionMapImplement<?, PropertyInterface> replacedAction = action.mapReplaceExtend(replacer);
+        if(replacedAction == null)
+            return null;
+
+        return PropertyFact.createApplyAction(interfaces, replacedAction, keepSessionProperties, serializable, canceled, applyMessage);
     }
 }

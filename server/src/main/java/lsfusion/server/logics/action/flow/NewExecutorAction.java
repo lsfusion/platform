@@ -3,6 +3,7 @@ package lsfusion.server.logics.action.flow;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -10,6 +11,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -22,12 +24,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class NewExecutorAction extends AroundAspectAction {
-    ScheduledExecutorService executor;
-    private final PropertyInterfaceImplement threadsProp;
+    private ScheduledExecutorService executor;
+    private final PropertyInterfaceImplement<PropertyInterface> threadsProp;
 
     public <I extends PropertyInterface> NewExecutorAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                            ActionMapImplement<?, I> action,
-                                                           PropertyInterfaceImplement threadsProp) {
+                                                           PropertyInterfaceImplement<I> threadsProp) {
         super(caption, innerInterfaces, action);
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -79,5 +81,10 @@ public class NewExecutorAction extends AroundAspectAction {
     @Override
     public PropertyInterface getSimpleDelete() {
         return aspectActionImplement.action.getSimpleDelete();
+    }
+
+    @Override
+    protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
+        return PropertyFact.createNewExecutorAction(interfaces, action, threadsProp);
     }
 }

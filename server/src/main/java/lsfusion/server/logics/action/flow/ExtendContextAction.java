@@ -63,22 +63,27 @@ public abstract class ExtendContextAction<I extends PropertyInterface> extends F
 
     protected abstract FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException;
 
-    // потом надо будет вверх реализацию перенести
-    private ActionMapImplement<?, PropertyInterface> compile;
-    private boolean compiled;
     @Override
-    @ManualLazy
-    public ActionMapImplement<?, PropertyInterface> compile() {
-        if(!compiled) {
-            ActionMapImplement<?, I> extCompile = compileExtend();
-            if(extCompile!=null)
-                compile = extCompile.map(mapInterfaces.reverse());
-            compiled = true;
-        }
-        return compile;
-   }
+    protected ActionMapImplement<?, PropertyInterface> aspectCompile() {
+        ActionMapImplement<?, I> extCompile = compileExtend();
+        if(extCompile!=null)
+            return extCompile.map(mapInterfaces.reverse());
+        return null;
+    }
 
     public ActionMapImplement<?, I> compileExtend() {
+        return null;
+    }
+
+    @Override
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        ActionMapImplement<?, I> extReplace = replaceExtend(replacer);
+        if(extReplace!=null)
+            return extReplace.map(mapInterfaces.reverse());
+        return null;
+    }
+
+    public ActionMapImplement<?, I> replaceExtend(ActionReplacer replacer) {
         return null;
     }
 }

@@ -3,6 +3,7 @@ package lsfusion.server.logics.action.session.action;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -14,6 +15,7 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -130,5 +132,10 @@ public class NewSessionAction extends AroundAspectAction {
     @Override
     public PropertyInterface getSimpleDelete() {
         return null; // aspectActionImplement.property.getSimpleDelete();
+    }
+
+    @Override
+    protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
+        return PropertyFact.createNewSessionAction(interfaces, action, singleApply, newSQL, migrateSessionProperties, isNested);
     }
 }

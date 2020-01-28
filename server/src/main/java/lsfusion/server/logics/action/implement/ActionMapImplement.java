@@ -79,6 +79,13 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
             return mapping.get(simpleDelete);
         return null;
     }
+    
+    public ActionMapImplement<?, T> mapReplaceExtend(Action.ActionReplacer replacer) {
+        ActionMapImplement<?, P> replaced = action.replace(replacer);
+        if(replaced != null)
+            return replaced.map(mapping);
+        return null;        
+    }
 
     public ImList<ActionMapImplement<?, T>> getList() {
         return PropertyFact.mapActionImplements(mapping, action.getList());
@@ -134,5 +141,8 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
     public String toString() {
         return action.toString() + " {" + mapping + "}";
     }
-
+    
+    public <X> ActionImplement<P, X> map(ImMap<T, X> map) {
+        return new ActionImplement<>(action, mapping.join(map));
+    }
 }

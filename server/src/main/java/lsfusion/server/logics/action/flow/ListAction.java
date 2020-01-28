@@ -28,6 +28,7 @@ import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class ListAction extends ListCaseAction {
@@ -119,6 +120,21 @@ public class ListAction extends ListCaseAction {
         for(ActionMapImplement<?, PropertyInterface> action : getActions())
             mResult.addAll(action.getList());
         return mResult.immutableList();
+    }
+
+    @Override
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        ImList<ActionMapImplement<?, PropertyInterface>> list = getList();
+        ImList<ActionMapImplement<?, PropertyInterface>> replacedList = list.mapListValues((ActionMapImplement<?, PropertyInterface> element) -> element.mapReplaceExtend(replacer));
+
+        if(replacedList.filterList(Objects::nonNull).isEmpty())
+            return null;
+
+        return PropertyFact.createListAction(interfaces, replacedList.mapListValues((i, element) -> {
+            if(element == null)
+                return list.get(i);
+            return element;
+        }), localsInScope);
     }
 
     @Override

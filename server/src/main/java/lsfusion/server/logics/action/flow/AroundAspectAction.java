@@ -63,4 +63,20 @@ public abstract class AroundAspectAction extends KeepContextAction {
     public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return aspectActionImplement.mapCalcWhereProperty();
     }
+
+    @Override
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        return aspectReplaceGenerics(replacer);
+    }
+    
+    private <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> aspectReplaceGenerics(ActionReplacer replacer) {
+        ActionMapImplement<T, PropertyInterface> aspectActionImplement = (ActionMapImplement<T, PropertyInterface>) this.aspectActionImplement;
+        ActionMapImplement<?, T> replacedAction = aspectActionImplement.action.replace(replacer);
+        if(replacedAction == null)
+            return null;
+
+        return createAspectImplement(interfaces, replacedAction.map(aspectActionImplement.mapping));
+    }
+
+    protected abstract <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action);
 }

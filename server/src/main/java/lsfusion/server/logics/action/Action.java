@@ -41,7 +41,6 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.interactive.action.change.GroupChangeAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -592,6 +591,20 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public ActionMapImplement<?, P> compile() {
+        return null;
+    }
+    
+    @FunctionalInterface
+    public interface ActionReplacer {
+        <P extends PropertyInterface> ActionMapImplement<?, P> replaceAction(Action<P> action);
+    }
+    public ActionMapImplement<?, P> replace(ActionReplacer replacer) {
+        ActionMapImplement<?, P> replacedAction = replacer.replaceAction(this);
+        if(replacedAction != null)
+            return replacedAction;            
+        return aspectReplace(replacer);
+    }
+    protected ActionMapImplement<?, P> aspectReplace(ActionReplacer replacer) {
         return null;
     }
 

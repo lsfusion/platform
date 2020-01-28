@@ -8,6 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
@@ -16,13 +17,12 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.change.SetAction;
-import lsfusion.server.logics.action.flow.CaseAction;
-import lsfusion.server.logics.action.flow.ForAction;
-import lsfusion.server.logics.action.flow.JoinAction;
-import lsfusion.server.logics.action.flow.ListAction;
+import lsfusion.server.logics.action.flow.*;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.LocalNestedType;
+import lsfusion.server.logics.action.session.action.ApplyAction;
+import lsfusion.server.logics.action.session.action.NewSessionAction;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -37,6 +37,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.change.CheckCanBeChangedAction;
+import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAggAction;
 import lsfusion.server.logics.form.interactive.action.input.PushRequestAction;
 import lsfusion.server.logics.form.interactive.action.input.RequestAction;
 import lsfusion.server.logics.property.cases.ActionCase;
@@ -749,6 +750,12 @@ public class PropertyFact {
         return caseAction.getImplement(listInterfaces);
     }
 
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createTryAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> tryAction, ActionMapImplement<?, L> catchAction, ActionMapImplement<?, L> finallyAction) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        Action caseAction = new TryAction(LocalizedString.NONAME, listInterfaces, tryAction, catchAction, finallyAction);
+        return caseAction.getImplement(listInterfaces);
+    }
+
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createCaseAction(ImSet<L> innerInterfaces, boolean isExclusive, ImList<ActionCase<L>> cases) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         Action caseAction = new CaseAction(LocalizedString.NONAME, isExclusive, listInterfaces, cases);
@@ -855,6 +862,31 @@ public class PropertyFact {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         PushRequestAction changeAction = new PushRequestAction(LocalizedString.NONAME, listInterfaces, action);
         return changeAction.getImplement(listInterfaces);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createDefaultChangedAggAction(ImSet<L> innerInterfaces, Property<P> aggProp, ValueClass aggClass, ActionMapImplement<?, L> changeAction) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        DefaultChangeAggAction<P> aggAction = new DefaultChangeAggAction<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeAction);
+        return aggAction.getImplement(listInterfaces);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewSessionAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, boolean singleApply, boolean newSQL, FunctionSet<SessionDataProperty> migrateSessionProperties, boolean isNested) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        NewSessionAction aggAction = new NewSessionAction(LocalizedString.NONAME, listInterfaces, action, singleApply, newSQL, migrateSessionProperties, isNested);
+        return aggAction.getImplement(listInterfaces);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewThreadAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> period, PropertyInterfaceImplement<L> delay, PropertyInterfaceImplement<L> connection) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        NewThreadAction aggAction = new NewThreadAction(LocalizedString.NONAME, listInterfaces, action, period, delay, connection);
+        return aggAction.getImplement(listInterfaces);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewExecutorAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> threads) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        NewExecutorAction aggAction = new NewExecutorAction(LocalizedString.NONAME, listInterfaces, action, threads);
+        return aggAction.getImplement(listInterfaces);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createApplyAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable, Property canceled, Property applyMessage) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        ApplyAction aggAction = new ApplyAction(LocalizedString.NONAME, listInterfaces, action, keepSessionProperties, serializable, canceled, applyMessage);
+        return aggAction.getImplement(listInterfaces);
     }
 
     // расширенный интерфейс создания SetAction, который умеет группировать, если что

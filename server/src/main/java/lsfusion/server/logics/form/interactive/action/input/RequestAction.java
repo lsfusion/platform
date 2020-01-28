@@ -72,6 +72,23 @@ public class RequestAction extends KeepContextAction {
         return result;
     }
 
+    @Override
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        ActionMapImplement<?, PropertyInterface> replacedRequestAction = requestAction.mapReplaceExtend(replacer);
+        ActionMapImplement<?, PropertyInterface> replacedDoAction = doAction != null ? doAction.mapReplaceExtend(replacer) : null;
+        ActionMapImplement<?, PropertyInterface> replacedElseAction = elseAction != null ? elseAction.mapReplaceExtend(replacer) : null;
+        if(replacedRequestAction == null && replacedDoAction == null && replacedElseAction == null)
+            return null;
+
+        if(replacedRequestAction == null)
+            replacedRequestAction = requestAction;
+        if(replacedDoAction == null)
+            replacedDoAction = doAction;
+        if(replacedElseAction == null)
+            replacedElseAction = elseAction;
+        return PropertyFact.createRequestAction(interfaces, replacedRequestAction, replacedDoAction, replacedElseAction);
+    }
+
     // there is a hack when doAction is set empty instead of null
     private boolean hasDoOrElseAction() {
         return doAction != null && !doAction.getList().isEmpty() || elseAction != null;        
@@ -95,6 +112,10 @@ public class RequestAction extends KeepContextAction {
     @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         return requestAction.action.getSimpleRequestInputType(optimistic, true);
+    }
+
+    public ActionMapImplement<?, PropertyInterface> getDoAction() {
+        return doAction;
     }
 }
 

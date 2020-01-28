@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.action.change;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
@@ -16,8 +17,8 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -29,7 +30,7 @@ public class DefaultChangeAggAction<P extends PropertyInterface> extends AroundA
     private final Property<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;
 
-    public DefaultChangeAggAction(LocalizedString caption, ImOrderSet<JoinProperty.Interface> listInterfaces, Property<P> aggProp, ValueClass aggClass, ActionMapImplement<?, JoinProperty.Interface> changeAction) {
+    public <I extends PropertyInterface> DefaultChangeAggAction(LocalizedString caption, ImOrderSet<I> listInterfaces, Property<P> aggProp, ValueClass aggClass, ActionMapImplement<?, I> changeAction) {
         super(caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;
@@ -84,5 +85,9 @@ public class DefaultChangeAggAction<P extends PropertyInterface> extends AroundA
             return context.pushRequestedValue(convertWYSValue, aggClass.getType(), () -> proceed(context));
         }
         return FlowResult.FINISH;
+    }
+
+    protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
+        return PropertyFact.createDefaultChangedAggAction(interfaces, aggProp, aggClass, action);
     }
 }

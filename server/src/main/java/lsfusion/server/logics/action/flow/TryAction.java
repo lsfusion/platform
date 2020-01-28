@@ -76,7 +76,22 @@ public class TryAction extends KeepContextAction {
         return result;
     }
 
+    @Override
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        ActionMapImplement<?, PropertyInterface> replacedTryAction = tryAction.mapReplaceExtend(replacer);
+        ActionMapImplement<?, PropertyInterface> replacedCatchAction = catchAction != null ? catchAction.mapReplaceExtend(replacer) : null;
+        ActionMapImplement<?, PropertyInterface> replacedFinallyAction = finallyAction != null ? finallyAction.mapReplaceExtend(replacer) : null;
+        if(replacedTryAction == null && replacedCatchAction == null && replacedFinallyAction == null)
+            return null;
 
+        if(replacedTryAction == null)
+            replacedTryAction = tryAction;
+        if(replacedCatchAction == null)
+            replacedCatchAction = catchAction;
+        if(replacedFinallyAction == null)
+            replacedFinallyAction = finallyAction;
+        return PropertyFact.createTryAction(interfaces, replacedTryAction, replacedCatchAction, replacedFinallyAction);
+    }
 
     @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {

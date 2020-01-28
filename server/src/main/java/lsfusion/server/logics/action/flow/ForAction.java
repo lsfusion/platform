@@ -452,7 +452,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
-        return pushFor(innerInterfaces, ifProp, mapInterfaces, mapping, context, push, orders, ordersNotNull, (PushFor<I, PropertyInterface>) (context1, where, orders1, ordersNotNull1, mapInnerInterfaces) -> createForAction(context1, where, orders1.mergeOrder(mapImplements(ForAction.this.orders, mapInnerInterfaces)), ordersNotNull1, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, autoSet, false, noInline.mapRev(mapInnerInterfaces), forceInline));
+        return pushFor(innerInterfaces, ifProp, mapInterfaces, mapping, context, push, orders, ordersNotNull, (context1, where, orders1, ordersNotNull1, mapInnerInterfaces) -> createForAction(context1, where, orders1.mergeOrder(mapImplements(ForAction.this.orders, mapInnerInterfaces)), ordersNotNull1, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, autoSet, false, noInline.mapRev(mapInnerInterfaces), forceInline));
     }
 
 //        (e, x)
@@ -494,6 +494,20 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
         return pushFor.push(mapPushInterfaces.filterRev(context).valuesSet(), mapPush,
                 PropertyFact.mapImplements(orders, mapPushInterfaces), ordersNotNull, mapInnerInterfaces.result).map(mapPushInterfaces.reverse());
+    }
+
+    @Override
+    public ActionMapImplement<?, I> replaceExtend(ActionReplacer replacer) {
+        ActionMapImplement<?, I> replacedAction = action.mapReplaceExtend(replacer);
+        ActionMapImplement<?, I> replacedElseAction = elseAction != null ? elseAction.mapReplaceExtend(replacer) : null;
+        if(replacedAction == null && replacedElseAction == null)
+            return null;
+        
+        if(replacedAction == null)
+            replacedAction = action;
+        if(replacedElseAction == null)
+            replacedElseAction = elseAction;
+        return PropertyFact.createForAction(innerInterfaces, mapInterfaces.valuesSet(), ifProp, orders, ordersNotNull, replacedAction, replacedElseAction, addObject, addClass, autoSet, recursive, noInline, forceInline);
     }
 
     @Override
