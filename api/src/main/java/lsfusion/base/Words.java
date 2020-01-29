@@ -344,7 +344,7 @@ public class Words {
     }
 
     public static String toString(Double numObject) {
-        return toString(numObject, false);
+        return toString(numObject, "number");
     }
 
     public static String toString(BigDecimal numObject, String type) {
