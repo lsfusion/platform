@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.StyleElement;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.RequiresResize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -25,11 +26,13 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
     }
 
     private JavaScriptObject map;
+    private JavaScriptObject markerClusters;
     private Map<GGroupObjectValue, JavaScriptObject> markers = new HashMap<>();
     @Override
     protected void render(Element renderElement, com.google.gwt.dom.client.Element recordElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
-            map = createMap(renderElement);
+            markerClusters = createMarkerClusters();
+            map = createMap(renderElement, markerClusters);
             renderElement.getStyle().setProperty("zIndex", "0"); // need this because leaflet uses z-indexes and therefore dialogs for example are shown below layers
         }
 
@@ -40,22 +43,22 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
             JavaScriptObject marker = oldMarkers.remove(key);
             if(marker == null) {
-                marker = createMarker(map, recordElement, fromObject(key));
+                marker = createMarker(map, recordElement, fromObject(key), markerClusters);
                 markers.put(key, marker);
             }
 
-            String filterID = createFilter(getMarkerColor(object));
-            updateMarker(map, marker, object, filterID);
+            String filterStyle = createFilter(getMarkerColor(object));
+            updateMarker(map, marker, object, filterStyle);
         }
         for(Map.Entry<GGroupObjectValue, JavaScriptObject> oldMarker : oldMarkers.entrySet()) {
-            removeMarker(oldMarker.getValue());
+            removeMarker(oldMarker.getValue(), markerClusters);
             markers.remove(oldMarker.getKey());
         }
         
         fitBounds(map, GwtSharedUtils.toArray(markers.values()));
     }
 
-    protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element)/*-{
+    protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters)/*-{
         var L = $wnd.L;
         var map = L.map(element);
 
@@ -63,24 +66,76 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+        map.addLayer(markerClusters);
+        
         return map;            
     }-*/;
 
-    protected native JavaScriptObject createMarker(JavaScriptObject map, com.google.gwt.dom.client.Element popupElement, JavaScriptObject key)/*-{
+    protected native JavaScriptObject createMarkerClusters()/*-{
+        var L = $wnd.L;
+        var browser = navigator.userAgent.toLowerCase();
+        if (browser.indexOf('firefox') > -1) {
+            return L.markerClusterGroup();
+        }
+        return L.markerClusterGroup({
+            iconCreateFunction: function (cluster) {
+                var colors = [];
+                cluster.getAllChildMarkers().forEach(function (marker) {
+                    colors.push(marker.color ? marker.color : "var(--focus-color)");
+                });
+                var colorsSetArray = Array.from(new Set(colors));
+
+                var backgroundColor = ""
+                if (colorsSetArray.length === 1) {
+                    backgroundColor = colorsSetArray[0];
+                } else {
+                    backgroundColor = "conic-gradient("
+                    var prevPercent = 0;
+                    colorsSetArray.forEach(function (color) {
+                        backgroundColor += color;
+                        if (colorsSetArray.indexOf(color) !== 0) {
+                            backgroundColor += " 0"
+                        }
+
+                        if (colorsSetArray.indexOf(color) < colorsSetArray.length - 1) {
+                            var newPercent = prevPercent + (colors.filter(function (c) {
+                                return c === color;
+                            }).length / colors.length * 100);
+                            backgroundColor += " " + newPercent + "%,";
+                            prevPercent = newPercent;
+                        }
+                    });
+                    backgroundColor += ")"
+                }
+
+                return L.divIcon({
+                    html: "<div class=\"leaflet-marker-cluster\" style=\"background:" + backgroundColor + ";\">" +
+                        "<div class=\"leaflet-marker-cluster-text\">" + cluster.getChildCount() + "</div>" +
+                        "</div>"
+                });
+            }
+        });
+    }-*/;
+
+    protected native JavaScriptObject createMarker(JavaScriptObject map, com.google.gwt.dom.client.Element popupElement, JavaScriptObject key, JavaScriptObject markerClusters)/*-{
         var L = $wnd.L;
 
-        var marker = L.marker([0, 0]).addTo(map);
+        var marker = L.marker([0, 0]);
+        
         if (popupElement !== null)
             marker.bindPopup(popupElement, {maxWidth: Number.MAX_SAFE_INTEGER});
         var thisObject = this;
         marker.on('click', function (e) {
             thisObject.@GMap::changeSimpleGroupObject(*)(key);
         });
+        
+        markerClusters.addLayer(marker);
+        
         return marker;
     }-*/;
 
-    protected native void removeMarker(JavaScriptObject marker)/*-{
-        marker.remove();
+    protected native void removeMarker(JavaScriptObject marker, JavaScriptObject markerClusters)/*-{
+        markerClusters.removeLayer(marker);
     }-*/;
 
     protected native void appendSVG(JavaScriptObject map, com.google.gwt.dom.client.Element svg)/*-{
@@ -92,12 +147,13 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
     }-*/;
 
     protected String createFilter(String colorStr) {
-        String svgID = null;
+        String svgStyle = null;
         if (colorStr != null) {
             int red = Integer.valueOf(colorStr.substring(1, 3), 16);
             int green = Integer.valueOf(colorStr.substring(3, 5), 16);
             int blue = Integer.valueOf(colorStr.substring(5, 7), 16);
-            svgID = "svg_" + red + "_" + green + "_" + blue;
+            String svgID = "svg_" + red + "_" + green + "_" + blue;
+            svgStyle = svgID + "-style";
 
             com.google.gwt.dom.client.Element svgEl = Document.get().getElementById(svgID);
             if (svgEl == null) {
@@ -118,28 +174,26 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
                 svgElement.appendChild(svgFilterElement);
 
                 appendSVG(map, svgElement.getElement());
+
+                StyleElement styleElement = Document.get().createStyleElement();
+                styleElement.setType("text/css");
+                styleElement.setInnerHTML("." + svgStyle + " { filter: url(#" + svgID + ") }");
+                Document.get().getElementsByTagName("head").getItem(0).appendChild(styleElement);
             }
         }
-        return svgID;
+        return svgStyle;
     }
     
-    protected native void updateMarker(JavaScriptObject map, JavaScriptObject marker, JavaScriptObject element, String filterID)/*-{
+    protected native void updateMarker(JavaScriptObject map, JavaScriptObject marker, JavaScriptObject element, String filterStyle)/*-{
         var L = $wnd.L;
 
         marker.setLatLng([element.latitude != null ? element.latitude : 0, element.longitude != null ? element.longitude : 0]);
-        marker.setIcon(element.icon != null ? new L.Icon(Object.assign({}, L.Icon.Default.prototype.options, {
-                iconUrl : element.icon
-                })) : new L.Icon.Default());
-        if (filterID) {
-            var filterStyleValue = "url(#" + filterID + ")";
-            if (map._loaded) {
-                marker._icon.style.filter = filterStyleValue;
-            } else { // marker._icon is undefined when the map is not loaded
-                map.on('load', function (e) {
-                    marker._icon.style.filter = filterStyleValue;
-                });
-            }
-        }
+        var iconUrl = element.icon != null ? element.icon : L.Icon.Default.prototype._getIconUrl('icon');
+
+        var myIcon = L.divIcon({html: "<img src=" + iconUrl + " alt=\"\" tabindex=\"0\">", className: filterStyle ? filterStyle : ''});
+        
+        marker.setIcon(myIcon);
+        marker.color = element.color;
     }-*/;
 
     protected native void fitBounds(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{

@@ -805,6 +805,38 @@ table.pvtTable tbody tr td {
     border-radius: unset !important;
 }
 
+.leaflet-marker-icon {
+    margin: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+.leaflet-marker-icon img {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
+.leaflet-marker-cluster {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    left: -21px;
+    top: -40px;
+    border: 1px solid var(--border-color);
+}
+
+.leaflet-marker-cluster-text {
+    padding: 10px 0;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 5px black;
+    text-align: center;
+}
+
 /* ------------ Other components  ------------ */
 .gridResizePanel{
     min-height: 70px;
