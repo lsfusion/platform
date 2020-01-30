@@ -805,7 +805,9 @@ public abstract class GroupingDialog extends JDialog {
                 cell.setCellValue(getColumnName(i));
                 sheet.autoSizeColumn(i);
             }
-            workbook.write(new FileOutputStream(file));
+            try(FileOutputStream fos = new FileOutputStream(file)) {
+                workbook.write(fos);
+            }
         }
 
         if(!isPivot)
