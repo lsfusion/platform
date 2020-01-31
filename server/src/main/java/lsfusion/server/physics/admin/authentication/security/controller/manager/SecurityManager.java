@@ -5,12 +5,14 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
@@ -34,6 +36,8 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
@@ -52,6 +56,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import javax.naming.CommunicationException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -385,13 +390,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         try {
             QueryBuilder<String, String> qne = new QueryBuilder<>(SetFact.singleton("neId"));
             Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
-            Expr permissionNEExpr = securityLM.permissionNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
+            Expr permitNEExpr = securityLM.permitNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
+            Expr forbidNEExpr = securityLM.forbidNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
 
             qne.and(nameExpr.getWhere());
-            qne.and(permissionNEExpr.getWhere());
+            qne.and(permitNEExpr.getWhere().or(forbidNEExpr.getWhere()));
 
             qne.addProperty("canonicalName", nameExpr);
-            qne.addProperty("permission", permissionNEExpr);
+            qne.addProperty("permit", permitNEExpr);
+            qne.addProperty("forbid", forbidNEExpr);
 
             applyNavigatorElementPolicy(qne.execute(session).values(), policy);
             securityPolicies.add(policy);
@@ -411,12 +418,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             if (neMap.containsKey(canonicalName)) {
                 ImMap<String, Object> valueMap = neMap.get(canonicalName);
                 NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
-                Boolean permission = getPermissionValue(valueMap.get("permission"));
-                if(permission != null) {
-                    if(permission)
-                        policy.navigator.permit(element);
-                    else
-                        policy.navigator.deny(element);
+                if (valueMap.get("forbid") != null) {
+                    policy.navigator.deny(element);
+                } else if (valueMap.get("permit") != null) {
+                    policy.navigator.permit(element);
                 }
             }
         }
@@ -428,9 +433,12 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             QueryBuilder<String, String> qu = new QueryBuilder<>(SetFact.toExclSet("userId"));
             Expr userExpr = qu.getMapExprs().get("userId");
             qu.and(userExpr.compare(userObject, Compare.EQUALS));
-            qu.addProperty("permissionAllForms", securityLM.permissionAllFormsUser.getExpr(session.getModifier(), userExpr));
-            qu.addProperty("permissionViewAllProperty", securityLM.permissionViewAllPropertyUser.getExpr(session.getModifier(), userExpr));
-            qu.addProperty("permissionChangeAllProperty", securityLM.permissionChangeAllPropertyUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("permitAllForms", securityLM.permitAllFormsUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("forbidAllForms", securityLM.forbidAllFormsUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("permitViewAllProperty", securityLM.permitViewAllPropertyUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("forbidViewAllProperty", securityLM.forbidViewAllPropertyUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("permitChangeAllProperty", securityLM.permitChangeAllPropertyUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("forbidChangeAllProperty", securityLM.forbidChangeAllPropertyRole.getExpr(session.getModifier(), userExpr));
 
             qu.addProperty("forbidViewAllSetupPolicies", securityLM.forbidViewAllSetupPolicies.getExpr(session.getModifier(), userExpr));
             qu.addProperty("forbidChangeAllSetupPolicies", securityLM.forbidChangeAllSetupPolicies.getExpr(session.getModifier(), userExpr));
@@ -445,20 +453,20 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session).values();
             for (ImMap<String, Object> valueMap : userPermissionValues) {
-                Boolean permission = getPermissionValue(valueMap.get("permissionAllForms"));
-                if(permission != null) {
-                    policy.navigator.defaultPermission = permission;
-                }
+                if (valueMap.get("forbidAllForms") != null)
+                    policy.navigator.defaultPermission = false;
+                else if (valueMap.get("permitAllForms") != null)
+                    policy.navigator.defaultPermission = true;
 
-                Boolean permissionViewAllProperty = getPermissionValue(valueMap.get("permissionViewAllProperty"));
-                if(permissionViewAllProperty != null) {
-                    policy.property.view.defaultPermission = permissionViewAllProperty;
-                }
+                if (valueMap.get("forbidViewAllProperty") != null)
+                    policy.property.view.defaultPermission = false;
+                else if (valueMap.get("permitViewAllProperty") != null)
+                    policy.property.view.defaultPermission = true;
 
-                Boolean permissionChangeAllProperty = getPermissionValue(valueMap.get("permissionChangeAllProperty"));
-                if(permissionChangeAllProperty != null) {
-                    policy.property.change.defaultPermission = permissionChangeAllProperty;
-                }
+                if (valueMap.get("forbidChangeAllProperty") != null)
+                    policy.property.change.defaultPermission = false;
+                else if (valueMap.get("permitChangeAllProperty") != null)
+                    policy.property.change.defaultPermission = true;
                 
                 cachePropertyPolicy = valueMap.get("cachePropertyPolicy") != null;
                 forbidViewAllSetupPolicies = valueMap.get("forbidViewAllSetupPolicies") != null;
@@ -468,14 +476,16 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             QueryBuilder<String, String> qne = new QueryBuilder<>(SetFact.toExclSet("userId", "neId"));
             Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
-            Expr permissionUserNeExpr = securityLM.permissionUserNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("userId"), qne.getMapExprs().get("neId"));
+            Expr permitUserNeExpr = securityLM.permitUserNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("userId"), qne.getMapExprs().get("neId"));
+            Expr forbidUserNeExpr = securityLM.forbidUserNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("userId"), qne.getMapExprs().get("neId"));
 
             qne.and(nameExpr.getWhere());
             qne.and(qne.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
-            qne.and(permissionUserNeExpr.getWhere());
+            qne.and(permitUserNeExpr.getWhere().or(forbidUserNeExpr.getWhere()));
 
             qne.addProperty("canonicalName", nameExpr);
-            qne.addProperty("permission", permissionUserNeExpr);
+            qne.addProperty("permit", permitUserNeExpr);
+            qne.addProperty("forbid", forbidUserNeExpr);
 
             applyNavigatorElementPolicy(qne.execute(session).values(), policy);
 
@@ -511,10 +521,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    Boolean getPermissionValue(Object permission) {
-        return permission != null ? permission.equals("Security_Permission.permit") : null;
     }
 
     private LRUSVSMap<Long, ImCol<ImMap<String, Object>>> propertyPolicyCache = new LRUSVSMap<>(LRUUtil.G2);
