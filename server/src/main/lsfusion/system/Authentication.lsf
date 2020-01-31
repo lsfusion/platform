@@ -181,6 +181,8 @@ colorThemeStaticName (CustomUser user) = staticName(colorTheme(user));
 name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
 colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(colorTheme(user));
 
+isDarkTheme() = colorTheme(currentUser()) == ColorTheme.dark;
+
 changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
 WHEN CHANGED(colorTheme(CustomUser user)) DO {
     changeColorThemeAction(colorTheme(user));    
