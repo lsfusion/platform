@@ -823,6 +823,8 @@ public abstract class GroupingDialog extends JDialog {
             if (columnName.contains("↑") || columnName.contains("↓")) {
                 columnName = columnName.substring(0, columnName.lastIndexOf(' '));
             }
+            if(columnName.isEmpty())
+                columnName = "undefined";
         }
         return columnName;
     }
