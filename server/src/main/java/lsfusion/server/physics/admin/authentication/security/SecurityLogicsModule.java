@@ -46,6 +46,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP nameUserRole;
     public LP mainRoleCustomUser;
     public LP hasUserRole;
+    public LA<?> createSystemUserRoles;
 
     public LP currentUserMainRoleName;
     public LP nameMainRoleUser;
@@ -83,6 +84,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // Список ролей для пользователей
         mainRoleCustomUser = findProperty("mainRole[CustomUser]");
         hasUserRole = findProperty("has[User,UserRole]");
+
+        createSystemUserRoles = findAction("createSystemUserRoles[]");
 
         // ------------------------ Политика безопасности ------------------ //
         idPolicy = findProperty("id[Policy]");

@@ -286,6 +286,18 @@ copy (UserRole from, UserRole to) +{
     dataPermissionChange(to, PropertyGroup propertyGroup) <- dataPermissionChange(from, propertyGroup);
 }
 
+createSystemUserRoles() {
+    IF NOT userRoleSID('readonly') THEN {
+        NEW ur = UserRole {
+            sid(ur) <- 'readonly';
+            name(ur) <- ISTRING[100] ('{security.user.role.readonly}');
+            permissionChange(ur, propertyGroup('System_root')) <- Permission.forbid;
+        }
+    }
+      
+    apply();
+}
+
 // ------ Property policy caches ----------- //
 
 cachePropertyPolicy '{security.cache.property.policy}' = DATA BOOLEAN (User) CHARWIDTH 10;
@@ -353,40 +365,6 @@ backgroundPermission (UserRole ur, NavigatorElement e)=
 copy (UserRole from, UserRole to) +{
     permissionAllForms(to) <- permissionAllForms(from);
     dataPermission(to, NavigatorElement navigatorElement) <- dataPermission(from, navigatorElement);
-}
-
-newPermissionPolicy = DATA BOOLEAN ();
-onStarted() + {
-    IF NOT newPermissionPolicy() THEN {
-        permissionAllForms(UserRole ur) <- Permission.forbid WHERE forbidAllForms(ur);
-        permissionAllForms(UserRole ur) <- Permission.permit WHERE permitAllForms(ur);
-        permissionViewAllProperty(UserRole ur) <- Permission.forbid WHERE forbidViewAllProperty(ur);
-        permissionViewAllProperty(UserRole ur) <- Permission.permit WHERE permitViewAllProperty(ur);
-        permissionChangeAllProperty(UserRole ur) <- Permission.forbid WHERE forbidChangeAllProperty(ur);
-        permissionChangeAllProperty(UserRole ur) <- Permission.permit WHERE permitChangeAllProperty(ur);
-        dataPermission(UserRole ur, NavigatorElement e) <- Permission.forbid WHERE forbid(ur, e);
-        dataPermission(UserRole ur, NavigatorElement e) <- Permission.permit WHERE permit(ur, e);
-        dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(ur, p);
-        dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitView(ur, p);
-        permissionChange(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(ur, p);
-        permissionChange(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(ur, p);
-        dataPermission(NavigatorElement e) <- Permission.forbid WHERE forbid(e);
-        dataPermission(NavigatorElement e) <- Permission.permit WHERE permit(e);
-        dataPermissionView(PropertyGroup g) <- Permission.forbid WHERE dataForbidView(g);
-        dataPermissionView(PropertyGroup g) <- Permission.permit WHERE dataPermitView(g);
-        dataPermissionView(ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(p);
-        dataPermissionView(ActionOrProperty p) <- Permission.permit WHERE dataPermitView(p);
-        dataPermissionChange(PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(g);
-        dataPermissionChange(PropertyGroup g) <- Permission.permit WHERE dataPermitChange(g);
-        dataPermissionChange(ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(p);
-        dataPermissionChange(ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(p);
-        dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidView(ur, g);
-        dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitView(ur, g);
-        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(ur, g);
-        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitChange(ur, g);  
-        
-        newPermissionPolicy() <- TRUE;
-    }     
 }
 
 // ----------------- Form policy ---------------------- //
@@ -473,6 +451,41 @@ onStarted() + {
         }
         migrated() <- TRUE;
     }
+}
+
+newPermissionPolicy = DATA BOOLEAN ();
+onStarted() + {
+    IF NOT newPermissionPolicy() THEN {
+        permissionAllForms(UserRole ur) <- Permission.forbid WHERE forbidAllForms(ur);
+        permissionAllForms(UserRole ur) <- Permission.permit WHERE permitAllForms(ur);
+        permissionViewAllProperty(UserRole ur) <- Permission.forbid WHERE forbidViewAllProperty(ur);
+        permissionViewAllProperty(UserRole ur) <- Permission.permit WHERE permitViewAllProperty(ur);
+        permissionChangeAllProperty(UserRole ur) <- Permission.forbid WHERE forbidChangeAllProperty(ur);
+        permissionChangeAllProperty(UserRole ur) <- Permission.permit WHERE permitChangeAllProperty(ur);
+        dataPermission(UserRole ur, NavigatorElement e) <- Permission.forbid WHERE forbid(ur, e);
+        dataPermission(UserRole ur, NavigatorElement e) <- Permission.permit WHERE permit(ur, e);
+        dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(ur, p);
+        dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitView(ur, p);
+        permissionChange(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(ur, p);
+        permissionChange(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(ur, p);
+        dataPermission(NavigatorElement e) <- Permission.forbid WHERE forbid(e);
+        dataPermission(NavigatorElement e) <- Permission.permit WHERE permit(e);
+        dataPermissionView(PropertyGroup g) <- Permission.forbid WHERE dataForbidView(g);
+        dataPermissionView(PropertyGroup g) <- Permission.permit WHERE dataPermitView(g);
+        dataPermissionView(ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(p);
+        dataPermissionView(ActionOrProperty p) <- Permission.permit WHERE dataPermitView(p);
+        dataPermissionChange(PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(g);
+        dataPermissionChange(PropertyGroup g) <- Permission.permit WHERE dataPermitChange(g);
+        dataPermissionChange(ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(p);
+        dataPermissionChange(ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(p);
+        dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidView(ur, g);
+        dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitView(ur, g);
+        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(ur, g);
+        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitChange(ur, g);
+        in(CustomUser u, userRoleSID('readonly')) <- TRUE IF GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);  
+        
+        newPermissionPolicy() <- TRUE;
+    }     
 }
 
 // ------------------ Security policy form ----------------------- //
