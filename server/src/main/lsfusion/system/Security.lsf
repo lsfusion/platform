@@ -158,11 +158,6 @@ dataForbidView = DATA BOOLEAN (UserRole, PropertyGroup);
 //remove after onStarted
 dataForbidView = DATA BOOLEAN (UserRole, ActionOrProperty);     
     
-permissionViewAllProperty = DATA Permission (UserRole);
-permissionViewAllPropertyForeground (UserRole ur) = parentPermissionForeground() IF NOT permissionViewAllProperty(ur); 
-captionPermissionViewAllProperty '{security.view.all.properties}' (UserRole ur) = staticCaption(OVERRIDE permissionViewAllProperty(ur), Permission.permit) CHARWIDTH 10;
-namePermissionViewAllProperty (User user) = staticName(permissionViewAllProperty(mainRole(user)));
-
 dataPermissionView = DATA Permission (UserRole, PropertyGroup);
 nearestParentPermissionView (UserRole ur, PropertyGroup g) =
     GROUP LAST dataPermissionView(ur, PropertyGroup parent) IF dataPermissionView(ur, parent) ORDER DESC level(g, parent) MATERIALIZED;    
@@ -232,11 +227,6 @@ permissionChange (UserRole ur, ActionOrProperty p) =
     OVERRIDE dataPermissionChange(ur, p), nearestParentPermissionChange(ur, parent(p));
 foregroundPermissionChange (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionChange(ur, p);             
 captionPermissionChange '{security.change}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionChange(ur, p), Permission.permit) CHARWIDTH 10;      
-
-permissionChangeAllProperty = DATA Permission (UserRole);
-permissionChangeAllPropertyForeground (UserRole ur) = parentPermissionForeground() IF NOT permissionChangeAllProperty (ur);
-captionPermissionChangeAllProperty '{security.change.all.properties}' (UserRole ur) = staticCaption(OVERRIDE permissionChangeAllProperty(ur), Permission.permit) CHARWIDTH 10;
-namePermissionChangeAllProperty(User user) = staticName(permissionChangeAllProperty(mainRole(user)));
     
 // --- Global + Roles --- //
 
@@ -246,8 +236,6 @@ forbidRolesChange (User user, ActionOrProperty property) = GROUP SUM 1 IF has(us
 forbidChange (User user, ActionOrProperty property) = forbidRolesChange (user, property) AND NOT permitRolesChange(user, property);
 
 copy (UserRole from, UserRole to) +{
-    permissionViewAllProperty(to) <- permissionViewAllProperty(from);
-    permissionChangeAllProperty(to) <- permissionChangeAllProperty(from);
     dataPermissionView(to, ActionOrProperty property) <- dataPermissionView(from, property);
     dataPermissionChange(to, ActionOrProperty property) <- dataPermissionChange(from, property);
     dataPermissionView(to, PropertyGroup propertyGroup) <- dataPermissionView(from, propertyGroup);
@@ -416,10 +404,6 @@ newPermissionPolicy = DATA BOOLEAN ();
 onStarted() + {
     //newPermissionPolicy() <- NULL;
     IF NOT newPermissionPolicy() THEN {
-        permissionViewAllProperty(UserRole ur) <- Permission.forbid WHERE forbidViewAllProperty(ur);
-        permissionViewAllProperty(UserRole ur) <- Permission.permit WHERE permitViewAllProperty(ur);
-        permissionChangeAllProperty(UserRole ur) <- Permission.forbid WHERE forbidChangeAllProperty(ur);
-        permissionChangeAllProperty(UserRole ur) <- Permission.permit WHERE permitChangeAllProperty(ur);
         dataPermission(UserRole ur, NavigatorElement e) <- Permission.forbid WHERE forbid(ur, e);
         dataPermission(UserRole ur, NavigatorElement e) <- Permission.permit WHERE permit(ur, e);
         dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(ur, p);
@@ -440,10 +424,15 @@ onStarted() + {
         dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitView(ur, g);
         dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(ur, g);
         dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitChange(ur, g);         
-        in(CustomUser u, userRoleSID('readonly')) <- TRUE IF GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);
         
         dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.forbid WHERE forbidAllForms(ur);
         dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.permit WHERE permitAllForms(ur);
+        dataPermissionView(UserRole ur, propertyGroup('System_root')) <- Permission.forbid WHERE forbidViewAllProperty(ur);
+        dataPermissionView(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE permitViewAllProperty(ur);
+        dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.forbid WHERE forbidChangeAllProperty(ur);
+        dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE permitChangeAllProperty(ur);
+        
+        in(CustomUser u, userRoleSID('readonly')) <- TRUE IF GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);                
         
         newPermissionPolicy() <- TRUE;
     }     
@@ -459,8 +448,6 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur) name, sid
     PROPERTIES(ur) NEW, DELETE
     
-    PROPERTIES(ur) captionPermissionViewAllProperty FOREGROUND permissionViewAllPropertyForeground(ur),
-                   captionPermissionChangeAllProperty FOREGROUND permissionChangeAllPropertyForeground(ur)
     PROPERTIES(ur) forbidViewAllSetupPolicies, forbidChangeAllSetupPolicies, forbidEditObjects
 
     PROPERTIES(ur) forbidChangePassword, forbidEditProfile
