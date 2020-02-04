@@ -408,9 +408,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             QueryBuilder<String, String> qu = new QueryBuilder<>(SetFact.toExclSet("userId"));
             Expr userExpr = qu.getMapExprs().get("userId");
             qu.and(userExpr.compare(userObject, Compare.EQUALS));
-            qu.addProperty("permissionViewAllProperty", securityLM.permissionViewAllPropertyUser.getExpr(session.getModifier(), userExpr));
-            qu.addProperty("permissionChangeAllProperty", securityLM.permissionChangeAllPropertyUser.getExpr(session.getModifier(), userExpr));
-
             qu.addProperty("forbidViewAllSetupPolicies", securityLM.forbidViewAllSetupPolicies.getExpr(session.getModifier(), userExpr));
             qu.addProperty("forbidChangeAllSetupPolicies", securityLM.forbidChangeAllSetupPolicies.getExpr(session.getModifier(), userExpr));
             qu.addProperty("forbidEditObjects", securityLM.forbidEditObjects.getExpr(session.getModifier(), userExpr));
@@ -424,16 +421,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session).values();
             for (ImMap<String, Object> valueMap : userPermissionValues) {
-                Boolean permissionViewAllProperty = getPermissionValue(valueMap.get("permissionViewAllProperty"));
-                if(permissionViewAllProperty != null) {
-                    policy.property.view.defaultPermission = permissionViewAllProperty;
-                }
-
-                Boolean permissionChangeAllProperty = getPermissionValue(valueMap.get("permissionChangeAllProperty"));
-                if(permissionChangeAllProperty != null) {
-                    policy.property.change.defaultPermission = permissionChangeAllProperty;
-                }
-                
                 cachePropertyPolicy = valueMap.get("cachePropertyPolicy") != null;
                 forbidViewAllSetupPolicies = valueMap.get("forbidViewAllSetupPolicies") != null;
                 forbidChangeAllSetupPolicies = valueMap.get("forbidChangeAllSetupPolicies") != null;

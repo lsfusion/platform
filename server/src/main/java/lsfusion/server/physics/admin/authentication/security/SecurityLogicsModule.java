@@ -25,9 +25,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
     public LP forbidDuplicateFormsCustomUser;
 
-    public LP<?> permissionViewAllPropertyUser;
-    public LP<?> permissionChangeAllPropertyUser;
-
     public LP forbidViewUserProperty;
     public LP forbidChangeUserProperty;
 
@@ -100,9 +97,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidViewAllSetupPolicies = findProperty("forbidViewAllSetupPolicies[User]");
         forbidChangeAllSetupPolicies = findProperty("forbidChangeAllSetupPolicies[User]");
         forbidEditObjects = findProperty("forbidEditObjects[User]");
-
-        permissionViewAllPropertyUser = findProperty("namePermissionViewAllProperty[User]");
-        permissionChangeAllPropertyUser = findProperty("namePermissionChangeAllProperty[User]");
 
         // Разрешения для каждого свойства
         forbidViewUserProperty = findProperty("forbidView[User,ActionOrProperty]");
