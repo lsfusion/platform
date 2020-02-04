@@ -35,7 +35,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP forbidChangeAllSetupPolicies;
     public LP forbidEditObjects;
 
-    public LP<?> permissionNavigatorElement;
     public LP<?> permissionAllFormsUser;
     public LP<?> permissionUserNavigatorElement;
 
@@ -111,11 +110,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidChangeUserProperty = findProperty("forbidChange[User,ActionOrProperty]");
 
         // ---- Политики для логики представлений
-
-        // -- Глобальные разрешения для всех ролей
-        permissionNavigatorElement = findProperty("nameDataPermission[NavigatorElement]");
-        
-        // -- Разрешения для каждой роли
 
         // Разрешения для всех элементов
         permissionAllFormsUser = findProperty("namePermissionAllForms[User]");

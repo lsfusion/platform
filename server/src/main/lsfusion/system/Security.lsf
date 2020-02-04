@@ -34,6 +34,10 @@ rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 
 CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE '{security.this.role.is.assigned.to.user}';
+    
+WHEN SETCHANGED (login(CustomUser u)) DO {
+    in(u, userRoleSID('default')) <- TRUE;        
+}
 
 // Forms
 FORM userRolesDialog '{security.user.roles}'
@@ -136,21 +140,6 @@ dataForbidView = DATA BOOLEAN (PropertyGroup) CHARWIDTH 10;
 //remove after onStarted
 dataForbidView = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
 
-dataPermissionView = DATA Permission (PropertyGroup);
-nearestParentPermissionView (PropertyGroup g) = GROUP LAST dataPermissionView(PropertyGroup parent) IF dataPermissionView(parent) ORDER DESC level(g, parent) MATERIALIZED;
-foregroundPermissionView (PropertyGroup p) = parentPermissionForeground() IF NOT dataPermissionView(p);
-backgroundPermissionView(PropertyGroup p) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, p) AND dataPermissionView(child) AND 
-    (NOT dataPermissionView(p) OR dataPermissionView(child) != dataPermissionView(p));          
-permissionView (PropertyGroup g) = OVERRIDE dataPermissionView(g), nearestParentPermissionView(g); 
-captionPermissionView '{security.view}' (PropertyGroup g) = staticCaption(OVERRIDE permissionView(g), Permission.permit) CHARWIDTH 10; 
-
-dataPermissionView = DATA Permission (ActionOrProperty);
-foregroundPermissionView (ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionView(p); 
-backgroundPermissionView(ActionOrProperty p) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, parent(p)) AND dataPermissionView(child) AND 
-    (NOT dataPermissionView(p) OR dataPermissionView(child) != dataPermissionView(p));          
-permissionView (ActionOrProperty p) = OVERRIDE dataPermissionView(p), nearestParentPermissionView(parent(p));
-captionPermissionView '{security.view}' (ActionOrProperty p) = staticCaption(OVERRIDE permissionView(p), Permission.permit) CHARWIDTH 10;
-
 // --- Roles --- // 
 
 // - Permit - //
@@ -193,8 +182,7 @@ captionPermissionView '{security.view}' (UserRole ur, ActionOrProperty p) = stat
 permitRolesView (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permissionView(userRole, property) == Permission.permit;
 forbidRolesView (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permissionView(userRole, property) == Permission.forbid;
 
-forbidView (User user, ActionOrProperty property) = 
-    ((permissionView(property) == Permission.forbid AND user IS User) OR rolesCount(user) = forbidRolesView(user, property)) AND NOT permitRolesView(user, property);    
+forbidView (User user, ActionOrProperty property) = forbidRolesView(user, property) AND NOT permitRolesView(user, property);    
 
 // ----- Change ----- //
 
@@ -211,25 +199,6 @@ dataPermitChange = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
 dataForbidChange = DATA BOOLEAN (PropertyGroup) CHARWIDTH 10;
 //remove after onStarted
 dataForbidChange = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
-
-// - Forbid - //
-dataPermissionChange = DATA Permission (PropertyGroup);
-nearestParentPermissionChange (PropertyGroup g) =
-    GROUP LAST dataPermissionChange(PropertyGroup parent) IF dataPermissionChange(parent) ORDER DESC level(g, parent) MATERIALIZED;
-foregroundPermissionChange (PropertyGroup p) = parentPermissionForeground() IF NOT dataPermissionChange(p);                 
-backgroundPermissionChange(PropertyGroup p) = 
-    childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, p) AND dataPermissionChange(child) AND    
-    (NOT dataPermissionChange(p) OR dataPermissionChange(child) != dataPermissionChange(p));
-permissionChange (PropertyGroup g) = OVERRIDE dataPermissionChange(g), nearestParentPermissionChange(g);
-captionPermissionChange '{security.change}' (PropertyGroup g) = staticCaption(OVERRIDE permissionChange(g), Permission.permit) CHARWIDTH 10;    
-
-dataPermissionChange = DATA Permission (ActionOrProperty);
-foregroundPermissionChange (ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionChange(p); 
-backgroundPermissionChange(ActionOrProperty p) = 
-    childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, parent(p)) AND dataPermissionChange(child) AND 
-    (NOT dataPermissionChange(p) OR dataPermissionChange(child) != dataPermissionChange(p));
-permissionChange (ActionOrProperty p) = OVERRIDE dataPermissionChange(p), nearestParentPermissionChange(parent(p));
-captionPermissionChange '{security.change}' (ActionOrProperty p) = staticCaption(OVERRIDE permissionChange(p), Permission.permit) CHARWIDTH 10;
 
 // --- Roles --- // 
 
@@ -274,8 +243,7 @@ namePermissionChangeAllProperty(User user) = staticName(permissionChangeAllPrope
 permitRolesChange (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permissionChange(userRole, property) == Permission.permit;
 forbidRolesChange (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permissionChange(userRole, property) == Permission.forbid;
 
-forbidChange (User user, ActionOrProperty property) = 
-    ((permissionChange(property) == Permission.forbid AND user IS User) OR rolesCount(user) = forbidRolesChange (user, property)) AND NOT permitRolesChange(user, property);
+forbidChange (User user, ActionOrProperty property) = forbidRolesChange (user, property) AND NOT permitRolesChange(user, property);
 
 copy (UserRole from, UserRole to) +{
     permissionViewAllProperty(to) <- permissionViewAllProperty(from);
@@ -294,6 +262,13 @@ createSystemUserRoles() {
             permissionChange(ur, propertyGroup('System_root')) <- Permission.forbid;
         }
     }
+    
+     IF NOT userRoleSID('default') THEN {
+            NEW ur = UserRole {
+                sid(ur) <- 'default';
+                name(ur) <- ISTRING[100] ('{security.user.role.default}');
+            }
+        }
       
     apply();
 }
@@ -330,16 +305,6 @@ forbidAllForms '{security.forbid.all.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH
 //remove after onStarted
 forbid '{security.forbid}' = DATA BOOLEAN (UserRole, NavigatorElement) CHARWIDTH 10;  
 
-dataPermission = DATA Permission (NavigatorElement);
-nameDataPermission (NavigatorElement e) = staticName(dataPermission(e));
-nearestParentPermission (NavigatorElement e) = GROUP LAST dataPermission(NavigatorElement parent) IF dataPermission(parent) ORDER DESC level(e, parent) MATERIALIZED;
-foregroundPermission (NavigatorElement e) = parentPermissionForeground() IF NOT dataPermission(e);
-backgroundPermission (NavigatorElement e)= 
-    childPermissionBackground() IF GROUP SUM 1 IF level(NavigatorElement child, e) AND dataPermission(child) AND 
-    (NOT dataPermission(e) OR dataPermission(child) != dataPermission(e));    
-permission (NavigatorElement e) = OVERRIDE dataPermission(e), nearestParentPermission(e);
-captionPermission '{security.permission}' (NavigatorElement e) = staticCaption(OVERRIDE permission(e), Permission.permit) CHARWIDTH 10;
-
 permissionAllForms = DATA Permission (UserRole);
 permissionAllFormsForeground (UserRole ur) = parentPermissionForeground() IF NOT permissionAllForms(ur);
 captionPermissionAllForms '{security.all.forms}' (UserRole ur) = staticCaption(OVERRIDE permissionAllForms(ur), Permission.permit) CHARWIDTH 10;
@@ -348,7 +313,7 @@ namePermissionAllForms (User user) = staticName(permissionAllForms(mainRole(user
 dataPermission = DATA Permission (UserRole, NavigatorElement);
 nearestParentPermission (UserRole ur, NavigatorElement e) = GROUP LAST dataPermission(ur, NavigatorElement parent) IF dataPermission(ur, parent) ORDER DESC level(e, parent) MATERIALIZED;
 foregroundPermission (UserRole ur, NavigatorElement e) = parentPermissionForeground() IF NOT dataPermission(ur, e);    
-permission (UserRole ur, NavigatorElement e) = OVERRIDE dataPermission(ur, e), nearestParentPermission(ur, e), permissionAllForms(ur), permission(e);
+permission (UserRole ur, NavigatorElement e) = OVERRIDE dataPermission(ur, e), nearestParentPermission(ur, e), permissionAllForms(ur);
 captionPermission '{security.permission}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.permit) CHARWIDTH 10;
 
 permit (User user, NavigatorElement navigatorElement) = 
@@ -468,21 +433,21 @@ onStarted() + {
         dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitView(ur, p);
         permissionChange(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(ur, p);
         permissionChange(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(ur, p);
-        dataPermission(NavigatorElement e) <- Permission.forbid WHERE forbid(e);
-        dataPermission(NavigatorElement e) <- Permission.permit WHERE permit(e);
-        dataPermissionView(PropertyGroup g) <- Permission.forbid WHERE dataForbidView(g);
-        dataPermissionView(PropertyGroup g) <- Permission.permit WHERE dataPermitView(g);
-        dataPermissionView(ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(p);
-        dataPermissionView(ActionOrProperty p) <- Permission.permit WHERE dataPermitView(p);
-        dataPermissionChange(PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(g);
-        dataPermissionChange(PropertyGroup g) <- Permission.permit WHERE dataPermitChange(g);
-        dataPermissionChange(ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(p);
-        dataPermissionChange(ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(p);
+        dataPermission(userRoleSID('default'), NavigatorElement e) <- Permission.forbid WHERE forbid(e);
+        dataPermission(userRoleSID('default'), NavigatorElement e) <- Permission.permit WHERE permit(e);
+        dataPermissionView(userRoleSID('default'), PropertyGroup g) <- Permission.forbid WHERE dataForbidView(g);
+        dataPermissionView(userRoleSID('default'), PropertyGroup g) <- Permission.permit WHERE dataPermitView(g);
+        dataPermissionView(userRoleSID('default'), ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(p);
+        dataPermissionView(userRoleSID('default'), ActionOrProperty p) <- Permission.permit WHERE dataPermitView(p);
+        dataPermissionChange(userRoleSID('default'), PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(g);
+        dataPermissionChange(userRoleSID('default'), PropertyGroup g) <- Permission.permit WHERE dataPermitChange(g);
+        dataPermissionChange(userRoleSID('default'), ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(p);
+        dataPermissionChange(userRoleSID('default'), ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(p);
         dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidView(ur, g);
         dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitView(ur, g);
         dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(ur, g);
-        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitChange(ur, g);
-        in(CustomUser u, userRoleSID('readonly')) <- TRUE IF GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);  
+        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitChange(ur, g);         
+        in(CustomUser u, userRoleSID('readonly')) <- TRUE IF GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);
         
         newPermissionPolicy() <- TRUE;
     }     
@@ -491,37 +456,7 @@ onStarted() + {
 // ------------------ Security policy form ----------------------- //
 
 FORM securityPolicy '{security.form.policy}'
-
-    // ----- Global ------ //
-    
-    // Navigator elements
-    TREE navigatorElementsDefault tdf = NavigatorElement PARENT parent(tdf)
-    PROPERTIES(tdf) READONLY caption, canonicalName, number
-    PROPERTIES(tdf) captionPermission FOREGROUND foregroundPermission(tdf) BACKGROUND backgroundPermission(tdf)
-    ORDER number(tdf)
-
-    OBJECTS df = NavigatorElement
-    PROPERTIES(df) READONLY caption, canonicalName
-    PROPERTIES(df) captionPermission FOREGROUND foregroundPermission(df) BACKGROUND backgroundPermission(df)
-
-    // Properties
-    TREE propertiesDefault tdprs = PropertyGroup PARENT parent(tdprs), dprs = ActionOrProperty
-    PROPERTIES (tdprs) READONLY caption, SID, number 
-    PROPERTIES (dprs)  READONLY caption, canonicalName, number
-    PROPERTIES (tdprs) captionPermissionView FOREGROUND foregroundPermissionView(tdprs) BACKGROUND backgroundPermissionView(tdprs)
-    PROPERTIES (tdprs) captionPermissionChange FOREGROUND foregroundPermissionChange(tdprs) BACKGROUND backgroundPermissionChange(tdprs)
-    PROPERTIES (dprs)  captionPermissionView FOREGROUND foregroundPermissionView(dprs) BACKGROUND backgroundPermissionView(dprs)
-    PROPERTIES (dprs)  captionPermissionChange FOREGROUND foregroundPermissionChange(dprs) BACKGROUND backgroundPermissionChange(dprs)
-    ORDER number(tdprs), number(dprs)
-    FILTERS parent(dprs) = tdprs
-
-    OBJECTS dpr = ActionOrProperty
-    PROPERTIES(dpr) READONLY caption, canonicalName
-    PROPERTIES(dpr) captionPermissionView FOREGROUND foregroundPermissionView(dpr) 
-    PROPERTIES(dpr) captionPermissionChange FOREGROUND foregroundPermissionChange(dpr)
-
-    // ----- Roles ------ //
-    
+ 
     PROPERTIES() nameDefaultMainRole
 
     OBJECTS ur = UserRole
@@ -580,71 +515,48 @@ DESIGN securityPolicy {
     OBJECTS {
         NEW container {
             fill = 1;
-            type = TABBED;
-    
-            NEW defaultPolicy {
-                type = TABBED;
-                caption = '{security.form.default.policy}';
-    
-                NEW defaultElements {
-                    type = TABBED;
-                    caption = '{security.form.navigator}';
-                    MOVE BOX(TREE navigatorElementsDefault) { caption = '{security.form.tree}'; }
-                    MOVE BOX(df) { caption = '{security.form.table}'; }
-                }
-    
-                NEW defaultPropertyContainer {
-                    type = TABBED;
-                    caption = '{security.form.properties}';
-                    MOVE BOX(TREE propertiesDefault) { caption = '{security.form.tree}'; }
-                    MOVE BOX(dpr) { caption = '{security.form.table}'; }
+              
+            type = SPLITV;
+            NEW roleHeader {
+                fill = 1;
+                MOVE PROPERTY(nameDefaultMainRole());
+                MOVE BOX(ur) {
+                    GRID(ur) { headerHeight = 60; }
                 }
             }
-    
-            NEW roles {
-                caption = '{security.user.roles}';
-                type = SPLITV;
-                NEW roleHeader {
-                    fill = 1;
-                    MOVE PROPERTY(nameDefaultMainRole());
-                    MOVE BOX(ur) {
-                        GRID(ur) { headerHeight = 60; }
-                    }
-                }
-    
-                NEW rolePolicyContainer {
-                    fill = 1;
+
+            NEW rolePolicyContainer {
+                fill = 1;
+                type = TABBED;
+
+                NEW elementsContainer {
                     type = TABBED;
-    
-                    NEW elementsContainer {
-                        type = TABBED;
-                        caption = '{security.form.navigator}';
-                        MOVE BOX(TREE navigatorElements) { caption = '{security.form.tree}'; }
-                        MOVE BOX(f) { caption = '{security.form.table}'; }
-                    }
-    
-                    NEW propertiesContainer {
-                        type = TABBED;
-                        caption = '{security.form.properties}';
-                        MOVE BOX(TREE properties) { caption = '{security.form.tree}'; }
-                        MOVE BOX(pr) { caption = '{security.form.table}'; }
-                    }
-                    
-                    MOVE BOX(p);
-                    MOVE BOX(u) {
-                        caption = '{authentication.users}';
-                        GRID(u) { headerHeight = 60; }
-                    }
-                    
-                    NEW roleApplicationScroll {
-                        caption = '{security.form.application.settings}';
-                        type = SCROLL;
-                        NEW roleApplicationPane {
-                            MOVE PANEL(ur);
-                            NEW roleApplicationSettings {
-                                type = COLUMNS;
-                                columns = 3;
-                            }
+                    caption = '{security.form.navigator}';
+                    MOVE BOX(TREE navigatorElements) { caption = '{security.form.tree}'; }
+                    MOVE BOX(f) { caption = '{security.form.table}'; }
+                }
+
+                NEW propertiesContainer {
+                    type = TABBED;
+                    caption = '{security.form.properties}';
+                    MOVE BOX(TREE properties) { caption = '{security.form.tree}'; }
+                    MOVE BOX(pr) { caption = '{security.form.table}'; }
+                }
+                
+                MOVE BOX(p);
+                MOVE BOX(u) {
+                    caption = '{authentication.users}';
+                    GRID(u) { headerHeight = 60; }
+                }
+                
+                NEW roleApplicationScroll {
+                    caption = '{security.form.application.settings}';
+                    type = SCROLL;
+                    NEW roleApplicationPane {
+                        MOVE PANEL(ur);
+                        NEW roleApplicationSettings {
+                            type = COLUMNS;
+                            columns = 3;
                         }
                     }
                 }
@@ -683,8 +595,6 @@ NAVIGATOR {
 FORM propertyPolicy '{security.form.policy}'
     OBJECTS p = Property PANEL
     PROPERTIES(p) READONLY caption, canonicalName
-    PROPERTIES(p) captionPermissionView FOREGROUND foregroundPermissionView(p)
-    PROPERTIES(p) captionPermissionChange FOREGROUND foregroundPermissionChange(p)
     PROPERTIES(p) userLoggable, isSetNotNull
     
     OBJECTS ur = UserRole
@@ -706,8 +616,6 @@ DESIGN propertyPolicy {
             type = CONTAINERH;
             alignment = STRETCH;
             caption = '{security.form.access}';
-            MOVE PROPERTY(captionPermissionView(p));
-            MOVE PROPERTY(captionPermissionChange(p));
             MOVE PROPERTY(userLoggable(p));
             MOVE PROPERTY(isSetNotNull(p));
         }
@@ -722,8 +630,6 @@ WHEN FORMS propertyPolicy, properties SETCHANGED(userLoggable(Property p)) DO ch
 FORM actionPolicy '{security.form.policy}'
     OBJECTS p = Action PANEL
     PROPERTIES(p) READONLY caption, canonicalName
-    PROPERTIES(p) captionPermissionView FOREGROUND foregroundPermissionView(p)
-    PROPERTIES(p) captionPermissionChange FOREGROUND foregroundPermissionChange(p)
     
     OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
@@ -744,8 +650,6 @@ DESIGN actionPolicy {
             type = CONTAINERH;
             alignment = STRETCH;
             caption = '{security.form.access}';
-            MOVE PROPERTY(captionPermissionView(p));
-            MOVE PROPERTY(captionPermissionChange(p));
         }
         MOVE BOX(ur);
     }
