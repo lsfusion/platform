@@ -168,6 +168,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     private DataObject anonymousUser = null;
     public void initUsers() throws SQLException, SQLHandledException {
         try(DataSession session = createSession()) {
+
+            securityLM.createSystemUserRoles.execute(session, getStack());
+
             DataObject adminUser = readUser("admin", session);
             if (adminUser == null) {
                 adminUser = addUser("admin", initialAdminPassword, session);
