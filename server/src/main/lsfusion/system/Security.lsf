@@ -264,11 +264,11 @@ createSystemUserRoles() {
     }
     
      IF NOT userRoleSID('default') THEN {
-            NEW ur = UserRole {
-                sid(ur) <- 'default';
-                name(ur) <- ISTRING[100] ('{security.user.role.default}');
-            }
+        NEW ur = UserRole {
+            sid(ur) <- 'default';
+            name(ur) <- ISTRING[100] ('{security.user.role.default}');
         }
+     }
       
     apply();
 }
@@ -305,15 +305,10 @@ forbidAllForms '{security.forbid.all.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH
 //remove after onStarted
 forbid '{security.forbid}' = DATA BOOLEAN (UserRole, NavigatorElement) CHARWIDTH 10;  
 
-permissionAllForms = DATA Permission (UserRole);
-permissionAllFormsForeground (UserRole ur) = parentPermissionForeground() IF NOT permissionAllForms(ur);
-captionPermissionAllForms '{security.all.forms}' (UserRole ur) = staticCaption(OVERRIDE permissionAllForms(ur), Permission.permit) CHARWIDTH 10;
-namePermissionAllForms (User user) = staticName(permissionAllForms(mainRole(user)));
-
 dataPermission = DATA Permission (UserRole, NavigatorElement);
 nearestParentPermission (UserRole ur, NavigatorElement e) = GROUP LAST dataPermission(ur, NavigatorElement parent) IF dataPermission(ur, parent) ORDER DESC level(e, parent) MATERIALIZED;
 foregroundPermission (UserRole ur, NavigatorElement e) = parentPermissionForeground() IF NOT dataPermission(ur, e);    
-permission (UserRole ur, NavigatorElement e) = OVERRIDE dataPermission(ur, e), nearestParentPermission(ur, e), permissionAllForms(ur);
+permission (UserRole ur, NavigatorElement e) = OVERRIDE dataPermission(ur, e), nearestParentPermission(ur, e);
 captionPermission '{security.permission}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.permit) CHARWIDTH 10;
 
 permit (User user, NavigatorElement navigatorElement) = 
@@ -328,7 +323,6 @@ backgroundPermission (UserRole ur, NavigatorElement e)=
     (NOT dataPermission(ur, e) OR dataPermission(ur, child) != dataPermission(ur, e));
 
 copy (UserRole from, UserRole to) +{
-    permissionAllForms(to) <- permissionAllForms(from);
     dataPermission(to, NavigatorElement navigatorElement) <- dataPermission(from, navigatorElement);
 }
 
@@ -420,9 +414,8 @@ onStarted() + {
 
 newPermissionPolicy = DATA BOOLEAN ();
 onStarted() + {
+    //newPermissionPolicy() <- NULL;
     IF NOT newPermissionPolicy() THEN {
-        permissionAllForms(UserRole ur) <- Permission.forbid WHERE forbidAllForms(ur);
-        permissionAllForms(UserRole ur) <- Permission.permit WHERE permitAllForms(ur);
         permissionViewAllProperty(UserRole ur) <- Permission.forbid WHERE forbidViewAllProperty(ur);
         permissionViewAllProperty(UserRole ur) <- Permission.permit WHERE permitViewAllProperty(ur);
         permissionChangeAllProperty(UserRole ur) <- Permission.forbid WHERE forbidChangeAllProperty(ur);
@@ -449,6 +442,9 @@ onStarted() + {
         dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitChange(ur, g);         
         in(CustomUser u, userRoleSID('readonly')) <- TRUE IF GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);
         
+        dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.forbid WHERE forbidAllForms(ur);
+        dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.permit WHERE permitAllForms(ur);
+        
         newPermissionPolicy() <- TRUE;
     }     
 }
@@ -463,8 +459,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur) name, sid
     PROPERTIES(ur) NEW, DELETE
     
-    PROPERTIES(ur) captionPermissionAllForms FOREGROUND permissionAllFormsForeground(ur),
-                   captionPermissionViewAllProperty FOREGROUND permissionViewAllPropertyForeground(ur),
+    PROPERTIES(ur) captionPermissionViewAllProperty FOREGROUND permissionViewAllPropertyForeground(ur),
                    captionPermissionChangeAllProperty FOREGROUND permissionChangeAllPropertyForeground(ur)
     PROPERTIES(ur) forbidViewAllSetupPolicies, forbidChangeAllSetupPolicies, forbidEditObjects
 
