@@ -295,9 +295,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         
         securityPolicies.add(defaultPolicy);
 
-        // политика по умолчанию из формы "Политика безопасности"
-        applyDefaultNavigatorElementDefinedPolicy(securityPolicies, session);
-
         // политика для роли из формы "Политика безопасности"
         applyNavigatorElementDefinedUserPolicy(securityPolicies, userObject, session);
 
@@ -381,26 +378,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
         if (!authenticationLM.checkPassword(session, userObject, password, stack))
             throw new LoginException();
-    }
-
-    private void applyDefaultNavigatorElementDefinedPolicy(List<SecurityPolicy> securityPolicies, DataSession session) {
-        SecurityPolicy policy = new SecurityPolicy(-1);
-        try {
-            QueryBuilder<String, String> qne = new QueryBuilder<>(SetFact.singleton("neId"));
-            Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
-            Expr permissionNEExpr = securityLM.permissionNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
-
-            qne.and(nameExpr.getWhere());
-            qne.and(permissionNEExpr.getWhere());
-
-            qne.addProperty("canonicalName", nameExpr);
-            qne.addProperty("permission", permissionNEExpr);
-
-            applyNavigatorElementPolicy(qne.execute(session).values(), policy);
-            securityPolicies.add(policy);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private void applyNavigatorElementPolicy(ImCol<ImMap<String, Object>> neQueryValues, SecurityPolicy policy) {
