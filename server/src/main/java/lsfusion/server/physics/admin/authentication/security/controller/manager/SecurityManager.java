@@ -408,7 +408,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             QueryBuilder<String, String> qu = new QueryBuilder<>(SetFact.toExclSet("userId"));
             Expr userExpr = qu.getMapExprs().get("userId");
             qu.and(userExpr.compare(userObject, Compare.EQUALS));
-            qu.addProperty("permissionAllForms", securityLM.permissionAllFormsUser.getExpr(session.getModifier(), userExpr));
             qu.addProperty("permissionViewAllProperty", securityLM.permissionViewAllPropertyUser.getExpr(session.getModifier(), userExpr));
             qu.addProperty("permissionChangeAllProperty", securityLM.permissionChangeAllPropertyUser.getExpr(session.getModifier(), userExpr));
 
@@ -425,11 +424,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session).values();
             for (ImMap<String, Object> valueMap : userPermissionValues) {
-                Boolean permission = getPermissionValue(valueMap.get("permissionAllForms"));
-                if(permission != null) {
-                    policy.navigator.defaultPermission = permission;
-                }
-
                 Boolean permissionViewAllProperty = getPermissionValue(valueMap.get("permissionViewAllProperty"));
                 if(permissionViewAllProperty != null) {
                     policy.property.view.defaultPermission = permissionViewAllProperty;
