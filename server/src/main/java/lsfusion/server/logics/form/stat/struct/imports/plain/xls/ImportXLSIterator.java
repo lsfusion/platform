@@ -112,7 +112,11 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         CellValue cellValue = formulaEvaluator.evaluate(cell);
         if(cellValue == null)
             return null;
-        return type.parseXLS(cell, cellValue);
+        try {
+            return type.parseXLS(cell, cellValue);
+        } catch (ParseException e) {
+            throw new ParseException(e.getMessage() + String.format(" (row %s, column %s)", cell.getRowIndex() + 1, cell.getColumnIndex() + 1), e);
+        }
     }
 
     @Override
