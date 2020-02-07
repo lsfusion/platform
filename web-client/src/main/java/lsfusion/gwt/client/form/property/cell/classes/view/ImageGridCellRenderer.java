@@ -27,6 +27,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
         if (table instanceof GGridPropertyTable) {
             cellElement.getStyle().setPosition(Style.Position.RELATIVE);
         }
+        cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
         
         updateDom(cellElement, table, context, value);
     }
@@ -37,10 +38,13 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
         cellElement.setInnerText(null);
         
         if (value == null && property.isEditableNotNull()) {
+            cellElement.getStyle().setPaddingRight(4, Style.Unit.PX);
+            cellElement.getStyle().setPaddingLeft(4, Style.Unit.PX);
             cellElement.setInnerText(REQUIRED_VALUE);
             cellElement.setTitle(REQUIRED_VALUE);
             cellElement.addClassName("requiredValueString");
         } else {
+            cellElement.getStyle().clearPadding();
             cellElement.removeClassName("requiredValueString");
             cellElement.setInnerText(null);
             cellElement.setTitle("");

@@ -21,6 +21,7 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
         cellElement.setAttribute("align", "center");
         cellElement.getStyle().setHeight(100, Style.Unit.PCT);
         cellElement.getStyle().setPosition(Style.Position.RELATIVE);
+        cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
         updateDom(cellElement, table, context, value);
 
 //        ImageElement image = Document.get().createImageElement();
@@ -39,6 +40,8 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
                 cellElement.removeAllChildren();
 
                 DivElement innerElement = cellElement.appendChild(Document.get().createDivElement());
+                innerElement.getStyle().setPaddingRight(4, Style.Unit.PX);
+                innerElement.getStyle().setPaddingLeft(4, Style.Unit.PX);
                 innerElement.setInnerText(REQUIRED_VALUE);
                 innerElement.setTitle(REQUIRED_VALUE);
                 innerElement.addClassName("requiredValueString");
