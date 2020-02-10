@@ -26,9 +26,9 @@ import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingBlocker;
 import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
-import lsfusion.gwt.client.base.exception.AuthenticationDispatchException;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
+import lsfusion.gwt.client.base.exception.RemoteMessageDispatchException;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.VoidResult;
@@ -126,7 +126,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
             @Override
             public void failure(Throwable caught) {
-                if(caught instanceof AuthenticationDispatchException) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
+                if(caught instanceof RemoteMessageDispatchException) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
                     GwtClientUtils.logout();
                 } else if(caught instanceof AppServerNotAvailableDispatchException) {
                     new Timer()
