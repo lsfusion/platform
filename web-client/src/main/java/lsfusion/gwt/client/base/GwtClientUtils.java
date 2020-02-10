@@ -642,4 +642,23 @@ public class GwtClientUtils {
 
         adjustFlexesToFixedTableLayout(viewWidth, prefs, flexes, flexValues);
     }
+
+    //equal to BaseUtils.replaceSeparators
+    public static String replaceSeparators(String value, String separator, String groupingSeparator) {
+        if (value.contains(",") && !groupingSeparator.equals(",") && separator.equals("."))
+            value = replaceCommaSeparator(value);
+        else if (value.contains(".") && !groupingSeparator.equals(".") && separator.equals(","))
+            value = replaceDotSeparator(value);
+        return value;
+    }
+
+    //equal to BaseUtils.replaceCommaSeparator
+    public static String replaceCommaSeparator(String value) {
+        return value.replace(',', '.');
+    }
+
+    //equal to BaseUtils.replaceDotSeparator
+    public static String replaceDotSeparator(String value) {
+        return value.replace('.', ',');
+    }
 }

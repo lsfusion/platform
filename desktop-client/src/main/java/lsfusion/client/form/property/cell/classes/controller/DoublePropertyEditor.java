@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.design.ComponentDesign;
 import org.apache.commons.lang.StringUtils;
 
@@ -189,11 +190,9 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         //та же проблема с кареткой при полной замене отрицательного значения на положительное (минус сохраняется, и каретка смещается)
         boolean moveCaretBack = false;
         char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
+        char groupingSeparator = df.getDecimalFormatSymbols().getGroupingSeparator();
+        content = BaseUtils.replaceSeparators(content, separator, groupingSeparator);
         if (getSelectedText() == null) {
-            if (content.contains(",") && separator == '.')
-                content = content.replace(",", ".");
-            else if (content.contains(".") && separator == ',')
-                content = content.replace(".", ",");
             String text = getText();
             if(isMinusZeroText(text, separator) && hasMask)
                 moveCaretBack = true;

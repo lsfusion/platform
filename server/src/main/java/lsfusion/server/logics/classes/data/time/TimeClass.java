@@ -13,11 +13,9 @@ import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Time;
+import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -89,6 +87,17 @@ public class TimeClass extends DataClass<Time> {
     @Override
     public int getBaseDotNetSize() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Time parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        Time cellValue;
+        try {
+            cellValue = new Time(cell.getDateCellValue().getTime());
+        } catch (IllegalStateException e) {
+            return super.parseXLS(cell, formulaValue);
+        }
+        return readXLS(cellValue);
     }
 
     public int getSQL(SQLSyntax syntax) {
