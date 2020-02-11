@@ -50,6 +50,11 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
     }
 
     @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return false;
+    }
+
+    @Override
     protected ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
         return ExClassSet.toExValue(baseClass.objectClass);
     }

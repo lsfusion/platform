@@ -7,6 +7,8 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MOrderSet;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.lambda.set.NotFunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -29,19 +31,31 @@ public class Inferred<T extends PropertyInterface> {
     public static <T extends PropertyInterface> Inferred<T> FALSE() {
         return FALSE;
     }
-    
+
     private static <T extends PropertyInterface> ImMap<T, ExClassSet> applyCompared(ImMap<T, ExClassSet> params, ImSet<Compared<T>> compared, InferType inferType) {
+        if (params == null) 
+            return null;
+        
+        MAddExclMap<ImSet<Compared<T>>, ImMap<T, ExClassSet>> memoized = MapFact.mAddExclMap();
+        return applyCompared(params, compared, inferType, memoized);
+    }
+    
+    private static <T extends PropertyInterface> ImMap<T, ExClassSet> applyCompared(ImMap<T, ExClassSet> params, ImSet<Compared<T>> compared, InferType inferType, MAddExclMap<ImSet<Compared<T>>, ImMap<T, ExClassSet>> memoized) {
         if(params == null)
             return null;
         
         ImMap<T, ExClassSet> result = params;
         for(Compared<T> compare : compared) {
-            ImMap<T, ExClassSet> recInferred = new Inferred<>(result, new NotNull<>(result.keys()), compared.removeIncl(compare)).finishEx(inferType); // вообще говоря not null не правильный, но это ни на что не влияет
-            if (recInferred == null) {
-                return null;
+            ImSet<Compared<T>> recCompared = getNeededRecCompared(compare, compared, inferType);
+            ImMap<T, ExClassSet> recInferred = memoized.get(recCompared);
+            if(recInferred == null) {
+                recInferred = applyCompared(result, recCompared, inferType);
+                if (recInferred == null) {
+                    return null;
+                }
+                memoized.exclAdd(recCompared, recInferred);
             }
             
-            // вызываем infer без этого compare чтобы предотвратить рекурсию
             ExClassSet classSet = ExClassSet.op(compare.resolveInferred(compare.first, recInferred, inferType), compare.resolveInferred(compare.second, recInferred, inferType), false);
             ResolveClassSet vSet = null;
             if(compare instanceof Equals || ((vSet = ExClassSet.fromEx(classSet)) instanceof DataClass)) {
@@ -58,7 +72,33 @@ public class Inferred<T extends PropertyInterface> {
         }
         return result;
     }
-    
+
+    // intersect optimization is really important when there are a lot of compares that can cause too deep recursion 
+    private static <T extends PropertyInterface> ImSet<Compared<T>> getNeededRecCompared(Compared<T> compare, ImSet<Compared<T>> compared, InferType inferType) {
+        ImMap<Compared<T>, ImSet<T>> comparedInterfaces = compared.mapValues((Compared<T> value) -> {
+            ImSet<T> interfaces = SetFact.EMPTY();
+            if (value.first.mapNeedInferredForValueClass(inferType))
+                interfaces = interfaces.merge(value.first.getInterfaces().toSet());
+            if (value.second.mapNeedInferredForValueClass(inferType))
+                interfaces = interfaces.merge(value.second.getInterfaces().toSet());
+            return interfaces;
+        });
+        
+        // we need recursion to find all needed "linked" compared
+        MOrderSet<Compared<T>> queue = SetFact.mOrderSet();
+        queue.add(compare);
+        int iq = 0;
+        
+        while(iq < queue.size()) {
+            Compared<T> queued = queue.get(iq);
+            ImSet<T> queuedInterfaces = comparedInterfaces.get(queued);
+            for(Compared<T> depCompared : comparedInterfaces.filterFnValues(element -> element.intersect(queuedInterfaces)).keyIt())
+                queue.add(depCompared);
+            iq++;
+        }
+        return queue.immutableOrder().getSet().removeIncl(compare);
+    }    
+
     private static <T> ImMap<T, ExClassSet> overrideClasses(ImMap<T, ExClassSet> oldClasses, ImMap<T, ExClassSet> newClasses) {
         return oldClasses.filterFnValues(new NotFunctionSet<>((SFunctionSet<ExClassSet>) element -> ExClassSet.fromEx(element) instanceof DataClass)).override(newClasses.removeNulls());
     }

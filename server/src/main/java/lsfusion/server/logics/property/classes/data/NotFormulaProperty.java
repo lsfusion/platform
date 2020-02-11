@@ -37,6 +37,11 @@ public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
     }
 
     @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return false;
+    }
+
+    @Override
     protected ExClassSet calcInferValueClass(ImMap<PropertyInterface, ExClassSet> inferred, InferType inferType) {
         return ExClassSet.logical;
     }
