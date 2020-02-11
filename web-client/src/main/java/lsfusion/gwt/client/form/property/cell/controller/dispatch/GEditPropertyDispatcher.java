@@ -21,10 +21,12 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
 
     private GType readType;
     private Object oldValue;
+    private boolean hasOldValue;
     private GPropertyDraw simpleChangeProperty;
     private GGroupObjectValue editColumnKey;
 
     private boolean valueRequested;
+    private Object oldValueRequested;
     private boolean transferFocusAfterEdit;
 
 
@@ -33,13 +35,16 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         this.editHandler = editHandler;
     }
 
-    public void executePropertyEventAction(final GPropertyDraw editProperty, final GGroupObjectValue columnKey, String actionSID, final Object currentValue) {
+    public void executePropertyEventAction(final GPropertyDraw editProperty, final GGroupObjectValue columnKey, String actionSID) {
         valueRequested = false;
+        oldValueRequested = null;
+        oldValue = null;
+        hasOldValue = false;
+
         simpleChangeProperty = null;
         readType = null;
-//        GExceptionManager.addStackTrace("INIT DROPPED READTYPE");
         editColumnKey = null;
-        oldValue = null;
+
         transferFocusAfterEdit = true;
 
         final boolean asyncModifyObject = form.isAsyncModifyObject(editProperty);
@@ -49,14 +54,14 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
                     @Override
                     public void closed(DialogBoxHelper.OptionType chosenOption) {
                         if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey, currentValue);
+                            executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey);
                         } else {
                             transferFocusAfterEdit();
                         }
                     }
                 });
             } else {
-                executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey, currentValue);
+                executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey);
             }
         } else {
             form.executeEventAction(editProperty, columnKey, actionSID, new ErrorHandlingCallback<ServerResponseResult>() {
@@ -75,7 +80,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         }
     }
 
-    private void executeSimpleChangeProperty(boolean asyncModifyObject, GPropertyDraw editProperty, GGroupObjectValue columnKey, Object currentValue) {
+    private void executeSimpleChangeProperty(boolean asyncModifyObject, GPropertyDraw editProperty, GGroupObjectValue columnKey) {
         if (asyncModifyObject) {
             form.modifyObject(editProperty, columnKey);
             transferFocusAfterEdit();
@@ -83,7 +88,6 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
 //          т.е. property.changeType != null
             editColumnKey = columnKey;
             simpleChangeProperty = editProperty;
-            oldValue = currentValue;
             requestValue(simpleChangeProperty.changeType);
         }
     }
@@ -108,7 +112,8 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     private void requestValue(GType type) {
         Log.debug("Edit started.");
         valueRequested = true;
-        editHandler.requestValue(type, oldValue);
+        oldValueRequested = editHandler.getEditValue();
+        editHandler.requestValue(type, hasOldValue ? oldValue : oldValueRequested);
     }
 
     public void cancelEdit() {
@@ -127,13 +132,15 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         }
 
         valueRequested = false;
+        Object oldValueRequested = this.oldValueRequested;
+        this.oldValueRequested = null;
 
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
                 if (simpleChangeProperty.canUseChangeValueForRendering()) {
                     editHandler.updateEditValue(inputResult.getValue());
                 }
-                form.changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
+                form.changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValueRequested);
                 transferFocusAfterEdit();
             }
             return;

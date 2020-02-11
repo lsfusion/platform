@@ -145,7 +145,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
                 if (!form.isEditing()) {
                     final String actionSID = getPropertyKeyPressActionSID(new NativeEditEvent(event.getNativeEvent()), property);
                     if (actionSID != null) {
-                        editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null);
+                        editDispatcher.executePropertyEventAction(property, columnKey, actionSID);
                     }
                 }
             }
@@ -169,13 +169,13 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     private void onContextMenuItemSelected(String actionSID) {
         if (!form.isEditing()) {
-            editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null);
+            editDispatcher.executePropertyEventAction(property, columnKey, actionSID);
         }
     }
 
     private void click(EventTarget ifocusTargetAfterEdit) {
         focusTargetAfterEdit = ifocusTargetAfterEdit;
-        editDispatcher.executePropertyEventAction(property, columnKey, GEditBindingMap.CHANGE, null);
+        editDispatcher.executePropertyEventAction(property, columnKey, GEditBindingMap.CHANGE);
     }
 
     @Override
@@ -269,6 +269,11 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         } else {
             focus();
         }
+    }
+
+    @Override
+    public Object getEditValue() {
+        return null;
     }
 
     private class ActionButton extends AppImageButton {

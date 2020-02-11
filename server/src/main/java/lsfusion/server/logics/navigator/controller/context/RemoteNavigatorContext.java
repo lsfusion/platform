@@ -177,8 +177,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         return uiContext.requestUserObject(dialog, stack);
     }
 
-    public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
-        return uiContext.requestUserData(dataClass, oldValue);
+    public ObjectValue requestUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
+        return uiContext.requestUserData(dataClass, oldValue, hasOldValue);
     }
 
     public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

@@ -50,7 +50,7 @@ public class DefaultChangeAggAction<P extends PropertyInterface> extends AroundA
 
         Type type = aggProp.getType();
         if (type instanceof DataClass) {
-            readValue = context.requestUserData((DataClass) type, null);
+            readValue = context.requestUserData((DataClass) type, null, false);
         } else {
             context.inputUserObject(
                     context.getFormFlowInstance().createObjectDialogRequest((CustomClass) aggProp.getValueClass(ClassType.editValuePolicy), context.stack)

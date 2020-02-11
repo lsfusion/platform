@@ -39,7 +39,7 @@ public interface Context {
     void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException;
     
     ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException;
-    ObjectValue requestUserData(DataClass dataClass, Object oldValue);
+    ObjectValue requestUserData(DataClass dataClass, Object oldValue, boolean hasOldValue);
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
     void pushLogMessage();

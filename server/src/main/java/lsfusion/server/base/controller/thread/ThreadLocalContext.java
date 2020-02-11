@@ -207,8 +207,8 @@ public class ThreadLocalContext {
         return get().requestUserObject(dialogRequest, stack);
     }
 
-    public static ObjectValue inputUserData(DataClass dataClass, Object oldValue) {
-        return get().requestUserData(dataClass, oldValue);
+    public static ObjectValue inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
+        return get().requestUserData(dataClass, oldValue, hasOldValue);
     }
 
     public static ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

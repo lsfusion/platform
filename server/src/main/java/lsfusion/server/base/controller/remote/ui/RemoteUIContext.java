@@ -68,9 +68,9 @@ public abstract class RemoteUIContext extends AbstractContext {
         return dialogInstance.getFormResult() == FormCloseType.DROP ? NullValue.instance : dialog.getValue();
     }
 
-    public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
+    public ObjectValue requestUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
         try {
-            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue)));
+            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue), hasOldValue));
             if (result.isCanceled()) {
                 return null;
             }

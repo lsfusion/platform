@@ -28,6 +28,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     protected final EditPropertyHandler handler;
 
     private boolean valueRequested = false;
+    private Object oldValueRequested;
     private boolean editPerformed;
 
     private ClientGroupObjectValue editColumnKey;
@@ -35,6 +36,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
     private ClientType readType;
     private Object oldValue;
+    private boolean hasOldValue;
     private Callback<Object> updateEditValueCallback;
 
     public EditPropertyDispatcher(EditPropertyHandler handler, DispatcherListener dispatcherListener) {
@@ -47,10 +49,12 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         return handler.getForm();
     }
 
-    /**
-     * @return true, если на сервере вызван action для редактирования
-     */
-    public boolean executePropertyEventAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, Object currentValue, EventObject editEvent) {
+    public boolean executePropertyEventAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, EventObject editEvent) {
+        valueRequested = false;
+        oldValueRequested = null;
+        oldValue = null;
+        hasOldValue = false;
+
         readType = null;
         simpleChangeProperty = null;
         editColumnKey = null;
@@ -79,7 +83,6 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 //                      т.е. property.changeType != null
                         editColumnKey = columnKey;
                         simpleChangeProperty = property;
-                        oldValue = currentValue;
                         return internalRequestValue(property.changeType);
                     }
                 }
@@ -126,11 +129,16 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
     private boolean internalRequestValue(ClientType readType) throws IOException {
         valueRequested = true;
-        return handler.requestValue(readType, oldValue);
+        oldValueRequested = handler.getEditValue();
+        return handler.requestValue(readType, hasOldValue ? oldValue : oldValueRequested);
     }
 
     private void internalCommitValue(UserInputResult inputResult) {
         Preconditions.checkState(valueRequested, "value wasn't requested");
+
+        valueRequested = false;
+        Object oldValueRequested = this.oldValueRequested;
+        this.oldValueRequested = null;
 
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
@@ -142,7 +150,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                             updateEditValueCallback.done(inputResult.getValue());
                         }
                     }
-                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValueRequested);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }
@@ -150,7 +158,6 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             return;
         }
 
-        valueRequested = false;
         continueDispatching(inputResult);
     }
 
@@ -166,6 +173,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         try {
             readType = deserializeClientType(action.readType);
             oldValue = deserializeObject(action.oldValue);
+            hasOldValue = action.hasOldValue;
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

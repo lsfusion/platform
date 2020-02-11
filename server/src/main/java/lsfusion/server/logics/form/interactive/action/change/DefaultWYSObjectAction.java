@@ -37,7 +37,7 @@ public class DefaultWYSObjectAction<P extends PropertyInterface> extends Abstrac
     @Override
     protected ObjectValue requestValue(ExecutionContext<ClassPropertyInterface> context, ImMap<ClassPropertyInterface, DataObject> keys, PropertyValueImplement<P> propertyValues) throws SQLException, SQLHandledException {
         Object oldValue = implement.read(context, keys);
-        ObjectValue changeValue = context.requestUserData(ObjectType.idClass, oldValue);
+        ObjectValue changeValue = context.requestUserData(ObjectType.idClass, oldValue, true);
         if(changeValue != null)
             changeValue = context.getSession().getObjectValue(valueClass, (Long)changeValue.getValue());
         return changeValue;

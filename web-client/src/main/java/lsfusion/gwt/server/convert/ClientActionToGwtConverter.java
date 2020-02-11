@@ -131,7 +131,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         Object value = deserializeServerValue(action.oldValue);
 
-        return new GRequestUserInputAction(type, value);
+        return new GRequestUserInputAction(type, value, action.hasOldValue);
     }
 
     private Object deserializeServerValue(byte[] valueBytes) throws IOException {

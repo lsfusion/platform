@@ -234,7 +234,7 @@ public abstract class AbstractContext implements Context {
         throw new UnsupportedOperationException("requestUserObject is not supported");
     }
 
-    public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
+    public ObjectValue requestUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
         throw new UnsupportedOperationException("requestUserData is not supported");
     }
 

@@ -18,7 +18,7 @@ public class LogicalPropertyEditor extends JCheckBox implements PropertyEditor {
         setOpaque(true);
         setBackground(Color.white);
 
-        //ставим новое значение, т.к. сразу закончим редактирование
+        // set new value because we'll finish editing immediately
         newValue = value == null;
         model.setSelected(newValue);
 
