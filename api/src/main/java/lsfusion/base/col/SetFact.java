@@ -327,6 +327,16 @@ public class SetFact {
             }
 
             @Override
+            public int size() {
+                return mExclSet.size();
+            }
+
+            @Override
+            public K get(int i) {
+                return mExclSet.get(i);
+            }
+
+            @Override
             public ImOrderSet<K> immutableOrder() {
                 return mExclSet.immutableOrder();
             }

@@ -44,6 +44,9 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
         ImCol<PropertyInterfaceImplement<Interface>> operands = getOperands();
         return op(operands.toList(), ListFact.toList(commonValue, operands.size()), operands.size(), -1, inferType, true);
     }
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return opNeedInferForValueClass(getOperands(), inferType);
+    }
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
         return opInferValueClasses(getOperands(), inferred, true, inferType);
     }

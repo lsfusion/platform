@@ -67,6 +67,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     ImCol<P> getInterfaces();
 
     Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType);
+    boolean mapNeedInferredForValueClass(InferType inferType);
     ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType);
 
     boolean mapIsFull(ImSet<P> interfaces);

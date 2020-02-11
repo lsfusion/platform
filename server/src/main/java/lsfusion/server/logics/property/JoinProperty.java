@@ -362,6 +362,14 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return op(implement.mapping, implementParams, implementNotNull, inferType); // возможно здесь надо было бы отдельно для прямой ветки, а отдельно для not*, но как их слить пока неясно
     }
 
+    @Override
+    public boolean needInferredForValueClass(InferType inferType) {
+        if(implement.property.needInferredForValueClass(inferType))
+            return false;
+        // in theory check for explicitClasses could be done, but it's not that important
+        return opNeedInferForValueClass(implement.mapping.values(), inferType);
+    }
+
     public ValueClass objectPropertyClass; // временный хак
     @Override
     public ExClassSet calcInferValueClass(final ImMap<Interface, ExClassSet> inferred, final InferType inferType) {

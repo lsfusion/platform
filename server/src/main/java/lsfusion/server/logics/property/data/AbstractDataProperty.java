@@ -27,6 +27,11 @@ public abstract class AbstractDataProperty extends Property<ClassPropertyInterfa
         return new Inferred<>(getDataClassValueWhere().getCommonExClasses(interfaces));
     }
 
+    @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return false;
+    }
+
     protected ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
         return getDataClassValueWhere().getCommonExClasses(SetFact.singleton("value")).get("value");
     }
