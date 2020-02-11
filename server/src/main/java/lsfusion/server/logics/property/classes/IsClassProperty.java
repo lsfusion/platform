@@ -280,6 +280,11 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         return new Inferred<>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
     }
 
+    @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return false;
+    }
+
     public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
         return ExClassSet.logical;
     }

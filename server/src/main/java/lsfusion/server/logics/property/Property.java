@@ -1741,11 +1741,26 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return calcInferInterfaceClasses(commonValue, inferType);
     }
     protected abstract Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType);
+    // optimization really important for applyCompared
+    @IdentityStartLazy
+    public boolean needInferredForValueClass(InferType inferType) {
+        return calcNeedInferredForValueClass(inferType);
+    }
     @IdentityStartLazy
     public ExClassSet inferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         return calcInferValueClass(inferred, inferType);
     }
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return true;
+    } 
     protected abstract ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType);
+    public static <I extends PropertyInterface> boolean opNeedInferForValueClass(ImCol<? extends PropertyInterfaceImplement<I>> props, InferType inferType) {
+        for (int i = 0; i < props.size(); i++) {
+            if(props.get(i).mapNeedInferredForValueClass(inferType))
+                return true;
+        }
+        return false;
+    }
     public static <I extends PropertyInterface> ExClassSet opInferValueClasses(ImCol<? extends PropertyInterfaceImplement<I>> props, ImMap<I, ExClassSet> inferred, boolean or, InferType inferType) {
         ExClassSet result = null;
         for (int i = 0; i < props.size(); i++) {

@@ -27,6 +27,11 @@ public abstract class ChangeProperty<T extends PropertyInterface> extends Aggreg
     }
 
     @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return false;
+    }
+
+    @Override
     protected ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         // they are used only in filters and in filters there is ignoreInInterface
         // however we still need this method, for empty, null, full, so we'll consider that property to be nullable with unknown classes
