@@ -39,7 +39,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.base.BaseUtils.*;
+import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -101,6 +102,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public boolean panelCaptionAbove;
+    public boolean panelCaptionAfter;
+    
+    public FlexAlignment valueAlignment;
 
     public int charHeight;
     public int charWidth;
@@ -124,7 +128,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String columnsName;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<>();
 
-    public boolean panelCaptionAfter;
     public boolean clearText;
     public boolean notSelectAll;
     public String tableName;
@@ -230,6 +233,21 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     @Override
     public FlexAlignment getAlignment() {
         return alignment;
+    }
+    
+    public Integer getSwingValueAlignment() {
+        if (valueAlignment != null) {
+            switch (valueAlignment) {
+                case CENTER:
+                case STRETCH:
+                    return SwingConstants.CENTER;
+                case END:
+                    return SwingConstants.RIGHT;
+                case START:
+                    return SwingConstants.LEFT;
+            }
+        }
+        return null;
     }
 
     public Format getFormat() {
@@ -379,8 +397,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, focusable);
 
         outStream.writeBoolean(panelCaptionAbove);
-
         outStream.writeBoolean(panelCaptionAfter);
+        
+        pool.writeObject(outStream, valueAlignment);
+        
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
 
@@ -419,8 +439,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         editType = PropertyEditType.deserialize(inStream.readByte());
 
         panelCaptionAbove = inStream.readBoolean();
-
         panelCaptionAfter = inStream.readBoolean();
+
+        valueAlignment = pool.readObject(inStream);
+
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();
 

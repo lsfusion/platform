@@ -10,7 +10,6 @@ public abstract class FilePropertyRenderer extends LabelPropertyRenderer {
     public FilePropertyRenderer(ClientPropertyDraw property) {
         super(property);
 
-        getComponent().setHorizontalAlignment(JLabel.CENTER);
         getComponent().setVerticalAlignment(JLabel.CENTER);
     }
 

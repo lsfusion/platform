@@ -9,7 +9,6 @@ public abstract class LinkPropertyRenderer extends LabelPropertyRenderer {
     public LinkPropertyRenderer(ClientPropertyDraw property) {
         super(property);
 
-        getComponent().setHorizontalAlignment(JLabel.CENTER);
         getComponent().setVerticalAlignment(JLabel.CENTER);
     }
 

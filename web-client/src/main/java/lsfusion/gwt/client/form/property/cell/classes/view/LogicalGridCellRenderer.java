@@ -5,13 +5,24 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
 public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
+    private GPropertyDraw property;
+
+    public LogicalGridCellRenderer(GPropertyDraw property) {
+        this.property = property;
+    }
 
     @Override
     public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
         boolean checked = value != null && (Boolean) value;
+
+        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        if (textAlignStyle != null) {
+            cellElement.setAttribute("align", textAlignStyle.getCssName());
+        }
 
         Style checkStyle;
         // logical class is rendered as checkbox input to make all checkboxes look the same. 
@@ -31,13 +42,6 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
             checkStyle = input.getStyle();
             checkStyle.setProperty("pointerEvents", "none");
         }
-        
-        checkStyle.setProperty("margin", "auto");
-        checkStyle.setPosition(Style.Position.ABSOLUTE);
-        checkStyle.setTop(0, Style.Unit.PX);
-        checkStyle.setLeft(0, Style.Unit.PX);
-        checkStyle.setBottom(0, Style.Unit.PX);
-        checkStyle.setRight(0, Style.Unit.PX);
 
         if (table instanceof GGridPropertyTable) {
             cellElement.getStyle().setPosition(Style.Position.RELATIVE);

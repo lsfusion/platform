@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.link;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -86,6 +87,11 @@ public abstract class LinkClass extends DataClass<String> {
     @Override
     public ExtInt getCharLength() {
         return ExtInt.UNLIMITED;
+    }
+    
+    @Override
+    public FlexAlignment getValueAlignment() {
+        return FlexAlignment.CENTER;
     }
 
     @Override

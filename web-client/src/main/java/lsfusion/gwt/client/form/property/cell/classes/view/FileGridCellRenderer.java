@@ -22,7 +22,10 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
-        cellElement.setAttribute("align", "center");
+        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        if (textAlignStyle != null) {
+            cellElement.setAttribute("align", textAlignStyle.getCssName());
+        }
         cellElement.getStyle().setHeight(100, Style.Unit.PCT);
         cellElement.getStyle().setPosition(Style.Position.RELATIVE);
         cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);

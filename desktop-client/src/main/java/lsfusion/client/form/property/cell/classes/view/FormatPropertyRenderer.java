@@ -3,7 +3,6 @@ package lsfusion.client.form.property.cell.classes.view;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.LabelPropertyRenderer;
 
-import javax.swing.*;
 import java.text.Format;
 
 public abstract class FormatPropertyRenderer extends LabelPropertyRenderer {
@@ -14,7 +13,6 @@ public abstract class FormatPropertyRenderer extends LabelPropertyRenderer {
         super(property);
 
         updateFormat();
-        getComponent().setHorizontalAlignment(JLabel.RIGHT);
     }
     
     public void updateFormat() {

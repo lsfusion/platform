@@ -3,6 +3,7 @@ package lsfusion.server.logics.classes.data.time;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
 import lsfusion.base.SystemUtils;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -106,6 +107,11 @@ public class DateClass extends DataClass<Date> {
     @Override
     public ExtInt getCharLength() {
         return new ExtInt(25);
+    }
+
+    @Override
+    public FlexAlignment getValueAlignment() {
+        return FlexAlignment.END;
     }
 
     public boolean isSafeString(Object value) {

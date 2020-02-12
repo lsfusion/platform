@@ -60,7 +60,7 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new DateTimePropertyEditor(value, getEditFormat(property), property.design);
+        return new DateTimePropertyEditor(value, getEditFormat(property), property);
     }
 
     public Object parseString(String s) throws ParseException {

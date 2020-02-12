@@ -27,6 +27,11 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
             cellElement.getStyle().setPosition(Style.Position.RELATIVE);
         }
         cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
+
+        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        if (textAlignStyle != null) {
+            cellElement.setAttribute("align", textAlignStyle.getCssName());
+        }
         
         updateDom(cellElement, table, context, value);
     }
@@ -54,13 +59,6 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
             imgStyle.setProperty("maxWidth", "100%");
             imgStyle.setProperty("maxHeight", "100%");
-            imgStyle.setProperty("margin", "auto");
-
-            imgStyle.setPosition(Style.Position.ABSOLUTE);
-            imgStyle.setTop(0, Style.Unit.PX);
-            imgStyle.setLeft(0, Style.Unit.PX);
-            imgStyle.setBottom(0, Style.Unit.PX);
-            imgStyle.setRight(0, Style.Unit.PX);
 
             setImageSrc(img, value);
         }

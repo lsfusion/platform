@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.TimeConverter;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -15,7 +16,10 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Time;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -111,6 +115,11 @@ public class TimeClass extends DataClass<Time> {
     @Override
     public ExtInt getCharLength() {
         return new ExtInt(25);
+    }
+
+    @Override
+    public FlexAlignment getValueAlignment() {
+        return FlexAlignment.END;
     }
 
     @Override

@@ -57,7 +57,6 @@ public class PropertyDrawView extends ComponentView {
 
     public PropertyDrawEntity<?> entity;
 
-    public boolean panelCaptionAfter;
     public boolean editOnSingleClick;
     public boolean hide;
     public String regexp;
@@ -85,6 +84,9 @@ public class PropertyDrawView extends ComponentView {
     public Boolean focusable;
 
     public boolean panelCaptionAbove = false;
+    public boolean panelCaptionAfter;
+    
+    public FlexAlignment valueAlignment;
 
     public LocalizedString caption;
     public boolean clearText;
@@ -260,8 +262,10 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeByte(entity.getEditType().serialize());
 
         outStream.writeBoolean(panelCaptionAbove);
-
         outStream.writeBoolean(panelCaptionAfter);
+
+        pool.writeObject(outStream, getValueAlignment());
+
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
 
@@ -442,8 +446,10 @@ public class PropertyDrawView extends ComponentView {
         focusable = pool.readObject(inStream);
 
         panelCaptionAbove = inStream.readBoolean();
-
         panelCaptionAfter = inStream.readBoolean();
+
+        valueAlignment = pool.readObject(inStream);
+
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();
 
@@ -517,5 +523,12 @@ public class PropertyDrawView extends ComponentView {
     }
     public boolean hasEditObjectAction(ServerContext context) {
         return entity.getEventAction(EDIT_OBJECT, context.entity, context.securityPolicies) != null;
+    }
+    
+    public FlexAlignment getValueAlignment() {
+        if (valueAlignment == null && isProperty()) {
+            return getType().getValueAlignment();
+        }
+        return valueAlignment;
     }
 }

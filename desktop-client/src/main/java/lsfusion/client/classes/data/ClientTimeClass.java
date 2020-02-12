@@ -35,7 +35,7 @@ public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> impleme
     }
 
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new TimePropertyEditor(value, getEditFormat(property), property.design);
+        return new TimePropertyEditor(value, getEditFormat(property), property);
     }
 
     public Format getDefaultFormat() {

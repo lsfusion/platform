@@ -46,7 +46,7 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
         super.paintLabelComponent(g);
         
         if (icon != null) {
-            ImagePropertyRenderer.paintComponent(getComponent(), g, icon);
+            ImagePropertyRenderer.paintComponent(getComponent(), g, icon, property);
         }
     }
 

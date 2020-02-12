@@ -5,9 +5,9 @@ import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
-import lsfusion.interop.form.design.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -25,17 +25,17 @@ import java.util.EventObject;
 public class DatePropertyEditor extends JDateChooser implements PropertyEditor, ClientPropertyTableEditorComponent {
     protected final SimpleDateFormat format;
 
-    public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
-        super(null, null, format.toPattern(), new DatePropertyEditorComponent(format));
+    public DatePropertyEditor(Object value, SimpleDateFormat format, ClientPropertyDraw property) {
+        super(null, null, format.toPattern(), new DatePropertyEditorComponent(property, format));
         this.format = format;
 
         if (value != null) {
             setDate(valueToDate(value));
             ((JFormattedTextField) dateEditor).selectAll();
         }
-        
-        if (design != null) {
-            design.designCell(this);
+
+        if (property != null && property.design != null) {
+            property.design.designCell(this);
         }
     }
 
@@ -151,10 +151,16 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
     }
 
     protected static class DatePropertyEditorComponent extends JTextFieldDateEditor {
-        public DatePropertyEditorComponent(SimpleDateFormat format) {
+        public DatePropertyEditorComponent(ClientPropertyDraw property, SimpleDateFormat format) {
             super(format.toPattern(), null, ' ');
             this.dateFormatter = format;
-            setHorizontalAlignment(JTextField.RIGHT);
+
+            if (property != null) {
+                Integer valueAlignment = property.getSwingValueAlignment();
+                if (valueAlignment != null) {
+                    setHorizontalAlignment(valueAlignment);
+                }
+            }
 
             setBorder(new EmptyBorder(0, 1, 0, 0));
         }

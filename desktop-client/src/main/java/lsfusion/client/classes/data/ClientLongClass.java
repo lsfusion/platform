@@ -43,11 +43,11 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
 
     @Override
     public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
-        return new IntegerPropertyEditor(value, getEditFormat(property), property.design, Long.class);
+        return new IntegerPropertyEditor(value, getEditFormat(property), property, Long.class);
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new IntegerPropertyEditor(value, property.maxValue, getEditFormat(property), property.design, Long.class);
+        return new IntegerPropertyEditor(value, property.maxValue, getEditFormat(property), property, Long.class);
     }
 
     @Override

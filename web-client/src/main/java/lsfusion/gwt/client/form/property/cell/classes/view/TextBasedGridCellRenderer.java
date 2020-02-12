@@ -12,23 +12,18 @@ import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 
 public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
-    protected final Style.TextAlign textAlign;
     protected GPropertyDraw property;
 
     public TextBasedGridCellRenderer(GPropertyDraw property) {
-        this(property, null);
-    }
-
-    public TextBasedGridCellRenderer(GPropertyDraw property, Style.TextAlign textAlign) {
         this.property = property;
-        this.textAlign = textAlign == Style.TextAlign.LEFT ? null : textAlign;
     }
 
     @Override
     public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
-        if (textAlign != null) {
-            divStyle.setTextAlign(textAlign);
+        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        if (textAlignStyle != null) {
+            divStyle.setTextAlign(textAlignStyle);
         }
         divStyle.setPaddingTop(0, Style.Unit.PX);
         divStyle.setPaddingRight(4, Style.Unit.PX);
