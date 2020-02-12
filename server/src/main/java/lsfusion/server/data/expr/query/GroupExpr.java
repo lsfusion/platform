@@ -389,11 +389,11 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
     }
     
     public static <K> Expr create(ImMap<K, ? extends Expr> inner, Expr expr, GroupType type, ImMap<K, ? extends Expr> outer, boolean noInnerFollows) {
-        return createTypeAdjust(inner, new Query(expr, type, noInnerFollows), outer);
+        return create(inner, new Query(expr, type, noInnerFollows), outer, null);
     }
 
     public static <K> Expr create(ImMap<K, ? extends Expr> group, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, GroupType type, ImMap<K, ? extends Expr> implement, boolean noInnerFollows) {
-        return createTypeAdjust(group, new Query(exprs, orders, ordersNotNull, type, noInnerFollows), implement);
+        return create(group, new Query(exprs, orders, ordersNotNull, type, noInnerFollows), implement, null);
     }
     
     private static <K> Type getType(ImMap<K, ? extends Expr> group, Query query) {
