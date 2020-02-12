@@ -375,10 +375,13 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         });
     }
 
+    public static void remoteClean(AsyncCallback<VoidResult> callback) {
+        navigatorDispatchAsync.execute(new CloseNavigator(), callback);
+    }
+
     public void clean() {
-        navigatorDispatchAsync.execute(new CloseNavigator(), new ErrorHandlingCallback<VoidResult>());
+        remoteClean(null);
         GConnectionLostManager.invalidate();
         System.gc();
     }
-
 }

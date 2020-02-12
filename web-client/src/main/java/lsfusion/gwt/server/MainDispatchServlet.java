@@ -39,7 +39,7 @@ import java.text.ParseException;
 
 // singleton, one for whole application
 public class MainDispatchServlet extends net.customware.gwt.dispatch.server.standard.AbstractStandardDispatchServlet implements org.springframework.web.HttpRequestHandler, org.springframework.beans.factory.InitializingBean, org.springframework.beans.factory.BeanNameAware {
-    protected final static Logger logger = Logger.getLogger(MainDispatchServlet.class);
+    public final static Logger logger = Logger.getLogger(MainDispatchServlet.class);
 
     protected Dispatch dispatch;
 

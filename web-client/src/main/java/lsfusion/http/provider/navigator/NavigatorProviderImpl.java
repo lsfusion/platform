@@ -1,11 +1,9 @@
-
-
 package lsfusion.http.provider.navigator;
 
-import com.google.gwt.core.client.GWT;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -134,7 +132,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     @Override
     public void destroy() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        GWT.log("Destroying navigator for user " + (auth == null ? "UNKNOWN" : auth.getName()) + "...", new Exception());
+        MainDispatchServlet.logger.error("Destroying navigator for user " + (auth == null ? "UNKNOWN" : auth.getName()) + "...");
 
         for(NavigatorSessionObject navigatorSessionObject : currentLogicsAndNavigators.values())
             navigatorSessionObject.remoteNavigator.close();
