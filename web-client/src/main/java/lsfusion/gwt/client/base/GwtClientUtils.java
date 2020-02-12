@@ -9,8 +9,10 @@ import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.http.client.*;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -59,7 +61,18 @@ public class GwtClientUtils {
 
     public static void logout() {
         MainFrame.disableConfirmDialog = true;
-        Window.open(GwtClientUtils.getLogoutUrl(), "_self", null);
+        //CloseNavigator should be called before logout, because logout removes authentication
+        MainFrame.remoteClean(new AsyncCallback<VoidResult>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                Window.open(GwtClientUtils.getLogoutUrl(), "_self", null);
+            }
+
+            @Override
+            public void onSuccess(VoidResult result) {
+                Window.open(GwtClientUtils.getLogoutUrl(), "_self", null);
+            }
+        });
     }
 
     public static void downloadFile(String name, String displayName, String extension) {
