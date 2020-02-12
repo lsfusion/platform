@@ -62,7 +62,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             return new Query(this, translator, restPartitions);
         }
 
-        public Query and(final Where where, ImSet<Expr> newPartitions) { // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. AggrType.getWhere
+        public Query and(final Where where, ImSet<Expr> newPartitions) { // there is an assertion that first expr is in where, see (PartitionExpr / GroupExpr).Query.and
             return new Query(exprs.mapListValues((i, value) -> {
                 if(i==0)
                     value = value.and(where);

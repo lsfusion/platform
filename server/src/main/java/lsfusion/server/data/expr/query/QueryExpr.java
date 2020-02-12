@@ -222,9 +222,13 @@ public abstract class QueryExpr<K extends Expr,I extends QueryExpr.Query<I>, J e
         @IdentityLazy
         protected Stat getStatValue(StatType type) {
             Stat result;
-            if(isSelect()) // assert что expr учавствует в where
-                result = new StatPullWheres(type).proceed(getFullWhere(), getMainExpr());
-            else
+            if(isSelect()) {
+                Where fullWhere = getFullWhere();
+                Expr mainExpr = getMainExpr();
+                if(isSelectNotInFullWhere()) // there is an assertion that mainExpr is in FullWhere
+                    fullWhere = fullWhere.and(mainExpr.getWhere());
+                result = new StatPullWheres(type).proceed(fullWhere, mainExpr); 
+            } else
                 result = Stat.AGGR;
             // в случае с isSelect рушится assertion на min в случае когда GROUP MIN большое число разновидностей BY маленькое число разновидностей
             return thisObj.getAdjustStatValue(type, result); // возможно избыточно но рушит assertion'ы на min
@@ -232,6 +236,7 @@ public abstract class QueryExpr<K extends Expr,I extends QueryExpr.Query<I>, J e
         protected abstract Expr getMainExpr();
         protected abstract Where getFullWhere();
         protected abstract boolean isSelect();
+        protected abstract boolean isSelectNotInFullWhere(); // optimization not to do and every time
     }
     protected abstract IC createInnerContext();
     private IC inner;
