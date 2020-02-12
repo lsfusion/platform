@@ -3875,15 +3875,15 @@ constraintStatement
 			}
 		}
 		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inMainParseState()) property = self.checkSingleParam($expr.property).getLP(); }
+		('CHECKED' { checked = true; }
+			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })?
+		)?
+		'MESSAGE' message=propertyExpression[new ArrayList<TypedParameter>(), false]
 		{
 			if (inMainParseState()) {
 				self.dropPrevScope($et.event);
 			}
 		}
-		('CHECKED' { checked = true; }
-			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })?
-		)?
-		'MESSAGE' message=propertyExpression[new ArrayList<TypedParameter>(), false]
 		';'
 	;
 
@@ -3921,15 +3921,15 @@ followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event ev
             }
         }
         expr = propertyExpression[context, false]
+		('RESOLVE' 
+			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, getEventDebugPoint()));})?
+			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, getEventDebugPoint()));})?
+		)? { $prop = $expr.property; }
         {
             if (inMainParseState()) {
                 self.dropPrevScope($et.event);
             }
         }
-		('RESOLVE' 
-			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, getEventDebugPoint()));})?
-			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, getEventDebugPoint()));})?
-		)? { $prop = $expr.property; }
 ;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3992,17 +3992,17 @@ eventStatement
 			}
 		}
 		whenExpr=propertyExpression[context, true]
-		{
-			if (inMainParseState()) {
-				self.dropPrevScope($et.event);
-			}
-		}
 		(	'ORDER' ('DESC' { descending = true; })?
 			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
 		)?
 		in=inlineStatement[context]
 		'DO'
 		action=endDeclTopContextDependentActionDefinitionBody[context, false, false]
+		{
+			if (inMainParseState()) {
+				self.dropPrevScope($et.event);
+			}
+		}
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4020,13 +4020,13 @@ globalEventStatement
 }
 	:	'ON' 
 		et=baseEvent
-		('SINGLE' { single = true; })?
-		('SHOWDEP' property=actionOrPropertyUsage)?
 		{
 			if (inMainParseState()) {
 				self.setPrevScope($et.event);
 			}
 		}
+		('SINGLE' { single = true; })?
+		('SHOWDEP' property=actionOrPropertyUsage)?
 		action=endDeclTopContextDependentActionDefinitionBody[new ArrayList<TypedParameter>(), false, false]
 		{
 			if (inMainParseState()) {
