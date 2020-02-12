@@ -120,6 +120,10 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
             throw new RuntimeException("should not be");
         }
 
+        protected boolean isSelectNotInFullWhere() {
+            throw new RuntimeException("should not be");
+        }
+
         protected Where getFullWhere() {
             throw new RuntimeException("should not be");
         }
