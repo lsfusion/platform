@@ -109,7 +109,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
             return "GROUP(" + exprs + "," + orders + "," + type + ")";
         }
 
-        public Query and(final Where where) { // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. AggrType.getWhere
+        public Query and(final Where where) { // there is an assertion that first expr is in where, see (PartitionExpr / GroupExpr).Query.and
             return new Query(exprs.mapListValues((i, value) -> {
                 if(i==0)
                     value = value.and(where);
@@ -325,7 +325,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
 
         final Where packWhere = packClasses.getPackWhere().and(innerWhere);
 
-        // for keepWhere
+        // for keepWhere - need to avoid packing classes info
         Where groupWhere = thisExpr != null ? thisExpr.getInner().getGroupWhere() : getGroupWhere(innerOuter);
         Where fullWhere = thisExpr != null ? thisExpr.getInner().getFullWhere() : getFullWhere(groupWhere, query);
         Where keepWhere = getKeepWhere(fullWhere, query.noInnerFollows).followFalse(groupWhere.not(), pack);
