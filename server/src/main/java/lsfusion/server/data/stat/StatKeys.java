@@ -43,7 +43,7 @@ public class StatKeys<K> extends TwinImmutableObject {
         ImRevMap<K, BaseExpr> revInnerOuter = mRevOuterInner.immutable().toRevExclMap().reverse();
         rRevInnerOuter.set(revInnerOuter);
         if(revInnerOuter.size() != innerOuter.size())
-            return new StatKeys<>(cost, stat, new DistinctKeys<>(distinct.filterIncl(revInnerOuter.keys())));
+            return StatKeys.create(cost, stat, new DistinctKeys<>(distinct.filterIncl(revInnerOuter.keys()))); // since we collapse groups - stat can go lower than max distinct values (however was faced only in rare CHECKED BY case with pull exprs)  
         return this;
     }
 
