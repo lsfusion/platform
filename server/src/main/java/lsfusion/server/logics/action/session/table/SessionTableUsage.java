@@ -35,6 +35,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -250,8 +251,11 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }*/
 
     public void drop(SQLSession session, OperationOwner owner) throws SQLException {
-        table.drop(session, this, owner);
-        table = null;
+        if (table != null) {
+            table.drop(session, this, owner);
+            table = null;
+        } else
+            ServerLoggers.assertLog(false, "TABLE WAS DROPPED BEFORE");
     }
 
     public ImCol<ImMap<V, Object>> read(DataSession session, ImMap<K, DataObject> mapValues) throws SQLException, SQLHandledException {
