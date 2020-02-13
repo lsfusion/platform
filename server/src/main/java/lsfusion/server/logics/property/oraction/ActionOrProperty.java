@@ -517,6 +517,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         boolean checkEquals(V expl, V calc);
     }
 
+    protected BaseLogicsModule getBaseLM() {
+        return ThreadLocalContext.getBusinessLogics().LM;
+    }
+
     //
     protected static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption, ActionOrProperty property, Checker<V> checker) {
         

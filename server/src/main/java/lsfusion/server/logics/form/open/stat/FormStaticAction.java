@@ -57,22 +57,21 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
 
     @Override
     protected ImMap<Property, Boolean> aspectUsedExtProps() {
-        FormEntity formEntity = form.getStaticForm();
-        if(formEntity != null) {
-            MSet<Property> mProps = SetFact.mSet();
-            boolean isReport = this instanceof PrintAction;
-            for (PropertyDrawEntity<?> propertyDraw : formEntity.getStaticPropertyDrawsList()) {
-                if (isReport) {
-                    MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
-                    propertyDraw.fillQueryProps(mReaders);
-                    for (PropertyReaderEntity reader : mReaders.immutable())
-                        mProps.add((Property) reader.getPropertyObjectEntity().property);
-                } else 
-                    mProps.add(propertyDraw.getValueProperty().property);
-            }
-            return mProps.immutable().toMap(false);
+        return getUsedExtProps(form.getStaticForm(getBaseLM()), this instanceof PrintAction);
+    }
+
+    private static ImMap<Property, Boolean> getUsedExtProps(FormEntity formEntity, boolean isReport) {
+        MSet<Property> mProps = SetFact.mSet();
+        for (PropertyDrawEntity<?> propertyDraw : formEntity.getStaticPropertyDrawsList()) {
+            if (isReport) {
+                MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
+                propertyDraw.fillQueryProps(mReaders);
+                for (PropertyReaderEntity reader : mReaders.immutable())
+                    mProps.add((Property) reader.getPropertyObjectEntity().property);
+            } else 
+                mProps.add(propertyDraw.getValueProperty().property);
         }
-        return super.aspectChangeExtProps();
+        return mProps.immutable().toMap(false);
     }
 
 }
