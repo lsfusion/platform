@@ -99,8 +99,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         });
     }
 
-    public static void cleanRemote(Runnable runnable) {
-        if (navigatorDispatchAsync != null) { // dispatcher may be not initialized yet (at first look up logics call)
+    public static void cleanRemote(Runnable runnable, boolean connectionLost) {
+        if (navigatorDispatchAsync != null && !connectionLost) { // dispatcher may be not initialized yet (at first look up logics call)
             navigatorDispatchAsync.execute(new CloseNavigator(), new AsyncCallback<VoidResult>() {
                 public void onFailure(Throwable caught) {
                     runnable.run();
@@ -387,7 +387,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void clean() {
-        cleanRemote(() -> {});
+        cleanRemote(() -> {}, false);
         GConnectionLostManager.invalidate();
         System.gc();
     }

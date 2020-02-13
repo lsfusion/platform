@@ -51,8 +51,12 @@ public class GwtClientUtils {
     }
 
     public static void logout() {
+        logout(false);
+    }
+
+    public static void logout(boolean connectionLost) {
         //CloseNavigator should be called before logout, because logout removes authentication
-        MainFrame.cleanRemote(() -> Window.open(GwtClientUtils.getLogoutUrl(), "_self", null));
+        MainFrame.cleanRemote(() -> Window.open(GwtClientUtils.getLogoutUrl(), "_self", null), connectionLost);
     }
 
     public static void downloadFile(String name, String displayName, String extension) {

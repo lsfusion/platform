@@ -244,7 +244,7 @@ public class GConnectionLostManager {
         }
 
         private void exitAction() {
-            GwtClientUtils.logout();
+            GwtClientUtils.logout(true);
         }
 
         private void reconnectAction() {
