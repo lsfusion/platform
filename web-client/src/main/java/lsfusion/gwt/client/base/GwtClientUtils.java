@@ -85,7 +85,7 @@ public class GwtClientUtils {
     public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
         return getWebAppBaseURL() + GwtSharedUtils.getDownloadURL(name, displayName, extension, actionFile);
     }
-    
+
     public static String getModuleImagePath(String imagePath) {
         return imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath;
     }
@@ -93,8 +93,8 @@ public class GwtClientUtils {
     public static String getAppImagePath(String imagePath) {
         return imagePath == null ? null : getWebAppBaseURL() + imagePath;
     }
-    
-    private static Map<String, Boolean> imagePathCache = new HashMap<>(); 
+
+    private static Map<String, Boolean> imagePathCache = new HashMap<>();
     public static void ensureImage(String imagePath, Callback callback) {
         Boolean cachedResult = imagePathCache.get(imagePath);
         if (cachedResult != null) {
@@ -129,7 +129,7 @@ public class GwtClientUtils {
                 callback.onFailure();
             }
         }
-    } 
+    }
 
     public static Map<String, String> getPageParameters() {
         Map<String, String> params = new HashMap<>();
