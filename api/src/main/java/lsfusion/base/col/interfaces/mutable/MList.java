@@ -12,7 +12,9 @@ public interface MList<K> {
     void set(int i, K value);
     K get(int i);
     
+    // hacks for extremely rear cases
     void removeAll();
+    void removeLast();
 
     void addAll(ImList<? extends K> list);
         

@@ -60,8 +60,13 @@ public class MExprCaseList extends MCaseList<Expr, Expr, ExprCase> implements Ca
         if(size()==0) return Expr.NULL();
 
         if(!exclusive) {
-            ExprCase lastCase = get(size()-1); // в последнем элементе срезаем null'ы с конца
-            lastCase.where = lastCase.where.followFalse(lastCase.data.getWhere().not(), packExprs);
+            ExprCase lastCase = get(size()-1);
+            Where lastDataWhere = lastCase.data.getWhere();
+            if(lastDataWhere.isFalse()) { // "cutting" last null (in theory it can be only one, because of equals check while adding cases)
+                removeLast();
+                return getExclFinal();
+            }
+            lastCase.where = lastCase.where.followFalse(lastDataWhere.not(), packExprs); // "cutting" last null's from where
         }
 
         if(size()==1 && single().where.isTrue())
