@@ -3151,7 +3151,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> List<TypedParameter> getTypedObjectsNames(MappedForm<O> mapped) {
-        FormEntity staticForm = mapped.form.getStaticForm();
+        FormEntity staticForm = mapped.form.getNFStaticForm();
         if(staticForm == null) // can be only mapped objects
             return Collections.singletonList(new TypedParameter(mapped.form.getBaseClass(mapped.objects.single()),"object"));
 
@@ -3159,7 +3159,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private <O extends ObjectSelector> ImOrderSet<O> getMappingObjectsArray(MappedForm<O> mapped, List<TypedParameter> objectsContext) throws ScriptingErrorLog.SemanticErrorException {
-        FormEntity staticForm = mapped.form.getStaticForm();
+        FormEntity staticForm = mapped.form.getNFStaticForm();
         if(staticForm == null) // can be only mapped objects
             return mapped.objects;
         

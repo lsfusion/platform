@@ -1641,7 +1641,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(eventActionSID.equals(ServerResponse.CHANGE_WYS)) // like GROUP_CHANGE will be proceeded in PropertyDrawEntity
             return null;
 
-        BaseLogicsModule lm = getBusinessLogics().LM;
+        BaseLogicsModule lm = getBaseLM();
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             if (!(getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)) 

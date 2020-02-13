@@ -531,7 +531,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         ConcreteCustomClass concreteCustomClass = null;
         
         ConcreteClass concreteClass = null;
-        if(concreteObject instanceof DataObject && (concreteClass = session.getCurrentClass((DataObject)concreteObject)) instanceof ConcreteCustomClass)
+        if(session != null && concreteObject instanceof DataObject && (concreteClass = session.getCurrentClass((DataObject)concreteObject)) instanceof ConcreteCustomClass)
             concreteCustomClass = (ConcreteCustomClass) concreteClass;
             
         return editFormHolder.getPolyForm(LM, concreteCustomClass);

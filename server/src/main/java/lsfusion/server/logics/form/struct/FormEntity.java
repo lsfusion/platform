@@ -1216,7 +1216,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @Override
-    public FormEntity getStaticForm() {
+    public FormEntity getNFStaticForm() {
         return this;
     }
 

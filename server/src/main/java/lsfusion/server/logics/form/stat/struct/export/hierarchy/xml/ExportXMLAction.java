@@ -4,14 +4,11 @@ import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.TextClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.ExportHierarchicalAction;
 import lsfusion.server.logics.form.stat.struct.hierarchy.xml.XMLNode;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -30,7 +27,7 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
     }
 
     protected XMLNode createRootNode(String root, String tag) {
-        String elementName = root != null ? root : form.getStaticForm().getIntegrationSID();
+        String elementName = root != null ? root : form.getStaticForm(getBaseLM()).getIntegrationSID();
         Result<String> shortKey = new Result<>();
         Namespace namespace = XMLNode.addXMLNamespace(null, elementName, shortKey, false);
         return new XMLNode(new Element(shortKey.result, namespace), tag);
