@@ -58,6 +58,11 @@ public abstract class MCaseList<A, D extends A,C extends Case<D>> {
         return ((MList<C>)list).immutableList();
     }
     
+    public void removeLast() {
+        assert !exclusive;
+        ((MList<C>)list).removeLast();
+    }
+    
     public abstract void add(Where where, A data);
     public abstract A getFinal();
 }

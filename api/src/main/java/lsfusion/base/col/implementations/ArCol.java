@@ -90,4 +90,8 @@ public class ArCol<K> extends ACol<K> implements MCol<K>, MAddCol<K> {
         size = 0;
         array = new Object[4];
     }
+
+    public void removeLast() {
+        size--;
+    }
 }
