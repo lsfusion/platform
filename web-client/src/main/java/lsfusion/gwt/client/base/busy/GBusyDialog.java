@@ -309,7 +309,7 @@ public class GBusyDialog extends WindowBox {
     }
 
     private void reconnectAction() {
-        GwtClientUtils.relogin();
+        GwtClientUtils.reconnect();
     }
 
     private void cancelAction() {

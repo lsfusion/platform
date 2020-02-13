@@ -111,7 +111,6 @@ public interface ClientMessages extends Messages {
     String rmiConnectionLostMessage(int attempt);
     String rmiConnectionLostMessageUnavailable(int attempt);
     String rmiConnectionLostExit();
-    String rmiConnectionLostRelogin();
     String rmiConnectionLostReconnect();
 
     String propertyTooltipCanonicalName();

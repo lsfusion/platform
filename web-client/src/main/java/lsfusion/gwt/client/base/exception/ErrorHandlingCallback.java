@@ -36,7 +36,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
                 DialogBoxHelper.showMessageBox(true, messages.error(), messages.sessionTimeoutError(), false, new DialogBoxHelper.CloseCallback() {
                     @Override
                     public void closed(OptionType chosenOption) {
-                        relogin();
+                        logout();
                     }
                 });
                 return;
@@ -67,7 +67,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
         return -1; // not connection problem
     }
 
-    protected void relogin() {
-        GwtClientUtils.relogin();
+    protected void logout() {
+        GwtClientUtils.logout();
     }
 }

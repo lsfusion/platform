@@ -43,18 +43,9 @@ public class GwtClientUtils {
         return getPageUrlPreservingParameters("logout");
     }
 
-    public static String getLoginUrl() {
-        return getPageUrlPreservingParameters("login");
-    }
-
     public static void reconnect() {
         MainFrame.disableConfirmDialog = true;
         Window.Location.reload();
-    }
-
-    public static void relogin() {
-        MainFrame.disableConfirmDialog = true;
-        Window.open(GwtClientUtils.getLoginUrl(), "_self", null);
     }
 
     public static void logout() {
