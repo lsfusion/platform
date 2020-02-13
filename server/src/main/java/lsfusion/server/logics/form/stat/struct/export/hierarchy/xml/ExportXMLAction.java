@@ -27,7 +27,7 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
     }
 
     protected XMLNode createRootNode(String root, String tag) {
-        String elementName = root != null ? root : form.getStaticForm().getIntegrationSID();
+        String elementName = root != null ? root : form.getStaticForm(getBaseLM()).getIntegrationSID();
         Result<String> shortKey = new Result<>();
         Namespace namespace = XMLNode.addXMLNamespace(null, elementName, shortKey, false);
         return new XMLNode(new Element(shortKey.result, namespace), tag);

@@ -18,6 +18,8 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 import java.sql.SQLException;
 
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.getBusinessLogics;
+
 public class ClassFormSelector implements FormSelector<ClassFormSelector.VirtualObject> {
     
     private final CustomClass cls;
@@ -43,7 +45,7 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
     }
 
     @Override
-    public FormEntity getStaticForm() {
+    public FormEntity getNFStaticForm() {
         return null;
     }
 

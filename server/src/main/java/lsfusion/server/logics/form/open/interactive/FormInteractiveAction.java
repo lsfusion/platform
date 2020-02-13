@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.form.ModalityType;
@@ -174,7 +175,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     public boolean hasFlow(ChangeFlowType type) {
         if(type == ChangeFlowType.FORMCHANGE) {
             if(!readOnly) { // если не read only
-                FormEntity staticForm = form.getStaticForm();
+                FormEntity staticForm = form.getStaticForm(getBaseLM());
                 if(staticForm == null || !staticForm.hasNoChange()) // и форма не известна и может что-то изменять
                     return true;
             }
