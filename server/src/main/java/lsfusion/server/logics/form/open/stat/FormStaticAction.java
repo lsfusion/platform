@@ -56,7 +56,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
 
     @Override
     protected ImMap<Property, Boolean> aspectUsedExtProps() {
-        return getUsedExtProps(form.getStaticForm(getBaseLM()), this instanceof PrintAction);
+        return getUsedExtProps(getForm(), this instanceof PrintAction);
     }
 
     private static ImMap<Property, Boolean> getUsedExtProps(FormEntity formEntity, boolean isReport) {

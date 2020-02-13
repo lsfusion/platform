@@ -31,6 +31,10 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
     public final FormSelector<O> form;
     public final ImRevMap<O, ClassPropertyInterface> mapObjects;
+    
+    protected final FormEntity getForm() {
+        return form.getStaticForm(getBaseLM());
+    }
 
     private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, int contextInterfaces, ValueClass[] extraValueClasses) {
         ImList<ValueClass> objectClasses = objects.mapListValues((Function<O, ValueClass>) o -> form.getBaseClass(o));
