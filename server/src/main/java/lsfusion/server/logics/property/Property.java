@@ -1544,6 +1544,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new PropertyMapImplement<>(this, getMapInterfaces(list));
     }
 
+    public <X extends PropertyInterface> PropertyMapImplement<?, X> getIdentityImplement(ImRevMap<T, X> mapping) {
+        return new PropertyMapImplement<>(this, mapping);
+    }
+
     // важно для подсветки
     public boolean canBeChanged() { // предполагается что все сверху кэшируется
         return canBeChanged(false);

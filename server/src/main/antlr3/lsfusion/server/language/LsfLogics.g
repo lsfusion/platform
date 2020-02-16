@@ -3628,7 +3628,7 @@ recalculateActionDefinitionBody[List<TypedParameter> context] returns [LAWithPar
 }
 	:	'RECALCULATE'
 		propUsage=propertyUsage
-		'(' params=singleParameterList[newContext, true] ')'
+		'(' params=propertyExpressionList[newContext, true] ')'
 		('WHERE'
 		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
 	;

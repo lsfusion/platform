@@ -747,7 +747,7 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         PropertyMapImplement<W, PropertyInterface> where = hasWhere ? (PropertyMapImplement<W, PropertyInterface>) (readImplements.get(resInterfaces + 1)) : null;
-        return addAction(null, new LA<>(new RecalculatePropertyAction<C, W, PropertyInterface>(LocalizedString.NONAME, innerInterfaces.getSet(),
+        return addAction(null, new LA<>(new RecalculatePropertyAction<C, PropertyInterface>(LocalizedString.NONAME, innerInterfaces.getSet(),
                 (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), where)));
     }
 

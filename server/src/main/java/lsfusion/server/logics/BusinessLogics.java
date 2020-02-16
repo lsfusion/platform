@@ -1162,13 +1162,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return result;
     }
 
-    private static ActionOrProperty checkJoinProperty(ActionOrProperty<?> property) {
-        if(property instanceof JoinProperty) {
-            JoinProperty joinProperty = (JoinProperty) property;
-            if(joinProperty.isIdentity()) {
-                return checkJoinProperty(joinProperty.implement.property);
-            }
-        }
+    private static <X extends PropertyInterface> ActionOrProperty checkJoinProperty(ActionOrProperty<X> property) {
+        if(property instanceof Property)
+            return ((Property<X>) property).getIdentityImplement(property.getIdentityInterfaces()).property;
         return property;
     }
     private static String findDependency(ActionOrProperty<?> property1, ActionOrProperty<?> property2, LinkType desiredType) {

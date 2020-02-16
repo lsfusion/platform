@@ -2313,19 +2313,29 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedChangePropertyAProp(List<TypedParameter> context, NamedPropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        LP toPropertyLP = findLPByPropertyUsage(toPropertyUsage, toPropertyMapping, newContext);
+        Pair<LPWithParams, LPWithParams> identityChange = getIdentityLPPropertyUsageWithWhere(context, toPropertyUsage, toPropertyMapping, whereProperty, newContext);
+        return addScriptedChangeAProp(context, fromProperty, identityChange.second, identityChange.first);
+    }
+
+    public LAWithParams addScriptedRecalculatePropertyAProp(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        Pair<LPWithParams, LPWithParams> identityRecalc = getIdentityLPPropertyUsageWithWhere(context, propertyUsage, propertyMapping, whereProperty, newContext);
+        return addScriptedRecalculateAProp(context, identityRecalc.first, identityRecalc.second);
+    }
+
+    public Pair<LPWithParams, LPWithParams> getIdentityLPPropertyUsageWithWhere(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        LP toPropertyLP = findLPByPropertyUsage(propertyUsage, propertyMapping, newContext);
 
         // to make change operator work with join property, we need identity parameters : 
         // we have to run through all toPropertyMapping if there is lp, or duplicate parameter, add virtual parameter to newContext with equals this parameter and AND it with whereProperty
-        toPropertyMapping = new ArrayList<>(toPropertyMapping);
+        propertyMapping = new ArrayList<>(propertyMapping);
         Set<Integer> usedParams = new HashSet<>();
         int oldContextSize = context.size();
         int exParams = newContext.size();
-        for (int i = 0; i < toPropertyMapping.size(); i++) {
-            LPWithParams toParam = toPropertyMapping.get(i);
+        for (int i = 0; i < propertyMapping.size(); i++) {
+            LPWithParams toParam = propertyMapping.get(i);
             if (toParam.getLP() != null || !usedParams.add(toParam.usedParams.get(0))) {
                 Result<LPWithParams> rWhereProperty = new Result<>(whereProperty);
-                toPropertyMapping.set(i, addVirtualParam(exParams, toParam, rWhereProperty, oldContextSize, newContext));
+                propertyMapping.set(i, addVirtualParam(exParams, toParam, rWhereProperty, oldContextSize, newContext));
                 whereProperty = rWhereProperty.result;
                 exParams++;
             } else {
@@ -2336,34 +2346,10 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
             }
         }
-        
-        LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
 
-        return addScriptedChangeAProp(context, fromProperty, whereProperty, toProperty);
-    }
+        LPWithParams toProperty = addScriptedJProp(toPropertyLP, propertyMapping);
 
-    public LAWithParams addScriptedRecalculatePropertyAProp(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        LP recalc = findLPByPropertyUsage(propertyUsage, propertyMapping, newContext);
-        if(recalc.property instanceof AggregateProperty) {
-            LPWithParams recalcProperty = addScriptedJProp(recalc, propertyMapping);
-            assert recalc == recalcProperty.getLP();
-            
-            List<Integer> resultInterfaces = getResultInterfaces(context.size(), recalcProperty, whereProperty);
-    
-            List<LAPWithParams> paramsList = new ArrayList<>();
-            for (int resI : resultInterfaces) {
-                paramsList.add(new LPWithParams(resI));
-            }
-            paramsList.add(recalcProperty);
-            if(whereProperty != null) {
-                paramsList.add(whereProperty);
-            }
-    
-            LA result = addRecalculatePropertyAProp(resultInterfaces.size(), whereProperty != null, getParamsPlainList(paramsList).toArray());
-            return new LAWithParams(result, resultInterfaces);
-        } else {
-            throw new UnsupportedOperationException("RECALCULATE is supported only for AggregateProperty");
-        }
+        return new Pair<>(toProperty, whereProperty);
     }
 
     private LPWithParams addVirtualParam(int exParams, LPWithParams toParam, Result<LPWithParams> rWhereProperty, int oldContextSize, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -2392,8 +2378,25 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (whereProperty != null) {
             paramsList.add(whereProperty);
         }
-        List<Object> resultParams = getParamsPlainList(paramsList);
-        LA result = addSetPropertyAProp(null, LocalizedString.NONAME, resultInterfaces.size(), whereProperty != null, resultParams.toArray());
+        
+        LA result = addSetPropertyAProp(null, LocalizedString.NONAME, resultInterfaces.size(), whereProperty != null, getParamsPlainList(paramsList).toArray());
+        return new LAWithParams(result, resultInterfaces);
+    }
+
+    // the same as change but without from
+    public LAWithParams addScriptedRecalculateAProp(List<TypedParameter> context, LPWithParams recalcProperty, LPWithParams whereProperty) {
+        List<Integer> resultInterfaces = getResultInterfaces(context.size(), recalcProperty, whereProperty);
+
+        List<LAPWithParams> paramsList = new ArrayList<>();
+        for (int resI : resultInterfaces) {
+            paramsList.add(new LPWithParams(resI));
+        }
+        paramsList.add(recalcProperty);
+        if(whereProperty != null) {
+            paramsList.add(whereProperty);
+        }
+
+        LA result = addRecalculatePropertyAProp(resultInterfaces.size(), whereProperty != null, getParamsPlainList(paramsList).toArray());
         return new LAWithParams(result, resultInterfaces);
     }
 

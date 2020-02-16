@@ -185,6 +185,10 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getChangeProps();
     }
 
+    public PropertyMapImplement<?, T> mapIdentityImplement() {
+        return property.getIdentityImplement(mapping);
+    }
+
     public boolean mapIsOrDependsPreread() {
         return property.isOrDependsPreread();
     }

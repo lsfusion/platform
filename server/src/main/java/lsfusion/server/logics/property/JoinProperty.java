@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -64,7 +65,15 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public boolean isIdentity() {
         return isIdentity(this.interfaces, implement);
     }
-    
+
+    public <X extends PropertyInterface> PropertyMapImplement<?, X> getIdentityImplement(ImRevMap<Interface, X> mapping) {
+        if(isIdentity()) {
+            ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
+            return implement.property.getIdentityImplement(joinMapping.join(mapping));
+        }
+        return super.getIdentityImplement(mapping);
+    }
+
     public JoinProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement) {
         this(caption, interfaces, false, implement);
     }

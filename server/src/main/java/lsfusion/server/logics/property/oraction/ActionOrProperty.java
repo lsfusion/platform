@@ -45,6 +45,8 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
