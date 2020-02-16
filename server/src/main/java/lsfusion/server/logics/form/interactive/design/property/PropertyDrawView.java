@@ -85,7 +85,9 @@ public class PropertyDrawView extends ComponentView {
 
     public boolean panelCaptionAbove = false;
     public boolean panelCaptionAfter;
-    
+
+    public boolean columnKeysVertical = false;
+
     public FlexAlignment valueAlignment;
 
     public LocalizedString caption;
@@ -264,6 +266,8 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(panelCaptionAbove);
         outStream.writeBoolean(panelCaptionAfter);
 
+        outStream.writeBoolean(columnKeysVertical);
+        
         pool.writeObject(outStream, getValueAlignment());
 
         outStream.writeBoolean(editOnSingleClick);
@@ -447,6 +451,8 @@ public class PropertyDrawView extends ComponentView {
 
         panelCaptionAbove = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
+
+        columnKeysVertical = inStream.readBoolean();
 
         valueAlignment = pool.readObject(inStream);
 

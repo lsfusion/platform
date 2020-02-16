@@ -103,7 +103,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean panelCaptionAbove;
     public boolean panelCaptionAfter;
-    
+
+    public boolean columnKeysVertical;
+
     public FlexAlignment valueAlignment;
 
     public int charHeight;
@@ -398,7 +400,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         outStream.writeBoolean(panelCaptionAbove);
         outStream.writeBoolean(panelCaptionAfter);
-        
+
+        outStream.writeBoolean(columnKeysVertical);
+
         pool.writeObject(outStream, valueAlignment);
         
         outStream.writeBoolean(editOnSingleClick);
@@ -440,6 +444,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         panelCaptionAbove = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
+
+        columnKeysVertical = inStream.readBoolean();
 
         valueAlignment = pool.readObject(inStream);
 

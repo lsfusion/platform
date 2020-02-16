@@ -570,10 +570,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.changeMouse = new MouseInputEvent(mouseStroke);
     }
 
-    public void setPanelCaptionAbove(PropertyDrawView property, boolean panelCaptionAbove) {
-        property.panelCaptionAbove = panelCaptionAbove;
-    }
-
     public void setPropertyDrawViewHide(boolean hide, PropertyDrawEntity... properties) {
         for (PropertyDrawEntity property : properties) {
             setPropertyDrawViewHide(property, hide);
