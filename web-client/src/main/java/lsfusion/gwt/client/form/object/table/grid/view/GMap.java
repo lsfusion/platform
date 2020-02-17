@@ -16,6 +16,7 @@ import org.vectomatic.dom.svg.OMSVGFilterElement;
 import org.vectomatic.dom.svg.OMSVGSVGElement;
 import org.vectomatic.dom.svg.utils.OMSVGParser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
     private JavaScriptObject map;
     private JavaScriptObject markerClusters;
     private Map<GGroupObjectValue, JavaScriptObject> markers = new HashMap<>();
+    private ArrayList<JavaScriptObject> lines = new ArrayList<>();
     @Override
     protected void render(Element renderElement, com.google.gwt.dom.client.Element recordElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
@@ -35,6 +37,8 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             map = createMap(renderElement, markerClusters);
             renderElement.getStyle().setProperty("zIndex", "0"); // need this because leaflet uses z-indexes and therefore dialogs for example are shown below layers
         }
+
+        Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
 
         Map<GGroupObjectValue, JavaScriptObject> oldMarkers = new HashMap<>(markers);
         for(int i=0,size=listObjects.length();i<size;i++) {
@@ -49,11 +53,22 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
             String filterStyle = createFilter(getMarkerColor(object));
             updateMarker(map, marker, object, filterStyle);
+
+            Object line = getLine(object);
+            if(line != null)
+                routes.computeIfAbsent(line, o -> JavaScriptObject.createArray().cast()).push(marker);
         }
         for(Map.Entry<GGroupObjectValue, JavaScriptObject> oldMarker : oldMarkers.entrySet()) {
             removeMarker(oldMarker.getValue(), markerClusters);
             markers.remove(oldMarker.getKey());
         }
+
+        for(JavaScriptObject line : lines)
+            removeLine(map, line);
+        lines.clear();
+        for(JsArray<JavaScriptObject> route : routes.values())
+            if(route.length() > 1)
+                lines.add(createLine(map, route));
         
         fitBounds(map, GwtSharedUtils.toArray(markers.values()));
     }
@@ -144,6 +159,32 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
     protected native String getMarkerColor(JavaScriptObject element)/*-{
         return element.color;
+    }-*/;
+
+    protected native Object getLine(JavaScriptObject element)/*-{
+        return element.line;
+    }-*/;
+
+    protected native JavaScriptObject createLine(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
+        var L = $wnd.L;
+
+        var points = [];
+        markers.forEach(function (marker) {
+            var latlng = marker.getLatLng();
+            points.push([latlng.lat, latlng.lng]);
+        });
+        var line = L.polyline(points).addTo(map);
+        var lineArrow = L.polylineDecorator(line, {
+            patterns: [
+                { offset: '100%', repeat: 0, symbol: L.Symbol.arrowHead({pathOptions: {stroke: true}}) }
+            ]
+        }).addTo(map);
+        return {line : line, lineArrow : lineArrow};
+    }-*/;
+
+    protected native void removeLine(JavaScriptObject map, JavaScriptObject line)/*-{
+        map.removeLayer(line.line);
+        map.removeLayer(line.lineArrow);
     }-*/;
 
     protected String createFilter(String colorStr) {
