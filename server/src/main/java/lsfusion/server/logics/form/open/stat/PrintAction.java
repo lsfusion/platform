@@ -20,9 +20,11 @@ import lsfusion.server.logics.form.stat.print.PrintMessageData;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
+import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -58,13 +60,15 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        FormSelector<O> form,
                        final ImList<O> objectsToSet,
                        final ImList<Boolean> nulls,
+                       ImOrderSet<PropertyInterface> orderContextInterfaces,
+                       ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
                        FormPrintType staticType,
                        boolean syncType,
                        Integer top,
                        LP exportFile,
                        LP formPageCount, boolean removeNullsAndDuplicates,
                        ValueClass printer, ValueClass sheetName, ValueClass password) {
-        super(caption, form, objectsToSet, nulls, staticType, top, getExtraParams(printer, sheetName, password));
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, top, getExtraParams(printer, sheetName, password));
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
         this.passwordInterface = password != null ? orderInterfaces.get(orderInterfaces.size() - 1) : null;

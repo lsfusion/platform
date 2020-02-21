@@ -3111,24 +3111,46 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
                                                                          Boolean syncType, WindowFormType windowType, ManageSessionType manageSession, FormSessionScope formSessionScope,
-                                                                         boolean checkOnOk, Boolean noCancel, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
-        ImList<O> objects = mapped.objects;
+                                                                         boolean checkOnOk, Boolean noCancel, boolean readonly,
+                                                                         List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> oldContext) throws ScriptingErrorLog.SemanticErrorException {
+        ImList<O> mappedObjects = mapped.objects;
+        ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
+
+        MList<O> mInputObjects = ListFact.mListMax(mappedObjects.size());
+        MList<Boolean> mInputNulls = ListFact.mListMax(mappedObjects.size());
+        MList<LP> mInputProps = ListFact.mListMax(mappedObjects.size());
+
+        MList<O> mObjects = ListFact.mListMax(mappedObjects.size());
         List<LPWithParams> mapping = new ArrayList<>();
-        MList<Boolean> mNulls = ListFact.mList(objects.size());
-        for (int i = 0; i < objects.size(); i++) {
+        MList<Boolean> mNulls = ListFact.mListMax(mappedObjects.size());
+
+        for (int i = 0; i < mappedObjects.size(); i++) {
             FormActionProps objectProp = allObjectProps.get(i);
             assert objectProp.in != null;
+            mObjects.add(mappedObjects.get(i));
             mapping.add(objectProp.in);
             mNulls.add(objectProp.inNull);
             assert !objectProp.out && !objectProp.constraintFilter;
         }
+        ImList<O> inputObjects = mInputObjects.immutableList();
+        ImList<Boolean> inputNulls = mInputNulls.immutableList();
+        ImList<LP> inputProps = mInputProps.immutableList();
 
+        CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), ListFact.EMPTY());
+
+        ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
-                                 manageSession, noCancel,
-                                 syncType, windowType, false, checkOnOk,
-                                 readonly);
+                inputObjects, inputProps, inputNulls,
+                manageSession, noCancel,
+                contextEntities.orderInterfaces, contextEntities.filters,
+                syncType, windowType, false, checkOnOk,
+                readonly);
 
         action = addSessionScopeAProp(formSessionScope, action);
+
+        for (int usedParam : contextEntities.usedParams) {
+            mapping.add(new LPWithParams(usedParam));
+        }
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(action, mapping);
@@ -3458,12 +3480,17 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormPrintType printType,
                                                                           NamedPropertyUsage propUsage, Boolean syncType, Integer selectTop,
-                                                                          LPWithParams printerProperty, LPWithParams sheetNameProperty, LPWithParams passwordProperty, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+                                                                          LPWithParams printerProperty, LPWithParams sheetNameProperty, LPWithParams passwordProperty,
+                                                                          List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         assert printType != null;
-        ImList<O> objects = mapped.objects;
+
+        ImList<O> mappedObjects = mapped.objects;
+        ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
+
         List<LPWithParams> mapping = new ArrayList<>();
-        MList<Boolean> mNulls = ListFact.mList(objects.size());
-        for (int i = 0; i < objects.size(); i++) {
+        MList<Boolean> mNulls = ListFact.mList(mappedObjects.size());
+
+        for (int i = 0; i < mappedObjects.size(); i++) {
             FormActionProps objectProp = allObjectProps.get(i);
             assert objectProp.in != null;
             mapping.add(objectProp.in);
@@ -3482,8 +3509,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, params) : null;
         ValueClass password = passwordProperty != null ? getValueClassByParamProperty(passwordProperty, params) : null;
 
-        LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
-                printType, syncType, selectTop, targetProp, false, printer, sheetName, password);
+        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters), ListFact.EMPTY());
+
+        LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
+                contextEntities.orderInterfaces, contextEntities.filters, printType, syncType, selectTop, targetProp, false, printer, sheetName, password);
+
+        for (int usedParam : contextEntities.usedParams) {
+            mapping.add(new LPWithParams(usedParam));
+        }
 
         if(printerProperty != null) {
             mapping.add(printerProperty);
@@ -3505,14 +3538,18 @@ public class ScriptingLogicsModule extends LogicsModule {
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                            LPWithParams rootProperty, LPWithParams tagProperty, boolean attr, boolean noHeader,
                                                                            String separator, boolean noEscape, Integer selectTop, String charset, NamedPropertyUsage propUsage,
-                                                                           OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+                                                                           OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages, List<TypedParameter> objectsContext,
+                                                                           List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         if(exportType == null)
             exportType = FormIntegrationType.JSON;
 
-        ImList<O> objects = mapped.objects;
+        ImList<O> mappedObjects = mapped.objects;
+        ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
+
         List<LPWithParams> mapping = new ArrayList<>();
-        MList<Boolean> mNulls = ListFact.mList(objects.size());
-        for (int i = 0; i < objects.size(); i++) {
+        MList<Boolean> mNulls = ListFact.mListMax(mappedObjects.size());
+
+        for (int i = 0; i < mappedObjects.size(); i++) {
             FormActionProps objectProp = allObjectProps.get(i);
             assert objectProp.in != null;
             mapping.add(objectProp.in);
@@ -3554,9 +3591,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass root = rootProperty != null ? getValueClassByParamProperty(rootProperty, params) : null;
         ValueClass tag = tagProperty != null ? getValueClassByParamProperty(tagProperty, params) : null;
 
-        LA action = addEFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
-                exportType, noHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles.immutable(), root, tag);
-        
+        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters), ListFact.EMPTY());
+
+        LA action = addEFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
+                contextEntities.orderInterfaces, contextEntities.filters, exportType, noHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles.immutable(), root, tag);
+
+        for (int usedParam : contextEntities.usedParams) {
+            mapping.add(new LPWithParams(usedParam));
+        }
+
         if(rootProperty != null)
             mapping.add(rootProperty);
 
