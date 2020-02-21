@@ -68,7 +68,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     public SecurityPolicy defaultPolicy;
     public SecurityPolicy permitAllPolicy;
-    public SecurityPolicy readOnlyPolicy;
     public SecurityPolicy allowConfiguratorPolicy;
 
     private BusinessLogics businessLogics;
@@ -122,21 +121,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             permitAllPolicy = addPolicy("allowAll", localize("{logics.policy.allow.all}"), localize("{logics.policy.allows.all.actions}"));
             permitAllPolicy.setReplaceMode(true);
 
-            readOnlyPolicy = addPolicy("readonly", localize("{logics.policy.forbid.editing.all.properties}"), localize("{logics.policy.read.only.forbids.editing.of.all.properties.on.the.forms}"));
-            readOnlyPolicy.property.change.defaultPermission = false;
-            readOnlyPolicy.cls.edit.add.defaultPermission = false;
-            readOnlyPolicy.cls.edit.change.defaultPermission = false;
-            readOnlyPolicy.cls.edit.remove.defaultPermission = false;
-
             for (FormEntity formEntity : businessLogics.getAllForms())
                 formEntity.proceedAllEventActions((eventAction, drawAction) -> {
-                    if (eventAction.property.ignoreReadOnlyPolicy()) {
-                        readOnlyPolicy.property.change.permit(eventAction.property); // permits eventAction if it doesn't change anything
-                    } else {
-                        if (drawAction != null) { // hiding actions that cannot be executed 
-                            drawAction.deny(readOnlyPolicy.property.view);
-                        }
-                    }                    
                 });
 
             allowConfiguratorPolicy = addPolicy("allowConfiguration", localize("{logics.policy.allow.configurator}"), localize("{logics.policy.logics.allow.configurator}"));
