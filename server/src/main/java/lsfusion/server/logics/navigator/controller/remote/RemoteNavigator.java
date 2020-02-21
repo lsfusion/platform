@@ -235,6 +235,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         boolean useBusyDialog;
         boolean useRequestTimeout;
         boolean forbidDuplicateForms;
+        boolean showDetailedInfo;
         boolean devMode;
         ColorTheme colorTheme;
 
@@ -244,17 +245,18 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
             useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
             forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCustomUser.read(session, user) != null;
+            showDetailedInfo = businessLogics.securityLM.showDetailedInfoCustomUser.read(session, user) != null;
+
             devMode = SystemProperties.inDevMode || businessLogics.authenticationLM.devMode.read(session) != null;
-            
+
             String colorThemeStaticName = (String) businessLogics.authenticationLM.colorThemeStaticName.read(session, user);
             String colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null; 
             colorTheme = BaseUtils.nvl(ColorTheme.get(colorThemeString), ColorTheme.DEFAULT);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-        boolean configurationAccessAllowed = securityPolicy.configurator != null && securityPolicy.configurator;
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, devMode, configurationAccessAllowed, forbidDuplicateForms, colorTheme);
+                useRequestTimeout, devMode, showDetailedInfo, forbidDuplicateForms, colorTheme);
     }
 
     public void gainedFocus(FormInstance form) {
