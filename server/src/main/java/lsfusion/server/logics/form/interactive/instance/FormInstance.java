@@ -220,8 +220,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.logicsInstance = logicsInstance;
         this.BL = logicsInstance.getBusinessLogics();
 
-        if(showReadOnly)
-            securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);
         this.securityPolicies = securityPolicies;
 
         this.locale = locale;
