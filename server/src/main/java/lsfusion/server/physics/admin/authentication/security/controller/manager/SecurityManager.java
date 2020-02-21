@@ -68,7 +68,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     public SecurityPolicy defaultPolicy;
     public SecurityPolicy permitAllPolicy;
-    public SecurityPolicy allowConfiguratorPolicy;
 
     private BusinessLogics businessLogics;
     private DBManager dbManager;
@@ -124,9 +123,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             for (FormEntity formEntity : businessLogics.getAllForms())
                 formEntity.proceedAllEventActions((eventAction, drawAction) -> {
                 });
-
-            allowConfiguratorPolicy = addPolicy("allowConfiguration", localize("{logics.policy.allow.configurator}"), localize("{logics.policy.logics.allow.configurator}"));
-            allowConfiguratorPolicy.configurator = true;
         } catch (SQLException | SQLHandledException e) {
             throw new RuntimeException("Error initializing Security Manager: ", e);
         }
@@ -295,7 +291,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
         if(userObject.equals(adminUser)) {
             securityPolicies.add(permitAllPolicy);
-            securityPolicies.add(allowConfiguratorPolicy);
         }
 
         SecurityPolicy resultPolicy = new SecurityPolicy(-1);

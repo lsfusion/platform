@@ -2,12 +2,10 @@ package lsfusion.server.physics.admin.authentication.security.policy;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class SecurityPolicy {
     public final long ID;
-    public Boolean configurator;
     public Boolean editObjects;
 
     public SecurityPolicy() {
@@ -28,10 +26,7 @@ public class SecurityPolicy {
         property.override(policy.property);
         navigator.override(policy.navigator);
         form.override(policy.form);
-        
-        if (policy.configurator != null) {
-            configurator = policy.configurator;
-        }
+
         if (policy.editObjects != null) {
             editObjects = policy.editObjects;
         }

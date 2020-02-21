@@ -321,6 +321,9 @@ forbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (UserRol
 dataForbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
 forbidDuplicateForms (CustomUser u) = OVERRIDE dataForbidDuplicateForms(u), forbidDuplicateForms(mainRole(u));
 
+showDetailedInfo '{security.user.role.show.detailed.info}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
+showDetailedInfo (CustomUser u) = showDetailedInfo(mainRole(u));
+
 // Default forms
 defaultNumber '{security.default.forms.number}' = DATA INTEGER (UserRole, NavigatorElement);
 defaultNumber (User user, NavigatorElement navigatorElement) = 
@@ -433,6 +436,7 @@ onStarted() + {
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE permitChangeAllProperty(ur);
         
         in(CustomUser u, userRoleSID('readonly')) <- TRUE IF GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);                
+        showDetailedInfo(UserRole ur) <- TRUE IF order(ur, policy('allowConfiguration'));                
         
         newPermissionPolicy() <- TRUE;
     }     
@@ -450,7 +454,7 @@ FORM securityPolicy '{security.form.policy}'
     
     PROPERTIES(ur) forbidViewAllSetupPolicies, forbidChangeAllSetupPolicies, forbidEditObjects
 
-    PROPERTIES(ur) forbidChangePassword, forbidEditProfile
+    PROPERTIES(ur) forbidChangePassword, forbidEditProfile, showDetailedInfo
 
     PROPERTIES(ur) defaultForms, maximizeDefaultForms, forbidDuplicateForms
     PROPERTIES(ur) transactTimeout
