@@ -9,7 +9,6 @@ public class AbstractSecurityPolicy<T> {
     private Set<T> permitted = new HashSet<>();
     private Set<T> denied = new HashSet<>();
 
-    public boolean replaceMode = false;
     public Boolean defaultPermission;
 
     public void permit(T obj) {
@@ -36,12 +35,6 @@ public class AbstractSecurityPolicy<T> {
     }
 
     protected void override(AbstractSecurityPolicy<T> policy) {
-
-        if (policy.replaceMode) {
-            permitted.clear();
-            denied.clear();
-        }
-
         deny(policy.denied);
         permit(policy.permitted);
 

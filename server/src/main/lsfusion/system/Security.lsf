@@ -36,6 +36,7 @@ CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE '{security.this.role.is.assigned.to.user}';
     
 WHEN SETCHANGED (login(CustomUser u)) DO {
+    mainRole(u) <- userRoleSID('admin') IF login(u) == 'admin'; 
     in(u, userRoleSID('default')) <- TRUE;        
 }
 
@@ -242,25 +243,6 @@ copy (UserRole from, UserRole to) +{
     dataPermissionChange(to, PropertyGroup propertyGroup) <- dataPermissionChange(from, propertyGroup);
 }
 
-createSystemUserRoles() {
-    IF NOT userRoleSID('readonly') THEN {
-        NEW ur = UserRole {
-            sid(ur) <- 'readonly';
-            name(ur) <- ISTRING[100] ('{security.user.role.readonly}');
-            permissionChange(ur, propertyGroup('System_root')) <- Permission.forbid;
-        }
-    }
-    
-     IF NOT userRoleSID('default') THEN {
-        NEW ur = UserRole {
-            sid(ur) <- 'default';
-            name(ur) <- ISTRING[100] ('{security.user.role.default}');
-        }
-     }
-      
-    apply();
-}
-
 // ------ Property policy caches ----------- //
 
 cachePropertyPolicy '{security.cache.property.policy}' = DATA BOOLEAN (User) CHARWIDTH 10;
@@ -403,6 +385,34 @@ onStarted() + {
     }
 }
 
+createSystemUserRoles() {
+    IF NOT userRoleSID('admin') THEN {
+        NEW ur = UserRole {
+            sid(ur) <- 'admin';
+            name(ur) <- ISTRING[100] ('{security.user.role.admin}');
+            showDetailedInfo(ur) <- TRUE;      
+            dataPermission(ur, navigatorElementCanonicalName('System.root')) <- Permission.permit;        
+            dataPermissionView(ur, propertyGroup('System_root')) <- Permission.permit;        
+            dataPermissionChange(ur, propertyGroup('System_root')) <- Permission.permit;            
+        }
+    }
+
+    IF NOT userRoleSID('readonly') THEN {
+        NEW ur = UserRole {
+            sid(ur) <- 'readonly';
+            name(ur) <- ISTRING[100] ('{security.user.role.readonly}');
+            permissionChange(ur, propertyGroup('System_root')) <- Permission.forbid;
+        }
+    }
+    
+     IF NOT userRoleSID('default') THEN {
+        NEW ur = UserRole {
+            sid(ur) <- 'default';
+            name(ur) <- ISTRING[100] ('{security.user.role.default}');
+        }
+     }   
+}
+
 newPermissionPolicy = DATA BOOLEAN ();
 onStarted() + {
     //newPermissionPolicy() <- NULL;
@@ -436,7 +446,11 @@ onStarted() + {
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE permitChangeAllProperty(ur);
         
         in(CustomUser u, userRoleSID('readonly')) <- TRUE IF GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);                
-        showDetailedInfo(UserRole ur) <- TRUE IF order(ur, policy('allowConfiguration'));                
+        showDetailedInfo(UserRole ur) <- TRUE IF order(ur, policy('allowConfiguration'));
+        
+        dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.permit IF order(ur, policy('allowAll'));        
+        dataPermissionView(UserRole ur, propertyGroup('System_root')) <- Permission.permit IF order(ur, policy('allowAll'));        
+        dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit IF order(ur, policy('allowAll'));        
         
         newPermissionPolicy() <- TRUE;
     }     

@@ -9,8 +9,4 @@ public class ClassSecurityPolicy {
         view.override(cls.view);
         edit.override(cls.edit);
     }
-
-    public void setReplaceMode(boolean replaceMode) {
-        edit.setReplaceMode(replaceMode);
-    }
 }

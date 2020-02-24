@@ -21,7 +21,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP<?> policyId;
     public LP<?> namePolicy;
     public LP descriptionPolicy;
-    public LP orderUserPolicy;
 
     public LP forbidDuplicateFormsCustomUser;
     public LP showDetailedInfoCustomUser;
@@ -88,7 +87,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         policyId = findProperty("policy[STRING[100]]");
         namePolicy = findProperty("name[Policy]");
         descriptionPolicy = findProperty("description[Policy]");
-        orderUserPolicy = findProperty("order[User,Policy]");
 
         // ---- Политики для доменной логики
 
