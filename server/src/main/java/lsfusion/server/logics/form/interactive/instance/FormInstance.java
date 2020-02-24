@@ -943,10 +943,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (objectInstance instanceof CustomObjectInstance) {
             CustomObjectInstance object = (CustomObjectInstance) objectInstance;
 
-            if (SecurityPolicy.checkClassChangePermission(securityPolicies, object.currentClass)) {
-                object.changeClass(session, dataObject, cls);
-                dataChanged = true;
-            }
+            object.changeClass(session, dataObject, cls);
+            dataChanged = true;
         } else
             session.changeClass(objectInstance, dataObject, cls);
     }
