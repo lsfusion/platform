@@ -11,10 +11,4 @@ public class EditClassSecurityPolicy {
         remove.override(edit.remove);
         change.override(edit.change);
     }
-
-    public void setReplaceMode(boolean replaceMode) {
-        add.replaceMode = replaceMode;
-        remove.replaceMode = replaceMode;
-        change.replaceMode = replaceMode;
-    }
 }

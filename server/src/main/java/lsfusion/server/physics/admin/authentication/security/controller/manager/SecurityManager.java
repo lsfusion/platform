@@ -5,10 +5,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.col.interfaces.immutable.ImCol;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.base.exception.AuthenticationException;
@@ -55,8 +55,6 @@ import javax.naming.CommunicationException;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
-
 public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;
     private static final Logger systemLogger = ServerLoggers.systemLogger;
@@ -64,10 +62,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     @Deprecated
     public static SecurityPolicy serverSecurityPolicy = new SecurityPolicy();
 
-    private final MAddMap<Long, SecurityPolicy> policies = MapFact.mAddOverrideMap();
-
     public SecurityPolicy defaultPolicy;
-    public SecurityPolicy permitAllPolicy;
 
     private BusinessLogics businessLogics;
     private DBManager dbManager;
@@ -114,18 +109,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         this.securityLM = businessLogics.securityLM;
         this.reflectionLM = businessLogics.reflectionLM;
 
-        try {
-            defaultPolicy = new SecurityPolicy();
+        defaultPolicy = new SecurityPolicy();
 
-            permitAllPolicy = addPolicy("allowAll", localize("{logics.policy.allow.all}"), localize("{logics.policy.allows.all.actions}"));
-            permitAllPolicy.setReplaceMode(true);
-
-            for (FormEntity formEntity : businessLogics.getAllForms())
-                formEntity.proceedAllEventActions((eventAction, drawAction) -> {
-                });
-        } catch (SQLException | SQLHandledException e) {
-            throw new RuntimeException("Error initializing Security Manager: ", e);
-        }
+        for (FormEntity formEntity : businessLogics.getAllForms())
+            formEntity.proceedAllEventActions((eventAction, drawAction) -> {
+            });
     }
 
     @Override
@@ -138,20 +126,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public void putPolicy(Long policyID, SecurityPolicy policy) {
-        policies.add(policyID, policy);
-    }
-
-    public SecurityPolicy getPolicy(Long policyID) {
-        return policies.get(policyID);
-    }
-
     private DataObject adminUser = null;
     private DataObject anonymousUser = null;
     public void initUsers() throws SQLException, SQLHandledException {
         try(DataSession session = createSession()) {
-
             securityLM.createSystemUserRoles.execute(session, getStack());
+            apply(session);
+        }
+
+        try(DataSession session = createSession()) {
 
             DataObject adminUser = readUser("admin", session);
             if (adminUser == null) {
@@ -179,30 +162,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     private DataSession createSession() throws SQLException {
         return dbManager.createSession();
-    }
-
-    public SecurityPolicy addPolicy(String id, String name, String description) throws SQLException, SQLHandledException {
-
-        Long policyID;
-        try (DataSession session = createSession()) {
-            policyID = readPolicy(id, session);
-            if (policyID == null) {
-                DataObject addObject = session.addObject(securityLM.policy);
-                securityLM.idPolicy.change(id, session, addObject);
-                securityLM.namePolicy.change(name, session, addObject);
-                securityLM.descriptionPolicy.change(description, session, addObject);
-                policyID = (Long) addObject.object;
-                apply(session);
-            }
-        }
-
-        SecurityPolicy policyObject = new SecurityPolicy(policyID);
-        putPolicy(policyID, policyObject);
-        return policyObject;
-    }
-
-    private Long readPolicy(String id, DataSession session) throws SQLException, SQLHandledException {
-        return (Long) securityLM.policyId.read(session, new DataObject(id, StringClass.get(100)));
     }
 
     protected DataObject addUser(String login, String defaultPassword, DataSession session) throws SQLException, SQLHandledException {
@@ -280,49 +239,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         // политика для роли из формы "Политика безопасности"
         applyNavigatorElementDefinedUserPolicy(securityPolicies, userObject, session);
 
-        // дополнительные политики из формы "Политика безопасности"
-        List<Long> userPoliciesIds = readUserPoliciesIds(userObject, session);
-        for (long policyId : userPoliciesIds) {
-            SecurityPolicy policy = getPolicy(policyId);
-            if (policy != null) {
-                securityPolicies.add(policy);
-            }
-        }
-
-        if(userObject.equals(adminUser)) {
-            securityPolicies.add(permitAllPolicy);
-        }
-
         SecurityPolicy resultPolicy = new SecurityPolicy(-1);
         for (SecurityPolicy policy : securityPolicies) {
             resultPolicy.override(policy);
         }
         return resultPolicy;
-    }
-
-    private List<Long> readUserPoliciesIds(DataObject userObject, DataSession session) {
-        try {
-            ArrayList<Long> result = new ArrayList<>();
-
-            QueryBuilder<String, Object> q = new QueryBuilder<>(SetFact.toExclSet("userId", "policyId"));
-            Expr orderExpr = securityLM.orderUserPolicy.getExpr(session.getModifier(), q.getMapExprs().get("userId"), q.getMapExprs().get("policyId"));
-
-            q.addProperty("pOrder", orderExpr);
-            q.and(orderExpr.getWhere());
-            q.and(q.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
-
-            ImOrderMap<Object, Boolean> orderBy = MapFact.singletonOrder("pOrder", false);
-            ImSet<ImMap<String, Object>> keys = q.execute(session, orderBy, 0).keys();
-            if (keys.size() != 0) {
-                for (ImMap<String, Object> keyMap : keys) {
-                    result.add((Long) keyMap.get("policyId"));
-                }
-            }
-
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void authenticateUser(DataSession session, DataObject userObject, String login, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -463,7 +384,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     private ImCol<ImMap<String, Object>> readPropertyPolicy(ExecutionContext context, DataSession session, DataObject userObject, boolean cache, boolean reupdateCache) throws SQLException, SQLHandledException {
 
-        ImCol<ImMap<String, Object>> result = null;
+        ImCol<ImMap<String, Object>> result;
         if(cache && !reupdateCache) {
             result = propertyPolicyCache.get((long) userObject.object);
             if (result != null)
@@ -499,13 +420,13 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public void setUserParameters(DataObject customUser, String firstName, String lastName, String email, List<String> userRoleSIDs, DataSession session) {
         try {
             if (firstName != null)
-                authenticationLM.firstNameContact.change(firstName, session, (DataObject) customUser);
+                authenticationLM.firstNameContact.change(firstName, session, customUser);
 
             if (lastName != null)
-                authenticationLM.lastNameContact.change(lastName, session, (DataObject) customUser);
+                authenticationLM.lastNameContact.change(lastName, session, customUser);
             
             if (email != null)
-                authenticationLM.emailContact.change(email, session, (DataObject) customUser);
+                authenticationLM.emailContact.change(email, session, customUser);
 
             if (userRoleSIDs != null) {
                 for (String userRoleName : userRoleSIDs) {

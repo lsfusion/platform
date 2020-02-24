@@ -9,9 +9,4 @@ public class PropertySecurityPolicy {
         view.override(policy.view);
         change.override(policy.change);
     }
-
-    public void setReplaceMode(boolean replaceMode) {
-        view.replaceMode = replaceMode;
-        change.replaceMode = replaceMode;
-    }
 }

@@ -32,13 +32,6 @@ public class SecurityPolicy {
         }
     }
 
-    public void setReplaceMode(boolean replaceMode) {
-        cls.setReplaceMode(replaceMode);
-        property.setReplaceMode(replaceMode);
-        navigator.replaceMode = replaceMode;
-        form.replaceMode = replaceMode;
-    }
-
     public static boolean checkPropertyViewPermission(ImSet<SecurityPolicy> securityPolicies, ActionOrProperty property) {
         for(SecurityPolicy securityPolicy : securityPolicies)
             if(!securityPolicy.property.view.checkPermission(property))
