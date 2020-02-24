@@ -445,12 +445,12 @@ onStarted() + {
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.forbid WHERE forbidChangeAllProperty(ur);
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE permitChangeAllProperty(ur);
         
-        in(CustomUser u, userRoleSID('readonly')) <- TRUE IF GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);                
-        showDetailedInfo(UserRole ur) <- TRUE IF order(ur, policy('allowConfiguration'));
+        in(CustomUser u, userRoleSID('readonly')) <- TRUE WHERE GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);                
+        showDetailedInfo(UserRole ur) <- TRUE WHERE order(ur, policy('allowConfiguration'));
         
-        dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.permit IF order(ur, policy('allowAll'));        
-        dataPermissionView(UserRole ur, propertyGroup('System_root')) <- Permission.permit IF order(ur, policy('allowAll'));        
-        dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit IF order(ur, policy('allowAll'));        
+        dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.permit WHERE order(ur, policy('allowAll'));        
+        dataPermissionView(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE order(ur, policy('allowAll'));        
+        dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE order(ur, policy('allowAll'));        
         
         newPermissionPolicy() <- TRUE;
     }     
