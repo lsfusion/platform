@@ -87,17 +87,6 @@ public class ActionDebugger implements DebuggerService {
     private Map<String, Class> delegatesHolderClasses = new HashMap<>();
 
     private ActionDebugger() {
-        try {
-            if(isEnabled()) {
-                DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(this, 0, new LocalhostClientSocketFactory(), null);
-                int port = SystemProperties.getDebuggerPort();
-                Registry registry = LocateRegistry.createRegistry(port);
-                registry.bind("lsfDebuggerService", stub);
-            }
-        } catch (Throwable t) {
-            logger.error("Cannot start LSF debugger", t);
-//            Throwables.propagate(e);
-        }
     } //singleton
 
     private Set<DebugInfo> delegates = new HashSet<>();
