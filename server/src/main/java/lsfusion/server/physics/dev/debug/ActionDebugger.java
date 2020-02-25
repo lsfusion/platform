@@ -36,7 +36,6 @@ import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import sun.management.jmxremote.LocalRMIServerSocketFactory;
 
 import javax.tools.*;
 import java.io.File;
@@ -93,7 +92,7 @@ public class ActionDebugger implements DebuggerService {
     private ActionDebugger() {
         try {
             if(isEnabled()) {
-                DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(this, 0, new LocalhostClientSocketFactory(), new LocalRMIServerSocketFactory());
+                DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(this, 0, new LocalhostClientSocketFactory(), null);
                 int port = SystemProperties.getDebuggerPort();
                 Registry registry = LocateRegistry.createRegistry(port);
                 registry.bind("lsfDebuggerService", stub);
