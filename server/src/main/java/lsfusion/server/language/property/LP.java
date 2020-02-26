@@ -26,6 +26,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.UnionProperty;
@@ -232,18 +233,9 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         }
     }
 
-    public <D extends PropertyInterface> void setEventChange(LP<D> valueProperty, int whereNum, Object... params) {
-
-        ImList<PropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
-
-        property.setEventChange(LogicsModule.mapCalcListImplement(valueProperty, listInterfaces),
-                BaseUtils.immutableCast(defImplements.subList(0, whereNum)),
-                BaseUtils.<ImList<PropertyMapImplement<?, T>>>immutableCast(defImplements.subList(whereNum, defImplements.size())).getCol());
-    }
-
-    public <D extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, Object... params) {
+    public <D extends PropertyInterface> void setEventChange(LogicsModule lm, Event actionEvent, Object... params) {
         ImList<PropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
-        property.setEventChange(lm, action, listImplements.get(0), (PropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
+        property.setEventChange(lm, actionEvent, listImplements.get(0), (PropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
     }
 
     public void addOperand(boolean hasWhen, List<ResolveClassSet> signature, Version version, Object... params) {

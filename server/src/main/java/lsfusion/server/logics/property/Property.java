@@ -1456,30 +1456,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     public Expr changeExpr;
 
-    public <D extends PropertyInterface> void setEventChange(PropertyMapImplement<D, T> valueImplement, ImList<PropertyMapImplement<?, T>> whereImplements, ImCol<PropertyMapImplement<?, T>> onChangeImplements) {
-
-        ImCol<PropertyMapImplement<?, T>> onChangeWhereImplements = onChangeImplements.mapColValues(value -> value.mapChanged(IncrementType.SETCHANGED, ChangeEvent.scope));
-
-        PropertyMapImplement<?, T> where;
-        if(onChangeWhereImplements.size() > 0) {
-            if(onChangeWhereImplements.size()==1)
-                where = onChangeWhereImplements.single();
-            else
-                where = PropertyFact.createUnion(interfaces, onChangeWhereImplements.toList());
-            if(whereImplements.size()>0)
-                where = PropertyFact.createAnd(interfaces, where, whereImplements.getCol());
-        } else { // по сути новая ветка, assert что whereImplements > 0
-            where = whereImplements.get(0);
-            if(whereImplements.size() > 1)
-                where = PropertyFact.createAnd(interfaces, where, whereImplements.subList(1, whereImplements.size()).getCol());
-        }
-        setEventChange(null, false, valueImplement, where);
-    }
-
-    public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
-        if(action && !Settings.get().isDisableWhenCalcDo()) {
+    public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, Event actionEvent, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
+        if(actionEvent != null) {
             ActionMapImplement<?, T> setAction = PropertyFact.createSetAction(interfaces, getImplement(), valueImplement);
-            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.EMPTYORDER(), false, Event.SESSION, null, true, false, null);
+            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.EMPTYORDER(), false, actionEvent, SetFact.EMPTY(), false, false, null);
             return;
         }
 

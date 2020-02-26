@@ -487,25 +487,6 @@ public abstract class LogicsModule {
 
     // ------------------- Loggable ----------------- //
 
-    protected <D extends PropertyInterface> LP addDCProp(LocalizedString caption, int whereNum, LP<D> derivedProp, Object... params) {
-        Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
-
-        // выполняем само создание свойства
-        StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, signature.second);
-        LP derDataProp = addProperty(null, new LP<>(dataProperty));
-
-        derDataProp.setEventChange(derivedProp, whereNum, params);
-        return derDataProp;
-    }
-
-    protected <D extends PropertyInterface> LP addLogProp(LocalizedString caption, int whereNum, LP<D> derivedProp, Object... params) {
-        Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
-
-        // выполняем само создание свойства
-        StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, LogicalClass.instance);
-        return addProperty(null, new LP<>(dataProperty));
-    }
-
     private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LP<D> derivedProp, int whereNum, Object[] params) {
         // придется создавать Join свойство чтобы считать его класс
         int dersize = getIntNum(params);
@@ -1494,39 +1475,34 @@ public abstract class LogicsModule {
     // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #48),
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
     public LP addLProp(SystemEventsLogicsModule systemEventsLM, LP lp, DBNamingPolicy namingPolicy) {
+        return addLProp(systemEventsLM, lp, false, namingPolicy);
+    }
+
+    public LP addLProp(SystemEventsLogicsModule systemEventsLM, LP lp, boolean drop, DBNamingPolicy namingPolicy) {
         assert lp.property.isNamed();
-        String name = getLogPropertyName(lp, false);
+        String name = getLogPropertyName(lp, drop);
         
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
         
-        LP result = addDCProp(LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
+        LP equalsProperty = systemEventsLM.isCurrentSession;
 
-        makePropertyPublic(result, name, signature);
-        markLoggableStored(result, namingPolicy);
-        return result;
+        LP value = drop ? baseLM.vtrue : lp;
+
+        LP changed = addCHProp(lp, drop ? IncrementType.DROP : IncrementType.SETCHANGED, PrevScope.DB);
+        LP where = addJProp(baseLM.and1, add(directLI(changed), new Object[]{equalsProperty, changed.listInterfaces.size() + 1}));
+
+        StoredDataProperty data = new StoredDataProperty(LocalizedString.create("{logics.log}" + " " + lp.property), where.getInterfaceClasses(ClassType.logPolicy), value.property.getValueClass(ClassType.logPolicy));
+        LP log = addProperty(null, new LP<>(data));
+
+        log.setEventChange(systemEventsLM, Event.APPLY, BaseUtils.add(directLI(value), directLI(where)));
+
+        makePropertyPublic(log, name, signature);
+        markLoggableStored(log, namingPolicy);
+        return log;
     }
 
     public LP addLDropProp(SystemEventsLogicsModule systemEventsLM, LP lp, DBNamingPolicy namingPolicy) {
-        String name = getLogPropertyName(lp, true);
-
-        List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
-
-        LP equalsProperty = addJProp(baseLM.equals2, 1, systemEventsLM.currentSession);
-        LP logDropProperty = addLogProp(LocalizedString.create("{logics.log}" + " " + lp.property + " {drop}"), 1, lp, add(new Object[]{equalsProperty, lp.listInterfaces.size() + 1}, directLI(lp)));
-
-        LP changedProperty = addCHProp(lp, IncrementType.DROP, PrevScope.EVENT);
-        LP whereProperty = addJProp(baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
-
-        Object[] params = directLI(baseLM.vtrue);
-        if (whereProperty != null) {
-            params = BaseUtils.add(params, directLI(whereProperty));
-        }
-        logDropProperty.setEventChange(systemEventsLM, true, params);
-
-        makePropertyPublic(logDropProperty, name, signature);
-        markLoggableStored(logDropProperty, namingPolicy);
-
-        return logDropProperty;
+        return addLProp(systemEventsLM, lp, true, namingPolicy);
     }
 
     private void markLoggableStored(LP lp, DBNamingPolicy namingPolicy) {

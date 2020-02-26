@@ -90,6 +90,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP connectionFormCount;
 
     public LP<?> currentSession;
+    public LP<?> isCurrentSession;
     public LP connectionSession;
     public LP formSession;
     public LP quantityAddedClassesSession;
@@ -179,6 +180,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         // Сессия
         currentSession = findProperty("currentSession[]");
+        isCurrentSession = findProperty("isCurrentSession[?]");
         connectionSession = findProperty("connection[Session]");
         formSession = findProperty("form[Session]");
         quantityAddedClassesSession = findProperty("quantityAddedClasses[Session]");

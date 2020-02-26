@@ -205,6 +205,7 @@ TABLE session(Session);
 TABLE sessionObject(Session, Object);
 
 currentSession = DATA LOCAL Session();
+isCurrentSession(s) = s = currentSession(); 
 
 quantityAddedClasses '{system.events.quantity.added.classes.session}' = DATA INTEGER (Session);
 quantityRemovedClasses '{system.events.quantity.removed.classes.session}' = DATA INTEGER (Session);
