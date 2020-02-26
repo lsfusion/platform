@@ -233,7 +233,7 @@ class BusyDialog extends JDialog {
                     stackLines = new ArrayList<>();
                     changed = false;
                 }
-                JPanel progressBarPanel = createProgressBarPanel((ProgressBar) line, ((ProgressBar) line).params == null ? 1 : 2);
+                JPanel progressBarPanel = createProgressBarPanel((ProgressBar) line, ((ProgressBar) line).getParams() == null ? 1 : 2);
                 progressBarPanel.setBorder(new EmptyBorder(0, 2, 0, 0));
                 stackComponents.add(progressBarPanel);
                 progressBarCount++;
@@ -343,8 +343,9 @@ class BusyDialog extends JDialog {
         messagePanel.add(progressBar);
         messageProgressPanel.add(messagePanel);
 
-        if (progressBarLine.params != null) {
-            JLabel paramsLabel = new JLabel(progressBarLine.params);
+        String params = progressBarLine.getParams();
+        if (params != null) {
+            JLabel paramsLabel = new JLabel(params);
             paramsLabel.setPreferredSize(new Dimension(messagePanel.getPreferredSize().width, paramsLabel.getPreferredSize().height));
             messageProgressPanel.add(paramsLabel);
         }

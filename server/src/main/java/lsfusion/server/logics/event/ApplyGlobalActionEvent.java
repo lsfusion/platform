@@ -2,9 +2,11 @@ package lsfusion.server.logics.event;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.changed.OldProperty;
+import lsfusion.server.logics.action.session.changed.SessionProperty;
 
-public class ApplyGlobalActionEvent extends ApplyGlobalEvent implements ApplyActionEvent {
+public class ApplyGlobalActionEvent extends ApplyGlobalEvent implements ApplyEvent {
     
     public final Action<?> action;
 
@@ -12,6 +14,13 @@ public class ApplyGlobalActionEvent extends ApplyGlobalEvent implements ApplyAct
         this.action = action;
 
         assert action.getSessionEnv(SystemEvent.APPLY)!=null;
+    }
+
+    public boolean hasChanges(StructChanges changes) {
+        for (SessionProperty property : action.getGlobalEventSessionCalcDepends())
+            if (property.hasChanges(changes))
+                return true;
+        return false;
     }
 
     @Override

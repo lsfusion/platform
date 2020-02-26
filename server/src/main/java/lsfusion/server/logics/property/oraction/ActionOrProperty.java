@@ -85,7 +85,14 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return result;
     } 
     
+    private String fullString;
+    @ManualLazy
     public String toString() {
+        if(fullString == null)
+            fullString = calcToString();
+        return fullString;
+    }
+    private String calcToString() {
         String result;
         if (canonicalName != null) {
             result = canonicalName;

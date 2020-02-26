@@ -175,7 +175,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ProgressBar.class)
     public GProgressBar convertProgressBar(ProgressBar progressBar) {
-        return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.params);
+        return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.getParams());
     }
 
     @Converter(from = LoadLinkClientAction.class)

@@ -1,7 +1,11 @@
 package lsfusion.server.logics.event;
 
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+
+import java.sql.SQLException;
 
 // удаление объекта с заданным ClassDataProperty
 public class ApplyRemoveClassesEvent extends ApplyCalcEvent {
@@ -13,7 +17,11 @@ public class ApplyRemoveClassesEvent extends ApplyCalcEvent {
         
         assert property.isSingleApplyDroppedIsClassProp();
     }
-    
+
+    public boolean hasChanges(StructChanges changes) {
+        return property.hasChanges(changes);
+    }
+
     public IsClassProperty getIsClassProperty() {
         return (IsClassProperty) property.property;
     }

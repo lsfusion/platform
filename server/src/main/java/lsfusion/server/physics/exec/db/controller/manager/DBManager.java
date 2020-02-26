@@ -540,7 +540,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             count++;
             long start = System.currentTimeMillis();
             if(dataTable.overCalculateStat(reflectionLM, session, propertiesSet, getDisableStatsTableColumnSet(),
-                    new ProgressBar("Recalculate Stats", count, tables.size(), String.format("Table: %s (%s of %s)", dataTable, count, tables.size())))) {
+                    new ProgressBar("Recalculate Stats", count, tables.size(), dataTable.toString()))) {
                 long time = System.currentTimeMillis() - start;
                 BaseUtils.serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
             }
@@ -1610,7 +1610,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (int i = 0; i < checkProperties.size(); i++) {
             Property property = checkProperties.get(i);
             if(property != null)
-                message += ((AggregateProperty) property).checkAggregation(session, LM.baseClass, new ProgressBar(localize("{logics.info.checking.aggregated.property}"), i, checkProperties.size(), property.getSID()));
+                message += ((AggregateProperty) property).checkAggregation(session, LM.baseClass, new ProgressBar(localize("{logics.info.checking.aggregated.property}"), i, checkProperties.size(), property.toString()));
         }
         return message;
     }

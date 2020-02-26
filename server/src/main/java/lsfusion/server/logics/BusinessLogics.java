@@ -49,6 +49,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.ApplyFilter;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.Correlation;
+import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
@@ -93,6 +94,7 @@ import lsfusion.server.physics.admin.authentication.security.controller.manager.
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.admin.monitor.StatusMessage;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
@@ -1404,9 +1406,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> getApplyEvents(ApplyFilter increment) {
+    public ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> getApplyEvents(ApplyFilter filter) {
         // здесь нужно вернуть список stored или тех кто
-        ImOrderSet<ActionOrProperty> list = getPropertyListWithGraph(increment).first;
+        ImOrderSet<ActionOrProperty> list = getPropertyListWithGraph(filter).first;
         MOrderExclMap<ApplyGlobalEvent, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         for (ActionOrProperty property : list) {
             ApplyGlobalEvent applyEvent = property.getApplyEvent();
@@ -1416,10 +1418,31 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutableOrder();
     }
 
-    public ImOrderSet<ApplyGlobalEvent> getApplyEvents(DataSession session) {
-        return session.filterOrderEnv(getApplyEvents(session.applyFilter));
+    public static class Next {
+        public final ApplyGlobalEvent event;
+        public final SessionEnvEvent sessionEnv;
+        public final int index;
+        public final StatusMessage statusMessage;
+
+        public Next(ApplyGlobalEvent event, SessionEnvEvent sessionEnv, int index, StatusMessage statusMessage) {
+            this.event = event;
+            this.sessionEnv = sessionEnv;
+            this.index = index;
+            this.statusMessage = statusMessage;
+        }
     }
-    
+
+    @IdentityLazy
+    public Next getNextApplyEvent(ApplyFilter filter, int i, StructChanges changes) {
+        ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = getApplyEvents(filter);
+        for(int size=applyEvents.size();i<size;i++) {
+            ApplyGlobalEvent event = applyEvents.getKey(i);
+            if(event.hasChanges(changes))
+                return new Next(event, applyEvents.getValue(i), i, new StatusMessage("event", event, i, size));
+        }
+        return null;            
+    }
+
     private static ImSet<Property> getSingleApplyDepends(Property<?> fill, Result<Boolean> canBeOutOfDepends, ApplySingleEvent event) {
         ImSet<Property> depends = fill.getDepends(false);// вычисляемые события отдельно отрабатываются (собственно обрабатываются как обычные события)
 

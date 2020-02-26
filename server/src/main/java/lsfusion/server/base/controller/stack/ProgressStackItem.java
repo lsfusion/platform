@@ -54,13 +54,8 @@ public class ProgressStackItem extends AspectStackItem {
                     if (paramAnnotation instanceof StackProgress) {
                         ProgressBar progressBar = (ProgressBar) args[i];
                         if (progressBar != null) {
-                            String extraParams = params.toString(",");
-                            if (!extraParams.isEmpty()) {
-                                if (progressBar.params == null)
-                                    progressBar.params = extraParams;
-                                else
-                                    progressBar.params += (progressBar.params.isEmpty() ? "" : ", ") + extraParams;
-                            }
+                            if(!params.isEmpty())
+                                progressBar.params = params.toString(","); 
                             return progressBar;
                         }
                     }
