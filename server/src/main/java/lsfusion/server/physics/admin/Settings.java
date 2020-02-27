@@ -1295,6 +1295,24 @@ public class Settings implements Cloneable {
         this.tooMuchAttempts = tooMuchAttempts;
     }
 
+    private long criticalLRURangePercent = 5; // range (90-95-100) after exceeding middle of which panic mode will be enabled, reducing LRU to target
+    private long targetLRURangePercent = 10; // range (70-80-90) after exceeding upper border of which lru will become shorter, lower border - longer 
+
+    public long getCriticalLRURangePercent() {
+        return criticalLRURangePercent;
+    }
+
+    public void setCriticalLRURangePercent(long criticalLRURangePercent) {
+        this.criticalLRURangePercent = criticalLRURangePercent;
+    }
+
+    public long getTargetLRURangePercent() {
+        return targetLRURangePercent;
+    }
+
+    public void setTargetLRURangePercent(long targetLRURangePercent) {
+        this.targetLRURangePercent = targetLRURangePercent;
+    }
 
     public boolean isEnableAdjustSelectivity() {
         return enableAdjustSelectivity;
