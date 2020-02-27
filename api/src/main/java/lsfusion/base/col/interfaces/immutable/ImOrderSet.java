@@ -72,6 +72,8 @@ public interface ImOrderSet<K> extends ImList<K> {
     <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapOrderValuesEx(ThrowingIntObjectFunction<K, M, E1,E2> getter) throws E1, E2;
     <MK, MV, E1 extends Exception, E2 extends Exception> ImMap<MK, MV> mapOrderKeyValuesEx(ThrowingIntObjectFunction<K, MK, E1,E2> getterKey, IntFunction<MV> getterValue) throws E1, E2;
 
+    <E1 extends Exception, E2 extends Exception> ImOrderSet<K> mapItIdentityOrderValuesEx(ThrowingFunction<K, K, E1,E2> getter) throws E1, E2; // with aftereffect, identity optimization
+
     <V> ImOrderMap<K, V> toOrderMap(V value);
 
 }

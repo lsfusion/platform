@@ -219,6 +219,26 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     }
 
     @Override
+    public <E1 extends Exception, E2 extends Exception> ImOrderSet<K> mapItIdentityOrderValuesEx(ThrowingFunction<K, K, E1, E2> getter) throws E1, E2 {
+        MOrderExclSet<K> mvResult = null;
+        for(int i=0,size=size();i<size;i++) {
+            K oldValue = get(i);
+            K newValue = getter.apply(oldValue);
+            if (mvResult == null && oldValue != newValue) {
+                mvResult = SetFact.mOrderExclSet(size());
+                for(int j=0;j<i;j++)
+                    mvResult.exclAdd(get(j));
+            }
+            if(mvResult != null)
+                mvResult.exclAdd(newValue);
+        }
+        if(mvResult != null)
+            return mvResult.immutableOrder();
+        else
+            return this;
+    }
+
+    @Override
     public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapOrderValuesEx(ThrowingIntObjectFunction<K, M, E1, E2> getter) throws E1, E2 {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)

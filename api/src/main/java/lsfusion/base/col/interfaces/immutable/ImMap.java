@@ -110,8 +110,9 @@ public interface ImMap<K, V> {
     <M> ImValueMap<K,M> mapItValues();
     <M> ImRevValueMap<K,M> mapItRevValues();
 
-    <M> ImMap<K,M> mapItValues(Function<V, M> getter); // с последействием
-    <M> ImMap<K,M> mapItValues(BiFunction<K, V, M> getter); // с последействием
+    <M> ImMap<K,M> mapItValues(Function<V, M> getter); // with aftereffect
+    <M> ImMap<K,M> mapItValues(BiFunction<K, V, M> getter); // with aftereffect
+    <E1 extends Exception, E2 extends Exception> ImMap<K,V> mapItIdentityValuesEx(ThrowingFunction<V, V, E1,E2> getter) throws E1, E2; // with aftereffect, identity optimization
 
     // "функциональщина"
     <M> ImMap<K,M> mapValues(Function<V, M> getter);

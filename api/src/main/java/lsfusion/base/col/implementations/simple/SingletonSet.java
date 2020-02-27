@@ -699,4 +699,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
             return SetFact.EMPTY();
         }
     }
+
+    public <E1 extends Exception, E2 extends Exception> ImOrderSet<K> mapItIdentityOrderValuesEx(ThrowingFunction<K, K, E1, E2> getter) throws E1, E2 {
+        K newKey = getter.apply(key);
+        if(newKey != key)
+            return new SingletonSet<>(newKey);
+        return this;
+    }
 }
