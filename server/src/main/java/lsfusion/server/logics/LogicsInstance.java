@@ -1,11 +1,13 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.server.base.controller.manager.LifecycleManager;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.stack.NestedThreadException;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.EventThreadInfo;
+import lsfusion.server.base.controller.thread.ExecutorFactoryThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.controller.manager.RestartManager;
@@ -24,6 +26,7 @@ import java.util.Map;
 
 public class LogicsInstance implements InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
+    protected final static Logger lruLogger = ServerLoggers.lruLogger;
 
     private final LogicsInstanceContext context;
 
@@ -172,14 +175,20 @@ public class LogicsInstance implements InitializingBean {
         logger.info("Logics instance is starting...");
         try {
             ThreadInfo threadInfo = EventThreadInfo.START();
-            ThreadLocalContext.aspectBeforeLifecycle(this, threadInfo);
+            Runnable beforeAspect = () -> ThreadLocalContext.aspectBeforeLifecycle(this, threadInfo);
+            Runnable afterAspect = () -> ThreadLocalContext.aspectAfterLifecycle(threadInfo);
+            beforeAspect.run();
             try {
+                LRUUtil.initLRUTuner(lruLogger::info, beforeAspect, afterAspect,
+                        () -> ((double)Settings.get().getTargetLRURangePercent() / 100.0), 
+                        () -> ((double)Settings.get().getCriticalLRURangePercent() / 100.0));
+
                 lifecycle.fireStarting();
                 lifecycle.fireStarted();
 
                 businessLogics.cleanCaches();
             } finally {
-                ThreadLocalContext.aspectAfterLifecycle(threadInfo);
+                afterAspect.run();
             }
 
             logger.info("Logics instance has successfully started");

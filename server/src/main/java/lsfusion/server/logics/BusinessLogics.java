@@ -140,7 +140,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     protected final static Logger logger = ServerLoggers.systemLogger;
     public final static Logger sqlLogger = ServerLoggers.sqlLogger;
     protected final static Logger startLogger = ServerLoggers.startLogger;
-    protected final static Logger lruLogger = ServerLoggers.lruLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
     public static final String systemScriptsPath = "/system/*.lsf";
@@ -292,8 +291,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @Override
     public void afterPropertiesSet() {
         Assert.notNull(initTask, "initTask must be specified");
-        
-        LRUUtil.initLRUTuner(lruLogger::info);
     }
 
     @Override
