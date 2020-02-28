@@ -1429,15 +1429,24 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    @IdentityLazy
-    public Next getNextApplyEvent(ApplyFilter filter, int i, StructChanges changes) {
-        ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = getApplyEvents(filter);
+    private Next calcNextApplyEvent(int i, StructChanges changes, ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents) {
         for(int size=applyEvents.size();i<size;i++) {
             ApplyGlobalEvent event = applyEvents.getKey(i);
             if(event.hasChanges(changes))
                 return new Next(event, applyEvents.getValue(i), i, new StatusMessage("event", event, i, size));
         }
-        return null;            
+        return null;
+    }
+
+    @IdentityLazy
+    private Next getCachedNextApplyEvent(ApplyFilter filter, int i, StructChanges changes) {
+        return calcNextApplyEvent(i, changes, getApplyEvents(filter));
+    }
+
+    public Next getNextApplyEvent(ApplyFilter filter, int i, StructChanges changes, ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents) {
+        if(changes.size() < (double) applyEvents.size() * Settings.get().getCacheNextEventActionRatio())
+            return getCachedNextApplyEvent(filter, i, changes);
+        return calcNextApplyEvent(i, changes, applyEvents);
     }
 
     private static ImSet<Property> getSingleApplyDepends(Property<?> fill, Result<Boolean> canBeOutOfDepends, ApplySingleEvent event) {

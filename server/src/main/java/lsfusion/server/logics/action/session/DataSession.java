@@ -2127,8 +2127,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         
         try {
             BusinessLogics.Next next = null;
+            ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = BL.getApplyEvents(applyFilter);
             while(true) {
-                next = BL.getNextApplyEvent(applyFilter, next == null ? 0 : next.index + 1, getModifier().getPropertyChanges().getStruct());
+                next = BL.getNextApplyEvent(applyFilter, next == null ? 0 : next.index + 1, getModifier().getPropertyChanges().getStruct(), applyEvents);
                 if(next == null)
                     break;
                 if(next.sessionEnv.contains(this)) {

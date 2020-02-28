@@ -2321,7 +2321,17 @@ public class Settings implements Cloneable {
     public void setEnableInteractiveAssertLog(boolean enableInteractiveAssertLog) {
         this.enableInteractiveAssertLog = enableInteractiveAssertLog;
     }
-    
+
+    private double cacheNextEventActionRatio = 0.001; // if the percent of changes is lower that this percent of events - cache them
+
+    public double getCacheNextEventActionRatio() {
+        return cacheNextEventActionRatio;
+    }
+
+    public void setCacheNextEventActionRatio(double cacheNextEventActionRatio) {
+        this.cacheNextEventActionRatio = cacheNextEventActionRatio;
+    }
+
     private boolean disablePessQueries = false;
 
     public boolean isDisablePessQueries() {
