@@ -55,12 +55,15 @@ public class LRUUtil {
 
     private static ScheduledExecutorService scheduler;
     private static long lastCollected;
+    private static long lastStableCollected;
+    private static long lastUnadjusted;
+    private static boolean needAdjustment;
     private static long lastCriticalMem;
     private static boolean runningCleanLRU = false;
 
     private static final String cmsFraction = "-XX:CMSInitiatingOccupancyFraction=";
     private static final String newSizeFraction = "-XX:G1NewSizePercent=";
-    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio) {
+    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
 
         // the same as in updateSavePointsInfo
@@ -153,20 +156,32 @@ public class LRUUtil {
                 else 
                     used = tenuredGenPool.getCollectionUsage().getUsed();
 
-                if (used != lastCollected) { // прошла сборка мусора
-                    long upAverageMemValue = upAverageMem.get();
-                    long downAverageMemValue = downAverageMem.get();
-                    logger.log("COLLECTED, USED : " + used + ", LASTCOLLECTED : " + lastCollected + ", UPAVERAGE : " + upAverageMemValue + ", DOWNAVERAGE : " + downAverageMemValue);
-                    if (used > lastCollected && used > upAverageMemValue && multiplier > MIN_MULTIPLIER) { // память растет и мы ниже критического предела, ускоряем сборку LRU
-                        multiplier /= (1.0 + adjustLRU.get());
-                        logger.log("DEC MULTI " + multiplier);
-                    }
-                    if (used < lastCollected && used < downAverageMemValue && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
-                        multiplier *= (1.0 + adjustLRU.get());
-                        logger.log("INC MULTI " + multiplier);
-                    }
-
+                if (used != lastCollected) { // g1 when doing mixed garbage collection can do it in several cycles, so we'll wait until collection usage is stabilized
+                    logger.log("COLLECTED, USED : " + used + ", LASTCOLLECTED : " + lastCollected);
                     lastCollected = used;
+
+                    needAdjustment = true;
+                    lastStableCollected = 0;
+                } else
+                    lastStableCollected++;
+
+                if(needAdjustment) {
+                    if(lastStableCollected > stableMinCount.get() || lastUnadjusted > unstableMaxCount.get()) {
+                        long upAverageMemValue = upAverageMem.get();
+                        long downAverageMemValue = downAverageMem.get();
+                        logger.log("ADJUST UPAVERAGE : " + upAverageMemValue + ", DOWNAVERAGE : " + downAverageMemValue);
+                        if (used > lastCollected && used > upAverageMemValue && multiplier > MIN_MULTIPLIER) { // память растет и мы ниже критического предела, ускоряем сборку LRU
+                            multiplier /= (1.0 + adjustLRU.get());
+                            logger.log("DEC MULTI " + multiplier);
+                        }
+                        if (used < lastCollected && used < downAverageMemValue && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
+                            multiplier *= (1.0 + adjustLRU.get());
+                            logger.log("INC MULTI " + multiplier);
+                        }
+                        needAdjustment = false;
+                        lastUnadjusted = 0;
+                    } else
+                        lastUnadjusted++;
                 }
             } finally {
                 afterAspect.run();
