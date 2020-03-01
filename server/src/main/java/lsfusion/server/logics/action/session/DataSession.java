@@ -1469,10 +1469,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(split.first.first.isEmpty()) // оптимизация
             return;
         
+        // it should be before apply, since split HAS ALREADY changed datasession (unlike executeStoredEvent), so if apply rollbacks we'll have inconsistent state
+        updateProperties(split.second, null); // here there are no updateSessionEvents, since transaction and local events are ignored (however it can be pretty dangerous behaviour)
+
         // split'утый modifier
         applySingleRemoveClasses(event, split.first.first, split.first.second, stack, BL);
-
-        updateProperties(split.second, null); // здесь updateSessionEvents нет, так как уже транзакция и локальные события игнорируются (хотя потенциально это опасное поведение)
     }
 
     private void applySingleRemoveClasses(ApplyRemoveClassesEvent event, ImMap<ClassDataProperty, SingleKeyPropertyUsage> news, ImMap<ClassDataProperty, ChangedDataClasses> changedClasses, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
