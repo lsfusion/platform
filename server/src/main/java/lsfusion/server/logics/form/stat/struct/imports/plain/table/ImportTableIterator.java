@@ -42,11 +42,6 @@ public class ImportTableIterator extends ImportPlainIterator {
     }
 
     @Override
-    protected boolean fieldExists(String name) {
-        return rs.fields.contains(name);
-    }
-
-    @Override
     protected Integer getRowIndex() {
         return currentRow;
     }

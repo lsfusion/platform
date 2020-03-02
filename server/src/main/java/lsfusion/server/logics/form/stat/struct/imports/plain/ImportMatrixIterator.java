@@ -78,11 +78,6 @@ public abstract class ImportMatrixIterator extends ImportPlainIterator {
         }
     }
 
-    @Override
-    protected boolean fieldExists(String name) {
-        return fieldIndexMap.get(name) != null;
-    }
-
     protected abstract Object getPropValue(Integer fieldIndex, Type type) throws ParseException;
 
     protected abstract boolean isLastValue(Integer fieldIndex);

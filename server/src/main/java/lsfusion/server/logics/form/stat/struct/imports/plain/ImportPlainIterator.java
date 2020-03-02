@@ -103,8 +103,6 @@ public abstract class ImportPlainIterator {
     
     protected abstract Object getPropValue(String name, Type type) throws lsfusion.server.logics.classes.data.ParseException, ParseException, IOException;
 
-    protected abstract boolean fieldExists(String name);
-
     protected abstract Integer getRowIndex();
     
     public ImMap<String, Object> next() {
@@ -151,19 +149,21 @@ public abstract class ImportPlainIterator {
                     conditionResult = ignoreRowIndexCondition(where.not, getRowIndex(), where.sign, where.value);
                 } else {
                     Type fieldType = fieldTypes.get(where.field);
-                    if (fieldType == null || !fieldExists(where.field)) {
+                    if (fieldType == null || !mapping.containsKey(where.field)) {
                         throw Throwables.propagate(new RuntimeException(String.format("Incorrect WHERE in IMPORT: no such column '%s'", where.field)));
                     }
 
-                    if (fieldType == DateClass.instance || fieldType == TimeClass.instance || fieldType == DateTimeClass.instance) {
-                        Date fieldValue = (Date) getPropValue(mapping.get(where.field), fieldType);
-                        conditionResult = fieldValue == null || ignoreRowDateCondition(where.not, fieldValue, where.sign, (Date) fieldType.parseString(where.value));
-                    } else if(fieldType instanceof NumericClass) {
-                        BigDecimal fieldValue = (BigDecimal) getPropValue(mapping.get(where.field), fieldType);
-                        conditionResult = fieldValue == null || ignoreRowNumericCondition(where.not, fieldValue, where.sign, (BigDecimal) fieldType.parseString(where.value));
+                    Object fieldValue = getPropValue(mapping.get(where.field), fieldType);
+                    if(fieldValue != null) {
+                        if (fieldType == DateClass.instance || fieldType == TimeClass.instance || fieldType == DateTimeClass.instance) {
+                            conditionResult = ignoreRowDateCondition(where.not, (Date) fieldValue, where.sign, (Date) fieldType.parseString(where.value));
+                        } else if (fieldType instanceof NumericClass) {
+                            conditionResult = ignoreRowNumericCondition(where.not, (BigDecimal) fieldValue, where.sign, (BigDecimal) fieldType.parseString(where.value));
+                        } else {
+                            conditionResult = ignoreRowStringCondition(where.not, String.valueOf(fieldValue), where.sign, where.value);
+                        }
                     } else {
-                        Object fieldValue = getPropValue(mapping.get(where.field), fieldType);
-                        conditionResult = fieldValue == null || ignoreRowStringCondition(where.not, String.valueOf(fieldValue), where.sign, where.value);
+                        conditionResult = true;
                     }
                 }
 

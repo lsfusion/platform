@@ -56,11 +56,6 @@ public class ImportDBFIterator extends ImportPlainIterator {
     }
 
     @Override
-    protected boolean fieldExists(String name) {
-        return record.getField(mapping.get(name)) != null;
-    }
-
-    @Override
     protected Integer getRowIndex() {
         return record.getRecordNumber() - 1;
     }
