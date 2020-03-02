@@ -641,17 +641,17 @@ public abstract class LogicsModule {
                 break;
             // plain
             case CSV:
-                importAction = new ImportCSVAction(paramsCount, groupFiles, formEntity, charset, noHeader, noEscape, separator);
+                importAction = new ImportCSVAction(paramsCount, groupFiles, formEntity, charset, hasWhere, noHeader, noEscape, separator);
                 break;
             case DBF:
                 importAction = new ImportDBFAction(paramsCount, groupFiles, formEntity, charset, hasWhere);
                 break;
             case XLS:
             case XLSX:
-                importAction = new ImportXLSAction(paramsCount, groupFiles, formEntity, charset, noHeader, sheetAll);
+                importAction = new ImportXLSAction(paramsCount, groupFiles, formEntity, charset, hasWhere, noHeader, sheetAll);
                 break;
             case TABLE:
-                importAction = new ImportTableAction(paramsCount, groupFiles, formEntity, charset);
+                importAction = new ImportTableAction(paramsCount, groupFiles, formEntity, charset, hasWhere);
                 break;
             default:
                 throw new UnsupportedOperationException();

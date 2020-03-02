@@ -2368,12 +2368,34 @@ propertyUsageWithId returns [String id = null, Boolean literal = null, NamedProp
 	;
 
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, LPWithParams sheet, boolean sheetAll, LPWithParams memo, LPWithParams where, String separator, boolean hasHeader, boolean noEscape, String charset, LPWithParams root, boolean attr]
-	:	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? (noEscapeVal = noEscapeOption { $noEscape = $noEscapeVal.noEscape; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-    |	'DBF'	{ $format = FormIntegrationType.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-    |   'XLS' 	{ $format = FormIntegrationType.XLS; } (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
-	|	'JSON'	{ $format = FormIntegrationType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?
-	|	'TABLE'	{ $format = FormIntegrationType.TABLE; }
+	:	'CSV'	{ $format = FormIntegrationType.CSV; } (
+	            (separatorVal = stringLiteral { $separator = $separatorVal.val; })?
+	            (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
+	            (noEscapeVal = noEscapeOption { $noEscape = $noEscapeVal.noEscape; })?
+	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
+	            ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	            )
+    |	'DBF'	{ $format = FormIntegrationType.DBF; } (
+                ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })?
+                ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
+                ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+                )
+    |   'XLS' 	{ $format = FormIntegrationType.XLS; } (
+                (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
+                ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
+                ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
+                )
+	|	'JSON'	{ $format = FormIntegrationType.JSON; } (
+	            ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	            ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	            )
+	|	'XML'	{ $format = FormIntegrationType.XML; } (
+	            ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	            ('ATTR' { $attr = true; })?
+	            )
+	|	'TABLE'	{ $format = FormIntegrationType.TABLE; } (
+	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
+	            )
 	;
 
 propertyUsage returns [String name, NamedPropertyUsage propUsage]

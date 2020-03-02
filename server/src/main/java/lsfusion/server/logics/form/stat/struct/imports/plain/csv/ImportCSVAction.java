@@ -19,16 +19,16 @@ public class ImportCSVAction extends ImportPlainAction<ImportCSVIterator> {
     private boolean noEscape;
     private String separator;
     
-    public ImportCSVAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean noHeader, boolean noEscape, String separator) {
-        super(paramsCount, groupFiles, formEntity, charset != null ? charset : ExternalUtils.defaultCSVCharset);
+    public ImportCSVAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere, boolean noHeader, boolean noEscape, String separator) {
+        super(paramsCount, groupFiles, formEntity, charset != null ? charset : ExternalUtils.defaultCSVCharset, hasWhere);
         this.noHeader = noHeader;
         this.noEscape = noEscape;
         this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
     }
 
     @Override
-    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
-        return new ImportCSVIterator(fieldTypes, file, charset, noHeader, noEscape, separator);
+    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, String wheres, ExecutionContext<PropertyInterface> context) throws IOException {
+        return new ImportCSVIterator(fieldTypes, file, charset, wheres, noHeader, noEscape, separator);
     }
 
     protected boolean indexBased() {

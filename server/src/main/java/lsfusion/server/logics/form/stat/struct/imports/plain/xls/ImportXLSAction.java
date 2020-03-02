@@ -19,17 +19,17 @@ public class ImportXLSAction extends ImportPlainAction<ImportXLSIterator> {
     private final boolean sheetAll;
     private final PropertyInterface sheetInterface;
 
-    public ImportXLSAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean noHeader, boolean sheetAll) {
-        super(paramsCount, groupFiles, formEntity, charset);
+    public ImportXLSAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere, boolean noHeader, boolean sheetAll) {
+        super(paramsCount, groupFiles, formEntity, charset, hasWhere);
         this.noHeader = noHeader;
         this.sheetAll = sheetAll;
 
-        int shift = groupFiles.size();
+        int shift = groupFiles.size() + (hasWhere ? 1 : 0);
         sheetInterface =  shift < paramsCount ? getOrderInterfaces().get(shift) : null;
     }
 
     @Override
-    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
+    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, String wheres, ExecutionContext<PropertyInterface> context) throws IOException {
         Integer singleSheetIndex = null;
         if(!sheetAll) {
             if(sheetInterface != null) {
@@ -40,6 +40,6 @@ public class ImportXLSAction extends ImportPlainAction<ImportXLSIterator> {
             if(singleSheetIndex == null)
                 singleSheetIndex = 0;
         }
-        return new ImportXLSIterator(fieldTypes, file, file.getBytes()[0] == 80, noHeader, singleSheetIndex);
+        return new ImportXLSIterator(fieldTypes, file, file.getBytes()[0] == 80, wheres, noHeader, singleSheetIndex);
     }
 }
