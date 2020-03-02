@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -19,7 +18,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom( DataGrid table, DivElement cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
@@ -53,7 +52,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
         GFont font = property.font;
         if (font == null && table instanceof GGridPropertyTable) {
             font = ((GGridPropertyTable) table).font;

@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.DivElement;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
 public class HTMLGridCellRenderer extends AbstractGridCellRenderer {
@@ -12,12 +11,12 @@ public class HTMLGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
         updateElement(cellElement, value);
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
         updateElement(cellElement, value);
     }
 

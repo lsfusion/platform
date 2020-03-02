@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -22,7 +21,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom( DataGrid table, DivElement cellElement, Object value) {
         if (table instanceof GGridPropertyTable) {
             cellElement.getStyle().setPosition(Style.Position.RELATIVE);
         }
@@ -33,11 +32,11 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
             cellElement.setAttribute("align", textAlignStyle.getCssName());
         }
         
-        updateDom(cellElement, table, context, value);
+        updateDom(cellElement, table, value);
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {     
+    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
         cellElement.removeAllChildren();
         cellElement.setInnerText(null);
         

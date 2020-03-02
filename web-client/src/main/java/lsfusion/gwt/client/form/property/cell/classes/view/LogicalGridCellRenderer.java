@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
@@ -16,7 +15,7 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom( DataGrid table, DivElement cellElement, Object value) {
         boolean checked = value != null && (Boolean) value;
 
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
@@ -49,7 +48,7 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
         if (GwtClientUtils.isIEUserAgent()) {
             ImageElement img = cellElement.getFirstChild().cast();
             img.setSrc(getCBImagePath(value));

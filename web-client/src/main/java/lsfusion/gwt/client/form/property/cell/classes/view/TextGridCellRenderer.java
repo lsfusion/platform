@@ -18,7 +18,7 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom( DataGrid table, DivElement cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         divStyle.setPaddingRight(4, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
