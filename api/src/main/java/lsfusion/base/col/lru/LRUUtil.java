@@ -170,11 +170,11 @@ public class LRUUtil {
                         long upAverageMemValue = upAverageMem.get();
                         long downAverageMemValue = downAverageMem.get();
                         logger.log("ADJUST UPAVERAGE : " + upAverageMemValue + ", DOWNAVERAGE : " + downAverageMemValue);
-                        if (used > lastCollected && used > upAverageMemValue && multiplier > MIN_MULTIPLIER) { // память растет и мы ниже критического предела, ускоряем сборку LRU
+                        if (lastCollected > upAverageMemValue && multiplier > MIN_MULTIPLIER) { // память растет и мы ниже критического предела, ускоряем сборку LRU
                             multiplier /= (1.0 + adjustLRU.get());
                             logger.log("DEC MULTI " + multiplier);
                         }
-                        if (used < lastCollected && used < downAverageMemValue && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
+                        if (lastCollected < downAverageMemValue && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
                             multiplier *= (1.0 + adjustLRU.get());
                             logger.log("INC MULTI " + multiplier);
                         }
