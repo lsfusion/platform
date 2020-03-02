@@ -28,11 +28,12 @@ public class ImportTableIterator extends ImportPlainIterator {
     private ImMap<String, Object> row;
     @Override
     protected boolean nextRow(boolean checkWhere) {
-        if(currentRow >= rs.set.size())
-            return false;
-        
-        row = rs.set.get(currentRow++);
-        return !checkWhere || !ignoreRow() || nextRow(checkWhere);
+        do {
+            if(currentRow >= rs.set.size())
+                return false;
+            row = rs.set.get(currentRow++);
+        } while (checkWhere && ignoreRow());
+        return true;
     }
 
     @Override

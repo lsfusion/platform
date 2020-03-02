@@ -34,8 +34,10 @@ public class ImportCSVIterator extends ImportMatrixIterator {
 
     @Override
     protected boolean nextRow(boolean checkWhere) throws IOException {
-        line = readLine();
-        return line != null && (!ignoreRow() || nextRow(checkWhere));
+        do {
+            line = readLine();
+        } while (line != null && (checkWhere && ignoreRow()));
+        return line != null;
     }
 
     @Override

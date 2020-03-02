@@ -80,30 +80,31 @@ public class ImportXLSIterator extends ImportMatrixIterator {
 
     @Override
     protected boolean nextRow(boolean checkWhere) {
-        if (sheet == null || !rowIterator.hasNext()) {
-            if (!nextSheet())
-                return false;
-            rowIterator = sheet.rowIterator();
+        while(true) {
+            if (sheet == null || !rowIterator.hasNext()) {
+                if (!nextSheet()) return false;
+                rowIterator = sheet.rowIterator();
 
-            if (useStreamingReader)
-                firstRow = true;
+                if (useStreamingReader) firstRow = true;
 
-            return nextRow(checkWhere);
-        }
-        row = rowIterator.next();
-
-        if(checkWhere && ignoreRow())
-            return nextRow(true);
-
-        if (useStreamingReader && row.getRowNum() == 0) {
-            if (firstRow) { //skip all rows with rowNum 0 (except first) - they are incorrect
-                firstRow = false;
-            } else {
                 return nextRow(checkWhere);
             }
-        }
+            row = rowIterator.next();
 
-        return true;
+            if (checkWhere && ignoreRow()) {
+                continue;
+            }
+
+            if (useStreamingReader && row.getRowNum() == 0) {
+                if (firstRow) { //skip all rows with rowNum 0 (except first) - they are incorrect
+                    firstRow = false;
+                } else {
+                    return nextRow(checkWhere);
+                }
+            }
+
+            return true;
+        }
     }
 
     @Override
