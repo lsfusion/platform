@@ -184,6 +184,9 @@ public class LogicsInstance implements InitializingBean {
                         () -> ((double)Settings.get().getCriticalLRURangePercent() / 100.0),
                         () -> Settings.get().getTargetLRUAdjustCoeff(),
                         () -> Settings.get().getCriticalLRUAdjustCoeff(),
+                        Settings.get().getLRURangeDefaultCoeff(),
+                        () -> Settings.get().getLRURangeMinCoeff(),
+                        () -> Settings.get().getLRURangeMaxCoeff(),
                         () -> Settings.get().getStableLRUMinCount(),
                         () -> Settings.get().getUnstableLRUMaxCount());
 

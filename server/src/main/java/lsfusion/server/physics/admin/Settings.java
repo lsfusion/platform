@@ -1299,6 +1299,9 @@ public class Settings implements Cloneable {
     private long criticalLRURangePercent = 15; // range (70-85-100) after exceeding middle of which panic mode will be enabled, reducing LRU to target
     private double targetLRUAdjustCoeff = 2.0; // makes caches adjustment more / less agressive (by default more aggressive)
     private double criticalLRUAdjustCoeff = 1.0; // makes caches adjustment after critical hit more / less agressive
+    private double LRURangeDefaultCoeff = 1.0; // default coeff (1.0 - will give 1 hour for most common caches)
+    private double LRURangeMinCoeff = 0.1; // min coeff, can be very close to zero (however very low is not also desirable)
+    private double LRURangeMaxCoeff = 5.0; // max coeff, it's undesirable to have it very big, because if suddenly usage increases very much, it will take too much time to get multiplier back to its basic value
     private long stableLRUMinCount = 10; // how many cycles (seconds) used memory should be stable to do adjustment (because g1 can do mixed collections for a pretty long time)
     private long unstableLRUMaxCount = 60; // how many cycles used memory can be unstable before doing adjustment (if garbage collector is unstable)
 
@@ -1348,6 +1351,30 @@ public class Settings implements Cloneable {
 
     public void setUnstableLRUMaxCount(long unstableLRUMaxCount) {
         this.unstableLRUMaxCount = unstableLRUMaxCount;
+    }
+
+    public double getLRURangeDefaultCoeff() {
+        return LRURangeDefaultCoeff;
+    }
+
+    public void setLRURangeDefaultCoeff(double LRURangeDefaultCoeff) {
+        this.LRURangeDefaultCoeff = LRURangeDefaultCoeff;
+    }
+
+    public double getLRURangeMinCoeff() {
+        return LRURangeMinCoeff;
+    }
+
+    public void setLRURangeMinCoeff(double LRURangeMinCoeff) {
+        this.LRURangeMinCoeff = LRURangeMinCoeff;
+    }
+
+    public double getLRURangeMaxCoeff() {
+        return LRURangeMaxCoeff;
+    }
+
+    public void setLRURangeMaxCoeff(double LRURangeMaxCoeff) {
+        this.LRURangeMaxCoeff = LRURangeMaxCoeff;
     }
 
     public boolean isEnableAdjustSelectivity() {
