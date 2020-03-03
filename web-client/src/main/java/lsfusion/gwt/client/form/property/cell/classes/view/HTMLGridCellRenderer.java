@@ -12,11 +12,21 @@ public class HTMLGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(DataGrid table, DivElement cellElement, Object value) {
+        renderDom(cellElement, value);
+    }
+
+    @Override
+    public void renderDom(DivElement cellElement, Object value) {
         updateElement(cellElement, value);
     }
 
     @Override
     public void updateDom(DivElement cellElement, DataGrid table, Object value) {
+        updateDom(cellElement, value);
+    }
+
+    @Override
+    public void updateDom(DivElement cellElement, Object value) {
         updateElement(cellElement, value);
     }
 

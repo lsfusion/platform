@@ -10,17 +10,24 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(DataGrid table, DivElement cellElement, Object value) {
+        renderDom(cellElement, value);
+    }
+
+    @Override
+    public void renderDom(DivElement cellElement, Object value) {
         String color = getColorValue(value);
-
         cellElement.setInnerText(EscapeUtils.UNICODE_NBSP);
-
         cellElement.getStyle().setBorderWidth(0, Style.Unit.PX);
-
         updateElement(cellElement, color);
     }
 
     @Override
     public void updateDom(DivElement cellElement, DataGrid table, Object value) {
+        updateDom(cellElement, value);
+    }
+
+    @Override
+    public void updateDom(DivElement cellElement, Object value) {
         String color = getColorValue(value);
         updateElement(cellElement, color);
     }

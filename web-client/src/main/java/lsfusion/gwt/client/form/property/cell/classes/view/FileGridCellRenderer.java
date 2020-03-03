@@ -21,6 +21,11 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(DataGrid table, DivElement cellElement, Object value) {
+        renderDom(cellElement, value);
+    }
+
+    @Override
+    public void renderDom(DivElement cellElement, Object value) {
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
             cellElement.setAttribute("align", textAlignStyle.getCssName());
@@ -28,7 +33,7 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
         cellElement.getStyle().setHeight(100, Style.Unit.PCT);
         cellElement.getStyle().setPosition(Style.Position.RELATIVE);
         cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
-        updateDom(cellElement, table, value);
+        updateDom(cellElement, value);
 
 //        ImageElement image = Document.get().createImageElement();
 //        cellElement.appendChild(image);
@@ -38,6 +43,11 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void updateDom(DivElement cellElement, DataGrid table, Object value) {
+        updateDom(cellElement, value);
+    }
+
+    @Override
+    public void updateDom(DivElement cellElement, Object value) {
         Element childElement = cellElement.getFirstChildElement();
         boolean hadImage = childElement != null && "IMG".equals(childElement.getTagName());
 
@@ -57,7 +67,7 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
                 setImageSrc((ImageElement) childElement, value);
             } else {
                 cellElement.removeAllChildren();
-                
+
                 ImageElement image = cellElement.appendChild(Document.get().createImageElement());
                 image.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
                 setImageSrc(image, value);

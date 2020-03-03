@@ -18,7 +18,14 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     }
 
     @Override
-    public void renderDom( DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
+        renderDom(cellElement, value);
+        if (property.font == null && table instanceof GGridPropertyTable) {
+            property.font = ((GGridPropertyTable) table).font;
+        }
+    }
+
+    public void renderDom(DivElement cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
@@ -30,8 +37,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         divStyle.setPaddingLeft(4, Style.Unit.PX);
 
         // важно оставить множественные пробелы
-        divStyle.setWhiteSpace(Style.WhiteSpace.PRE);   
-        
+        divStyle.setWhiteSpace(Style.WhiteSpace.PRE);
         divStyle.setPosition(Style.Position.RELATIVE);
 
         //нужно для эллипсиса, но подтормаживает рендеринг,
@@ -39,12 +45,8 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 //        divStyle.setOverflow(Style.Overflow.HIDDEN);
 //        divStyle.setTextOverflow(Style.TextOverflow.ELLIPSIS);
 
-        GFont font = property.font;
-        if (font == null && table instanceof GGridPropertyTable) {
-            font = ((GGridPropertyTable) table).font;
-        }
-        if (font != null) {
-            font.apply(divStyle);
+        if (property.font != null) {
+            property.font.apply(divStyle);
         }
         divStyle.clearProperty("lineHeight");
 
@@ -53,12 +55,17 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 
     @Override
     public void updateDom(DivElement cellElement, DataGrid table, Object value) {
-        GFont font = property.font;
-        if (font == null && table instanceof GGridPropertyTable) {
-            font = ((GGridPropertyTable) table).font;
+        updateDom(cellElement, value);
+
+        if (property.font == null && table instanceof GGridPropertyTable) {
+            property.font = ((GGridPropertyTable) table).font;
         }
-        if (font != null) {
-            font.apply(cellElement.getStyle());
+    }
+
+    @Override
+    public void updateDom(DivElement cellElement, Object value) {
+        if (property.font != null) {
+            property.font.apply(cellElement.getStyle());
         }
         updateElement(cellElement, value);
     }

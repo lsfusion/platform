@@ -18,6 +18,15 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(DataGrid table, DivElement cellElement, Object value) {
+        if (property.getImage() == null) {
+            if (property.font == null && table instanceof GGridPropertyTable) {
+                property.font = ((GGridPropertyTable) table).font;
+            }
+        }
+    }
+
+    @Override
+    public void renderDom(DivElement cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         cellElement.addClassName("gwt-Button");
         divStyle.setWidth(100, Style.Unit.PCT);
@@ -41,15 +50,9 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
             setImage(img, value);
         } else {
             LabelElement label = innerTop.appendChild(Document.get().createLabelElement());
-
-            GFont font = property.font;
-            if (font == null && table instanceof GGridPropertyTable) {
-                font = ((GGridPropertyTable) table).font;
+            if (property.font != null) {
+                property.font.apply(label.getStyle());
             }
-            if (font != null) {
-                font.apply(label.getStyle());
-            }
-            
             label.setInnerText("...");
         }
     }
@@ -57,19 +60,23 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     @Override
     public void updateDom(DivElement cellElement, DataGrid table, Object value) {
         if (property.getImage() == null) {
-            LabelElement label = cellElement.getFirstChild().getFirstChild().cast();
-            GFont font = property.font;
-            if (font == null && table instanceof GGridPropertyTable) {
-                font = ((GGridPropertyTable) table).font;
+            if (property.font == null && table instanceof GGridPropertyTable) {
+                property.font = ((GGridPropertyTable) table).font;
             }
-            if (font != null) {
-                font.apply(label.getStyle());
-            }   
+        }
+    }
+
+    @Override
+    public void updateDom(DivElement cellElement, Object value) {
+        if (property.getImage() == null) {
+            LabelElement label = cellElement.getFirstChild().getFirstChild().cast();
+            if (property.font != null) {
+                property.font.apply(label.getStyle());
+            }
         } else {
-            ImageElement img = cellElement
+            setImage(cellElement
                     .getFirstChild()
-                    .getFirstChild().cast();
-            setImage(img, value);
+                    .getFirstChild().cast(), value);
         }
     }
 

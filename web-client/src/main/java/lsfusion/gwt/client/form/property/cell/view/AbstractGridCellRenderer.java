@@ -13,5 +13,11 @@ public abstract class AbstractGridCellRenderer implements GridCellRenderer {
     public abstract void renderDom(DataGrid table, DivElement cellElement, Object value);
 
     @Override
+    public abstract void renderDom(DivElement cellElement, Object value);
+
+    @Override
     public abstract void updateDom(DivElement cellElement, DataGrid table, Object value);
+
+    @Override
+    public abstract void updateDom(DivElement cellElement, Object value);
 }

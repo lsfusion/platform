@@ -15,31 +15,39 @@ import static lsfusion.gwt.client.form.property.cell.classes.view.FileGridCellRe
 
 public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     protected GPropertyDraw property;
-    
+
     public ImageGridCellRenderer(GPropertyDraw property) {
         this.property = property;
     }
 
     @Override
-    public void renderDom( DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
         if (table instanceof GGridPropertyTable) {
             cellElement.getStyle().setPosition(Style.Position.RELATIVE);
         }
-        cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
+    }
 
+    @Override
+    public void renderDom(DivElement cellElement, Object value) {
+        cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
             cellElement.setAttribute("align", textAlignStyle.getCssName());
         }
-        
-        updateDom(cellElement, table, value);
+
+        updateDom(cellElement, value);
     }
 
     @Override
     public void updateDom(DivElement cellElement, DataGrid table, Object value) {
+        updateDom(cellElement, value);
+    }
+
+    @Override
+    public void updateDom(DivElement cellElement, Object value) {
         cellElement.removeAllChildren();
         cellElement.setInnerText(null);
-        
+
         if (value == null && property.isEditableNotNull()) {
             cellElement.getStyle().setPaddingRight(4, Style.Unit.PX);
             cellElement.getStyle().setPaddingLeft(4, Style.Unit.PX);
@@ -53,7 +61,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
             cellElement.setTitle("");
 
             ImageElement img = cellElement.appendChild(Document.get().createImageElement());
-            
+
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
             imgStyle.setProperty("maxWidth", "100%");
@@ -65,7 +73,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
 
     protected void setImageSrc(ImageElement img, Object value) {
         if (value instanceof String && !value.equals("null")) {
-            img.setSrc(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)property.baseType).extension, false)); // form file
+            img.setSrc(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType) property.baseType).extension, false)); // form file
         } else {
             img.setSrc(GwtClientUtils.getModuleImagePath(ICON_EMPTY));
         }

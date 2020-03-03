@@ -15,7 +15,15 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom( DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
+        renderDom(cellElement, value);
+        if (table instanceof GGridPropertyTable) {
+            cellElement.getStyle().setPosition(Style.Position.RELATIVE);
+        }
+    }
+
+    @Override
+    public void renderDom(DivElement cellElement, Object value) {
         boolean checked = value != null && (Boolean) value;
 
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
@@ -24,7 +32,7 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
         }
 
         Style checkStyle;
-        // logical class is rendered as checkbox input to make all checkboxes look the same. 
+        // logical class is rendered as checkbox input to make all checkboxes look the same.
         // in case of renderer we want to prevent checkbox from listening to mouse events.
         // for this purpose we use property "pointerEvents: none", which doesn't work in IE.
         if (GwtClientUtils.isIEUserAgent()) {
@@ -41,14 +49,15 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
             checkStyle = input.getStyle();
             checkStyle.setProperty("pointerEvents", "none");
         }
-
-        if (table instanceof GGridPropertyTable) {
-            cellElement.getStyle().setPosition(Style.Position.RELATIVE);
-        }
     }
 
     @Override
     public void updateDom(DivElement cellElement, DataGrid table, Object value) {
+        updateDom(cellElement, value);
+    }
+
+    @Override
+    public void updateDom(DivElement cellElement, Object value) {
         if (GwtClientUtils.isIEUserAgent()) {
             ImageElement img = cellElement.getFirstChild().cast();
             img.setSrc(getCBImagePath(value));
