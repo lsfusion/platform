@@ -63,8 +63,8 @@ public class JSONNode implements Node<JSONNode> {
     public Object getValue(String key, boolean attr, Type type) throws ParseException {
         try {
             Object value = element.opt(key);
-            if(value instanceof JSONArray || value instanceof JSONObject) // if incorrect structure just consider it missing
-                value = null;
+//            if(value instanceof JSONArray || value instanceof JSONObject) // if incorrect structure just consider it missing
+//                value = null;
             return type.parseJSON(value);
         } catch (JSONException e) {
             throw Throwables.propagate(e);
