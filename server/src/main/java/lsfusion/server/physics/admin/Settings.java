@@ -1295,8 +1295,10 @@ public class Settings implements Cloneable {
         this.tooMuchAttempts = tooMuchAttempts;
     }
 
-    private long criticalLRURangePercent = 10; // range (90-95-100) after exceeding middle of which panic mode will be enabled, reducing LRU to target
-    private long targetLRURangePercent = 10; // range (70-80-90) after exceeding upper border of which lru will become shorter, lower border - longer 
+    private long targetLRURangePercent = 10; // range (60-70-80) after exceeding upper border of which lru will become shorter, lower border - longer
+    private long criticalLRURangePercent = 15; // range (70-85-100) after exceeding middle of which panic mode will be enabled, reducing LRU to target
+    private double targetLRUAdjustCoeff = 2.0; // makes caches adjustment more / less agressive (by default more aggressive)
+    private double criticalLRUAdjustCoeff = 1.0; // makes caches adjustment after critical hit more / less agressive
     private long stableLRUMinCount = 10; // how many cycles (seconds) used memory should be stable to do adjustment (because g1 can do mixed collections for a pretty long time)
     private long unstableLRUMaxCount = 60; // how many cycles used memory can be unstable before doing adjustment (if garbage collector is unstable)
 
@@ -1314,6 +1316,22 @@ public class Settings implements Cloneable {
 
     public void setTargetLRURangePercent(long targetLRURangePercent) {
         this.targetLRURangePercent = targetLRURangePercent;
+    }
+
+    public double getTargetLRUAdjustCoeff() {
+        return targetLRUAdjustCoeff;
+    }
+
+    public void setTargetLRUAdjustCoeff(double targetLRUAdjustCoeff) {
+        this.targetLRUAdjustCoeff = targetLRUAdjustCoeff;
+    }
+
+    public double getCriticalLRUAdjustCoeff() {
+        return criticalLRUAdjustCoeff;
+    }
+
+    public void setCriticalLRUAdjustCoeff(double criticalLRUAdjustCoeff) {
+        this.criticalLRUAdjustCoeff = criticalLRUAdjustCoeff;
     }
 
     public long getStableLRUMinCount() {

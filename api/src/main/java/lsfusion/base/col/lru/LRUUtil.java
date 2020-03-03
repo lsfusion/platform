@@ -63,7 +63,7 @@ public class LRUUtil {
 
     private static final String cmsFraction = "-XX:CMSInitiatingOccupancyFraction=";
     private static final String newSizeFraction = "-XX:G1NewSizePercent=";
-    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
+    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Double> adjustTargetLRU, Supplier<Double> adjustCriticalLRU, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
 
         // the same as in updateSavePointsInfo
@@ -87,8 +87,7 @@ public class LRUUtil {
         final Supplier<Long> upAverageMem = () -> (long) (criticalMem.get() - maxMem * criticalMemRatio.get());
         final Supplier<Long> averageMem = () -> (long) (upAverageMem.get() - maxMem * targetMemRatio.get());        
         final Supplier<Long> downAverageMem = () -> (long) (averageMem.get() - maxMem * targetMemRatio.get());
-        final Supplier<Double> adjustLRU = targetMemRatio;
-                
+
         scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("lru-tuner"));
 
         final boolean collectionUsageNotSupported = !tenuredGenPool.isCollectionUsageThresholdSupported(); // it seems that collectionusage for g1 is pretty relevant now (so we don't need to disable it) : https://bugs.openjdk.java.net/browse/JDK-8195115  
@@ -115,6 +114,9 @@ public class LRUUtil {
                                             if (used > criticalMemValue) { // если все еще used вырезаем еще
                                                 double cleanMem = 1.0 - ((double) averageMem.get() / (double) used);
                                                 logger.log("REMOVED " + cleanMem + " / RESCHEDULE " + " " + (long) (100 * cleanMem / memGCIn100Millis));
+
+                                                multiplier /= (1.0 + cleanMem * adjustCriticalLRU.get());
+                                                logger.log("DEC THRESHOLD MULTI " + multiplier);
 //                                            System.out.println("REMOVED / RESCHEDULE " + cleanMem + " " + (long) (100 * cleanMem / memGCIn100Millis));
 
                                                 ALRUMap.forceRemoveAllLRU(cleanMem);
@@ -130,6 +132,10 @@ public class LRUUtil {
                             long used = tenuredGenPool.getCollectionUsage().getUsed();
                             double cleanMem = 1.0 - ((double) averageMem.get() / (double) used);
                             logger.log("MEMORY COLLECTION THRESHOLD EXCEEDED, USED : " + used + ", CLEAN : " + cleanMem);
+
+                            multiplier /= (1.0 + cleanMem * adjustCriticalLRU.get());
+                            logger.log("DEC THRESHOLD MULTI " + multiplier);
+
                             ALRUMap.forceRemoveAllLRU(cleanMem);
                         }
                     }
@@ -169,13 +175,13 @@ public class LRUUtil {
                     if(lastStableCollected > stableMinCount.get() || lastUnadjusted > unstableMaxCount.get()) {
                         long upAverageMemValue = upAverageMem.get();
                         long downAverageMemValue = downAverageMem.get();
-                        logger.log("ADJUST UPAVERAGE : " + upAverageMemValue + ", DOWNAVERAGE : " + downAverageMemValue);
+                        logger.log("ADJUST COLLECTED : " + lastCollected + " UPAVERAGE : " + upAverageMemValue + ", DOWNAVERAGE : " + downAverageMemValue);
                         if (lastCollected > upAverageMemValue && multiplier > MIN_MULTIPLIER) { // память растет и мы ниже критического предела, ускоряем сборку LRU
-                            multiplier /= (1.0 + adjustLRU.get());
+                            multiplier /= (1.0 + targetMemRatio.get() * adjustTargetLRU.get());
                             logger.log("DEC MULTI " + multiplier);
                         }
                         if (lastCollected < downAverageMemValue && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
-                            multiplier *= (1.0 + adjustLRU.get());
+                            multiplier *= (1.0 + targetMemRatio.get() * adjustTargetLRU.get());
                             logger.log("INC MULTI " + multiplier);
                         }
                         needAdjustment = false;

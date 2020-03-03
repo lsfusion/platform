@@ -182,6 +182,8 @@ public class LogicsInstance implements InitializingBean {
                 LRUUtil.initLRUTuner(lruLogger::info, beforeAspect, afterAspect,
                         () -> ((double)Settings.get().getTargetLRURangePercent() / 100.0), 
                         () -> ((double)Settings.get().getCriticalLRURangePercent() / 100.0),
+                        () -> Settings.get().getTargetLRUAdjustCoeff(),
+                        () -> Settings.get().getCriticalLRUAdjustCoeff(),
                         () -> Settings.get().getStableLRUMinCount(),
                         () -> Settings.get().getUnstableLRUMaxCount());
 
