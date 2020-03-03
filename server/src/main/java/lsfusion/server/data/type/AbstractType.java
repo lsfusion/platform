@@ -160,7 +160,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
             default:
                 cellValue = formulaValue.formatAsString();
         }
-        return parseNullableString(cellValue, false);
+        return parseNullableString(cellValue, true);
     }
 
     @Override
