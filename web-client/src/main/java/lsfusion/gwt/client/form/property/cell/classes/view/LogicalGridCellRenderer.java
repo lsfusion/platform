@@ -23,7 +23,7 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(DivElement cellElement, Object value) {
+    public void renderDom(Element cellElement, Object value) {
         boolean checked = value != null && (Boolean) value;
 
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
@@ -57,7 +57,7 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Object value) {
+    public void updateDom(Element cellElement, Object value) {
         if (GwtClientUtils.isIEUserAgent()) {
             ImageElement img = cellElement.getFirstChild().cast();
             img.setSrc(getCBImagePath(value));

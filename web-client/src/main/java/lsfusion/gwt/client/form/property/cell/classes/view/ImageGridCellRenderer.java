@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GImageType;
@@ -28,7 +25,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(DivElement cellElement, Object value) {
+    public void renderDom(Element cellElement, Object value) {
         cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
@@ -44,7 +41,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Object value) {
+    public void updateDom(Element cellElement, Object value) {
         cellElement.removeAllChildren();
         cellElement.setInnerText(null);
 

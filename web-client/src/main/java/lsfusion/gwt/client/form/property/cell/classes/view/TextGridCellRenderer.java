@@ -1,11 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -26,7 +25,7 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
     }
 
     @Override
-    public void renderDom(DivElement cellElement, Object value) {
+    public void renderDom(Element cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         divStyle.setPaddingRight(4, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
@@ -43,7 +42,7 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
     }
 
     @Override
-    protected void updateElement(DivElement div, Object value) {
+    protected void updateElement(Element div, Object value) {
         if (!rich || value == null) {
             super.updateElement(div, value);
         } else {

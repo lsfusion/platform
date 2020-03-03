@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -14,7 +15,7 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(DivElement cellElement, Object value) {
+    public void renderDom(Element cellElement, Object value) {
         String color = getColorValue(value);
         cellElement.setInnerText(EscapeUtils.UNICODE_NBSP);
         cellElement.getStyle().setBorderWidth(0, Style.Unit.PX);
@@ -27,12 +28,12 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Object value) {
+    public void updateDom(Element cellElement, Object value) {
         String color = getColorValue(value);
         updateElement(cellElement, color);
     }
 
-    private void updateElement(DivElement div, String colorValue) {
+    private void updateElement(Element div, String colorValue) {
         div.getStyle().setColor(colorValue);
         div.getStyle().setBackgroundColor(colorValue);
         div.setTitle(colorValue);

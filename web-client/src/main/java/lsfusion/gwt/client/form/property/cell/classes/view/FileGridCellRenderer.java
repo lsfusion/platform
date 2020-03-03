@@ -25,7 +25,7 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(DivElement cellElement, Object value) {
+    public void renderDom(Element cellElement, Object value) {
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
             cellElement.setAttribute("align", textAlignStyle.getCssName());
@@ -47,7 +47,7 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Object value) {
+    public void updateDom(Element cellElement, Object value) {
         Element childElement = cellElement.getFirstChildElement();
         boolean hadImage = childElement != null && "IMG".equals(childElement.getTagName());
 

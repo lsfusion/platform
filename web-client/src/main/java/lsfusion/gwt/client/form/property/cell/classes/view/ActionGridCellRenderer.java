@@ -4,7 +4,6 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
@@ -26,7 +25,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(DivElement cellElement, Object value) {
+    public void renderDom(Element cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         cellElement.addClassName("gwt-Button");
         divStyle.setWidth(100, Style.Unit.PCT);
@@ -67,7 +66,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Object value) {
+    public void updateDom(Element cellElement, Object value) {
         if (property.getImage() == null) {
             LabelElement label = cellElement.getFirstChild().getFirstChild().cast();
             if (property.font != null) {
