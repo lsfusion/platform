@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.hierarchy.xml;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
@@ -7,9 +8,16 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
+import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.Text;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 
 public class XMLNode implements Node<XMLNode> {
@@ -27,7 +35,7 @@ public class XMLNode implements Node<XMLNode> {
 
     @Override
     public XMLNode getNode(String key) {
-        Element childElement = getXMLChild(key, false);
+        Element childElement = getXMLChild(key);
         if(childElement == null)
             return null;
         return new XMLNode(childElement);
@@ -91,14 +99,10 @@ public class XMLNode implements Node<XMLNode> {
         return element.getAttributeValue(shortKey.result, namespace);
     }
 
-    public Element getXMLChild(String key, boolean convertValue) {
-        if(convertValue && key.equals("value")) {
-            return element;
-        } else {
-            Result<String> shortKey = new Result<>();
-            Namespace namespace = getXMLNamespace(key, shortKey, true);
-            return element.getChild(shortKey.result, namespace);
-        }
+    public Element getXMLChild(String key) {
+        Result<String> shortKey = new Result<>();
+        Namespace namespace = getXMLNamespace(key, shortKey, true);
+        return element.getChild(shortKey.result, namespace);
     }
 
     public List getXMLChildren(String key) {
@@ -107,14 +111,37 @@ public class XMLNode implements Node<XMLNode> {
         return element.getChildren(shortKey.result, namespace);
     }
 
+    private static String getOutputFullText(Element content) {
+        XMLOutputter outp = new XMLOutputter();
+        outp.setFormat(Format.getRawFormat());
+        StringWriter sw = new StringWriter();
+        try {
+            outp.output(content.getContent(), sw);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+        return sw.getBuffer().toString();
+    }
+    // copy of getText, but without Text filter
+    private static String getFullText(Element element) {
+        for(int i=0,size=element.getContentSize();i<size;i++) // optimization
+            if(!(element.getContent(i) instanceof Text))
+                return getOutputFullText(element);
+        return element.getText();
+    }
+
     @Override
     public Object getValue(String key, boolean attr, Type type) throws ParseException {
         String stringValue;
         if(attr)
             stringValue = getXMLAttributeValue(key);
         else {
-            Element childElement = getXMLChild(key, true);
-            stringValue = childElement != null ? childElement.getText() : null; // array and objects will be ignored (see getText implementation)
+            if(key.equals("value"))
+                stringValue = element.getText(); // array and objects will be ignored (see getText implementation)
+            else {
+                Element childElement = getXMLChild(key);
+                stringValue = childElement != null ? getFullText(childElement) : null; // array and objects will be ignored (see getText implementation)
+            }
         }
         return type.parseXML(stringValue);
     }
@@ -127,7 +154,7 @@ public class XMLNode implements Node<XMLNode> {
             for (int i = 0; i < children.size(); i++)
                 mResult.add(new Pair<>(i, new XMLNode((Element) children.get(i))));
         } else {
-            Element child = getXMLChild(key, false);
+            Element child = getXMLChild(key);
             if(child != null)
                 for(Object value : child.getChildren())
                     mResult.add(new Pair<>(((Element) value).getName(), new XMLNode((Element) value)));
