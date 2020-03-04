@@ -31,7 +31,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         divStyle.setPaddingLeft(4, Style.Unit.PX);
 
         // важно оставить множественные пробелы
-        divStyle.setWhiteSpace(Style.WhiteSpace.PRE);
+        divStyle.setWhiteSpace(Style.WhiteSpace.PRE);   
         
         divStyle.setPosition(Style.Position.RELATIVE);
 
