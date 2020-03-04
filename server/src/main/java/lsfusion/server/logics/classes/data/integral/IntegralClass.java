@@ -19,7 +19,7 @@ import org.json.JSONObject;
 // класс который можно сравнивать
 public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
-    public int getReportMinimumWidth() { return 30;  }
+    public int getReportMinimumWidth() { return 30; }
     public int getReportPreferredWidth() { return 50; }
 
     protected IntegralClass(LocalizedString caption) {
