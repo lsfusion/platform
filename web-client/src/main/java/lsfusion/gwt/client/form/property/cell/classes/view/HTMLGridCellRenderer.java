@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
 public class HTMLGridCellRenderer extends AbstractGridCellRenderer {
@@ -12,16 +12,26 @@ public class HTMLGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
+        renderDom(cellElement, value);
+    }
+
+    @Override
+    public void renderDom(Element cellElement, Object value) {
         updateElement(cellElement, value);
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
+        updateDom(cellElement, value);
+    }
+
+    @Override
+    public void updateDom(Element cellElement, Object value) {
         updateElement(cellElement, value);
     }
 
-    protected void updateElement(DivElement div, Object value) {
+    protected void updateElement(Element div, Object value) {
         div.setInnerHTML("<iframe src=\"" + value + "\" style=\"width:100%; height:100%;\" >Unfortunately this content could not be displayed</iframe>");
     }
 }

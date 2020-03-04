@@ -4,8 +4,6 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
@@ -18,7 +16,16 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     private GPropertyDraw property;
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
+        if (property.getImage() == null) {
+            if (property.font == null && table instanceof GGridPropertyTable) {
+                property.font = ((GGridPropertyTable) table).font;
+            }
+        }
+    }
+
+    @Override
+    public void renderDom(Element cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         cellElement.addClassName("gwt-Button");
         divStyle.setWidth(100, Style.Unit.PCT);
@@ -42,35 +49,33 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
             setImage(img, value);
         } else {
             LabelElement label = innerTop.appendChild(Document.get().createLabelElement());
-
-            GFont font = property.font;
-            if (font == null && table instanceof GGridPropertyTable) {
-                font = ((GGridPropertyTable) table).font;
+            if (property.font != null) {
+                property.font.apply(label.getStyle());
             }
-            if (font != null) {
-                font.apply(label.getStyle());
-            }
-            
             label.setInnerText("...");
         }
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
+        if (property.getImage() == null) {
+            if (property.font == null && table instanceof GGridPropertyTable) {
+                property.font = ((GGridPropertyTable) table).font;
+            }
+        }
+    }
+
+    @Override
+    public void updateDom(Element cellElement, Object value) {
         if (property.getImage() == null) {
             LabelElement label = cellElement.getFirstChild().getFirstChild().cast();
-            GFont font = property.font;
-            if (font == null && table instanceof GGridPropertyTable) {
-                font = ((GGridPropertyTable) table).font;
+            if (property.font != null) {
+                property.font.apply(label.getStyle());
             }
-            if (font != null) {
-                font.apply(label.getStyle());
-            }   
         } else {
-            ImageElement img = cellElement
+            setImage(cellElement
                     .getFirstChild()
-                    .getFirstChild().cast();
-            setImage(img, value);
+                    .getFirstChild().cast(), value);
         }
     }
 

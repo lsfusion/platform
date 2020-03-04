@@ -58,7 +58,7 @@ public class GridEditableCell extends AbstractCell<Object> {
         GPropertyDraw property = table.getProperty(context);
         if (property != null) {
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
-            cellRenderer.renderDom(context, table, cellElement, value);
+            cellRenderer.renderDom(table, cellElement, value);
         }
     }
 
@@ -71,7 +71,7 @@ public class GridEditableCell extends AbstractCell<Object> {
         GPropertyDraw property = table.getProperty(context);
         if (property != null) {
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
-            cellRenderer.updateDom(cellElement, table, context, value);
+            cellRenderer.updateDom(cellElement, table, value);
         }
     }
 }

@@ -1,12 +1,8 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -16,31 +12,39 @@ import static lsfusion.gwt.client.form.property.cell.classes.view.FileGridCellRe
 
 public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     protected GPropertyDraw property;
-    
+
     public ImageGridCellRenderer(GPropertyDraw property) {
         this.property = property;
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
         if (table instanceof GGridPropertyTable) {
             cellElement.getStyle().setPosition(Style.Position.RELATIVE);
         }
-        cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
+    }
 
+    @Override
+    public void renderDom(Element cellElement, Object value) {
+        cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
             cellElement.setAttribute("align", textAlignStyle.getCssName());
         }
-        
-        updateDom(cellElement, table, context, value);
+
+        updateDom(cellElement, value);
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {     
+    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
+        updateDom(cellElement, value);
+    }
+
+    @Override
+    public void updateDom(Element cellElement, Object value) {
         cellElement.removeAllChildren();
         cellElement.setInnerText(null);
-        
+
         if (value == null && property.isEditableNotNull()) {
             cellElement.getStyle().setPaddingRight(4, Style.Unit.PX);
             cellElement.getStyle().setPaddingLeft(4, Style.Unit.PX);
@@ -54,7 +58,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
             cellElement.setTitle("");
 
             ImageElement img = cellElement.appendChild(Document.get().createImageElement());
-            
+
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
             imgStyle.setProperty("maxWidth", "100%");
@@ -66,7 +70,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
 
     protected void setImageSrc(ImageElement img, Object value) {
         if (value instanceof String && !value.equals("null")) {
-            img.setSrc(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)property.baseType).extension, false)); // form file
+            img.setSrc(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType) property.baseType).extension, false)); // form file
         } else {
             img.setSrc(GwtClientUtils.getModuleImagePath(ICON_EMPTY));
         }

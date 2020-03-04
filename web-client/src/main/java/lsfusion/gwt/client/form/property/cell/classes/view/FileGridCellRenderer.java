@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
@@ -17,7 +16,12 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
+    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
+        renderDom(cellElement, value);
+    }
+
+    @Override
+    public void renderDom(Element cellElement, Object value) {
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
             cellElement.setAttribute("align", textAlignStyle.getCssName());
@@ -25,7 +29,7 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
         cellElement.getStyle().setHeight(100, Style.Unit.PCT);
         cellElement.getStyle().setPosition(Style.Position.RELATIVE);
         cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
-        updateDom(cellElement, table, context, value);
+        updateDom(cellElement, value);
 
 //        ImageElement image = Document.get().createImageElement();
 //        cellElement.appendChild(image);
@@ -34,7 +38,12 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
+        updateDom(cellElement, value);
+    }
+
+    @Override
+    public void updateDom(Element cellElement, Object value) {
         Element childElement = cellElement.getFirstChildElement();
         boolean hadImage = childElement != null && "IMG".equals(childElement.getTagName());
 

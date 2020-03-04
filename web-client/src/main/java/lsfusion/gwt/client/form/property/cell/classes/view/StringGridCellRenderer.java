@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -32,7 +32,7 @@ public class StringGridCellRenderer extends TextBasedGridCellRenderer<String> {
     }
 
     @Override
-    protected void updateElement(DivElement div, Object value) {
+    protected void updateElement(Element div, Object value) {
         super.updateElement(div, value == null ? null : value.toString());
     }
 }
