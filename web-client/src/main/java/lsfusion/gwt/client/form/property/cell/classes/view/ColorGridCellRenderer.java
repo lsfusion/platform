@@ -1,42 +1,30 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
 public class ColorGridCellRenderer extends AbstractGridCellRenderer {
-
     @Override
-    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
-        renderDom(cellElement, value);
+    public void render(Element element, GFont font, Object value, boolean isSingle) {
+        renderStatic(element, font, isSingle);
+        renderDynamic(element, font, value, isSingle);
     }
 
     @Override
-    public void renderDom(Element cellElement, Object value) {
+    public void renderStatic(Element element, GFont font, boolean isSingle) {
+        element.setInnerText(EscapeUtils.UNICODE_NBSP);
+        element.getStyle().setBorderWidth(0, Style.Unit.PX);
+    }
+
+    @Override
+    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
         String color = getColorValue(value);
-        cellElement.setInnerText(EscapeUtils.UNICODE_NBSP);
-        cellElement.getStyle().setBorderWidth(0, Style.Unit.PX);
-        updateElement(cellElement, color);
-    }
-
-    @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
-        updateDom(cellElement, value);
-    }
-
-    @Override
-    public void updateDom(Element cellElement, Object value) {
-        String color = getColorValue(value);
-        updateElement(cellElement, color);
-    }
-
-    private void updateElement(Element div, String colorValue) {
-        div.getStyle().setColor(colorValue);
-        div.getStyle().setBackgroundColor(colorValue);
-        div.setTitle(colorValue);
+        element.getStyle().setColor(color);
+        element.getStyle().setBackgroundColor(color);
+        element.setTitle(color);
     }
 
     private String getColorValue(Object value) {

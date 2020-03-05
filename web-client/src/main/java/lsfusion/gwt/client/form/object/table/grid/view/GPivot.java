@@ -586,7 +586,9 @@ public class GPivot extends GStateTableView {
                         return val;
                     },
                     format: $wnd.$.pivotUtilities.numberFormat(),
-                    cellRender: function (element, value, columns, columnType) { instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::getCellRendererByColumns(*)(element, value, columns, columnType); },
+                    cellRender: function (element, value, columns, columnType) {
+                        instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::getCellRendererByColumns(*)(element, value, columns, columnType);
+                    },
                     numInputs: 0
                 }
             }
@@ -601,7 +603,7 @@ public class GPivot extends GStateTableView {
         if (columns != null && columns.length() > 0) {
             GPropertyDraw propertyDraw = columnMap.get(columns.get(0)).property;
             GridCellRenderer renderer = propertyDraw.getGridCellRenderer();
-            renderer.renderDom(jsElement, value);
+            renderer.render(jsElement, null, value, false);
         }
     }
 

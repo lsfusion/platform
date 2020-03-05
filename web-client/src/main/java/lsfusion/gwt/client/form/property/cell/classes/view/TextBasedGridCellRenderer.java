@@ -1,10 +1,8 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
@@ -13,27 +11,19 @@ import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
     protected GPropertyDraw property;
 
-    public TextBasedGridCellRenderer(GPropertyDraw property) {
+    TextBasedGridCellRenderer(GPropertyDraw property) {
         this.property = property;
     }
 
-    @Override
-    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
-        renderDom(cellElement, value);
-        if (property.font == null && table instanceof GGridPropertyTable) {
-            property.font = ((GGridPropertyTable) table).font;
-        }
-    }
-
-    public void renderDom(Element cellElement, Object value) {
-        Style divStyle = cellElement.getStyle();
+    public void renderStatic(Element element, GFont font, boolean isSingle) {
+        Style divStyle = getTextBasedStyle(element, font, isSingle);
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+
         if (textAlignStyle != null) {
             divStyle.setTextAlign(textAlignStyle);
         }
+
         divStyle.setPaddingTop(0, Style.Unit.PX);
-        divStyle.setPaddingRight(4, Style.Unit.PX);
-        divStyle.setPaddingBottom(0, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
 
         // важно оставить множественные пробелы
@@ -45,41 +35,32 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 //        divStyle.setOverflow(Style.Overflow.HIDDEN);
 //        divStyle.setTextOverflow(Style.TextOverflow.ELLIPSIS);
 
+        divStyle.clearProperty("lineHeight");
+    }
+
+    protected Style getTextBasedStyle(Element element, GFont font, boolean isMultiple) {
+        Style divStyle = element.getStyle();
+        divStyle.setPaddingRight(4, Style.Unit.PX);
+        divStyle.setPaddingBottom(0, Style.Unit.PX);
+
+        if (property.font == null && isMultiple) {
+            property.font = font;
+        }
+
         if (property.font != null) {
             property.font.apply(divStyle);
         }
-        divStyle.clearProperty("lineHeight");
-
-        updateElement(cellElement, value);
+        return divStyle;
     }
 
-    @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
-        updateDom(cellElement, value);
-
-        if (property.font == null && table instanceof GGridPropertyTable) {
-            property.font = ((GGridPropertyTable) table).font;
-        }
-    }
-
-    @Override
-    public void updateDom(Element cellElement, Object value) {
-        if (property.font != null) {
-            property.font.apply(cellElement.getStyle());
-        }
-        updateElement(cellElement, value);
-    }
-
-    protected void updateElement(Element div, Object value) {
-        String text = value == null ? null : renderToString((T) value);
-
-        if (text == null) {
-            div.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
-            setInnerText(div, null);
+    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+        if (value == null) {
+            element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
+            setInnerText(element, null);
         } else {
-            String stringValue = unicodeEscape(text);
-            setInnerText(div, stringValue);
-            div.setTitle(property.echoSymbols ? "" : stringValue);
+            String stringValue = unicodeEscape(castToString((T) value));
+            setInnerText(element, stringValue);
+            element.setTitle(property.echoSymbols ? "" : stringValue);
         }
     }
 
@@ -101,5 +82,5 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         }
     }
 
-    protected abstract String renderToString(T value);
+    protected abstract String castToString(T value);
 }

@@ -3,8 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageDescription;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
@@ -16,30 +15,24 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     private GPropertyDraw property;
 
     @Override
-    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
-        if (property.getImage() == null) {
-            if (property.font == null && table instanceof GGridPropertyTable) {
-                property.font = ((GGridPropertyTable) table).font;
-            }
-        }
-    }
-
-    @Override
-    public void renderDom(Element cellElement, Object value) {
-        Style divStyle = cellElement.getStyle();
-        cellElement.addClassName("gwt-Button");
+    public void renderStatic(Element element, GFont font, boolean isSingle) {
+        Style divStyle = element.getStyle();
+        element.addClassName("gwt-Button");
         divStyle.setWidth(100, Style.Unit.PCT);
         divStyle.setPadding(0, Style.Unit.PX);
 
         // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
-        cellElement.addClassName("boxSized");
+        element.addClassName("boxSized");
+    }
 
-        DivElement innerTop = cellElement.appendChild(Document.get().createDivElement());
+    @Override
+    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+        DivElement innerTop = element.appendChild(Document.get().createDivElement());
         innerTop.getStyle().setHeight(50, Style.Unit.PCT);
         innerTop.getStyle().setPosition(Style.Position.RELATIVE);
         innerTop.setAttribute("align", "center");
 
-        DivElement innerBottom = cellElement.appendChild(Document.get().createDivElement());
+        DivElement innerBottom = element.appendChild(Document.get().createDivElement());
         innerBottom.getStyle().setHeight(50, Style.Unit.PCT);
 
         if (property.getImage() != null) {
@@ -48,34 +41,14 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
             img.getStyle().setLeft(50, Style.Unit.PCT);
             setImage(img, value);
         } else {
-            LabelElement label = innerTop.appendChild(Document.get().createLabelElement());
+            LabelElement label = element.getFirstChild().getFirstChild().cast();
+            if (property.font == null && isSingle) {
+                property.font = font;
+            }
             if (property.font != null) {
                 property.font.apply(label.getStyle());
             }
             label.setInnerText("...");
-        }
-    }
-
-    @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
-        if (property.getImage() == null) {
-            if (property.font == null && table instanceof GGridPropertyTable) {
-                property.font = ((GGridPropertyTable) table).font;
-            }
-        }
-    }
-
-    @Override
-    public void updateDom(Element cellElement, Object value) {
-        if (property.getImage() == null) {
-            LabelElement label = cellElement.getFirstChild().getFirstChild().cast();
-            if (property.font != null) {
-                property.font.apply(label.getStyle());
-            }
-        } else {
-            setImage(cellElement
-                    .getFirstChild()
-                    .getFirstChild().cast(), value);
         }
     }
 

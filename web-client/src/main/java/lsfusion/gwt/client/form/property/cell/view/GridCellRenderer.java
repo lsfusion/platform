@@ -1,13 +1,16 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.design.GFont;
 
 public interface GridCellRenderer {
-    void renderDom(DataGrid table, DivElement cellElement, Object value);
-    void updateDom(DivElement cellElement, DataGrid table, Object value);
+    default void render(Element element, GFont font, Object value, boolean isSingle) {
+        renderStatic(element, font, isSingle);
+        renderDynamic(element, font, value, isSingle);
+    }
 
-    void renderDom(Element cellElement, Object value);
-    void updateDom(Element cellElement, Object value);
+    default void renderStatic(Element element, GFont font, boolean isSingle) {}
+
+    default void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+    }
 }

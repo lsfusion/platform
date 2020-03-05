@@ -1,10 +1,12 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.ImageElement;
+import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GImageType;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
@@ -18,46 +20,36 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
-        if (table instanceof GGridPropertyTable) {
-            cellElement.getStyle().setPosition(Style.Position.RELATIVE);
-        }
-    }
+    public void renderStatic(Element element, GFont font, boolean isSingle) {
+        element.removeAllChildren();
+        element.setInnerText(null);
 
-    @Override
-    public void renderDom(Element cellElement, Object value) {
-        cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
+        if (isSingle) {
+            element.getStyle().setPosition(Style.Position.RELATIVE);
+        }
+
+        element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
-            cellElement.setAttribute("align", textAlignStyle.getCssName());
+            element.setAttribute("align", textAlignStyle.getCssName());
         }
-
-        updateDom(cellElement, value);
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
-        updateDom(cellElement, value);
-    }
-
-    @Override
-    public void updateDom(Element cellElement, Object value) {
-        cellElement.removeAllChildren();
-        cellElement.setInnerText(null);
-
+    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
         if (value == null && property.isEditableNotNull()) {
-            cellElement.getStyle().setPaddingRight(4, Style.Unit.PX);
-            cellElement.getStyle().setPaddingLeft(4, Style.Unit.PX);
-            cellElement.setInnerText(REQUIRED_VALUE);
-            cellElement.setTitle(REQUIRED_VALUE);
-            cellElement.addClassName("requiredValueString");
+            element.getStyle().setPaddingRight(4, Style.Unit.PX);
+            element.getStyle().setPaddingLeft(4, Style.Unit.PX);
+            element.setInnerText(REQUIRED_VALUE);
+            element.setTitle(REQUIRED_VALUE);
+            element.addClassName("requiredValueString");
         } else {
-            cellElement.getStyle().clearPadding();
-            cellElement.removeClassName("requiredValueString");
-            cellElement.setInnerText(null);
-            cellElement.setTitle("");
+            element.getStyle().clearPadding();
+            element.removeClassName("requiredValueString");
+            element.setInnerText(null);
+            element.setTitle("");
 
-            ImageElement img = cellElement.appendChild(Document.get().createImageElement());
+            ImageElement img = element.appendChild(Document.get().createImageElement());
 
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
@@ -75,5 +67,4 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
             img.setSrc(GwtClientUtils.getModuleImagePath(ICON_EMPTY));
         }
     }
-
 }

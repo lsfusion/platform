@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.view.grid.cell.AbstractCell;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
@@ -58,7 +59,12 @@ public class GridEditableCell extends AbstractCell<Object> {
         GPropertyDraw property = table.getProperty(context);
         if (property != null) {
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
-            cellRenderer.renderDom(table, cellElement, value);
+
+            if (table instanceof GGridPropertyTable) {
+                cellRenderer.render(cellElement, ((GGridPropertyTable) table).font, value, false);
+            } else {
+                cellRenderer.render(cellElement, null, value, true);
+            }
         }
     }
 
@@ -71,7 +77,12 @@ public class GridEditableCell extends AbstractCell<Object> {
         GPropertyDraw property = table.getProperty(context);
         if (property != null) {
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
-            cellRenderer.updateDom(cellElement, table, value);
+
+            if (table instanceof GGridPropertyTable) {
+                cellRenderer.renderDynamic(cellElement, ((GGridPropertyTable) table).font, value, false);
+            } else {
+                cellRenderer.renderDynamic(cellElement, null, value, true);
+            }
         }
     }
 }
