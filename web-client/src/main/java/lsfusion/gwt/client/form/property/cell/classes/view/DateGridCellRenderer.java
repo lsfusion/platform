@@ -8,13 +8,12 @@ import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
 import java.util.Date;
 
 public class DateGridCellRenderer extends FormatGridCellRenderer<Object, DateTimeFormat> {
-
     public DateGridCellRenderer(GPropertyDraw property) {
         super(property);
     }
 
     @Override
-    protected String renderToString(Object value) {
+    protected String castToString(Object value) {
         if (value instanceof GDateDTO) {
             return format.format(((GDateDTO) value).toDate());
         } else if (value instanceof GTimeDTO) {

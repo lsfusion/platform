@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 import lsfusion.gwt.client.view.MainFrame;
@@ -20,20 +20,14 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void renderDom(DataGrid table, DivElement cellElement, Object value) {
-        renderDom(cellElement, value);
-    }
-
-    @Override
-    public void renderDom(Element cellElement, Object value) {
+    public void renderStatic(Element element, GFont font, boolean isSingle) {
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
-            cellElement.setAttribute("align", textAlignStyle.getCssName());
+            element.setAttribute("align", textAlignStyle.getCssName());
         }
-        cellElement.getStyle().setHeight(100, Style.Unit.PCT);
-        cellElement.getStyle().setPosition(Style.Position.RELATIVE);
-        cellElement.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
-        updateDom(cellElement, value);
+        element.getStyle().setHeight(100, Style.Unit.PCT);
+        element.getStyle().setPosition(Style.Position.RELATIVE);
+        element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
 
 //        ImageElement image = Document.get().createImageElement();
 //        cellElement.appendChild(image);
@@ -42,20 +36,15 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Object value) {
-        updateDom(cellElement, value);
-    }
-
-    @Override
-    public void updateDom(Element cellElement, Object value) {
-        Element childElement = cellElement.getFirstChildElement();
+    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+        Element childElement = element.getFirstChildElement();
         boolean hadImage = childElement != null && "IMG".equals(childElement.getTagName());
 
         if (value == null && property.isEditableNotNull()) {
             if (childElement == null || hadImage) {
-                cellElement.removeAllChildren();
+                element.removeAllChildren();
 
-                DivElement innerElement = cellElement.appendChild(Document.get().createDivElement());
+                DivElement innerElement = element.appendChild(Document.get().createDivElement());
                 innerElement.getStyle().setPaddingRight(4, Style.Unit.PX);
                 innerElement.getStyle().setPaddingLeft(4, Style.Unit.PX);
                 innerElement.setInnerText(REQUIRED_VALUE);
@@ -66,9 +55,9 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
             if (hadImage) {
                 setImageSrc((ImageElement) childElement, value);
             } else {
-                cellElement.removeAllChildren();
+                element.removeAllChildren();
 
-                ImageElement image = cellElement.appendChild(Document.get().createImageElement());
+                ImageElement image = element.appendChild(Document.get().createImageElement());
                 image.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
                 setImageSrc(image, value);
             }

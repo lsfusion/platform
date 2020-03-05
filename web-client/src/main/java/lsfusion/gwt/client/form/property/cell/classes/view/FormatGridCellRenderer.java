@@ -4,12 +4,11 @@ import com.google.gwt.dom.client.DivElement;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-public abstract class FormatGridCellRenderer<T, F> extends TextBasedGridCellRenderer<T> {
+public abstract class FormatGridCellRenderer<T, F> extends StringBasedGridCellRenderer<T> {
     protected F format;
 
     public FormatGridCellRenderer(GPropertyDraw property) {
         super(property);
-
         updateFormat();
     }
 
