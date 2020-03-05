@@ -8,41 +8,30 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.FileBasedGridCellRenderer;
 
 import static lsfusion.gwt.client.form.property.cell.classes.view.FileGridCellRenderer.ICON_EMPTY;
 
-public class ImageGridCellRenderer extends AbstractGridCellRenderer {
+public class ImageGridCellRenderer extends FileBasedGridCellRenderer {
     protected GPropertyDraw property;
 
     public ImageGridCellRenderer(GPropertyDraw property) {
-        this.property = property;
+        super(property);
     }
 
     @Override
     public void renderStatic(Element element, GFont font, boolean isSingle) {
+        super.renderStatic(element, font, isSingle);
         element.removeAllChildren();
         element.setInnerText(null);
 
-        if (isSingle) {
-            element.getStyle().setPosition(Style.Position.RELATIVE);
-        }
-
-        element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
-        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
-        if (textAlignStyle != null) {
-            element.setAttribute("align", textAlignStyle.getCssName());
-        }
+        if (isSingle) element.getStyle().setPosition(Style.Position.RELATIVE);
     }
 
     @Override
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
         if (value == null && property.isEditableNotNull()) {
-            element.getStyle().setPaddingRight(4, Style.Unit.PX);
-            element.getStyle().setPaddingLeft(4, Style.Unit.PX);
-            element.setInnerText(REQUIRED_VALUE);
-            element.setTitle(REQUIRED_VALUE);
-            element.addClassName("requiredValueString");
+            setBasedEmptyElement(element);
         } else {
             element.getStyle().clearPadding();
             element.removeClassName("requiredValueString");
@@ -56,11 +45,12 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
             imgStyle.setProperty("maxWidth", "100%");
             imgStyle.setProperty("maxHeight", "100%");
 
-            setImageSrc(img, value);
+            setFileSrc(img, value);
         }
     }
 
-    protected void setImageSrc(ImageElement img, Object value) {
+    @Override
+    protected void setFileSrc(ImageElement img, Object value) {
         if (value instanceof String && !value.equals("null")) {
             img.setSrc(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType) property.baseType).extension, false)); // form file
         } else {

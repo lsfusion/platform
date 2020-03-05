@@ -1,33 +1,33 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.ImageElement;
+import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.FileBasedGridCellRenderer;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
 
-public class FileGridCellRenderer extends AbstractGridCellRenderer {
+public class FileGridCellRenderer extends FileBasedGridCellRenderer {
     public static final String ICON_EMPTY = "empty.png";
     private static final String ICON_FILE = "file.png";
-    private GPropertyDraw property;
+
 
     public FileGridCellRenderer(GPropertyDraw property) {
-        this.property = property;
+        super(property);
     }
 
     @Override
     public void renderStatic(Element element, GFont font, boolean isSingle) {
-        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
-        if (textAlignStyle != null) {
-            element.setAttribute("align", textAlignStyle.getCssName());
-        }
+        super.renderStatic(element, font, isSingle);
+
         element.getStyle().setHeight(100, Style.Unit.PCT);
         element.getStyle().setPosition(Style.Position.RELATIVE);
-        element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
 
 //        ImageElement image = Document.get().createImageElement();
 //        cellElement.appendChild(image);
@@ -44,38 +44,33 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
             if (childElement == null || hadImage) {
                 element.removeAllChildren();
 
-                DivElement innerElement = element.appendChild(Document.get().createDivElement());
-                innerElement.getStyle().setPaddingRight(4, Style.Unit.PX);
-                innerElement.getStyle().setPaddingLeft(4, Style.Unit.PX);
-                innerElement.setInnerText(REQUIRED_VALUE);
-                innerElement.setTitle(REQUIRED_VALUE);
-                innerElement.addClassName("requiredValueString");
+                setBasedEmptyElement(element.appendChild(Document.get().createDivElement()));
             }
         } else {
             if (hadImage) {
-                setImageSrc((ImageElement) childElement, value);
+                setFileSrc((ImageElement) childElement, value);
             } else {
                 element.removeAllChildren();
 
-                ImageElement image = element.appendChild(Document.get().createImageElement());
-                image.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
-                setImageSrc(image, value);
+                ImageElement img = element.appendChild(Document.get().createImageElement());
+                img.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
+                setFileSrc(img, value);
             }
         }
     }
 
-    private void setImageSrc(ImageElement image, Object value) {
+    protected void setFileSrc(ImageElement file, Object value) {
         String imagePath = value == null ? ICON_EMPTY : ICON_FILE;
         String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
         GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
             @Override
             public void onFailure() {
-                image.setSrc(getModuleImagePath(imagePath));
+                file.setSrc(getModuleImagePath(imagePath));
             }
 
             @Override
             public void onSuccess() {
-                image.setSrc(getModuleImagePath(colorThemeImagePath));
+                file.setSrc(getModuleImagePath(colorThemeImagePath));
             }
         });
     }

@@ -13,7 +13,7 @@ public class ImageLinkGridCellRenderer extends ImageGridCellRenderer {
     }
 
     @Override
-    protected void setImageSrc(ImageElement img, Object value) {
+    protected void setFileSrc(ImageElement img, Object value) {
         if (value instanceof String) {
             img.setSrc((String) value);
         } else {
