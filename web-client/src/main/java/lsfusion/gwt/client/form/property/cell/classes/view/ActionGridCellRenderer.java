@@ -5,14 +5,11 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
-public class ActionGridCellRenderer extends AbstractGridCellRenderer {
+public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
     public ActionGridCellRenderer(GPropertyDraw property) {
-        this.property = property;
+        super(property);
     }
-
-    private GPropertyDraw property;
 
     @Override
     public void renderStatic(Element element, GFont font, boolean isSingle) {
@@ -21,35 +18,38 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
         divStyle.setWidth(100, Style.Unit.PCT);
         divStyle.setPadding(0, Style.Unit.PX);
 
+        DivElement innerTop = element.appendChild(Document.get().createDivElement());
+        innerTop.getStyle().setHeight(50, Style.Unit.PCT);
+        innerTop.getStyle().setPosition(Style.Position.RELATIVE);
+        innerTop.setAttribute("align", "center");
+
+        element.appendChild(Document.get().createDivElement()).getStyle().setHeight(50, Style.Unit.PCT);
         // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
         element.addClassName("boxSized");
     }
 
     @Override
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
-        DivElement innerTop = element.appendChild(Document.get().createDivElement());
-        innerTop.getStyle().setHeight(50, Style.Unit.PCT);
-        innerTop.getStyle().setPosition(Style.Position.RELATIVE);
-        innerTop.setAttribute("align", "center");
-
-        DivElement innerBottom = element.appendChild(Document.get().createDivElement());
-        innerBottom.getStyle().setHeight(50, Style.Unit.PCT);
-
         if (property.getImage() != null) {
-            ImageElement img = innerTop.appendChild(Document.get().createImageElement());
+            ImageElement img = element.getFirstChildElement().appendChild(Document.get().createImageElement());
             img.getStyle().setPosition(Style.Position.ABSOLUTE);
             img.getStyle().setLeft(50, Style.Unit.PCT);
             setImage(img, value);
         } else {
             LabelElement label = element.getFirstChild().getFirstChild().cast();
-            if (property.font == null && isSingle) {
-                property.font = font;
-            }
-            if (property.font != null) {
-                property.font.apply(label.getStyle());
-            }
-            label.setInnerText("...");
+            setBasedTextFonts(label.getStyle(), font, isSingle);
+            setInnerText(label, "...");
         }
+    }
+
+    @Override
+    protected void setInnerText(Element element, String innerText) {
+        element.setInnerText(innerText);
+    }
+
+    @Override
+    protected String castToString(Object value) {
+        return null;
     }
 
     private void setImage(ImageElement img, Object value) {

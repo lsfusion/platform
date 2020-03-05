@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-public abstract class FormatGridCellRenderer<T, F> extends StringBasedGridCellRenderer<T> {
+public abstract class FormatGridCellRenderer<T, F> extends TextBasedGridCellRenderer<T> {
     protected F format;
 
     public FormatGridCellRenderer(GPropertyDraw property) {
@@ -16,18 +16,19 @@ public abstract class FormatGridCellRenderer<T, F> extends StringBasedGridCellRe
         this.format = (F) property.getFormat();
     }
 
-    protected void setInnerText(DivElement div, String innerText) {
+    @Override
+    protected void setInnerText(Element element, String innerText) {
         if (innerText == null) {
             if (property.isEditableNotNull()) {
-                div.setInnerText(REQUIRED_VALUE);
-                div.addClassName("requiredValueString");
+                element.setInnerText(REQUIRED_VALUE);
+                element.addClassName("requiredValueString");
             } else {
-                div.setInnerText(EscapeUtils.UNICODE_NBSP);
-                div.removeClassName("requiredValueString");
+                element.setInnerText(EscapeUtils.UNICODE_NBSP);
+                element.removeClassName("requiredValueString");
             }
         } else {
-            div.setInnerText(innerText);
-            div.removeClassName("requiredValueString");
+            element.setInnerText(innerText);
+            element.removeClassName("requiredValueString");
         }
     }
 }

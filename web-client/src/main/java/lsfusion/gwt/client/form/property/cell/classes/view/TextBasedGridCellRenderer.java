@@ -16,41 +16,44 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     }
 
     public void renderStatic(Element element, GFont font, boolean isSingle) {
-        Style divStyle = getTextBasedStyle(element, font, isSingle);
+        Style style = getBasedStyle(element, font, isSingle);
+        setBasedTextFonts(style, font, isSingle);
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
 
         if (textAlignStyle != null) {
-            divStyle.setTextAlign(textAlignStyle);
+            style.setTextAlign(textAlignStyle);
         }
 
-        divStyle.setPaddingTop(0, Style.Unit.PX);
-        divStyle.setPaddingLeft(4, Style.Unit.PX);
+        style.setPaddingTop(0, Style.Unit.PX);
+        style.setPaddingLeft(4, Style.Unit.PX);
 
         // важно оставить множественные пробелы
-        divStyle.setWhiteSpace(Style.WhiteSpace.PRE);
-        divStyle.setPosition(Style.Position.RELATIVE);
+        style.setWhiteSpace(Style.WhiteSpace.PRE);
+        style.setPosition(Style.Position.RELATIVE);
 
         //нужно для эллипсиса, но подтормаживает рендеринг,
         //оставлено закомменченым просто для справки
-//        divStyle.setOverflow(Style.Overflow.HIDDEN);
-//        divStyle.setTextOverflow(Style.TextOverflow.ELLIPSIS);
+//        style.setOverflow(Style.Overflow.HIDDEN);
+//        style.setTextOverflow(Style.TextOverflow.ELLIPSIS);
 
-        divStyle.clearProperty("lineHeight");
+        style.clearProperty("lineHeight");
     }
 
-    protected Style getTextBasedStyle(Element element, GFont font, boolean isMultiple) {
-        Style divStyle = element.getStyle();
-        divStyle.setPaddingRight(4, Style.Unit.PX);
-        divStyle.setPaddingBottom(0, Style.Unit.PX);
+    protected Style getBasedStyle(Element element, GFont font, boolean isSingle) {
+        Style style = element.getStyle();
+        style.setPaddingRight(4, Style.Unit.PX);
+        style.setPaddingBottom(0, Style.Unit.PX);
+        return style;
+    }
 
-        if (property.font == null && isMultiple) {
+    protected void setBasedTextFonts(Style style, GFont font, boolean isSingle){
+        if (property.font == null && isSingle) {
             property.font = font;
         }
 
         if (property.font != null) {
-            property.font.apply(divStyle);
+            property.font.apply(style);
         }
-        return divStyle;
     }
 
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
@@ -64,23 +67,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         }
     }
 
-    protected void setInnerText(Element div, String innerText) {
-        if (innerText == null) {
-            if (property.isEditableNotNull()) {
-                div.setInnerText(REQUIRED_VALUE);
-                div.addClassName("requiredValueString");
-                div.removeClassName("nullValueString");
-            } else {
-                div.setInnerText(EMPTY_VALUE);
-                div.addClassName("nullValueString");
-                div.removeClassName("requiredValueString");
-            }
-        } else {
-            div.setInnerText(innerText);
-            div.removeClassName("nullValueString");
-            div.removeClassName("requiredValueString");
-        }
-    }
+    protected abstract void setInnerText(Element element, String innerText);
 
     protected abstract String castToString(T value);
 }
