@@ -13,10 +13,10 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
 
     @Override
     public void renderStatic(Element element, GFont font, boolean isSingle) {
-        Style divStyle = element.getStyle();
+        Style style = element.getStyle();
         element.addClassName("gwt-Button");
-        divStyle.setWidth(100, Style.Unit.PCT);
-        divStyle.setPadding(0, Style.Unit.PX);
+        style.setWidth(100, Style.Unit.PCT);
+        style.setPadding(0, Style.Unit.PX);
 
         DivElement innerTop = element.appendChild(Document.get().createDivElement());
         innerTop.getStyle().setHeight(50, Style.Unit.PCT);

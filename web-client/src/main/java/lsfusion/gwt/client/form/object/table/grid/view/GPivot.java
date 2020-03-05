@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
 import java.util.*;
 
@@ -602,7 +602,7 @@ public class GPivot extends GStateTableView {
     public void getCellRendererByColumns(Element jsElement, JavaScriptObject value, JsArrayString columns, String columnType) {
         if (columns != null && columns.length() > 0) {
             GPropertyDraw propertyDraw = columnMap.get(columns.get(0)).property;
-            GridCellRenderer renderer = propertyDraw.getGridCellRenderer();
+            AbstractGridCellRenderer renderer = propertyDraw.getGridCellRenderer();
             renderer.render(jsElement, null, value, false);
         }
     }

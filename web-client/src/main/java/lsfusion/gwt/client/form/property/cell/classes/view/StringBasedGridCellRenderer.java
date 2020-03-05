@@ -8,21 +8,21 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
         super(property);
     }
 
-    protected void setInnerText(Element div, String innerText) {
+    protected void setInnerText(Element element, String innerText) {
         if (innerText == null) {
             if (property.isEditableNotNull()) {
-                div.setInnerText(REQUIRED_VALUE);
-                div.addClassName("requiredValueString");
-                div.removeClassName("nullValueString");
+                element.setInnerText(REQUIRED_VALUE);
+                element.addClassName("requiredValueString");
+                element.removeClassName("nullValueString");
             } else {
-                div.setInnerText(EMPTY_VALUE);
-                div.addClassName("nullValueString");
-                div.removeClassName("requiredValueString");
+                element.setInnerText(EMPTY_VALUE);
+                element.addClassName("nullValueString");
+                element.removeClassName("requiredValueString");
             }
         } else {
-            div.setInnerText(innerText);
-            div.removeClassName("nullValueString");
-            div.removeClassName("requiredValueString");
+            element.setInnerText(innerText);
+            element.removeClassName("nullValueString");
+            element.removeClassName("requiredValueString");
         }
     }
 

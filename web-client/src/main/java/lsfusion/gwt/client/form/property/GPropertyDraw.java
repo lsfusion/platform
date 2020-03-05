@@ -28,7 +28,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -124,7 +124,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     
     public boolean hide;
 
-    private transient GridCellRenderer cellRenderer;
+    private transient AbstractGridCellRenderer cellRenderer;
     
     public boolean notNull;
 
@@ -150,7 +150,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return baseType.createPanelRenderer(form, this, columnKey);
     }
 
-    public GridCellRenderer getGridCellRenderer() {
+    public AbstractGridCellRenderer getGridCellRenderer() {
         if (cellRenderer == null) {
             cellRenderer = baseType.createGridCellRenderer(this);
         }
@@ -169,7 +169,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(baseType instanceof GFormatType) {
             this.pattern = pattern != null ? pattern : defaultPattern;
 
-            GridCellRenderer renderer = getGridCellRenderer();
+            AbstractGridCellRenderer renderer = getGridCellRenderer();
             if (renderer instanceof FormatGridCellRenderer) {
                 ((FormatGridCellRenderer) renderer).updateFormat();
             } else

@@ -8,12 +8,6 @@ import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
 public class ColorGridCellRenderer extends AbstractGridCellRenderer {
     @Override
-    public void render(Element element, GFont font, Object value, boolean isSingle) {
-        renderStatic(element, font, isSingle);
-        renderDynamic(element, font, value, isSingle);
-    }
-
-    @Override
     public void renderStatic(Element element, GFont font, boolean isSingle) {
         element.setInnerText(EscapeUtils.UNICODE_NBSP);
         element.getStyle().setBorderWidth(0, Style.Unit.PX);
