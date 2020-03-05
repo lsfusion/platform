@@ -25,7 +25,7 @@ public class ImageGridCellRenderer extends FileBasedGridCellRenderer {
         element.removeAllChildren();
         element.setInnerText(null);
 
-        if (isSingle) element.getStyle().setPosition(Style.Position.RELATIVE);
+        if (!isSingle) element.getStyle().setPosition(Style.Position.RELATIVE);
     }
 
     @Override

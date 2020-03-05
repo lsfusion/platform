@@ -10,7 +10,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.LongGridCellEdi
 import lsfusion.gwt.client.form.property.cell.classes.view.NumberGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
 import java.text.ParseException;
 
@@ -22,7 +22,7 @@ public class GObjectType extends GType {
     public static final GObjectType instance = new GObjectType();
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public AbstractGridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new NumberGridCellRenderer(property);
     }
 

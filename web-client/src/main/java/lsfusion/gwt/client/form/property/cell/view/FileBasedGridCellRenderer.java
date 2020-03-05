@@ -12,10 +12,9 @@ public abstract class FileBasedGridCellRenderer extends AbstractGridCellRenderer
     @Override
     public void renderStatic(Element element, GFont font, boolean isSingle) {
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
-        if (textAlignStyle != null) {
-            element.setAttribute("align", textAlignStyle.getCssName());
-        }
         element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
+        if (textAlignStyle != null) element.setAttribute("align", textAlignStyle.getCssName());
+        if (!isSingle) element.getStyle().setPosition(Style.Position.RELATIVE);
     }
 
     protected void setBasedEmptyElement(Element element){
