@@ -20,17 +20,24 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
+import org.kordamp.ikonli.swing.FontIcon;
+import org.kordamp.ikonli.fontawesome.FontAwesome;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
 import static lsfusion.base.col.MapFact.singletonOrder;
 
 public abstract class NavigatorElement {
-    
+
+    public static final int DEFAULT_ICON_SIZE = 32;
+    public static final Color DEFAULT_ICON_COLOR = Color.DARK_GRAY;
+
     private SerializableImageIconHolder imageHolder;
     public DefaultIcon defaultIcon;
 
@@ -209,7 +216,16 @@ public abstract class NavigatorElement {
     }
 
     public final void setImage(String imagePath, DefaultIcon defaultIcon) {
-        ImageIcon image = ResourceUtils.readImage(imagePath);
+        ImageIcon image = null;
+
+        //FontAwesome pack - pattern ^fa-[^\.]*
+        if (imagePath.startsWith("fa-") && !imagePath.contains(".")) {
+            FontIcon fi  = FontIcon.of(FontAwesome.findByDescription(imagePath), DEFAULT_ICON_SIZE, DEFAULT_ICON_COLOR);
+            image = new ImageIcon(fi.getImage());
+        } else {
+            image = ResourceUtils.readImage(imagePath);
+        }
+
         if (image != null) {
             imageHolder = new SerializableImageIconHolder(image, imagePath);
             this.defaultIcon = defaultIcon;
