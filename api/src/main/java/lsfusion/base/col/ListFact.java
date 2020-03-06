@@ -194,6 +194,11 @@ public class ListFact {
             mList.add(list.get(i));
     }
 
+    public static <K> void addJavaAll(ImList<?  extends K> list, List<K> mList) {
+        for(int i=0,size=list.size();i<size;i++)
+            mList.add(list.get(i));
+    }
+
     private final static IntFunction<MSet<Object>> mSet = i -> SetFact.mSet();
 
     public static <V> IntFunction<MSet<V>> mSet() {

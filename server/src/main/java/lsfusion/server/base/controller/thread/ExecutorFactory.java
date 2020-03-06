@@ -1,6 +1,9 @@
 package lsfusion.server.base.controller.thread;
 
 import lsfusion.base.DaemonThreadFactory;
+import lsfusion.base.Pair;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
@@ -147,7 +150,7 @@ public class ExecutorFactory {
             }
 
             @Override
-            public void aspectAfterRun() {
+            public void aspectAfterRun(Object submit) {
                 ThreadLocalContext.aspectAfterRmi(ExecutorFactoryThreadInfo.instance);
             }
         });
@@ -173,7 +176,7 @@ public class ExecutorFactory {
             }
 
             @Override
-            public void aspectAfterRun() {
+            public void aspectAfterRun(Object submit) {
                 ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
             }
         });
@@ -201,7 +204,7 @@ public class ExecutorFactory {
             }
 
             @Override
-            public void aspectAfterRun() {
+            public void aspectAfterRun(Object submit) {
                 ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
             }
         });
@@ -247,7 +250,7 @@ public class ExecutorFactory {
             }
 
             @Override
-            public void aspectAfterRun() {
+            public void aspectAfterRun(Object submit) {
                 ThreadLocalContext.aspectAfterLifecycle(ExecutorFactoryThreadInfo.instance);
             }
         });
@@ -265,8 +268,8 @@ public class ExecutorFactory {
         return wrapInnerService(executorService, type, createContextAspect(context, type));
     }
 
-    public static ScheduledExecutorService createNewThreadService(ExecutionContext<PropertyInterface> context, Integer nThreads) {
-        SyncType type = SyncType.NOSYNC;
+    public static ScheduledExecutorService createNewThreadService(ExecutionContext<PropertyInterface> context, Integer nThreads, boolean sync) {
+        SyncType type = sync ? SyncType.MULTISYNC : SyncType.NOSYNC;
 
         ClosableDaemonThreadFactory threadFactory = new ClosableDaemonThreadFactory(context.getLogicsInstance(), "executor-pool");
 
@@ -417,10 +420,10 @@ public class ExecutorFactory {
     // ЛОКАЛЬНЫЕ СЕРВИСЫ
 
     private interface TaskInnerAspect<S> {
-        S aspectSubmit(); // верхний поток \ стек
+        S aspectSubmit(); // thread that creats new thread
 
-        void aspectBeforeRun(S submit); // внутренний поток \ стек
-        void aspectAfterRun();
+        void aspectBeforeRun(S submit); // new thread start
+        void aspectAfterRun(S submit); // new thread stop
     }
 
     private static <T> Callable<T> wrapInnerTask(final Callable<T> callable, final TaskInnerAspect aspect, SyncType type) {
@@ -431,7 +434,7 @@ public class ExecutorFactory {
             try {
                 return callable.call();
             } finally {
-                aspect.aspectAfterRun();
+                aspect.aspectAfterRun(submit);
             }
         };
     }
@@ -464,7 +467,7 @@ public class ExecutorFactory {
             try {
                 aspectRun();
             } finally {
-                aspect.aspectAfterRun();
+                aspect.aspectAfterRun(submit);
             }
         }
     }
@@ -493,19 +496,27 @@ public class ExecutorFactory {
     }
 
     private static TaskInnerAspect createContextAspect(final ExecutionContext<PropertyInterface> context, final SyncType type) {
-        return new TaskInnerAspect<Context>() {
+        return new TaskInnerAspect<Pair<Context, AbstractContext.MessageLogger>>() {
             @Override
-            public Context aspectSubmit() {
-                return ThreadLocalContext.assureContext(context);
+            public Pair<Context, AbstractContext.MessageLogger> aspectSubmit() {
+                return new Pair<>(ThreadLocalContext.assureContext(context), type != SyncType.NOSYNC ? ThreadLocalContext.get().getLogMessage() : null);
             }
 
             @Override
-            public void aspectBeforeRun(Context submit) {
-                ThreadLocalContext.aspectBeforeContext(submit, context, type);
+            public void aspectBeforeRun(Pair<Context, AbstractContext.MessageLogger> submit) {
+                ThreadLocalContext.aspectBeforeContext(submit.first, context, type);
+                if(submit.second != null)
+                    ThreadLocalContext.pushLogMessage();
             }
 
             @Override
-            public void aspectAfterRun() {
+            public void aspectAfterRun(Pair<Context, AbstractContext.MessageLogger> submit) {
+                if(submit.second != null) {
+                    ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
+                    synchronized (submit.second) { // such synchronization is not very clean solution, since if the main thread will modify MessageLogger it will be not thread-safe, however for example delayUserInteraction is also not synchronized, so we'll assume that main thread should not do it
+                        submit.second.addAll(logMessages);
+                    }
+                }
                 ThreadLocalContext.aspectAfterContext();
             }
         };
