@@ -1,15 +1,12 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.view.grid.cell.AbstractCell;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
-import static lsfusion.gwt.client.base.GwtClientUtils.ensureImage;
-import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
-import static lsfusion.gwt.client.view.MainFrame.colorTheme;
+import static lsfusion.gwt.client.base.GwtClientUtils.setSignImage;
 
 public class GTreeGridControlCell extends AbstractCell<Object> {
     private final String ICON_LEAF = "tree_leaf.png";
@@ -91,10 +88,10 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         DivElement vert = Document.get().createDivElement();
         vert.getStyle().setWidth(16, Style.Unit.PX);
         vert.getStyle().setHeight(100, Style.Unit.PCT);
-        
+
         DivElement top = vert.appendChild(Document.get().createDivElement());
         top.getStyle().setHeight(50, Style.Unit.PCT);
-        
+
         DivElement bottom = vert.appendChild(Document.get().createDivElement());
         bottom.getStyle().setHeight(50, Style.Unit.PCT);
         bottom.getStyle().setPosition(Style.Position.RELATIVE);
@@ -102,7 +99,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         ImageElement img = bottom.appendChild(Document.get().createImageElement());
         img.getStyle().setPosition(Style.Position.ABSOLUTE);
         img.getStyle().setTop(-8, Style.Unit.PX);
-        
+
         return div.appendChild(vert);
     }
 
@@ -136,25 +133,13 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
             changeDots(element, false, true);
         }
 
-        String imagePath = ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon;
-        String colorThemeImagePath = colorTheme.getImagePath(imagePath);
-        ensureImage(colorThemeImagePath, new Callback() {
-            @Override
-            public void onFailure() {
-                img.setSrc(getModuleImagePath(imagePath));
-            }
-
-            @Override
-            public void onSuccess() {
-                img.setSrc(getModuleImagePath(colorThemeImagePath));
-            }
-        });
+        setSignImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
     }
 
     private void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
         Element top = element.getFirstChild().cast();
         Element bottom = element.getLastChild().cast();
-        
+
         if (dotTop && dotBottom) {
             ensureDotsAndSetBackground(element);
             element.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
@@ -180,18 +165,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
     }
 
     private void ensureDotsAndSetBackground(Element element) {
-        String colorThemeImagePath = colorTheme.getImagePath(ICON_PASSBY);
-        ensureImage(colorThemeImagePath, new Callback() {
-            @Override
-            public void onFailure() {
-                element.getStyle().setBackgroundImage("url('" + getModuleImagePath(ICON_PASSBY) + "')");
-            }
-
-            @Override
-            public void onSuccess() {
-                element.getStyle().setBackgroundImage("url('" + getModuleImagePath(colorThemeImagePath) + "')");
-            }
-        });
+        setSignImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
     }
 
     private String getNodeIcon(GTreeColumnValue treeValue) {

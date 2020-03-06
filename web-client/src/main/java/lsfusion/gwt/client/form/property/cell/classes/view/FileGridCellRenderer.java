@@ -1,15 +1,11 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
-import lsfusion.gwt.client.view.MainFrame;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
 
 public class FileGridCellRenderer extends AbstractGridCellRenderer {
     public static final String ICON_EMPTY = "empty.png";
@@ -58,7 +54,7 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
                 setImageSrc((ImageElement) childElement, value);
             } else {
                 cellElement.removeAllChildren();
-                
+
                 ImageElement image = cellElement.appendChild(Document.get().createImageElement());
                 image.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
                 setImageSrc(image, value);
@@ -67,18 +63,6 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     private void setImageSrc(ImageElement image, Object value) {
-        String imagePath = value == null ? ICON_EMPTY : ICON_FILE;
-        String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
-        GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
-            @Override
-            public void onFailure() {
-                image.setSrc(getModuleImagePath(imagePath));
-            }
-
-            @Override
-            public void onSuccess() {
-                image.setSrc(getModuleImagePath(colorThemeImagePath));
-            }
-        });
+        GwtClientUtils.setSignImage(value == null ? ICON_EMPTY : ICON_FILE, image::setSrc);
     }
 }
