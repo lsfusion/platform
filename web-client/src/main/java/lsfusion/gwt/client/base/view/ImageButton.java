@@ -1,14 +1,13 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.ensureImage;
 import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
+import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
@@ -90,21 +89,10 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
         this.imagePath = imagePath;
         ensureAndSet(imagePath);
     }
-    
+
     private void ensureAndSet(String imagePath) {
         if (imagePath != null && !colorTheme.isDefault()) {
-            String colorThemeImagePath = colorTheme.getImagePath(imagePath);
-            ensureImage(colorThemeImagePath, new Callback() {
-                @Override
-                public void onFailure() {
-                    setAbsoluteImagePath(getModuleImagePath(imagePath));
-                }
-
-                @Override
-                public void onSuccess() {
-                    setAbsoluteImagePath(getModuleImagePath(colorThemeImagePath));
-                }
-            });
+            setThemeImage(imagePath, this::setAbsoluteImagePath);
         } else {
             setAbsoluteImagePath(getModuleImagePath(imagePath));
         }
@@ -122,7 +110,7 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
                 if (imagePath == null) {
                     image.removeFromParent();
                 } else {
-                    ((InsertPanel)panel).insert(image, 0);
+                    ((InsertPanel) panel).insert(image, 0);
                     if (vertical) {
                         panel.setCellHorizontalAlignment(image, HasHorizontalAlignment.ALIGN_CENTER);
                     } else {
@@ -150,7 +138,7 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
             strut.setVisible(image.isVisible() && label.isVisible());
         }
     }
-    
+
     private void updateStyle() {
         if (label.isVisible()) {
             removeStyleName("imageButtonWithoutCaption");
