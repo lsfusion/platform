@@ -150,7 +150,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             img.getStyle().setMarginLeft(2, Style.Unit.PX);
             img.getStyle().setVerticalAlign(Style.VerticalAlign.BOTTOM);
 
-            GwtClientUtils.setSignImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
+            GwtClientUtils.setThemeImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
 
             SpanElement span = Document.get().createSpanElement();
             span.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);

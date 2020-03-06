@@ -6,7 +6,7 @@ import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.view.grid.cell.AbstractCell;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
-import static lsfusion.gwt.client.base.GwtClientUtils.setSignImage;
+import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 
 public class GTreeGridControlCell extends AbstractCell<Object> {
     private final String ICON_LEAF = "tree_leaf.png";
@@ -133,7 +133,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
             changeDots(element, false, true);
         }
 
-        setSignImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
+        setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
     }
 
     private void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
@@ -165,7 +165,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
     }
 
     private void ensureDotsAndSetBackground(Element element) {
-        setSignImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
+        setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
     }
 
     private String getNodeIcon(GTreeColumnValue treeValue) {

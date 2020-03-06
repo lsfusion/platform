@@ -63,6 +63,6 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     private void setImageSrc(ImageElement image, Object value) {
-        GwtClientUtils.setSignImage(value == null ? ICON_EMPTY : ICON_FILE, image::setSrc);
+        GwtClientUtils.setThemeImage(value == null ? ICON_EMPTY : ICON_FILE, image::setSrc);
     }
 }
