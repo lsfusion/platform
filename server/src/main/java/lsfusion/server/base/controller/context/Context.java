@@ -45,6 +45,8 @@ public interface Context {
 
     void pushLogMessage();
     ImList<AbstractContext.LogMessage> popLogMessage();
+    AbstractContext.MessageLogger getLogMessage(); // for multithreading
+
     LogInfo getLogInfo();
     void delayUserInteraction(ClientAction action);
     Object requestUserInteraction(ClientAction action);

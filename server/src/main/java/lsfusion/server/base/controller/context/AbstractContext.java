@@ -62,7 +62,7 @@ public abstract class AbstractContext implements Context {
         }
     }
 
-    private static class MessageLogger {
+    public static class MessageLogger {
         private final List<LogMessage> messages = new ArrayList<>();
         private final Stack<Integer> startIndexes = new Stack<>();
         
@@ -70,6 +70,10 @@ public abstract class AbstractContext implements Context {
             messages.add(new LogMessage(message, failed));
         }
         
+        public void addAll(ImList<LogMessage> addMessages) {
+            ListFact.addJavaAll(addMessages, messages);
+        }
+
         public void push() {
             startIndexes.push(messages.size());
         }
@@ -94,6 +98,10 @@ public abstract class AbstractContext implements Context {
             logMessage.set(logMessages);
         }
         logMessages.push();
+    }
+
+    public MessageLogger getLogMessage() {
+        return logMessage.get();
     }
 
     @Override
