@@ -80,7 +80,7 @@ public class GwtClientUtils {
 
     private static Map<String, Boolean> imagePathCache = new HashMap<>();
 
-    public static void setSignImage(String imagePath, Consumer<String> modifier) {
+    public static void setThemeImage(String imagePath, Consumer<String> modifier) {
         String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
         GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
             @Override
@@ -92,7 +92,7 @@ public class GwtClientUtils {
             public void onSuccess() {
                 modifier.accept(getModuleImagePath(colorThemeImagePath));
             }
-        });
+            });
     }
 
 
