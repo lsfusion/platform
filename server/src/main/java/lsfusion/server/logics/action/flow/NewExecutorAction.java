@@ -60,7 +60,7 @@ public class NewExecutorAction extends AroundAspectAction {
             Integer nThreads = (Integer) threadsProp.read(context, context.getKeys());
             if(nThreads == null || nThreads == 0)
                 nThreads = TaskRunner.availableProcessors();
-            executor = ExecutorFactory.createNewThreadService(context, nThreads);
+            executor = ExecutorFactory.createNewThreadService(context, nThreads, true); // because we use awaitTermination, change to WAIT | NOWAIT during its implementation
             return proceed(context.override(executor));
         } finally {
             if(executor != null) {
