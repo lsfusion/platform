@@ -6,10 +6,8 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
 import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
-import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class ImageButton extends Button implements ColorThemeChangeListener {
     protected final Image image;
@@ -91,11 +89,7 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
     }
 
     private void ensureAndSet(String imagePath) {
-        if (imagePath != null && !colorTheme.isDefault()) {
-            setThemeImage(imagePath, this::setAbsoluteImagePath);
-        } else {
-            setAbsoluteImagePath(getModuleImagePath(imagePath));
-        }
+            setThemeImage(imagePath, this::setAbsoluteImagePath, true);
     }
 
     protected void setAbsoluteImagePath(String imagePath) {

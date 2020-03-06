@@ -7,6 +7,8 @@ import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.util.function.Consumer;
+
 public abstract class FileBasedGridCellRenderer extends AbstractGridCellRenderer {
     protected static final String ICON_EMPTY = "empty.png";
     protected static final String ICON_FILE = "file.png";
@@ -40,7 +42,7 @@ public abstract class FileBasedGridCellRenderer extends AbstractGridCellRenderer
             imgStyle.setProperty("maxWidth", "100%");
             imgStyle.setProperty("maxHeight", "100%");
 
-            img.setSrc(prepareFilePath(value));
+            setFilePath(value, img::setSrc);
         }
     }
 
@@ -52,7 +54,7 @@ public abstract class FileBasedGridCellRenderer extends AbstractGridCellRenderer
         element.addClassName("requiredValueString");
     }
 
-    protected abstract String prepareFilePath(Object value);
+    protected abstract void setFilePath(Object value, Consumer<String> modifier);
 
     protected FileBasedGridCellRenderer(GPropertyDraw property) {
         this.property = property;

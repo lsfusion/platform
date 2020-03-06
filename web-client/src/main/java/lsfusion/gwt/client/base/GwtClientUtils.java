@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static java.lang.Math.max;
+import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class GwtClientUtils {
 
@@ -80,19 +81,23 @@ public class GwtClientUtils {
 
     private static Map<String, Boolean> imagePathCache = new HashMap<>();
 
-    public static void setThemeImage(String imagePath, Consumer<String> modifier) {
-        String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
-        GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
-            @Override
-            public void onFailure() {
-                modifier.accept(getModuleImagePath(imagePath));
-            }
+    public static void setThemeImage(String imagePath, Consumer<String> modifier, boolean isEnableColorTheme) {
+        if (imagePath != null && !colorTheme.isDefault() || isEnableColorTheme) {
+            String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
+            GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
+                @Override
+                public void onFailure() {
+                    modifier.accept(getModuleImagePath(imagePath));
+                }
 
-            @Override
-            public void onSuccess() {
-                modifier.accept(getModuleImagePath(colorThemeImagePath));
-            }
+                @Override
+                public void onSuccess() {
+                    modifier.accept(getModuleImagePath(colorThemeImagePath));
+                }
             });
+        } else {
+            modifier.accept(getModuleImagePath(imagePath));
+        }
     }
 
 
