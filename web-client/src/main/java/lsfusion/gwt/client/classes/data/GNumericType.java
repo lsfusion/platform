@@ -8,7 +8,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.NumericGridCell
 import lsfusion.gwt.client.form.property.cell.classes.view.NumberGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -29,7 +29,7 @@ public class GNumericType extends GDoubleType {
     }
 
     @Override
-    public AbstractGridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new NumberGridCellRenderer(property);
     }
 

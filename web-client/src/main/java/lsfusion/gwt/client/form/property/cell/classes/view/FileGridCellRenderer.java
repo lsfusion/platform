@@ -7,8 +7,6 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.FileBasedGridCellRenderer;
 
-import java.util.function.Consumer;
-
 public class FileGridCellRenderer extends FileBasedGridCellRenderer {
     public FileGridCellRenderer(GPropertyDraw property) {
         super(property);
@@ -21,7 +19,9 @@ public class FileGridCellRenderer extends FileBasedGridCellRenderer {
     }
 
     @Override
-    protected void setFilePath(Object value, Consumer<String> modifier) {
-        GwtClientUtils.setThemeImage(value == null ? ICON_EMPTY : ICON_FILE, modifier, true);
+    protected String getFilePath(Object value) {
+        StringBuilder sb = new StringBuilder();
+        GwtClientUtils.setThemeImage(value == null ? ICON_EMPTY : ICON_FILE, sb::append);
+        return sb.toString();
     }
 }

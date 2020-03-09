@@ -4,11 +4,11 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 
-public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
+public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
     protected GPropertyDraw property;
 
     TextBasedGridCellRenderer(GPropertyDraw property) {
@@ -17,7 +17,6 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 
     public void renderStatic(Element element, GFont font, boolean isSingle) {
         Style style = getBasedStyle(element, font, isSingle);
-        setBasedTextFonts(style, font, isSingle);
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
 
         if (textAlignStyle != null) {
@@ -46,7 +45,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         return style;
     }
 
-    protected void setBasedTextFonts(Style style, GFont font, boolean isSingle){
+    protected void setBasedTextFonts(Style style, GFont font, boolean isSingle) {
         if (property.font == null && isSingle) {
             property.font = font;
         }
@@ -57,6 +56,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     }
 
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+        setBasedTextFonts(element.getStyle(), font, isSingle);
         if (value == null) {
             element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
             setInnerText(element, null);

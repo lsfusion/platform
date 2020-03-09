@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.design.GFont;
 
-public abstract class  AbstractGridCellRenderer {
+public abstract class GridCellRenderer {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     protected final String EMPTY_VALUE = messages.formRendererNotDefined();
     protected final String REQUIRED_VALUE = messages.formRendererRequired();

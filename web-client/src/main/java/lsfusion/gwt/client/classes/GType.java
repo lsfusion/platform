@@ -10,7 +10,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.DataPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
@@ -22,7 +22,7 @@ public abstract class GType implements Serializable {
         return new DataPanelRenderer(form, property, columnKey);
     }
 
-    public abstract AbstractGridCellRenderer createGridCellRenderer(GPropertyDraw property);
+    public abstract GridCellRenderer createGridCellRenderer(GPropertyDraw property);
 
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
         return null;

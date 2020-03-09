@@ -195,8 +195,8 @@
         removeClass(element, replaceClassName);
         return addClass(element, byClassName);
       };
-      executeCellRender = function(element, value, property, rendererCallBack, context, columnType) {
-        element = rendererCallBack(element, value, property, context, columnType);
+      executeCellRender = function(element, value, property, rendererCallBack, context) {
+        element = rendererCallBack(element, value, property, context);
         return element;
       };
       createElement = function(elementType, className, textContent, attributes, eventHandlers) {
@@ -564,9 +564,9 @@
               "data-rownode": rh.node,
               "data-colnode": ch.node
             }, getTableEventHandlers(val, rh.key, ch.key, rowAttrs, colAttrs, opts));
+            tr.appendChild(td);
           }
-          tr.appendChild(td);
-          executeCellRender(td, val, aggregator.property(), aggregator.cellRender, 'common');
+          executeCellRender(td, val, aggregator.property(), aggregator.cellRender);
           totalAggregator = rowTotals[rh.flatKey];
           val = totalAggregator.value();
           td = createElement("td", "pvtTotal rowTotal " + rCls, totalAggregator.format(val), {
@@ -576,7 +576,7 @@
             "data-rownode": rh.node
           }, getTableEventHandlers(val, rh.key, [], rowAttrs, colAttrs, opts));
           tr.appendChild(td);
-          results.push(executeCellRender(td, val, aggregator.property(), aggregator.cellRender, 'sideTotal'));
+          results.push(executeCellRender(td, val, aggregator.property(), aggregator.cellRender));
         }
         return results;
       };
@@ -613,7 +613,7 @@
             "data-colnode": "" + h.node
           }, getTableEventHandlers(val, [], h.key, rowAttrs, colAttrs, opts));
           tr.appendChild(td);
-          results.push(executeCellRender(td, val, totalAggregator.property(), totalAggregator.cellRender, 'grandColTotal'));
+          results.push(executeCellRender(td, val, totalAggregator.property(), totalAggregator.cellRender));
         }
         return results;
       };
@@ -626,7 +626,7 @@
         }, getTableEventHandlers(val, [], [], rowAttrs, colAttrs, opts));
         tr.appendChild(td);
         tbody.appendChild(tr);
-        return executeCellRender(td, val, totalAggregator.property(), totalAggregator.cellRender, 'grandColSideTotal');
+        return executeCellRender(td, val, totalAggregator.property(), totalAggregator.cellRender);
       };
       collapseAxisHeaders = function(axisHeaders, col, opts) {
         var ah, collapsible, i, k, ref, ref1, results;
@@ -1110,5 +1110,3 @@
   });
 
 }).call(this);
-
-//# sourceMappingURL=subtotal.js.map

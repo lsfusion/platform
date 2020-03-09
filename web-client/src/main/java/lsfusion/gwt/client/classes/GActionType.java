@@ -6,7 +6,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
@@ -21,7 +21,7 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public AbstractGridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new ActionGridCellRenderer(property);
     }
 

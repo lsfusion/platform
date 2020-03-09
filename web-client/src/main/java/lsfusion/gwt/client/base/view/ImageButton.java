@@ -89,7 +89,7 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
     }
 
     private void ensureAndSet(String imagePath) {
-            setThemeImage(imagePath, this::setAbsoluteImagePath, true);
+            setThemeImage(imagePath, this::setAbsoluteImagePath);
     }
 
     protected void setAbsoluteImagePath(String imagePath) {

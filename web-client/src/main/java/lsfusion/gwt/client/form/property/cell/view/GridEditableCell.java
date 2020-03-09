@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.view.grid.cell.AbstractCell;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
@@ -58,13 +59,15 @@ public class GridEditableCell extends AbstractCell<Object> {
 
         GPropertyDraw property = table.getProperty(context);
         if (property != null) {
-            AbstractGridCellRenderer cellRenderer = property.getGridCellRenderer();
+            GridCellRenderer cellRenderer = property.getGridCellRenderer();
 
-            if (table instanceof GGridPropertyTable) {
-                cellRenderer.render(cellElement, ((GGridPropertyTable) table).font, value, false);
-            } else {
-                cellRenderer.render(cellElement, null, value, true);
+            GFont tableFont = null;
+            boolean isSingleCell = true;
+            if(table instanceof GGridPropertyTable){
+                tableFont = ((GGridPropertyTable) table).font;
+                isSingleCell = false;
             }
+            cellRenderer.render(cellElement, tableFont, value, isSingleCell);
         }
     }
 
@@ -76,7 +79,7 @@ public class GridEditableCell extends AbstractCell<Object> {
 
         GPropertyDraw property = table.getProperty(context);
         if (property != null) {
-            AbstractGridCellRenderer cellRenderer = property.getGridCellRenderer();
+            GridCellRenderer cellRenderer = property.getGridCellRenderer();
 
             if (table instanceof GGridPropertyTable) {
                 cellRenderer.renderDynamic(cellElement, ((GGridPropertyTable) table).font, value, false);

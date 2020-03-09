@@ -5,6 +5,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class GImage extends Image {
     public GImage(String imagePath) {
-        GwtClientUtils.setThemeImage(imagePath, this::setUrl, true);
+        GwtClientUtils.setThemeImage(imagePath, this::setUrl);
     }
 }

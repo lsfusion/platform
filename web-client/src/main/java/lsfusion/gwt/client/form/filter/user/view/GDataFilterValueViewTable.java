@@ -17,7 +17,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
@@ -176,7 +176,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
                 this.context = context;
             }
 
-            AbstractGridCellRenderer cellRenderer = property.getGridCellRenderer();
+            GridCellRenderer cellRenderer = property.getGridCellRenderer();
             cellRenderer.render(cellElement, null, value, false);
         }
 
@@ -184,7 +184,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
         public void updateDom(Context context, DivElement cellElement, Object value) {
             assert !isInEditingState;
 
-            AbstractGridCellRenderer cellRenderer = property.getGridCellRenderer();
+            GridCellRenderer cellRenderer = property.getGridCellRenderer();
             cellRenderer.renderDynamic(cellElement, null, value,false);
         }
 

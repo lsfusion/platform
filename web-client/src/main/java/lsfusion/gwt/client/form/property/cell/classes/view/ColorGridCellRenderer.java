@@ -4,9 +4,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
-public class ColorGridCellRenderer extends AbstractGridCellRenderer {
+public class ColorGridCellRenderer extends GridCellRenderer {
     @Override
     public void renderStatic(Element element, GFont font, boolean isSingle) {
         element.setInnerText(EscapeUtils.UNICODE_NBSP);

@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import java.util.*;
 
@@ -541,18 +541,16 @@ public class GPivot extends GStateTableView {
             return result;
         }
 
-        private JsArrayString property(State state) {
-            JsArrayString aggregateColumns = JsArrayString.createArray().cast();
+        private String property(State state) {
             JsArrayString columns = getColumns();
             for (int i = 0, size = columns.length(); i < size; i++) {
                 if (state.hasColumnState(columns.get(i))) {
-                    aggregateColumns.push(columns.get(i));
+                    return columns.get(i);
                 }
             }
-            return aggregateColumns;
+            return null;
         }
     }
-
 
     private final static String[] aggregatorNames = new String[]{"Sum", "Max", "Min"};
 
@@ -586,8 +584,8 @@ public class GPivot extends GStateTableView {
                         return val;
                     },
                     format: $wnd.$.pivotUtilities.numberFormat(),
-                    cellRender: function (element, value, columns, columnType) {
-                        instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::getCellRendererByColumns(*)(element, value, columns, columnType);
+                    cellRender: function (element, value, columns) {
+                        instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::getCellRendererByColumns(*)(element, value, columns);
                     },
                     numInputs: 0
                 }
@@ -599,12 +597,9 @@ public class GPivot extends GStateTableView {
      * Assign cellRender to columns from pivot table.
      * Only first property Drawer will be execute render
      */
-    public void getCellRendererByColumns(Element jsElement, JavaScriptObject value, JsArrayString columns, String columnType) {
-        if (columns != null && columns.length() > 0) {
-            GPropertyDraw propertyDraw = columnMap.get(columns.get(0)).property;
-            AbstractGridCellRenderer renderer = propertyDraw.getGridCellRenderer();
-            renderer.render(jsElement, null, value, false);
-        }
+    public void getCellRendererByColumns(Element jsElement, JavaScriptObject value, String column) {
+        GridCellRenderer renderer = columnMap.get(column).property.getGridCellRenderer();
+        renderer.render(jsElement, null, value, false);
     }
 
     private static class ColumnAggregator extends JavaScriptObject {

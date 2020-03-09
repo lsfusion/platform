@@ -7,7 +7,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.DoubleGridCellE
 import lsfusion.gwt.client.form.property.cell.classes.view.DoubleGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import java.text.ParseException;
 
@@ -17,7 +17,7 @@ public class GDoubleType extends GIntegralType {
     protected static String defaultPattern = "#,###.##########";
 
     @Override
-    public AbstractGridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new DoubleGridCellRenderer(property);
     }
 

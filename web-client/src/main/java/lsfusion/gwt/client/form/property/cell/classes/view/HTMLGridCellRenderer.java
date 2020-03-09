@@ -2,9 +2,9 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
-public class HTMLGridCellRenderer extends AbstractGridCellRenderer {
+public class HTMLGridCellRenderer extends GridCellRenderer {
     public HTMLGridCellRenderer() { super(); }
 
     @Override

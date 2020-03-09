@@ -133,7 +133,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
             changeDots(element, false, true);
         }
 
-        setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc, true);
+        setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
     }
 
     private void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
@@ -165,7 +165,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
     }
 
     private void ensureDotsAndSetBackground(Element element) {
-        setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"), true);
+        setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
     }
 
     private String getNodeIcon(GTreeColumnValue treeValue) {

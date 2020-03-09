@@ -8,7 +8,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.FileGridCellEdi
 import lsfusion.gwt.client.form.property.cell.classes.view.FileGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public AbstractGridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new FileGridCellRenderer(property);
     }
 

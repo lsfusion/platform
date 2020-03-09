@@ -5,8 +5,6 @@ import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.FileBasedGridCellRenderer;
 
-import java.util.function.Consumer;
-
 public class ImageGridCellRenderer extends FileBasedGridCellRenderer {
     protected GPropertyDraw property;
 
@@ -15,9 +13,9 @@ public class ImageGridCellRenderer extends FileBasedGridCellRenderer {
     }
 
     @Override
-    protected void setFilePath(Object value, Consumer<String> modifier) {
-        modifier.accept( value instanceof String && !value.equals("null") ?
+    protected String getFilePath(Object value) {
+        return value instanceof String && !value.equals("null") ?
                 GwtClientUtils.getDownloadURL((String) value, null, ((GImageType) property.baseType).extension, false) :
-                GwtClientUtils.getModuleImagePath(ICON_EMPTY));
+                GwtClientUtils.getModuleImagePath(ICON_EMPTY);
     }
 }

@@ -8,7 +8,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.ColorGridCellEd
 import lsfusion.gwt.client.form.property.cell.classes.view.ColorGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import java.text.ParseException;
 
@@ -21,7 +21,7 @@ public class GColorType extends GDataType {
     }
 
     @Override
-    public AbstractGridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new ColorGridCellRenderer();
     }
 

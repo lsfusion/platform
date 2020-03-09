@@ -8,7 +8,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.StringGridCellE
 import lsfusion.gwt.client.form.property.cell.classes.view.StringGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import java.text.ParseException;
 
@@ -56,7 +56,7 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public AbstractGridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new StringGridCellRenderer(property, !blankPadded);
     }
 

@@ -4,9 +4,9 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
-public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
+public class LogicalGridCellRenderer extends GridCellRenderer {
     private GPropertyDraw property;
 
     public LogicalGridCellRenderer(GPropertyDraw property) {

@@ -81,8 +81,12 @@ public class GwtClientUtils {
 
     private static Map<String, Boolean> imagePathCache = new HashMap<>();
 
+    public static void setThemeImage(String imagePath, Consumer<String> modifier) {
+        setThemeImage(imagePath, modifier, true);
+    }
+
     public static void setThemeImage(String imagePath, Consumer<String> modifier, boolean isEnableColorTheme) {
-        if (imagePath != null && !colorTheme.isDefault() || isEnableColorTheme) {
+        if (imagePath != null && !colorTheme.isDefault() && isEnableColorTheme) {
             String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
             GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
                 @Override

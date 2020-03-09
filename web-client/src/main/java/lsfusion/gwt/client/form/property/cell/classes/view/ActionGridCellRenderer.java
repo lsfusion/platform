@@ -26,19 +26,28 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
         element.appendChild(Document.get().createDivElement()).getStyle().setHeight(50, Style.Unit.PCT);
         // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
         element.addClassName("boxSized");
+
+        if (property.getImage() != null) {
+            ImageElement img = innerTop.appendChild(Document.get().createImageElement());
+            img.getStyle().setPosition(Style.Position.ABSOLUTE);
+            img.getStyle().setLeft(50, Style.Unit.PCT);
+        } else {
+            LabelElement label = innerTop.appendChild(Document.get().createLabelElement());
+            setBasedTextFonts(style, font, isSingle);
+            label.setInnerText("...");
+        }
     }
 
     @Override
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
-        if (property.getImage() != null) {
-            ImageElement img = element.getFirstChildElement().appendChild(Document.get().createImageElement());
-            img.getStyle().setPosition(Style.Position.ABSOLUTE);
-            img.getStyle().setLeft(50, Style.Unit.PCT);
-            setImage(img, value);
-        } else {
+        if (property.getImage() == null) {
             LabelElement label = element.getFirstChild().getFirstChild().cast();
             setBasedTextFonts(label.getStyle(), font, isSingle);
-            setInnerText(label, "...");
+        } else {
+            ImageElement img = element
+                    .getFirstChild()
+                    .getFirstChild().cast();
+            setImage(img, value);
         }
     }
 

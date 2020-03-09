@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.rich.RichTextGr
 import lsfusion.gwt.client.form.property.cell.classes.view.TextGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 public class GTextType extends GStringType {
 
@@ -29,7 +29,7 @@ public class GTextType extends GStringType {
     }
 
     @Override
-    public AbstractGridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new TextGridCellRenderer(property, rich);
     }
 
