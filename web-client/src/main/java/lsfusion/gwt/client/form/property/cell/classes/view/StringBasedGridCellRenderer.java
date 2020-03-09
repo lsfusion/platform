@@ -25,5 +25,4 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
             element.removeClassName("requiredValueString");
         }
     }
-
 }

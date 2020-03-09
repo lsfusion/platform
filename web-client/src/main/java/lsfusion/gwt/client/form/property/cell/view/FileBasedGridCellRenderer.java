@@ -25,12 +25,14 @@ public abstract class FileBasedGridCellRenderer extends GridCellRenderer {
 
     @Override
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+            element.setInnerText(null);
+            element.removeAllChildren();
+
         if (value == null && property.isEditableNotNull()) {
             setBasedEmptyElement(element);
         } else {
             element.getStyle().clearPadding();
             element.removeClassName("requiredValueString");
-            element.setInnerText(null);
             element.setTitle("");
 
             ImageElement img = element.appendChild(Document.get().createImageElement());
@@ -40,11 +42,11 @@ public abstract class FileBasedGridCellRenderer extends GridCellRenderer {
             imgStyle.setProperty("maxWidth", "100%");
             imgStyle.setProperty("maxHeight", "100%");
 
-            getFilePath(value);
+            img.setSrc(getFilePath(value));
         }
     }
 
-    protected void setBasedEmptyElement(Element element){
+    protected void setBasedEmptyElement(Element element) {
         element.getStyle().setPaddingRight(4, Style.Unit.PX);
         element.getStyle().setPaddingLeft(4, Style.Unit.PX);
         element.setInnerText(REQUIRED_VALUE);
