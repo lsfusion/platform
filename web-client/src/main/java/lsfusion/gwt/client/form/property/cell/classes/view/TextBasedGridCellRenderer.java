@@ -23,12 +23,6 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
             style.setTextAlign(textAlignStyle);
         }
 
-        style.setPaddingRight(4, Style.Unit.PX);
-        style.setPaddingLeft(4, Style.Unit.PX);
-
-        style.setPaddingBottom(0, Style.Unit.PX);
-        style.setPaddingTop(0, Style.Unit.PX);
-
         renderStaticContent(element, font);
     }
 
@@ -37,11 +31,20 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
         // важно оставить множественные пробелы
         style.setWhiteSpace(Style.WhiteSpace.PRE);
         style.setPosition(Style.Position.RELATIVE);
+        setPadding(style);
 
         //нужно для эллипсиса, но подтормаживает рендеринг,
         //оставлено закомменченым просто для справки
 //        style.setOverflow(Style.Overflow.HIDDEN);
 //        style.setTextOverflow(Style.TextOverflow.ELLIPSIS);
+    }
+
+    protected void setPadding(Style style) {
+        style.setPaddingRight(4, Style.Unit.PX);
+        style.setPaddingLeft(4, Style.Unit.PX);
+
+        style.setPaddingBottom(0, Style.Unit.PX);
+        style.setPaddingTop(0, Style.Unit.PX);
     }
 
     protected void setBasedTextFonts(Style style, GFont font, boolean isSingle) {

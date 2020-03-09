@@ -17,6 +17,7 @@ public class TextGridCellRenderer extends StringBasedGridCellRenderer {
     @Override
     public void renderStaticContent(Element element, GFont font) {
         Style style = element.getStyle();
+        setPadding(style);
 
         style.setProperty("lineHeight", "normal");
         if (!rich) {

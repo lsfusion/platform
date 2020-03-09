@@ -12,13 +12,8 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
     }
 
     @Override
-    public void renderStatic(Element element, GFont font, boolean isSingle) {
+    public void renderStaticContent(Element element, GFont font) {
         Style style = element.getStyle();
-
-        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
-        if (textAlignStyle != null) {
-            style.setTextAlign(textAlignStyle);
-        }
 
         element.addClassName("gwt-Button");
         style.setWidth(100, Style.Unit.PCT);
