@@ -9,49 +9,49 @@ public class Words {
 
     private final static String[][] a_power = new String[][]{
             {"0", "", "", ""},  // 1
-            {"1", "тысяча ", "тысячи ", "тысяч "},  // 2
-            {"0", "миллион ", "миллиона ", "миллионов "},  // 3
-            {"0", "миллиард ", "миллиарда ", "миллиардов "},  // 4
-            {"0", "триллион ", "триллиона ", "триллионов "},  // 5
-            {"0", "квадриллион ", "квадриллиона ", "квадриллионов "},  // 6
-            {"0", "квинтиллион ", "квинтиллиона ", "квинтиллионов "}   // 7
+            {"1", "тысяча", "тысячи", "тысяч"},  // 2
+            {"0", "миллион", "миллиона", "миллионов"},  // 3
+            {"0", "миллиард", "миллиарда", "миллиардов"},  // 4
+            {"0", "триллион", "триллиона", "триллионов"},  // 5
+            {"0", "квадриллион", "квадриллиона", "квадриллионов"},  // 6
+            {"0", "квинтиллион", "квинтиллиона", "квинтиллионов"}   // 7
     };
 
     private final static String[][] digit = new String[][]{
-            {"", "", "десять ", "", ""},
-            {"один ", "одна ", "одиннадцать ", "десять ", "сто "},
-            {"два ", "две ", "двенадцать ", "двадцать ", "двести "},
-            {"три ", "три ", "тринадцать ", "тридцать ", "триста "},
-            {"четыре ", "четыре ", "четырнадцать ", "сорок ", "четыреста "},
-            {"пять ", "пять ", "пятнадцать ", "пятьдесят ", "пятьсот "},
-            {"шесть ", "шесть ", "шестнадцать ", "шестьдесят ", "шестьсот "},
-            {"семь ", "семь ", "семнадцать ", "семьдесят ", "семьсот "},
-            {"восемь ", "восемь ", "восемнадцать ", "восемьдесят ", "восемьсот "},
-            {"девять ", "девять ", "девятнадцать ", "девяносто ", "девятьсот "}
+            {"", "", "десять", "", ""},
+            {"один", "одна", "одиннадцать", "десять", "сто"},
+            {"два", "две", "двенадцать", "двадцать", "двести"},
+            {"три", "три", "тринадцать", "тридцать", "триста"},
+            {"четыре", "четыре", "четырнадцать", "сорок", "четыреста"},
+            {"пять", "пять", "пятнадцать", "пятьдесят", "пятьсот"},
+            {"шесть", "шесть", "шестнадцать", "шестьдесят", "шестьсот"},
+            {"семь", "семь", "семнадцать", "семьдесят", "семьсот"},
+            {"восемь", "восемь", "восемнадцать", "восемьдесят", "восемьсот"},
+            {"девять", "девять", "девятнадцать", "девяносто", "девятьсот"}
     };
 
     private static final HashMap<String, String[]> decimalPostfix = new HashMap<>();
 
     static {
-        decimalPostfix.put(("ton"), new String[]{"тонна ", "тонны ", "тонн "});
-        decimalPostfix.put(("kg"), new String[]{"килограмм ", "килограмма ", "килограмм "});
-        decimalPostfix.put(("gr"), new String[]{"грамм ", "грамма ", "грамм "});
+        decimalPostfix.put(("ton"), new String[]{"тонна", "тонны", "тонн"});
+        decimalPostfix.put(("kg"), new String[]{"килограмм", "килограмма", "килограмм"});
+        decimalPostfix.put(("gr"), new String[]{"грамм", "грамма", "грамм"});
         decimalPostfix.put(("number0"), new String[]{"", "", ""});
-        decimalPostfix.put(("number"), new String[]{"целая ", "целых ", "целых "});
+        decimalPostfix.put(("number"), new String[]{"целая", "целых", "целых"});
     }
 
     private static final HashMap<String, String[]> fractalPostfix = new HashMap<>();
 
     static {
-        fractalPostfix.put("ton3", new String[]{"килограмм ", "килограмма ", "килограмм "});
-        fractalPostfix.put("kg3", new String[]{"грамм ", "грамма ", "грамм "});
-        fractalPostfix.put("gr3", new String[]{"тысячная ", "тысячных ", "тысячных "});
-        fractalPostfix.put("number1", new String[]{"десятая ", "десятых ", "десятых "});
-        fractalPostfix.put("number2", new String[]{"cотая ", "сотых ", "сотых "});
-        fractalPostfix.put("number3", new String[]{"тысячная ", "тысячных ", "тысячных "});
-        fractalPostfix.put("number4", new String[]{"десятитысячная ", "десятитысячных ", "десятитысячных "});
-        fractalPostfix.put("number5", new String[]{"стотысячная ", "стотысячных ", "стотысячных "});
-        fractalPostfix.put("number6", new String[]{"миллионная ", "миллионных ", "миллионных "});
+        fractalPostfix.put("ton3", new String[]{"килограмм", "килограмма", "килограмм"});
+        fractalPostfix.put("kg3", new String[]{"грамм", "грамма", "грамм"});
+        fractalPostfix.put("gr3", new String[]{"тысячная", "тысячных", "тысячных"});
+        fractalPostfix.put("number1", new String[]{"десятая", "десятых", "десятых"});
+        fractalPostfix.put("number2", new String[]{"cотая", "сотых", "сотых"});
+        fractalPostfix.put("number3", new String[]{"тысячная", "тысячных", "тысячных"});
+        fractalPostfix.put("number4", new String[]{"десятитысячная", "десятитысячных", "десятитысячных"});
+        fractalPostfix.put("number5", new String[]{"стотысячная", "стотысячных", "стотысячных"});
+        fractalPostfix.put("number6", new String[]{"миллионная", "миллионных", "миллионных"});
     }
 
     private static final HashMap<String, Boolean> sexMap = new HashMap<>(); //true - female, false - male
@@ -81,50 +81,50 @@ public class Words {
 
     static {
         //BYN
-        decimalPostfix.put(("BYN"), new String[]{"белорусский рубль ", "белорусских рубля ", "белорусских рублей "});
-        fractalPostfix.put("BYN2", new String[]{"копейка ", "копейки ", "копеек "});
+        decimalPostfix.put(("BYN"), new String[]{"белорусский рубль", "белорусских рубля", "белорусских рублей"});
+        fractalPostfix.put("BYN2", new String[]{"копейка", "копейки", "копеек"});
         sexMap.put(("BYN"), false);
         sexMap.put(("BYN2"), true);
         numOfDigitsMap.put(("BYN"), 2);
 
         //RUB
-        decimalPostfix.put(("RUB"), new String[]{"рубль ", "рубля ", "рублей "});
-        fractalPostfix.put("RUB2", new String[]{"копейка ", "копейки ", "копеек "});
+        decimalPostfix.put(("RUB"), new String[]{"рубль", "рубля", "рублей"});
+        fractalPostfix.put("RUB2", new String[]{"копейка", "копейки", "копеек"});
         sexMap.put(("RUB"), false);
         sexMap.put(("RUB2"), true);
         numOfDigitsMap.put(("RUB"), 2);
 
         //EUR
-        decimalPostfix.put(("EUR"), new String[]{"евро ", "евро ", "евро "});
-        fractalPostfix.put("EUR2", new String[]{"евроцент ", "евроцента ", "евроцентов "});
+        decimalPostfix.put(("EUR"), new String[]{"евро", "евро", "евро"});
+        fractalPostfix.put("EUR2", new String[]{"евроцент", "евроцента", "евроцентов"});
         sexMap.put(("EUR"), false);
         sexMap.put(("EUR2"), false);
         numOfDigitsMap.put(("EUR"), 2);
 
         //USD
-        decimalPostfix.put(("USD"), new String[]{"доллар США ", "доллара США ", "долларов США "});
-        fractalPostfix.put("USD2", new String[]{"цент ", "цента ", "центов "});
+        decimalPostfix.put(("USD"), new String[]{"доллар США", "доллара США", "долларов США"});
+        fractalPostfix.put("USD2", new String[]{"цент", "цента", "центов"});
         sexMap.put(("USD"), false);
         sexMap.put(("USD2"), false);
         numOfDigitsMap.put(("USD"), 2);
 
         //PLN
-        decimalPostfix.put(("PLN"), new String[]{"злотый ", "злотых ", "злотых "});
-        fractalPostfix.put("PLN2", new String[]{"грош ", "гроша ", "грошей "});
+        decimalPostfix.put(("PLN"), new String[]{"злотый", "злотых", "злотых"});
+        fractalPostfix.put("PLN2", new String[]{"грош", "гроша", "грошей"});
         sexMap.put(("PLN"), false);
         sexMap.put(("PLN2"), false);
         numOfDigitsMap.put(("PLN"), 2);
 
         //UAH
-        decimalPostfix.put(("UAH"), new String[]{"гривна ", "гривны ", "гривен "});
-        fractalPostfix.put("UAH2", new String[]{"копейка ", "копейки ", "копеек "});
+        decimalPostfix.put(("UAH"), new String[]{"гривна", "гривны", "гривен"});
+        fractalPostfix.put("UAH2", new String[]{"копейка", "копейки", "копеек"});
         sexMap.put(("UAH"), false);
         sexMap.put(("UAH2"), true);
         numOfDigitsMap.put(("UAH"), 2);
 
         //CNY
-        decimalPostfix.put(("CNY"), new String[]{"юань ", "юаня ", "юаней "});
-        fractalPostfix.put("CNY2", new String[]{"фэнь ", "фэня ", "фэней "});
+        decimalPostfix.put(("CNY"), new String[]{"юань", "юаня ", "юаней"});
+        fractalPostfix.put("CNY2", new String[]{"фэнь", "фэня", "фэней"});
         sexMap.put(("CNY"), false);
         sexMap.put(("CNY2"), false);
         numOfDigitsMap.put(("CNY"), 2);
@@ -149,7 +149,7 @@ public class Words {
 
         if (sum != 0) {
             if (sum < 0) {
-                result.append("минус ");
+                result.append("минус");
                 psum = -psum;
             }
 
@@ -162,18 +162,18 @@ public class Words {
                 //str="";
                 if (mny == 0) {
                     if (i > 0) continue;
-                    result.append(a_power[i][one]);
+                    append(result, a_power[i][one]);
                 } else {
                     if (mny >= 100) {
-                        result.append(digit[mny / 100][hun]);
+                        append(result, digit[mny / 100][hun]);
                         mny %= 100;
                     }
                     if (mny >= 20) {
-                        result.append(digit[mny / 10][dec]);
+                        append(result, digit[mny / 10][dec]);
                         mny %= 10;
                     }
                     if (mny >= 10) {
-                        result.append(digit[mny - 10][dec2]);
+                        append(result, digit[mny - 10][dec2]);
                     } else {
                         //int sex = 1;
                         //if (isFractalPart != null)
@@ -181,24 +181,24 @@ public class Words {
                         String fullType = type + (numOfDigits==null ? "" : numOfDigits);
                         Integer sex = "1".equals(a_power[i][0]) ? 1 : (type == null ? 0 : (fullType.equals("number0") ? (female ? 1 : 0)
                                 : (sexMap.containsKey (fullType) ? (sexMap.get(fullType) ? 1 : 0) : (sexMap.containsKey(type) ? (sexMap.get(type) ? 1 : 0) : 0))));
-                        if (mny >= 1) result.append(digit[mny][(sex == null ? (female ? 1 : 0) : sex)]);
+                        if (mny >= 1) append(result, digit[mny][(sex == null ? (female ? 1 : 0) : sex)]);
                     }
                     switch (mny) {
                         case 1:
-                            result.append(a_power[i][one]);
+                            append(result, a_power[i][one]);
                             break;
                         case 2:
                         case 3:
                         case 4:
-                            result.append(a_power[i][four]);
+                            append(result, a_power[i][four]);
                             break;
                         default:
-                            result.append(a_power[i][many]);
+                            append(result, a_power[i][many]);
                             break;
                     }
                 }
             }
-        } else result.append("ноль ");
+        } else append(result, "ноль");
 
         String postfix;
         String decPostfix = decimalPostfix.containsKey(type) ?
@@ -215,7 +215,12 @@ public class Words {
                 postfix = decPostfix;
         } else
             postfix = type.equals("number0") ? decimalPostfix.get("number0")[getVariation(value)] : decPostfix;
-        return (numericFraction ? appendZeroes(value, 2) + " " : result.toString()) + postfix;
+        return (numericFraction ? appendZeroes(value, 2) + " " : result.toString()) + (postfix.isEmpty() ? "" : " ") + postfix;
+    }
+
+    private static void append(StringBuilder result, String value) {
+        if(!value.isEmpty())
+            result.append(result.length() == 0 ? "" : " ").append(value);
     }
 
     private static String appendZeroes(Long value, int len) {
@@ -226,7 +231,7 @@ public class Words {
     }
 
     private static int getVariation(long value) {
-        switch ((int) value % 10) {
+        switch ((int) Math.abs(value) % 10) {
             case 1:
                 if (String.valueOf(value).endsWith("11"))
                     return 2;
@@ -304,10 +309,10 @@ public class Words {
         double num = numObject == null ? 0.0 : numObject;
         Integer numOfDigits = getNumOfDigits(num, type, forceNumOfDigits);
         if (decimalPostfix.containsKey(type) && (fractalPostfix.containsKey(type) || fractalPostfix.containsKey(type + numOfDigits))) {
-            long fract = Math.round(num * Math.pow(10, numOfDigits) - ((long) num) * Math.pow(10, numOfDigits));
+            long fract = Math.abs(Math.round(num * Math.pow(10, numOfDigits) - ((long) num) * Math.pow(10, numOfDigits)));
             String result;
             if (fract != 0 || forceNumOfDigits != null)
-                result = toString((long) num, type, null, sexMap.get(type), false) + toString(fract, type, numOfDigits, sexMap.get(type + numOfDigits), numericFraction);
+                result = toString((long) num, type, null, sexMap.get(type), false) + " " + toString(fract, type, numOfDigits, sexMap.get(type + numOfDigits), numericFraction);
             else
                 result = toString((long) num, type);
             return result;
@@ -319,10 +324,10 @@ public class Words {
     public static String toString(Double numObject, Integer numOfDigits, Boolean female) {
         double num = numObject == null ? 0.0 : numObject;
         int numOfDig = numOfDigits == null ? 0 : Math.min(numOfDigits, 6);
-        long fract = numOfDig == 0 ? 0 : (long) (Math.round(num * Math.pow(10, numOfDig)) - ((long) num) * Math.pow(10, numOfDig));
+        long fract = Math.abs(numOfDig == 0 ? 0 : (long) (Math.round(num * Math.pow(10, numOfDig)) - ((long) num) * Math.pow(10, numOfDig)));
         String result;
         if (fract != 0)
-            result = toString((long) num, "number", 0, female, false) + toString(fract, "number" + numOfDig, numOfDig, female, false);
+            result = toString((long) num, "number", 0, female == null ? true : female, false) + " " + toString(fract, "number" + numOfDig, numOfDig, female, false);
         else
             result = toString((long) num, "number0");
         return result;
@@ -384,7 +389,7 @@ public class Words {
     }
 
     public static String toString(BigDecimal numObject) {
-        return toString(numObject, false);
+        return toString(numObject, (Boolean) null);
     }
 
     public static String capitalizeFirstLetter(String value) {
@@ -410,10 +415,10 @@ public class Words {
 
     private static String toStringCustom(Double numObject, String decPostfix, String fractPostfix, int numOfFractDigits, Integer forceNumOfFractDigits, boolean numericFraction) {
         double num = numObject == null ? 0.0 : numObject;
-        long fract = numOfFractDigits <= 0 ? 0 : Math.round(num * Math.pow(10, numOfFractDigits) - ((long) num) * Math.pow(10, numOfFractDigits));
+        long fract = Math.abs(numOfFractDigits <= 0 ? 0 : Math.round(num * Math.pow(10, numOfFractDigits) - ((long) num) * Math.pow(10, numOfFractDigits)));
         String result;
         if (fract != 0 || (forceNumOfFractDigits != null && forceNumOfFractDigits > 0))
-            result = toStringCustom((long) num, decPostfix, fractPostfix, null, false, false) + toStringCustom(fract, decPostfix, fractPostfix, forceNumOfFractDigits != null ? Math.max(numOfFractDigits, forceNumOfFractDigits) : numOfFractDigits, true, numericFraction);
+            result = toStringCustom((long) num, decPostfix, fractPostfix, null, false, false) + " " + toStringCustom(fract, decPostfix, fractPostfix, forceNumOfFractDigits != null ? Math.max(numOfFractDigits, forceNumOfFractDigits) : numOfFractDigits, true, numericFraction);
         else
             result = toStringCustom((long) num, decPostfix, fractPostfix, null, false, false);
         return result;
@@ -439,7 +444,7 @@ public class Words {
 
         if (sum != 0) {
             if (sum < 0) {
-                result.append("минус ");
+                result.append("минус");
                 psum = -psum;
             }
 
@@ -452,43 +457,43 @@ public class Words {
                 //str="";
                 if (mny == 0) {
                     if (i > 0) continue;
-                    result.append(a_power[i][one]);
+                    append(result, a_power[i][one]);
                 } else {
                     if (mny >= 100) {
-                        result.append(digit[mny / 100][hun]);
+                        append(result, digit[mny / 100][hun]);
                         mny %= 100;
                     }
                     if (mny >= 20) {
-                        result.append(digit[mny / 10][dec]);
+                        append(result, digit[mny / 10][dec]);
                         mny %= 10;
                     }
                     if (mny >= 10) {
-                        result.append(digit[mny - 10][dec2]);
+                        append(result, digit[mny - 10][dec2]);
                     } else {
-                        if (mny >= 1) result.append(digit[mny]["1".equals(a_power[i][0]) || female ? 1 : 0]);
+                        if (mny >= 1) append(result, digit[mny]["1".equals(a_power[i][0]) || female ? 1 : 0]);
                     }
                     switch (mny) {
                         case 1:
-                            result.append(a_power[i][one]);
+                            append(result, a_power[i][one]);
                             break;
                         case 2:
                         case 3:
                         case 4:
-                            result.append(a_power[i][four]);
+                            append(result, a_power[i][four]);
                             break;
                         default:
-                            result.append(a_power[i][many]);
+                            append(result, a_power[i][many]);
                             break;
                     }
                 }
             }
-        } else result.append("ноль ");
+        } else append(result, "ноль");
 
         String postfix;
         if (numOfDigits != null && numOfDigits != 0)
             postfix = fractPostfix;
         else
             postfix = decPostfix;
-        return (numericFraction ? appendZeroes(value, 2) + " " : result.toString()) + postfix + " ";
+        return (numericFraction ? appendZeroes(value, 2) : result.toString()) + (postfix.isEmpty() ? "" : " ") + postfix;
     }
 }
