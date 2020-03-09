@@ -41,13 +41,12 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
     @Override
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
         if (property.getImage() == null) {
-            LabelElement label = element.getFirstChild().getFirstChild().cast();
-            setBasedTextFonts(label.getStyle(), font, isSingle);
+            super.renderDynamic(element, font, value, isSingle);
         } else {
             ImageElement img = element
                     .getFirstChild()
                     .getFirstChild().cast();
-            setImage(img, value != null && (Boolean) value);
+            setImage(img, (value != null) && (Boolean) value);
         }
     }
 
@@ -58,7 +57,7 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
 
     @Override
     protected String castToString(Object value) {
-        return null;
+        return (value == null) ? "" : "...";
     }
 
     private void setImage(ImageElement img, boolean enabled) {

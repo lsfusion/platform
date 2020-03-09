@@ -26,7 +26,6 @@ public class TextGridCellRenderer extends StringBasedGridCellRenderer {
         }
     }
 
-
     @Override
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
         if (!rich || value == null) {
