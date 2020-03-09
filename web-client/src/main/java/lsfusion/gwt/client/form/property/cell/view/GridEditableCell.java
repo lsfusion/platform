@@ -63,7 +63,7 @@ public class GridEditableCell extends AbstractCell<Object> {
 
             GFont tableFont = null;
             boolean isSingleCell = true;
-            if(table instanceof GGridPropertyTable){
+            if (table instanceof GGridPropertyTable) {
                 tableFont = ((GGridPropertyTable) table).font;
                 isSingleCell = false;
             }
@@ -81,11 +81,13 @@ public class GridEditableCell extends AbstractCell<Object> {
         if (property != null) {
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
 
+            GFont tableFont = null;
+            boolean isSingleCell = true;
             if (table instanceof GGridPropertyTable) {
-                cellRenderer.renderDynamic(cellElement, ((GGridPropertyTable) table).font, value, false);
-            } else {
-                cellRenderer.renderDynamic(cellElement, null, value, true);
+                tableFont = ((GGridPropertyTable) table).font;
+                isSingleCell = false;
             }
+            cellRenderer.renderDynamic(cellElement, tableFont, value, isSingleCell);
         }
     }
 }

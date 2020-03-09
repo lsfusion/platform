@@ -16,16 +16,24 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
     }
 
     public void renderStatic(Element element, GFont font, boolean isSingle) {
-        Style style = getBasedStyle(element, font, isSingle);
-        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        Style style = element.getStyle();
 
+        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
             style.setTextAlign(textAlignStyle);
         }
 
-        style.setPaddingTop(0, Style.Unit.PX);
+        style.setPaddingRight(4, Style.Unit.PX);
         style.setPaddingLeft(4, Style.Unit.PX);
 
+        style.setPaddingBottom(0, Style.Unit.PX);
+        style.setPaddingTop(0, Style.Unit.PX);
+
+        renderStaticContent(element, font);
+    }
+
+    protected void renderStaticContent(Element element, GFont font) {
+        Style style = element.getStyle();
         // важно оставить множественные пробелы
         style.setWhiteSpace(Style.WhiteSpace.PRE);
         style.setPosition(Style.Position.RELATIVE);
@@ -34,15 +42,6 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
         //оставлено закомменченым просто для справки
 //        style.setOverflow(Style.Overflow.HIDDEN);
 //        style.setTextOverflow(Style.TextOverflow.ELLIPSIS);
-
-        style.clearProperty("lineHeight");
-    }
-
-    protected Style getBasedStyle(Element element, GFont font, boolean isSingle) {
-        Style style = element.getStyle();
-        style.setPaddingRight(4, Style.Unit.PX);
-        style.setPaddingBottom(0, Style.Unit.PX);
-        return style;
     }
 
     protected void setBasedTextFonts(Style style, GFont font, boolean isSingle) {

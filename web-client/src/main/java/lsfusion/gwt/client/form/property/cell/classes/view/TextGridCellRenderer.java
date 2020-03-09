@@ -15,15 +15,16 @@ public class TextGridCellRenderer extends StringBasedGridCellRenderer {
     }
 
     @Override
-    public void renderStatic(Element element, GFont font, boolean isSingle) {
-        Style divStyle = getBasedStyle(element, font, isSingle);
+    public void renderStaticContent(Element element, GFont font) {
+        Style style = element.getStyle();
 
-        divStyle.setProperty("lineHeight", "normal");
+        style.setProperty("lineHeight", "normal");
         if (!rich) {
-            divStyle.setProperty("wordWrap", "break-word");
-            divStyle.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
+            style.setProperty("wordWrap", "break-word");
+            style.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
         }
     }
+
 
     @Override
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {

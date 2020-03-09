@@ -14,6 +14,12 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
     @Override
     public void renderStatic(Element element, GFont font, boolean isSingle) {
         Style style = element.getStyle();
+
+        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        if (textAlignStyle != null) {
+            style.setTextAlign(textAlignStyle);
+        }
+
         element.addClassName("gwt-Button");
         style.setWidth(100, Style.Unit.PCT);
         style.setPadding(0, Style.Unit.PX);
@@ -33,7 +39,6 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
             img.getStyle().setLeft(50, Style.Unit.PCT);
         } else {
             LabelElement label = innerTop.appendChild(Document.get().createLabelElement());
-            setBasedTextFonts(style, font, isSingle);
             label.setInnerText("...");
         }
     }
@@ -47,7 +52,7 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
             ImageElement img = element
                     .getFirstChild()
                     .getFirstChild().cast();
-            setImage(img, value);
+            setImage(img, value != null && (Boolean) value);
         }
     }
 
@@ -61,8 +66,7 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
         return null;
     }
 
-    private void setImage(ImageElement img, Object value) {
-        boolean enabled = value != null && (Boolean) value;
+    private void setImage(ImageElement img, boolean enabled) {
         ImageDescription image = property.getImage(enabled);
         if (image != null) {
             img.setSrc(GwtClientUtils.getAppImagePath(image.url));
