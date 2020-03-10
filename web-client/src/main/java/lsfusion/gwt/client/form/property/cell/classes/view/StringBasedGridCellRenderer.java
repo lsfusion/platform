@@ -20,7 +20,7 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
                 element.removeClassName("requiredValueString");
             }
         } else {
-            element.setInnerText(innerText);
+            setInnerTextNotNull(element, innerText);
             element.removeClassName("nullValueString");
             element.removeClassName("requiredValueString");
         }

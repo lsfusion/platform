@@ -22,19 +22,13 @@ public class TextGridCellRenderer extends StringBasedGridCellRenderer {
         style.setProperty("lineHeight", "normal");
         if (!rich) {
             style.setProperty("wordWrap", "break-word");
-            style.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
         }
+        element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
     }
 
     @Override
-    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
-        if (!rich || value == null) {
-            super.renderDynamic(element, font, value, isSingle);
-        } else {
-            element.removeClassName("nullValueString");
-            element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
-            element.setInnerHTML(EscapeUtils.sanitizeHtml((String) value));
-        }
+    protected void setInnerTextNotNull(Element element, String innerText){
+        element.setInnerText(rich? EscapeUtils.sanitizeHtml(innerText) : innerText);
     }
 
     @Override
