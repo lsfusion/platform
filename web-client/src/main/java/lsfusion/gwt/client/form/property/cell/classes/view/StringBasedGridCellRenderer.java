@@ -25,4 +25,8 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
             element.removeClassName("requiredValueString");
         }
     }
+
+    protected void setInnerContent(Element element, String innerText) {
+        element.setInnerText(innerText);
+    }
 }

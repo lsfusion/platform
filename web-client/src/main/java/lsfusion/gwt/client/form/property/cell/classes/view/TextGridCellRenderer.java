@@ -31,7 +31,7 @@ public class TextGridCellRenderer extends StringBasedGridCellRenderer {
         if (rich) {
             element.setInnerHTML(EscapeUtils.sanitizeHtml(innerText));
         } else {
-            element.setInnerText(innerText);
+            super.setInnerContent(element, innerText);
         }
     }
 
