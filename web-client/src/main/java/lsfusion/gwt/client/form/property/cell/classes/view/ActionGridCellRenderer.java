@@ -32,9 +32,6 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
             ImageElement img = innerTop.appendChild(Document.get().createImageElement());
             img.getStyle().setPosition(Style.Position.ABSOLUTE);
             img.getStyle().setLeft(50, Style.Unit.PCT);
-        } else {
-            LabelElement label = innerTop.appendChild(Document.get().createLabelElement());
-            label.setInnerText("...");
         }
     }
 
@@ -57,7 +54,7 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
 
     @Override
     protected String castToString(Object value) {
-        return (value == null) ? "" : "...";
+        return (value == null) && ((Boolean) value) ? "" : "...";
     }
 
     private void setImage(ImageElement img, boolean enabled) {
