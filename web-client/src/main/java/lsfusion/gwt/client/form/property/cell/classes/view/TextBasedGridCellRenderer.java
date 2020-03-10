@@ -71,7 +71,7 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
 
     protected abstract void setInnerText(Element element, String innerText);
 
-    protected void setInnerTextNotNull(Element element, String innerText){
+    protected void setInnerContent(Element element, String innerText){
         element.setInnerText(innerText);
     };
 

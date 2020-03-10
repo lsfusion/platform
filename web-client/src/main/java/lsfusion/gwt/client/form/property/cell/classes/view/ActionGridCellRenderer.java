@@ -32,6 +32,8 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
             ImageElement img = innerTop.appendChild(Document.get().createImageElement());
             img.getStyle().setPosition(Style.Position.ABSOLUTE);
             img.getStyle().setLeft(50, Style.Unit.PCT);
+        }else{
+            innerTop.appendChild(Document.get().createLabelElement());
         }
     }
 

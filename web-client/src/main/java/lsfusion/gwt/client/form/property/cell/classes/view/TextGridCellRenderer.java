@@ -27,8 +27,12 @@ public class TextGridCellRenderer extends StringBasedGridCellRenderer {
     }
 
     @Override
-    protected void setInnerTextNotNull(Element element, String innerText){
-        element.setInnerText(rich? EscapeUtils.sanitizeHtml(innerText) : innerText);
+    protected void setInnerContent(Element element, String innerText) {
+        if (rich) {
+            element.setInnerHTML(EscapeUtils.sanitizeHtml(innerText));
+        } else {
+            element.setInnerText(innerText);
+        }
     }
 
     @Override

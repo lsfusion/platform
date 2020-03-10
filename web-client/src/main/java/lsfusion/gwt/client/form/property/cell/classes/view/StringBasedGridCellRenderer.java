@@ -11,16 +11,16 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
     protected void setInnerText(Element element, String innerText) {
         if (innerText == null) {
             if (property.isEditableNotNull()) {
-                element.setInnerText(REQUIRED_VALUE);
+                setInnerContent(element, REQUIRED_VALUE);
                 element.addClassName("requiredValueString");
                 element.removeClassName("nullValueString");
             } else {
-                element.setInnerText(EMPTY_VALUE);
+                setInnerContent(element, EMPTY_VALUE);
                 element.addClassName("nullValueString");
                 element.removeClassName("requiredValueString");
             }
         } else {
-            setInnerTextNotNull(element, innerText);
+            setInnerContent(element, innerText);
             element.removeClassName("nullValueString");
             element.removeClassName("requiredValueString");
         }
