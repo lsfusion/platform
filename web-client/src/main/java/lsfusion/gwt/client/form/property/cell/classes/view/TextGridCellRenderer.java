@@ -1,15 +1,12 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-public class TextGridCellRenderer extends TextBasedGridCellRenderer {
+public class TextGridCellRenderer extends StringBasedGridCellRenderer {
     private final boolean rich;
 
     public TextGridCellRenderer(GPropertyDraw property, boolean rich) {
@@ -18,41 +15,28 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
-        Style divStyle = cellElement.getStyle();
-        divStyle.setPaddingRight(4, Style.Unit.PX);
-        divStyle.setPaddingLeft(4, Style.Unit.PX);
+    public void renderStaticContent(Element element, GFont font) {
+        Style style = element.getStyle();
+        setPadding(style);
 
-        divStyle.setProperty("lineHeight", "normal");
+        style.setProperty("lineHeight", "normal");
         if (!rich) {
-            divStyle.setProperty("wordWrap", "break-word");
-            divStyle.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
+            style.setProperty("wordWrap", "break-word");
         }
-
-        GFont font = property.font;
-        if (font == null && table instanceof GGridPropertyTable) {
-            font = ((GGridPropertyTable) table).font;
-        }
-        if (font != null) {
-            font.apply(divStyle);
-        }
-
-        updateElement(cellElement, value);
+        element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
     }
 
     @Override
-    protected void updateElement(DivElement div, Object value) {
-        if (!rich || value == null) {
-            super.updateElement(div, value);
+    protected void setInnerContent(Element element, String innerText) {
+        if (rich) {
+            element.setInnerHTML(EscapeUtils.sanitizeHtml(innerText));
         } else {
-            div.removeClassName("nullValueString");
-            div.getStyle().setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
-            div.setInnerHTML(EscapeUtils.sanitizeHtml((String) value));
+            super.setInnerContent(element, innerText);
         }
     }
 
     @Override
-    protected String renderToString(Object value) {
+    protected String castToString(Object value) {
         return (String) value;
     }
 }

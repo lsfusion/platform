@@ -85,7 +85,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     }
 
     private void setCellHeight(int cellHeight) {
-        ((GPropertyTableBuilder)getTableBuilder()).setCellHeight(cellHeight);
+        ((GPropertyTableBuilder) getTableBuilder()).setCellHeight(cellHeight);
         setRowHeight(cellHeight + 1); //1px for border
     }
 
@@ -177,7 +177,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             }
 
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
-            cellRenderer.renderDom(context, GDataFilterValueViewTable.this, cellElement, value);
+            cellRenderer.render(cellElement, null, value, false);
         }
 
         @Override
@@ -185,7 +185,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             assert !isInEditingState;
 
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
-            cellRenderer.updateDom(cellElement, GDataFilterValueViewTable.this, context, value);
+            cellRenderer.renderDynamic(cellElement, null, value,false);
         }
 
         @Override

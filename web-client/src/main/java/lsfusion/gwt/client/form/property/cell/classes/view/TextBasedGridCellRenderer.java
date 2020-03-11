@@ -1,99 +1,75 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 
-public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
+public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
     protected GPropertyDraw property;
 
-    public TextBasedGridCellRenderer(GPropertyDraw property) {
+    TextBasedGridCellRenderer(GPropertyDraw property) {
         this.property = property;
     }
 
-    @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
-        Style divStyle = cellElement.getStyle();
+    public void renderStatic(Element element, GFont font, boolean isSingle) {
+        Style style = element.getStyle();
+
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
-            divStyle.setTextAlign(textAlignStyle);
+            style.setTextAlign(textAlignStyle);
         }
-        divStyle.setPaddingTop(0, Style.Unit.PX);
-        divStyle.setPaddingRight(4, Style.Unit.PX);
-        divStyle.setPaddingBottom(0, Style.Unit.PX);
-        divStyle.setPaddingLeft(4, Style.Unit.PX);
 
+        renderStaticContent(element, font);
+    }
+
+    protected void renderStaticContent(Element element, GFont font) {
+        Style style = element.getStyle();
         // важно оставить множественные пробелы
-        divStyle.setWhiteSpace(Style.WhiteSpace.PRE);
-        
-        divStyle.setPosition(Style.Position.RELATIVE);
+        style.setWhiteSpace(Style.WhiteSpace.PRE);
+        style.setPosition(Style.Position.RELATIVE);
+        setPadding(style);
 
         //нужно для эллипсиса, но подтормаживает рендеринг,
         //оставлено закомменченым просто для справки
-//        divStyle.setOverflow(Style.Overflow.HIDDEN);
-//        divStyle.setTextOverflow(Style.TextOverflow.ELLIPSIS);
-
-        GFont font = property.font;
-        if (font == null && table instanceof GGridPropertyTable) {
-            font = ((GGridPropertyTable) table).font;
-        }
-        if (font != null) {
-            font.apply(divStyle);
-        }
-        divStyle.clearProperty("lineHeight");
-
-        updateElement(cellElement, value);
+//        style.setOverflow(Style.Overflow.HIDDEN);
+//        style.setTextOverflow(Style.TextOverflow.ELLIPSIS);
     }
 
-    @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
-        GFont font = property.font;
-        if (font == null && table instanceof GGridPropertyTable) {
-            font = ((GGridPropertyTable) table).font;
-        }
-        if (font != null) {
-            font.apply(cellElement.getStyle());
-        }
-        updateElement(cellElement, value);
+    protected void setPadding(Style style) {
+        style.setPaddingRight(4, Style.Unit.PX);
+        style.setPaddingLeft(4, Style.Unit.PX);
+
+        style.setPaddingBottom(0, Style.Unit.PX);
+        style.setPaddingTop(0, Style.Unit.PX);
     }
 
-    protected void updateElement(DivElement div, Object value) {
-        String text = value == null ? null : renderToString((T) value);
+    protected void setBasedTextFonts(Style style, GFont font, boolean isSingle) {
+        if (property.font == null && isSingle) {
+            property.font = font;
+        }
 
-        if (text == null) {
-            div.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
-            setInnerText(div, null);
+        if (property.font != null) {
+            property.font.apply(style);
+        }
+    }
+
+    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+        setBasedTextFonts(element.getStyle(), font, isSingle);
+        if (value == null) {
+            element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
+            setInnerText(element, null);
         } else {
-            String stringValue = unicodeEscape(text);
-            setInnerText(div, stringValue);
-            div.setTitle(property.echoSymbols ? "" : stringValue);
+            String stringValue = unicodeEscape(castToString((T) value));
+            setInnerText(element, stringValue);
+            element.setTitle(property.echoSymbols ? "" : stringValue);
         }
     }
 
-    protected void setInnerText(DivElement div, String innerText) {
-        if (innerText == null) {
-            if (property.isEditableNotNull()) {
-                div.setInnerText(REQUIRED_VALUE);
-                div.addClassName("requiredValueString");
-                div.removeClassName("nullValueString");
-            } else {
-                div.setInnerText(EMPTY_VALUE);
-                div.addClassName("nullValueString");
-                div.removeClassName("requiredValueString");
-            }
-        } else {
-            div.setInnerText(innerText);
-            div.removeClassName("nullValueString");
-            div.removeClassName("requiredValueString");
-        }
-    }
+    protected abstract void setInnerText(Element element, String innerText);
 
-    protected abstract String renderToString(T value);
+    protected abstract String castToString(T value);
 }

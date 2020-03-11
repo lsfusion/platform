@@ -1,10 +1,21 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
-import com.google.gwt.dom.client.DivElement;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.form.design.GFont;
 
-public interface GridCellRenderer {
-    void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value);
-    void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value);
+public abstract class GridCellRenderer {
+    private static final ClientMessages messages = ClientMessages.Instance.get();
+    protected final String EMPTY_VALUE = messages.formRendererNotDefined();
+    protected final String REQUIRED_VALUE = messages.formRendererRequired();
+
+    public void render(Element element, GFont font, Object value, boolean isSingle) {
+        renderStatic(element, font, isSingle);
+        renderDynamic(element, font, value, isSingle);
+    }
+
+    public void renderStatic(Element element, GFont font, boolean isSingle) {}
+
+    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+    }
 }

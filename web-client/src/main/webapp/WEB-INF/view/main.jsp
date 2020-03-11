@@ -74,7 +74,8 @@
 
         <!-- subtotal.js libs : subtotal_renderers -->
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.css">
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>
+<%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>--%>
+        <script type="text/javascript" src="static/js/subtotal.js"></script>
 
         <!--  plotly libs : plotly_renderers  -->
         <script type="text/javascript" src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
