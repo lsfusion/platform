@@ -243,12 +243,12 @@
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-swing</artifactId>
-            <version>11.3.5-8</version>
+            <version>11.3.5-9</version>
         </dependency>
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-fontawesome-pack</artifactId>
-            <version>11.3.5-8</version>
+            <version>11.3.5-9</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.geocoder-java</groupId>

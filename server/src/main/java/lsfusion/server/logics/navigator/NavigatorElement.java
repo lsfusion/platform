@@ -25,6 +25,7 @@ import org.kordamp.ikonli.fontawesome.FontAwesome;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -216,12 +217,15 @@ public abstract class NavigatorElement {
     }
 
     public final void setImage(String imagePath, DefaultIcon defaultIcon) {
-        ImageIcon image = null;
+        ImageIcon image;
 
         //FontAwesome pack - pattern ^fa-[^\.]*
         if (imagePath.startsWith("fa-") && !imagePath.contains(".")) {
+            BufferedImage iconImage = new BufferedImage(DEFAULT_ICON_SIZE, DEFAULT_ICON_SIZE, BufferedImage.TYPE_INT_ARGB);
             FontIcon fi  = FontIcon.of(FontAwesome.findByDescription(imagePath), DEFAULT_ICON_SIZE, DEFAULT_ICON_COLOR);
-            image = new ImageIcon(fi.getImage());
+            fi.paintIcon(null, iconImage.getGraphics(),0,0);
+
+            image = new ImageIcon(iconImage);
         } else {
             image = ResourceUtils.readImage(imagePath);
         }
