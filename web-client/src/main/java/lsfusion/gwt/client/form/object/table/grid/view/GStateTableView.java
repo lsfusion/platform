@@ -2,15 +2,12 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -78,20 +75,24 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
         int index = properties.indexOf(property);
         if(!updateKeys) {
             if(index < 0) {
-                index = properties.size();
-                properties.add(property);
-                this.columnKeys.add(null);
                 captions.add(null);
-                this.values.add(null);
+
+                index = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), this.properties);
+                this.properties.add(index, property);
+                this.columnKeys.add(index, columnKeys);
+                this.values.add(index, values);
+
                 List<Map<GGroupObjectValue, Object>> list = new ArrayList<>();
                 for(int i=0;i<property.lastReaders.size();i++)
                     list.add(null);
                 lastAggrs.add(list);
+            } else {
+                this.columnKeys.set(index, columnKeys);
             }
-            this.columnKeys.set(index, columnKeys);
-        } else
+        } else {
             assert index >= 0;
-        this.values.set(index, values);
+            this.values.set(index, values);
+        }
 
         dataUpdated = true;
     }
