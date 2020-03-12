@@ -75,9 +75,9 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
         int index = properties.indexOf(property);
         if(!updateKeys) {
             if(index < 0) {
-                captions.add(null);
-
                 index = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), this.properties);
+
+                this.captions.add(index, null);
                 this.properties.add(index, property);
                 this.columnKeys.add(index, null);
                 this.values.add(index, null);
