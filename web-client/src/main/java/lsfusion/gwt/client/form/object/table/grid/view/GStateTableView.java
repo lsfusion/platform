@@ -79,20 +79,18 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
 
                 index = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), this.properties);
                 this.properties.add(index, property);
-                this.columnKeys.add(index, columnKeys);
-                this.values.add(index, values);
+                this.columnKeys.add(index, null);
+                this.values.add(index, null);
 
                 List<Map<GGroupObjectValue, Object>> list = new ArrayList<>();
-                for(int i=0;i<property.lastReaders.size();i++)
+                for (int i = 0; i < property.lastReaders.size(); i++)
                     list.add(null);
-                lastAggrs.add(list);
-            } else {
-                this.columnKeys.set(index, columnKeys);
+                lastAggrs.add(index, list);
             }
-        } else {
+            this.columnKeys.set(index, columnKeys);
+        } else
             assert index >= 0;
-            this.values.set(index, values);
-        }
+        this.values.set(index, values);
 
         dataUpdated = true;
     }
@@ -158,7 +156,7 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
     // ignore for now
     @Override
     public void focusProperty(GPropertyDraw propertyDraw) {
-        
+
     }
 
     @Override
@@ -168,7 +166,7 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
 
     @Override
     public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
-        
+
     }
 
     @Override

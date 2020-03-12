@@ -391,6 +391,7 @@ public class GPivot extends GStateTableView {
         var d = $doc.createElement('div');
 
         // Configuration ordering column for group
+        config.sorters = {};
         config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);
 
         // because we create new element, aggregators every time
