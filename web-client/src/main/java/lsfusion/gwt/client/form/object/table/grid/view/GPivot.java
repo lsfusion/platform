@@ -158,7 +158,7 @@ public class GPivot extends GStateTableView {
         return caption;
     }
 
-    private static final String COLUMN = "(Колонка)";
+    public static final String COLUMN = "(Колонка)";
 
     @Override
     protected void updateView() {
@@ -169,7 +169,10 @@ public class GPivot extends GStateTableView {
         JavaScriptObject data = getData(columnMap, aggregator, aggrCaptions, systemColumns); // convertToObjects()
         config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
 
-        render(getElement(), data, config); // we need to updateRendererState after it is painted
+        JsArrayString jsArray = JsArrayString.createArray().cast();
+        aggrCaptions.forEach(jsArray::push);
+
+        render(getElement(), data, config, jsArray); // we need to updateRendererState after it is painted
     }
 
     @Override
@@ -374,6 +377,7 @@ public class GPivot extends GStateTableView {
         );
 
         return {
+            sorters: {}, // Configuration ordering column for group
             dataClass: $wnd.$.pivotUtilities.SubtotalPivotData,
             cols: [columnField], // inital columns since overwrite is false
             renderers: renderers,
@@ -383,9 +387,12 @@ public class GPivot extends GStateTableView {
         }
     }-*/;
 
-    protected native void render(com.google.gwt.dom.client.Element element, JavaScriptObject array, JavaScriptObject config)/*-{
+    protected native void render(com.google.gwt.dom.client.Element element, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns)/*-{
 //        var d = element;
         var d = $doc.createElement('div');
+
+        // Configuration ordering column for group
+        config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);
 
         // because we create new element, aggregators every time
         $wnd.$(d).pivotUI(array, config, true);

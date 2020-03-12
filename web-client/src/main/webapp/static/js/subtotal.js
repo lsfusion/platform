@@ -94,7 +94,7 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var addClass, adjustAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeader, buildColAxisHeaders, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeaders, buildRowHeader, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseAxis, collapseAxisHeaders, collapseChildCol, collapseChildRow, collapseCol, collapseHiddenColSubtotal, collapseRow, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, defaults, executeCellRender, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, getHeaderText, getTableEventHandlers, hasClass, hideChildCol, hideChildRow, main, processKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setAttributes, showChildCol, showChildRow, tree;
+      var addClass, adjustAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeader, buildColAxisHeaders, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeaders, buildRowHeader, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseAxis, collapseAxisHeaders, collapseChildCol, collapseChildRow, collapseCol, collapseHiddenColSubtotal, collapseRow, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, defaults, executeAggregatorCellRender, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, getHeaderText, getTableEventHandlers, hasClass, hideChildCol, hideChildRow, main, processKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setAttributes, showChildCol, showChildRow, tree;
       defaults = {
         table: {
           clickCallback: null
@@ -195,9 +195,8 @@
         removeClass(element, replaceClassName);
         return addClass(element, byClassName);
       };
-      executeCellRender = function(element, value, property, rendererCallBack, context) {
-        element = rendererCallBack(element, value, property, context);
-        return element;
+      executeAggregatorCellRender = function(aggregator, td, val) {
+        return aggregator.cellRender(td, val, aggregator.property());
       };
       createElement = function(elementType, className, textContent, attributes, eventHandlers) {
         var attr, e, event, handler, val;
@@ -559,24 +558,24 @@
             } else {
               cls += " " + classColShow;
             }
-            td = createElement("td", cls, aggregator.format(val), {
+            td = createElement("td", cls, "", {
               "data-value": val,
               "data-rownode": rh.node,
               "data-colnode": ch.node
             }, getTableEventHandlers(val, rh.key, ch.key, rowAttrs, colAttrs, opts));
             tr.appendChild(td);
+            executeAggregatorCellRender(aggregator, td, val);
           }
-          executeCellRender(td, val, aggregator.property(), aggregator.cellRender);
           totalAggregator = rowTotals[rh.flatKey];
           val = totalAggregator.value();
-          td = createElement("td", "pvtTotal rowTotal " + rCls, totalAggregator.format(val), {
+          td = createElement("td", "pvtTotal rowTotal " + rCls, "", {
             "data-value": val,
             "data-row": "row" + rh.row,
             "data-rowcol": "col" + rh.col,
             "data-rownode": rh.node
           }, getTableEventHandlers(val, rh.key, [], rowAttrs, colAttrs, opts));
           tr.appendChild(td);
-          results.push(executeCellRender(td, val, aggregator.property(), aggregator.cellRender));
+          results.push(executeAggregatorCellRender(totalAggregator, td, val));
         }
         return results;
       };
@@ -607,13 +606,13 @@
           }
           totalAggregator = colTotals[h.flatKey];
           val = totalAggregator.value();
-          td = createElement("td", clsNames, totalAggregator.format(val), {
+          td = createElement("td", clsNames, "", {
             "data-value": val,
             "data-for": "col" + h.col,
             "data-colnode": "" + h.node
           }, getTableEventHandlers(val, [], h.key, rowAttrs, colAttrs, opts));
           tr.appendChild(td);
-          results.push(executeCellRender(td, val, totalAggregator.property(), totalAggregator.cellRender));
+          results.push(executeAggregatorCellRender(totalAggregator, td, val));
         }
         return results;
       };
@@ -621,12 +620,12 @@
         var td, totalAggregator, val;
         totalAggregator = allTotal;
         val = totalAggregator.value();
-        td = createElement("td", "pvtGrandTotal", totalAggregator.format(val), {
+        td = createElement("td", "pvtGrandTotal", "", {
           "data-value": val
         }, getTableEventHandlers(val, [], [], rowAttrs, colAttrs, opts));
         tr.appendChild(td);
         tbody.appendChild(tr);
-        return executeCellRender(td, val, totalAggregator.property(), totalAggregator.cellRender);
+        return executeAggregatorCellRender(totalAggregator, td, val);
       };
       collapseAxisHeaders = function(axisHeaders, col, opts) {
         var ah, collapsible, i, k, ref, ref1, results;

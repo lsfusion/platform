@@ -2,15 +2,12 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -78,15 +75,17 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
         int index = properties.indexOf(property);
         if(!updateKeys) {
             if(index < 0) {
-                index = properties.size();
-                properties.add(property);
-                this.columnKeys.add(null);
-                captions.add(null);
-                this.values.add(null);
+                index = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), this.properties);
+
+                this.captions.add(index, null);
+                this.properties.add(index, property);
+                this.columnKeys.add(index, null);
+                this.values.add(index, null);
+
                 List<Map<GGroupObjectValue, Object>> list = new ArrayList<>();
-                for(int i=0;i<property.lastReaders.size();i++)
+                for (int i = 0; i < property.lastReaders.size(); i++)
                     list.add(null);
-                lastAggrs.add(list);
+                lastAggrs.add(index, list);
             }
             this.columnKeys.set(index, columnKeys);
         } else
@@ -157,7 +156,7 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
     // ignore for now
     @Override
     public void focusProperty(GPropertyDraw propertyDraw) {
-        
+
     }
 
     @Override
@@ -167,7 +166,7 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
 
     @Override
     public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
-        
+
     }
 
     @Override
