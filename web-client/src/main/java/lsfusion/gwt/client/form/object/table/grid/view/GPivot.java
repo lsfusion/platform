@@ -583,16 +583,17 @@ public class GPivot extends GStateTableView {
                         aggregator.@Aggregator::push(*)(this.state, record, aggrFunc);
                     },
                     value: function () {
-                        var val = aggregator.@Aggregator::value(*)(this.state, aggrFunc);
-                        return val;
+                        return aggregator.@Aggregator::value(*)(this.state, aggrFunc);
                     },
                     property: function () {
-                        var val = aggregator.@Aggregator::property(*)(this.state);
-                        return val;
+                        return aggregator.@Aggregator::property(*)(this.state);
                     },
-                    format: $wnd.$.pivotUtilities.numberFormat(),
+                    format : $wnd.$.pivotUtilities.numberFormat(), // to be removed later when all cells will be rendered with renderCell
                     cellRender: function (element, value, columns) {
-                        instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::getCellRendererByColumns(*)(element, value, columns);
+                        if(columns != null)
+                            instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderCell(*)(element, value, columns);
+                        else if(value != null) // default behaviour
+                            element.textContent = $wnd.$.pivotUtilities.numberFormat()(value);
                     },
                     numInputs: 0
                 }
@@ -604,7 +605,7 @@ public class GPivot extends GStateTableView {
      * Assign cellRender to columns from pivot table.
      * Only first property Drawer will be execute render
      */
-    public void getCellRendererByColumns(Element jsElement, JavaScriptObject value, String column) {
+    public void renderCell(Element jsElement, JavaScriptObject value, String column) {
         GridCellRenderer renderer = columnMap.get(column).property.getGridCellRenderer();
         renderer.render(jsElement, null, value, false);
     }
