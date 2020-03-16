@@ -6,7 +6,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.FileBasedGridCellRenderer;
 
 public class ImageGridCellRenderer extends FileBasedGridCellRenderer {
-    protected GPropertyDraw property;
 
     public ImageGridCellRenderer(GPropertyDraw property) {
         super(property);
