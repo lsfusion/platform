@@ -21,9 +21,6 @@ public class StringGridCellRenderer extends StringBasedGridCellRenderer<String> 
         if (echoSymbols) {
             return multiplyString(EscapeUtils.UNICODE_BULLET, 6);
         } else if (!isVarString) {
-            if (isRedundantString(value)) {
-                return null;
-            }
             return value.trim();
         } else {
             return value;
