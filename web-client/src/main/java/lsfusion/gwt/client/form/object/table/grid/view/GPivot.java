@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
 
@@ -169,6 +170,13 @@ public class GPivot extends GStateTableView {
         JavaScriptObject data = getData(columnMap, aggregator, aggrCaptions, systemColumns); // convertToObjects()
         config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
 
+        int rowHeight = 0;
+        for(GPropertyDraw property : properties) {
+            int columnMinimumHeight = property.getValueHeight(font);
+            rowHeight = Math.max(rowHeight, columnMinimumHeight);
+        }
+        this.rowHeight = rowHeight;
+
         JsArrayString jsArray = JsArrayString.createArray().cast();
         aggrCaptions.forEach(jsArray::push);
 
@@ -231,6 +239,8 @@ public class GPivot extends GStateTableView {
     private List<String> aggrCaptions;
     private WrapperObject config;
     private boolean settings = true;
+
+    private int rowHeight;
 
     public boolean isSettings() {
         return settings;
@@ -592,7 +602,7 @@ public class GPivot extends GStateTableView {
                     cellRender: function (element, value, columns) {
                         if(columns != null)
                             instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderCell(*)(element, value, columns);
-                        else if(value != null) // default behaviour
+                        else if(value != null) // default behaviour, to be removed later when all cells will be rendered with renderCell
                             element.textContent = $wnd.$.pivotUtilities.numberFormat()(value);
                     },
                     numInputs: 0
@@ -601,13 +611,11 @@ public class GPivot extends GStateTableView {
         }
     }-*/;
 
-    /**
-     * Assign cellRender to columns from pivot table.
-     * Only first property Drawer will be execute render
-     */
     public void renderCell(Element jsElement, JavaScriptObject value, String column) {
+        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
+
         GridCellRenderer renderer = columnMap.get(column).property.getGridCellRenderer();
-        renderer.render(jsElement, null, value, false);
+        renderer.render(jsElement, font, value, false);
     }
 
     private static class ColumnAggregator extends JavaScriptObject {

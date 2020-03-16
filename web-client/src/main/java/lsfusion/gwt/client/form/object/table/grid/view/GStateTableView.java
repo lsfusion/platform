@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -20,6 +21,8 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
 
     protected final GFormController form;
     protected final GGridController grid;
+
+    protected GFont font;
 
     protected GGroupObjectValue currentKey;
 
