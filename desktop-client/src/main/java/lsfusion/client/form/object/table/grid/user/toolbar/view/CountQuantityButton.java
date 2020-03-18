@@ -1,6 +1,5 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
-import lsfusion.base.ResourceUtils;
 import lsfusion.client.ClientResourceBundle;
 
 import javax.swing.*;
@@ -8,10 +7,10 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 
 public abstract class CountQuantityButton extends ToolbarGridButton {
-    private static final ImageIcon quantityIcon = ResourceUtils.readImage("quantity.png");
+    private static final String QUANTITY_ICON_PATH = "quantity.png";
 
     public CountQuantityButton() {
-        super(quantityIcon, ClientResourceBundle.getString("form.queries.number.of.entries"));
+        super(QUANTITY_ICON_PATH, ClientResourceBundle.getString("form.queries.number.of.entries"));
     }
 
     public abstract void addListener();

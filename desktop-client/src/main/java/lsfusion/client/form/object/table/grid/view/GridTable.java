@@ -1891,9 +1891,9 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
                 ClientPropertyDraw property = model.getColumnProperty(modelIndex);
                 if (property.notNull) {
-                    paintRightBottomCornerTriangle((Graphics2D) g, 5, Color.RED, x - 2, -3, w, h); // -2/-3 - не залазим на границы
+                    paintRightBottomCornerTriangle((Graphics2D) g, 5, Color.RED, x - 1, - 1, w, h); // -1/-1 - не залазим на границы
                 } else if (property.hasChangeAction) {
-                    paintRightBottomCornerTriangle((Graphics2D) g, 5, new Color(120, 170, 208), x - 2, -3, w, h);
+                    paintRightBottomCornerTriangle((Graphics2D) g, 5, new Color(120, 170, 208), x - 1, - 1, w, h);
                 }
             }
         }

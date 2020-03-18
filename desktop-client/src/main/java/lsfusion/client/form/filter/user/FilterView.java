@@ -6,31 +6,29 @@ import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 
-import static lsfusion.base.ResourceUtils.readImage;
-
 public class FilterView extends QueryView {
 
-    private static final ImageIcon applyIcon = readImage("filtapply.png");
+    public static final String APPLY_ICON_PATH = "filtapply.png";
 
-    private static final ImageIcon addIcon = readImage("filtadd.png");
+    public static final String ADD_ICON_PATH = "filtadd.png";
 
-    private static final ImageIcon filterIcon = readImage("filt.png");
+    public static final String FILTER_ICON_PATH = "filt.png";
 
     public FilterView(QueryController controller) {
         super(controller);
     }
 
-    public Icon getApplyIcon() {
-        return applyIcon;
-    }
+//    public Icon getApplyIcon() {
+//        return applyIcon;
+//    }
 
-    public Icon getAddIcon() {
-        return addIcon;
-    }
+//    public Icon getAddIcon() {
+//        return addIcon;
+//    }
 
-    public Icon getFilterIcon() {
-        return filterIcon;
-    }
+//    public Icon getFilterIcon() {
+//        return filterIcon;
+//    }
 
     protected KeyStroke getKeyStroke(int modifier) {
         return KeyStrokes.getFilterKeyStroke(modifier);

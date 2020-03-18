@@ -3,6 +3,7 @@ package lsfusion.interop.form.design;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.context.ContextObject;
 import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.interop.base.view.ColorTheme;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +27,10 @@ public class ComponentDesign extends ContextObject implements Serializable {
         return imageHolder != null ? imageHolder.getImage() : null;
     }
 
+    public ImageIcon getImage(ColorTheme colorTheme) {
+        return imageHolder != null ? imageHolder.getImage(colorTheme) : null;
+    }
+
     public void setImage(String imagePath) {
         ImageIcon image = ResourceUtils.readImage(imagePath);
         if (image != null) {
@@ -42,19 +47,19 @@ public class ComponentDesign extends ContextObject implements Serializable {
     }
 
     public void designCell(JComponent comp) {
-        designComponent(comp, Color.white); // а то по умолчанию background у Label - серый
+        designComponent(comp);
     }
 
-    public void designComponent(JComponent comp) {
-        designComponent(comp, null);
-        if (getImage() != null && comp instanceof AbstractButton) {
-            AbstractButton button = (AbstractButton) comp;
-            button.setIcon(getImage());
+    public void designButton(JButton comp, ColorTheme colorTheme) {
+        designComponent(comp);
+        
+        ImageIcon image = getImage(colorTheme);
+        if (image != null) {
+            comp.setIcon(image);
         }
     }
 
-    private void designComponent(JComponent comp, Color defaultBackground) {
-
+    public void designComponent(JComponent comp) {
         if (font != null) {
             comp.setFont(getFont(comp));
         }
@@ -62,8 +67,10 @@ public class ComponentDesign extends ContextObject implements Serializable {
         if (background != null) {
             comp.setBackground(background);
             comp.setOpaque(true);
-        } else if (defaultBackground != null) {
-            comp.setBackground(defaultBackground);
+//        } else if (defaultBackground != null) {
+//            comp.setBackground(defaultBackground);
+        } else {
+            comp.setBackground(null); // default transparent background
         }
 
         if (foreground != null) {

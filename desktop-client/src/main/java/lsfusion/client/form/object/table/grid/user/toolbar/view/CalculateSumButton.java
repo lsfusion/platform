@@ -1,6 +1,5 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
-import lsfusion.base.ResourceUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.StartupProperties;
 
@@ -11,10 +10,10 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 
 public abstract class CalculateSumButton extends ToolbarGridButton {
-    private static final ImageIcon sumIcon = ResourceUtils.readImage("sum.png");
+    private static final String SUM_ICON_PATH = "sum.png";
 
     public CalculateSumButton() {
-        super(sumIcon, ClientResourceBundle.getString("form.queries.calculate.sum"));
+        super(SUM_ICON_PATH, ClientResourceBundle.getString("form.queries.calculate.sum"));
     }
 
     public abstract void addListener();

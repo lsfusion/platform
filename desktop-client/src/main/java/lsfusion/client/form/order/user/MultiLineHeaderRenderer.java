@@ -1,17 +1,16 @@
 package lsfusion.client.form.order.user;
 
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-import static lsfusion.base.ResourceUtils.readImage;
-
 public class MultiLineHeaderRenderer implements TableCellRenderer {
 
-    protected final static ImageIcon arrowUpIcon = readImage("arrowup.png");
-    protected final static ImageIcon arrowDownIcon = readImage("arrowdown.png");
+    protected final static String ARROW_UP_ICON_PATH = "arrowup.png";
+    protected final static String ARROW_DOWN_ICON_PATH = "arrowdown.png";
 
     private final TableCellRenderer tableCellRenderer;
     private final TableSortableHeaderManager sortableHeaderManager;
@@ -40,7 +39,7 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
 
             Boolean sortDir = sortableHeaderManager.getSortDirection(column);
             if (sortDir != null) {
-                label.setIcon(sortDir ? arrowUpIcon : arrowDownIcon);
+                label.setIcon(ClientImages.get(sortDir ? ARROW_UP_ICON_PATH : ARROW_DOWN_ICON_PATH));
             } else {
                 label.setIcon(null);
             }

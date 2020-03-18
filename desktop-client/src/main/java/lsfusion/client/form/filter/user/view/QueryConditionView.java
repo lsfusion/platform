@@ -1,6 +1,5 @@
 package lsfusion.client.form.filter.user.view;
 
-import lsfusion.base.ResourceUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.controller.remote.RmiQueue;
@@ -30,7 +29,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
     public static final int PREFERRED_HEIGHT = 18;
 
     // Icons - загружаем один раз, для экономии
-    private static final ImageIcon deleteIcon = ResourceUtils.readImage("filtdel.png");
+    private static final String DELETE_ICON_PATH = "filtdel.png";
 
     private final ClientPropertyFilter filter;
 
@@ -143,7 +142,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        delButton = new ToolbarGridButton(deleteIcon, ClientResourceBundle.getString("form.queries.filter.remove.condition"), new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
+        delButton = new ToolbarGridButton(DELETE_ICON_PATH, ClientResourceBundle.getString("form.queries.filter.remove.condition"), new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
         delButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 RmiQueue.runAction(new Runnable() {

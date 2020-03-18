@@ -1,9 +1,12 @@
 package lsfusion.client.navigator.view;
 
+import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
@@ -15,7 +18,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Set;
 
-public class ToolBarNavigatorView extends NavigatorView {
+public class ToolBarNavigatorView extends NavigatorView implements ColorThemeChangeListener {
 
     private final JToolBar toolBar;
     private final ClientToolBarNavigatorWindow window;
@@ -30,6 +33,8 @@ public class ToolBarNavigatorView extends NavigatorView {
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
         toolBar.setFocusable(false);
+
+        MainFrame.addColorThemeChangeListener(this);
     }
 
     @Override
@@ -50,24 +55,7 @@ public class ToolBarNavigatorView extends NavigatorView {
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int indent) {
-
-        JToggleButton button = new JToggleButton(element.toString());
-        button.setToolTipText(element.getTooltip());
-        button.addMouseListener(new NavigatorMouseAdapter(element));
-        button.setIcon(new IndentedIcon(element.imageHolder.getImage(), indent));
-        button.setVerticalTextPosition(window.verticalTextPosition);
-        button.setHorizontalTextPosition(window.horizontalTextPosition);
-        button.setVerticalAlignment(window.verticalAlignment);
-        button.setHorizontalAlignment(window.horizontalAlignment);
-//        button.setAlignmentY(window.alignmentY);
-//        button.setAlignmentX(window.alignmentX);
-        button.setFocusable(false);
-        button.getModel().setArmed(true);
-
-        if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorFolder.class)) {
-            button.setForeground(Color.blue);
-            button.setSelected(true);
-        }
+        ToolbarNavigatorViewButton button = new ToolbarNavigatorViewButton(element, indent);
 
         toolBar.add(button, new FlexConstraints(FlexAlignment.STRETCH, 0));
 
@@ -89,6 +77,14 @@ public class ToolBarNavigatorView extends NavigatorView {
         selected = element;
     }
 
+    @Override
+    public void colorThemeChanged() {
+        for (Component toolBarComponent : toolBar.getComponents()) {
+            ((ToolbarNavigatorViewButton) toolBarComponent).updateIcon();    
+        }
+//        toolBar.updateUI();
+    }
+
     private class NavigatorMouseAdapter extends MouseAdapter {
         ClientNavigatorElement selected;
 
@@ -101,6 +97,39 @@ public class ToolBarNavigatorView extends NavigatorView {
             setSelectedElement(selected);
             controller.update();
             controller.openElement(getSelectedElement(), e.getModifiers());
+        }
+    }
+    
+    private class ToolbarNavigatorViewButton extends JToggleButton {
+        private SerializableImageIconHolder imageHolder;
+        private int indent;
+
+        ToolbarNavigatorViewButton(ClientNavigatorElement element, int indent) {
+            super(element.toString());
+            this.imageHolder = element.imageHolder;
+            this.indent = indent;
+
+            updateIcon();
+
+            setToolTipText(element.getTooltip());
+            addMouseListener(new NavigatorMouseAdapter(element));
+            setVerticalTextPosition(window.verticalTextPosition);
+            setHorizontalTextPosition(window.horizontalTextPosition);
+            setVerticalAlignment(window.verticalAlignment);
+            setHorizontalAlignment(window.horizontalAlignment);
+            setFocusable(false);
+            getModel().setArmed(true);
+            putClientProperty("Button.arc", "6");
+            putClientProperty("Component.arc", "5");
+
+            if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorFolder.class)) {
+//                setForeground(Color.blue);
+                setSelected(true);
+            }
+        }
+        
+        public void updateIcon() {
+            setIcon(new IndentedIcon(imageHolder.getImage(MainFrame.colorTheme), indent));
         }
     }
 }
