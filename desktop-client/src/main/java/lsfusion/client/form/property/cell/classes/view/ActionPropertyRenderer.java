@@ -2,10 +2,10 @@ package lsfusion.client.form.property.cell.classes.view;
 
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import java.awt.*;
 
 public class ActionPropertyRenderer extends PropertyRenderer {
     private static final String defaultCaption = "...";
@@ -32,15 +32,15 @@ public class ActionPropertyRenderer extends PropertyRenderer {
     @Override
     protected void initDesign() {
         if (property != null) {
-            property.design.designComponent(getComponent());
+            property.design.designButton(getComponent(), MainFrame.colorTheme);
         }
-        defaultBackground = getComponent().getBackground();
+//        defaultBackground = getComponent().getBackground();
     }
 
-    @Override
-    protected Color getDefaultBackground() {
-        return value == null ? Color.WHITE : super.getDefaultBackground();
-    }
+//    @Override
+//    protected Color getDefaultBackground() {
+//        return value == null ? Color.WHITE : super.getDefaultBackground();
+//    }
 
     @Override
     protected Border getDefaultBorder() {

@@ -1,12 +1,14 @@
 package lsfusion.client.controller;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.remote.ZipClientSocketFactory;
 import lsfusion.client.SingleInstance;
-import lsfusion.client.SplashScreen;
 import lsfusion.client.StartupProperties;
 import lsfusion.client.authentication.LoginDialog;
 import lsfusion.client.authentication.UserInfo;
@@ -23,6 +25,7 @@ import lsfusion.client.logics.LogicsProvider;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
+import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.LogicsRunnable;
@@ -31,12 +34,10 @@ import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.SessionInfo;
 import org.apache.log4j.Logger;
-import sun.awt.OSInfo;
-import sun.awt.SunToolkit;
-import sun.security.action.GetPropertyAction;
 
 import javax.swing.Timer;
 import javax.swing.*;
+import javax.swing.plaf.ColorUIResource;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,7 +47,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
-import java.security.AccessController;
 import java.util.List;
 import java.util.*;
 
@@ -68,6 +68,7 @@ public class MainController {
     public static boolean configurationAccessAllowed;
     public static boolean forbidDuplicateForms;
     public static long timeDiffServerClientLog = 1000;
+    public static ColorTheme colorTheme = ColorTheme.DEFAULT;
 
     // lifecycle
 
@@ -308,28 +309,48 @@ public class MainController {
         ToolTipManager.sharedInstance().setReshowDelay(0);
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
 
-        UIManager.setLookAndFeel(getSystemLookAndFeelClassName());
+//        UIManager.setLookAndFeel(new FlatDarculaLaf());
+//        UIManager.setLookAndFeel(new FlatDarkLaf());
+//        UIManager.setLookAndFeel(new FlatIntelliJLaf());
+        FlatLightLaf newLookAndFeel = new FlatLightLaf();
+        UIManager.setLookAndFeel(newLookAndFeel);
+//        UIManager.setLookAndFeel(getSystemLookAndFeelClassName());
+
+        UIManager.put("Button.arc", 0);
+        UIManager.put("Component.arc", 0);
+        UIManager.put("CheckBox.arc", 0);
+        
+        UIManager.put("Table.showHorizontalLines", true);
+        UIManager.put("Table.showVerticalLines", true);
+
+        UIManager.put("Button.default.boldText", false);
+        
+        Object focusColor = new ColorUIResource( 0xF4AF3D ) ;
+//        UIManager.put("Button.default.focusColor", null);
+//        UIManager.put("Button.focusedBorderColor", focusColor);
+//        UIManager.put("Button.default.focusedBorderColor", focusColor);
+//        UIManager.put("Component.focusedBorderColor", focusColor);
         
         // при первом использовании rich-editora во время редактирования, его создание тормозит...
         // возможно, где-то внутри кэшируются какие-то lazy-ресурсы... Чтобы это не напрягало на форме, создаём компонент вхолостую здесь
         new RichEditorPane();
     }
 
-    private static String getSystemLookAndFeelClassName() {
-        String systemLAF = AccessController.doPrivileged(new GetPropertyAction("swing.systemlaf"));
-        if (systemLAF != null) {
-            return systemLAF;
-        }
-        if (AccessController.doPrivileged(OSInfo.getOSTypeAction()) != OSInfo.OSType.WINDOWS) {
-            Toolkit toolkit = Toolkit.getDefaultToolkit();
-            // for non-gnome linux environments
-            if (toolkit instanceof SunToolkit && ((SunToolkit) toolkit).isNativeGTKAvailable()) {
-                return "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
-            }
-        }
-
-        return UIManager.getSystemLookAndFeelClassName();
-    }
+//    private static String getSystemLookAndFeelClassName() {
+//        String systemLAF = AccessController.doPrivileged(new GetPropertyAction("swing.systemlaf"));
+//        if (systemLAF != null) {
+//            return systemLAF;
+//        }
+//        if (AccessController.doPrivileged(OSInfo.getOSTypeAction()) != OSInfo.OSType.WINDOWS) {
+//            Toolkit toolkit = Toolkit.getDefaultToolkit();
+//            // for non-gnome linux environments
+//            if (toolkit instanceof SunToolkit && ((SunToolkit) toolkit).isNativeGTKAvailable()) {
+//                return "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+//            }
+//        }
+//
+//        return UIManager.getSystemLookAndFeelClassName();
+//    }
 
     public static void setStatusText(String msg) {
         if (MainFrame.instance != null) {
@@ -465,7 +486,7 @@ public class MainController {
         return nvl(BaseUtils.nullEmpty(settings != null ? settings.displayName : null), LSFUSION_TITLE);
     }
 
-    private static final String DEFAULT_ICON_PATH = "/images/logo/";
+    private static final String DEFAULT_ICON_PATH = "logo/";
     public static List<Image> getMainIcons(ServerSettings serverSettings) {
         Set<Image> images = new LinkedHashSet<>();
         RawFileData logicsMainIcon = serverSettings != null ? serverSettings.logicsIcon : null;
@@ -494,7 +515,7 @@ public class MainController {
     }
 
     private static ImageIcon getImageIcon(String resourcePath) {
-        return new ImageIcon(SplashScreen.class.getResource(resourcePath));
+        return ResourceUtils.readImage(resourcePath);
     }
 
     public static String getMainTitle() {
@@ -527,5 +548,22 @@ public class MainController {
             text = "<html><b>" + text + "</b> powered by " + LSFUSION_TITLE + "</html>";
         }
         return text;
+    }
+
+    public static void changeColorTheme(ColorTheme newColorTheme) {
+        if (colorTheme != newColorTheme) {
+            colorTheme = newColorTheme;
+
+            try {
+                if (colorTheme.isLight()) {
+                    UIManager.setLookAndFeel(new FlatLightLaf());
+                } else {
+                    UIManager.setLookAndFeel(new FlatDarkLaf());
+                }
+                SwingUtilities.updateComponentTreeUI(MainFrame.instance);
+            } catch (UnsupportedLookAndFeelException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

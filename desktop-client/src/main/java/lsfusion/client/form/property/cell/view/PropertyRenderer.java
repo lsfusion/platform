@@ -18,7 +18,7 @@ public abstract class PropertyRenderer {
     public static final Color INACTIVE_FOREGROUND = UIManager.getColor("TextField.inactiveForeground");
     public static final Color REQUIRED_FOREGROUND = new Color(136, 9, 0);
 
-    protected Color defaultBackground;
+//    protected Color defaultBackground;
 
     protected ClientPropertyDraw property;
     protected Object value;
@@ -33,7 +33,8 @@ public abstract class PropertyRenderer {
         if (property != null) {
             property.design.designCell(getComponent());
         }
-        defaultBackground = getComponent().getBackground();
+//        defaultBackground = null;
+//        defaultBackground = getComponent().getBackground();
     }
 
     protected void setValue(Object value) {
@@ -58,16 +59,18 @@ public abstract class PropertyRenderer {
         drawBorder(isInFocusedRow, hasFocus);
     }
     
-    protected Color getDefaultBackground() {
-        return defaultBackground;
-    }
+//    protected Color getDefaultBackground() {
+//        return defaultBackground;
+//    }
 
     protected void drawBackground(boolean isInFocusedRow, boolean hasFocus, Color conditionalBackground) {
-        Color baseColor = conditionalBackground != null ? conditionalBackground : getDefaultBackground();
+        Color baseColor = conditionalBackground != null ? conditionalBackground : null;
+//        Color baseColor = conditionalBackground != null ? conditionalBackground : getComponent().getParent().getBackground();
+//        Color baseColor = conditionalBackground != null ? conditionalBackground : getDefaultBackground();
         if (hasFocus) {
-            getComponent().setBackground(new Color(baseColor.getRGB() & colorPreferences.getFocusedCellBackground().getRGB()));
+            getComponent().setBackground(baseColor != null ? new Color(baseColor.getRGB() & colorPreferences.getFocusedCellBackground().getRGB()) : colorPreferences.getFocusedCellBackground());
         } else if (isInFocusedRow) {
-            getComponent().setBackground(new Color(baseColor.getRGB() & colorPreferences.getSelectedRowBackground().getRGB()));
+            getComponent().setBackground(baseColor != null ? new Color(baseColor.getRGB() & colorPreferences.getSelectedRowBackground().getRGB()) : colorPreferences.getSelectedRowBackground());
         } else {
             getComponent().setBackground(baseColor);
         }

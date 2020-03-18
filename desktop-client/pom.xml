@@ -177,6 +177,10 @@
             <artifactId>jxlayer</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.jhlabs</groupId>
             <artifactId>filters</artifactId>
         </dependency>

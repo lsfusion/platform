@@ -1,9 +1,8 @@
 package lsfusion.client.form.filter.user.controller;
 
-import lsfusion.base.ResourceUtils;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.base.view.FlatRolloverButton;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
+import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.filter.user.view.QueryView;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
@@ -19,7 +18,7 @@ import java.util.List;
 
 public abstract class QueryController {
 
-    public static final ImageIcon collapseIcon = ResourceUtils.readImage("collapse.png");
+    public static final String COLLAPSE_ICON_PATH = "collapse.png";
 
     private enum State {
         HIDDEN, REMOVED, COLLAPSED, EXPANDED
@@ -30,7 +29,7 @@ public abstract class QueryController {
     private final QueryView view;
 
     private final TableController logicsSupplier;
-    private final FlatRolloverButton toolbarButton;
+    private final ToolbarGridButton toolbarButton;
 
     private State state;
     private State hiddenState;
@@ -40,7 +39,7 @@ public abstract class QueryController {
 
         view = createView();
 
-        toolbarButton = new ToolbarGridButton(view.getFilterIcon(), "") {
+        toolbarButton = new ToolbarGridButton(FilterView.FILTER_ICON_PATH, "") {
             
             @Override
             public String getToolTipText() {
@@ -81,16 +80,17 @@ public abstract class QueryController {
     private void setState(State state) {
         this.state = state;
 
-        toolbarButton.setIcon(getStateIcon());
+        toolbarButton.setIconPath(getStateIconPath());
 
         getView().setContentVisible(state == State.EXPANDED);
     }
 
-    private Icon getStateIcon() {
+    private String getStateIconPath() {
         switch (state) {
-            case REMOVED: return getView().getFilterIcon();
-            case COLLAPSED: return collapseIcon;
-            case EXPANDED: return collapseIcon;
+            case REMOVED: return FilterView.FILTER_ICON_PATH;
+            case COLLAPSED:
+            case EXPANDED:
+                return COLLAPSE_ICON_PATH;
         }
         return null;
     }

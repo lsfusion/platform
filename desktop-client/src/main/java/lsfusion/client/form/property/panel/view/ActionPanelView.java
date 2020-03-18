@@ -12,6 +12,7 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
@@ -31,7 +32,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     private final EditPropertyDispatcher editDispatcher;
     private final ClientPropertyContextMenuPopup menu = new ClientPropertyContextMenuPopup();
 
-    private Color defaultBackground;
+//    private Color defaultBackground;
 
     private final ClientPropertyDraw property;
     private final ClientGroupObjectValue columnKey;
@@ -44,7 +45,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
         super((String)null);
 
-        this.defaultBackground = getBackground();
+//        this.defaultBackground = getBackground();
         this.property = iproperty;
         this.columnKey = icolumnKey;
         this.form = iform;
@@ -58,7 +59,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             setEnabled(false);
         }
 
-        property.design.designComponent(this);
+        property.design.designButton(this, MainFrame.colorTheme);
         if (property.focusable != null) {
             setFocusable(property.focusable);
         } else if (property.changeKey != null) {
@@ -200,13 +201,14 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setBackgroundColor(Color background) {
-        setBackground(background == null ? defaultBackground : background);
+        setBackground(background);
+//        setBackground(background == null ? defaultBackground : background);
     }
 
-    @Override
-    public void setBackground(Color bg) {
-        super.setBackground(bg);
-    }
+//    @Override
+//    public void setBackground(Color bg) {
+//        super.setBackground(bg);
+//    }
 
     public void setForegroundColor(Color background) {
         // пока не highlight'им

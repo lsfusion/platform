@@ -5,6 +5,7 @@ import lsfusion.client.form.object.table.grid.user.toolbar.view.TitledPanel;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientPanelNavigatorWindow;
+import lsfusion.client.view.MainFrame;
 import org.jdesktop.swingx.VerticalLayout;
 
 import javax.swing.*;
@@ -66,13 +67,12 @@ public class PanelNavigatorView extends NavigatorView {
     }
 
     private JButton createButton(ClientNavigatorElement element) {
-        JButton button = new FlatRolloverButton(element.toString()) {
+        JButton button = new FlatRolloverButton(element.imageHolder.getImage(MainFrame.colorTheme), element.toString()) {
             @Override
             public Insets getInsets() {
                 return new Insets(4, 4, 4, 4);
             }
         };
-        button.setIcon(element.imageHolder.getImage());
         button.setToolTipText(element.toString());
         button.addMouseListener(new NavigatorMouseAdapter(element));
         button.setHorizontalAlignment(JButton.LEFT);

@@ -174,6 +174,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                             new HighlightPredicate.AndHighlightPredicate(
                                     HighlightPredicate.HAS_FOCUS,
                                     new HighlightPredicate.ColumnHighlightPredicate(0)
+                                    // there is no text in tree column: foreground colors mean nothing 
                             ), colorPreferences.getFocusedCellBackground(), Color.BLACK, colorPreferences.getFocusedCellBackground(), Color.BLACK
                     ),
                     new ColorHighlighter(
@@ -182,7 +183,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                                             HighlightPredicate.HAS_FOCUS
                                     ),
                                     new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), Color.WHITE, Color.BLACK, colorPreferences.getSelectedRowBackground(), Color.BLACK
+                            ), null, Color.BLACK, colorPreferences.getSelectedRowBackground(), Color.BLACK
                     )
             );
 

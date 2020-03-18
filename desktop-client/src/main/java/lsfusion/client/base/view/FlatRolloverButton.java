@@ -26,11 +26,11 @@ public class FlatRolloverButton extends JButton {
     }
 
     public FlatRolloverButton(String text) {
-        this(text, null);
+        this(null, text);
     }
 
     public FlatRolloverButton(Icon icon) {
-        this(null, icon);
+        this(icon, null);
     }
 
     public FlatRolloverButton(Action a) {
@@ -38,7 +38,7 @@ public class FlatRolloverButton extends JButton {
         setAction(a);
     }
 
-    public FlatRolloverButton(String text, Icon icon) {
+    public FlatRolloverButton(Icon icon, String text) {
         super(text, icon);
         setContentAreaFilled(false);
         addMouseListener(mouseAdapter);

@@ -1,11 +1,16 @@
 package lsfusion.client.view;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import com.google.common.base.Throwables;
 import com.jhlabs.image.BlurFilter;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.SplashScreen;
+import lsfusion.client.base.view.ClientImages;
+import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.controller.remote.ReconnectWorker;
@@ -19,6 +24,7 @@ import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
+import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -34,16 +40,14 @@ import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 
 import javax.swing.*;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -139,6 +143,8 @@ public abstract class MainFrame extends JFrame {
             frame.clearForms();
 
             instance = frame; // it's important to set this field before onDesktopClientStarted because it is used when getting eventbus for example
+            
+            changeColorTheme(clientSettings.colorTheme);
 
             frame.executeNavigatorAction("SystemEvents.onDesktopClientStarted[]", 0, null, null);
         } catch (Throwable e) {
@@ -452,4 +458,53 @@ public abstract class MainFrame extends JFrame {
 
     public abstract ClientFormDockable runForm(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener);
 
+    public static ColorTheme colorTheme = ColorTheme.DEFAULT;
+//    public static List<ColorThemeChangeListener> colorThemeChangeListeners = new ArrayList<>();
+    public static Set<ColorThemeChangeListener> colorThemeChangeListeners = Collections.newSetFromMap(new WeakHashMap<>());
+
+    public static void addColorThemeChangeListener(ColorThemeChangeListener listener) {
+        colorThemeChangeListeners.add(listener);
+    }
+    
+    public static void changeColorTheme(ColorTheme newColorTheme) {
+        if (colorTheme != newColorTheme) {
+            colorTheme = newColorTheme;
+
+            FlatLaf newLookAndFeel = colorTheme.isLight() ? new FlatLightLaf() : new FlatDarkLaf();
+            FlatLaf.install(newLookAndFeel);
+
+            ClientImages.refreshIcons();
+
+            Properties colorThemeProperties = new Properties();
+            try (InputStream input = MainFrame.class.getClassLoader().getResourceAsStream("theme/" + colorTheme.getSid() + ".properties")) {
+                if (input == null) {
+                    System.out.println("Unable to find " + colorTheme.getSid() + ".properties");
+                    return;
+                }
+                colorThemeProperties.load(input);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Object focusColor;
+            if (newColorTheme.isLight()) {
+                focusColor = new ColorUIResource(0xFF0000);
+            } else {
+                focusColor = new ColorUIResource(0x00FF00);
+            }
+            
+//            Object focusColor = "FF0000";
+//            Object focusColor = colorThemeProperties.get("focus.color");
+
+//            UIManager.put("Button.default.focusColor", null);
+            UIManager.put("Button.focusedBorderColor", focusColor);
+            UIManager.put("Button.default.focusedBorderColor", focusColor);
+            UIManager.put("Component.focusedBorderColor", focusColor);
+
+            FlatLaf.updateUI();
+
+            for (ColorThemeChangeListener colorThemeChangeListener : colorThemeChangeListeners) {
+                colorThemeChangeListener.colorThemeChanged();
+            }
+        }
+    }
 }

@@ -1,13 +1,11 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ResourceUtils;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -18,12 +16,12 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class GroupingButton extends ToolbarGridButton {
 
-    private static final ImageIcon PIVOT_ICON = ResourceUtils.readImage("pivot.png");
+    private static final String PIVOT_ICON_PATH = "pivot.png";
 
     public GroupingDialog dialog;
 
     public GroupingButton(final GridTable grid) {
-        super(PIVOT_ICON, getString("form.queries.grouping"));
+        super(PIVOT_ICON_PATH, getString("form.queries.grouping"));
 
         addActionListener(new ActionListener() {
             @Override

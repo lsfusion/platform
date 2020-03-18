@@ -1,8 +1,8 @@
 package lsfusion.client.form.print.view;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
-import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.RmiQueue;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -139,7 +139,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
 
     private JButton getEditReportButton(final EditReportInvoker editInvoker, boolean visible) {
-        return createButton("/images/editReport.png", getString("layout.menu.file.edit.report"), visible, new ActionListener() {
+        return createButton("editReport.png", getString("layout.menu.file.edit.report"), visible, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 RmiQueue.runAction(new Runnable() {
@@ -153,7 +153,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
 
     private JButton getAddReportButton(final EditReportInvoker editInvoker) {
-        return createButton("/images/editAutoReport.png", getString("layout.menu.file.create.custom.report"), true, new ActionListener() {
+        return createButton("editAutoReport.png", getString("layout.menu.file.create.custom.report"), true, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 RmiQueue.runAction(new Runnable() {
@@ -184,7 +184,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
 
     private JButton getDeleteReportButton(final EditReportInvoker editInvoker, final boolean visible) {
-        return createButton("/images/deleteReport.png", getString("layout.menu.file.delete.report"), visible, new ActionListener() {
+        return createButton("deleteReport.png", getString("layout.menu.file.delete.report"), visible, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 RmiQueue.runAction(new Runnable() {
@@ -208,7 +208,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
     
     private JButton createButton(String iconPath, String tooltipText, boolean visible, ActionListener actionListener) {
-        JButton button = new JButton(new ImageIcon(MainController.class.getResource(iconPath)));
+        JButton button = new JButton(ResourceUtils.readImage(iconPath));
         button.setToolTipText(tooltipText);
         button.setMargin(new Insets(2, 2, 2, 2));
         button.setMaximumSize(new Dimension(23, 23));

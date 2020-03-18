@@ -13,8 +13,6 @@ import lsfusion.client.logics.LogicsProvider;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.logics.LogicsConnection;
-import lsfusion.interop.logics.LogicsRunnable;
-import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
@@ -44,21 +42,22 @@ public class LoginDialog extends JDialog {
     private JButton buttonOK;
     private String checkVersionError;
     private JButton buttonCancel;
-    private JComboBox loginBox;
+    private JComboBox<String> loginBox;
     private JPasswordField passwordField;
-    private JComboBox serverHostComboBox;
+    private JComboBox<String> serverHostComboBox;
     private JCheckBox savePasswordCheckBox;
     private JCheckBox useAnonymousUICheckBox;
     private JLabel warningLabel;
     private JPanel warningPanel;
-    private JComboBox serverDBComboBox;
+    private JPanel warningPanelWrapper;
+    private JComboBox<String> serverDBComboBox;
     private JLabel loginLabel;
     private JLabel passwordLabel;
     private JLabel imageLabel;
 
     private List<UserInfo> userInfos; // needed for passwords
     
-    public String getCurrentItem(JComboBox comboBox) {
+    public String getCurrentItem(JComboBox<String> comboBox) {
         return (String)comboBox.getEditor().getItem(); // not getSelectedItem, because we want to see edited (not selected) text
     }
 
@@ -129,31 +128,13 @@ public class LoginDialog extends JDialog {
     }
 
     private void initUIHandlers() {
-        getRootPane().setWindowDecorationStyle(JRootPane.PLAIN_DIALOG);
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        serverHostComboBox.addItemListener(e -> updateOK());
 
-        serverHostComboBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                updateOK();
-            }
-        });
-
-        serverHostComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                updateOK();
-            }
-        });
+        serverHostComboBox.addActionListener(e -> updateOK());
 
         KeyListener updateKeyListener = new KeyListener() {
             public void keyTyped(KeyEvent e) {
@@ -170,15 +151,13 @@ public class LoginDialog extends JDialog {
         };
         serverHostComboBox.getEditor().getEditorComponent().addKeyListener(updateKeyListener);
 
-        loginBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    UserInfo info = getUserInfo(getCurrentItem(loginBox));
-                    if (info != null) {
-                        updatePassword(info);
-                    }
-                    updateOK();
+        loginBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                UserInfo info = getUserInfo(getCurrentItem(loginBox));
+                if (info != null) {
+                    updatePassword(info);
                 }
+                updateOK();
             }
         });
 
@@ -186,7 +165,7 @@ public class LoginDialog extends JDialog {
 
         loginBox.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
-                JComboBox textBox = (JComboBox) e.getComponent();
+                JComboBox<String> textBox = (JComboBox<String>) e.getComponent();
                 textBox.getEditor().selectAll();
             }
         });
@@ -198,12 +177,7 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        useAnonymousUICheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                updateAnonymousUIActivity();
-            }
-        });
+        useAnonymousUICheckBox.addItemListener(e -> updateAnonymousUIActivity());
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -212,11 +186,7 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStrokes.getEscape(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStrokes.getEscape(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     public void updatePassword(UserInfo info) {
@@ -225,21 +195,15 @@ public class LoginDialog extends JDialog {
     }
 
     private void initServerSettingsListeners() {
-        serverHostComboBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if(e.getStateChange() == ItemEvent.DESELECTED) {
-                    updateServerSettings(true);
-                }
+        serverHostComboBox.addItemListener(e -> {
+            if(e.getStateChange() == ItemEvent.DESELECTED) {
+                updateServerSettings(true);
             }
         });
 
-        serverDBComboBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if(e.getStateChange() == ItemEvent.DESELECTED) {
-                    updateServerSettings(true);
-                }
+        serverDBComboBox.addItemListener(e -> {
+            if(e.getStateChange() == ItemEvent.DESELECTED) {
+                updateServerSettings(true);
             }
         });
     }
@@ -437,7 +401,7 @@ public class LoginDialog extends JDialog {
         int port = 0;
         try {
             port = Integer.parseInt(server.substring(pos + 1));
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException ignored) {
         }
 
         return new Pair<>(server.substring(0, pos), port);
@@ -451,7 +415,7 @@ public class LoginDialog extends JDialog {
     public void setWarningMsg(String msg) {
         ClientLoggers.clientLogger.info("setWarningMsg: " + msg);
         warningLabel.setText(msg != null ? "<html><body style='width: " + warningPanel.getSize().width + "'>" + msg + "</body></html>" : "");
-        warningPanel.setVisible(msg != null && !msg.isEmpty());
+        warningPanelWrapper.setVisible(msg != null && !msg.isEmpty());
         pack();
     }
 
@@ -486,11 +450,9 @@ public class LoginDialog extends JDialog {
         // synchronizing userInfos
         final Result<List<UserInfo>> rUserInfos = new Result<>(userInfos);
         try {
-            LogicsProvider.instance.runRequest(serverInfo, new LogicsRunnable<Object>() {
-                public Object run(LogicsSessionObject sessionObject) throws RemoteException {
-                    syncUsers(sessionObject.remoteLogics, rUserInfos);
-                    return null;
-                }
+            LogicsProvider.instance.runRequest(serverInfo, sessionObject -> {
+                syncUsers(sessionObject.remoteLogics, rUserInfos);
+                return null;
             });
         } catch (Throwable e) {
             ClientLoggers.clientLogger.error("Failed to synchronize users", e);
@@ -532,7 +494,7 @@ public class LoginDialog extends JDialog {
         JLabel serverLabel = new JLabel(ClientResourceBundle.getString("dialog.server.address"));
         settingsPanel.add(serverLabel, getGridBagConstraints(0, 0, true));
 
-        serverHostComboBox = new JComboBox();
+        serverHostComboBox = new JComboBox<>();
         serverHostComboBox.setEditable(true);
         settingsPanel.add(serverHostComboBox, getGridBagConstraints(0, 1, true));
 
@@ -540,7 +502,7 @@ public class LoginDialog extends JDialog {
         serverDBLabel.setLabelFor(serverDBComboBox);
         settingsPanel.add(serverDBLabel, getGridBagConstraints(1, 0, true));
 
-        serverDBComboBox = new JComboBox();
+        serverDBComboBox = new JComboBox<>();
         serverDBComboBox.setEditable(true);
         settingsPanel.add(serverDBComboBox, getGridBagConstraints(1, 1, true));
 
@@ -551,7 +513,7 @@ public class LoginDialog extends JDialog {
         loginLabel.setLabelFor(loginBox);
         settingsPanel.add(loginLabel, getGridBagConstraints(3, 0, true));
 
-        loginBox = new JComboBox();
+        loginBox = new JComboBox<>();
         loginBox.setEditable(true);
         settingsPanel.add(loginBox, getGridBagConstraints(3, 1, true));
 
@@ -571,13 +533,15 @@ public class LoginDialog extends JDialog {
         JPanel okCancelPanel = new JPanel(new BorderLayout());
         bottomPanel.add(okCancelPanel, getGridBagConstraints(1, 1, false));
 
-        JPanel subOKCancelPanel = new JPanel(new GridLayout());
+        JPanel subOKCancelPanel = new JPanel();
+        subOKCancelPanel.setLayout(new BoxLayout(subOKCancelPanel, BoxLayout.X_AXIS));
         okCancelPanel.add(subOKCancelPanel, BorderLayout.EAST);
 
         buttonOK = new JButton(ClientResourceBundle.getString("dialog.ok"));
         buttonOK.setMnemonic('O');
         buttonOK.setDisplayedMnemonicIndex(0);
         subOKCancelPanel.add(buttonOK);
+        subOKCancelPanel.add(Box.createHorizontalStrut(2));
 
         buttonCancel = new JButton(ClientResourceBundle.getString("dialog.cancel"));
         buttonCancel.setMnemonic('C');
@@ -588,7 +552,11 @@ public class LoginDialog extends JDialog {
         warningPanel.setBackground(new Color(-39322));
         warningLabel = new JLabel("");
         warningPanel.add(warningLabel);
-        mainPanel.add(warningPanel);
+        warningPanelWrapper = new JPanel();
+        warningPanelWrapper.setLayout(new BoxLayout(warningPanelWrapper, BoxLayout.Y_AXIS));
+        warningPanelWrapper.add(warningPanel);
+        warningPanelWrapper.setBorder(BorderFactory.createEmptyBorder(5, 1, 1, 1));
+        mainPanel.add(warningPanelWrapper);
     }
 
     private GridBagConstraints getGridBagConstraints(int row, int column, boolean insets) {
