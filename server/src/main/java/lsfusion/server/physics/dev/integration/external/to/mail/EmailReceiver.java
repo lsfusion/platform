@@ -6,6 +6,7 @@ import com.github.junrar.exception.RarException;
 import com.github.junrar.impl.FileVolumeManager;
 import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
+import com.sun.mail.imap.IMAPBodyPart;
 import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.BASE64DecoderStream;
 import com.sun.mail.util.FolderClosedIOException;
@@ -379,7 +380,10 @@ public class EmailReceiver {
                         f.deleteOnExit();
                 }
             } else {
-                Object content = bp.getContent();
+                Object content = bp instanceof IMAPBodyPart ? getIMAPBodyPartContent((IMAPBodyPart) bp) : null;
+                if(content == null) {
+                    content = bp.getContent();
+                }
                 if (content instanceof BASE64DecoderStream) {
                     RawFileData byteArray = new RawFileData((BASE64DecoderStream) content);
                     String fileName = decodeFileName(bp.getFileName());
@@ -391,6 +395,15 @@ public class EmailReceiver {
             }
         }
         return new MultipartBody(body, attachments);
+    }
+
+    private Object getIMAPBodyPartContent(IMAPBodyPart bp) throws MessagingException, IOException {
+        Object content = null;
+        String encoding = bp.getEncoding();
+        if(encoding != null && encoding.equals("8bit")) {
+            content = MimeUtility.decode(bp.getInputStream(), "8bit");
+        }
+        return content;
     }
 
     private MultipartBody extractWinMail(File winMailFile) throws IOException {
