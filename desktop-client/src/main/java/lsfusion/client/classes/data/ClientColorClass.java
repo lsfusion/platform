@@ -16,10 +16,6 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
 
     public final static ClientColorClass instance = new ClientColorClass();
 
-    public static Color getDefaultValue() {
-        return Color.WHITE;
-    }
-
     @Override
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new ColorPropertyRenderer(property);

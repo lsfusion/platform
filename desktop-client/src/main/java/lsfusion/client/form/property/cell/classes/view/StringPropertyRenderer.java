@@ -3,8 +3,6 @@ package lsfusion.client.form.property.cell.classes.view;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.LabelPropertyRenderer;
 
-import java.awt.*;
-
 public class StringPropertyRenderer extends LabelPropertyRenderer {
 
     private final boolean echoSymbols;
@@ -15,16 +13,8 @@ public class StringPropertyRenderer extends LabelPropertyRenderer {
     }
 
     @Override
-    protected void drawForeground(Color conditionalForeground) {
-        if (value == null) {
-            if (property != null && property.isEditableNotNull()) {
-                getComponent().setForeground(REQUIRED_FOREGROUND);
-            } else {
-                getComponent().setForeground(INACTIVE_FOREGROUND);
-            }
-        } else {
-            getComponent().setForeground(conditionalForeground != null ? conditionalForeground : defaultForeground);
-        }
+    protected boolean showNotDefinedString() {
+        return true;
     }
 
     public void setValue(Object value) {

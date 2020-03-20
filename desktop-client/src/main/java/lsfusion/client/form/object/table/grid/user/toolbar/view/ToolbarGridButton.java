@@ -14,8 +14,6 @@ public class ToolbarGridButton extends ThemedFlatRolloverButton {
         super(iconPath);
         putClientProperty("Button.arc", 5);
         putClientProperty("Component.arc", 5);
-//        Icon icon = readImage(iconPath);
-//        setIcon(icon);
         setAlignmentY(Component.TOP_ALIGNMENT);
         setMinimumSize(buttonSize);
         setPreferredSize(buttonSize);

@@ -1,6 +1,7 @@
 package lsfusion.client.navigator.tree.view;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.tree.ClientTree;
@@ -9,7 +10,6 @@ import lsfusion.client.navigator.tree.ClientTreeActionEvent;
 import lsfusion.client.navigator.tree.ClientTreeNode;
 import lsfusion.client.navigator.view.NavigatorView;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
-import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -88,7 +88,7 @@ public class TreeNavigatorView extends NavigatorView {
 
         @Override
         public Icon getIcon() {
-            return getTypedObject().imageHolder.getImage(MainFrame.colorTheme);
+            return getTypedObject().imageHolder.getImage(MainController.colorTheme);
         }
     }
 }

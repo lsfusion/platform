@@ -49,7 +49,6 @@ public class GridController extends AbstractTableController {
     private static final String UPDATE_ICON_PATH = "update.png";
     private static final String OK_ICON_PATH = "ok.png";
 
-
     private final ClientGroupObject groupObject;
 
     private GridView view;

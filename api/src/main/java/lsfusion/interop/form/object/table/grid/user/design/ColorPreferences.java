@@ -1,33 +1,25 @@
 package lsfusion.interop.form.object.table.grid.user.design;
 
-import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.io.Serializable;
 
 public class ColorPreferences implements Serializable {
     private Color selectedRowBackground;
-    private Border selectedRowBorder;
     private Color selectedCellBackground;
     private Color focusedCellBackground;
-    private Border focusedCellBorder;
+    private Color focusedCellBorderColor;
 
 
-    public ColorPreferences(Color selectedRowBackground, Color selectedRowBorder, Color selectedCellBackground, 
-                            Color focusedCellBackground, Color focusedCellBorder) {
+    public ColorPreferences(Color selectedRowBackground, Color selectedCellBackground, 
+                            Color focusedCellBackground, Color focusedCellBorderColor) {
         this.selectedRowBackground = selectedRowBackground;
-        this.selectedRowBorder = BorderFactory.createMatteBorder(1, 0, 1, 0, selectedRowBorder);
         this.selectedCellBackground = selectedCellBackground;
         this.focusedCellBackground = focusedCellBackground;
-        this.focusedCellBorder = BorderFactory.createMatteBorder(1, 1, 1, 1, focusedCellBorder);
+        this.focusedCellBorderColor = focusedCellBorderColor;
     }
 
     public Color getSelectedRowBackground() {
         return selectedRowBackground;
-    }
-
-    public Border getSelectedRowBorder() {
-        return selectedRowBorder;
     }
 
     public Color getSelectedCellBackground() {
@@ -38,7 +30,7 @@ public class ColorPreferences implements Serializable {
         return focusedCellBackground;
     }
     
-    public Border getFocusedCellBorder() {
-        return focusedCellBorder;
+    public Color getFocusedCellBorderColor() {
+        return focusedCellBorderColor;
     }
 }

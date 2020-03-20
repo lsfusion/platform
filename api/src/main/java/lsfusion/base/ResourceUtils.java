@@ -152,7 +152,6 @@ public class ResourceUtils {
     
     public static ImageIcon readImage(String imagePath) {
         URL resource = ResourceUtils.class.getResource("/images/" + imagePath);
-//        Toolkit.getDefaultToolkit().getImage(resource);
         return resource != null ? new ImageIcon(resource) : null;
     }
 }  

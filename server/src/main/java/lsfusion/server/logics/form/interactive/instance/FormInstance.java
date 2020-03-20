@@ -19,7 +19,6 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventType;
-import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -113,11 +112,9 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -530,20 +527,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         return new FormUserPreferences(goGeneralPreferences, goUserPreferences);
-    }
-
-    public ColorPreferences loadColorPreferences() {       
-        try {
-            Color selectedRowBackground = (Color) BL.serviceLM.overrideSelectedRowBackgroundColor.read(session);
-            Color selectedRowBorder = (Color) BL.serviceLM.overrideSelectedRowBorderColor.read(session);
-            Color selectedCellBackground = (Color) BL.serviceLM.overrideSelectedCellBackgroundColor.read(session);
-            Color focusedCellBackground = (Color) BL.serviceLM.overrideFocusedCellBackgroundColor.read(session);
-            Color focusedCellBorder = (Color) BL.serviceLM.overrideFocusedCellBorderColor.read(session);
-            return new ColorPreferences(selectedRowBackground, selectedRowBorder, selectedCellBackground, 
-                    focusedCellBackground, focusedCellBorder);
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
     }
     
     private ImSet<PropertyDrawInstance> userPrefsHiddenProperties = SetFact.EMPTY();

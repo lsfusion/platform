@@ -67,8 +67,6 @@ public class ComponentDesign extends ContextObject implements Serializable {
         if (background != null) {
             comp.setBackground(background);
             comp.setOpaque(true);
-//        } else if (defaultBackground != null) {
-//            comp.setBackground(defaultBackground);
         } else {
             comp.setBackground(null); // default transparent background
         }

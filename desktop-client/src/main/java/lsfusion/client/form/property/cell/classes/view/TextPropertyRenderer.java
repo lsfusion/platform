@@ -9,14 +9,8 @@ import lsfusion.client.view.MainFrame;
 import javax.swing.*;
 import java.awt.*;
 
-import static javax.swing.BorderFactory.createCompoundBorder;
-import static javax.swing.BorderFactory.createEmptyBorder;
-import static lsfusion.client.form.controller.ClientFormController.colorPreferences;
-
 
 public class TextPropertyRenderer extends PropertyRenderer {
-    private Color defaultForeground;
-
     private boolean rich;
     private JEditorPane pane;
 
@@ -28,8 +22,6 @@ public class TextPropertyRenderer extends PropertyRenderer {
         getComponent().setFont(new Font("Tahoma", Font.PLAIN, MainFrame.getIntUIFontSize(10)));
         getComponent().setEditable(false);
         getComponent().setEditorKitForContentType("text/html", new RichEditorKit());
-
-        defaultForeground = getComponent().getForeground();
     }
 
     public JEditorPane getComponent() {
@@ -40,26 +32,13 @@ public class TextPropertyRenderer extends PropertyRenderer {
     }
 
     @Override
-    protected void drawForeground(Color conditionalForeground) {
-        if (value == null) {
-            if (property != null && property.isEditableNotNull()) {
-                getComponent().setForeground(REQUIRED_FOREGROUND);
-            } else {
-                getComponent().setForeground(INACTIVE_FOREGROUND);
-            }
-        } else {
-            getComponent().setForeground(conditionalForeground != null ? conditionalForeground : defaultForeground);
-        }
+    protected boolean showRequiredString() {
+        return true;
     }
 
-    protected void drawBorder(boolean isInFocusedRow, boolean hasFocus) {
-        if (hasFocus) {
-            getComponent().setBorder(createCompoundBorder(colorPreferences.getFocusedCellBorder(), createEmptyBorder(1, 2, 0, 1)));
-        } else if (isInFocusedRow) {
-            getComponent().setBorder(createCompoundBorder(colorPreferences.getSelectedRowBorder(), createEmptyBorder(1, 3, 0, 2)));
-        } else {
-            getComponent().setBorder(createEmptyBorder(2, 3, 1, 2));
-        }
+    @Override
+    protected boolean showNotDefinedString() {
+        return true;
     }
 
     public void setValue(Object value) {

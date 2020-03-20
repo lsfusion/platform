@@ -21,7 +21,6 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -220,7 +219,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return valueSize.height;
         }
         int height = baseType.getDefaultHeight(comp.getFontMetrics(design.getFont(comp)), charHeight == 0 ? 1 : charHeight);
-        ImageIcon image = design.getImage(MainFrame.colorTheme);
+        ImageIcon image = design.getImage(MainController.colorTheme);
         if (image != null) // предпочитаемую высоту берем исходя из размера иконки
             height = Math.max(image.getIconHeight() + 6, height);
         return height;

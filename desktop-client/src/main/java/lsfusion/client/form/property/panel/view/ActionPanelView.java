@@ -2,7 +2,10 @@ package lsfusion.client.form.property.panel.view;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.ColorThemeChangeListener;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -12,7 +15,6 @@ import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
@@ -28,11 +30,9 @@ import static javax.swing.SwingUtilities.isRightMouseButton;
 import static lsfusion.client.base.SwingUtils.overrideSize;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPressActionSID;
 
-public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
+public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler, ColorThemeChangeListener {
     private final EditPropertyDispatcher editDispatcher;
     private final ClientPropertyContextMenuPopup menu = new ClientPropertyContextMenuPopup();
-
-//    private Color defaultBackground;
 
     private final ClientPropertyDraw property;
     private final ClientGroupObjectValue columnKey;
@@ -45,10 +45,11 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
         super((String)null);
 
-//        this.defaultBackground = getBackground();
         this.property = iproperty;
         this.columnKey = icolumnKey;
         this.form = iform;
+        
+        MainController.addColorThemeChangeListener(this);
         
         editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 
@@ -59,7 +60,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             setEnabled(false);
         }
 
-        property.design.designButton(this, MainFrame.colorTheme);
+        property.design.designButton(this, MainController.colorTheme);
         if (property.focusable != null) {
             setFocusable(property.focusable);
         } else if (property.changeKey != null) {
@@ -201,14 +202,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setBackgroundColor(Color background) {
-        setBackground(background);
-//        setBackground(background == null ? defaultBackground : background);
+        setBackground(background == null ? SwingDefaults.getButtonBackground() : background);
     }
-
-//    @Override
-//    public void setBackground(Color bg) {
-//        super.setBackground(bg);
-//    }
 
     public void setForegroundColor(Color background) {
         // пока не highlight'им
@@ -274,5 +269,10 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     @Override
     public EditPropertyDispatcher getEditPropertyDispatcher() {
         return editDispatcher;
+    }
+
+    @Override
+    public void colorThemeChanged() {
+        setIcon(property.design.getImage(MainController.colorTheme));
     }
 }

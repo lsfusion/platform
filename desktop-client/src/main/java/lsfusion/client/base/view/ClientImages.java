@@ -1,6 +1,6 @@
 package lsfusion.client.base.view;
 
-import lsfusion.client.view.MainFrame;
+import lsfusion.client.controller.MainController;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -14,23 +14,17 @@ public class ClientImages {
     public static ImageIcon get(String path) {
         ImageIcon image = images.get(path);
         if (image == null) {
-            image = refreshIcon(path);
+            ImageIcon newImage = readImage(MainController.colorTheme.getImagePath(path));
+            if (newImage != null) {
+                images.put(path, newImage);
+            } else {
+                images.put(path, readImage(path)); // default color theme
+            }
         }
         return image;
     }
     
-    public static void refreshIcons() {
-        for (String path : images.keySet()) {
-            refreshIcon(path);
-        }
+    public static void reset() {
+        images.clear();
     } 
-
-    public static ImageIcon refreshIcon(String path) {
-        ImageIcon image = readImage(MainFrame.colorTheme.getImagePath(path));
-        if (image == null) {
-            image = readImage(path); // default color theme
-        }
-        images.put(path, image);
-        return image;
-    }
 }

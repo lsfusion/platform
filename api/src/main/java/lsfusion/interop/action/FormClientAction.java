@@ -3,8 +3,6 @@ package lsfusion.interop.action;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
-import java.io.IOException;
-
 public class FormClientAction extends ExecuteClientAction {
 
     public String formSID;
@@ -17,7 +15,7 @@ public class FormClientAction extends ExecuteClientAction {
     public Object[] immutableMethods;
     public byte[] firstChanges;
 
-    public static String[] methodNames = new String[] {"getUserPreferences", "getColorPreferences", "getRichDesignByteArray", "getInitFilterPropertyDraw"};
+    public static String[] methodNames = new String[] {"getUserPreferences", "getRichDesignByteArray", "getInitFilterPropertyDraw"};
 
     public FormClientAction(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, ModalityType modalityType) {
         this.formSID = formSID;

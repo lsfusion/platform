@@ -2,6 +2,7 @@ package lsfusion.client.form.property.cell.classes.controller;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
 import lsfusion.client.view.MainFrame;
@@ -47,6 +48,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         if (design != null) {
             design.designCell(textArea);
         }
+        textArea.setBackground(SwingDefaults.getTableCellBackground());
 
 
         String msgString1 = ClientResourceBundle.getString("form.editor.text");

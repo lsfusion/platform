@@ -179,9 +179,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP isServer;
 
     public LP defaultBackgroundColor;
-    public LP defaultOverrideBackgroundColor;
     public LP defaultForegroundColor;
-    public LP defaultOverrideForegroundColor;
 
     public LP reportRowHeight, reportCharWidth, reportToStretch;
 
@@ -487,9 +485,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         // Настройка форм
         defaultBackgroundColor = findProperty("defaultBackgroundColor[]");
-        defaultOverrideBackgroundColor = findProperty("defaultOverrideBackgroundColor[]");
         defaultForegroundColor = findProperty("defaultForegroundColor[]");
-        defaultOverrideForegroundColor = findProperty("defaultOverrideForegroundColor[]");
 
         initNavigators();
     }
