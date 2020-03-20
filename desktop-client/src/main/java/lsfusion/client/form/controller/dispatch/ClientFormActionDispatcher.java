@@ -1,12 +1,12 @@
 package lsfusion.client.form.controller.dispatch;
 
 import com.google.common.base.Throwables;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.dispatch.DispatcherListener;
 import lsfusion.client.controller.dispatch.SwingClientActionDispatcher;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.view.ClientFormDockable;
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
@@ -95,7 +95,6 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     @Override
     public void execute(ChangeColorThemeClientAction action) {
-        MainFrame.instance.changeColorTheme(action.colorTheme);
-//        MainController.changeColorTheme(action.colorTheme);
+        MainController.changeColorTheme(action.colorTheme);
     }
 }

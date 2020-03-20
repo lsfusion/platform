@@ -1,11 +1,11 @@
 package lsfusion.client.navigator.view;
 
 import lsfusion.client.base.view.FlatRolloverButton;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.TitledPanel;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientPanelNavigatorWindow;
-import lsfusion.client.view.MainFrame;
 import org.jdesktop.swingx.VerticalLayout;
 
 import javax.swing.*;
@@ -67,7 +67,7 @@ public class PanelNavigatorView extends NavigatorView {
     }
 
     private JButton createButton(ClientNavigatorElement element) {
-        JButton button = new FlatRolloverButton(element.imageHolder.getImage(MainFrame.colorTheme), element.toString()) {
+        JButton button = new FlatRolloverButton(element.imageHolder.getImage(MainController.colorTheme), element.toString()) {
             @Override
             public Insets getInsets() {
                 return new Insets(4, 4, 4, 4);

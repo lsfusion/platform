@@ -2,11 +2,11 @@ package lsfusion.client.navigator.view;
 
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.client.base.view.ColorThemeChangeListener;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
@@ -34,7 +34,7 @@ public class ToolBarNavigatorView extends NavigatorView implements ColorThemeCha
         toolBar.setRollover(true);
         toolBar.setFocusable(false);
 
-        MainFrame.addColorThemeChangeListener(this);
+        MainController.addColorThemeChangeListener(this);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class ToolBarNavigatorView extends NavigatorView implements ColorThemeCha
         }
         
         public void updateIcon() {
-            setIcon(new IndentedIcon(imageHolder.getImage(MainFrame.colorTheme), indent));
+            setIcon(new IndentedIcon(imageHolder.getImage(MainController.colorTheme), indent));
         }
     }
 }

@@ -55,7 +55,6 @@ import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
-import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -135,8 +134,6 @@ public class ClientFormController implements AsyncListener {
 
     private final String formSID;
     private final String canonicalName;
-
-    public static ColorPreferences colorPreferences;
 
     private final int ID;
 
@@ -286,8 +283,6 @@ public class ClientFormController implements AsyncListener {
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
     private void initializeForm(byte[] firstChanges) throws Exception {
-        initializeColorPreferences();
-        
         initializeControllers();
 
         initializeRegularFilters();
@@ -307,10 +302,6 @@ public class ClientFormController implements AsyncListener {
 
     public List<ClientPropertyDraw> getPropertyDraws() {
         return form.getPropertyDraws();
-    }
-
-    private void initializeColorPreferences() throws RemoteException {
-        colorPreferences = remoteForm.getColorPreferences(); // есть ли необходимость читать эти настройки при открытии каждой формы?
     }
     
     private void initializeControllers() throws IOException {

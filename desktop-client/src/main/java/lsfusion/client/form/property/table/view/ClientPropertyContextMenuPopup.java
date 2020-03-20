@@ -10,17 +10,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ClientPropertyContextMenuPopup extends JPopupMenu {
-    private static final Color BORDER_COLOR = new Color(175, 175, 255);
-//    private static final Color BACKGROUND = new Color(249, 249, 255);
-    
     public interface ItemSelectionListener {
         void onMenuItemSelected(String actionSID);
     }
 
     public ClientPropertyContextMenuPopup() {
-//        setBackground(BACKGROUND);
-//        setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, BORDER_COLOR,
-//                                                  getBackground(), Color.GRAY, BORDER_COLOR));
     }
 
     public void show(ClientPropertyDraw property, Component owner, Point point, final ItemSelectionListener selectionListener) {

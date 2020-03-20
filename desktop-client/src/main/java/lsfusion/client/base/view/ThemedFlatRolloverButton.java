@@ -1,6 +1,6 @@
 package lsfusion.client.base.view;
 
-import lsfusion.client.view.MainFrame;
+import lsfusion.client.controller.MainController;
 
 public class ThemedFlatRolloverButton extends FlatRolloverButton implements ColorThemeChangeListener {
     private String iconPath;
@@ -16,7 +16,7 @@ public class ThemedFlatRolloverButton extends FlatRolloverButton implements Colo
     public ThemedFlatRolloverButton(String iconPath, String text) {
         super(ClientImages.get(iconPath), text);
         this.iconPath = iconPath;
-        MainFrame.addColorThemeChangeListener(this);
+        MainController.addColorThemeChangeListener(this);
     }
 
     public void setIconPath(String iconPath) {

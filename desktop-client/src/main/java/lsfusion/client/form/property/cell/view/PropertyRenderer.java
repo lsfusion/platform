@@ -1,24 +1,18 @@
 package lsfusion.client.form.property.cell.view;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-import static javax.swing.BorderFactory.createEmptyBorder;
-import static lsfusion.client.form.controller.ClientFormController.colorPreferences;
-
 public abstract class PropertyRenderer {
     public static final String EMPTY_STRING = ClientResourceBundle.getString("form.renderer.not.defined");
     public static final String REQUIRED_STRING = ClientResourceBundle.getString("form.renderer.required");
 
-    public static final Color NORMAL_FOREGROUND = UIManager.getColor("TextField.foreground");
-    public static final Color INACTIVE_FOREGROUND = UIManager.getColor("TextField.inactiveForeground");
-    public static final Color REQUIRED_FOREGROUND = new Color(136, 9, 0);
-
-//    protected Color defaultBackground;
+    public static final Color REQUIRED_FOREGROUND = new Color(188, 63, 60);
 
     protected ClientPropertyDraw property;
     protected Object value;
@@ -33,8 +27,6 @@ public abstract class PropertyRenderer {
         if (property != null) {
             property.design.designCell(getComponent());
         }
-//        defaultBackground = null;
-//        defaultBackground = getComponent().getBackground();
     }
 
     protected void setValue(Object value) {
@@ -59,45 +51,60 @@ public abstract class PropertyRenderer {
         drawBorder(isInFocusedRow, hasFocus);
     }
     
-//    protected Color getDefaultBackground() {
-//        return defaultBackground;
-//    }
+    protected boolean showRequiredString() {
+        return false;
+    }
+    
+    protected boolean showNotDefinedString() {
+        return false;
+    }
+    
+    protected Color getDefaultBackground() {
+        return SwingDefaults.getTableCellBackground(); 
+    }
+    
+    protected Border getDefaultBorder() {
+        return SwingDefaults.getTableCellBorder();
+    }
 
     protected void drawBackground(boolean isInFocusedRow, boolean hasFocus, Color conditionalBackground) {
-        Color baseColor = conditionalBackground != null ? conditionalBackground : null;
-//        Color baseColor = conditionalBackground != null ? conditionalBackground : getComponent().getParent().getBackground();
-//        Color baseColor = conditionalBackground != null ? conditionalBackground : getDefaultBackground();
-        if (hasFocus) {
-            getComponent().setBackground(baseColor != null ? new Color(baseColor.getRGB() & colorPreferences.getFocusedCellBackground().getRGB()) : colorPreferences.getFocusedCellBackground());
-        } else if (isInFocusedRow) {
-            getComponent().setBackground(baseColor != null ? new Color(baseColor.getRGB() & colorPreferences.getSelectedRowBackground().getRGB()) : colorPreferences.getSelectedRowBackground());
+        if (conditionalBackground != null) {
+            getComponent().setBackground(conditionalBackground);
         } else {
-            getComponent().setBackground(baseColor);
+            if (hasFocus) {
+                getComponent().setBackground(SwingDefaults.getFocusedTableCellBackground());
+            } else if (isInFocusedRow) {
+                getComponent().setBackground(SwingDefaults.getFocusedTableRowBackground());
+            } else {
+                getComponent().setBackground(getDefaultBackground());
+            }
         }
     }
     
     protected void drawForeground(Color conditionalForeground) {
-        if (conditionalForeground != null) {
-            getComponent().setForeground(conditionalForeground);
-        }    
+        if (value == null) {
+            if (property != null && property.isEditableNotNull()) {
+                if (showRequiredString()) {
+                    getComponent().setForeground(REQUIRED_FOREGROUND);
+                }
+            } else if (showNotDefinedString()) {
+                getComponent().setForeground(SwingDefaults.getNotDefinedForeground());
+            }
+        } else {
+            getComponent().setForeground(conditionalForeground != null ? conditionalForeground : SwingDefaults.getTableCellForeground());
+        }
     }
     
-    protected Border getDefaultBorder() {
-        return createEmptyBorder();    
-    }
-
     protected void drawBorder(boolean isInFocusedRow, boolean hasFocus) {
         if (hasFocus) {
-            getComponent().setBorder(colorPreferences.getFocusedCellBorder());
-        } else if (isInFocusedRow) {
-            getComponent().setBorder(colorPreferences.getSelectedRowBorder());
+            getComponent().setBorder(SwingDefaults.getFocusedTableCellBorder());
         } else {
             getComponent().setBorder(getDefaultBorder());
         }
     }
 
     protected void paintAsSelected() {
-        getComponent().setBackground(colorPreferences.getSelectedCellBackground());
+        getComponent().setBackground(SwingDefaults.getTableSelectionBackground());
     }
 }
 
