@@ -124,6 +124,10 @@ public abstract class PartitionType implements AggrType {
         return Expr.getWhere(exprs);
     }
 
+    public ImList<Expr> followFalse(Where falseWhere, ImList<Expr> exprs, boolean pack) {
+        return falseWhere.followFalse(exprs, pack);
+    }
+
     public Expr getMainExpr(ImList<Expr> exprs) {
         return exprs.get(0);
     }

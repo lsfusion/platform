@@ -17,4 +17,5 @@ public interface AggrType {
     
     Where getWhere(ImList<Expr> exprs); // there is an assertion that first expr is in where, see (PartitionExpr / GroupExpr).Query.and
     Expr getMainExpr(ImList<Expr> exprs); // there is an assertion that first expr is in where, see (PartitionExpr / GroupExpr).Query.and
+    ImList<Expr> followFalse(Where falseWhere, ImList<Expr> exprs, boolean pack);
 }
