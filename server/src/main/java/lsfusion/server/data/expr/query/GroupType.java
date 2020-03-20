@@ -102,6 +102,16 @@ public enum GroupType implements AggrType {
         return -1;
     }
 
+    public ImList<Expr> followFalse(Where falseWhere, ImList<Expr> exprs, boolean pack) {
+        if(this==LAST) {
+            assert exprs.size()==2;
+            Expr firstExpr = exprs.get(0).followFalse(falseWhere, pack);
+            Expr secondExpr = exprs.get(1).followFalse(falseWhere.or(firstExpr.getWhere().not()), pack);
+            return ListFact.toList(firstExpr, secondExpr);
+        }
+        return falseWhere.followFalse(exprs, pack);
+    }
+
     public Expr getMainExpr(ImList<Expr> exprs) {
         return exprs.get(getMainIndex());
     }

@@ -102,7 +102,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
 
         public Query followFalse(Where falseWhere, boolean pack) {
-            return new Query(falseWhere.followFalse(exprs, pack), falseWhere.followFalse(orders, pack), ordersNotNull, type, noInnerFollows);
+            return new Query(type.followFalse(falseWhere, exprs, pack), falseWhere.followFalse(orders, pack), ordersNotNull, type, noInnerFollows);
         }
 
         public String toString() {
