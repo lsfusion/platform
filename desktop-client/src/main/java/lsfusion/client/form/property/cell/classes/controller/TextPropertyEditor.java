@@ -44,11 +44,13 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         setViewportView(textArea);
         setPreferredSize(new Dimension(200, 200));
         dialog = new JDialog(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
-        textArea.setFont(new Font("Tahoma", Font.PLAIN, MainFrame.getIntUIFontSize(12)));
+        Font defaultFont = SwingDefaults.getTextAreaFont();
+        textArea.setFont(defaultFont.deriveFont((float) MainFrame.getIntUIFontSize(defaultFont.getSize())));
         if (design != null) {
             design.designCell(textArea);
         }
         textArea.setBackground(SwingDefaults.getTableCellBackground());
+        textArea.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 1));
 
 
         String msgString1 = ClientResourceBundle.getString("form.editor.text");

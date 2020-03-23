@@ -3,8 +3,6 @@ package lsfusion.client.form.object.table.grid.user.toolbar.view;
 import lsfusion.client.ClientResourceBundle;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import java.awt.*;
 
 public abstract class CountQuantityButton extends ToolbarGridButton {
     private static final String QUANTITY_ICON_PATH = "quantity.png";
@@ -19,8 +17,6 @@ public abstract class CountQuantityButton extends ToolbarGridButton {
         JPopupMenu menu = new JPopupMenu();
         JLabel label = new JLabel(ClientResourceBundle.getString("form.queries.number.of.entries") + ": " + (quantity == null ? 0 : quantity));
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(192, 192, 255));
-        menu.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.GRAY, Color.LIGHT_GRAY));
         panel.add(label);
         menu.add(panel);
         menu.setLocation(getLocation());
