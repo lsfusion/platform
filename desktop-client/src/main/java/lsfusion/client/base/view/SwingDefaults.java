@@ -6,8 +6,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-import static javax.swing.UIManager.getBorder;
-import static javax.swing.UIManager.getColor;
+import static javax.swing.UIManager.*;
 import static lsfusion.client.controller.MainController.colorPreferences;
 
 public class SwingDefaults {
@@ -23,6 +22,8 @@ public class SwingDefaults {
     private static Color tableSelectionBackground;
     private static Color notDefinedForeground;
     
+    private static Font textAreaFont;
+    
     public static void reset() {
         buttonBackground = null;
         buttonBorder = null;
@@ -35,6 +36,8 @@ public class SwingDefaults {
         focusedTableRowForeground = null;
         tableSelectionBackground = null;
         notDefinedForeground = null;
+        
+        textAreaFont = null;
     }
     
     public static Color getButtonBackground() {
@@ -123,5 +126,12 @@ public class SwingDefaults {
             }
         }
         return notDefinedForeground;
+    }
+
+    public static Font getTextAreaFont() {
+        if (textAreaFont == null) {
+            textAreaFont = getFont("TextArea.font");
+        }
+        return textAreaFont;
     }
 }

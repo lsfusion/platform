@@ -31,7 +31,6 @@ import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPr
 
 public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;
-    private final ClientPropertyContextMenuPopup menu = new ClientPropertyContextMenuPopup();
 
     private final ClientPropertyDraw property;
     private final ClientGroupObjectValue columnKey;
@@ -140,7 +139,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
     private void showContextMenu(Point point) {
         if (form.commitCurrentEditing()) {
-            menu.show(property, this, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
+            new ClientPropertyContextMenuPopup().show(property, this, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
                 @Override
                 public void onMenuItemSelected(final String actionSID) {
                     RmiQueue.runAction(new Runnable() {

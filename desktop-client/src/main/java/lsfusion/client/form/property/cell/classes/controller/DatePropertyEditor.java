@@ -162,7 +162,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
                 }
             }
 
-            setBorder(new EmptyBorder(0, 1, 0, 0));
+            setBorder(new EmptyBorder(0, 3, 1, 2));
         }
 
         @Override
