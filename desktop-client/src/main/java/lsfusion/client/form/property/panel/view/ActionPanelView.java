@@ -2,7 +2,6 @@ package lsfusion.client.form.property.panel.view;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.controller.MainController;
@@ -30,7 +29,7 @@ import static javax.swing.SwingUtilities.isRightMouseButton;
 import static lsfusion.client.base.SwingUtils.overrideSize;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPressActionSID;
 
-public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler, ColorThemeChangeListener {
+public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;
     private final ClientPropertyContextMenuPopup menu = new ClientPropertyContextMenuPopup();
 
@@ -48,8 +47,6 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         this.property = iproperty;
         this.columnKey = icolumnKey;
         this.form = iform;
-        
-        MainController.addColorThemeChangeListener(this);
         
         editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 
@@ -127,6 +124,14 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         panel.setLayout(new FlexLayout(panel, true, Alignment.CENTER));
         panel.add(this, new FlexConstraints(property.getAlignment(), 1));
         property.installMargins(panel);
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        if (property != null) { // first call from constructor
+            setIcon(property.design.getImage(MainController.colorTheme));
+        }
     }
 
     private boolean executePropertyEventAction(String actionSID) {
@@ -269,10 +274,5 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     @Override
     public EditPropertyDispatcher getEditPropertyDispatcher() {
         return editDispatcher;
-    }
-
-    @Override
-    public void colorThemeChanged() {
-        setIcon(property.design.getImage(MainController.colorTheme));
     }
 }
