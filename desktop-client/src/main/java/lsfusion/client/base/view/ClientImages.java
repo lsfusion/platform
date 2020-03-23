@@ -14,11 +14,11 @@ public class ClientImages {
     public static ImageIcon get(String path) {
         ImageIcon image = images.get(path);
         if (image == null) {
-            ImageIcon newImage = readImage(MainController.colorTheme.getImagePath(path));
-            if (newImage != null) {
-                images.put(path, newImage);
+            image = readImage(MainController.colorTheme.getImagePath(path));
+            if (image != null) {
+                images.put(path, image);
             } else {
-                images.put(path, readImage(path)); // default color theme
+                images.put(path, image = readImage(path)); // default color theme
             }
         }
         return image;
