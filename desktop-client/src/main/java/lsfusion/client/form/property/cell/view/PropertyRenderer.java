@@ -46,7 +46,7 @@ public abstract class PropertyRenderer {
             drawBackground(isInFocusedRow, hasFocus, conditionalBackground);
         }
 
-        drawForeground(conditionalForeground);
+        drawForeground(isInFocusedRow, hasFocus, conditionalForeground);
 
         drawBorder(isInFocusedRow, hasFocus);
     }
@@ -68,20 +68,18 @@ public abstract class PropertyRenderer {
     }
 
     protected void drawBackground(boolean isInFocusedRow, boolean hasFocus, Color conditionalBackground) {
-        if (conditionalBackground != null) {
+        if (hasFocus) {
+            getComponent().setBackground(SwingDefaults.getFocusedTableCellBackground());
+        } else if (isInFocusedRow) {
+            getComponent().setBackground(SwingDefaults.getFocusedTableRowBackground());
+        } else if (conditionalBackground != null) {
             getComponent().setBackground(conditionalBackground);
         } else {
-            if (hasFocus) {
-                getComponent().setBackground(SwingDefaults.getFocusedTableCellBackground());
-            } else if (isInFocusedRow) {
-                getComponent().setBackground(SwingDefaults.getFocusedTableRowBackground());
-            } else {
-                getComponent().setBackground(getDefaultBackground());
-            }
+            getComponent().setBackground(getDefaultBackground());
         }
     }
     
-    protected void drawForeground(Color conditionalForeground) {
+    protected void drawForeground(boolean isInFocusedRow, boolean hasFocus, Color conditionalForeground) {
         if (value == null) {
             if (property != null && property.isEditableNotNull()) {
                 if (showRequiredString()) {
@@ -91,7 +89,13 @@ public abstract class PropertyRenderer {
                 getComponent().setForeground(SwingDefaults.getNotDefinedForeground());
             }
         } else {
-            getComponent().setForeground(conditionalForeground != null ? conditionalForeground : SwingDefaults.getTableCellForeground());
+            if (hasFocus || isInFocusedRow) {
+                getComponent().setForeground(SwingDefaults.getFocusedTableRowForeground());
+            } else if (conditionalForeground != null) {
+                getComponent().setForeground(conditionalForeground);
+            } else {
+                getComponent().setForeground(SwingDefaults.getTableCellForeground());
+            }
         }
     }
     

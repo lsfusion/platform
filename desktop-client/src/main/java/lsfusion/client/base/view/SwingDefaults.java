@@ -19,6 +19,7 @@ public class SwingDefaults {
     private static Color focusedTableCellBackground;
     private static Border focusedTableCellBorder;
     private static Color focusedTableRowBackground;
+    private static Color focusedTableRowForeground;
     private static Color tableSelectionBackground;
     private static Color notDefinedForeground;
     
@@ -31,6 +32,7 @@ public class SwingDefaults {
         focusedTableCellBackground = null;
         focusedTableCellBorder = null;
         focusedTableRowBackground = null;
+        focusedTableRowForeground = null;
         tableSelectionBackground = null;
         notDefinedForeground = null;
     }
@@ -96,6 +98,13 @@ public class SwingDefaults {
             focusedTableRowBackground = preferredBackground != null ? preferredBackground : getColor("Table.selectionBackground");
         }
         return focusedTableRowBackground; 
+    }
+
+    public static Color getFocusedTableRowForeground() {
+        if (focusedTableRowForeground == null) {
+            focusedTableRowForeground = getColor("Table.selectionForeground");
+        }
+        return focusedTableRowForeground; 
     }
 
     public static Color getTableSelectionBackground() {
