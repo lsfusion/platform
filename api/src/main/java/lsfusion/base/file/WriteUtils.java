@@ -47,20 +47,20 @@ public class WriteUtils {
                     fileData.append(file.getAbsolutePath());
                     break;
                 case "xls": {
-                    HSSFWorkbook sourceWB = new HSSFWorkbook(fileData.getInputStream());
-                    HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
-                    CopyExcelUtil.copyHSSFSheets(sourceWB, destinationWB);
-                    try (FileOutputStream fos = new FileOutputStream(file)) {
-                        destinationWB.write(fos);
+                    try (HSSFWorkbook sourceWB = new HSSFWorkbook(fileData.getInputStream());
+                         HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
+                         FileOutputStream fos = new FileOutputStream(file)) {
+                            CopyExcelUtil.copyHSSFSheets(sourceWB, destinationWB);
+                            destinationWB.write(fos);
                     }
                     break;
                 }
                 case "xlsx":
-                    XSSFWorkbook sourceWB = new XSSFWorkbook(fileData.getInputStream());
-                    XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
-                    CopyExcelUtil.copyXSSFSheets(sourceWB, destinationWB);
-                    try (FileOutputStream fos = new FileOutputStream(file)) {
-                        destinationWB.write(fos);
+                    try (XSSFWorkbook sourceWB = new XSSFWorkbook(fileData.getInputStream());
+                         XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
+                         FileOutputStream fos = new FileOutputStream(file)) {
+                            CopyExcelUtil.copyXSSFSheets(sourceWB, destinationWB);
+                            destinationWB.write(fos);
                     }
                     break;
                 default:
