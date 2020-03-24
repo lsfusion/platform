@@ -21,7 +21,7 @@ public class HtmlSanitizerUtil implements HtmlSanitizer {
                     "dfn", "dir", "div", "dl", "dt", "em", "fieldset", "font", "form", "h1", "h2",
                     "h3", "h4", "h5", "h6", "hr", "i", "img", "input", "ins", "kbd", "label", "legend",
                     "li", "map", "menu", "ol", "optgroup", "option", "p", "pre", "q", "s", "samp",
-                    "select", "small", "span", "strike", "strong", "style", "sub", "sup", "table", "tbody", "td",
+                    "select", "small", "span", "strike", "strong", "sub", "sup", "table", "tbody", "td",
                     "textarea", "tfoot", "th", "thead", "tr", "tt", "u", "ul", "var"));
 
     /**
