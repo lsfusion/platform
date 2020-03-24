@@ -1646,6 +1646,12 @@
                             rows: [],
                             dataClass: opts.dataClass
                         };
+                        subopts.rendererOptions.rowSubtotalDisplay = {
+                            splitPositions: opts.splitRows
+                        };
+                        subopts.rendererOptions.colSubtotalDisplay = {
+                            splitPositions: opts.splitCols
+                        };
                         numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
                         vals = [];
                         _this.find(".pvtRows li span.pvtAttr").each(function() {
