@@ -314,18 +314,22 @@ public abstract class UserPreferencesDialog extends JDialog {
     private JPanel createArrowsPanel() {
         JButton showSelectedButton = new JButton(readImage("arrowLeftOne.png"));
         showSelectedButton.setBorder(null);
+        showSelectedButton.setBackground(null);
         showSelectedButton.addActionListener(createMoveSelectedButtonListener(invisibleList, visibleListModel));
 
         JButton hideSelectedButton = new JButton(readImage("arrowRightOne.png"));
         hideSelectedButton.setBorder(null);
+        hideSelectedButton.setBackground(null);
         hideSelectedButton.addActionListener(createMoveSelectedButtonListener(visibleList, invisibleListModel));
 
         JButton showAllButton = new JButton(readImage("arrowLeft.png"));
         showAllButton.setBorder(null);
+        showAllButton.setBackground(null);
         showAllButton.addActionListener(createMoveAllButtonListener(invisibleListModel, visibleListModel));
 
         JButton hideAllButton = new JButton(readImage("arrowRight.png"));
         hideAllButton.setBorder(null);
+        hideAllButton.setBackground(null);
         hideAllButton.addActionListener(createMoveAllButtonListener(visibleListModel, invisibleListModel));
 
         JPanel arrowsPanel = new JPanel();
