@@ -63,7 +63,7 @@ public class SwingDefaults {
 
     public static Color getTableCellForeground() {
         if (tableCellForeground == null) {
-            tableCellForeground = getColor("Table.textForeground");
+            tableCellForeground = getColor("Table.foreground");
         }
         return tableCellForeground;
     }
