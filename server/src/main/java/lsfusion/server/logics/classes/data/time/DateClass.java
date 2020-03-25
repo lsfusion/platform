@@ -25,8 +25,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.time.LocalDate;
 
-import static lsfusion.base.DateConverter.safeDateToSql;
+import static lsfusion.base.DateConverter.*;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
 
 public class DateClass extends DataClass<Date> {
 
@@ -59,7 +61,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     public Date getDefaultValue() {
-        return DateConverter.getCurrentDate();
+        return getWriteDate(LocalDate.now());
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

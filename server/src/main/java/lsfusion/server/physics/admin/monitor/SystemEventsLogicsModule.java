@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.monitor;
 
-import lsfusion.base.DateConverter;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.interop.base.exception.*;
@@ -16,7 +15,6 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.property.CurrentConnectionProperty;
@@ -26,8 +24,11 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
 public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
@@ -247,7 +248,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
             typeException.change(errorType, session, exceptionObject);
             erTraceException.change(javaStack, session, exceptionObject);
             lsfTraceException.change(lsfStack, session, exceptionObject);
-            dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
+            dateException.change(getWriteDateTime(LocalDateTime.now()), session, exceptionObject);
 
             session.applyException(bl, stack);
         }

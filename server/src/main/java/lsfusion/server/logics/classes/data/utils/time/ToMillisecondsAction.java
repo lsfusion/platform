@@ -10,8 +10,11 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Iterator;
+
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getLocalDateTime;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.localDateTimeToSqlTimestamp;
 
 public class ToMillisecondsAction extends InternalAction {
     private final ClassPropertyInterface timestampInterface;
@@ -25,9 +28,9 @@ public class ToMillisecondsAction extends InternalAction {
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        Timestamp timestamp = (Timestamp) context.getKeyValue(timestampInterface).getValue();
+        LocalDateTime timestamp = getLocalDateTime(context.getKeyValue(timestampInterface).getValue());
         try {
-            findProperty("resultMilliseconds[]").change(timestamp != null ? timestamp.getTime() : null, context);
+            findProperty("resultMilliseconds[]").change(timestamp != null ? localDateTimeToSqlTimestamp(timestamp).getTime() : null, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

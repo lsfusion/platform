@@ -71,6 +71,7 @@ import java.sql.Timestamp;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
 // it would be better if there was NavigatorInstance (just like FormInstance and LogicsInstance), but for now will leave it this way
 public class RemoteNavigator extends RemoteConnection implements RemoteNavigatorInterface, FocusListener, CustomClassListener, RemoteFormListener {
@@ -323,8 +324,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 if(computerValue instanceof DataObject) {
                     DataObject computerObject = (DataObject)computerValue;
                     for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
-                        DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
-                        DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
+                        DataObject dateFrom = new DataObject(getWriteDateTime(new Timestamp(pingEntry.getKey())), DateTimeClass.instance);
+                        DataObject dateTo = new DataObject(getWriteDateTime(new Timestamp(pingEntry.getValue().get(0))), DateTimeClass.instance);
                         businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(1).intValue(), session, computerObject, dateFrom, dateTo);
                         if (pingEntry.getValue().size() >= 6) {
                             businessLogics.systemEventsLM.minTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(2).intValue(), session, computerObject, dateFrom, dateTo);

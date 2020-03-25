@@ -128,13 +128,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
@@ -1940,11 +1942,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             try (DataSession session = createSystemTaskSession()) {
                 session.setNoCancelInTransaction(true);
 
-                Date currentDate = (Date) timeLM.currentDate.read(session);
-                Date newDate = DateConverter.getCurrentDate();
-                if (currentDate == null || currentDate.getDate() != newDate.getDate() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
+                LocalDate currentDate = getLocalDate(timeLM.currentDate.read(session));
+                LocalDate newDate = LocalDate.now();
+                if (currentDate == null || !currentDate.equals(newDate)) {
                     logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));
-                    timeLM.currentDate.change(newDate, session);
+                    timeLM.currentDate.change(getWriteDate(newDate), session);
                     session.applyException(this, stack);
                     logger.info("ChangeCurrentDate finished");
                 }
@@ -1958,9 +1960,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return scheduler.createSystemTask(stack -> {
             try (DataSession session = createSystemTaskSession()) {
                 session.setNoCancelInTransaction(true);
-                Timestamp newDataDateTime = new Timestamp(System.currentTimeMillis());
+                LocalDateTime newDataDateTime = LocalDateTime.now();
                 logger.info("Change currentDateTimeSnapshot to " + newDataDateTime);
-                timeLM.currentDateTimeSnapshot.change(newDataDateTime, session);
+                timeLM.currentDateTimeSnapshot.change(getWriteDateTime(newDataDateTime), session);
                 session.applyException(this, stack);
             } catch (Exception e) {
                 logger.error(String.format("ChangeCurrentDate error: %s", e));

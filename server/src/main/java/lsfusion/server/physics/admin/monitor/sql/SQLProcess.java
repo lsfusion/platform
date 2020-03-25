@@ -2,16 +2,16 @@ package lsfusion.server.physics.admin.monitor.sql;
 
 import lsfusion.server.physics.admin.monitor.StatusMessage;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public class SQLProcess {
-    public Timestamp dateTimeCall;
+    public LocalDateTime dateTimeCall;
     public String query;
     public String fullQuery;
     public Long user;
     public Long computer;
     public String addressUser;
-    public Timestamp dateTime;
+    public LocalDateTime dateTime;
     public Boolean isActive;
     public Boolean fusionInTransaction;
     public Boolean baseInTransaction;
@@ -28,8 +28,8 @@ public class SQLProcess {
     public String threadName;
     public String threadStackTrace;
 
-    public SQLProcess(Timestamp dateTimeCall, String query, String fullQuery, Long user, Long computer, String addressUser,
-                      Timestamp dateTime, Boolean isActive, Boolean fusionInTransaction, Boolean baseInTransaction,
+    public SQLProcess(LocalDateTime dateTimeCall, String query, String fullQuery, Long user, Long computer, String addressUser,
+                      LocalDateTime dateTime, Boolean isActive, Boolean fusionInTransaction, Boolean baseInTransaction,
                       Long startTransaction, String attemptCount, String status, StatusMessage statusMessage, String lockOwnerId, String lockOwnerName,
                       Integer sqlId, Boolean isDisabledNestLoop, Integer queryTimeout, String debugInfo, String threadName, String threadStackTrace) {
         this.dateTimeCall = dateTimeCall;

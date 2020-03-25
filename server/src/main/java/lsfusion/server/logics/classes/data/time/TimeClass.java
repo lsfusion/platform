@@ -22,7 +22,10 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
+
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteTime;
 
 public class TimeClass extends DataClass<Time> {
     public final static TimeClass instance = new TimeClass();
@@ -140,7 +143,7 @@ public class TimeClass extends DataClass<Time> {
     }
 
     public Time getDefaultValue() {
-        return new Time(System.currentTimeMillis());
+        return getWriteTime(LocalTime.now());
     }
 
     @Override
