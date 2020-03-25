@@ -325,6 +325,7 @@ public class MainController {
         UIManager.put("Table.showVerticalLines", true);
         UIManager.put("Table.intercellSpacing", new Dimension(1, 1));
         UIManager.put("Tree.border", BorderFactory.createEmptyBorder());
+        UIManager.put("TextComponent.selectAllOnFocusPolicy", "never");
         
         updateUI();
         
