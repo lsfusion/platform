@@ -22,7 +22,12 @@ public class ToolBarNavigatorView extends NavigatorView {
     private ClientNavigatorElement selected;
 
     public ToolBarNavigatorView(ClientToolBarNavigatorWindow iWindow, INavigatorController controller) {
-        super(iWindow, new JToolBar("Toolbar", iWindow.type), controller);
+        super(iWindow, new JToolBar("Toolbar", iWindow.type) {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+            }
+        }, controller);
         window = iWindow;
 
         toolBar = (JToolBar) getComponent();
