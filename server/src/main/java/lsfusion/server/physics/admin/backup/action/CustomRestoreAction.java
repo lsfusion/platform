@@ -52,10 +52,14 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.trimToNull;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
 
 public class CustomRestoreAction extends InternalAction {
     private final ClassPropertyInterface backupInterface;
@@ -217,12 +221,12 @@ public class CustomRestoreAction extends InternalAction {
                                         return new DataObject((Long) object);
                                     else if (object instanceof BigDecimal)
                                         return new DataObject((BigDecimal) object, (NumericClass) classValue);
-                                    else if (object instanceof Date)
-                                        return new DataObject(object, DateClass.instance);
-                                    else if (object instanceof Time)
-                                        return new DataObject(object, TimeClass.instance);
-                                    else if (object instanceof Timestamp)
-                                        return new DataObject(object, DateTimeClass.instance);
+                                    else if (object instanceof Date || object instanceof LocalDate)
+                                        return new DataObject(getWriteDate(object), DateClass.instance);
+                                    else if (object instanceof Time || object instanceof LocalTime)
+                                        return new DataObject(getWriteTime(object), TimeClass.instance);
+                                    else if (object instanceof Timestamp || object instanceof LocalDateTime)
+                                        return new DataObject(getWriteDateTime(object), DateTimeClass.instance);
                                     else
                                         return new DataObject(String.valueOf(object));
                                 } catch (SQLException | SQLHandledException e) {
@@ -282,11 +286,11 @@ public class CustomRestoreAction extends InternalAction {
 
     private Type getKeyType(Object key) {
         Type keyType;
-        if(key instanceof Date) {
+        if(key instanceof Date || key instanceof LocalDate) {
             keyType = DateClass.instance;
-        } else if(key instanceof Time) {
+        } else if(key instanceof Time || key instanceof LocalTime) {
             keyType = TimeClass.instance;
-        } else if(key instanceof Timestamp) {
+        } else if(key instanceof Timestamp || key instanceof LocalDateTime) {
             keyType = DateTimeClass.instance;
         } else if(key instanceof Integer) {
             keyType = IntegerClass.instance;

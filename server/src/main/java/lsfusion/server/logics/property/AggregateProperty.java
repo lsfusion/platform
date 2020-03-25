@@ -47,7 +47,9 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
@@ -218,7 +220,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
         ObjectValue propertyObject = BL.reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(getCanonicalName()));
         if (propertyObject instanceof DataObject)
-            BL.reflectionLM.lastRecalculateProperty.change(new Timestamp(System.currentTimeMillis()), session, (DataObject) propertyObject);
+            BL.reflectionLM.lastRecalculateProperty.change(getWriteDateTime(LocalDateTime.now()), session, (DataObject) propertyObject);
     }
 
     @StackMessage("{logics.info.recalculation.of.aggregated.property}")

@@ -104,12 +104,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.directLI;
 
 public class DBManager extends LogicsManager implements InitializingBean {
@@ -1516,7 +1517,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             DataObject object = session.addObject(reflectionLM.dropColumn);
             reflectionLM.sidDropColumn.change(sid, session, object);
             reflectionLM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
-            reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
+            reflectionLM.timeDropColumn.change(getWriteDateTime(LocalDateTime.now()), session, object);
             reflectionLM.revisionDropColumn.change(getRevision(SystemProperties.inDevMode), session, object);
         }
         apply(session);

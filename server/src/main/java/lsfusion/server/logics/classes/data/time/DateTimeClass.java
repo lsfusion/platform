@@ -21,8 +21,10 @@ import org.apache.poi.ss.usermodel.CellValue;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 
-import static lsfusion.base.DateConverter.dateToStamp;
+import static lsfusion.base.DateConverter.*;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
 public class DateTimeClass extends DataClass<Timestamp> {
 
@@ -57,7 +59,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     public Timestamp getDefaultValue() {
-        return new Timestamp(System.currentTimeMillis());
+        return getWriteDateTime(LocalDateTime.now());
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
