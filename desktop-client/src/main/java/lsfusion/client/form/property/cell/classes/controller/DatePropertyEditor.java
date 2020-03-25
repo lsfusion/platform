@@ -35,7 +35,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         }
 
         if (property != null && property.design != null) {
-            property.design.designCell(this);
+            property.design.designComponent(this);
         }
     }
 

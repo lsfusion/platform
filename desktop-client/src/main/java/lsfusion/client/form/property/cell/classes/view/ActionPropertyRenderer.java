@@ -23,16 +23,9 @@ public class ActionPropertyRenderer extends PropertyRenderer {
 
     public JButton getComponent() {
         if (button == null) {
-            button = new JButton();
+            button = property != null ? new JButton(property.design.getImage(MainController.colorTheme)) : new JButton();
         }
         return button;
-    }
-    
-    @Override
-    protected void initDesign() {
-        if (property != null) {
-            property.design.designButton(getComponent(), MainController.colorTheme);
-        }
     }
 
     @Override

@@ -19,15 +19,11 @@ public abstract class PropertyRenderer {
 
     public PropertyRenderer(ClientPropertyDraw property) {
         this.property = property;
-        initDesign();
-    }
-    public abstract JComponent getComponent();
-
-    protected void initDesign() {
         if (property != null) {
-            property.design.designCell(getComponent());
+            property.design.installFont(getComponent());
         }
     }
+    public abstract JComponent getComponent();
 
     protected void setValue(Object value) {
         this.value = value;
@@ -74,6 +70,8 @@ public abstract class PropertyRenderer {
             getComponent().setBackground(SwingDefaults.getFocusedTableRowBackground());
         } else if (conditionalBackground != null) {
             getComponent().setBackground(conditionalBackground);
+        } else if (property != null && property.design.background != null) {
+            getComponent().setBackground(property.design.background);
         } else {
             getComponent().setBackground(getDefaultBackground());
         }
@@ -93,6 +91,8 @@ public abstract class PropertyRenderer {
                 getComponent().setForeground(SwingDefaults.getFocusedTableRowForeground());
             } else if (conditionalForeground != null) {
                 getComponent().setForeground(conditionalForeground);
+            } else if (property != null && property.design.foreground != null) {
+                getComponent().setForeground(property.design.foreground);
             } else {
                 getComponent().setForeground(SwingDefaults.getTableCellForeground());
             }

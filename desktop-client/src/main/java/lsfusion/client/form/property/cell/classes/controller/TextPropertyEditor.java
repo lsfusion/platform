@@ -47,7 +47,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         Font defaultFont = SwingDefaults.getTextAreaFont();
         textArea.setFont(defaultFont.deriveFont((float) MainFrame.getIntUIFontSize(defaultFont.getSize())));
         if (design != null) {
-            design.designCell(textArea);
+            design.designComponent(textArea);
         }
         textArea.setBackground(SwingDefaults.getTableCellBackground());
         textArea.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 1));

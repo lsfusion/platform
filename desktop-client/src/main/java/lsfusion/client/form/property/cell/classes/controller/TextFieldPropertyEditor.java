@@ -23,7 +23,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         if (property != null) {
             if (property.design != null) {
-                property.design.designCell(this);
+                property.design.designComponent(this);
             }
 
             Integer valueAlignment = property.getSwingValueAlignment();

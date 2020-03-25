@@ -31,7 +31,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.EventObject;
 
 import static lsfusion.client.form.property.cell.EditBindingMap.*;
@@ -40,7 +39,6 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     private final EditPropertyDispatcher editDispatcher;
     protected final EditBindingMap editBindingMap = new EditBindingMap();
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
-    private ClientPropertyTableUIHandler propertyTableUIHandler = new ClientPropertyTableUIHandler(this);
     
     protected final ClientFormController form;
     protected final ClientGroupObject groupObject;
@@ -326,9 +324,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         if (listener != null && ("javax.swing.plaf.basic.BasicTableUI$Handler".equals(listener.getClass().getName()) ||
                 "com.apple.laf.AquaTableUI$MouseInputHandler".equals(listener.getClass().getName()))) {
             // mouse listener is added again after switching between color themes (in updateUI())
-            if (Arrays.asList(getMouseListeners()).contains(propertyTableUIHandler)) {
-                listener = propertyTableUIHandler;
-            }
+            listener = new ClientPropertyTableUIHandler(this);
         }
         super.addMouseListener(listener);
     }

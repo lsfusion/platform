@@ -41,7 +41,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     private JPanel panel;
 
     public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
-        super((String)null);
+        super((String)null, iproperty.design.getImage(MainController.colorTheme));
 
         this.property = iproperty;
         this.columnKey = icolumnKey;
@@ -56,7 +56,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             setEnabled(false);
         }
 
-        property.design.designButton(this, MainController.colorTheme);
+        property.design.designComponent(this);
         if (property.focusable != null) {
             setFocusable(property.focusable);
         } else if (property.changeKey != null) {

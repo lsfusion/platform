@@ -46,33 +46,22 @@ public class ComponentDesign extends ContextObject implements Serializable {
         return imageHolder;
     }
 
-    public void designCell(JComponent comp) {
-        designComponent(comp);
-    }
-
-    public void designButton(JButton comp, ColorTheme colorTheme) {
-        designComponent(comp);
-        
-        ImageIcon image = getImage(colorTheme);
-        if (image != null) {
-            comp.setIcon(image);
-        }
-    }
-
     public void designComponent(JComponent comp) {
-        if (font != null) {
-            comp.setFont(getFont(comp));
-        }
+        installFont(comp);
 
         if (background != null) {
             comp.setBackground(background);
             comp.setOpaque(true);
-        } else {
-            comp.setBackground(null); // default transparent background
         }
 
         if (foreground != null) {
             comp.setForeground(foreground);
+        }
+    }
+    
+    public void installFont(JComponent comp) {
+        if (font != null) {
+            comp.setFont(getFont(comp));
         }
     }
 
