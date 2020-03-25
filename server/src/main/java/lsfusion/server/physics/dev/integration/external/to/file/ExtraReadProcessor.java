@@ -88,89 +88,34 @@ public class ExtraReadProcessor implements ExtraReadInterface {
         }
     }
 
-    private void copyMDBToFile(String path, File file) throws IOException {
-        /*mdb://path:table;where [NOT] condition1 [AND|OR conditionN]*/
-        /*conditions: field=value (<,>,<=,>=) or field IN (value1,value2,value3)*/
-        Pattern queryPattern = Pattern.compile("(.*):([^;]*)(?:;([^;]*))*");
-        Matcher queryMatcher = queryPattern.matcher(path);
-        if (queryMatcher.matches()) {
-            Database db = null;
-
-            try {
-                db = DatabaseBuilder.open(new File(queryMatcher.group(1)));
-
-                Table table = db.getTable(queryMatcher.group(2));
-
-                List<List<String>> wheresList = new ArrayList<>();
-
-                String wheres = queryMatcher.group(3);
-                if (wheres != null) { //spaces in value are not permitted
-                    Pattern wherePattern = Pattern.compile("(?:\\s(AND|OR)\\s)?(?:(NOT)\\s)?([^=<>\\s]+)(\\sIN\\s|=|<|>|<=|>=)([^=<>\\s]+)");
-                    Matcher whereMatcher = wherePattern.matcher(wheres);
-                    while (whereMatcher.find()) {
-                        String condition = whereMatcher.group(1);
-                        String not = whereMatcher.group(2);
-                        String field = whereMatcher.group(3);
-                        String sign = whereMatcher.group(4);
-                        String value = whereMatcher.group(5);
-                        wheresList.add(Arrays.asList(condition, not, field, sign, value));
-                    }
-                }
-
-                List<Map<String, Object>> rows = new ArrayList<>();
-
-                for (Row rowEntry : table) {
-
-                    boolean ignoreRow = false;
-
-                    for (List<String> where : wheresList) {
-                        String condition = where.get(0);
-                        boolean and = condition != null && condition.equals("AND");
-                        boolean or = condition != null && condition.equals("OR");
-                        boolean not = where.get(1) != null;
-                        String field = where.get(2);
-                        String sign = where.get(3);
-                        String value = where.get(4);
-
-                        if (!rowEntry.containsKey(field)) {
-                            throw new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are case sensitive");
-                        }
-                        boolean conditionResult;
-                        Object fieldValue = rowEntry.get(field);
-                        if (fieldValue == null)
-                            conditionResult = true;
-                        else if (fieldValue instanceof Integer) {
-                            conditionResult = ignoreRowIntegerCondition(not, fieldValue, sign, value);
-                        } else if (fieldValue instanceof Double) {
-                            conditionResult = ignoreRowDoubleCondition(not, fieldValue, sign, value);
-                        } else if (fieldValue instanceof java.util.Date) {
-                            conditionResult = ignoreRowDateCondition(not, fieldValue, sign, value);
-                        } else {
-                            conditionResult = ignoreRowStringCondition(not, fieldValue, sign, value);
-                        }
-                        ignoreRow = and ? (ignoreRow | conditionResult) : or ? (ignoreRow & conditionResult) : conditionResult;
-                    }
-
-                    if (!ignoreRow) {
-                        Map<String, Object> row = new HashMap<>();
-                        for (Map.Entry<String, Object> entry : rowEntry.entrySet()) {
-                            row.put(entry.getKey(), entry.getValue());
-                        }
-                        rows.add(row);
-                    }
-                }
-
-                FileUtils.writeByteArrayToFile(file, BaseUtils.serializeCustomObject(rows));
-
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            } finally {
-                if (db != null)
-                    db.close();
+    private static boolean ignoreRowDateCondition(boolean not, Object fieldValue, String sign, String value) {
+        boolean ignoreRow = false;
+        if (sign.equals(IN)) {
+            List<LocalDate> dateValues = new ArrayList<>();
+            for (String v : splitIn(value)) {
+                dateValues.add(parseDate(v));
             }
             ignoreRow = !dateValues.contains(fieldValue);
         } else {
-            throw new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table;where [NOT] condition1 [AND|OR conditionN]");
+
+            int compareResult = compare(fieldValue, parseDate(value));
+            switch (sign) {
+                case EQ:
+                    ignoreRow = compareResult != 0;
+                    break;
+                case GE:
+                    ignoreRow = compareResult < 0;
+                    break;
+                case GT:
+                    ignoreRow = compareResult <= 0;
+                    break;
+                case LE:
+                    ignoreRow = compareResult > 0;
+                    break;
+                case LT:
+                    ignoreRow = compareResult >= 0;
+                    break;
+            }
         }
         return not != ignoreRow;
     }
@@ -264,6 +209,14 @@ public class ExtraReadProcessor implements ExtraReadInterface {
         }
     }
 
+    private static LocalDate parseDate(String value) {
+        try {
+            return LocalDate.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        } catch (Exception e) {
+            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
+        }
+    }
+
     private static int compare(Object field1, Object field2) {
         if (field1 instanceof LocalDate) {
             return ((LocalDate) field1).compareTo((LocalDate) field2);
@@ -272,14 +225,6 @@ public class ExtraReadProcessor implements ExtraReadInterface {
         } else if (field1 instanceof LocalDateTime) {
             return ((LocalDateTime) field1).compareTo((LocalDateTime) field2);
         } else return 0;
-    }
-
-    private static LocalDate parseDate(String value) {
-        try {
-            return LocalDate.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        } catch (Exception e) {
-            throw new RuntimeException("Incorrect WHERE in mdb url. Invalid value");
-        }
     }
 
     private void copyMDBToFile(String path, File file) throws IOException {
@@ -327,7 +272,7 @@ public class ExtraReadProcessor implements ExtraReadInterface {
                         String value = where.get(4);
 
                         if (!rowEntry.containsKey(field)) {
-                            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are case sensitive"));
+                            throw new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are case sensitive");
                         }
                         boolean conditionResult;
                         Object fieldValue = rowEntry.get(field);
@@ -363,7 +308,7 @@ public class ExtraReadProcessor implements ExtraReadInterface {
                     db.close();
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table;where [NOT] condition1 [AND|OR conditionN]"));
+            throw new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table;where [NOT] condition1 [AND|OR conditionN]");
         }
     }
 
