@@ -1,13 +1,12 @@
 package lsfusion.client.base.view;
 
-import lsfusion.client.controller.MainController;
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
 import static javax.swing.UIManager.*;
 import static lsfusion.client.controller.MainController.colorPreferences;
+import static lsfusion.client.controller.MainController.colorTheme;
 
 public class SwingDefaults {
     private static Color buttonBackground;
@@ -121,7 +120,7 @@ public class SwingDefaults {
     public static Color getNotDefinedForeground() {
         if (notDefinedForeground == null) {
             notDefinedForeground = getColor("TextField.inactiveForeground");
-            if (!MainController.colorTheme.isLight()) {
+            if (!colorTheme.isLight()) {
                 notDefinedForeground = notDefinedForeground.darker(); // dark LAF returns the same color as enabled text field 
             }
         }
@@ -133,5 +132,19 @@ public class SwingDefaults {
             textAreaFont = getFont("TextArea.font");
         }
         return textAreaFont;
+    }
+    
+    
+    // ----------- not cached properties ----------- //
+    
+    public static Color getTitledBorderTitleColor() {
+        // Trying to be close to default titled border color.
+        // As we don't know what TitledBorder.border contains, use Separator.foreground (as FlatLaf does).
+        Color borderColor = getColor("Separator.foreground");
+        if (colorTheme.isLight()) {
+            return borderColor.darker();
+        } else {
+            return borderColor.brighter();
+        }
     }
 }

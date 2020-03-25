@@ -537,9 +537,11 @@ public class MainController {
         colorThemeChangeListeners.add(listener);
     }
     
+    // properties which depend on current color theme. 
     public static void updateUI() {
         UIManager.put("Table.gridColor", UIManager.getColor("TableHeader.separatorColor"));
-        UIManager.put("Tree.selectionInactiveBackground", SwingDefaults.getFocusedTableRowBackground());
+        UIManager.put("Tree.selectionInactiveBackground", SwingDefaults.getFocusedTableRowBackground()); // JTree in TreeGroupTable draws inactive background on selection
+        UIManager.put("TitledBorder.titleColor", SwingDefaults.getTitledBorderTitleColor());
     }
 
     public static void changeColorTheme(ColorTheme newColorTheme) {
