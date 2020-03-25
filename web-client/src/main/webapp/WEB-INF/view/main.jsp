@@ -73,7 +73,7 @@
         <script type="text/javascript" src="static/js/utils.js"></script>
 
         <!-- subtotal.js libs : subtotal_renderers -->
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.css">
+        <link rel="stylesheet" type="text/css" href="static/css/subtotal.css">
 <%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>--%>
         <script type="text/javascript" src="static/js/subtotal.js"></script>
 

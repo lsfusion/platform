@@ -95,7 +95,7 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var addClass, adjustColAxisHeader, adjustRowAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeaders, buildColAxisHeader, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeader, buildRowHeader, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseChildCol, collapseChildRow, collapseCol, collapseColAxis, collapseColAxisHeaders, collapseHiddenColSubtotal, collapseRow, collapseRowAxis, collapseRowAxisHeaders, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, curGroupLength, defaults, executeAggregatorCellRender, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, firstIndexInGroup, getColHeaderText, getTableEventHandlers, hasClass, hideChildCol, hideChildRow, i, lastIndexInSomeGroup, longestGroupLength, main, processKeys, processRowKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setAttributes, showChildCol, showChildRow, subtotalIsEnabled, tree;
+      var addClass, adjustColAxisHeader, adjustRowAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeaders, buildColAxisHeader, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeader, buildRowHeader, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseChildCol, collapseChildRow, collapseCol, collapseColAxis, collapseColAxisHeaders, collapseHiddenColSubtotal, collapseRow, collapseRowAxis, collapseRowAxisHeaders, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, curGroupLength, defaults, executeAggregatorCellRender, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, firstIndexInGroup, getColHeaderText, getTableEventHandlers, hasClass, hideChildCol, hideChildRow, i, lastIndexInSomeGroup, longestGroupLength, main, processKeys, processRowKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowLabelsLevelPadding, rowLabelsPadding, rowTotals, setAttributes, showChildCol, showChildRow, subtotalIsEnabled, tree;
       defaults = {
         table: {
           clickCallback: null
@@ -168,6 +168,8 @@
       classColCollapsed = "colcollapsed";
       arrowExpanded = opts.arrowExpanded;
       arrowCollapsed = opts.arrowCollapsed;
+      rowLabelsPadding = 5;
+      rowLabelsLevelPadding = 10;
       hasClass = function(element, className) {
         var regExp;
         regExp = new RegExp("(?:^|\\s)" + className + "(?!\\S)", "g");
@@ -421,7 +423,9 @@
         firstIndex = firstIndexInGroup(opts.splitPositions, index);
         for (i = k = ref = firstIndex, ref1 = opts.splitPositions[index]; ref <= ref1 ? k <= ref1 : k >= ref1; i = ref <= ref1 ? ++k : --k) {
           if (i === firstIndex) {
-            th = createElement("th", "pvtAxisLabel " + hClass, "" + arrow + attrs[i]);
+            th = createElement("th", "pvtAxisLabel " + hClass, "" + arrow + attrs[i], {
+              style: "padding-left: " + (rowLabelsPadding + index * rowLabelsLevelPadding) + "px;"
+            });
           } else {
             th = createElement("th", "pvtAxisLabel " + hClass, "" + attrs[i]);
           }
@@ -598,7 +602,7 @@
         return tr.appendChild(th);
       };
       buildRowHeader = function(tbody, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts) {
-        var ah, arrow, chKey, colSpan, firstChild, k, l, len1, ref, ref1, ref2, splitPositions, th;
+        var ah, arrow, attrs, chKey, colSpan, firstChild, k, l, len1, ref, ref1, ref2, splitPositions, th;
         ref = h.children;
         for (k = 0, len1 = ref.length; k < len1; k++) {
           chKey = ref[k];
@@ -624,7 +628,10 @@
         }
         h.ths = [];
         for (i = l = 0, ref1 = h.values.length; 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
-          th = createElement("th", "pvtRowLabel", h.values[i]);
+          attrs = i === 0 ? {
+            style: "padding-left: " + (rowLabelsLevelPadding + h.col * rowLabelsLevelPadding) + "px;"
+          } : {};
+          th = createElement("th", "pvtRowLabel", h.values[i], attrs);
           addClass(th, classRowShow + " row" + h.row + " rowcol" + h.col + " " + classRowExpanded);
           th.setAttribute("data-rownode", h.node);
           if (i + 1 === h.values.length) {
