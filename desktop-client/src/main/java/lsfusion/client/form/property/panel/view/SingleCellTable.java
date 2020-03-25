@@ -36,6 +36,12 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         SwingUtils.setupSingleCellTable(this);
     }
 
+    // is called after color theme change, overwrites our values and changes getCellRect() result -> renderer gets larger size  
+    @Override
+    public void setIntercellSpacing(Dimension intercellSpacing) {
+        super.setIntercellSpacing(new Dimension(2, 2));
+    }
+
     public void setProperty(ClientPropertyDraw property) {
         setName(property.getCaption());
         model.setProperty(property);
@@ -165,6 +171,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     @Override
     public void setBounds(int x, int y, int width, int height) {
         rowHeight = height;
+        // after switching color theme UI changes rowHeight to LaF default if isRowHeightSet is not set 
         ReflectionUtils.setPrivateFieldValue(JTable.class, this, "isRowHeightSet", true);
         super.setBounds(x, y, width, height);
     }

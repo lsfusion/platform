@@ -462,8 +462,7 @@ public class SwingUtils {
             }
         });
 
-        table.getColumnModel().setColumnMargin(2);
-        table.setRowMargin(2);
+        table.setIntercellSpacing(new Dimension(2, 2));
         table.setBorder(BorderFactory.createLineBorder(Color.gray));
     }
 
