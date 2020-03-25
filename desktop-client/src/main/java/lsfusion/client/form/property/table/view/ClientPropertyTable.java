@@ -318,15 +318,31 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         });
     }
 
+    private MouseListener listener;
+
+    private boolean isSubstituteListener(MouseListener listener) {
+        return listener != null && "javax.swing.plaf.basic.BasicTableUI$Handler".equals(listener.getClass().getName()) ||
+                "com.apple.laf.AquaTableUI$MouseInputHandler".equals(listener.getClass().getName());
+    }
+
     @Override
     public synchronized void addMouseListener(MouseListener listener) {
         //подменяем стандартный MouseListener
-        if (listener != null && ("javax.swing.plaf.basic.BasicTableUI$Handler".equals(listener.getClass().getName()) ||
-                "com.apple.laf.AquaTableUI$MouseInputHandler".equals(listener.getClass().getName()))) {
-            // mouse listener is added again after switching between color themes (in updateUI())
-            listener = new ClientPropertyTableUIHandler(this);
+        if (isSubstituteListener(listener)) {
+            if(this.listener == null)
+                this.listener = new ClientPropertyTableUIHandler(this);
+            listener = this.listener;
         }
         super.addMouseListener(listener);
+    }
+
+    @Override
+    public synchronized void removeMouseListener(MouseListener listener) {
+        //подменяем стандартный MouseListener
+        if (isSubstituteListener(listener)) {
+            listener = this.listener;
+        }
+        super.removeMouseListener(listener);
     }
 
     @Override
