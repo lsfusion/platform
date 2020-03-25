@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.service.action;
 
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -9,8 +8,9 @@ import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
-import java.sql.SQLException;
-import java.util.Calendar;
+import java.time.LocalDateTime;
+
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.localDateTimeToSqlTimestamp;
 
 public class ClearFusionTempFilesAction extends InternalAction {
 
@@ -22,15 +22,10 @@ public class ClearFusionTempFilesAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             Integer countDays = (Integer) findProperty("countDaysClearFusionTempFiles").read(context);
-            if(countDays == null) {
-                countDays = 0;
-            }
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DATE, -countDays);
-            long minDate = cal.getTimeInMillis();
+            LocalDateTime minDate = LocalDateTime.now().minusDays(countDays != null ? countDays : 0);
             String tempDir = System.getProperty("java.io.tmpdir");
             if (tempDir != null) {
-                deleteFiles(new File(tempDir), minDate, false);
+                deleteFiles(new File(tempDir), localDateTimeToSqlTimestamp(minDate).getTime(), false);
             }
         } catch (Exception e) {
             ServerLoggers.systemLogger.error("Failed to clear lsfusion temp files", e);

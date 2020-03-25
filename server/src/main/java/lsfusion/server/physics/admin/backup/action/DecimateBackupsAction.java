@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -18,9 +17,12 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.sql.Date;
-import java.sql.SQLException;
-import java.util.Calendar;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getLocalDate;
 
 public class DecimateBackupsAction extends InternalAction {
 
@@ -37,10 +39,6 @@ public class DecimateBackupsAction extends InternalAction {
             if(maxQuantity == null && !saveFirstDay && !saveMonday)
                 maxQuantity = 30;
 
-            long currentDate = Calendar.getInstance().getTime().getTime();
-            long month = new Long("2592000000"); // 30 * 24 * 3600 * 1000
-            long week = new Long("604800000"); // 7 * 24 * 3600 * 1000
-
             KeyExpr backupExpr = new KeyExpr("Backup");
             ImRevMap<Object, KeyExpr> backupKeys = MapFact.singletonRev("Backup", backupExpr);
 
@@ -56,17 +54,15 @@ public class DecimateBackupsAction extends InternalAction {
             for (int i = 0; i < backupResult.size(); i++) {
                 DataObject backupObject = backupResult.getKey(i).getObject("Backup");
 
-                Date dateBackup = (Date) backupResult.getValue(i).get("dateBackup").getValue();
-                long delta = currentDate - dateBackup.getTime();
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(dateBackup);
+                LocalDate dateBackup = getLocalDate(backupResult.getValue(i).get("dateBackup").getValue());
+                long delta = Duration.between(dateBackup.atStartOfDay(), LocalDateTime.now()).toDays();
                 boolean limit = maxQuantity != null && count >= maxQuantity;
-                boolean firstDay = calendar.get(Calendar.DAY_OF_MONTH) == 1 && saveFirstDay;
-                boolean monday = calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && saveMonday;
+                boolean firstDay = dateBackup.getDayOfMonth() == 1 && saveFirstDay;
+                boolean monday = dateBackup.getDayOfWeek() == DayOfWeek.MONDAY && saveMonday;
                 //Если превышен лимит кол-ва, удаляем;
                 //Если старше недели, оставляем только за понедельник и за первое число;
                 //Если старше месяца, только за первое число.
-                if (limit || (delta > month && !firstDay) || (delta < month && delta > week && !firstDay && !monday)) {
+                if (limit || (delta > 30 && !firstDay) || (delta < 30 && delta > 7 && !firstDay && !monday)) {
                     ServerLoggers.systemLogger.info("Decimate Backups: deleting backup " + dateBackup);
                     findAction("delete[Backup]").execute(newContext, backupObject);
                 } else
