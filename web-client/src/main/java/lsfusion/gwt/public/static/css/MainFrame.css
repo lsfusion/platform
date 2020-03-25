@@ -808,12 +808,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     border-radius: unset !important;
 }
 
-.leaflet-marker-icon {
-    margin: 0 !important;
-    width: 0 !important;
-    height: 0 !important;
-}
-
 .leaflet-marker-icon img {
     position: absolute;
     bottom: 0;
@@ -827,8 +821,8 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     width: 40px;
     height: 40px;
     position: absolute;
-    left: -21px;
-    top: -40px;
+    left: -15px; /* -half size + margin marker icon (6) - border */
+    top: -15px; /* -half size + margin marker icon (6) - border */
     border: 1px solid var(--border-color);
 }
 

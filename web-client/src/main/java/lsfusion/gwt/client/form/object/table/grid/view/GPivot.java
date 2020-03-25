@@ -26,16 +26,6 @@ public class GPivot extends GStateTableView {
         config = getDefaultConfig(COLUMN);
     }
 
-    private static class Column {
-        public final GPropertyDraw property;
-        public final GGroupObjectValue columnKey;
-
-        public Column(GPropertyDraw property, GGroupObjectValue columnKey) {
-            this.property = property;
-            this.columnKey = columnKey;
-        }
-    }
-
     // in theory we can order all properties once, but so far there is no full list of properties
     private void fillPropertiesOrder(List<GPropertyDraw> properties, List<GPropertyDraw> propertiesList, Set<GPropertyDraw> propertiesSet) {
         for (GPropertyDraw property : properties) {

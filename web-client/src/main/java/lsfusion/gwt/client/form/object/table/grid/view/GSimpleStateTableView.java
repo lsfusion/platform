@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.user.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -13,6 +14,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.io.Serializable;
 import java.util.*;
 
 public abstract class GSimpleStateTableView extends GStateTableView {
@@ -21,9 +23,12 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         super(form, grid);
     }
 
+    private NativeHashMap<String, Column> columnMap;
+
     @Override
     protected void updateView() {
-        JsArray<JavaScriptObject> list = convertToObjectsMixed(getData());
+        columnMap = new NativeHashMap<>();
+        JsArray<JavaScriptObject> list = convertToObjectsMixed(getData(columnMap));
 
         render(getElement(), getRecordElement(), list);
     }
@@ -40,10 +45,10 @@ public abstract class GSimpleStateTableView extends GStateTableView {
     }
 
     // we need key / value view since pivot
-    private JsArray<JsArray<JavaScriptObject>> getData() {
+    private JsArray<JsArray<JavaScriptObject>> getData(NativeHashMap<String, Column> columnMap) {
         JsArray<JsArray<JavaScriptObject>> array = JavaScriptObject.createArray().cast();
 
-        array.push(getCaptions());
+        array.push(getCaptions(columnMap));
 
         // getting values
         if(keys != null)
@@ -84,7 +89,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             array.push(fromString(value.toString()));
     }
 
-    private JsArray<JavaScriptObject> getCaptions() {
+    private JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap) {
         JsArray<JavaScriptObject> columns = JavaScriptObject.createArray().cast();
         for (int i = 0, size = properties.size() ; i < size; i++) {
             GPropertyDraw property = properties.get(i);
@@ -92,7 +97,9 @@ public abstract class GSimpleStateTableView extends GStateTableView {
 
             for (int c = 0; c < propColumnKeys.size(); c++) {
                 GGroupObjectValue columnKey = propColumnKeys.get(c);
-                columns.push(fromString(property.propertyFormName + (columnKey.isEmpty() ? "" : "_" + c)));
+                String columnName = property.propertyFormName + (columnKey.isEmpty() ? "" : "_" + c);
+                columnMap.put(columnName, new Column(property, columnKey));
+                columns.push(fromString(columnName));
             }
         }
         columns.push(fromString(keysFieldName));
@@ -104,7 +111,17 @@ public abstract class GSimpleStateTableView extends GStateTableView {
     protected void changeSimpleGroupObject(JavaScriptObject object) {
         changeGroupObject(toObject(object));
     }
-    
+
+    protected void changeProperty(String property, Serializable newValue, JavaScriptObject object) {
+        Column column = columnMap.get(property);
+        changeProperty(column.property, toObject(object), column.columnKey, newValue);
+    }
+
+    protected boolean isReadOnly(String property, GGroupObjectValue object) {
+        Column column = columnMap.get(property);
+        return isReadOnly(column.property, object, column.columnKey);
+    }
+
     protected GGroupObjectValue getKey(JavaScriptObject object) {
         return toObject(getValue(object, keysFieldName));
     }

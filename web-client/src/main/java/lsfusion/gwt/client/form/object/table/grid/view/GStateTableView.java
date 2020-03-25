@@ -14,6 +14,7 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.io.Serializable;
 import java.util.*;
 
 // view with state, without incremental updates
@@ -33,6 +34,17 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
     protected List<Map<GGroupObjectValue, Object>> captions = new ArrayList<>();
     protected List<Map<GGroupObjectValue, Object>> values = new ArrayList<>();
     protected List<List<Map<GGroupObjectValue, Object>>> lastAggrs = new ArrayList<>();
+    protected List<Map<GGroupObjectValue, Object>> readOnlys = new ArrayList<>();
+
+    protected static class Column {
+        public final GPropertyDraw property;
+        public final GGroupObjectValue columnKey;
+
+        public Column(GPropertyDraw property, GGroupObjectValue columnKey) {
+            this.property = property;
+            this.columnKey = columnKey;
+        }
+    }
 
     public final native JsArrayString clone(JsArrayString array) /*-{
         n = array.length;
@@ -64,6 +76,8 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
     @Override
     public void setCurrentKey(GGroupObjectValue currentKey) {
         this.currentKey = currentKey;
+
+        dataUpdated = true;
     }
 
     @Override
@@ -84,6 +98,7 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
                 this.properties.add(index, property);
                 this.columnKeys.add(index, null);
                 this.values.add(index, null);
+                this.readOnlys.add(index, null);
 
                 List<Map<GGroupObjectValue, Object>> list = new ArrayList<>();
                 for (int i = 0; i < property.lastReaders.size(); i++)
@@ -120,6 +135,7 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
         captions.remove(index);
         lastAggrs.remove(index);
         values.remove(index);
+        readOnlys.remove(index);
 
         dataUpdated = true;
     }
@@ -194,7 +210,9 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
 
     @Override
     public void updateReadOnlyValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        this.readOnlys.set(properties.indexOf(propertyDraw), values);
 
+        this.dataUpdated = true;
     }
 
     @Override
@@ -247,7 +265,7 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
 
     @Override
     public boolean containsProperty(GPropertyDraw property) {
-        throw new UnsupportedOperationException();
+        return properties.indexOf(property) >= 0;
     }
 
     @Override
@@ -283,6 +301,25 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
     protected void changeGroupObject(GGroupObjectValue value) {
         setCurrentKey(value);
         form.changeGroupObjectLater(grid.groupObject, value);
+    }
+
+    protected Object getValue(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        return values.get(properties.indexOf(property)).get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
+    protected void changeProperty(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, Serializable newValue) {
+        form.changeProperty(property, rowKey, columnKey, newValue, getValue(property, rowKey, columnKey));
+    }
+
+    protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        if(property.isReadOnly())
+            return true;
+
+        Map<GGroupObjectValue, Object> readOnlyValues = readOnlys.get(properties.indexOf(property));
+        if(readOnlyValues == null)
+            return false;
+
+        return readOnlyValues.get(GGroupObjectValue.getFullKey(rowKey, columnKey)) != null;
     }
 
     // utils
