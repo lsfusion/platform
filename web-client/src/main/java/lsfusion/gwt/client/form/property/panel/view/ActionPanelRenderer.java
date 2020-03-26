@@ -244,7 +244,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     public void updateCellBackgroundValue(Object value) {
         if (!nullEquals(background, value)) {
             background = value;
-            button.getElement().getStyle().setBorderColor(value == null ? null : value.toString());
+            button.getElement().getStyle().setBackgroundColor(value == null ? null : value.toString());
         }
     }
 
