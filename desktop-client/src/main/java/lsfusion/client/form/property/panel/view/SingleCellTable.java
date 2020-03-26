@@ -22,6 +22,7 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.base.view.SwingDefaults.getSingleCellTableIntercellSpacing;
 import static lsfusion.client.form.controller.ClientFormController.PasteData;
 
 public abstract class SingleCellTable extends ClientPropertyTable {
@@ -39,14 +40,15 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     // is called after color theme change, overwrites our values and changes getCellRect() result -> renderer gets larger size  
     @Override
     public void setIntercellSpacing(Dimension intercellSpacing) {
-        super.setIntercellSpacing(new Dimension(2, 2));
+        super.setIntercellSpacing(new Dimension(getSingleCellTableIntercellSpacing(), getSingleCellTableIntercellSpacing()));
     }
 
     public void setProperty(ClientPropertyDraw property) {
         setName(property.getCaption());
         model.setProperty(property);
 
-        setPreferredSize(new Dimension(property.getValueWidth(this), property.getValueHeight(this)));
+        // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
+        setPreferredSize(new Dimension(property.getValueWidth(this), property.getValueHeight(this) + getRowMargin()));
     }
 
     public void setValue(Object value) {

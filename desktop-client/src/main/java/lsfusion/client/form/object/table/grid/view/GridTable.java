@@ -606,7 +606,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         if (model.getColumnCount() != 0) {
 
             if (getRowHeight() != rowHeight) {
-                setRowHeight(rowHeight);
+                // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
+                setRowHeight(rowHeight + getRowMargin());
             }
 
             repaint();

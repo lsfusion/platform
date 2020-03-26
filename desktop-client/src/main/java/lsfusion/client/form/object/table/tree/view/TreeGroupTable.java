@@ -451,7 +451,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             rowHeight = max(rowHeight, columnProperty.getValueHeight(this));
         }
         if (rowHeight != getRowHeight() && rowHeight > 0) {
-            setRowHeight(rowHeight);
+            setTableRowHeight(rowHeight);
         }
     }
 
@@ -522,8 +522,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         columnsMap.put(property, tableColumn);
 
         if (getRowHeight() != rowHeight && rowHeight > 0) {
-            setRowHeight(rowHeight);
+            setTableRowHeight(rowHeight);
         }
+    }
+    
+    private void setTableRowHeight(int rowHeight) {
+        // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
+        setRowHeight(rowHeight + getRowMargin());
     }
 
     public void setCurrentPath(final ClientGroupObjectValue objects) {

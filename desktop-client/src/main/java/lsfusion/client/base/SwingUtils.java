@@ -26,6 +26,7 @@ import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static lsfusion.client.base.view.SwingDefaults.getSingleCellTableIntercellSpacing;
 
 public class SwingUtils {
 
@@ -462,7 +463,8 @@ public class SwingUtils {
             }
         });
 
-        table.setIntercellSpacing(new Dimension(2, 2));
+        table.setIntercellSpacing(new Dimension(getSingleCellTableIntercellSpacing(), getSingleCellTableIntercellSpacing()));
+
         table.setBorder(BorderFactory.createLineBorder(Color.gray));
     }
 

@@ -2,6 +2,7 @@ package lsfusion.client.classes.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.ClientTypeClass;
@@ -56,7 +57,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     @Override
     public int getDefaultHeight(FontMetrics fontMetrics, int charHeight) {
-        return fontMetrics.getHeight() * charHeight + 1;
+        return Math.max(fontMetrics.getHeight() * charHeight, SwingDefaults.getCellHeight());
     }
 
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {

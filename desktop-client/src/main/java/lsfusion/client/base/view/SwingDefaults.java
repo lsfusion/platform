@@ -165,4 +165,12 @@ public class SwingDefaults {
             return borderColor.brighter();
         }
     }
+    
+    public static int getCellHeight() {
+        return 19;
+    } 
+    
+    public static int getSingleCellTableIntercellSpacing() {
+        return 2;
+    }
 }
