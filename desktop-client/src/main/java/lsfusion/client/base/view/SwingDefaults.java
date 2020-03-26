@@ -22,6 +22,8 @@ public class SwingDefaults {
     private static Color notDefinedForeground;
     
     private static Font textAreaFont;
+    private static Color logPanelErrorColor;
+    private static Color logPanelSuccessColor;
     
     public static void reset() {
         buttonBackground = null;
@@ -37,6 +39,8 @@ public class SwingDefaults {
         notDefinedForeground = null;
         
         textAreaFont = null;
+        logPanelErrorColor = null;
+        logPanelSuccessColor = null;
     }
     
     public static Color getButtonBackground() {
@@ -132,6 +136,20 @@ public class SwingDefaults {
             textAreaFont = getFont("TextArea.font");
         }
         return textAreaFont;
+    }
+    
+    public static Color getLogPanelErrorColor() {
+        if (logPanelErrorColor == null) {
+            logPanelErrorColor = colorTheme.isLight() ? new Color(255, 182, 182) : new Color(100, 0, 0);
+        }
+        return logPanelErrorColor;
+    }
+    
+    public static Color getLogPanelSuccessColor() {
+        if (logPanelSuccessColor == null) {
+            logPanelSuccessColor = colorTheme.isLight() ? new Color(182, 255, 182) : new Color(0, 100, 0);
+        }
+        return logPanelSuccessColor;
     }
     
     
