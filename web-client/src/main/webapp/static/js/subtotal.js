@@ -1228,11 +1228,11 @@
         resultTable.appendChild(thead);
         ref = buildAxisHeaders(thead, rowAttrs, colAttrs, opts), colAxisHeaders = ref[0], rowAxisHeaders = ref[1];
         if (colAttrs.length !== 0) {
-          node = {
-            counter: 0
-          };
           overallSpan = 0;
           if (colKeyHeaders != null) {
+            node = {
+              counter: 0
+            };
             ref1 = colKeyHeaders.children;
             for (k = 0, len1 = ref1.length; k < len1; k++) {
               chKey = ref1[k];
@@ -1255,10 +1255,10 @@
           if (colAttrs.length === 0) {
             buildRowTotalsHeader(rowAxisHeaders.ah[0].tr, opts.rowSubtotalDisplay.splitPositions.length);
           }
-          node = {
-            counter: 0
-          };
           if (rowKeyHeaders != null) {
+            node = {
+              counter: 0
+            };
             ref2 = rowKeyHeaders.children;
             for (l = 0, len2 = ref2.length; l < len2; l++) {
               chKey = ref2[l];
@@ -1282,19 +1282,19 @@
       return main(rowAttrs, rowKeys, colAttrs, colKeys);
     };
     $.pivotUtilities.subtotal_renderers = {
-      "Table With Subtotal": function(pvtData, opts) {
+      "Table": function(pvtData, opts) {
         return SubtotalRenderer(pvtData, opts);
       },
-      "Table With Subtotal Bar Chart": function(pvtData, opts) {
+      "Table Barchart": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).barchart();
       },
-      "Table With Subtotal Heatmap": function(pvtData, opts) {
+      "Heatmap": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).heatmap("heatmap", opts);
       },
-      "Table With Subtotal Row Heatmap": function(pvtData, opts) {
+      "Row Heatmap": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).heatmap("rowheatmap", opts);
       },
-      "Table With Subtotal Col Heatmap": function(pvtData, opts) {
+      "Col Heatmap": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).heatmap("colheatmap", opts);
       }
     };

@@ -372,7 +372,7 @@ public class GPivot extends GStateTableView {
             $wnd.$.pivotUtilities.subtotal_renderers,
             $wnd.$.pivotUtilities.plotly_renderers,
 //            $wnd.$.pivotUtilities.c3_renderers,
-            $wnd.$.pivotUtilities.renderers,
+//            $wnd.$.pivotUtilities.renderers,
             $wnd.$.pivotUtilities.d3_renderers
         );
 
