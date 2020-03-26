@@ -95,7 +95,7 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var addClass, adjustColAxisHeader, adjustRowAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeaders, buildColAxisHeader, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeader, buildRowHeader, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseChildCol, collapseChildRow, collapseCol, collapseColAxis, collapseColAxisHeaders, collapseHiddenColSubtotal, collapseRow, collapseRowAxis, collapseRowAxisHeaders, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, curGroupLength, defaults, executeAggregatorCellRender, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, firstIndexInGroup, getColHeaderText, getTableEventHandlers, hasClass, hideChildCol, hideChildRow, i, lastIndexInSomeGroup, longestGroupLength, main, processKeys, processRowKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowLabelsLevelPadding, rowLabelsPadding, rowTotals, setAttributes, showChildCol, showChildRow, subtotalIsEnabled, tree;
+      var addClass, adjustColAxisHeader, adjustRowAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeaders, buildColAxisHeader, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeader, buildRowHeader, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseChildCol, collapseChildRow, collapseCol, collapseColAxis, collapseColAxisHeaders, collapseHiddenColSubtotal, collapseRow, collapseRowAxis, collapseRowAxisHeaders, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, curGroupLength, defaults, executeAggregatorCellRender, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, firstIndexInGroup, getColHeaderText, getTableEventHandlers, hasClass, hideChildCol, hideChildRow, i, lastIndexInSomeGroup, longestGroupLength, main, processColKeys, processRowKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowLabelsLevelPadding, rowLabelsPadding, rowTotals, setAttributes, showChildCol, showChildRow, subtotalIsEnabled, tree;
       defaults = {
         table: {
           clickCallback: null
@@ -246,7 +246,7 @@
         }
         return results;
       };
-      processKeys = function(keysArr, className, opts) {
+      processColKeys = function(keysArr, className, opts) {
         var headers, lastIdx, row;
         lastIdx = keysArr[0].length - 1;
         headers = {
@@ -1216,7 +1216,7 @@
         rowAttrHeaders = [];
         colAttrHeaders = [];
         if (colAttrs.length !== 0 && colKeys.length !== 0) {
-          colKeyHeaders = processKeys(colKeys, "pvtColLabel");
+          colKeyHeaders = processColKeys(colKeys, "pvtColLabel");
         }
         if (rowAttrs.length !== 0 && rowKeys.length !== 0) {
           rowKeyHeaders = processRowKeys(rowKeys, "pvtRowLabel", opts);
@@ -1232,11 +1232,13 @@
             counter: 0
           };
           overallSpan = 0;
-          ref1 = colKeyHeaders.children;
-          for (k = 0, len1 = ref1.length; k < len1; k++) {
-            chKey = ref1[k];
-            buildColHeader(colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts);
-            overallSpan += colKeyHeaders[chKey].th.colSpan;
+          if (colKeyHeaders != null) {
+            ref1 = colKeyHeaders.children;
+            for (k = 0, len1 = ref1.length; k < len1; k++) {
+              chKey = ref1[k];
+              buildColHeader(colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts);
+              overallSpan += colKeyHeaders[chKey].th.colSpan;
+            }
           }
           buildRowTotalsHeader(colAxisHeaders.ah[0].tr, colAttrs.length);
           rowAttrHeadersCount = opts.rowSubtotalDisplay.splitPositions.length;
@@ -1256,10 +1258,12 @@
           node = {
             counter: 0
           };
-          ref2 = rowKeyHeaders.children;
-          for (l = 0, len2 = ref2.length; l < len2; l++) {
-            chKey = ref2[l];
-            buildRowHeader(tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, opts);
+          if (rowKeyHeaders != null) {
+            ref2 = rowKeyHeaders.children;
+            for (l = 0, len2 = ref2.length; l < len2; l++) {
+              chKey = ref2[l];
+              buildRowHeader(tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, opts);
+            }
           }
         }
         buildValues(tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts);
