@@ -7,8 +7,8 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
-import lsfusion.server.logics.event.ApplyActionEvent;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -16,7 +16,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class ActionValueImplement<T extends PropertyInterface> extends ActionImplement<T, ObjectValue> implements ApplyActionEvent {
+public class ActionValueImplement<T extends PropertyInterface> extends ActionImplement<T, ObjectValue> {
 
     // кривовато, но иначе там нужно небольшой рефакторинг проводить
     private final ImMap<T, PropertyObjectInterfaceInstance> mapObjects;

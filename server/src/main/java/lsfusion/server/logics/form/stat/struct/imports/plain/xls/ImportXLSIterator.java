@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.stat.struct.imports.plain.xls;
 
 import com.monitorjbl.xlsx.StreamingReader;
 import com.monitorjbl.xlsx.exceptions.NotSupportedException;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.type.Type;
@@ -28,8 +27,8 @@ public class ImportXLSIterator extends ImportMatrixIterator {
     private FormulaEvaluator formulaEvaluator;
     private Integer lastSheet;
     
-    public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file, boolean xlsx, boolean noHeader, Integer singleSheetIndex) throws IOException {
-        super(fieldTypes, noHeader);
+    public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file, boolean xlsx, String wheres, boolean noHeader, Integer singleSheetIndex) throws IOException {
+        super(fieldTypes, wheres, noHeader);
 
         int minSize = Settings.get().getMinSizeForExcelStreamingReader();
         useStreamingReader = xlsx && minSize >= 0 && file.getLength() >= minSize;
@@ -80,28 +79,37 @@ public class ImportXLSIterator extends ImportMatrixIterator {
     private boolean firstRow;
 
     @Override
-    protected boolean nextRow() {
-        if (sheet == null || !rowIterator.hasNext()) {
-            if (!nextSheet())
-                return false;
-            rowIterator = sheet.rowIterator();
+    protected boolean nextRow(boolean checkWhere) {
+        while(true) {
+            if (sheet == null || !rowIterator.hasNext()) {
+                if (!nextSheet()) return false;
+                rowIterator = sheet.rowIterator();
 
-            if (useStreamingReader)
-                firstRow = true;
+                if (useStreamingReader) firstRow = true;
 
-            return nextRow();
-        }
-        row = rowIterator.next();
-
-        if (useStreamingReader && row.getRowNum() == 0) {
-            if (firstRow) { //skip all rows with rowNum 0 (except first) - they are incorrect
-                firstRow = false;
-            } else {
-                return nextRow();
+                return nextRow(checkWhere);
             }
-        }
+            row = rowIterator.next();
 
-        return true;
+            if (checkWhere && ignoreRow()) {
+                continue;
+            }
+
+            if (useStreamingReader && row.getRowNum() == 0) {
+                if (firstRow) { //skip all rows with rowNum 0 (except first) - they are incorrect
+                    firstRow = false;
+                } else {
+                    return nextRow(checkWhere);
+                }
+            }
+
+            return true;
+        }
+    }
+
+    @Override
+    protected Integer getRowIndex() {
+        return row.getRowNum() - (noHeader ? 0 : 1);
     }
 
     @Override
@@ -112,7 +120,11 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         CellValue cellValue = formulaEvaluator.evaluate(cell);
         if(cellValue == null)
             return null;
-        return type.parseXLS(cell, cellValue);
+        try {
+            return type.parseXLS(cell, cellValue);
+        } catch (ParseException e) {
+            throw new ParseException(e.getMessage() + String.format(" (row %s, column %s)", cell.getRowIndex() + 1, cell.getColumnIndex() + 1), e);
+        }
     }
 
     @Override

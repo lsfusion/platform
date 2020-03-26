@@ -48,7 +48,7 @@ public class PropertyPanelController {
             }
         });
 
-        viewsPanel = new JComponentPanel(false, Alignment.START);
+        viewsPanel = new JComponentPanel(property.columnKeysVertical, Alignment.START);
     }
 
     public boolean forceEdit() {

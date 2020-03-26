@@ -1472,7 +1472,7 @@
                     attr = shownInDragDrop[i];
                     fn1(attr);
                 }
-                tr1 = $("<tr>").appendTo(uiTable);
+                tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable);
                 aggregator = $("<select>").addClass('pvtAggregator').bind("change", function() {
                     return refresh();
                 });
@@ -1526,7 +1526,7 @@
                 pvtRows.append(pvtRowsTable);
                 pivotTable = $("<td>").attr("valign", "top").addClass('pvtRendererArea').appendTo(tr2);
                 if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
-                    uiTable.find('tr:nth-child(1)').prepend(rendererControl);
+                    uiTable.find('.uiTableRow:nth-child(1)').prepend(rendererControl);
                     uiTable.find('tr:nth-child(2)').prepend(unused);
                 } else {
                     uiTable.prepend($("<tr>").append(rendererControl).append(unused));
@@ -1625,16 +1625,6 @@
                 refreshDelayed = (function(_this) {
                     return function() {
                         var exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, subopts, unusedAttrsContainer, vals;
-                        subopts = {
-                            derivedAttributes: opts.derivedAttributes,
-                            localeStrings: opts.localeStrings,
-                            rendererOptions: opts.rendererOptions,
-                            sorters: opts.sorters,
-                            cols: [],
-                            rows: [],
-                            dataClass: opts.dataClass
-                        };
-                        numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
                         refreshPaxis(true);
                         refreshPaxis(false);
                         _this.find(".pvtAxisContainer").sortable({
@@ -1647,6 +1637,22 @@
                             items: 'li',
                             placeholder: 'pvtPlaceholder'
                         });
+                        subopts = {
+                            derivedAttributes: opts.derivedAttributes,
+                            localeStrings: opts.localeStrings,
+                            rendererOptions: opts.rendererOptions,
+                            sorters: opts.sorters,
+                            cols: [],
+                            rows: [],
+                            dataClass: opts.dataClass
+                        };
+                        subopts.rendererOptions.rowSubtotalDisplay = {
+                            splitPositions: opts.splitRows
+                        };
+                        subopts.rendererOptions.colSubtotalDisplay = {
+                            splitPositions: opts.splitCols
+                        };
+                        numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
                         vals = [];
                         _this.find(".pvtRows li span.pvtAttr").each(function() {
                             return subopts.rows.push($(this).data("attrName"));

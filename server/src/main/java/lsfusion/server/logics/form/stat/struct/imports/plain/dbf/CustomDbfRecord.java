@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.imports.plain.dbf;
 
+import lsfusion.server.logics.classes.data.ParseException;
 import net.iryndin.jdbf.core.DbfField;
 import net.iryndin.jdbf.core.DbfFieldTypeEnum;
 import net.iryndin.jdbf.core.DbfMetadata;
@@ -11,7 +12,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
-import java.text.ParseException;
 import java.util.*;
 
 public class CustomDbfRecord {
@@ -129,7 +129,7 @@ public class CustomDbfRecord {
 		*/
     }
 
-    public byte[] getMemoAsBytes(String fieldName) throws IOException {
+    public byte[] getMemoAsBytes(String fieldName) throws IOException, ParseException {
         DbfField f = getField(fieldName);
         if (f.getType() != DbfFieldTypeEnum.Memo) {
             throw new IllegalArgumentException("Field '" + fieldName + "' is not MEMO field!");
@@ -146,7 +146,7 @@ public class CustomDbfRecord {
         return memoReader.read(offsetInBlocks).getValue();
     }
 
-    public String getMemoAsString(String fieldName, Charset charset) throws IOException {
+    public String getMemoAsString(String fieldName, Charset charset) throws IOException, ParseException {
         DbfField f = getField(fieldName);
         if (f.getType() != DbfFieldTypeEnum.Memo) {
             throw new IllegalArgumentException("Field '" + fieldName + "' is not MEMO field!");
@@ -165,7 +165,7 @@ public class CustomDbfRecord {
         return memoReader.read(offsetInBlocks).getValueAsString(charset);
     }
 
-    public String getMemoAsString(String fieldName) throws IOException {
+    public String getMemoAsString(String fieldName) throws IOException, ParseException {
         Charset charset = getStringCharset();
         if (charset == null) {
             charset = Charset.defaultCharset();
@@ -173,14 +173,14 @@ public class CustomDbfRecord {
         return getMemoAsString(fieldName, charset);
     }
 
-    public Date getDate(String fieldName) throws ParseException {
+    public Date getDate(String fieldName) throws java.text.ParseException {
         String s = getString(fieldName);
         if (s == null) {
             return null;
         }
         try {
             return JdbfUtils.parseDate(s);
-        } catch (ParseException e) {
+        } catch (java.text.ParseException e) {
             try {
                 //Дата может присылаться в формате кол-ва дней от неизвестной даты 3 байтами в обратном порядке
                 byte[] bytes = getBytes(fieldName);
@@ -200,7 +200,7 @@ public class CustomDbfRecord {
         return b < 0 ? (256 + b) : b;
     }
 
-    public Number getNumber(String fieldName) {
+    public Number getNumber(String fieldName) throws ParseException {
         DbfField f = getField(fieldName);
         switch (f.getType()) {
             case Integer:
@@ -212,7 +212,7 @@ public class CustomDbfRecord {
         }
     }
     
-    public BigDecimal getBigDecimal(String fieldName) {
+    public BigDecimal getBigDecimal(String fieldName) throws ParseException {
         DbfField f = getField(fieldName);
         String s = getString(fieldName);
 
@@ -228,10 +228,14 @@ public class CustomDbfRecord {
 
         //MathContext mc = new MathContext(f.getNumberOfDecimalPlaces());
         //return new BigDecimal(s, mc);
-        return new BigDecimal(s);
+        try {
+            return new BigDecimal(s);
+        } catch (Exception e) {
+            throw new ParseException(String.format("error parsing numeric %s (row %s, column %s)", s, recordNumber, fieldName), e);
+        }
     }
 
-    public Double getDouble(String fieldName) {
+    public Double getDouble(String fieldName) throws ParseException {
         try {
             byte[] bytes = getBytes(fieldName);
             reverse(bytes);
@@ -239,7 +243,7 @@ public class CustomDbfRecord {
                 return stream.readDouble();
             }
         } catch (Exception e) {
-            return null;
+            throw new ParseException(String.format("error parsing double (row %s, column %s)", fieldName, recordNumber), e);
         }
     }
 
@@ -292,10 +296,13 @@ public class CustomDbfRecord {
         System.arraycopy(fieldBytes, 0, bytes, f.getOffset(), f.getLength());
     }
 
-    private Integer getInteger(String fieldName) {
-        byte[] bytes = getBytes(fieldName);
-
-        return BitUtils.makeInt(bytes[0], bytes[1], bytes[2], bytes[3]);
+    private Integer getInteger(String fieldName) throws ParseException {
+        try {
+            byte[] bytes = getBytes(fieldName);
+            return BitUtils.makeInt(bytes[0], bytes[1], bytes[2], bytes[3]);
+        } catch (Exception e) {
+            throw new ParseException(String.format("error parsing integer (row %s, column %s)", fieldName, recordNumber), e);
+        }
     }
 
     public DbfField getField(String fieldName) {
@@ -342,7 +349,7 @@ public class CustomDbfRecord {
         return sb.toString();
     }
 
-    public Map<String, Object> toMap() throws ParseException {
+    public Map<String, Object> toMap() throws ParseException, java.text.ParseException {
         Map<String, Object> map = new LinkedHashMap<>(getFields().size() * 2);
 
         for (DbfField f : getFields()) {

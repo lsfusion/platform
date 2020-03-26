@@ -1,35 +1,24 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
-public class ColorGridCellRenderer extends AbstractGridCellRenderer {
-
+public class ColorGridCellRenderer extends GridCellRenderer {
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
-        String color = getColorValue(value);
-
-        cellElement.setInnerText(EscapeUtils.UNICODE_NBSP);
-
-        cellElement.getStyle().setBorderWidth(0, Style.Unit.PX);
-
-        updateElement(cellElement, color);
+    public void renderStatic(Element element, GFont font, boolean isSingle) {
+        element.setInnerText(EscapeUtils.UNICODE_NBSP);
+        element.getStyle().setBorderWidth(0, Style.Unit.PX);
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
         String color = getColorValue(value);
-        updateElement(cellElement, color);
-    }
-
-    private void updateElement(DivElement div, String colorValue) {
-        div.getStyle().setColor(colorValue);
-        div.getStyle().setBackgroundColor(colorValue);
-        div.setTitle(colorValue);
+        element.getStyle().setColor(color);
+        element.getStyle().setBackgroundColor(color);
+        element.setTitle(color);
     }
 
     private String getColorValue(Object value) {

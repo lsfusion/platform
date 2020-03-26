@@ -20,7 +20,7 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
     private String currentError = null;
 
     public StringPropertyEditor(ClientPropertyDraw property, Object value, final int length, boolean isVarString, boolean matchRegexp) {
-        super(property.design);
+        super(property);
         this.isVarString = isVarString;
         this.matchRegexp = matchRegexp;
         this.property = property;

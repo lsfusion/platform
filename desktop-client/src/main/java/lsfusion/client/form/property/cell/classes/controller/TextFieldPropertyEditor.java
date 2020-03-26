@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
-import lsfusion.interop.form.design.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,14 +16,21 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     protected PropertyTableCellEditor tableEditor;
 
-    TextFieldPropertyEditor(ComponentDesign design) {
+    TextFieldPropertyEditor(ClientPropertyDraw property) {
         super();
 
         setBorder(new EmptyBorder(0, 3, 0, 0));
         setOpaque(true);
 
-        if (design != null) {
-            design.designCell(this);
+        if (property != null) {
+            if (property.design != null) {
+                property.design.designCell(this);
+            }
+
+            Integer valueAlignment = property.getSwingValueAlignment();
+            if (valueAlignment != null) {
+                setHorizontalAlignment(valueAlignment);
+            }
         }
 
         addActionListener(new ActionListener() {

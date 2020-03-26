@@ -23,15 +23,14 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
-public class RecalculatePropertyAction<P extends PropertyInterface, W extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
+public class RecalculatePropertyAction<P extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
     private final PropertyMapImplement<P, I> recalc;
     private final PropertyInterfaceImplement<I> where;
 
-    public RecalculatePropertyAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, PropertyMapImplement<P, I> recalc, PropertyMapImplement<W, I> where) {
+    public RecalculatePropertyAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, PropertyMapImplement<P, I> recalc, PropertyInterfaceImplement<I> where) {
         super(caption, innerInterfaces, mapInterfaces);
         this.recalc = recalc;
         this.where = where;
-        assert recalc.property instanceof AggregateProperty; 
         finalizeInit();
     }
 
@@ -58,17 +57,24 @@ public class RecalculatePropertyAction<P extends PropertyInterface, W extends Pr
 
     @Override
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
-        PropertyChange<P> propertyChange = null;
+        return executeExtendGenerics(context, innerKeys, innerValues, innerExprs);
+    }
+
+    private <X extends PropertyInterface> FlowResult executeExtendGenerics(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
+        PropertyMapImplement<X, I> recalc = (PropertyMapImplement<X, I>) this.recalc.mapIdentityImplement();
+        assert this.recalc.property.isMarkedStored();
+
+        PropertyChange<X> propertyChange = null;
         if(where != null) {
             Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();
-            ImMap<P, DataObject> writeInnerValues = DataObject.onlyDataObjects(recalc.mapping.innerJoin(innerValues));
+            ImMap<X, DataObject> writeInnerValues = DataObject.onlyDataObjects(recalc.mapping.innerJoin(innerValues));
             if (writeInnerValues != null)
-                propertyChange = new PropertyChange<>(writeInnerValues, recalc.mapping.rightJoin(innerKeys), ValueExpr.get(exprWhere), exprWhere);                
+                propertyChange = new PropertyChange<X>(writeInnerValues, recalc.mapping.rightJoin(innerKeys), ValueExpr.get(exprWhere), exprWhere);                
             else
                 proceedNullException();
         }
 
-        context.getDbManager().runAggregationRecalculation(context.getSession(), context.getSession().sql, (AggregateProperty<P>) recalc.property, propertyChange, true, false);
+        context.getDbManager().runAggregationRecalculation(context.getSession(), context.getSession().sql, (AggregateProperty<X>) recalc.property, propertyChange, true, false);
         return FlowResult.FINISH;
     }
 }

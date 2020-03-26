@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -18,7 +17,7 @@ public class IntegralGridCellEditor extends TextBasedGridCellEditor {
     }
 
     public IntegralGridCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property, NumberFormat format) {
-        super(editManager, property, Style.TextAlign.RIGHT);
+        super(editManager, property);
         this.format = format;
         this.type = type;
     }

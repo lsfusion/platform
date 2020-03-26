@@ -166,7 +166,7 @@ extractDOWNumber = [ FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPAR
 extractDOW '{time.extract.dow}' (DATE date) = DOW(extractDOWNumber(date));
 extractDOWName '{time.extract.dow.name}' (DATE date) = staticCaption(extractDOW(date)) CHARWIDTH 12;
 
-distanceDOWDOW (DOW d1, DOW d2) = (number(d2) - number(d1)) (+) (7 IF number(d2) < number(d1));     
+distanceDOWDOW (DOW d1, DOW d2) = (number(d2) - number(d1)) + (IF number(d2) < number(d1) THEN 7 ELSE 0);     
 
 // uses ISO 8601, where first week of the year contains January, 4th
 extractWeek = FORMULA INTEGER PG '(extract(week from ($1)))', MS 'datepart(isoww, $1)'; 

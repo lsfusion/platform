@@ -172,7 +172,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
                 } catch (SQLException | SQLHandledException ignored) {
                     ServerLoggers.sqlSuppLog(ignored);
                 } catch (Throwable t) {
-                    ServerLoggers.sqlSuppLog(t); // пока сюда же выведем
+                    ServerLoggers.remoteLogger.error("onDeactivate: ", t);
                 }
             }
         }
@@ -195,6 +195,8 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
                 } finally {
                     explicitClose();
                 }
+            } catch (Throwable t) {
+                ServerLoggers.remoteLogger.error("deactivateAndCloseLater: ", t);
             } finally {
                 ThreadLocalContext.aspectAfterRmi(threadInfo);
             }

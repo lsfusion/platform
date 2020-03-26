@@ -2,6 +2,7 @@ package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
@@ -71,6 +72,8 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     Stat getTypeStat(boolean forJoin);
 
     ExtInt getCharLength();
+    
+    FlexAlignment getValueAlignment();
 
     T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
     T parseJSON(Object value) throws ParseException, JSONException;

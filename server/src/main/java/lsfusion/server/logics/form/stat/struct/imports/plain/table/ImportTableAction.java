@@ -15,12 +15,12 @@ import java.io.IOException;
 
 public class ImportTableAction extends ImportPlainAction<ImportTableIterator> {
 
-    public ImportTableAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset) {
-        super(paramsCount, groupFiles, formEntity, charset);
+    public ImportTableAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere) {
+        super(paramsCount, groupFiles, formEntity, charset, hasWhere);
     }
 
     @Override
-    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
-        return new ImportTableIterator(fieldTypes, file);
+    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, String wheres, ExecutionContext<PropertyInterface> context) throws IOException {
+        return new ImportTableIterator(fieldTypes, file, wheres);
     }
 }

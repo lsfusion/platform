@@ -20,6 +20,11 @@ public abstract class ValueFormulaProperty<T extends PropertyInterface> extends 
     }
 
     @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return false;
+    }
+
+    @Override
     protected ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         assert value != null; // for String this method is overriden
         return ExClassSet.toExValue(value);

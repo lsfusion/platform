@@ -89,6 +89,10 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             return type.getMainExpr(exprs);
         }
 
+        public boolean isSelectNotInWhere() {
+            return type.isSelectNotInWhere();
+        }
+
         public ImSet<Expr> getExprs() { // получает все выражения
             return SetFact.add(exprs.toOrderSet().getSet(), orders.keys());
         }
@@ -118,6 +122,10 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
 
         protected Expr getMainExpr() {
             return thisObj.query.getMainExpr();
+        }
+
+        protected boolean isSelectNotInFullWhere() {
+            return thisObj.query.isSelectNotInWhere();
         }
 
         protected boolean isSelect() {

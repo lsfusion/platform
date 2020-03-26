@@ -27,10 +27,7 @@ import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingBlocker;
 import lsfusion.gwt.client.base.busy.LoadingManager;
-import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
-import lsfusion.gwt.client.base.exception.AuthenticationDispatchException;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
-import lsfusion.gwt.client.base.exception.GExceptionManager;
+import lsfusion.gwt.client.base.exception.*;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.VoidResult;
@@ -108,44 +105,31 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         });
     }
 
+    public static void cleanRemote(Runnable runnable, boolean connectionLost) {
+        if (navigatorDispatchAsync != null && !connectionLost) { // dispatcher may be not initialized yet (at first look up logics call)
+            navigatorDispatchAsync.execute(new CloseNavigator(), new AsyncCallback<VoidResult>() {
+                public void onFailure(Throwable caught) {
+                    runnable.run();
+                }
+
+                public void onSuccess(VoidResult result) {
+                    runnable.run();
+                }
+            });
+        } else {
+            runnable.run();
+        }
+    }
+
     public void onModuleLoad() {
         hackForGwtDnd();
         
-        initializeLogicsAndNavigator(0);
-    }
-
-    public void initializeLogicsAndNavigator(final int attemptCount) {
-        String host = Window.Location.getParameter("host");
-        String portString = Window.Location.getParameter("port");
-        Integer port = portString != null ? Integer.valueOf(portString) : null;
-        String exportName = Window.Location.getParameter("exportName");
-        logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
-        logicsDispatchAsync.execute(new CreateNavigatorAction(), new ErrorHandlingCallback<StringResult>() {
-            @Override
-            public void success(StringResult result) {
-                navigatorDispatchAsync = new NavigatorDispatchAsync(result.get());
-                initializeFrame();
-            }
-
-            @Override
-            public void failure(Throwable caught) {
-                if(caught instanceof AuthenticationDispatchException) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
-                    GwtClientUtils.logout();
-                } else if(caught instanceof AppServerNotAvailableDispatchException) {
-                    new Timer()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            GwtClientUtils.setAttemptCount(attemptCount + 1);
-                            initializeLogicsAndNavigator(attemptCount + 1);
-                        }
-                    }.schedule(2000);
-                } else {
-                    super.failure(caught);
-                }
-            }
+        GWT.setUncaughtExceptionHandler(t -> {
+            GExceptionManager.logClientError(t);
+            DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
         });
+
+        initializeLogicsAndNavigator(0);
     }
     
     private static class Linker<T> {
@@ -154,15 +138,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
     public void initializeFrame() {
         currentForm = null;
-        
-        GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
-            @Override
-            public void onUncaughtException(Throwable t) {
-                GExceptionManager.logClientError(t);
-                DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
-            }
-        });
-
         // we need to read settings first to have loadingManager set (for syncDispatch)
         navigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
             @Override
@@ -402,10 +377,45 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         });
     }
 
+    public void initializeLogicsAndNavigator(final int attemptCount) {
+        String host = Window.Location.getParameter("host");
+        String portString = Window.Location.getParameter("port");
+        Integer port = portString != null ? Integer.valueOf(portString) : null;
+        String exportName = Window.Location.getParameter("exportName");
+        logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
+        logicsDispatchAsync.execute(new CreateNavigatorAction(), new ErrorHandlingCallback<StringResult>() {
+            @Override
+            public void success(StringResult result) {
+                navigatorDispatchAsync = new NavigatorDispatchAsync(result.get());
+                initializeFrame();
+            }
+
+            @Override
+            public void failure(Throwable caught) {
+                if(caught instanceof AuthenticationDispatchException) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
+                    GwtClientUtils.logout();
+                } else if(caught instanceof RemoteMessageDispatchException) {
+                    GwtClientUtils.logout(); //see issue #312
+                } else if(caught instanceof AppServerNotAvailableDispatchException) {
+                    new Timer()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            GwtClientUtils.setAttemptCount(attemptCount + 1);
+                            initializeLogicsAndNavigator(attemptCount + 1);
+                        }
+                    }.schedule(2000);
+                } else {
+                    super.failure(caught);
+                }
+            }
+        });
+    }
+
     public void clean() {
-        navigatorDispatchAsync.execute(new CloseNavigator(), new ErrorHandlingCallback<VoidResult>());
+        cleanRemote(() -> {}, false);
         GConnectionLostManager.invalidate();
         System.gc();
     }
-
 }

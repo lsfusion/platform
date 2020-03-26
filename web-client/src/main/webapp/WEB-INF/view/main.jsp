@@ -74,7 +74,8 @@
 
         <!-- subtotal.js libs : subtotal_renderers -->
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.css">
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>
+<%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>--%>
+        <script type="text/javascript" src="static/js/subtotal.js"></script>
 
         <!--  plotly libs : plotly_renderers  -->
         <script type="text/javascript" src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
@@ -101,6 +102,7 @@
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />
         <script type="text/javascript" src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
         <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"></script>
     </head>
     <body>
         <script language="JavaScript">

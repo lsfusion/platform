@@ -51,6 +51,10 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, SubQueryExpr.Query, SubQuer
         protected boolean isSelect() {
             return true;
         }
+
+        protected boolean isSelectNotInFullWhere() {
+            return false;
+        }
     }
     protected QueryInnerContext createInnerContext() {
         return new QueryInnerContext(this);

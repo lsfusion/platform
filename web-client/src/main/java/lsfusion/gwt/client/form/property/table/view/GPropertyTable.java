@@ -173,11 +173,12 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
         GPropertyDraw property = getProperty(editContext);
         GGroupObjectValue columnKey = getColumnKey(editContext);
-        Object oldValue = getValueAt(editContext);
+
+        this.editContext = editContext;
 
         String keyPressActionSID = getPropertyKeyPressActionSID(editEvent, property);
         if (keyPressActionSID != null) {
-            editDispatcher.executePropertyEventAction(property, columnKey, keyPressActionSID, oldValue);
+            editDispatcher.executePropertyEventAction(property, columnKey, keyPressActionSID);
         }
 
         String actionSID = getPropertyEventActionSID(editEvent, property, editBindingMap);
@@ -197,7 +198,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
         this.editCell = editCell;
         this.editEvent = editEvent;
-        this.editContext = editContext;
         this.editCellParent = editCellParent;
 
 //        GExceptionManager.addStackTrace("SET CONTEXT");
@@ -211,7 +211,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         }
 
         editDispatcher.setLatestEditEvent(editEvent);
-        editDispatcher.executePropertyEventAction(property, columnKey, actionSID, oldValue);
+        editDispatcher.executePropertyEventAction(property, columnKey, actionSID);
     }
 
     @Override
@@ -269,7 +269,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
             this.cellEditor = cellEditor;
             editCell.setEditing(true);
 
-            //рендерим эдитор
             if (cellEditor.replaceCellRenderer()) {
                 removeAllChildren(editCellParent);
                 cellEditor.renderDom(editContext, this, editCellParent.<DivElement>cast(), oldValue);
@@ -286,6 +285,11 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     }
 
     @Override
+    public Object getEditValue() {
+        return getValueAt(editContext);
+    }
+
+    @Override
     public void takeFocusAfterEdit() {
         setFocus(true);
     }
@@ -294,7 +298,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     public void commitEditing(Object value) {
         assert cellEditor != null;
 
-        rerenderCell(editContext, editCellParent, getValueAt(editContext));
+        rerenderCell(editContext, editCellParent, getValueAt(editContext)); // here we have new values
 
         editDispatcher.commitValue(value);
 
@@ -305,7 +309,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     public void cancelEditing() {
         assert cellEditor != null;
 
-        rerenderCell(editContext, editCellParent, getValueAt(editContext));
+        rerenderCell(editContext, editCellParent, getValueAt(editContext)); // here we have new values
 
         editDispatcher.cancelEdit();
 

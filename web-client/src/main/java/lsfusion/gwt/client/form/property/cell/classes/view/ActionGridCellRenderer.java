@@ -3,79 +3,63 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageDescription;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
-public class ActionGridCellRenderer extends AbstractGridCellRenderer {
+public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
     public ActionGridCellRenderer(GPropertyDraw property) {
-        this.property = property;
+        super(property);
     }
 
-    private GPropertyDraw property;
-
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
-        Style divStyle = cellElement.getStyle();
-        cellElement.addClassName("gwt-Button");
-        divStyle.setWidth(100, Style.Unit.PCT);
-        divStyle.setPadding(0, Style.Unit.PX);
+    public void renderStaticContent(Element element, GFont font) {
+        Style style = element.getStyle();
 
-        // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
-        cellElement.addClassName("boxSized");
+        element.addClassName("gwt-Button");
+        style.setWidth(100, Style.Unit.PCT);
+        style.setPadding(0, Style.Unit.PX);
 
-        DivElement innerTop = cellElement.appendChild(Document.get().createDivElement());
+        DivElement innerTop = element.appendChild(Document.get().createDivElement());
         innerTop.getStyle().setHeight(50, Style.Unit.PCT);
         innerTop.getStyle().setPosition(Style.Position.RELATIVE);
         innerTop.setAttribute("align", "center");
 
-        DivElement innerBottom = cellElement.appendChild(Document.get().createDivElement());
-        innerBottom.getStyle().setHeight(50, Style.Unit.PCT);
+        element.appendChild(Document.get().createDivElement()).getStyle().setHeight(50, Style.Unit.PCT);
+        // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
+        element.addClassName("boxSized");
 
         if (property.getImage() != null) {
             ImageElement img = innerTop.appendChild(Document.get().createImageElement());
             img.getStyle().setPosition(Style.Position.ABSOLUTE);
             img.getStyle().setLeft(50, Style.Unit.PCT);
-            setImage(img, value);
-        } else {
-            LabelElement label = innerTop.appendChild(Document.get().createLabelElement());
-
-            GFont font = property.font;
-            if (font == null && table instanceof GGridPropertyTable) {
-                font = ((GGridPropertyTable) table).font;
-            }
-            if (font != null) {
-                font.apply(label.getStyle());
-            }
-            
-            label.setInnerText("...");
+        }else{
+            innerTop.appendChild(Document.get().createLabelElement());
         }
     }
 
     @Override
-    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
         if (property.getImage() == null) {
-            LabelElement label = cellElement.getFirstChild().getFirstChild().cast();
-            GFont font = property.font;
-            if (font == null && table instanceof GGridPropertyTable) {
-                font = ((GGridPropertyTable) table).font;
-            }
-            if (font != null) {
-                font.apply(label.getStyle());
-            }   
+            super.renderDynamic(element, font, value, isSingle);
         } else {
-            ImageElement img = cellElement
+            ImageElement img = element
                     .getFirstChild()
                     .getFirstChild().cast();
-            setImage(img, value);
+            setImage(img, (value != null) && (Boolean) value);
         }
     }
 
-    private void setImage(ImageElement img, Object value) {
-        boolean enabled = value != null && (Boolean) value;
+    @Override
+    protected void setInnerText(Element element, String innerText) {
+        element.setInnerText(innerText);
+    }
+
+    @Override
+    protected String castToString(Object value) {
+        return (value == null) && ((Boolean) value) ? "" : "...";
+    }
+
+    private void setImage(ImageElement img, boolean enabled) {
         ImageDescription image = property.getImage(enabled);
         if (image != null) {
             img.setSrc(GwtClientUtils.getAppImagePath(image.url));

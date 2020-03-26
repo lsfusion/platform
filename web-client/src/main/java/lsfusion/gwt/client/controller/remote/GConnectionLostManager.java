@@ -5,7 +5,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.AtomicBoolean;
@@ -134,7 +133,6 @@ public class GConnectionLostManager {
         private int attempt;
         public Timer showButtonsTimer;
         private Button btnExit;
-        private Button btnRelogin;
         private Button btnReconnect;
         private HTML lbMessage;
         private VerticalPanel loadingPanel;
@@ -176,16 +174,6 @@ public class GConnectionLostManager {
                 buttonPanel.add(btnReconnect);
             }
 
-            btnRelogin = new Button(messages.rmiConnectionLostRelogin());
-            btnRelogin.setEnabled(false);
-            btnRelogin.addClickHandler(new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent clickEvent) {
-                    reloginAction();
-                }
-            });
-            buttonPanel.add(btnRelogin);
-
             setModal(true);
 
             setText(messages.rmiConnectionLost());
@@ -225,7 +213,6 @@ public class GConnectionLostManager {
                 @Override
                 public void run() {
                     btnExit.setEnabled(true);
-                    btnRelogin.setEnabled(true);
                     btnReconnect.setEnabled(true);
                 }
             };
@@ -244,15 +231,11 @@ public class GConnectionLostManager {
         }
 
         private void exitAction() {
-            GwtClientUtils.logout();
+            GwtClientUtils.logout(true);
         }
 
         private void reconnectAction() {
             GwtClientUtils.reconnect();
-        }
-
-        private void reloginAction() {
-            GwtClientUtils.relogin();
         }
 
         public void setFatal(boolean fatal, boolean authException) {
@@ -266,7 +249,6 @@ public class GConnectionLostManager {
                     errorPanel.setVisible(fatal && !authException);
                     if (authException) {
                         btnExit.setEnabled(true);
-                        btnRelogin.setEnabled(true);
                         btnReconnect.setEnabled(true);
                     }
                     this.fatal = fatal;

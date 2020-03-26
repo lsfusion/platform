@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
 import lsfusion.base.DateConverter;
-import lsfusion.interop.form.design.ComponentDesign;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import java.beans.PropertyChangeEvent;
 import java.sql.Timestamp;
@@ -12,8 +12,8 @@ import java.util.GregorianCalendar;
 
 public class DateTimePropertyEditor extends DatePropertyEditor {
 
-    public DateTimePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
-        super(value, format, design);
+    public DateTimePropertyEditor(Object value, SimpleDateFormat format, ClientPropertyDraw property) {
+        super(value, format, property);
     }
 
     @Override

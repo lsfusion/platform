@@ -69,7 +69,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         form.addBinding(new KeyInputEvent(KeyStrokes.getEnter()), new ClientFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getSource() == ActionPanelView.this) {
             @Override
             public boolean pressed(KeyEvent ke) {
-                return form.commitCurrentEditing() && editDispatcher.executePropertyEventAction(property, columnKey, ServerResponse.CHANGE, null, null);
+                return form.commitCurrentEditing() && executePropertyEventAction(ServerResponse.CHANGE);
             }
 
             @Override
@@ -85,7 +85,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
                     RmiQueue.runAction(new Runnable() {
                         @Override
                         public void run() {
-                            editDispatcher.executePropertyEventAction(property, columnKey, ServerResponse.CHANGE, null, null);
+                            executePropertyEventAction(ServerResponse.CHANGE);
                         }
                     });
                 }
@@ -113,7 +113,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
                         RmiQueue.runAction(new Runnable() {
                             @Override
                             public void run() {
-                                editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null, null);
+                                executePropertyEventAction(actionSID);
                             }
                         });
                     }
@@ -127,6 +127,10 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         property.installMargins(panel);
     }
 
+    private boolean executePropertyEventAction(String actionSID) {
+        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null);
+    }
+
     private void showContextMenu(Point point) {
         if (form.commitCurrentEditing()) {
             menu.show(property, this, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
@@ -135,7 +139,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
                     RmiQueue.runAction(new Runnable() {
                         @Override
                         public void run() {
-                            editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null, null);
+                            executePropertyEventAction(actionSID);
                         }
                     });
                 }
@@ -258,6 +262,11 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
                 ActionPanelView.super.processKeyEvent(e);
             }
         });
+    }
+
+    @Override
+    public Object getEditValue() {
+        return null;
     }
 
     @Override

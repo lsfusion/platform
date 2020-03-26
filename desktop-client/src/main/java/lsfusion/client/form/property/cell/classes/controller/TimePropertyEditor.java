@@ -1,15 +1,15 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
 import lsfusion.base.DateConverter;
-import lsfusion.interop.form.design.ComponentDesign;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class TimePropertyEditor extends DatePropertyEditor {
-    public TimePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
-        super(value, format, design);
+    public TimePropertyEditor(Object value, SimpleDateFormat format, ClientPropertyDraw property) {
+        super(value, format, property);
         calendarButton.setVisible(false);
     }
 

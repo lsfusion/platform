@@ -44,10 +44,14 @@ import org.springframework.util.Assert;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.*;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
 import static org.apache.commons.lang3.StringUtils.trim;
 
 public class Scheduler extends MonitorServer implements InitializingBean {
@@ -113,12 +117,12 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             }
 
             if(BL.schedulerLM.activeScheduledTask.read(session, scheduledTaskObject) != null) {
-                Time timeFrom = (Time) BL.schedulerLM.timeFromScheduledTask.read(session, scheduledTaskObject);
-                Time timeTo = (Time) BL.schedulerLM.timeToScheduledTask.read(session, scheduledTaskObject);
+                LocalTime timeFrom = getLocalTime(BL.schedulerLM.timeFromScheduledTask.read(session, scheduledTaskObject));
+                LocalTime timeTo = getLocalTime(BL.schedulerLM.timeToScheduledTask.read(session, scheduledTaskObject));
                 String daysOfWeek = (String) BL.schedulerLM.daysOfWeekScheduledTask.read(session, scheduledTaskObject);
                 String daysOfMonth = (String) BL.schedulerLM.daysOfMonthScheduledTask.read(session, scheduledTaskObject);
                 boolean runAtStart = BL.schedulerLM.runAtStartScheduledTask.read(session, scheduledTaskObject) != null;
-                Timestamp startDate = (Timestamp) BL.schedulerLM.startDateScheduledTask.read(session, scheduledTaskObject);
+                LocalDateTime startDate = getLocalDateTime(BL.schedulerLM.startDateScheduledTask.read(session, scheduledTaskObject));
                 Integer period = (Integer) BL.schedulerLM.periodScheduledTask.read(session, scheduledTaskObject);
                 Object schedulerStartType = BL.schedulerLM.schedulerStartTypeScheduledTask.read(session, scheduledTaskObject);
                 Object afterFinish = ((ConcreteCustomClass) BL.schedulerLM.findClass("SchedulerStartType")).getDataObject("afterFinish").object;
@@ -197,9 +201,9 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             DataObject currentScheduledTaskObject = new DataObject(scheduledTaskId, BL.schedulerLM.userScheduledTask);
             String nameScheduledTask = trim((String) value.get("nameScheduledTask"));
             Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
-            Timestamp startDate = (Timestamp) value.get("startDateScheduledTask");
-            Time timeFrom = (Time) value.get("timeFromScheduledTask");
-            Time timeTo = (Time) value.get("timeToScheduledTask");
+            LocalDateTime startDate = getLocalDateTime(value.get("startDateScheduledTask"));
+            LocalTime timeFrom = getLocalTime(value.get("timeFromScheduledTask"));
+            LocalTime timeTo = getLocalTime(value.get("timeToScheduledTask"));
             Integer period = (Integer) value.get("periodScheduledTask");
             Object schedulerStartType = value.get("schedulerStartTypeScheduledTask");
             boolean fixedDelay = afterFinish.equals(schedulerStartType);
@@ -218,7 +222,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     }
 
     private UserSchedulerTask readUserSchedulerTask(DataSession session, Modifier modifier, DataObject scheduledTaskObject, String nameScheduledTask,
-                                                    Time timeFrom, Time timeTo, String daysOfWeekScheduledTask, String daysOfMonthScheduledTask) throws SQLException, SQLHandledException {
+                                                    LocalTime timeFrom, LocalTime timeTo, String daysOfWeekScheduledTask, String daysOfMonthScheduledTask) throws SQLException, SQLHandledException {
         KeyExpr scheduledTaskDetailExpr = new KeyExpr("scheduledTaskDetail");
         ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
 
@@ -278,12 +282,12 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     public class SchedulerTask {
         private final Long scheduledTaskId;
         private final boolean runAtStart;
-        private final Timestamp startDate;
+        private final LocalDateTime startDate;
         private final Integer period;
         private final boolean fixedDelay;
         private final Runnable task;
 
-        public SchedulerTask(final String name, final EExecutionStackRunnable task, Long scheduledTaskId, boolean runAtStart, Timestamp startDate, Integer period, boolean fixedDelay) {
+        public SchedulerTask(final String name, final EExecutionStackRunnable task, Long scheduledTaskId, boolean runAtStart, LocalDateTime startDate, Integer period, boolean fixedDelay) {
             this.task = () -> {
                 schedulerLogger.info("Started running scheduler task - " + name);
                 try {
@@ -313,7 +317,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             }
             Long start = null;
             if (startDate != null)
-                start = startDate.getTime();
+                start = localDateTimeToSqlTimestamp(startDate).getTime();
             long currentTime = System.currentTimeMillis();
             if (period != null) {
                 long longPeriod = period.longValue() * 1000;
@@ -352,14 +356,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     private class UserSchedulerTask implements EExecutionStackRunnable {
         String nameScheduledTask;
         private DataObject scheduledTaskObject;
-        Time defaultTime = new Time(0, 0, 0);
+        LocalTime defaultTime = LocalTime.MIDNIGHT;
         TreeMap<Integer, ScheduledTaskDetail> lapMap;
-        private Time timeFrom;
-        private Time timeTo;
+        private LocalTime timeFrom;
+        private LocalTime timeTo;
         private Set<String> daysOfWeek;
         private Set<String> daysOfMonth;
 
-        public UserSchedulerTask(String nameScheduledTask, DataObject scheduledTaskObject, TreeMap<Integer, ScheduledTaskDetail> lapMap, Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
+        public UserSchedulerTask(String nameScheduledTask, DataObject scheduledTaskObject, TreeMap<Integer, ScheduledTaskDetail> lapMap, LocalTime timeFrom, LocalTime timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
             this.nameScheduledTask = nameScheduledTask;
             this.scheduledTaskObject = scheduledTaskObject;
             this.lapMap = lapMap;
@@ -376,7 +380,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 if (daemonTasksExecutor instanceof WrappingScheduledExecutorService) {
                     schedulerLogger.info(((WrappingScheduledExecutorService) daemonTasksExecutor).getThreadPoolInfo());
                 }
-                boolean isTimeToRun = isTimeToRun(timeFrom, timeTo, daysOfWeek, daysOfMonth);
+                boolean isTimeToRun = isTimeToRun(localTimeToSqlTime(timeFrom), localTimeToSqlTime(timeTo), daysOfWeek, daysOfMonth);
                 schedulerLogger.info(String.format("Task %s. TimeFrom %s, TimeTo %s, daysOfWeek %s, daysOfMonth %s. %s",
                         nameScheduledTask, timeFrom == null ? "-" : timeFrom, timeTo == null ? "-" : timeTo,
                         daysOfWeek.isEmpty() ? "-" : daysOfWeek, daysOfMonth.isEmpty() ? "-" : daysOfMonth,
@@ -446,7 +450,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     || (!daysOfMonth.isEmpty() && !daysOfMonth.contains(String.valueOf(currentCal.get(Calendar.DAY_OF_MONTH)))))
                 return false;
 
-            if(timeFrom.equals(defaultTime) && timeTo.equals(defaultTime)) return true;
+            if(timeFrom.equals(localTimeToSqlTime(defaultTime)) && timeTo.equals(localTimeToSqlTime(defaultTime))) return true;
 
             Calendar calendarFrom = Calendar.getInstance();
             calendarFrom.setTime(timeFrom);
@@ -545,7 +549,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
                 BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) session, taskLogObject);
                 BL.schedulerLM.propertyScheduledTaskLog.change(message, session, taskLogObject);
-                BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), session, taskLogObject);
+                BL.schedulerLM.dateScheduledTaskLog.change(getWriteDateTime(LocalDateTime.now()), session, taskLogObject);
                 if(e != null)
                     BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, session, taskLogObject);
                 BL.schedulerLM.resultScheduledTaskLog.change(result, session, taskLogObject);
@@ -584,7 +588,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 BL.schedulerLM.lsfStackScheduledClientTaskLog.change(lsfStack, session, clientTaskLog);
             if(logMessage.failed)
                 BL.schedulerLM.failedScheduledClientTaskLog.change(true, session, clientTaskLog);
-            BL.schedulerLM.dateScheduledClientTaskLog.change(new Timestamp(logMessage.time), session, clientTaskLog);
+            BL.schedulerLM.dateScheduledClientTaskLog.change(getWriteDateTime(new Timestamp(logMessage.time)), session, clientTaskLog);
         }
     }
 

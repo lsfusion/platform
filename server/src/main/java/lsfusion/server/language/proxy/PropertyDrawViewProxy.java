@@ -1,5 +1,6 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.server.data.type.Type;
@@ -122,8 +123,16 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelCaptionAbove = panelCaptionAbove;
     }
 
+    public void setColumnKeysVertical(boolean columnKeysVertical) {
+        target.columnKeysVertical = columnKeysVertical;
+    }
+
     public void setCaption(LocalizedString caption) {
         target.caption = caption;
+    }
+    
+    public void setValueAlignment(FlexAlignment valueAlignment) {
+        target.valueAlignment = valueAlignment;
     }
 
     public void setClearText(boolean clearText) {

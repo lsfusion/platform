@@ -16,10 +16,10 @@ import java.io.IOException;
 
 public abstract class ImportMatrixIterator extends ImportPlainIterator {
 
-    private final boolean noHeader;
+    protected final boolean noHeader;
 
-    public ImportMatrixIterator(final ImOrderMap<String, Type> fieldTypes, boolean noHeader) {
-        super(fieldTypes);
+    public ImportMatrixIterator(final ImOrderMap<String, Type> fieldTypes, String wheres, boolean noHeader) {
+        super(fieldTypes, wheres);
 
         this.noHeader = noHeader;
     }
@@ -29,7 +29,7 @@ public abstract class ImportMatrixIterator extends ImportPlainIterator {
     @Override
     protected ImOrderSet<String> readFields() throws IOException {
         if(!noHeader) {
-            if(!nextRow())
+            if(!nextRow(false))
                 return SetFact.EMPTYORDER();
 
             ImOrderSet<String> fields = readHeader();
@@ -77,7 +77,7 @@ public abstract class ImportMatrixIterator extends ImportPlainIterator {
             return null;
         }
     }
-    
+
     protected abstract Object getPropValue(Integer fieldIndex, Type type) throws ParseException;
 
     protected abstract boolean isLastValue(Integer fieldIndex);

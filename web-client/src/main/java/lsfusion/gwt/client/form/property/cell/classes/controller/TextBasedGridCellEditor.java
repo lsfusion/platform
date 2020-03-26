@@ -28,26 +28,16 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
 
     protected final GPropertyDraw property;
     protected final EditManager editManager;
-    protected final Style.TextAlign textAlign;
     protected final String inputElementTagName;
 
     protected String currentText = "";
 
     public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property) {
-        this(editManager, property, (Style.TextAlign)null);
-    }
-
-    public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property, Style.TextAlign textAlign) {
-        this(editManager, property, textAlign, "input");
+        this(editManager, property, "input");
     }
 
     public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property, String inputElementTagName) {
-        this(editManager, property, null, inputElementTagName);
-    }
-
-    public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property, Style.TextAlign textAlign, String inputElementTagName) {
         this.inputElementTagName = inputElementTagName;
-        this.textAlign = textAlign == Style.TextAlign.LEFT ? null : textAlign;
         this.editManager = editManager;
         this.property = property;
     }
@@ -199,8 +189,9 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
         cellParent.getStyle().setPadding(0, Style.Unit.PX);
 
-        if (textAlign != null) {
-            inputStyle.setTextAlign(textAlign);
+        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        if (textAlignStyle != null) {
+            inputStyle.setTextAlign(textAlignStyle);
         }
 
         cellParent.appendChild(input);

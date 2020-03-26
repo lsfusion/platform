@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -19,7 +18,7 @@ public class TimeGridCellEditor extends TextBasedGridCellEditor {
     private static DateTimeFormat format = GwtSharedUtils.getDefaultTimeFormat();
 
     public TimeGridCellEditor(EditManager editManager, GPropertyDraw property) {
-        super(editManager, property, Style.TextAlign.RIGHT);
+        super(editManager, property);
     }
 
     @Override

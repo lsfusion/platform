@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.integral;
 
 import com.hexiong.jdbf.JDBFException;
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -94,7 +95,7 @@ public class DoubleClass extends IntegralClass<Double> {
 
     public Double parseString(String s) throws ParseException {
         try {
-            return Double.parseDouble(s.replace(',','.'));
+            return Double.parseDouble(BaseUtils.replaceCommaSeparator(s));
         } catch (Exception e) {
             throw new ParseException("error parsing double: " + s, e);
         }

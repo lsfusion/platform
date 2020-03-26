@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
-import com.google.gwt.core.client.*;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayMixed;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GIntegralType;
@@ -9,11 +12,12 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
 
 public class GPivot extends GStateTableView {
-    
     public GPivot(GFormController formController, GGridController gridController) {
         super(formController, gridController);
 
@@ -34,7 +38,7 @@ public class GPivot extends GStateTableView {
 
     // in theory we can order all properties once, but so far there is no full list of properties
     private void fillPropertiesOrder(List<GPropertyDraw> properties, List<GPropertyDraw> propertiesList, Set<GPropertyDraw> propertiesSet) {
-        for(GPropertyDraw property : properties) {
+        for (GPropertyDraw property : properties) {
             if (propertiesSet.add(property)) {
                 if (property.formula != null) {
                     fillPropertiesOrder(property.formulaOperands, propertiesList, propertiesSet);
@@ -51,7 +55,7 @@ public class GPivot extends GStateTableView {
         array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
 
         // getting values
-        for (GGroupObjectValue key : keys != null && !keys.isEmpty() ? keys : Collections.singleton((GGroupObjectValue)null)) { // can be null if manual update
+        for (GGroupObjectValue key : keys != null && !keys.isEmpty() ? keys : Collections.singleton((GGroupObjectValue) null)) { // can be null if manual update
             JsArrayString rowValues = getValues(key);
 
             for (String aggrCaption : aggrCaptions) { // putting columns to rows
@@ -134,7 +138,7 @@ public class GPivot extends GStateTableView {
         // ordering in inital order (all other lists are actually sets)
         JsArrayString rowCaptions = JavaScriptObject.createArray().cast();
         for (int i = 0; i < properties.size(); i++)
-            for(String column : orderedColumns.get(properties.get(i)))
+            for (String column : orderedColumns.get(properties.get(i)))
                 rowCaptions.push(column);
         rowCaptions.push(COLUMN); // putting columns to rows
 
@@ -155,7 +159,7 @@ public class GPivot extends GStateTableView {
         return caption;
     }
 
-    private static final String COLUMN = "(Колонка)";
+    public static final String COLUMN = "(Колонка)";
 
     @Override
     protected void updateView() {
@@ -166,12 +170,22 @@ public class GPivot extends GStateTableView {
         JavaScriptObject data = getData(columnMap, aggregator, aggrCaptions, systemColumns); // convertToObjects()
         config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
 
-        render(getElement(), data, config); // we need to updateRendererState after it is painted
+        int rowHeight = 0;
+        for(GPropertyDraw property : properties) {
+            int columnMinimumHeight = property.getValueHeight(font);
+            rowHeight = Math.max(rowHeight, columnMinimumHeight);
+        }
+        this.rowHeight = rowHeight;
+
+        JsArrayString jsArray = JsArrayString.createArray().cast();
+        aggrCaptions.forEach(jsArray::push);
+
+        render(getElement(), data, config, jsArray); // we need to updateRendererState after it is painted
     }
 
     @Override
     public void runGroupReport(boolean toExcel) {
-        if(toExcel) {
+        if (toExcel) {
             exportToExcel(getElement());
         } else {
             exportToPdf(getElement());
@@ -183,7 +197,7 @@ public class GPivot extends GStateTableView {
             var pvtTable = element.getElementsByClassName("pvtTable")[0];
 
             //set bold
-            Array.from(pvtTable.querySelectorAll("th.pvtAxisLabel, th.pvtColLabel, th.pvtTotalLabel, th.pvtTotalLabel, th.pvtRowLabel, td.pvtTotal, td.pvtRowSubtotal, td.pvtGrandTotal")).forEach(function(item){
+            Array.from(pvtTable.querySelectorAll("th.pvtAxisLabel, th.pvtColLabel, th.pvtTotalLabel, th.pvtTotalLabel, th.pvtRowLabel, td.pvtTotal, td.pvtRowSubtotal, td.pvtGrandTotal")).forEach(function (item) {
                 item.setAttribute("data-f-bold", "true");
             });
 
@@ -223,13 +237,15 @@ public class GPivot extends GStateTableView {
 
     private Map<String, Column> columnMap;
     private List<String> aggrCaptions;
-
     private WrapperObject config;
-
     private boolean settings = true;
+
+    private int rowHeight;
+
     public boolean isSettings() {
         return settings;
     }
+
     public void switchSettings() {
         settings = !settings;
         config = overrideShowUI(config, settings);
@@ -239,9 +255,9 @@ public class GPivot extends GStateTableView {
     }
 
     private void fillGroupColumns(JsArrayString cols, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, List<GPropertyGroupType> types, List<String> aggrColumns) {
-        for(int i=0,size=cols.length();i<size;i++) {
+        for (int i = 0, size = cols.length(); i < size; i++) {
             String name = cols.get(i);
-            if(!name.equals(COLUMN)) {
+            if (!name.equals(COLUMN)) {
                 Column col = columnMap.get(name);
                 properties.add(col.property);
                 columnKeys.add(col.columnKey);
@@ -253,7 +269,7 @@ public class GPivot extends GStateTableView {
     }
 
     private void removeAggrFilters(String name, List<String> aggrColumns) {
-        if(aggrColumns.remove(name)) { // if there was aggr column in filters -> remove it from filters
+        if (aggrColumns.remove(name)) { // if there was aggr column in filters -> remove it from filters
             applyFilter(COLUMN, aggrColumns, this.aggrCaptions);
         }
     }
@@ -261,7 +277,7 @@ public class GPivot extends GStateTableView {
     private void applyFilter(String name, List<String> include, List<String> allValues) {
         JsArrayString inclusions = JavaScriptObject.createArray().cast();
         JsArrayString exclusions = JavaScriptObject.createArray().cast();
-        for(String aggrCaption : allValues)
+        for (String aggrCaption : allValues)
             (include.contains(aggrCaption) ? inclusions : exclusions).push(aggrCaption);
         config = overrideFilter(config, name, inclusions, exclusions);
         rerender();
@@ -273,37 +289,37 @@ public class GPivot extends GStateTableView {
         var newExclusions = {};
         newExclusions[column] = columnExclusions;
         return Object.assign({}, config, {
-            inclusions : Object.assign({}, config.inclusions, newInclusions),
-            exclusions : Object.assign({}, config.exclusions, newExclusions)
+            inclusions: Object.assign({}, config.inclusions, newInclusions),
+            exclusions: Object.assign({}, config.exclusions, newExclusions)
         });
     }-*/;
 
     private native WrapperObject overrideDataClass(WrapperObject config, boolean subTotal)/*-{
         return Object.assign({}, config, {
-            dataClass : (subTotal ? $wnd.$.pivotUtilities.SubtotalPivotData : $wnd.$.pivotUtilities.PivotData)
+            dataClass: (subTotal ? $wnd.$.pivotUtilities.SubtotalPivotData : $wnd.$.pivotUtilities.PivotData)
         });
     }-*/;
 
     private native WrapperObject overrideShowUI(WrapperObject config, boolean showUI)/*-{
         return Object.assign({}, config, {
-            showUI : showUI
+            showUI: showUI
         });
     }-*/;
 
     private native WrapperObject overrideAggregators(WrapperObject config, JavaScriptObject aggregators, JsArrayString systemColumns)/*-{
         return Object.assign({}, config, {
-            aggregators : aggregators,
-            hiddenFromDragDrop : systemColumns
+            aggregators: aggregators,
+            hiddenFromDragDrop: systemColumns
         });
     }-*/;
 
     private List<String> createAggrColumns(WrapperObject inclusions) {
         JsArrayString columnValues = inclusions.getArrayString(COLUMN);
-        if(columnValues == null)
+        if (columnValues == null)
             return new ArrayList<>(aggrCaptions); // all columns
 
         List<String> result = new ArrayList<>();
-        for(int i=0,size=columnValues.length();i<size;i++)
+        for (int i = 0, size = columnValues.length(); i < size; i++)
             result.add(columnValues.get(i));
         return result;
     }
@@ -335,7 +351,7 @@ public class GPivot extends GStateTableView {
 
         int aggrProps = properties.size();
 
-        for(String aggrColumnCaption : aggrColumns) {
+        for (String aggrColumnCaption : aggrColumns) {
             Column aggrColumn = columnMap.get(aggrColumnCaption);
             properties.add(aggrColumn.property);
             columnKeys.add(aggrColumn.columnKey);
@@ -346,12 +362,15 @@ public class GPivot extends GStateTableView {
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
+
     private void setRendererElement(Element element) {
         rendererElement = element;
     }
+
     protected void updateRendererState(boolean set) {
         updateRendererElementState(rendererElement, set);
     }
+
     private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
@@ -359,7 +378,6 @@ public class GPivot extends GStateTableView {
     private native WrapperObject getDefaultConfig(String columnField)/*-{
         var tpl = $wnd.$.pivotUtilities.aggregatorTemplates;
         var instance = this;
-
         var renderers = $wnd.$.extend(
             $wnd.$.pivotUtilities.subtotal_renderers,
             $wnd.$.pivotUtilities.plotly_renderers,
@@ -369,18 +387,22 @@ public class GPivot extends GStateTableView {
         );
 
         return {
-            dataClass : $wnd.$.pivotUtilities.SubtotalPivotData,
-            cols : [columnField], // inital columns since overwrite is false
-            renderers : renderers,
-            onRefresh: function(config) {
+            sorters: {}, // Configuration ordering column for group
+            dataClass: $wnd.$.pivotUtilities.SubtotalPivotData,
+            cols: [columnField], // inital columns since overwrite is false
+            renderers: renderers,
+            onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             }
         }
     }-*/;
 
-    protected native void render(com.google.gwt.dom.client.Element element, JavaScriptObject array, JavaScriptObject config)/*-{
+    protected native void render(com.google.gwt.dom.client.Element element, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns)/*-{
 //        var d = element;
         var d = $doc.createElement('div');
+
+        // Configuration ordering column for group
+        config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);
 
         // because we create new element, aggregators every time
         $wnd.$(d).pivotUI(array, config, true);
@@ -413,28 +435,28 @@ public class GPivot extends GStateTableView {
         }
 
         private static native int compare(JavaScriptObject firstArray, JavaScriptObject secondArray) /*-{
-            for(var i=0;i<firstArray.length;i++) {
-                if(firstArray[i] > secondArray[i])
+            for (var i = 0; i < firstArray.length; i++) {
+                if (firstArray[i] > secondArray[i])
                     return 1;
-                if(firstArray[i] < secondArray[i])
+                if (firstArray[i] < secondArray[i])
                     return -1;
             }
             return 0;
         }-*/;
 
         private native boolean checkLastValue(JsArrayString lastColumns, Record record, boolean desc) /*-{
-            if(lastColumns.length === 0)
+            if (lastColumns.length === 0)
                 return true;
             var lastValues = new Array(lastColumns.length);
-            for(var i=0;i<lastColumns.length;i++)
+            for (var i = 0; i < lastColumns.length; i++)
                 lastValues[i] = record[lastColumns[i]];
             var compare = this.lastValues === undefined ? -2 : @GroupColumnState::compare(*)(lastValues, this.lastValues);
 
-            if(compare === -2 || (!desc && compare > 0) || (desc && compare < 0)) {
+            if (compare === -2 || (!desc && compare > 0) || (desc && compare < 0)) {
                 this.lastValues = lastValues;
                 this.value = null;
             } else {
-                if(compare !== 0)
+                if (compare !== 0)
                     return false;
             }
             return true;
@@ -454,9 +476,20 @@ public class GPivot extends GStateTableView {
         protected State() {
         }
 
+        public native final boolean hasColumnState(String column)/*-{
+            var columnState = this[column];
+            if (columnState !== undefined && columnState !== null) {
+                if (columnState[column].value !== undefined && columnState[column].value !== null) {
+                    return true;
+                }
+            }
+            return false;
+        }-*/;
+
+
         public native final ColumnState getColumnState(String column)/*-{
             var columnState = this[column];
-            if(columnState === undefined) {
+            if (columnState === undefined) {
                 columnState = {};
                 this[column] = columnState;
             }
@@ -471,7 +504,7 @@ public class GPivot extends GStateTableView {
 
         public native final GroupColumnState getGroupState(String column)/*-{
             var groupState = this[column];
-            if(groupState === undefined) {
+            if (groupState === undefined) {
                 groupState = {};
                 this[column] = groupState;
             }
@@ -485,28 +518,31 @@ public class GPivot extends GStateTableView {
         }
 
         public native static Aggregator create() /*-{
-             return {};
+            return {};
         }-*/;
 
         public native final void setAggregator(String column, ColumnAggregator aggregator)/*-{
             this[column] = aggregator;
 
-            if(this.columns === undefined)
+            if (this.columns === undefined)
                 this.columns = [];
             this.columns.push(column);
         }-*/;
+
         public native final ColumnAggregator getAggregator(String column)/*-{
             return this[column];
         }-*/;
+
         public native final JsArrayString getColumns()/*-{
             return this.columns;
         }-*/;
+
         public native final Object aggr(Object totalAggr, Object oldValue, Object newValue)/*-{
             return totalAggr(oldValue, newValue, false);
         }-*/;
 
         private void push(State state, Record record, Object defaultAggrFunc) {
-            String pushColumn = (String)record.get(COLUMN);
+            String pushColumn = (String) record.get(COLUMN);
             getAggregator(pushColumn).push(state.getColumnState(pushColumn), record, defaultAggrFunc);
         }
 
@@ -514,50 +550,73 @@ public class GPivot extends GStateTableView {
             JsArrayString columns = getColumns();
             Object result = null;
 
-            for(int i = 0, size = columns.length(); i < size ; i++) {
+            for (int i = 0, size = columns.length(); i < size; i++) {
                 String column = columns.get(i);
 
                 result = aggr(totalAggr, result, getAggregator(column).value(state.getColumnState(column)));
             }
             return result;
         }
+
+        private String property(State state) {
+            JsArrayString columns = getColumns();
+            for (int i = 0, size = columns.length(); i < size; i++) {
+                if (state.hasColumnState(columns.get(i))) {
+                    return columns.get(i);
+                }
+            }
+            return null;
+        }
     }
 
+    private final static String[] aggregatorNames = new String[]{"Sum", "Max", "Min"};
 
-    private final static String[] aggregatorNames = new String[] {"Sum", "Max", "Min"} ;
-    public static JavaScriptObject getAggregators(Aggregator aggregator) {
+    public JavaScriptObject getAggregators(Aggregator aggregator) {
         WrapperObject aggregators = JavaScriptObject.createObject().cast();
-        for(String aggregatorName : aggregatorNames)
+        for (String aggregatorName : aggregatorNames)
             aggregators.putValue(aggregatorName, getAggregator(aggregatorName.toUpperCase(), aggregator));
         return aggregators;
     }
-    public static JavaScriptObject getAggregator(String aggrFuncName, Aggregator aggregator) {
+
+    public JavaScriptObject getAggregator(String aggrFuncName, Aggregator aggregator) {
         return getAggregator(aggregator, getValueAggregator(aggrFuncName));
     }
-    public native static JavaScriptObject getAggregator(Aggregator aggregator, Object aggrFunc) /*-{
-        return function() {
+
+    public native JavaScriptObject getAggregator(Aggregator aggregator, Object aggrFunc) /*-{
+        var instance = this;
+        return function () {
             return function () {
                 return {
+                    aggregator: aggregator,
                     state: {},
                     push: function (record) {
-//                        console.log("BEFORE " + JSON.stringify(this.state));
-//                        console.log("RECORD " + JSON.stringify(record));
                         aggregator.@Aggregator::push(*)(this.state, record, aggrFunc);
-//                        console.log("AFTER " + JSON.stringify(this.state));
                     },
                     value: function () {
-//                        console.log("-----");
-//                        console.log("STATE " + JSON.stringify(this.state));
-                        var val = aggregator.@Aggregator::value(*)(this.state, aggrFunc);
-//                        console.log("VALUE " + val);
-                        return val;
+                        return aggregator.@Aggregator::value(*)(this.state, aggrFunc);
                     },
-                    format: $wnd.$.pivotUtilities.numberFormat(),
+                    property: function () {
+                        return aggregator.@Aggregator::property(*)(this.state);
+                    },
+                    format : $wnd.$.pivotUtilities.numberFormat(), // to be removed later when all cells will be rendered with renderCell
+                    cellRender: function (element, value, columns) {
+                        if(columns != null)
+                            instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderCell(*)(element, value, columns);
+                        else if(value != null) // default behaviour, to be removed later when all cells will be rendered with renderCell
+                            element.textContent = $wnd.$.pivotUtilities.numberFormat()(value);
+                    },
                     numInputs: 0
                 }
             }
         }
     }-*/;
+
+    public void renderCell(Element jsElement, JavaScriptObject value, String column) {
+        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
+
+        GridCellRenderer renderer = columnMap.get(column).property.getGridCellRenderer();
+        renderer.render(jsElement, font, value, false);
+    }
 
     private static class ColumnAggregator extends JavaScriptObject {
 
@@ -567,6 +626,7 @@ public class GPivot extends GStateTableView {
         public final native String getID() /*-{
             return this.id;
         }-*/;
+
         public final native void setID(String id) /*-{
             this.id = id;
         }-*/;
@@ -588,10 +648,10 @@ public class GPivot extends GStateTableView {
 
         public static native FormulaColumnAggregator create() /*-{
             return {
-                pushImpl : function (state, record, defaultAggrFunc) {
+                pushImpl: function (state, record, defaultAggrFunc) {
                     return this.@FormulaColumnAggregator::pushImpl(*)(state, record, defaultAggrFunc);
                 },
-                valueImpl : function (state) {
+                valueImpl: function (state) {
                     return this.@FormulaColumnAggregator::valueImpl(*)(state);
                 }
             }
@@ -600,16 +660,20 @@ public class GPivot extends GStateTableView {
         public final native void setOperands(JsArray<ColumnAggregator> operands) /*-{
             this.operands = operands;
         }-*/;
+
         public final native void setFormula(String formula) /*-{
             this.formula = $wnd.math.compile(formula);
         }-*/;
 
-        public final native JsArray<ColumnAggregator> getOperands() /*-{ return this.operands; }-*/;
+        public final native JsArray<ColumnAggregator> getOperands() /*-{
+            return this.operands;
+        }-*/;
+
         public final native Object evaluateFormula(JsArrayMixed params) /*-{
             var scope = $wnd.createPlainObject(); // we need to create object not from gwt, since it uses different constructor for {} and in math library there is .constructor == Object check for scope
-            for(var i=0;i<params.length;i++) {
+            for (var i = 0; i < params.length; i++) {
                 var param = params[i];
-                if(param == null)
+                if (param == null)
                     return param;
                 scope['$' + (i + 1)] = param;
             }
@@ -620,7 +684,7 @@ public class GPivot extends GStateTableView {
             ColumnState aggrState = state.getColumnState(getID());
 
             JsArray<ColumnAggregator> aggregators = getOperands();
-            for(int i=0,size=aggregators.length();i<size;i++) {
+            for (int i = 0, size = aggregators.length(); i < size; i++) {
                 ColumnAggregator aggr = aggregators.get(i);
                 aggr.push(aggrState, record, defaultAggrFunc);
             }
@@ -631,7 +695,7 @@ public class GPivot extends GStateTableView {
 
             JsArray<ColumnAggregator> aggregators = getOperands();
             JsArrayMixed values = JavaScriptObject.createArray().cast();
-            for(int i=0,size=aggregators.length();i<size;i++) {
+            for (int i = 0, size = aggregators.length(); i < size; i++) {
                 ColumnAggregator aggr = aggregators.get(i);
                 values.push(aggr.value(aggrState));
             }
@@ -646,10 +710,10 @@ public class GPivot extends GStateTableView {
 
         public static native GroupColumnAggregator create() /*-{
             return {
-                pushImpl : function (state, record, defaultAggrFunc) {
+                pushImpl: function (state, record, defaultAggrFunc) {
                     return this.@GroupColumnAggregator::pushImpl(*)(state, record, defaultAggrFunc);
                 },
-                valueImpl : function (state) {
+                valueImpl: function (state) {
                     return this.@GroupColumnAggregator::valueImpl(*)(state);
                 }
             }
@@ -667,9 +731,11 @@ public class GPivot extends GStateTableView {
             this.lastColumns = lastColumns;
             this.lastDesc = lastDesc;
         }-*/;
+
         public final native JsArrayString getLastColumns() /*-{
             return this.lastColumns;
         }-*/;
+
         public final native boolean getLastDesc() /*-{
             return this.lastDesc;
         }-*/;
@@ -681,7 +747,7 @@ public class GPivot extends GStateTableView {
                 return;
 
             Object aggrFunc = getAggrFunc();
-            if(aggrFunc == null)
+            if (aggrFunc == null)
                 aggrFunc = defaultAggrFunc;
             groupState.update(record.get(getID()), aggrFunc);
         }
@@ -698,6 +764,7 @@ public class GPivot extends GStateTableView {
             return oldValue + newValue;
         }
     }-*/;
+
     private final static Object SUM = getSumAggregator();
 
     private native static Object getMaxAggregator()/*-{
@@ -705,6 +772,7 @@ public class GPivot extends GStateTableView {
             return oldValue > newValue ? oldValue : newValue;
         }
     }-*/;
+
     private final static Object MAX = getMaxAggregator();
 
     private native static Object getMinAggregator()/*-{
@@ -712,26 +780,27 @@ public class GPivot extends GStateTableView {
             return oldValue < newValue ? oldValue : newValue;
         }
     }-*/;
+
     private final static Object MIN = getMinAggregator();
 
-    private native static Object getFinalAggregator(Object aggrFunc)/*-{
+    private native Object getFinalAggregator(Object aggrFunc)/*-{
         return function (oldValue, newValue, parseNew) {
-            if(newValue == null)
+            if (newValue == null)
                 return oldValue;
-            if(parseNew) {
+            if (parseNew) {
                 newValue = parseFloat(newValue);
-                if(isNaN(newValue))
+                if (isNaN(newValue))
                     return oldValue;
             }
-            if(oldValue == null)
+            if (oldValue == null)
                 return newValue;
             return aggrFunc(oldValue, newValue);
         }
     }-*/;
 
-    private static Object getValueAggregator(String aggrFuncName) {
+    private Object getValueAggregator(String aggrFuncName) {
         Object baseAggrFunc;
-        switch(aggrFuncName) {
+        switch (aggrFuncName) {
             case "SUM":
                 baseAggrFunc = SUM;
                 break;
@@ -756,7 +825,7 @@ public class GPivot extends GStateTableView {
         // operands
         JsArray<ColumnAggregator> aggrOperands = JavaScriptObject.createArray().cast();
         aggrOperands.push(columnAggregator);
-        for(GPropertyDraw formulaOperand : property.formulaOperands)
+        for (GPropertyDraw formulaOperand : property.formulaOperands)
             aggrOperands.push(aggregators.get(formulaOperand).get(columnKey));
         aggr.setOperands(aggrOperands);
 

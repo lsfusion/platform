@@ -20,6 +20,14 @@ public abstract class LabelPropertyRenderer extends PropertyRenderer {
         super(property);
         
         getComponent().setOpaque(true);
+        
+        if (property != null) {
+            Integer valueAlignment = property.getSwingValueAlignment();
+            if (valueAlignment != null) {
+                getComponent().setHorizontalAlignment(valueAlignment);
+            }
+        }
+        
             
         defaultForeground = getComponent().getForeground();
     }

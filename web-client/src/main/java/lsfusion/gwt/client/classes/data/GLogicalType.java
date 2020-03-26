@@ -18,8 +18,8 @@ public class GLogicalType extends GDataType {
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new LogicalGridCellRenderer();
-    }
+        return new LogicalGridCellRenderer(property);
+}
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {

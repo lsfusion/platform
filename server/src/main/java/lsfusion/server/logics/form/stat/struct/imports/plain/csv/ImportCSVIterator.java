@@ -19,8 +19,8 @@ import java.io.InputStreamReader;
 public class ImportCSVIterator extends ImportMatrixIterator {
     private CSVReader csvReader;
     
-    public ImportCSVIterator(final ImOrderMap<String, Type> fieldTypes, RawFileData file, String charset, boolean noHeader, boolean noEscape, String separator) throws IOException {
-        super(fieldTypes, noHeader);
+    public ImportCSVIterator(final ImOrderMap<String, Type> fieldTypes, RawFileData file, String charset, String wheres, boolean noHeader, boolean noEscape, String separator) throws IOException {
+        super(fieldTypes, wheres, noHeader);
 
         InputStreamReader isReader = charset != null ? new InputStreamReader(new BOMInputStream(file.getInputStream()), charset) : new InputStreamReader(new BOMInputStream(file.getInputStream()));
         char escapeChar = noEscape ? '\0' : ICSVParser.DEFAULT_ESCAPE_CHARACTER;
@@ -33,9 +33,16 @@ public class ImportCSVIterator extends ImportMatrixIterator {
     private ImList<String> line;
 
     @Override
-    protected boolean nextRow() throws IOException {
-        line = readLine();
+    protected boolean nextRow(boolean checkWhere) throws IOException {
+        do {
+            line = readLine();
+        } while (line != null && (checkWhere && ignoreRow()));
         return line != null;
+    }
+
+    @Override
+    protected Integer getRowIndex() {
+        return (int) csvReader.getRecordsRead() - 1;
     }
 
     private ImList<String> readLine() throws IOException {
@@ -53,7 +60,11 @@ public class ImportCSVIterator extends ImportMatrixIterator {
     protected Object getPropValue(Integer fieldIndex, Type type) throws ParseException {
         if (fieldIndex >= line.size())
             throw new ParseException("Column with index " + fieldIndex + " not found");
-        return type.parseCSV(line.get(fieldIndex));
+        try {
+            return type.parseCSV(line.get(fieldIndex));
+        } catch (ParseException e) {
+            throw new ParseException(e.getMessage() + String.format(" (row %s, column %s)", csvReader.getLinesRead(), fieldIndex + 1), e);
+        }
     }
 
     @Override

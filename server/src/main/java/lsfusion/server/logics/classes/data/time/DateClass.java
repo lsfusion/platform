@@ -3,6 +3,7 @@ package lsfusion.server.logics.classes.data.time;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
 import lsfusion.base.SystemUtils;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -24,8 +25,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.time.LocalDate;
 
-import static lsfusion.base.DateConverter.safeDateToSql;
+import static lsfusion.base.DateConverter.*;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
 
 public class DateClass extends DataClass<Date> {
 
@@ -58,7 +61,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     public Date getDefaultValue() {
-        return DateConverter.getCurrentDate();
+        return getWriteDate(LocalDate.now());
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
@@ -106,6 +109,11 @@ public class DateClass extends DataClass<Date> {
     @Override
     public ExtInt getCharLength() {
         return new ExtInt(25);
+    }
+
+    @Override
+    public FlexAlignment getValueAlignment() {
+        return FlexAlignment.END;
     }
 
     public boolean isSafeString(Object value) {

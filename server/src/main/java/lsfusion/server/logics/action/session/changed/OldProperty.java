@@ -67,6 +67,12 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
             result = result.getBase(inferType);
         return result;
     }
+
+    @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return property.needInferredForValueClass(inferType);
+    }
+
     public ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         ExClassSet exClassSet = property.inferValueClass(inferred, inferType);
         if(inferType == InferType.prevBase())

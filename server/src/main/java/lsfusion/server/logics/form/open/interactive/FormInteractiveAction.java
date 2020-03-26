@@ -1,9 +1,9 @@
 package lsfusion.server.logics.form.open.interactive;
 
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
@@ -156,11 +156,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     @Override
     public boolean hasFlow(ChangeFlowType type) {
         if(type == ChangeFlowType.FORMCHANGE) {
-            if(!readOnly) { // если не read only
-                FormEntity staticForm = form.getStaticForm();
-                if(staticForm == null || !staticForm.hasNoChange()) // и форма не известна и может что-то изменять
-                    return true;
-            }
+            if (!readOnly && !getForm().hasNoChange()) 
+                return true;
         }
         if(type == ChangeFlowType.NEEDMORESESSIONUSAGES && syncType == null)
             return true;

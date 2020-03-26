@@ -173,6 +173,9 @@ urlDecoded = DATA LOCAL TEXT();
 urlDecode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlDecodeAction' (TEXT, BPSTRING[20]);
 urlDecode (TEXT text) { urlDecode(text, 'UTF-8'); };
 
+generatedUUID = DATA LOCAL TEXT();
+generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.GenerateUUIDAction' ();
+
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';

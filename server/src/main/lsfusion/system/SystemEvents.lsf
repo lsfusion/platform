@@ -144,10 +144,14 @@ hasConnectedConnections (CustomUser user) = GROUP SUM 1 IF user(Connection conn)
 
 fileUserLogs = DATA FILE (Connection);
 userLogs ()  INTERNAL  'lsfusion.server.physics.admin.monitor.action.UserLogsAction' ();
-requestUserLogs '{system.events.request.user.logs.custom.user}' (CustomUser user)  { 
-    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-        NEWSESSION { fileUserLogs(conn) <- NULL; apply(); } 
-        NEWSESSION NEWTHREAD userLogs(); CONNECTION conn;
+requestUserLogs '{system.events.request.user.logs.custom.user}' (CustomUser user)  {
+    IF hasConnectedConnections(user) THEN { 
+        FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+            NEWSESSION { fileUserLogs(conn) <- NULL; apply(); } 
+            NEWSESSION NEWTHREAD userLogs(); CONNECTION conn;
+        }
+    } ELSE {
+        MESSAGE '{system.events.user.not.connected}';
     }
 }
 openUserLogs '{system.events.open.user.logs.custom.user}' (CustomUser user)  { 
@@ -157,6 +161,8 @@ openUserLogs '{system.events.open.user.logs.custom.user}' (CustomUser user)  {
         } ELSE {
             MESSAGE '{system.events.open.user.logs.message}';
         }
+    } ELSE {
+        MESSAGE '{system.events.user.not.connected}';
     }
 }
 
@@ -199,6 +205,7 @@ TABLE session(Session);
 TABLE sessionObject(Session, Object);
 
 currentSession = DATA LOCAL Session();
+isCurrentSession(s) = s = currentSession(); 
 
 quantityAddedClasses '{system.events.quantity.added.classes.session}' = DATA INTEGER (Session);
 quantityRemovedClasses '{system.events.quantity.removed.classes.session}' = DATA INTEGER (Session);

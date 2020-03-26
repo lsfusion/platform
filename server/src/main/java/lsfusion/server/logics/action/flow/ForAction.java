@@ -126,11 +126,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
             final ImOrderSet<ImMap<I, DataObject>> prevRows = rows;
             session.addRollbackInfo(() -> rows = prevRows);
-            MOrderExclSet<ImMap<I, DataObject>> mRows = SetFact.mOrderExclSet(rows.size() - i);
-            for(int j=i;j<rows.size();j++)
-                mRows.exclAdd(session.updateCurrentClasses(rows.get(j)));
+            rows = rows.subOrder(i, rows.size()).<SQLException, SQLHandledException>mapItIdentityOrderValuesEx(value -> session.updateCurrentClasses(value));
             i=0;
-            rows = mRows.immutableOrder();
         }
 
         int i = 0;

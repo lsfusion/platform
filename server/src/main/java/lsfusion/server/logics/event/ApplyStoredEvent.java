@@ -1,9 +1,13 @@
 package lsfusion.server.logics.event;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.DataProperty;
+
+import java.sql.SQLException;
 
 public class ApplyStoredEvent extends ApplyCalcEvent implements ApplySingleEvent {
     
@@ -12,6 +16,10 @@ public class ApplyStoredEvent extends ApplyCalcEvent implements ApplySingleEvent
     public ApplyStoredEvent(Property property) {
         this.property = property;
         assert property.isStored();
+    }
+
+    public boolean hasChanges(StructChanges changes) {
+        return property.hasChanges(changes);
     }
 
     @Override

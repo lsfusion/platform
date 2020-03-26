@@ -11,6 +11,7 @@ import java.lang.management.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class LRUUtil {
     private static final int UPDATE_CURTIME_FREQUENCY = 1 << 7;
@@ -54,114 +55,158 @@ public class LRUUtil {
 
     private static ScheduledExecutorService scheduler;
     private static long lastCollected;
+    private static long lastStableCollected;
+    private static long lastUnadjusted;
+    private static boolean needAdjustment;
+    private static long lastCriticalMem;
     private static boolean runningCleanLRU = false;
 
     private static final String cmsFraction = "-XX:CMSInitiatingOccupancyFraction=";
-    private static final String useGCFraction = "-XX:+UseG1GC";
-    public static void initLRUTuner(final LRULogger logger) {
+    private static final String newSizeFraction = "-XX:G1NewSizePercent=";
+    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Double> adjustTargetLRU, Supplier<Double> adjustCriticalLRU, double LRUDefCoeff, Supplier<Double> LRUMinCoeff, Supplier<Double> LRUMaxCoeff, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
 
         // the same as in updateSavePointsInfo
-        double averageRate = 0.7;
-        double safeMem = 0.1;
-        boolean useG1GC = false;
+        Double newSizePercent = null;
+        Double cmsInitiatingOccupancyFraction = null;
         for(String arg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
             if (arg.startsWith(cmsFraction)) {
-                double cmsFractionValue = 0.0;
-                try {
-                    cmsFractionValue = Double.valueOf(arg.substring(cmsFraction.length())) / 100.0;
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-                if(cmsFractionValue >= safeMem)
-                    averageRate = cmsFractionValue;
-            }
-            if (arg.startsWith(useGCFraction)) {
-                useG1GC = true;
-            }
+                cmsInitiatingOccupancyFraction = readPercentArg(arg);
+            } else if (arg.startsWith(newSizeFraction))
+                newSizePercent = readPercentArg(arg);
         }
 
-        double criticalRate = averageRate + 2 * safeMem;
-        final double adjustLRU = 1.0 + safeMem;
-
-        final long maxMem = tenuredGenPool.getUsage().getMax();
-        final double criticalMem = maxMem * criticalRate;
-        final double averageMem = maxMem * averageRate;
-        final double upAverageMem = averageMem * (1.0 + safeMem);
-        final double downAverageMem = averageMem * (1.0 - safeMem);
-
-        final boolean concurrent = !tenuredGenPool.isCollectionUsageThresholdSupported() || useG1GC;
-        final long longCriticalMem = (long) Math.floor(criticalMem);
+        long oldMem = tenuredGenPool.getUsage().getMax();
+        if(newSizePercent != null)
+            oldMem = (long) (oldMem - oldMem * newSizePercent);
+        else if(cmsInitiatingOccupancyFraction != null) // backward compatibility with cms
+            oldMem = (long) (cmsInitiatingOccupancyFraction * oldMem / (1 - 2 * criticalMemRatio.get() - targetMemRatio.get())); 
+        long maxMem = oldMem; 
+        
+        final Supplier<Long> criticalMem = () -> (long) (maxMem - maxMem * criticalMemRatio.get());
+        final Supplier<Long> upAverageMem = () -> (long) (criticalMem.get() - maxMem * criticalMemRatio.get());
+        final Supplier<Long> averageMem = () -> (long) (upAverageMem.get() - maxMem * targetMemRatio.get());        
+        final Supplier<Long> downAverageMem = () -> (long) (averageMem.get() - maxMem * targetMemRatio.get());
 
         scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("lru-tuner"));
+        multiplier = LRUDefCoeff;
 
-        if(concurrent)
-            tenuredGenPool.setUsageThreshold(longCriticalMem);
-        else
-            tenuredGenPool.setCollectionUsageThreshold(longCriticalMem);
+        final boolean collectionUsageNotSupported = !tenuredGenPool.isCollectionUsageThresholdSupported(); // it seems that collectionusage for g1 is pretty relevant now (so we don't need to disable it) : https://bugs.openjdk.java.net/browse/JDK-8195115  
 
         MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
         NotificationEmitter emitter = (NotificationEmitter) mbean;
         emitter.addNotificationListener(new NotificationListener() {
             public void handleNotification(Notification n, Object hb) {
-                if(concurrent) {
-                    if (n.getType().equals(MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED)) {
-                        synchronized (lockCleanLRU) {
-                            if(!runningCleanLRU) {
-                                runningCleanLRU = true;
-                                logger.log("MEMORY THRESHOLD EXCEEDED");
-                                
-                                scheduler.schedule(new Runnable() {
-                                    public void run() {
-                                        assert runningCleanLRU;
-                                        long used = tenuredGenPool.getUsage().getUsed();
-                                        logger.log("MEMORY THRESHOLD EXCEEDED, USED : " + used + ", CRITICAL : " + longCriticalMem);
-                                        if(used > longCriticalMem) { // если все еще used вырезаем еще
-                                            double cleanMem = 1.0 - (averageMem / used);
-                                            logger.log("REMOVED " + cleanMem + " / RESCHEDULE " + " " + (long) (100 * cleanMem / memGCIn100Millis));
+                beforeAspect.run();
+                try {
+                    if (collectionUsageNotSupported) {
+                        if (n.getType().equals(MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED)) {
+                            synchronized (lockCleanLRU) {
+                                if (!runningCleanLRU) {
+                                    runningCleanLRU = true;
+                                    logger.log("MEMORY THRESHOLD EXCEEDED");
+
+                                    scheduler.schedule(new Runnable() {
+                                        public void run() {
+                                            assert runningCleanLRU;
+                                            long used = tenuredGenPool.getUsage().getUsed();
+                                            Long criticalMemValue = criticalMem.get();
+                                            logger.log("MEMORY THRESHOLD EXCEEDED, USED : " + used + ", CRITICAL : " + criticalMemValue);
+                                            if (used > criticalMemValue) { // если все еще used вырезаем еще
+                                                double cleanMem = 1.0 - ((double) averageMem.get() / (double) used);
+                                                logger.log("REMOVED " + cleanMem + " / RESCHEDULE " + " " + (long) (100 * cleanMem / memGCIn100Millis));
+
+                                                if (multiplier > LRUMinCoeff.get()) {
+                                                    multiplier /= (1.0 + cleanMem * adjustCriticalLRU.get());
+                                                    logger.log("DEC THRESHOLD MULTI " + multiplier);
+                                                }
 //                                            System.out.println("REMOVED / RESCHEDULE " + cleanMem + " " + (long) (100 * cleanMem / memGCIn100Millis));
 
-                                            ALRUMap.forceRemoveAllLRU(cleanMem);
-                                            scheduler.schedule(this, (long) (100 * cleanMem / memGCIn100Millis), TimeUnit.MILLISECONDS);
-                                        } else
-                                            runningCleanLRU = false;
-                                    }
-                                }, 0, TimeUnit.MILLISECONDS);
+                                                ALRUMap.forceRemoveAllLRU(cleanMem);
+                                                scheduler.schedule(this, (long) (100 * cleanMem / memGCIn100Millis), TimeUnit.MILLISECONDS);
+                                            } else runningCleanLRU = false;
+                                        }
+                                    }, 0, TimeUnit.MILLISECONDS);
+                                }
                             }
                         }
+                    } else {
+                        if (n.getType().equals(MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED)) {
+                            long used = tenuredGenPool.getCollectionUsage().getUsed();
+                            double cleanMem = 1.0 - ((double) averageMem.get() / (double) used);
+                            logger.log("MEMORY COLLECTION THRESHOLD EXCEEDED, USED : " + used + ", CLEAN : " + cleanMem);
+
+                            if (multiplier > LRUMinCoeff.get()) {
+                                multiplier /= (1.0 + cleanMem * adjustCriticalLRU.get());
+                                logger.log("DEC THRESHOLD MULTI " + multiplier);
+                            }
+
+                            ALRUMap.forceRemoveAllLRU(cleanMem);
+                        }
                     }
-                } else {
-                    if (n.getType().equals(MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED)) {
-                        long used = tenuredGenPool.getCollectionUsage().getUsed();
-                        double cleanMem = 1.0 - (averageMem / used);
-                        logger.log("MEMORY COLLECTION THRESHOLD EXCEEDED, USED : " + used + ", CLEAN : " + cleanMem);
-                        ALRUMap.forceRemoveAllLRU(cleanMem);
-                    }
+                } finally {
+                    afterAspect.run();
                 }
             }}, null, null);
 
         scheduler.scheduleAtFixedRate(() -> {
-
-            long used;
-            if(concurrent)
-                used = tenuredGenPool.getUsage().getUsed();
-            else
-                used = tenuredGenPool.getCollectionUsage().getUsed();
-            
-            if(used!=lastCollected) { // прошла сборка мусора
-                logger.log("COLLECTED, USED : " + used + ", LASTCOLLECTED : " + lastCollected + ", UPAVERAGE : " + upAverageMem + ", DOWNAVERAGE : " + downAverageMem);
-                if (used > lastCollected && used > upAverageMem && multiplier > MIN_MULTIPLIER) { // память растет и мы ниже критического предела, ускоряем сборку LRU
-                    multiplier /= adjustLRU;
-                    logger.log("DEC MULTI " + multiplier);
-                }
-                if (used < lastCollected && used < downAverageMem && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
-                    multiplier *= adjustLRU;
-                    logger.log("INC MULTI " + multiplier);
+            beforeAspect.run();
+            try {
+                long criticalMemValue = criticalMem.get();
+                if (criticalMemValue != lastCriticalMem) {
+                    if (collectionUsageNotSupported) 
+                        tenuredGenPool.setUsageThreshold(criticalMemValue);
+                    else 
+                        tenuredGenPool.setCollectionUsageThreshold(criticalMemValue);
+                    lastCriticalMem = criticalMemValue;
                 }
 
-                lastCollected = used;
+                long used;
+                if (collectionUsageNotSupported) 
+                    used = tenuredGenPool.getUsage().getUsed();
+                else 
+                    used = tenuredGenPool.getCollectionUsage().getUsed();
+
+                if (used != lastCollected) { // g1 when doing mixed garbage collection can do it in several cycles, so we'll wait until collection usage becomes stable
+                    logger.log("COLLECTED, USED : " + used + ", LASTCOLLECTED : " + lastCollected);
+                    lastCollected = used;
+
+                    needAdjustment = true;
+                    lastStableCollected = 0;
+                } else
+                    lastStableCollected++;
+
+                if(needAdjustment) {
+                    if(lastStableCollected > stableMinCount.get() || lastUnadjusted > unstableMaxCount.get()) {
+                        long upAverageMemValue = upAverageMem.get();
+                        long downAverageMemValue = downAverageMem.get();
+                        logger.log("ADJUST COLLECTED : " + lastCollected + " UPAVERAGE : " + upAverageMemValue + ", DOWNAVERAGE : " + downAverageMemValue);
+                        if (lastCollected > upAverageMemValue && multiplier > LRUMinCoeff.get()) {
+                            multiplier /= (1.0 + targetMemRatio.get() * adjustTargetLRU.get());
+                            logger.log("DEC MULTI " + multiplier);
+                        }
+                        if (lastCollected < downAverageMemValue && multiplier < LRUMaxCoeff.get()) {
+                            multiplier *= (1.0 + targetMemRatio.get() * adjustTargetLRU.get());
+                            logger.log("INC MULTI " + multiplier);
+                        }
+                        needAdjustment = false;
+                        lastUnadjusted = 0;
+                    } else
+                        lastUnadjusted++;
+                }
+            } finally {
+                afterAspect.run();
             }
-        }, 0, (long) (100 * (adjustLRU - 1.0) / memGCIn100Millis), TimeUnit.MILLISECONDS);
+        }, 0, 1000, TimeUnit.MILLISECONDS);
+    }
+
+    public static double readPercentArg(String arg) {
+        Double cmsFractionValue = null;
+        try {
+            cmsFractionValue = Double.valueOf(arg.substring(cmsFraction.length())) / 100.0;
+        } catch (NumberFormatException e) {
+        }
+        return cmsFractionValue;
     }
 
     public enum Value {NULL}

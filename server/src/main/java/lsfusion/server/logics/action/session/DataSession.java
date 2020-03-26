@@ -1042,56 +1042,48 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         action.execute(env, stack);
     }
 
-    private void executeGlobalActionEvent(ExecutionEnvironment env, ExecutionStack stack, Action<?> action) throws SQLException, SQLHandledException {
-        if(noEventsInTransaction)
-            return;
-        boolean hasChanges = false;
-        for(SessionProperty property : action.getGlobalEventSessionCalcDepends()) { // оптимизация основанная на отсутствии последействия
-            // тут конечно для PREV брать CHANGED, не совсем правильно, так как новое значение может не использоваться вообще в действии, и PREV используется не для определения условия события, а для непосредственно тела
-            // поэтому по хорошему надо смотреть либо на getUsedProps или как-то хитрее определять условие. Аналогичную оптимизацию нужно было бы реализовать в applySingleStored
-            if(property.getChangedProperty().hasChanges(getModifier())) {
-                hasChanges = true;
-                break;
-            }
-        }
-
-        if(hasChanges)
-            executeGlobalActionEventWithChanges(env, stack, action);
-    }
-
     @LogTime
     @StackMessage("{message.global.event.exec}")
     @ThisMessage (profile = false)
-    private void executeGlobalActionEventWithChanges(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage Action<?> action) throws SQLException, SQLHandledException {
-        action.execute(env, stack);
+    private boolean executeGlobalActionEvent(ExecutionStack stack, BusinessLogics BL, @ParamMessage ApplyGlobalActionEvent event) throws SQLException, SQLHandledException {
+        if(!noEventsInTransaction) {
+            startPendingSingles(event.action);
+
+            event.action.execute(this, stack);
+
+            if(!isInTransaction())
+                return false;
+
+            flushPendingSingles(BL);
+        }
+        return true;
     }
 
+    @Cancelable
     @LogTime
     @ThisMessage (profile = false)
-    private void executeActionInTransaction(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionValueImplement<?> action) throws SQLException, SQLHandledException {
-        action.execute(env, stack);
+    private boolean executeApplyAction(BusinessLogics BL, ExecutionStack stack, @ParamMessage ActionValueImplement action) throws SQLException, SQLHandledException {
+        startPendingSingles(action.action);
+
+        action.execute(this, stack);
+
+        if(!isInTransaction()) // если ушли из транзакции вываливаемся
+            return false;
+
+        flushPendingSingles(BL);
+        
+        return true;
     }
 
     @StackProgress
     @Cancelable
-    private boolean executeApplyEvent(BusinessLogics BL, ExecutionStack stack, ApplyEvent event, @StackProgress final ProgressBar progressBar) throws SQLException, SQLHandledException {
-        if(event instanceof ApplyActionEvent) {
-            startPendingSingles(event instanceof ActionValueImplement ? ((ActionValueImplement) event).action : ((ApplyGlobalActionEvent) event).action);
-
-            if(event instanceof ActionValueImplement)
-                executeActionInTransaction(this, stack, (ActionValueImplement)event);
-            else
-                executeGlobalActionEvent(this, stack, ((ApplyGlobalActionEvent) event).action);
-
-            if(!isInTransaction()) // если ушли из транзакции вываливаемся
-                return false;
-
-            flushPendingSingles(BL);
+    private boolean executeApplyEvent(BusinessLogics BL, ExecutionStack stack, ApplyGlobalEvent event, @StackProgress final ProgressBar progressBar) throws SQLException, SQLHandledException {
+        if(event instanceof ApplyGlobalActionEvent) {
+            return executeGlobalActionEvent(stack, BL, (ApplyGlobalActionEvent) event);
         } else if(event instanceof ApplyStoredEvent) // постоянно-хранимые свойства
             executeStoredEvent((ApplyStoredEvent) event, BL);
         else if(event instanceof ApplyRemoveClassesEvent) // удаление
             executeRemoveClassesEvent((ApplyRemoveClassesEvent) event, stack, BL);
-
         return true;
     }
 
@@ -1465,16 +1457,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
         return split.second;
     }
-    private void executeRemoveClassesEvent(ApplyRemoveClassesEvent event, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
-        assert isInTransaction();
-        if(event.property.hasChanges(getModifier()))
-            executeRemoveClassesEventWithChanges(event, stack, BL);
-    }
 
     private final Runnable checkTransaction = this::checkTransaction;
 
     @StackMessage("{logics.remove.objects.classes}")
-    private void executeRemoveClassesEventWithChanges(@ParamMessage ApplyRemoveClassesEvent event, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
+    private void executeRemoveClassesEvent(@ParamMessage ApplyRemoveClassesEvent event, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
         assert isInTransaction;
 
         Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<Property, UpdateResult>> split = classChanges.splitSingleApplyRemove(event.getIsClassProperty(), baseClass, sql, env, checkTransaction);
@@ -1482,10 +1469,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(split.first.first.isEmpty()) // оптимизация
             return;
         
+        // it should be before apply, since split HAS ALREADY changed datasession (unlike executeStoredEvent), so if apply rollbacks we'll have inconsistent state
+        updateProperties(split.second, null); // here there are no updateSessionEvents, since transaction and local events are ignored (however it can be pretty dangerous behaviour)
+
         // split'утый modifier
         applySingleRemoveClasses(event, split.first.first, split.first.second, stack, BL);
-
-        updateProperties(split.second, null); // здесь updateSessionEvents нет, так как уже транзакция и локальные события игнорируются (хотя потенциально это опасное поведение)
     }
 
     private void applySingleRemoveClasses(ApplyRemoveClassesEvent event, ImMap<ClassDataProperty, SingleKeyPropertyUsage> news, ImMap<ClassDataProperty, ChangedDataClasses> changedClasses, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
@@ -2098,7 +2086,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return result;
     }
     public <K> ImOrderSet<K> filterOrderEnv(ImOrderMap<K, SessionEnvEvent> elements) {
-        return elements.filterOrderValues(elements1 -> elements1.contains(DataSession.this));
+        return elements.filterOrderValues(session -> session.contains(DataSession.this));
     }
 
     private boolean noCancelInTransaction;
@@ -2134,16 +2122,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private boolean recursiveApply(ImOrderSet<ActionValueImplement> actions, BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
-        ImOrderSet<ApplyEvent> execActions = SetFact.addOrderExcl(actions, BL.getApplyEvents(this));
-        for (int i = 0, size = execActions.size(); i < size; i++) {
-            try {
-                sql.statusMessage = new StatusMessage("event", execActions.get(i), i, size);
-                if (!executeApplyEvent(BL, stack, execActions.get(i), new ProgressBar(localize("{logics.server.apply.message}"), i, size, execActions.get(i) + ", " + i + " of " + size)))
-                    return false;
-            } finally {
-                sql.statusMessage = null;
+        for (ActionValueImplement action : actions)
+            if(!executeApplyAction(BL, stack, action))
+                return false;
+        
+        try {
+            BusinessLogics.Next next = null;
+            ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = BL.getApplyEvents(applyFilter);
+            while(true) {
+                next = BL.getNextApplyEvent(applyFilter, next == null ? 0 : next.index + 1, getModifier().getPropertyChanges().getStruct(), applyEvents);
+                if(next == null)
+                    break;
+                if(next.sessionEnv.contains(this)) {
+                    sql.statusMessage = next.statusMessage;
+                    if (!executeApplyEvent(BL, stack, next.event, new ProgressBar(localize("{logics.server.apply.message}"), next.statusMessage.index, next.statusMessage.total, next.event.toString())))
+                        return false;
+                }
             }
+        } finally {
+            sql.statusMessage = null;
         }
 
         if (applyFilter == ApplyFilter.ONLYCHECK) {
@@ -2241,14 +2238,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateCurrentClasses(session, filterSessionData(getKeepProps()).values());
     }
 
-    private <P extends PropertyInterface> void executeStoredEvent(ApplyStoredEvent event, BusinessLogics BL) throws SQLException, SQLHandledException {
-        assert isInTransaction();
-        if(event.property.hasChanges(getModifier()))
-            executeStoredEventWithChanges(event, BL);
-    }
-
     @StackMessage("{message.session.apply.write}")
-    private <P extends PropertyInterface> void executeStoredEventWithChanges(@ParamMessage ApplyStoredEvent event, BusinessLogics BL) throws SQLException, SQLHandledException {
+    private <P extends PropertyInterface> void executeStoredEvent(@ParamMessage ApplyStoredEvent event, BusinessLogics BL) throws SQLException, SQLHandledException {
         Property<P> property = event.property;
         PropertyChangeTableUsage<P> changeTable = property.readChangeTable("rswc", sql, getModifier(), baseClass, env);
         

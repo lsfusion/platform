@@ -2368,12 +2368,34 @@ propertyUsageWithId returns [String id = null, Boolean literal = null, NamedProp
 	;
 
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, LPWithParams sheet, boolean sheetAll, LPWithParams memo, LPWithParams where, String separator, boolean hasHeader, boolean noEscape, String charset, LPWithParams root, boolean attr]
-	:	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? (noEscapeVal = noEscapeOption { $noEscape = $noEscapeVal.noEscape; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-    |	'DBF'	{ $format = FormIntegrationType.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-    |   'XLS' 	{ $format = FormIntegrationType.XLS; } (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
-	|	'JSON'	{ $format = FormIntegrationType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?
-	|	'TABLE'	{ $format = FormIntegrationType.TABLE; }
+	:	'CSV'	{ $format = FormIntegrationType.CSV; } (
+	            (separatorVal = stringLiteral { $separator = $separatorVal.val; })?
+	            (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
+	            (noEscapeVal = noEscapeOption { $noEscape = $noEscapeVal.noEscape; })?
+	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
+	            ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	            )
+    |	'DBF'	{ $format = FormIntegrationType.DBF; } (
+                ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })?
+                ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
+                ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+                )
+    |   'XLS' 	{ $format = FormIntegrationType.XLS; } (
+                (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
+                ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
+                ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
+                )
+	|	'JSON'	{ $format = FormIntegrationType.JSON; } (
+	            ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	            ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	            )
+	|	'XML'	{ $format = FormIntegrationType.XML; } (
+	            ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	            ('ATTR' { $attr = true; })?
+	            )
+	|	'TABLE'	{ $format = FormIntegrationType.TABLE; } (
+	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
+	            )
 	;
 
 propertyUsage returns [String name, NamedPropertyUsage propUsage]
@@ -2953,6 +2975,9 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	Boolean syncType = null;
 	WindowFormType windowType = null;
 
+    List<TypedParameter> objectsContext = null;
+    List<LPWithParams> contextFilters = new ArrayList<>();
+
     ManageSessionType manageSession = ManageSessionType.AUTO;
 	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
 	FormSessionScope formSessionScope = FormSessionScope.OLDSESSION;
@@ -2962,12 +2987,18 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly);
+		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
+		                                     objectsContext, contextFilters, context);
 	}
 }
 	:	'SHOW' mf=mappedForm[context, null, dynamic]
+	    {
+	        if(inMainParseState())
+                objectsContext = self.getTypedObjectsNames($mf.mapped);
+	    }
 		(
-		    sync = syncTypeLiteral { syncType = $sync.val; }
+		    cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); }
+		|   sync = syncTypeLiteral { syncType = $sync.val; }
 		|   window = windowTypeLiteral { windowType = $window.val; }
 
         |	ms=manageSessionClause { manageSession = $ms.result; }
@@ -2985,8 +3016,8 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams a
 
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	
-	List<TypedParameter> objectsContext = null; 
-	List<LPWithParams> contextFilters = Collections.emptyList();
+	List<TypedParameter> objectsContext = null;
+	List<LPWithParams> contextFilters = new ArrayList<>();
 
 	ManageSessionType manageSession = ManageSessionType.AUTO;
 	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
@@ -3006,7 +3037,8 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams a
             if(inMainParseState())
         	    objectsContext = self.getTypedObjectsNames($mf.mapped); 
         }
-		(   window = windowTypeLiteral { windowType = $window.val; }
+		(   cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); }
+		|   window = windowTypeLiteral { windowType = $window.val; }
 		|	ms=manageSessionClause { manageSession = $ms.result; }
 		|	nc=noCancelClause { noCancel = $nc.result; }
 		|	fs=formSessionScopeClause { formSessionScope = $fs.result; }
@@ -3050,6 +3082,9 @@ windowTypeLiteral returns [WindowFormType val]
 
 printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
+    List<TypedParameter> objectsContext = null;
+    List<LPWithParams> contextFilters = new ArrayList<>();
+
 	FormPrintType printType = null;
     Boolean syncType = null;
     Integer selectTop = null;
@@ -3059,10 +3094,15 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, $pUsage.propUsage, syncType, selectTop, printerProperty, sheetNameProperty, passwordProperty, context);
+		$action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, $pUsage.propUsage, syncType, selectTop, printerProperty, sheetNameProperty, passwordProperty,
+		                                      objectsContext, contextFilters, context);
 	}
 }
-	:	'PRINT' mf=mappedForm[context, null, dynamic]
+	:	'PRINT' mf=mappedForm[context, null, dynamic] {
+            if(inMainParseState())
+                 objectsContext = self.getTypedObjectsNames($mf.mapped);
+        }
+        (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
 		(   ( // static - jasper
             (   'XLS'  { printType = FormPrintType.XLS; } ('SHEET' sheet = propertyExpression[context, dynamic] { sheetNameProperty = $sheet.property; })? ('PASSWORD' pwd = propertyExpression[context, dynamic] { passwordProperty = $pwd.property; })?
             |	'XLSX' { printType = FormPrintType.XLSX; } ('SHEET' sheet = propertyExpression[context, dynamic] { sheetNameProperty = $sheet.property; })? ('PASSWORD' pwd = propertyExpression[context, dynamic] { passwordProperty = $pwd.property; })?
@@ -3092,6 +3132,9 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
+    List<TypedParameter> objectsContext = null;
+    List<LPWithParams> contextFilters = new ArrayList<>();
+
     FormIntegrationType format = null;
 	String separator = null;
 	boolean hasHeader = false;
@@ -3103,15 +3146,34 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, !hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages, context);
+		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, !hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages,
+		                                       objectsContext, contextFilters, context);
 	}
 }
-	:	'EXPORT' mf=mappedForm[context, null, dynamic]
+	:	'EXPORT' mf=mappedForm[context, null, dynamic] {
+	        if(inMainParseState())
+                objectsContext = self.getTypedObjectsNames($mf.mapped);
+	    }
+	    (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
 		(type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
         	                                                    charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
 		('TOP' selectTop = intLiteral)?
 		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
 	;
+
+contextFiltersClause[List<TypedParameter> oldContext, List<TypedParameter> objectsContext] returns [List<LPWithParams> contextFilters = new ArrayList<>()]
+@init {
+    List<TypedParameter> context = new ArrayList<>();
+}
+    :   'FILTERS' {
+            if(inMainParseState()) {
+                context.addAll(oldContext);
+                context.addAll(objectsContext);
+            }
+        }
+        decl=propertyExpression[context, true] { contextFilters.add($decl.property); }
+        (',' decl=propertyExpression[context, true] { contextFilters.add($decl.property); })*
+    ;
 
 exportSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, String separator, boolean hasHeader, boolean noEscape, String charset, LPWithParams root, LPWithParams tag, boolean attr]
 	:	'CSV' { $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? (noEscapeVal = noEscapeOption { $noEscape = $noEscapeVal.noEscape; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
@@ -3658,7 +3720,7 @@ recalculateActionDefinitionBody[List<TypedParameter> context] returns [LAWithPar
 }
 	:	'RECALCULATE'
 		propUsage=propertyUsage
-		'(' params=singleParameterList[newContext, true] ')'
+		'(' params=propertyExpressionList[newContext, true] ')'
 		('WHERE'
 		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
 	;
@@ -3905,15 +3967,15 @@ constraintStatement
 			}
 		}
 		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inMainParseState()) property = self.checkSingleParam($expr.property).getLP(); }
+		('CHECKED' { checked = true; }
+			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })?
+		)?
+		'MESSAGE' message=propertyExpression[new ArrayList<TypedParameter>(), false]
 		{
 			if (inMainParseState()) {
 				self.dropPrevScope($et.event);
 			}
 		}
-		('CHECKED' { checked = true; }
-			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })?
-		)?
-		'MESSAGE' message=propertyExpression[new ArrayList<TypedParameter>(), false]
 		';'
 	;
 
@@ -3951,15 +4013,15 @@ followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event ev
             }
         }
         expr = propertyExpression[context, false]
+		('RESOLVE' 
+			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, getEventDebugPoint()));})?
+			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, getEventDebugPoint()));})?
+		)? { $prop = $expr.property; }
         {
             if (inMainParseState()) {
                 self.dropPrevScope($et.event);
             }
         }
-		('RESOLVE' 
-			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, getEventDebugPoint()));})?
-			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, getEventDebugPoint()));})?
-		)? { $prop = $expr.property; }
 ;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4022,17 +4084,17 @@ eventStatement
 			}
 		}
 		whenExpr=propertyExpression[context, true]
-		{
-			if (inMainParseState()) {
-				self.dropPrevScope($et.event);
-			}
-		}
 		(	'ORDER' ('DESC' { descending = true; })?
 			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
 		)?
 		in=inlineStatement[context]
 		'DO'
 		action=endDeclTopContextDependentActionDefinitionBody[context, false, false]
+		{
+			if (inMainParseState()) {
+				self.dropPrevScope($et.event);
+			}
+		}
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4050,13 +4112,13 @@ globalEventStatement
 }
 	:	'ON' 
 		et=baseEvent
-		('SINGLE' { single = true; })?
-		('SHOWDEP' property=actionOrPropertyUsage)?
 		{
 			if (inMainParseState()) {
 				self.setPrevScope($et.event);
 			}
 		}
+		('SINGLE' { single = true; })?
+		('SHOWDEP' property=actionOrPropertyUsage)?
 		action=endDeclTopContextDependentActionDefinitionBody[new ArrayList<TypedParameter>(), false, false]
 		{
 			if (inMainParseState()) {
@@ -5076,7 +5138,7 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME
 				|   'WORDLINK' | 'IMAGELINK'
 				|   'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
-				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
+				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
 ID				:	ID_FRAGMENT;

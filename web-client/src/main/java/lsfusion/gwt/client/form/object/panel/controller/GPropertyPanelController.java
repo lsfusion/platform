@@ -46,7 +46,7 @@ public class GPropertyPanelController {
         this.rowBackground = rowBackground;
         this.rowForeground = rowForeground;
 
-        renderersPanel = new FlexPanel();
+        renderersPanel = new FlexPanel(property.columnKeysVertical);
     }
 
     public Widget getView() {

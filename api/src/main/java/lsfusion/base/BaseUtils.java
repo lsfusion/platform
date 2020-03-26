@@ -54,7 +54,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 103;
+        return 107;
     }
     
     public static String getPlatformVersion() {
@@ -1270,6 +1270,22 @@ public class BaseUtils {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static String replaceSeparators(String value, char separator, char groupingSeparator) {
+        if (value.contains(",") && groupingSeparator != ',' && separator == '.')
+            value = replaceCommaSeparator(value);
+        else if (value.contains(".") && groupingSeparator != '.' && separator == ',')
+            value = replaceDotSeparator(value);
+        return value;
+    }
+
+    public static String replaceCommaSeparator(String value) {
+        return value.replace(',', '.');
+    }
+
+    public static String replaceDotSeparator(String value) {
+        return value.replace('.', ',');
     }
 
     public static <K, T extends K, V> void clearNotKeys(Map<K, V> map, FunctionSet<T> keep, Class<T> aClass) {

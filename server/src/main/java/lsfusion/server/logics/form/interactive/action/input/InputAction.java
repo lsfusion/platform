@@ -36,8 +36,9 @@ public class InputAction extends SystemExplicitAction {
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        Object oldValue = interfaces.isEmpty() ? null : context.getSingleKeyValue().getValue();
-        ObjectValue userValue = context.inputUserData(dataClass, oldValue);
+        boolean hasOldValue = !interfaces.isEmpty();
+        Object oldValue = hasOldValue ? context.getSingleKeyValue().getValue() : null;
+        ObjectValue userValue = context.inputUserData(dataClass, oldValue, hasOldValue);
         context.writeRequested(RequestResult.get(userValue, dataClass, targetProp));
     }
     

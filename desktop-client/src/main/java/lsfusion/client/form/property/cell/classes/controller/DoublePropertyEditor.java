@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
-import lsfusion.interop.form.design.ComponentDesign;
+import lsfusion.base.BaseUtils;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -16,8 +17,8 @@ import java.text.ParseException;
 public class DoublePropertyEditor extends TextFieldPropertyEditor {
     DecimalFormat df = null;
     boolean hasMask = false;
-    public DoublePropertyEditor(Object value, Long maxValue, NumberFormat format, ComponentDesign design, Class formatterValueClass, final boolean hasMask) {
-        super(design);
+    public DoublePropertyEditor(Object value, Long maxValue, NumberFormat format, ClientPropertyDraw property, Class formatterValueClass, final boolean hasMask) {
+        super(property);
         df = format != null ? (DecimalFormat) format : new DecimalFormat();
         this.hasMask = hasMask;
         final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
@@ -102,7 +103,6 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         if (maxValue != null)
             formatter.setMaximum(new BigDecimal(maxValue));
 
-        this.setHorizontalAlignment(JTextField.RIGHT);
         setFormatterFactory(new DefaultFormatterFactory(formatter));
 
         if (value != null) {
@@ -189,11 +189,9 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         //та же проблема с кареткой при полной замене отрицательного значения на положительное (минус сохраняется, и каретка смещается)
         boolean moveCaretBack = false;
         char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
+        char groupingSeparator = df.getDecimalFormatSymbols().getGroupingSeparator();
+        content = BaseUtils.replaceSeparators(content, separator, groupingSeparator);
         if (getSelectedText() == null) {
-            if (content.contains(",") && separator == '.')
-                content = content.replace(",", ".");
-            else if (content.contains(".") && separator == ',')
-                content = content.replace(".", ",");
             String text = getText();
             if(isMinusZeroText(text, separator) && hasMask)
                 moveCaretBack = true;

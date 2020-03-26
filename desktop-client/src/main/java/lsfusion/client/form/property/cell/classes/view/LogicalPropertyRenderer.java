@@ -10,7 +10,14 @@ public class LogicalPropertyRenderer extends PropertyRenderer {
     
     public LogicalPropertyRenderer(ClientPropertyDraw property) {
         super(property);
-        getComponent().setHorizontalAlignment(JCheckBox.CENTER);
+        
+        if (property != null) {
+            Integer valueAlignment = property.getSwingValueAlignment();
+            if (valueAlignment != null) {
+                getComponent().setHorizontalAlignment(valueAlignment);
+            }
+        }
+        
         getComponent().setBorderPainted(true);
         getComponent().setOpaque(true);
     }

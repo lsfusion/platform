@@ -487,25 +487,6 @@ public abstract class LogicsModule {
 
     // ------------------- Loggable ----------------- //
 
-    protected <D extends PropertyInterface> LP addDCProp(LocalizedString caption, int whereNum, LP<D> derivedProp, Object... params) {
-        Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
-
-        // выполняем само создание свойства
-        StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, signature.second);
-        LP derDataProp = addProperty(null, new LP<>(dataProperty));
-
-        derDataProp.setEventChange(derivedProp, whereNum, params);
-        return derDataProp;
-    }
-
-    protected <D extends PropertyInterface> LP addLogProp(LocalizedString caption, int whereNum, LP<D> derivedProp, Object... params) {
-        Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
-
-        // выполняем само создание свойства
-        StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, LogicalClass.instance);
-        return addProperty(null, new LP<>(dataProperty));
-    }
-
     private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LP<D> derivedProp, int whereNum, Object[] params) {
         // придется создавать Join свойство чтобы считать его класс
         int dersize = getIntNum(params);
@@ -583,32 +564,39 @@ public abstract class LogicsModule {
     public <P extends PropertyInterface, O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImList<ContextFilterSelector<?, P, O>> contextProperties, Boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
         return addAction(group, new LA<>(new FormInteractiveAction<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, orderInterfaces, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
     }
-    protected <O extends ObjectSelector> LA<?> addPFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormPrintType staticType, boolean syncType, Integer selectTop, LP targetProp, boolean removeNullsAndDuplicates, ValueClass printer, ValueClass sheetName, ValueClass password) {
-        return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
+    protected <O extends ObjectSelector> LA<?> addPFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
+                                                          ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                                                          FormPrintType staticType, boolean syncType, Integer selectTop, LP targetProp, boolean removeNullsAndDuplicates,
+                                                          ValueClass printer, ValueClass sheetName, ValueClass password) {
+        return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
+                staticType, syncType, selectTop, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
     }
-    protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, Integer selectTop, String charset, LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass root, ValueClass tag) {
+    protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
+                                                       ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
+                                                       FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, Integer selectTop, String charset,
+                                                       LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass root, ValueClass tag) {
         ExportAction<O> exportAction;
         switch(staticType) {
             case XML:
-                exportAction = new ExportXMLAction<>(caption, form, objectsToSet, nulls, staticType, singleExportFile, selectTop, charset, root, tag);
+                exportAction = new ExportXMLAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, singleExportFile, selectTop, charset, root, tag);
                 break;
             case JSON:
-                exportAction = new ExportJSONAction<>(caption, form, objectsToSet, nulls, staticType, singleExportFile, selectTop, charset);
+                exportAction = new ExportJSONAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, singleExportFile, selectTop, charset);
                 break;
             case CSV:
-                exportAction = new ExportCSVAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, noHeader, separator, noEscape);
+                exportAction = new ExportCSVAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, noHeader, separator, noEscape);
                 break;
             case XLS:
-                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, false, noHeader);
+                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false, noHeader);
                 break;
             case XLSX:
-                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, true, noHeader);
+                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, true, noHeader);
                 break;
             case DBF:
-                exportAction = new ExportDBFAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset);
+                exportAction = new ExportDBFAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset);
                 break;
             case TABLE:
-                exportAction = new ExportTableAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset);
+                exportAction = new ExportTableAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset);
                 break;
             default:
                 throw new UnsupportedOperationException();                
@@ -653,17 +641,17 @@ public abstract class LogicsModule {
                 break;
             // plain
             case CSV:
-                importAction = new ImportCSVAction(paramsCount, groupFiles, formEntity, charset, noHeader, noEscape, separator);
+                importAction = new ImportCSVAction(paramsCount, groupFiles, formEntity, charset, hasWhere, noHeader, noEscape, separator);
                 break;
             case DBF:
                 importAction = new ImportDBFAction(paramsCount, groupFiles, formEntity, charset, hasWhere);
                 break;
             case XLS:
             case XLSX:
-                importAction = new ImportXLSAction(paramsCount, groupFiles, formEntity, charset, noHeader, sheetAll);
+                importAction = new ImportXLSAction(paramsCount, groupFiles, formEntity, charset, hasWhere, noHeader, sheetAll);
                 break;
             case TABLE:
-                importAction = new ImportTableAction(paramsCount, groupFiles, formEntity, charset);
+                importAction = new ImportTableAction(paramsCount, groupFiles, formEntity, charset, hasWhere);
                 break;
             default:
                 throw new UnsupportedOperationException();
@@ -710,7 +698,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles, root, tag);
+        return addEFAProp(null, caption, form, objectsToSet, nulls, SetFact.EMPTYORDER(), ListFact.EMPTY(), type, noHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles, root, tag);
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LP<?> whereLCP, String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
@@ -744,7 +732,7 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         PropertyMapImplement<W, PropertyInterface> where = hasWhere ? (PropertyMapImplement<W, PropertyInterface>) (readImplements.get(resInterfaces + 1)) : null;
-        return addAction(null, new LA<>(new RecalculatePropertyAction<C, W, PropertyInterface>(LocalizedString.NONAME, innerInterfaces.getSet(),
+        return addAction(null, new LA<>(new RecalculatePropertyAction<C, PropertyInterface>(LocalizedString.NONAME, innerInterfaces.getSet(),
                 (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), where)));
     }
 
@@ -1487,39 +1475,34 @@ public abstract class LogicsModule {
     // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #48),
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
     public LP addLProp(SystemEventsLogicsModule systemEventsLM, LP lp, DBNamingPolicy namingPolicy) {
+        return addLProp(systemEventsLM, lp, false, namingPolicy);
+    }
+
+    public LP addLProp(SystemEventsLogicsModule systemEventsLM, LP lp, boolean drop, DBNamingPolicy namingPolicy) {
         assert lp.property.isNamed();
-        String name = getLogPropertyName(lp, false);
+        String name = getLogPropertyName(lp, drop);
         
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
         
-        LP result = addDCProp(LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
+        LP equalsProperty = systemEventsLM.isCurrentSession;
 
-        makePropertyPublic(result, name, signature);
-        markLoggableStored(result, namingPolicy);
-        return result;
+        LP value = drop ? baseLM.vtrue : lp;
+
+        LP changed = addCHProp(lp, drop ? IncrementType.DROP : IncrementType.SETCHANGED, PrevScope.DB);
+        LP where = addJProp(baseLM.and1, add(directLI(changed), new Object[]{equalsProperty, changed.listInterfaces.size() + 1}));
+
+        StoredDataProperty data = new StoredDataProperty(LocalizedString.create("{logics.log}" + " " + lp.property), where.getInterfaceClasses(ClassType.logPolicy), value.property.getValueClass(ClassType.logPolicy));
+        LP log = addProperty(null, new LP<>(data));
+
+        log.setEventChange(systemEventsLM, Event.APPLY, BaseUtils.add(directLI(value), directLI(where)));
+
+        makePropertyPublic(log, name, signature);
+        markLoggableStored(log, namingPolicy);
+        return log;
     }
 
     public LP addLDropProp(SystemEventsLogicsModule systemEventsLM, LP lp, DBNamingPolicy namingPolicy) {
-        String name = getLogPropertyName(lp, true);
-
-        List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
-
-        LP equalsProperty = addJProp(baseLM.equals2, 1, systemEventsLM.currentSession);
-        LP logDropProperty = addLogProp(LocalizedString.create("{logics.log}" + " " + lp.property + " {drop}"), 1, lp, add(new Object[]{equalsProperty, lp.listInterfaces.size() + 1}, directLI(lp)));
-
-        LP changedProperty = addCHProp(lp, IncrementType.DROP, PrevScope.EVENT);
-        LP whereProperty = addJProp(baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
-
-        Object[] params = directLI(baseLM.vtrue);
-        if (whereProperty != null) {
-            params = BaseUtils.add(params, directLI(whereProperty));
-        }
-        logDropProperty.setEventChange(systemEventsLM, true, params);
-
-        makePropertyPublic(logDropProperty, name, signature);
-        markLoggableStored(logDropProperty, namingPolicy);
-
-        return logDropProperty;
+        return addLProp(systemEventsLM, lp, true, namingPolicy);
     }
 
     private void markLoggableStored(LP lp, DBNamingPolicy namingPolicy) {
@@ -1960,7 +1943,7 @@ public abstract class LogicsModule {
         ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
 //            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.EMPTY(), ListFact.EMPTY(), FormPrintType.MESSAGE, false, 30, null, true, null, null, null).action.getImplement();
+        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), ListFact.EMPTY(), FormPrintType.MESSAGE, false, 30, null, true, null, null, null).action.getImplement();
         ActionMapImplement<?, ClassPropertyInterface> constraintAction =
                 PropertyFact.createListAction(
                         SetFact.EMPTY(),

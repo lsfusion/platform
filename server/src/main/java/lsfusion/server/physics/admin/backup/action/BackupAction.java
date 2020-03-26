@@ -19,13 +19,14 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import static lsfusion.base.file.IOUtils.readFileToString;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteTime;
 
 public class BackupAction extends InternalAction {
 
@@ -45,9 +46,7 @@ public class BackupAction extends InternalAction {
                 threadCount = 1;
             }
 
-            Date currentDate = Calendar.getInstance().getTime();
-            long currentTime = currentDate.getTime();
-            String backupFileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(currentDate);
+            String backupFileName = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
 
             List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<>();
 
@@ -57,8 +56,9 @@ public class BackupAction extends InternalAction {
                 String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."));
 
                 DataObject backupObject = newContext.addObject((ConcreteCustomClass) findClass("Backup"));
-                findProperty("date[Backup]").change(new java.sql.Date(currentTime), newContext, backupObject);
-                findProperty("time[Backup]").change(new java.sql.Time(currentTime), newContext, backupObject);
+                LocalDateTime currentDateTime = LocalDateTime.now();
+                findProperty("date[Backup]").change(getWriteDate(currentDateTime.toLocalDate()), newContext, backupObject);
+                findProperty("time[Backup]").change(getWriteTime(currentDateTime.toLocalTime()), newContext, backupObject);
                 findProperty("file[Backup]").change(backupFilePath, newContext, backupObject);
                 findProperty("name[Backup]").change(backupFileName + backupFileExtension, newContext, backupObject);
                 findProperty("fileLog[Backup]").change(backupFileLogPath, newContext, backupObject);

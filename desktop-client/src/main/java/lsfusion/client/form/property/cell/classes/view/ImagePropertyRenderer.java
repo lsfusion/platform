@@ -48,11 +48,11 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         super.paintLabelComponent(g);
 
         if (icon != null) {
-            paintComponent(getComponent(), g, icon);
+            paintComponent(getComponent(), g, icon, property);
         }
     }
     
-    public static void paintComponent(JComponent component, Graphics g, ImageIcon icon) {
+    public static void paintComponent(JComponent component, Graphics g, ImageIcon icon, ClientPropertyDraw property) {
         assert icon != null;
 
         int width = component.getWidth();
@@ -72,6 +72,16 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         int imageHeight = scaled.height;
 
         int dx = (width - imageWidth) / 2;
+        if (property != null && property.valueAlignment != null) {
+            switch (property.valueAlignment) {
+                case START: 
+                    dx = 0;
+                    break;
+                case END:
+                    dx = width - imageWidth;
+            }
+        }
+        
         int dy = (height - imageHeight) / 2;
 
         g.drawImage(img, dx, dy, imageWidth, imageHeight, component);

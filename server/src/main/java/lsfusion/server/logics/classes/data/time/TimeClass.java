@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.TimeConverter;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -13,6 +14,7 @@ import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,7 +22,10 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
+
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteTime;
 
 public class TimeClass extends DataClass<Time> {
     public final static TimeClass instance = new TimeClass();
@@ -91,6 +96,17 @@ public class TimeClass extends DataClass<Time> {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public Time parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        Time cellValue;
+        try {
+            cellValue = new Time(cell.getDateCellValue().getTime());
+        } catch (IllegalStateException e) {
+            return super.parseXLS(cell, formulaValue);
+        }
+        return readXLS(cellValue);
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getTimeSQL();
     }
@@ -102,6 +118,11 @@ public class TimeClass extends DataClass<Time> {
     @Override
     public ExtInt getCharLength() {
         return new ExtInt(25);
+    }
+
+    @Override
+    public FlexAlignment getValueAlignment() {
+        return FlexAlignment.END;
     }
 
     @Override
@@ -122,7 +143,7 @@ public class TimeClass extends DataClass<Time> {
     }
 
     public Time getDefaultValue() {
-        return new Time(System.currentTimeMillis());
+        return getWriteTime(LocalTime.now());
     }
 
     @Override

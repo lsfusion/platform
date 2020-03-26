@@ -4,10 +4,11 @@ import lsfusion.client.classes.ClientType;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 
 import java.awt.*;
 
-public interface CellTableInterface {
+public interface CellTableInterface extends EditPropertyHandler {
     ClientType getCurrentEditType();
     Object getCurrentEditValue();
 

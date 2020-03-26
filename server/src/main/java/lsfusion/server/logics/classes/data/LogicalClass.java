@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data;
 
 import com.hexiong.jdbf.JDBFException;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -119,6 +120,11 @@ public class LogicalClass extends DataClass<Boolean> {
     @Override
     public ExtInt getCharLength() {
         return new ExtInt(1);
+    }
+
+    @Override
+    public FlexAlignment getValueAlignment() {
+        return FlexAlignment.CENTER;
     }
 
     @Override

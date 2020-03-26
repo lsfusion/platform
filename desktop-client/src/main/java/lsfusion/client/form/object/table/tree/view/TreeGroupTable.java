@@ -22,11 +22,11 @@ import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
-import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.table.view.CellTableContextMenuHandler;
 import lsfusion.client.form.property.table.view.CellTableInterface;
+import lsfusion.client.form.property.table.view.InternalEditEvent;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
@@ -69,7 +69,7 @@ import static lsfusion.client.form.object.table.grid.view.GridTable.DEFAULT_PREF
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyEventActionSID;
 import static lsfusion.client.form.property.cell.EditBindingMap.isEditableAwareEditEvent;
 
-public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface, EditPropertyHandler {
+public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
 
     private final EditBindingMap editBindingMap = new EditBindingMap();
@@ -749,6 +749,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     public Object getCurrentEditValue() {
         return currentEditValue;
     }
+    
+    @Override
+    public Object getEditValue() {
+        return getValueAt(editRow, editCol);
+    }
 
     public boolean editCellAt(int row, int column, EventObject e){
         if (!form.commitCurrentEditing()) {
@@ -791,16 +796,20 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return false;
         }
 
-        editRow = row;
-        editCol = column;
-        editEvent = e;
-        commitingValue = false;
-
         //здесь немного запутанная схема...
         //executePropertyEventAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
         //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-        editPerformed = editDispatcher.executePropertyEventAction(property, columnKey, actionSID, getValueAt(row, column), editEvent);
+        editPerformed = edit(actionSID, property, columnKey, row, column, e);
         return editorComp != null;
+    }
+
+    public boolean edit(String actionSID, ClientPropertyDraw property, ClientGroupObjectValue columnKey, int row, int column, EventObject e) {
+        editRow = row;
+        editCol = column;
+        commitingValue = false;
+        editEvent = e;
+
+        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, editEvent);
     }
 
     public boolean requestValue(ClientType valueType, Object oldValue) {
@@ -808,6 +817,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         //если получится безусловно задержать фокус, то это ограничение можно будет убрать
         Preconditions.checkState(!commitingValue, "You can request value only once per edit action.");
 
+        // need this because we use getTableCellEditorComponent infrastructure and we need to pass currentEditValue there somehow
         currentEditType = valueType;
         currentEditValue = oldValue;
 
@@ -909,7 +919,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             if (property != null && columnKey != null) {
                 String keyPressedActionSID = EditBindingMap.getPropertyKeyPressActionSID(e, property);
                 if (keyPressedActionSID != null) {
-                    editDispatcher.executePropertyEventAction(property, columnKey, keyPressedActionSID, getValueAt(row, column), editEvent);
+                    edit(keyPressedActionSID, property, columnKey, row, column, new InternalEditEvent(this, keyPressedActionSID));
                 }
             }
         }

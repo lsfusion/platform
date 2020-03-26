@@ -190,6 +190,9 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
             result = result.getBase(inferType);
         return result;
     }
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return false;
+    }
     public ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         return ExClassSet.logical;
     }

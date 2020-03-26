@@ -1,6 +1,7 @@
 package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -81,6 +82,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return false;
     }
 
+    @Override
+    public FlexAlignment getValueAlignment() {
+        return FlexAlignment.START;
+    }
+
     protected static boolean isParseNullValue(String value) {
         return value.equals("");
     }
@@ -154,7 +160,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
             default:
                 cellValue = formulaValue.formatAsString();
         }
-        return parseNullableString(cellValue, false);
+        return parseNullableString(cellValue, true);
     }
 
     @Override

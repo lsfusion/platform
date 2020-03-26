@@ -2,16 +2,16 @@ package lsfusion.server.logics.form.stat.struct.export.hierarchy.xml;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.TextClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.ExportHierarchicalAction;
 import lsfusion.server.logics.form.stat.struct.hierarchy.xml.XMLNode;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -25,12 +25,13 @@ import java.io.PrintWriter;
 public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchicalAction<XMLNode, O> {
     
     public ExportXMLAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
+                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
                            FormIntegrationType staticType, LP exportFile, Integer selectTop, String charset, ValueClass root, ValueClass tag) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, selectTop, charset, root, tag);
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFile, selectTop, charset, root, tag);
     }
 
     protected XMLNode createRootNode(String root, String tag) {
-        String elementName = root != null ? root : form.getStaticForm().getIntegrationSID();
+        String elementName = root != null ? root : getForm().getIntegrationSID();
         Result<String> shortKey = new Result<>();
         Namespace namespace = XMLNode.addXMLNamespace(null, elementName, shortKey, false);
         return new XMLNode(new Element(shortKey.result, namespace), tag);

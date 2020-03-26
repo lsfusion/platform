@@ -49,6 +49,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.ApplyFilter;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.Correlation;
+import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
@@ -93,6 +94,7 @@ import lsfusion.server.physics.admin.authentication.security.controller.manager.
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.admin.monitor.StatusMessage;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
@@ -126,13 +128,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
@@ -140,7 +144,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     protected final static Logger logger = ServerLoggers.systemLogger;
     public final static Logger sqlLogger = ServerLoggers.sqlLogger;
     protected final static Logger startLogger = ServerLoggers.startLogger;
-    protected final static Logger lruLogger = ServerLoggers.lruLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
     public static final String systemScriptsPath = "/system/*.lsf";
@@ -292,8 +295,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @Override
     public void afterPropertiesSet() {
         Assert.notNull(initTask, "initTask must be specified");
-        
-        LRUUtil.initLRUTuner(lruLogger::info);
     }
 
     @Override
@@ -1162,13 +1163,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return result;
     }
 
-    private static ActionOrProperty checkJoinProperty(ActionOrProperty<?> property) {
-        if(property instanceof JoinProperty) {
-            JoinProperty joinProperty = (JoinProperty) property;
-            if(joinProperty.isIdentity()) {
-                return checkJoinProperty(joinProperty.implement.property);
-            }
-        }
+    private static <X extends PropertyInterface> ActionOrProperty checkJoinProperty(ActionOrProperty<X> property) {
+        if(property instanceof Property)
+            return ((Property<X>) property).getIdentityImplement(property.getIdentityInterfaces()).property;
         return property;
     }
     private static String findDependency(ActionOrProperty<?> property1, ActionOrProperty<?> property2, LinkType desiredType) {
@@ -1408,9 +1405,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> getApplyEvents(ApplyFilter increment) {
+    public ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> getApplyEvents(ApplyFilter filter) {
         // здесь нужно вернуть список stored или тех кто
-        ImOrderSet<ActionOrProperty> list = getPropertyListWithGraph(increment).first;
+        ImOrderSet<ActionOrProperty> list = getPropertyListWithGraph(filter).first;
         MOrderExclMap<ApplyGlobalEvent, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         for (ActionOrProperty property : list) {
             ApplyGlobalEvent applyEvent = property.getApplyEvent();
@@ -1420,10 +1417,40 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutableOrder();
     }
 
-    public ImOrderSet<ApplyGlobalEvent> getApplyEvents(DataSession session) {
-        return session.filterOrderEnv(getApplyEvents(session.applyFilter));
+    public static class Next {
+        public final ApplyGlobalEvent event;
+        public final SessionEnvEvent sessionEnv;
+        public final int index;
+        public final StatusMessage statusMessage;
+
+        public Next(ApplyGlobalEvent event, SessionEnvEvent sessionEnv, int index, StatusMessage statusMessage) {
+            this.event = event;
+            this.sessionEnv = sessionEnv;
+            this.index = index;
+            this.statusMessage = statusMessage;
+        }
     }
-    
+
+    private Next calcNextApplyEvent(int i, StructChanges changes, ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents) {
+        for(int size=applyEvents.size();i<size;i++) {
+            ApplyGlobalEvent event = applyEvents.getKey(i);
+            if(event.hasChanges(changes))
+                return new Next(event, applyEvents.getValue(i), i, new StatusMessage("event", event, i, size));
+        }
+        return null;
+    }
+
+    @IdentityLazy
+    private Next getCachedNextApplyEvent(ApplyFilter filter, int i, StructChanges changes) {
+        return calcNextApplyEvent(i, changes, getApplyEvents(filter));
+    }
+
+    public Next getNextApplyEvent(ApplyFilter filter, int i, StructChanges changes, ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents) {
+        if(changes.size() < (double) applyEvents.size() * Settings.get().getCacheNextEventActionRatio())
+            return getCachedNextApplyEvent(filter, i, changes);
+        return calcNextApplyEvent(i, changes, applyEvents);
+    }
+
     private static ImSet<Property> getSingleApplyDepends(Property<?> fill, Result<Boolean> canBeOutOfDepends, ApplySingleEvent event) {
         ImSet<Property> depends = fill.getDepends(false);// вычисляемые события отдельно отрабатываются (собственно обрабатываются как обычные события)
 
@@ -1915,11 +1942,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             try (DataSession session = createSystemTaskSession()) {
                 session.setNoCancelInTransaction(true);
 
-                Date currentDate = (Date) timeLM.currentDate.read(session);
-                Date newDate = DateConverter.getCurrentDate();
-                if (currentDate == null || currentDate.getDate() != newDate.getDate() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
+                LocalDate currentDate = getLocalDate(timeLM.currentDate.read(session));
+                LocalDate newDate = LocalDate.now();
+                if (currentDate == null || !currentDate.equals(newDate)) {
                     logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));
-                    timeLM.currentDate.change(newDate, session);
+                    timeLM.currentDate.change(getWriteDate(newDate), session);
                     session.applyException(this, stack);
                     logger.info("ChangeCurrentDate finished");
                 }
@@ -1933,9 +1960,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return scheduler.createSystemTask(stack -> {
             try (DataSession session = createSystemTaskSession()) {
                 session.setNoCancelInTransaction(true);
-                Timestamp newDataDateTime = new Timestamp(System.currentTimeMillis());
+                LocalDateTime newDataDateTime = LocalDateTime.now();
                 logger.info("Change currentDateTimeSnapshot to " + newDataDateTime);
-                timeLM.currentDateTimeSnapshot.change(newDataDateTime, session);
+                timeLM.currentDateTimeSnapshot.change(getWriteDateTime(newDataDateTime), session);
                 session.applyException(this, stack);
             } catch (Exception e) {
                 logger.error(String.format("ChangeCurrentDate error: %s", e));

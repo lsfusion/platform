@@ -35,6 +35,11 @@ public class CanonicalNameProperty extends FormulaProperty<CanonicalNameProperty
     }
 
     @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return false;
+    }
+
+    @Override
     protected ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
         return ExClassSet.toExValue(valueClass);
     }

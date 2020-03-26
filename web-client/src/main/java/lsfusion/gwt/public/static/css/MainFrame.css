@@ -721,6 +721,9 @@ table.pvtTable tbody tr td {
     padding: 2px 0 2px 0;
 }
 
+/*.paxis.pvtHorizList: there is a bug with incorrect width when drag'n'drop middle of 3 elements.
+reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width is correct */
+
 .paxis {
     border: none;
     padding: 0;

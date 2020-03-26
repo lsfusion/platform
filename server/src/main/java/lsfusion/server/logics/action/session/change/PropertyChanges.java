@@ -33,8 +33,12 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
 
     private final static SFunctionSet<ModifyChange> emptyChanges = element -> element==null || (!element.isFinal && element.isEmpty());
     public PropertyChanges replace(ImMap<Property, ModifyChange> replace) {
-        ImSet<Property> keys = replace.filterFnValues(emptyChanges).keys();
-        return new PropertyChanges(changes.remove(keys).merge(replace.remove(keys), MapFact.overridePrevRef())); // override с оставлением ссылки
+        ImSet<Property> remove = replace.filterFnValues(emptyChanges).keys();
+        ImMap<Property, ModifyChange> add = replace.remove(remove);
+        PropertyChanges propertyChanges = new PropertyChanges(changes.remove(remove).merge(add, MapFact.overridePrevRef()));
+        if(propertyChanges.struct != null) // optimization
+            struct = propertyChanges.struct.replace(remove, add.mapValues(StructChanges.getType));;
+        return propertyChanges; // override с оставлением ссылки
     }
 
     @IdentityLazy

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property;
 
+import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
@@ -116,6 +117,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int valueHeight = -1;
 
     public boolean panelCaptionAbove;
+    
+    public boolean columnKeysVertical;
+    
+    public GFlexAlignment valueAlignment;
     
     public boolean hide;
 
@@ -319,6 +324,21 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GFlexAlignment getAlignment() {
         return alignment;
+    }
+    
+    public Style.TextAlign getTextAlignStyle() {
+        if (valueAlignment != null) {
+            switch (valueAlignment) {
+                case START:
+                    return Style.TextAlign.LEFT;
+                case CENTER:
+                case STRETCH:
+                    return Style.TextAlign.CENTER;
+                case END:
+                    return Style.TextAlign.RIGHT;
+            }
+        }
+        return null;
     }
 
     public int getValueWidth(GFont parentFont) {

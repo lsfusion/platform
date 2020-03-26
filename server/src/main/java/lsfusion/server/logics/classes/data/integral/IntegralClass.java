@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.integral;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
@@ -121,7 +122,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
 
     @Override
-    public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) {
+    public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException {
         return readDBF(dbfRecord.getNumber(fieldName));
     }
 
@@ -158,5 +159,10 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     @Override
     public boolean isFlex() {
         return true;
+    }
+
+    @Override
+    public FlexAlignment getValueAlignment() {
+        return FlexAlignment.END;
     }
 }

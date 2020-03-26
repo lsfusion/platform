@@ -47,11 +47,11 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
 
     @Override
     public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
-        return new IntegerPropertyEditor(value, getEditFormat(property), property.design, Integer.class);
+        return new IntegerPropertyEditor(value, getEditFormat(property), property, Integer.class);
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new IntegerPropertyEditor(value, maxValue(property.maxValue), getEditFormat(property), property.design, Integer.class);
+        return new IntegerPropertyEditor(value, maxValue(property.maxValue), getEditFormat(property), property, Integer.class);
     }
 
     private Integer maxValue(Long maxValue) {

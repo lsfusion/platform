@@ -2,6 +2,7 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.NumberGridCellRenderer;
@@ -36,10 +37,7 @@ public abstract class GIntegralType extends GFormatType<NumberFormat> {
                 s = s.replace(" ", UNBREAKABLE_SPACE);
             }
             String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
-            if (s.contains(",") && !groupingSeparator.equals(",") && decimalSeparator.equals("."))
-                s = s.replace(",", ".");
-            else if (s.contains(".") && !groupingSeparator.equals(".") && decimalSeparator.equals(","))
-                s = s.replace(".", ",");
+            s = GwtClientUtils.replaceSeparators(s, decimalSeparator, groupingSeparator);
             return getFormat(pattern).parse(s);
         } catch (NumberFormatException e) {
             throw new ParseException("string " + s + "can not be converted to double", 0);

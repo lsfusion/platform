@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -65,7 +66,15 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public boolean isIdentity() {
         return isIdentity(this.interfaces, implement);
     }
-    
+
+    public <X extends PropertyInterface> PropertyMapImplement<?, X> getIdentityImplement(ImRevMap<Interface, X> mapping) {
+        if(isIdentity()) {
+            ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
+            return implement.property.getIdentityImplement(joinMapping.join(mapping));
+        }
+        return super.getIdentityImplement(mapping);
+    }
+
     public JoinProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement) {
         this(caption, interfaces, false, implement);
     }
@@ -361,6 +370,14 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(implementParams == null)
             return Inferred.FALSE();
         return op(implement.mapping, implementParams, implementNotNull, inferType); // возможно здесь надо было бы отдельно для прямой ветки, а отдельно для not*, но как их слить пока неясно
+    }
+
+    @Override
+    public boolean needInferredForValueClass(InferType inferType) {
+        if(implement.property.needInferredForValueClass(inferType))
+            return false;
+        // in theory check for explicitClasses could be done, but it's not that important
+        return opNeedInferForValueClass(implement.mapping.values(), inferType);
     }
 
     public ValueClass objectPropertyClass; // временный хак

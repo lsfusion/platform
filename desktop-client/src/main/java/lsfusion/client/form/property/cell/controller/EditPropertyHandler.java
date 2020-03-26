@@ -8,4 +8,5 @@ public interface EditPropertyHandler {
     ClientFormController getForm();
     
     void updateEditValue(Object value);
+    Object getEditValue();
 }

@@ -30,14 +30,16 @@ import java.util.function.Function;
 public abstract class ImportPlainAction<I extends ImportPlainIterator> extends ImportAction {
 
     protected final ImRevMap<GroupObjectEntity, PropertyInterface> fileInterfaces;
+    protected final PropertyInterface whereInterface;
 
-    public abstract ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException;
-
-    public ImportPlainAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset) {
+    public ImportPlainAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere) {
         super(paramsCount, formEntity, charset);
 
         this.fileInterfaces = groupFiles.mapSet(getOrderInterfaces());
+        whereInterface = hasWhere ? getOrderInterfaces().get(groupFiles.size()) : null;
     }
+
+    public abstract ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, String wheres, ExecutionContext<PropertyInterface> context) throws IOException;
 
     protected FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, SQLException, SQLHandledException {
         Map<GroupObjectEntity, RawFileData> files = getFiles(context);
@@ -84,7 +86,8 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
 
             MOrderSet<ImMap<ObjectEntity, Object>> mAllRows = SetFact.mOrderSet(isIndex);
 
-            ImportPlainIterator iterator = getIterator(file, fieldTypes, context);
+            String wheres = whereInterface != null ? (String)context.getKeyObject(whereInterface) : null;
+            ImportPlainIterator iterator = getIterator(file, fieldTypes, wheres, context);
             try {
                 ImMap<String, Object> row;
                 while ((row = iterator.next()) != null) {

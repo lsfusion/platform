@@ -4,7 +4,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>base</artifactId>
-        <version>4.beta.0-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 

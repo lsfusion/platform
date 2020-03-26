@@ -430,6 +430,14 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         
         return op(getCases().mapListValues((Function<CalcCase<Interface>, Inferred<Interface>>) aCase -> aCase.where.mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType).and(aCase.implement.mapInferInterfaceClasses(commonValue, inferType), inferType)), true, inferType);
     }
+
+    @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        if(isAbstract())
+            return false;
+        return opNeedInferForValueClass(getProps(), inferType);
+    }
+
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
         if(isAbstract())
             return classValueWhere.getCommonExClasses(SetFact.singleton("value")).singleValue();

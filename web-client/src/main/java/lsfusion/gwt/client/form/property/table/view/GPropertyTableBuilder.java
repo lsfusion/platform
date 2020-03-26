@@ -156,8 +156,8 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
         if (updateCellHeight) {
-            td.getStyle().setHeight(cellHeight, Style.Unit.PX);
-            td.getStyle().setLineHeight(cellHeight, Style.Unit.PX);
+            renderTD(cellHeight, td);
+
             Element divElement = td.getFirstChildElement();
             if (divElement != null) {
                 divElement.getStyle().setHeight(cellHeight, Style.Unit.PX);
@@ -177,6 +177,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         } else {
             td.getStyle().clearColor();
         }
+    }
+
+    public static void renderTD(int height, Element td) {
+        td.getStyle().setHeight(height, Style.Unit.PX);
+        td.getStyle().setLineHeight(height, Style.Unit.PX);
     }
 
     public abstract String getBackground(T rowValue, int row, int column);

@@ -46,7 +46,9 @@
 
         <form-login login-page="/login" login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
         <!-- invalidate-session="false" no invalidating session to give user opportunity to relogin, when another tab is opened, but it's not that secure because user can login with another access, and the tab with different access will be available -->
-        <logout logout-url="/logout" success-handler-ref="successLogoutHandler"/>
+        <!-- UPD: left invalidate-session="false" to be able to pass attributes between sessions (SPRING_SECURITY_LAST_EXCEPTION). 
+         We invalidate session manually in LSFSimpleUrlLogoutSuccessHandler instead.-->
+        <logout logout-url="/logout" success-handler-ref="successLogoutHandler" invalidate-session="false"/>
         
         <csrf disabled="true"/>
 

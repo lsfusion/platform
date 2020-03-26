@@ -6,6 +6,7 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.exception.RemoteInternalException;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -152,7 +153,7 @@ public final class Log {
         JPanel messagePanel = new JPanel();
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
         messagePanel.add(labelPanel);
-        if (data != null) {
+        if (data != null && !titles.isEmpty()) {
             messagePanel.add(new JScrollPane(createDataTable(titles, data)));
         }
 
@@ -276,16 +277,6 @@ public final class Log {
     }
 
     private static String toHtml(String message) {
-        StringBuilder htmlMessage = new StringBuilder("<html><font size=+1>");
-        for (int i = 0; i < message.length(); i++) {
-            char ch = message.charAt(i);
-            if (ch == '\n') {
-                htmlMessage.append("<br>");
-            } else {
-                htmlMessage.append(ch);
-            }
-        }
-        htmlMessage.append("</font></html>");
-        return htmlMessage.toString();
+        return "<html><font size=+1>" + StringEscapeUtils.escapeHtml4(message).replaceAll("(\r\n|\n\r|\r|\n)", "<br />") + "</font></html>";
     }
 }

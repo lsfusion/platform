@@ -633,16 +633,20 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
-        try { // временно для обратной совместимости
-            return requestUser(dataClass, () -> ThreadLocalContext.inputUserData(dataClass, oldValue));
+        return requestUserData(dataClass, oldValue, true);
+    }
+
+    public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue, boolean hasOldValue) {
+        try {
+            return requestUser(dataClass, () -> ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue));
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public ObjectValue inputUserData(DataClass dataClass, Object oldValue) {
+    public ObjectValue inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue) {
         assertNotUserInteractionInTransaction();
-        return ThreadLocalContext.inputUserData(dataClass, oldValue);
+        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue);
     }
 
     public ObjectValue requestUserClass(final CustomClass baseClass, final CustomClass defaultValue, final boolean concrete) throws SQLException, SQLHandledException {

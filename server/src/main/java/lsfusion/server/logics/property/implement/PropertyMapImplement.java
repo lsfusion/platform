@@ -186,6 +186,10 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getChangeProps();
     }
 
+    public PropertyMapImplement<?, T> mapIdentityImplement() {
+        return property.getIdentityImplement(mapping);
+    }
+
     public boolean mapIsOrDependsPreread() {
         return property.isOrDependsPreread();
     }
@@ -213,6 +217,9 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     public Inferred<T> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         return property.inferInterfaceClasses(commonValue, inferType).map(mapping);
+    }
+    public boolean mapNeedInferredForValueClass(InferType inferType) {
+        return property.needInferredForValueClass(inferType);
     }
     public ExClassSet mapInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         return property.inferValueClass(mapping.join(inferred), inferType);

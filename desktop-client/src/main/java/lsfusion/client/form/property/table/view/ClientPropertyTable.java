@@ -13,7 +13,6 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
-import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
@@ -36,7 +35,7 @@ import java.util.EventObject;
 
 import static lsfusion.client.form.property.cell.EditBindingMap.*;
 
-public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface, EditPropertyHandler {
+public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
     protected final EditBindingMap editBindingMap = new EditBindingMap();
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
@@ -104,6 +103,11 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     public Object getCurrentEditValue() {
         return currentEditValue;
     }
+    
+    @Override
+    public Object getEditValue() {
+        return getValueAt(editRow, editCol);
+    }
 
     public boolean editCellAt(int row, int column, EventObject e) {
         if (!form.commitCurrentEditing()) {
@@ -129,16 +133,20 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
         quickLog("formTable.editCellAt: " + e);
 
-        editRow = row;
-        editCol = column;
-        editEvent = e;
-        commitingValue = false;
-
         //здесь немного запутанная схема...
         //executePropertyEventAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
         //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-        editPerformed = editDispatcher.executePropertyEventAction(property, columnKey, actionSID, getValueAt(row, column), editEvent);
+        editPerformed = edit(property, columnKey, actionSID, row, column, e);
         return editorComp != null;
+    }
+
+    public boolean edit(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, int row, int column, EventObject e) {
+        editRow = row;
+        editCol = column;
+        commitingValue = false;
+        editEvent = e;
+
+        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, editEvent);
     }
 
     public abstract int getCurrentRow();
@@ -150,6 +158,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         //если получится безусловно задержать фокус, то это ограничение можно будет убрать
         Preconditions.checkState(!commitingValue, "You can request value only once per edit action.");
 
+        // need this because we use getTableCellEditorComponent infrastructure and we need to pass currentEditValue there somehow
         currentEditType = valueType;
         currentEditValue = oldValue;
 
@@ -297,7 +306,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
             String keyPressedActionSID = getPropertyKeyPressActionSID(e, property);
             if (keyPressedActionSID != null) {
-                editDispatcher.executePropertyEventAction(property, columnKey, keyPressedActionSID, getValueAt(row, column), editEvent);
+                edit(property, columnKey, keyPressedActionSID, row, column, new InternalEditEvent(this, keyPressedActionSID));
             }
         }
         

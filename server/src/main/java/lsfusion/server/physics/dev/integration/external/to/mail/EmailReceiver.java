@@ -6,6 +6,7 @@ import com.github.junrar.exception.RarException;
 import com.github.junrar.impl.FileVolumeManager;
 import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
+import com.sun.mail.imap.IMAPBodyPart;
 import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.BASE64DecoderStream;
 import com.sun.mail.util.FolderClosedIOException;
@@ -40,6 +41,7 @@ import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,6 +49,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
 
 public class EmailReceiver {
     EmailLogicsModule LM;
@@ -103,7 +106,7 @@ public class EmailReceiver {
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
             for(ImMap<Object, Object> entry : emailResult.values()) {
-                skipEmails.add(getEmailId((Timestamp) entry.get("dateTimeSentEmail"), (String) entry.get("fromAddressEmail"),
+                skipEmails.add(getEmailId(localDateTimeToSqlTimestamp(getLocalDateTime(entry.get("dateTimeSentEmail"))), (String) entry.get("fromAddressEmail"),
                         (String) entry.get("subjectEmail"), null));
             }
 
@@ -230,12 +233,10 @@ public class EmailReceiver {
 
             emailFolder.open(Folder.READ_WRITE);
 
-            Timestamp dateTimeReceivedEmail = new Timestamp(Calendar.getInstance().getTime().getTime());
+            LocalDateTime dateTimeReceivedEmail = LocalDateTime.now();
             Timestamp minDateTime = null;
             if (lastDaysAccount != null) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.DATE, -lastDaysAccount);
-                minDateTime = new Timestamp(calendar.getTime().getTime());
+                minDateTime = localDateTimeToSqlTimestamp(LocalDateTime.now().minusDays(lastDaysAccount));
             }
 
             int count = 0;
@@ -260,7 +261,7 @@ public class EmailReceiver {
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
                             }
                             FileData emlFileEmail = new FileData(getEMLByteArray(message), "eml");
-                            dataEmails.add(Arrays.asList(idEmail, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
+                            dataEmails.add(Arrays.asList(idEmail, getWriteDateTime(dateTimeSentEmail), getWriteDateTime(dateTimeReceivedEmail), fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
                             int counter = 1;
                             if (messageEmail.attachments != null) {
                                 for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
@@ -379,7 +380,10 @@ public class EmailReceiver {
                         f.deleteOnExit();
                 }
             } else {
-                Object content = bp.getContent();
+                Object content = bp instanceof IMAPBodyPart ? getIMAPBodyPartContent((IMAPBodyPart) bp) : null;
+                if(content == null) {
+                    content = bp.getContent();
+                }
                 if (content instanceof BASE64DecoderStream) {
                     RawFileData byteArray = new RawFileData((BASE64DecoderStream) content);
                     String fileName = decodeFileName(bp.getFileName());
@@ -391,6 +395,15 @@ public class EmailReceiver {
             }
         }
         return new MultipartBody(body, attachments);
+    }
+
+    private Object getIMAPBodyPartContent(IMAPBodyPart bp) throws MessagingException, IOException {
+        Object content = null;
+        String encoding = bp.getEncoding();
+        if(encoding != null && encoding.equals("8bit")) {
+            content = MimeUtility.decode(bp.getInputStream(), "8bit");
+        }
+        return content;
     }
 
     private MultipartBody extractWinMail(File winMailFile) throws IOException {

@@ -39,7 +39,7 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +47,7 @@ import java.util.Map;
 
 import static lsfusion.base.BaseUtils.trimToEmpty;
 import static lsfusion.base.BaseUtils.trimToNull;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getLocalDateTime;
 
 public abstract class ProcessDumpAction extends InternalAction {
 
@@ -121,7 +122,7 @@ public abstract class ProcessDumpAction extends InternalAction {
         }
     }
 
-    private SQLProcess getSQLProcess(String query, String addressUser, Timestamp dateTime, Boolean isActive,
+    private SQLProcess getSQLProcess(String query, String addressUser, LocalDateTime dateTime, Boolean isActive,
                                        String status, Map<Integer, SQLThreadInfo> sessionThreadMap,
                                        Integer sqlId, SQLThreadInfo sessionThread, Map<Integer, List<Object>> lockingMap) {
 
@@ -145,7 +146,7 @@ public abstract class ProcessDumpAction extends InternalAction {
         String lockOwnerId = lockingSessionThread == null ? null : getMonitorId(lockingSessionThread.javaThread, lockingSqlId);
         String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
 
-        Timestamp dateTimeCall = javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId());
+        LocalDateTime dateTimeCall = javaThread == null ? null : getLocalDateTime(RemoteLoggerAspect.getDateTimeCall(javaThread.getId()));
         String threadName = sessionThread == null || sessionThread.javaThreadDebugInfo == null ? null : sessionThread.javaThreadDebugInfo.threadName;
         String threadStackTrace = sessionThread == null || sessionThread.javaThreadDebugInfo == null ? null : sessionThread.javaThreadDebugInfo.threadStackTrace;
 
@@ -208,7 +209,7 @@ public abstract class ProcessDumpAction extends InternalAction {
             if (!query.equals(originalQuery) && (!onlyActive || !query.isEmpty())) {
                 Integer processId = (Integer) entry.get("session_id");
                 String address = trimToNull((String) entry.get("client_net_address"));
-                Timestamp dateTime = (Timestamp) entry.get("start_time");
+                LocalDateTime dateTime = getLocalDateTime(entry.get("start_time"));
 
                 SQLThreadInfo sessionThread = sessionThreadMap.get(processId);
                 Thread javaThread = sessionThread == null ? null : sessionThread.javaThread;
@@ -227,8 +228,8 @@ public abstract class ProcessDumpAction extends InternalAction {
                 SQLProcess prevEntry = resultMap.put(resultId, newEntry);
 
                 if (prevEntry != null) {
-                    Timestamp prevDateTime = prevEntry.dateTime;
-                    if (prevDateTime != null && (dateTime == null || prevDateTime.getTime() > dateTime.getTime())) {
+                    LocalDateTime prevDateTime = prevEntry.dateTime;
+                    if (prevDateTime != null && (dateTime == null || prevDateTime.compareTo(dateTime) > 0)) {
                         resultMap.put("s" + prevEntry.sqlId, prevEntry);
                     } else {
                         resultMap.put(resultId, prevEntry);
@@ -301,7 +302,7 @@ public abstract class ProcessDumpAction extends InternalAction {
             if (!query.equals(originalQuery) && (!onlyActive || active)) {
                 Integer sqlId = (Integer) entry.get("pid");
                 String address = trimToNull((String) entry.get("client_addr"));
-                Timestamp dateTime = (Timestamp) entry.get("query_start");
+                LocalDateTime dateTime = getLocalDateTime(entry.get("query_start"));
 
                 SQLThreadInfo sessionThread = sessionThreadMap.get(sqlId);
                 Thread javaThread = sessionThread == null ? null : sessionThread.javaThread;
@@ -320,8 +321,8 @@ public abstract class ProcessDumpAction extends InternalAction {
                 SQLProcess prevEntry = resultMap.put(resultId, newEntry);
 
                 if (prevEntry != null) {
-                    Timestamp prevDateTime = prevEntry.dateTime;
-                    if (prevDateTime != null && (dateTime == null || prevDateTime.getTime() > dateTime.getTime())) {
+                    LocalDateTime prevDateTime = prevEntry.dateTime;
+                    if (prevDateTime != null && (dateTime == null || prevDateTime.compareTo(dateTime) > 0)) {
                         resultMap.put("s" + prevEntry.sqlId, prevEntry);
                     } else {
                         resultMap.put(resultId, prevEntry);

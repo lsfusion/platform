@@ -18,9 +18,10 @@ import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import lsfusion.server.logics.form.stat.struct.hierarchy.ParseNode;
+import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.*;
@@ -47,12 +48,14 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
                                     FormSelector<O> form,
                                     ImList<O> objectsToSet,
                                     ImList<Boolean> nulls,
+                                    ImOrderSet<PropertyInterface> orderContextInterfaces,
+                                    ImList<ContextFilterSelector<?, PropertyInterface, O>> contextFilters,
                                     FormIntegrationType staticType,
                                     LP exportFile,
                                     Integer selectTop,
                                     String charset,
                                     ValueClass root, ValueClass tag) {
-        super(caption, form, objectsToSet, nulls, staticType, selectTop, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(root, tag));
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(root, tag));
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
         if (tag != null)

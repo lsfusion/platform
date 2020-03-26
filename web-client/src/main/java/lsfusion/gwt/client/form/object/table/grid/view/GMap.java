@@ -16,8 +16,7 @@ import org.vectomatic.dom.svg.OMSVGFilterElement;
 import org.vectomatic.dom.svg.OMSVGSVGElement;
 import org.vectomatic.dom.svg.utils.OMSVGParser;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class GMap extends GSimpleStateTableView implements RequiresResize {
 
@@ -25,9 +24,59 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         super(form, grid);
     }
 
+    private static class GroupMarker {
+
+        public final String color;
+        public final Object line;
+        public final String icon;
+        public final Double latitude;
+        public final Double longitude;
+
+        private final boolean groupEquals;
+
+        public final GGroupObjectValue key;
+
+        public GroupMarker(JavaScriptObject object, GGroupObjectValue key) {
+            color = getMarkerColor(object);
+            line = getLine(object);
+            icon = getIcon(object);
+            latitude = getLatitude(object);
+            longitude = getLongitude(object);
+
+            Boolean ge = getGroupEquals(object);
+            this.groupEquals = ge != null && ge;
+
+            this.key = key;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            GroupMarker that = (GroupMarker) o;
+
+            if(groupEquals && that.groupEquals)
+                return Objects.equals(color, that.color) &&
+                    Objects.equals(line, that.line) &&
+                    Objects.equals(icon, that.icon) &&
+                    Objects.equals(latitude, that.latitude) &&
+                    Objects.equals(longitude, that.longitude);
+
+            return Objects.equals(key, that.key);
+        }
+
+        @Override
+        public int hashCode() {
+            if(groupEquals)
+                return Objects.hash(color, line, icon, latitude, longitude);
+
+            return key.hashCode();
+        }
+    }
+
     private JavaScriptObject map;
     private JavaScriptObject markerClusters;
-    private Map<GGroupObjectValue, JavaScriptObject> markers = new HashMap<>();
+    private Map<GroupMarker, JavaScriptObject> markers = new HashMap<>();
+    private ArrayList<JavaScriptObject> lines = new ArrayList<>();
     @Override
     protected void render(Element renderElement, com.google.gwt.dom.client.Element recordElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
@@ -36,24 +85,45 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             renderElement.getStyle().setProperty("zIndex", "0"); // need this because leaflet uses z-indexes and therefore dialogs for example are shown below layers
         }
 
-        Map<GGroupObjectValue, JavaScriptObject> oldMarkers = new HashMap<>(markers);
+        Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
+
+        Set<GroupMarker> groupMarkerSet = new HashSet<>();
+        List<GroupMarker> groupMarkers = new ArrayList<>();
         for(int i=0,size=listObjects.length();i<size;i++) {
             JavaScriptObject object = listObjects.get(i);
-            GGroupObjectValue key = getKey(object);
+            GroupMarker groupMarker = new GroupMarker(object, getKey(object));
 
-            JavaScriptObject marker = oldMarkers.remove(key);
+            if(groupMarkerSet.add(groupMarker))
+                groupMarkers.add(groupMarker);
+        }
+
+        Map<GroupMarker, JavaScriptObject> oldMarkers = new HashMap<>(markers);
+        for(int i=0,size=groupMarkers.size();i<size;i++) {
+            GroupMarker groupMarker = groupMarkers.get(i);
+
+            JavaScriptObject marker = oldMarkers.remove(groupMarker);
             if(marker == null) {
-                marker = createMarker(map, recordElement, fromObject(key), markerClusters);
-                markers.put(key, marker);
+                marker = createMarker(map, recordElement, fromObject(groupMarker.key), markerClusters);
+                markers.put(groupMarker, marker);
             }
 
-            String filterStyle = createFilter(getMarkerColor(object));
-            updateMarker(map, marker, object, filterStyle);
+            String filterStyle = createFilter(groupMarker.color);
+            updateMarker(map, marker, groupMarker.latitude, groupMarker.longitude, groupMarker.icon, groupMarker.color, filterStyle);
+
+            if(groupMarker.line != null)
+                routes.computeIfAbsent(groupMarker.line, o -> JavaScriptObject.createArray().cast()).push(marker);
         }
-        for(Map.Entry<GGroupObjectValue, JavaScriptObject> oldMarker : oldMarkers.entrySet()) {
+        for(Map.Entry<GroupMarker, JavaScriptObject> oldMarker : oldMarkers.entrySet()) {
             removeMarker(oldMarker.getValue(), markerClusters);
             markers.remove(oldMarker.getKey());
         }
+
+        for(JavaScriptObject line : lines)
+            removeLine(map, line);
+        lines.clear();
+        for(JsArray<JavaScriptObject> route : routes.values())
+            if(route.length() > 1)
+                lines.add(createLine(map, route));
         
         fitBounds(map, GwtSharedUtils.toArray(markers.values()));
     }
@@ -142,8 +212,50 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         map._container.appendChild(svg)
     }-*/;
 
-    protected native String getMarkerColor(JavaScriptObject element)/*-{
+    protected native static String getMarkerColor(JavaScriptObject element)/*-{
         return element.color;
+    }-*/;
+
+    protected native static Object getLine(JavaScriptObject element)/*-{
+        return element.line;
+    }-*/;
+
+    protected native static Double getLatitude(JavaScriptObject element)/*-{
+        return element.latitude;
+    }-*/;
+
+    protected native static Double getLongitude(JavaScriptObject element)/*-{
+        return element.longitude;
+    }-*/;
+
+    protected static native String getIcon(JavaScriptObject element)/*-{
+        return element.icon;
+    }-*/;
+
+    protected static native Boolean getGroupEquals(JavaScriptObject element)/*-{
+        return element.groupEquals;
+    }-*/;
+
+    protected native JavaScriptObject createLine(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
+        var L = $wnd.L;
+
+        var points = [];
+        markers.forEach(function (marker) {
+            var latlng = marker.getLatLng();
+            points.push([latlng.lat, latlng.lng]);
+        });
+        var line = L.polyline(points).addTo(map);
+        var lineArrow = L.polylineDecorator(line, {
+            patterns: [
+                { offset: '100%', repeat: 0, symbol: L.Symbol.arrowHead({pathOptions: {stroke: true}}) }
+            ]
+        }).addTo(map);
+        return {line : line, lineArrow : lineArrow};
+    }-*/;
+
+    protected native void removeLine(JavaScriptObject map, JavaScriptObject line)/*-{
+        map.removeLayer(line.line);
+        map.removeLayer(line.lineArrow);
     }-*/;
 
     protected String createFilter(String colorStr) {
@@ -184,16 +296,16 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         return svgStyle;
     }
     
-    protected native void updateMarker(JavaScriptObject map, JavaScriptObject marker, JavaScriptObject element, String filterStyle)/*-{
+    protected native void updateMarker(JavaScriptObject map, JavaScriptObject marker, Double latitude, Double longitude, String icon, String color, String filterStyle)/*-{
         var L = $wnd.L;
 
-        marker.setLatLng([element.latitude != null ? element.latitude : 0, element.longitude != null ? element.longitude : 0]);
-        var iconUrl = element.icon != null ? element.icon : L.Icon.Default.prototype._getIconUrl('icon');
+        marker.setLatLng([latitude != null ? latitude : 0, longitude != null ? longitude : 0]);
 
+        var iconUrl = icon != null ? icon : L.Icon.Default.prototype._getIconUrl('icon');
         var myIcon = L.divIcon({html: "<img src=" + iconUrl + " alt=\"\" tabindex=\"0\">", className: filterStyle ? filterStyle : ''});
-        
         marker.setIcon(myIcon);
-        marker.color = element.color;
+
+        marker.color = color;
     }-*/;
 
     protected native void fitBounds(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{

@@ -322,16 +322,18 @@ public class SetFact {
                 return false;
             }
 
+            public void addAll(ImOrderSet<? extends K> set) {
+                mExclSet.exclAddAll(set);
+            }
+
+            @Override
             public int size() {
                 return mExclSet.size();
             }
 
+            @Override
             public K get(int i) {
                 return mExclSet.get(i);
-            }
-
-            public void addAll(ImOrderSet<? extends K> set) {
-                mExclSet.exclAddAll(set);
             }
 
             @Override

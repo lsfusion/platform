@@ -34,6 +34,11 @@ public abstract class CurrentEnvironmentProperty extends NoIncrementProperty<Pro
     }
 
     @Override
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return false;
+    }
+
+    @Override
     protected ExClassSet calcInferValueClass(ImMap<PropertyInterface, ExClassSet> inferred, InferType inferType) {
         return ExClassSet.toEx(paramClass.toResolve());
     }

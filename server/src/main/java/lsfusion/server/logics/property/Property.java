@@ -1456,30 +1456,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     public Expr changeExpr;
 
-    public <D extends PropertyInterface> void setEventChange(PropertyMapImplement<D, T> valueImplement, ImList<PropertyMapImplement<?, T>> whereImplements, ImCol<PropertyMapImplement<?, T>> onChangeImplements) {
-
-        ImCol<PropertyMapImplement<?, T>> onChangeWhereImplements = onChangeImplements.mapColValues(value -> value.mapChanged(IncrementType.SETCHANGED, ChangeEvent.scope));
-
-        PropertyMapImplement<?, T> where;
-        if(onChangeWhereImplements.size() > 0) {
-            if(onChangeWhereImplements.size()==1)
-                where = onChangeWhereImplements.single();
-            else
-                where = PropertyFact.createUnion(interfaces, onChangeWhereImplements.toList());
-            if(whereImplements.size()>0)
-                where = PropertyFact.createAnd(interfaces, where, whereImplements.getCol());
-        } else { // по сути новая ветка, assert что whereImplements > 0
-            where = whereImplements.get(0);
-            if(whereImplements.size() > 1)
-                where = PropertyFact.createAnd(interfaces, where, whereImplements.subList(1, whereImplements.size()).getCol());
-        }
-        setEventChange(null, false, valueImplement, where);
-    }
-
-    public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
-        if(action && !Settings.get().isDisableWhenCalcDo()) {
+    public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, Event actionEvent, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
+        if(actionEvent != null) {
             ActionMapImplement<?, T> setAction = PropertyFact.createSetAction(interfaces, getImplement(), valueImplement);
-            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.EMPTYORDER(), false, Event.SESSION, null, true, false, null);
+            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.EMPTYORDER(), false, actionEvent, SetFact.EMPTY(), false, false, null);
             return;
         }
 
@@ -1537,6 +1517,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public <V extends PropertyInterface> PropertyMapImplement<T, V> getImplement(ImOrderSet<V> list) {
         return new PropertyMapImplement<>(this, getMapInterfaces(list));
+    }
+
+    public <X extends PropertyInterface> PropertyMapImplement<?, X> getIdentityImplement(ImRevMap<T, X> mapping) {
+        return new PropertyMapImplement<>(this, mapping);
     }
 
     // важно для подсветки
@@ -1641,7 +1625,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(eventActionSID.equals(ServerResponse.CHANGE_WYS)) // like GROUP_CHANGE will be proceeded in PropertyDrawEntity
             return null;
 
-        BaseLogicsModule lm = getBusinessLogics().LM;
+        BaseLogicsModule lm = getBaseLM();
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             if (!(getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)) 
@@ -1807,11 +1791,26 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return calcInferInterfaceClasses(commonValue, inferType);
     }
     protected abstract Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType);
+    // optimization really important for applyCompared
+    @IdentityStartLazy
+    public boolean needInferredForValueClass(InferType inferType) {
+        return calcNeedInferredForValueClass(inferType);
+    }
     @IdentityStartLazy
     public ExClassSet inferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         return calcInferValueClass(inferred, inferType);
     }
+    public boolean calcNeedInferredForValueClass(InferType inferType) {
+        return true;
+    } 
     protected abstract ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType);
+    public static <I extends PropertyInterface> boolean opNeedInferForValueClass(ImCol<? extends PropertyInterfaceImplement<I>> props, InferType inferType) {
+        for (int i = 0; i < props.size(); i++) {
+            if(props.get(i).mapNeedInferredForValueClass(inferType))
+                return true;
+        }
+        return false;
+    }
     public static <I extends PropertyInterface> ExClassSet opInferValueClasses(ImCol<? extends PropertyInterfaceImplement<I>> props, ImMap<I, ExClassSet> inferred, boolean or, InferType inferType) {
         ExClassSet result = null;
         for (int i = 0; i < props.size(); i++) {

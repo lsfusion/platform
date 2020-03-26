@@ -644,21 +644,18 @@ public class ClassChanges {
     }
 
     public ObjectValue updateCurrentClass(SQLSession sql, QueryEnvironment env, BaseClass baseClass, ObjectValue value) throws SQLException, SQLHandledException {
-        if(value instanceof NullValue)
-            return value;
-        else {
+        if(value instanceof DataObject) {
             DataObject dataObject = (DataObject)value;
-            return new DataObject(dataObject.object, getCurrentClass(sql, env, baseClass, dataObject));
+            ConcreteClass currentClass = getCurrentClass(sql, env, baseClass, dataObject);
+            if(currentClass != dataObject.objectClass) // optimization
+                return new DataObject(dataObject.object, currentClass);
         }
+        return value;
     }
 
     public <K, T extends ObjectValue> ImMap<K, T> updateCurrentClasses(SQLSession sql, QueryEnvironment env, BaseClass baseClass, ImMap<K, T> objectValues) throws SQLException, SQLHandledException {
-        ImValueMap<K, T> mvResult = objectValues.mapItValues(); // exception кидает
-        for(int i=0,size=objectValues.size();i<size;i++)
-            mvResult.mapValue(i, (T) updateCurrentClass(sql, env, baseClass, objectValues.getValue(i)));
-        return mvResult.immutableValue();
+        return objectValues.<SQLException, SQLHandledException>mapItIdentityValuesEx(value -> (T) updateCurrentClass(sql, env, baseClass, value));
     }
-
     
     public ImSet<CustomClass> packRemoveClasses(Modifier classModifier, BusinessLogics BL, SQLSession sql, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
         if(news.isEmpty()) // оптимизация

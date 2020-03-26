@@ -83,7 +83,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.autoSize = clientComponent.autoSize;
 
         component.setFlex(clientComponent.flex);
-        component.setAlignment(clientComponent.alignment == null ? null : convertFlexAlignment(clientComponent.alignment));
+        component.setAlignment(convertFlexAlignment(clientComponent.alignment));
         component.marginTop = clientComponent.marginTop;
         component.marginBottom = clientComponent.marginBottom;
         component.marginLeft = clientComponent.marginLeft;
@@ -116,6 +116,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     }
 
     private GFlexAlignment convertFlexAlignment(FlexAlignment alignment) {
+        if (alignment == null) {
+            return null;
+        }
         switch (alignment) {
             case START: return GFlexAlignment.START;
             case CENTER: return GFlexAlignment.CENTER;
@@ -353,6 +356,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         propertyDraw.panelCaptionAbove = clientPropertyDraw.panelCaptionAbove;
+        
+        propertyDraw.columnKeysVertical = clientPropertyDraw.columnKeysVertical;
+        
+        propertyDraw.valueAlignment = convertFlexAlignment(clientPropertyDraw.valueAlignment);
         
         propertyDraw.hide = clientPropertyDraw.hide;
         

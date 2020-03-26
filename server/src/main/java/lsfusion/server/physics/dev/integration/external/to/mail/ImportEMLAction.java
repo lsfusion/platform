@@ -10,7 +10,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -29,8 +28,8 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +37,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.sqlTimestampToLocalDateTime;
 
 public class ImportEMLAction extends EmailAction {
     private final ClassPropertyInterface accountInterface;
@@ -81,8 +82,8 @@ public class ImportEMLAction extends EmailAction {
                 emailLM.findProperty("account[Email]").change(accountObject, session, (DataObject) emailObject);
                 emailLM.findProperty("uid[Email]").change(uidObject.object, session, (DataObject) emailObject);
                 emailLM.findProperty("id[Email]").change(email.id, session, (DataObject) emailObject);
-                emailLM.findProperty("dateTimeSent[Email]").change(email.dateTimeSent, session, (DataObject) emailObject);
-                emailLM.findProperty("dateTimeReceived[Email]").change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, (DataObject) emailObject);
+                emailLM.findProperty("dateTimeSent[Email]").change(getWriteDateTime(email.dateTimeSent), session, (DataObject) emailObject);
+                emailLM.findProperty("dateTimeReceived[Email]").change(getWriteDateTime(LocalDateTime.now()), session, (DataObject) emailObject);
                 emailLM.findProperty("fromAddress[Email]").change(email.fromAddress, session, (DataObject) emailObject);
                 emailLM.findProperty("toAddress[Email]").change(nameAccount, session, (DataObject) emailObject);
                 emailLM.findProperty("subject[Email]").change(email.subject, session, (DataObject) emailObject);
@@ -134,7 +135,7 @@ public class ImportEMLAction extends EmailAction {
             }
         }
 
-        return new Email(getEmailId(dateTimeSent, fromAddress, subjectEmail), dateTimeSent, fromAddress, subjectEmail, messageEmail.message, attachments);
+        return new Email(getEmailId(dateTimeSent, fromAddress, subjectEmail), sqlTimestampToLocalDateTime(dateTimeSent), fromAddress, subjectEmail, messageEmail.message, attachments);
     }
 
     private String getEmailId(Timestamp dateTime, String fromAddress, String subject) {
@@ -392,13 +393,13 @@ public class ImportEMLAction extends EmailAction {
 
     private class Email {
         String id;
-        Timestamp dateTimeSent;
+        LocalDateTime dateTimeSent;
         String fromAddress;
         String subject;
         String message;
         List<EmailAttachment> attachments;
 
-        private Email(String id, Timestamp dateTimeSent, String fromAddress, String subject, String message, List<EmailAttachment> attachments) {
+        private Email(String id, LocalDateTime dateTimeSent, String fromAddress, String subject, String message, List<EmailAttachment> attachments) {
             this.id = id;
             this.dateTimeSent = dateTimeSent;
             this.fromAddress = fromAddress;

@@ -18,6 +18,7 @@ import lsfusion.interop.action.ICleanListener;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.base.exception.AuthenticationException;
+import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -81,9 +82,13 @@ public abstract class MainFrame extends JFrame {
                         }, new AtomicBoolean());
                     }
                 }).connect();
-            } catch (AuthenticationException throwable) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
+            } catch (AuthenticationException e) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
                 MainController.authToken = null;
-                MainController.authAndLoadMainFrame(throwable.getMessage(), null);
+                MainController.authAndLoadMainFrame(e.getMessage(), null);
+                return;
+            } catch (RemoteMessageException e) {
+                MainController.authToken = null; //see issue #312
+                MainController.authAndLoadMainFrame(e.getMessage(), null);
                 return;
             }
 

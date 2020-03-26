@@ -34,7 +34,7 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
     }
 
     @Override
-    public FormEntity getStaticForm() {
+    public FormEntity getNFStaticForm() {
         return null;
     }
 

@@ -570,10 +570,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getOldDepends().filterFn(element -> element.scope == PrevScope.EVENT);
     }
 
+    // optimization that uses the fact that event handlers should not have aftereffect
     @IdentityLazy
-    public ImSet<SessionProperty> getGlobalEventSessionCalcDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
+    public ImSet<SessionProperty> getGlobalEventSessionCalcDepends() {
         assert getSessionEnv(SystemEvent.APPLY) != null;
-        return getSessionCalcDepends(false); // предполагается что FOR g, гда для g - есть вычисляемое свойство не будет, так как может привести к событиям на пустых сессиях
+        // in theory cases like FOR f(a) OR FOR f(a) != PREV (f(a)) will be ignored, but so far it doesn't matter
+        return getSessionCalcDepends(false).filterFn(element -> element instanceof ChangedProperty);
     }
 
     private ActionMapImplement<?, P> callCompile(boolean forExecution) {

@@ -9,13 +9,12 @@ import lsfusion.server.logics.form.stat.struct.imports.plain.ImportPlainIterator
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 
 import java.io.IOException;
-import java.text.ParseException;
 
 public class ImportTableIterator extends ImportPlainIterator {
     private final JDBCTable rs;
 
-    public ImportTableIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file) throws IOException {
-        super(fieldTypes);
+    public ImportTableIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file, String wheres) throws IOException {
+        super(fieldTypes, wheres);
         this.rs = JDBCTable.deserializeJDBC(file);
         
         finalizeInit();
@@ -28,17 +27,23 @@ public class ImportTableIterator extends ImportPlainIterator {
     private int currentRow = 0;
     private ImMap<String, Object> row;
     @Override
-    protected boolean nextRow() {
-        if(currentRow >= rs.set.size())
-            return false;
-        
-        row = rs.set.get(currentRow++);
+    protected boolean nextRow(boolean checkWhere) {
+        do {
+            if(currentRow >= rs.set.size())
+                return false;
+            row = rs.set.get(currentRow++);
+        } while (checkWhere && ignoreRow());
         return true;
     }
 
     @Override
     protected Object getPropValue(String name, Type type) {
         return type.read(row.get(name));
+    }
+
+    @Override
+    protected Integer getRowIndex() {
+        return currentRow;
     }
 
     @Override

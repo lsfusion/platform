@@ -1,5 +1,6 @@
 package lsfusion.http.authentication;
 
+import lsfusion.base.BaseUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -17,8 +18,13 @@ public class LSFHttpSessionRequestCache {
 	 * Stores the current request, provided the configuration properties allow it.
 	 */
 	public void saveRequest(HttpServletRequest request) {
-		request.getSession().setAttribute(this.sessionAttrName, request.getRequestURL().toString());
-		logger.debug("DefaultSavedRequest added to Session: " + request.getRequestURL());
+		StringBuffer requestURL = request.getRequestURL();
+		String queryString = request.getQueryString();
+		if (!BaseUtils.isRedundantString(queryString)) {
+			requestURL.append('?').append(queryString);
+		}
+		request.getSession().setAttribute(this.sessionAttrName, requestURL.toString());
+		logger.debug("DefaultSavedRequest added to Session: " + requestURL);
 	}
 
 	public String getRequest(HttpServletRequest currentRequest) {

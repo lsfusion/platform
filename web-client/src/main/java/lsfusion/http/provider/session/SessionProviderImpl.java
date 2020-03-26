@@ -1,6 +1,6 @@
 package lsfusion.http.provider.session;
 
-import com.google.gwt.core.client.GWT;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
@@ -54,7 +54,7 @@ public class SessionProviderImpl implements SessionProvider, DisposableBean {
     @Override
     public void destroy() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        GWT.log("Destroying session for user " + (auth == null ? "UNKNOWN" : auth.getName()) + "...", new Exception());
+        MainDispatchServlet.logger.error("Destroying session for user " + (auth == null ? "UNKNOWN" : auth.getName()) + "...");
         
         for(SessionSessionObject sessionSessionObject : currentSessions.values())
             sessionSessionObject.remoteSession.close();

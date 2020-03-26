@@ -304,11 +304,12 @@ public class GBusyDialog extends WindowBox {
     }
 
     private void exitAction() {
+        //we make logout instead of close browser window because JavaScript can only close windows that were opened by JavaScript
         GwtClientUtils.logout();
     }
 
     private void reconnectAction() {
-        GwtClientUtils.relogin();
+        GwtClientUtils.reconnect();
     }
 
     private void cancelAction() {

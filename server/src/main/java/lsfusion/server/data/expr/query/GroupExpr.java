@@ -102,14 +102,14 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
 
         public Query followFalse(Where falseWhere, boolean pack) {
-            return new Query(falseWhere.followFalse(exprs, pack), falseWhere.followFalse(orders, pack), ordersNotNull, type, noInnerFollows);
+            return new Query(type.followFalse(falseWhere, exprs, pack), falseWhere.followFalse(orders, pack), ordersNotNull, type, noInnerFollows);
         }
 
         public String toString() {
             return "GROUP(" + exprs + "," + orders + "," + type + ")";
         }
 
-        public Query and(final Where where) { // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. AggrType.getWhere
+        public Query and(final Where where) { // there is an assertion that first expr is in where, see (PartitionExpr / GroupExpr).Query.and
             return new Query(exprs.mapListValues((i, value) -> {
                 if(i==0)
                     value = value.and(where);
@@ -325,7 +325,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
 
         final Where packWhere = packClasses.getPackWhere().and(innerWhere);
 
-        // for keepWhere
+        // for keepWhere - need to avoid packing classes info
         Where groupWhere = thisExpr != null ? thisExpr.getInner().getGroupWhere() : getGroupWhere(innerOuter);
         Where fullWhere = thisExpr != null ? thisExpr.getInner().getFullWhere() : getFullWhere(groupWhere, query);
         Where keepWhere = getKeepWhere(fullWhere, query.noInnerFollows).followFalse(groupWhere.not(), pack);
@@ -389,11 +389,11 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
     }
     
     public static <K> Expr create(ImMap<K, ? extends Expr> inner, Expr expr, GroupType type, ImMap<K, ? extends Expr> outer, boolean noInnerFollows) {
-        return createTypeAdjust(inner, new Query(expr, type, noInnerFollows), outer);
+        return create(inner, new Query(expr, type, noInnerFollows), outer, null);
     }
 
     public static <K> Expr create(ImMap<K, ? extends Expr> group, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, GroupType type, ImMap<K, ? extends Expr> implement, boolean noInnerFollows) {
-        return createTypeAdjust(group, new Query(exprs, orders, ordersNotNull, type, noInnerFollows), implement);
+        return create(group, new Query(exprs, orders, ordersNotNull, type, noInnerFollows), implement, null);
     }
     
     private static <K> Type getType(ImMap<K, ? extends Expr> group, Query query) {

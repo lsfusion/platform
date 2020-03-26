@@ -3,20 +3,17 @@ package lsfusion.gwt.client.form.object.table.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.base.view.grid.HeaderPanel;
-import lsfusion.gwt.client.view.MainFrame;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
-import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -34,7 +31,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     private String caption;
     private String toolTip;
-    
+
     private boolean notNull;
     private boolean hasChangeAction;
 
@@ -134,7 +131,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     public void renderDom(TableCellElement th) {
         th.addClassName("positionRelative");
         th.getStyle().setHeight(headerHeight >= 0 ? headerHeight : HeaderPanel.DEFAULT_HEADER_HEIGHT, Style.Unit.PX);
-        
+
         Boolean sortDir = table.getSortDirection(this);
         String escapedCaption = getEscapedCaption();
 
@@ -152,20 +149,8 @@ public class GGridPropertyTableHeader extends Header<String> {
             img.getStyle().setMarginBottom(1, Style.Unit.PX);
             img.getStyle().setMarginLeft(2, Style.Unit.PX);
             img.getStyle().setVerticalAlign(Style.VerticalAlign.BOTTOM);
-            
-            String imagePath = sortDir ? "arrowup.png" : "arrowdown.png";
-            String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
-            GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
-                @Override
-                public void onFailure() {
-                    img.setSrc(getModuleImagePath(imagePath));
-                }
 
-                @Override
-                public void onSuccess() {
-                    img.setSrc(getModuleImagePath(colorThemeImagePath));
-                }
-            });
+            GwtClientUtils.setThemeImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
 
             SpanElement span = Document.get().createSpanElement();
             span.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
@@ -175,7 +160,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
             div.appendChild(img);
             div.appendChild(span);
-            
+
             th.appendChild(div);
         } else {
             div.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
@@ -232,6 +217,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         private int initalMouseX;
         TableCellElement leftHeaderCell;
         private int leftColumnIndex;
+
         public ColumnResizeHelper(int leftColumnIndex, TableCellElement leftHeaderCell) {
             this.leftHeaderCell = leftHeaderCell;
             this.initalMouseX = leftHeaderCell.getAbsoluteRight();
@@ -258,7 +244,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         private void resizeHeaders(int clientX) {
             int dragX = clientX - initalMouseX;
-            if(Math.abs(dragX) > 2) {
+            if (Math.abs(dragX) > 2) {
                 table.resizeColumn(leftColumnIndex, dragX);
 //                initalMouseX = leftHeaderCell.getAbsoluteRight();
                 initalMouseX = Math.max(clientX, leftHeaderCell.getAbsoluteRight()); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
