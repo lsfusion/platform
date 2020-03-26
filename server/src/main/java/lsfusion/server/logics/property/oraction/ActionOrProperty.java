@@ -443,7 +443,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     protected abstract ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events);
 
-    private ImOrderSet<Link> links;
+    public ImOrderSet<Link> links; // public for preread multithread optimization
     @ManualLazy
     public ImOrderSet<Link> getSortedLinks(boolean events) { // чисто для лексикографики
         if(links==null) {

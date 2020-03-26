@@ -832,6 +832,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
+    public static void prereadSortedLinks(ActionOrProperty<?> property) {
+        if(property.links == null) {
+            for (Link link : property.getSortedLinks(true)) {
+                prereadSortedLinks(link.to);
+            }
+        }
+    }
+
     // находит свойство входящее в "верхнюю" сильносвязную компоненту
     private static HSet<Link> buildOrder(ActionOrProperty<?> property, MAddMap<ActionOrProperty, HSet<Link>> linksMap, List<ActionOrProperty> order, ImSet<Link> removedLinks, boolean include, ImSet<ActionOrProperty> component, boolean events, boolean recursive, boolean checkNotRecursive) {
         HSet<Link> linksIn = linksMap.get(property);
@@ -841,11 +849,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             linksMap.add(property, linksIn);
 
             ImOrderSet<Link> links = property.getSortedLinks(events);
-            for (int i = 0,size = links.size(); i < size; i++) {
-                Link link = links.get(i);
+            for (Link link : links)
                 if (!removedLinks.contains(link) && component.contains(link.to) == include)
                     buildOrder(link.to, linksMap, order, removedLinks, include, component, events, true, checkNotRecursive).add(link);
-            }
             if(order != null)
                 order.add(property);
         }

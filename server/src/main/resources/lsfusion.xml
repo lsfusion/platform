@@ -383,7 +383,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="finalizeCalcAbstractTask"/>
-                <ref bean="markRecursionsTask"/>
+                <ref bean="markRecursionsTask"/> <!-- since JoinAction.isRecursive is used in a lot of methods -->
             </set>
         </property>
     </bean>
@@ -462,12 +462,21 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="getPropertyListTask" class="lsfusion.server.logics.event.init.GetPropertyListTask">
+    <bean id="prereadLinksTask" class="lsfusion.server.logics.event.init.PrereadLinksTask">
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/> <!-- так как в этом задании добавляются события -->
                 <ref bean="initIndicesTask"/> <!-- hideOlds -> STAT calculation -> getIndices cache  -->
                 <ref bean="showDependenciesTask"/> <!-- так как используется fillActionChangeProps, а его реализация не синхронизирована -->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
+    <bean id="getPropertyListTask" class="lsfusion.server.logics.event.init.GetPropertyListTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="prereadLinksTask"/> <!-- not in parallel because in the end of getPropertyList links caches are dropped-->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

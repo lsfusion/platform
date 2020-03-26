@@ -44,6 +44,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 public class CaseUnionProperty extends IncrementUnionProperty {
@@ -133,13 +134,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return abs.type;
     }
 
-    public void checkRecursions() {
+    public void checkRecursions(Set<Property> propertyMarks) {
         assert isAbstract();
-        checkRecursions(SetFact.EMPTY(), null);
+        checkRecursions(SetFact.EMPTY(), null, propertyMarks);
     }
 
     @Override
-    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path) {
+    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
         if(abstractPath.contains(this)) { // found recursion
             if(path != null)
                 throw new ScriptParsingException("Property " + this + " is recursive. One of the pathes : " + path);
@@ -147,7 +148,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             abstractPath = SetFact.EMPTY();
         }        
         abstractPath = abstractPath.addExcl(this);
-        return super.checkRecursions(abstractPath, path);
+        return super.checkRecursions(abstractPath, path, marks);
     }
 
     @Override

@@ -25,6 +25,7 @@ import lsfusion.server.physics.dev.debug.action.WatchAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.Set;
 
 public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
@@ -134,13 +135,13 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     private boolean isRecursive;
     // пока исходим из того что рекурсивными могут быть только abstract'ы
     @Override
-    protected void markRecursions(ImSet<ListCaseAction> recursiveActions) {
+    protected void markRecursions(ImSet<ListCaseAction> recursiveActions, Set<Action> marks) {
         Action<T> execAction = action.action;
         if(execAction instanceof ListCaseAction && recursiveActions.contains((ListCaseAction)execAction)) {
             assert ((ListCaseAction) execAction).isAbstract();
             isRecursive = true;
         } else
-            super.markRecursions(recursiveActions);    //To change body of overridden methods use File | Settings | File Templates.
+            super.markRecursions(recursiveActions, marks);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override

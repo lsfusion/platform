@@ -24,7 +24,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -69,6 +68,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public abstract class Action<P extends PropertyInterface> extends ActionOrProperty<P> {
@@ -161,9 +161,11 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return result.immutable();
     }
 
-    protected void markRecursions(ImSet<ListCaseAction> recursiveActions) {
+    protected void markRecursions(ImSet<ListCaseAction> recursiveActions, Set<Action> marks) {
+        if(!marks.add(this))
+            return;
         for(Action action : getDependActions())
-            action.markRecursions(recursiveActions);
+            action.markRecursions(recursiveActions, marks);
     }
 
     public ImMap<Property, Boolean> getUsedExtProps() {
