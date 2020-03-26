@@ -21,7 +21,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -472,8 +471,7 @@ public class LoginDialog extends JDialog {
         setContentPane(contentPane);
 
         JPanel imagePanel = new JPanel();
-        imagePanel.setBorder(new LineBorder(new Color(160, 160, 160)));
-        imagePanel.setBackground(Color.WHITE);
+        imagePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1,0, new Color(160, 160, 160)));
         contentPane.add(imagePanel);
 
         imageLabel = new JLabel("", SwingConstants.CENTER);
