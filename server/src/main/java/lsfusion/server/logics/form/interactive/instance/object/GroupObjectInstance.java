@@ -155,7 +155,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return null;
     }
 
-    private Integer pageSize;
+    public Integer pageSize;
     public int getPageSize() {
         assert !isInTree();
         return pageSize;
@@ -171,14 +171,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             this.pageSize = pageSize;
         }
     }
-    
+
     public void forceRefresh() {
         updated |= UPDATED_FORCE;
     }
     public boolean toRefresh() { // hack to not keep state at client, just resend it with every view (grid / pivot) change
         return (updated & UPDATED_FORCE) != 0;
     }
-    
+
     private boolean autoUpdateMode = true;
     public void setUpdateMode(UpdateMode updateMode) {
         if(updateMode == UpdateMode.FORCE)
@@ -195,7 +195,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public GroupMode setGroupMode;
     public void changeGroupMode(GroupMode groupMode) {
         setGroupMode = groupMode;
-    }    
+    }
 
     public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
 
@@ -212,7 +212,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         this.classView = entity.classView;
 
-        this.pageSize = entity.getDefaultPageSize();
+        this.pageSize = entity.pageSize;
 
         this.parent = parent;
         this.props = props;
@@ -861,7 +861,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(isPending != wasPending)
             changes.updateStateObjects.add(this, isPending);
     }
-
     private boolean hasUpdateEnvironmentIncrementProp(GroupObjectProp propType) { // оптимизация
         return props.get(propType) != null;
     }
