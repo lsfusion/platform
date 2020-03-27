@@ -8,11 +8,15 @@
     }
     table.pvtTable .pvtAxisLabel.expanded {
 	    white-space: nowrap;
-	    cursor: zoom-out !important;
+    }
+    table.pvtTable .pvtAxisLabel.expanded.zoom {
+        cursor: zoom-out !important;
     }
     table.pvtTable .pvtAxisLabel.collapsed {
 	    white-space: nowrap;
-	    cursor: zoom-in !important;
+    }
+    table.pvtTable .pvtAxisLabel.collapsed.zoom {
+        cursor: zoom-in !important;
     }
 
     /* RowLabel */
@@ -22,10 +26,14 @@
         background-color: white !important;
     }
     table.pvtTable tbody tr th.pvtRowLabel.rowexpanded {
-	    cursor: zoom-out !important;
+    }
+    table.pvtTable tbody tr th.pvtRowLabel.rowexpanded.zoom {
+        cursor: zoom-out !important;
     }
     table.pvtTable tbody tr th.pvtRowLabel.rowcollapsed {
-	    cursor: zoom-in !important;
+    }
+    table.pvtTable tbody tr th.pvtRowLabel.rowcollapsed.zoom {
+        cursor: zoom-in !important;
     }
 
     /* RowLabelFiller */
