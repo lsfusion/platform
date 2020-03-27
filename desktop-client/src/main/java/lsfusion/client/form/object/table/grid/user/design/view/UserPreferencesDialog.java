@@ -3,6 +3,7 @@ package lsfusion.client.form.object.table.grid.user.design.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.lambda.Callback;
+import lsfusion.client.base.view.ThemedFlatRolloverButton;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.grid.controller.GridController;
@@ -27,7 +28,6 @@ import java.util.Map;
 
 import static javax.swing.Box.createHorizontalStrut;
 import static javax.swing.Box.createVerticalStrut;
-import static lsfusion.base.ResourceUtils.readImage;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class UserPreferencesDialog extends JDialog {
@@ -312,22 +312,22 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private JPanel createArrowsPanel() {
-        JButton showSelectedButton = new JButton(readImage("arrowLeftOne.png"));
+        JButton showSelectedButton = new ThemedFlatRolloverButton("arrowLeftOne.png");
         showSelectedButton.setBorder(null);
         showSelectedButton.setBackground(null);
         showSelectedButton.addActionListener(createMoveSelectedButtonListener(invisibleList, visibleListModel));
 
-        JButton hideSelectedButton = new JButton(readImage("arrowRightOne.png"));
+        JButton hideSelectedButton = new ThemedFlatRolloverButton("arrowRightOne.png");
         hideSelectedButton.setBorder(null);
         hideSelectedButton.setBackground(null);
         hideSelectedButton.addActionListener(createMoveSelectedButtonListener(visibleList, invisibleListModel));
 
-        JButton showAllButton = new JButton(readImage("arrowLeft.png"));
+        JButton showAllButton = new ThemedFlatRolloverButton("arrowLeft.png");
         showAllButton.setBorder(null);
         showAllButton.setBackground(null);
         showAllButton.addActionListener(createMoveAllButtonListener(invisibleListModel, visibleListModel));
 
-        JButton hideAllButton = new JButton(readImage("arrowRight.png"));
+        JButton hideAllButton = new ThemedFlatRolloverButton("arrowRight.png");
         hideAllButton.setBorder(null);
         hideAllButton.setBackground(null);
         hideAllButton.addActionListener(createMoveAllButtonListener(visibleListModel, invisibleListModel));
