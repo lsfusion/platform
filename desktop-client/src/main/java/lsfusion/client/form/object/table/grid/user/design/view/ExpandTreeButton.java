@@ -4,22 +4,19 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 
-import javax.swing.*;
-
-import static lsfusion.base.ResourceUtils.readImage;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ExpandTreeButton extends ToolbarGridButton {
-    public static final ImageIcon EXPAND_TREE_ICON = readImage("expandTree.png");
-    public static final ImageIcon COLLAPSE_TREE_ICON = readImage("collapseTree.png");
-    public static final ImageIcon EXPAND_TREE_CURRENT_ICON = readImage("expandTreeCurrent.png");
-    public static final ImageIcon COLLAPSE_TREE_CURRENT_ICON = readImage("collapseTreeCurrent.png");
+    public static final String EXPAND_TREE_ICON_PATH = "expandTree.png";
+    public static final String COLLAPSE_TREE_ICON_PATH = "collapseTree.png";
+    public static final String EXPAND_TREE_CURRENT_ICON_PATH = "expandTreeCurrent.png";
+    public static final String COLLAPSE_TREE_CURRENT_ICON_PATH = "collapseTreeCurrent.png";
 
     private final boolean current;
     private boolean expand;
 
     public ExpandTreeButton(TreeGroupController treeGroupController, boolean current) {
-        super(current ? EXPAND_TREE_CURRENT_ICON : EXPAND_TREE_ICON, null);
+        super(current ? EXPAND_TREE_CURRENT_ICON_PATH : EXPAND_TREE_ICON_PATH, null);
         this.current = current;
         update(treeGroupController);
         addActionListener(e -> {
@@ -36,7 +33,7 @@ public class ExpandTreeButton extends ToolbarGridButton {
 
     public void update(TreeGroupController treeGroupController) {
         this.expand = !treeGroupController.isCurrentPathExpanded();
-        setIcon(current ? (expand ? EXPAND_TREE_CURRENT_ICON : COLLAPSE_TREE_CURRENT_ICON) : (expand ? EXPAND_TREE_ICON : COLLAPSE_TREE_ICON));
+        setIconPath(current ? (expand ? EXPAND_TREE_CURRENT_ICON_PATH : COLLAPSE_TREE_CURRENT_ICON_PATH) : (expand ? EXPAND_TREE_ICON_PATH : COLLAPSE_TREE_ICON_PATH));
         updateToolTipText();
     }
 

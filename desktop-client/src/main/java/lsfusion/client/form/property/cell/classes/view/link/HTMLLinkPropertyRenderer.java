@@ -38,12 +38,12 @@ public class HTMLLinkPropertyRenderer extends PropertyRenderer {
     }
 
     @Override
-    protected void drawForeground(Color conditionalForeground) {
+    protected void drawForeground(boolean isInFocusedRow, boolean hasFocus, Color conditionalForeground) {
         //do nothing
     }
 
     @Override
-    protected void drawBorder(boolean isInFocusedRow, boolean hasFocus) {
+    protected void drawBorder(boolean isInFocusedRow, boolean hasFocus, boolean drawFocusBorder) {
         //do nothing
     }
 

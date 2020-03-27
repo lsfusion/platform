@@ -262,6 +262,12 @@
         <dependency>
             <groupId>lsfusion.platform</groupId>
             <artifactId>desktop-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.formdev</groupId>
+                    <artifactId>flatlaf</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

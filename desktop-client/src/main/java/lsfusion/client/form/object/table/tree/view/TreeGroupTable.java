@@ -33,8 +33,6 @@ import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.order.user.Order;
 import org.jdesktop.swingx.JXTableHeader;
-import org.jdesktop.swingx.decorator.ColorHighlighter;
-import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
@@ -63,7 +61,6 @@ import static java.lang.Math.max;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static lsfusion.client.form.controller.ClientFormController.PasteData;
-import static lsfusion.client.form.controller.ClientFormController.colorPreferences;
 import static lsfusion.client.form.object.table.grid.view.GridTable.DEFAULT_HEADER_HEIGHT;
 import static lsfusion.client.form.object.table.grid.view.GridTable.DEFAULT_PREFERRED_SIZE;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyEventActionSID;
@@ -168,24 +165,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             setTableHeader(null);
             setShowGrid(false, false);
         } else {
-            //подсветка ячеек дерева
-            setHighlighters(
-                    new ColorHighlighter(
-                            new HighlightPredicate.AndHighlightPredicate(
-                                    HighlightPredicate.HAS_FOCUS,
-                                    new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), colorPreferences.getFocusedCellBackground(), Color.BLACK, colorPreferences.getFocusedCellBackground(), Color.BLACK
-                    ),
-                    new ColorHighlighter(
-                            new HighlightPredicate.AndHighlightPredicate(
-                                    new HighlightPredicate.NotHighlightPredicate(
-                                            HighlightPredicate.HAS_FOCUS
-                                    ),
-                                    new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), Color.WHITE, Color.BLACK, colorPreferences.getSelectedRowBackground(), Color.BLACK
-                    )
-            );
-
             setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
             setDefaultEditor(Object.class, new ClientAbstractCellEditor(this));
         }
@@ -472,7 +451,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             rowHeight = max(rowHeight, columnProperty.getValueHeight(this));
         }
         if (rowHeight != getRowHeight() && rowHeight > 0) {
-            setRowHeight(rowHeight);
+            setTableRowHeight(rowHeight);
         }
     }
 
@@ -543,8 +522,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         columnsMap.put(property, tableColumn);
 
         if (getRowHeight() != rowHeight && rowHeight > 0) {
-            setRowHeight(rowHeight);
+            setTableRowHeight(rowHeight);
         }
+    }
+    
+    private void setTableRowHeight(int rowHeight) {
+        // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
+        setRowHeight(rowHeight + getRowMargin());
     }
 
     public void setCurrentPath(final ClientGroupObjectValue objects) {

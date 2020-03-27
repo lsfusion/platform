@@ -4,6 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
+import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.filter.user.controller.QueryController;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
@@ -49,7 +50,7 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
     }
 
     private void initButtons() {
-        applyButton = new ToolbarGridButton(getApplyIcon(), ClientResourceBundle.getString("form.queries.filter.apply"));
+        applyButton = new ToolbarGridButton(FilterView.APPLY_ICON_PATH, ClientResourceBundle.getString("form.queries.filter.apply"));
         applyButton.setVisible(false);
         applyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -62,7 +63,7 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
             }
         });
 
-        addCondButton = new ToolbarGridButton(getAddIcon(), ClientResourceBundle.getString("form.queries.filter.add.condition") + " (alt + F2)");
+        addCondButton = new ToolbarGridButton(FilterView.ADD_ICON_PATH, ClientResourceBundle.getString("form.queries.filter.add.condition") + " (alt + F2)");
         addCondButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 controller.addConditionPressed();
@@ -272,11 +273,11 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
         controller.applyPressed();
     }
 
-    public abstract Icon getApplyIcon();
-
-    public abstract Icon getAddIcon();
-
-    public abstract Icon getFilterIcon();
+//    public abstract Icon getApplyIcon();
+//
+//    public abstract Icon getAddIcon();
+//
+//    public abstract Icon getFilterIcon();
 
     protected abstract KeyStroke getKeyStroke(int modifier);
 }

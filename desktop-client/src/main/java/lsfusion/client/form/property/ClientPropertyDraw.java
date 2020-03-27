@@ -206,7 +206,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         FontMetrics fontMetrics = comp.getFontMetrics(design.getFont(comp));
 
         String widthString = null;
-        if(widthString == null && charWidth != 0)
+        if(charWidth != 0)
             widthString = BaseUtils.replicate('0', charWidth);
         if(widthString != null)
             return baseType.getFullWidthString(widthString, fontMetrics, this);
@@ -218,9 +218,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (valueSize != null && valueSize.height > -1) {
             return valueSize.height;
         }
-        int height = baseType.getDefaultHeight(comp.getFontMetrics(design.getFont(comp)), charHeight == 0 ? 1 : charHeight);
-        if (design.getImage() != null) // предпочитаемую высоту берем исходя из размера иконки
-            height = Math.max(design.getImage().getIconHeight() + 6, height);
+        int height = baseType.getDefaultHeight(comp, design, charHeight == 0 ? 1 : charHeight);
+        ImageIcon image = design.getImage(MainController.colorTheme);
+        if (image != null) // предпочитаемую высоту берем исходя из размера иконки
+            height = Math.max(image.getIconHeight() + 6, height);
         return height;
     }
 

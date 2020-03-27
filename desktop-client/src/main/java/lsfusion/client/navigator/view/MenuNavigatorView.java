@@ -1,5 +1,6 @@
 package lsfusion.client.navigator.view;
 
+import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientMenuNavigatorWindow;
@@ -65,7 +66,7 @@ public class MenuNavigatorView extends NavigatorView {
 
     private JMenuItem addLeaf(JComponent parent, ClientNavigatorElement element) {
         JMenuItem menuItem = new JMenuItem(element.toString());
-        menuItem.setIcon(element.imageHolder.getImage());
+        menuItem.setIcon(element.imageHolder.getImage(MainController.colorTheme));
         menuItem.addActionListener(new MenuActionListener(element));
         parent.add(menuItem);
         return menuItem;
@@ -73,7 +74,7 @@ public class MenuNavigatorView extends NavigatorView {
 
     private JMenu addNode(JComponent parent, ClientNavigatorElement element) {
         JMenu menu = new JMenu(element.toString());
-        menu.setIcon(element.imageHolder.getImage());
+        menu.setIcon(element.imageHolder.getImage(MainController.colorTheme));
         parent.add(menu);
         return menu;
     }

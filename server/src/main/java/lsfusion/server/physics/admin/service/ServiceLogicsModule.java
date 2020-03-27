@@ -5,7 +5,6 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.property.IsServerRestartingProperty;
 import org.antlr.runtime.RecognitionException;
 
@@ -36,7 +35,6 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LA recalculateStatsMultiThreadAction;
 
     public LP overrideSelectedRowBackgroundColor;
-    public LP overrideSelectedRowBorderColor;
     public LP overrideSelectedCellBackgroundColor;
     public LP overrideFocusedCellBackgroundColor;
     public LP overrideFocusedCellBorderColor;
@@ -70,7 +68,6 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         recalculateStatsMultiThreadAction = findAction("recalculateStatsMultiThreadAction[]");
 
         overrideSelectedRowBackgroundColor = findProperty("overrideSelectedRowBackgroundColor[]");
-        overrideSelectedRowBorderColor = findProperty("overrideSelectedRowBorderColor[]");
         overrideSelectedCellBackgroundColor = findProperty("overrideSelectedCellBackgroundColor[]");
         overrideFocusedCellBackgroundColor = findProperty("overrideFocusedCellBackgroundColor[]");
         overrideFocusedCellBorderColor = findProperty("overrideFocusedCellBorderColor[]");

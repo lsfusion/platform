@@ -103,6 +103,7 @@ public abstract class MainFrame extends JFrame {
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
             MainController.configurationAccessAllowed = clientSettings.configurationAccessAllowed;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
+            MainController.colorPreferences = clientSettings.colorPreferences;
 
             Locale userLocale = userPreferences.locale;
             Locale.setDefault(userLocale);
@@ -139,6 +140,8 @@ public abstract class MainFrame extends JFrame {
             frame.clearForms();
 
             instance = frame; // it's important to set this field before onDesktopClientStarted because it is used when getting eventbus for example
+            
+            MainController.changeColorTheme(clientSettings.colorTheme);
 
             frame.executeNavigatorAction("SystemEvents.onDesktopClientStarted[]", 0, null, null);
         } catch (Throwable e) {
@@ -451,5 +454,4 @@ public abstract class MainFrame extends JFrame {
     public abstract Integer runReport(boolean isModal, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
     public abstract ClientFormDockable runForm(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener);
-
 }

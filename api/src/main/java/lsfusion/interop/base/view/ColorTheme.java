@@ -22,6 +22,10 @@ public enum ColorTheme {
         return this == DEFAULT;
     }
     
+    public boolean isLight() {
+        return this == LIGHT;
+    }
+    
     public String getFileNameSuffix() {
         return isDefault() ? "" : "_" + getSid();
     }

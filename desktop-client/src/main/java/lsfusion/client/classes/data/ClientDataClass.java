@@ -2,6 +2,7 @@ package lsfusion.client.classes.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.ClientTypeClass;
@@ -12,8 +13,10 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.property.Compare;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -55,8 +58,11 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     @Override
-    public int getDefaultHeight(FontMetrics fontMetrics, int charHeight) {
-        return fontMetrics.getHeight() * charHeight + 1;
+    public int getDefaultHeight(JComponent comp, ComponentDesign design, int charHeight) {
+        if (design.font != null) {
+            return comp.getFontMetrics(design.getFont(comp)).getHeight() * charHeight;
+        }
+        return SwingDefaults.getCellHeight() * charHeight;
     }
 
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {

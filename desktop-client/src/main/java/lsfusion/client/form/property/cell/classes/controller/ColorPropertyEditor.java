@@ -3,7 +3,6 @@ package lsfusion.client.form.property.cell.classes.controller;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.classes.data.ClientColorClass;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -23,11 +22,11 @@ public class ColorPropertyEditor extends DialogBasedPropertyEditor {
     public ColorPropertyEditor(Object value) {
         super();
 
-        final Color initialColor = (value instanceof Color) ? (Color) value : ClientColorClass.getDefaultValue();
+        final Color initialColor = (value instanceof Color) ? (Color) value : null;
 
         setBackground(initialColor);
 
-        colorChooser = new JColorChooser(initialColor);
+        colorChooser = initialColor != null ? new JColorChooser(initialColor) : new JColorChooser();
 
         colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
             @Override
@@ -78,9 +77,7 @@ public class ColorPropertyEditor extends DialogBasedPropertyEditor {
     private void setChoosenColor(Color chosenColor) {
         this.isColorChosen = true;
         this.chosenColor = chosenColor;
-        if (chosenColor != null) {
-            this.setBackground(ClientColorClass.getDefaultValue());
-        }
+        this.setBackground(chosenColor);
     }
 
     private void setBackground(Color color) {

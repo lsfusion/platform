@@ -37,13 +37,14 @@
         <ecj.version>4.6.1</ecj.version>
         <olap4j.version>1.2.0</olap4j.version>
         <apache.poi.version>4.1.1</apache.poi.version>
-        <docking.frames.version>1.1.2p17b</docking.frames.version>
+        <docking.frames.version>1.1.3p1</docking.frames.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
         <batik.version>1.8</batik.version>
         <xmlgraphics.commons.version>2.1</xmlgraphics.commons.version>
         <barcode4j.version>2.1</barcode4j.version>
         <swingx.version>1.6.1</swingx.version>
         <jxlayer.version>3.0.4</jxlayer.version>
+        <flatlaf.version>0.28</flatlaf.version>
         <jhlabs.filters.version>2.0.235</jhlabs.filters.version>
         <jcalendar.version>1.4</jcalendar.version>
         <jssc.version>0.8</jssc.version>
@@ -289,6 +290,11 @@
                 <groupId>org.swinglabs</groupId>
                 <artifactId>jxlayer</artifactId>
                 <version>${jxlayer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.formdev</groupId>
+                <artifactId>flatlaf</artifactId>
+                <version>${flatlaf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.jhlabs</groupId>

@@ -2,6 +2,7 @@ package lsfusion.interop.navigator;
 
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 
 import java.io.Serializable;
 
@@ -16,9 +17,11 @@ public class ClientSettings implements Serializable {
     public boolean configurationAccessAllowed;
     public boolean forbidDuplicateForms;
     public ColorTheme colorTheme;
+    public ColorPreferences colorPreferences;
 
-    public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, long busyDialogTimeout, boolean useRequestTimeout,
-                          boolean devMode, boolean configurationAccessAllowed, boolean forbidDuplicateForms, ColorTheme colorTheme) {
+    public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, 
+                          long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, boolean configurationAccessAllowed, 
+                          boolean forbidDuplicateForms, ColorTheme colorTheme, ColorPreferences colorPreferences) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -29,5 +32,6 @@ public class ClientSettings implements Serializable {
         this.configurationAccessAllowed = configurationAccessAllowed;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.colorTheme = colorTheme;
+        this.colorPreferences = colorPreferences;
     }
 }

@@ -331,19 +331,17 @@ getServerSettings() {
 } @@noauth;
 
 selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);
-overrideSelectedRowBackgroundColor '{service.selected.row.background.color}' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor(), RGB(249, 249, 255);
-selectedRowBorderColor '{service.selected.row.border.color}' = DATA COLOR (User);
-overrideSelectedRowBorderColor '{service.selected.row.border.color}' = OVERRIDE selectedRowBorderColor(currentUser()), selectedRowBorderColor(), RGB(175, 175, 255);
+overrideSelectedRowBackgroundColor '{service.selected.row.background.color}' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor();
 selectedCellBackgroundColor '{service.selected.cell.background.color}' = DATA COLOR (User);
-overrideSelectedCellBackgroundColor '{service.selected.cell.background.color}' = OVERRIDE selectedCellBackgroundColor(currentUser()), selectedCellBackgroundColor(), RGB(237, 238, 244);
+overrideSelectedCellBackgroundColor '{service.selected.cell.background.color}' = OVERRIDE selectedCellBackgroundColor(currentUser()), selectedCellBackgroundColor();
 focusedCellBackgroundColor '{service.focused.cell.background.color}' = DATA COLOR (User);
-overrideFocusedCellBackgroundColor '{service.focused.cell.background.color}' = OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor(), RGB(237, 238, 244);
+overrideFocusedCellBackgroundColor '{service.focused.cell.background.color}' = OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor();
 focusedCellBorderColor '{service.focused.cell.border.color}' = DATA COLOR (User);
-overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor(), RGB(98, 98, 255);
+overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor();
 
 FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, currentDateTime, currentDateTimeSnapshot, defaultBackgroundColor, defaultForegroundColor, 
-                 selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
+                 selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
                  dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon,
                  initHeapSize, maxHeapSize, minHeapFreeRatio, maxHeapFreeRatio, vmargs
@@ -353,7 +351,7 @@ FORM settings '{service.form.settings}'
     
     OBJECTS uc=User
     PROPERTIES(uc) READONLY name, login
-    PROPERTIES(uc) selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor
+    PROPERTIES(uc) selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor
     
     OBJECTS r = Setting
     PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
@@ -417,7 +415,6 @@ DESIGN settings {
                 NEW defaultColors {
                    caption = '{service.form.settings.caption.default.colors}';
                    MOVE PROPERTY(selectedRowBackgroundColor());
-                   MOVE PROPERTY(selectedRowBorderColor());
                    MOVE PROPERTY(selectedCellBackgroundColor());
                    MOVE PROPERTY(focusedCellBackgroundColor());
                    MOVE PROPERTY(focusedCellBorderColor());

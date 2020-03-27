@@ -1,14 +1,18 @@
 package lsfusion.client.form.property.panel.view;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.view.ClientSingleCellRenderer;
 import lsfusion.client.form.property.panel.SingleCellTableModel;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
 
+import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.InputEvent;
@@ -20,6 +24,7 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.base.view.SwingDefaults.getSingleCellTableIntercellSpacing;
 import static lsfusion.client.form.controller.ClientFormController.PasteData;
 
 public abstract class SingleCellTable extends ClientPropertyTable {
@@ -27,18 +32,25 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     private final SingleCellTableModel model;
 
     public SingleCellTable(ClientGroupObjectValue columnKey, ClientFormController form) {
-        super(new SingleCellTableModel(columnKey), form, null);
+        super(new SingleCellTableModel(columnKey), form, null, new ClientSingleCellRenderer());
 
         model = (SingleCellTableModel) getModel();
 
         SwingUtils.setupSingleCellTable(this);
     }
 
+    // is called after color theme change, overwrites our values and changes getCellRect() result -> renderer gets larger size  
+    @Override
+    public void setIntercellSpacing(Dimension intercellSpacing) {
+        super.setIntercellSpacing(new Dimension(getSingleCellTableIntercellSpacing(), getSingleCellTableIntercellSpacing()));
+    }
+
     public void setProperty(ClientPropertyDraw property) {
         setName(property.getCaption());
         model.setProperty(property);
 
-        setPreferredSize(new Dimension(property.getValueWidth(this), property.getValueHeight(this)));
+        // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
+        setPreferredSize(new Dimension(property.getValueWidth(this), property.getValueHeight(this) + getRowMargin()));
     }
 
     public void setValue(Object value) {
@@ -163,6 +175,8 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     @Override
     public void setBounds(int x, int y, int width, int height) {
         rowHeight = height;
+        // after switching color theme UI changes rowHeight to LaF default if isRowHeightSet is not set 
+        ReflectionUtils.setPrivateFieldValue(JTable.class, this, "isRowHeightSet", true);
         super.setBounds(x, y, width, height);
     }
 
@@ -177,5 +191,12 @@ public abstract class SingleCellTable extends ClientPropertyTable {
             editorComp.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, new HashSet<>());
         }
         return editorComp;
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        
+        setBorder(SwingDefaults.getSingleCellTableBorder());
     }
 }

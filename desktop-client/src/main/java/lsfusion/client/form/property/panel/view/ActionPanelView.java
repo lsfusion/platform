@@ -2,7 +2,9 @@ package lsfusion.client.form.property.panel.view;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -29,9 +31,6 @@ import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPr
 
 public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;
-    private final ClientPropertyContextMenuPopup menu = new ClientPropertyContextMenuPopup();
-
-    private Color defaultBackground;
 
     private final ClientPropertyDraw property;
     private final ClientGroupObjectValue columnKey;
@@ -42,9 +41,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     private JPanel panel;
 
     public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
-        super((String)null);
+        super((String)null, iproperty.design.getImage(MainController.colorTheme));
 
-        this.defaultBackground = getBackground();
         this.property = iproperty;
         this.columnKey = icolumnKey;
         this.form = iform;
@@ -127,13 +125,21 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         property.installMargins(panel);
     }
 
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        if (property != null) { // first call from constructor
+            setIcon(property.design.getImage(MainController.colorTheme));
+        }
+    }
+
     private boolean executePropertyEventAction(String actionSID) {
         return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null);
     }
 
     private void showContextMenu(Point point) {
         if (form.commitCurrentEditing()) {
-            menu.show(property, this, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
+            new ClientPropertyContextMenuPopup().show(property, this, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
                 @Override
                 public void onMenuItemSelected(final String actionSID) {
                     RmiQueue.runAction(new Runnable() {
@@ -200,12 +206,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setBackgroundColor(Color background) {
-        setBackground(background == null ? defaultBackground : background);
-    }
-
-    @Override
-    public void setBackground(Color bg) {
-        super.setBackground(bg);
+        setBackground(background == null ? SwingDefaults.getButtonBackground() : background);
     }
 
     public void setForegroundColor(Color background) {
