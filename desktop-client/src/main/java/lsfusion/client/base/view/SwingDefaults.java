@@ -9,6 +9,9 @@ import static lsfusion.client.controller.MainController.colorPreferences;
 import static lsfusion.client.controller.MainController.colorTheme;
 
 public class SwingDefaults {
+    final static Color focusedTableRowBackgroundLight = new Color(4, 137, 186, 23);
+    final static Color focusedTableRowBackgroundDark = new Color(5, 114, 154, 61);
+    
     private static Color buttonBackground;
     private static Border buttonBorder;
     private static Border singleCellTableBorder;
@@ -18,13 +21,12 @@ public class SwingDefaults {
     private static Color focusedTableCellBackground;
     private static Border focusedTableCellBorder;
     private static Color focusedTableRowBackground;
-    private static Color focusedTableRowForeground;
     private static Color tableSelectionBackground;
     private static Color notDefinedForeground;
-    
     private static Font textAreaFont;
     private static Color logPanelErrorColor;
     private static Color logPanelSuccessColor;
+    private static Color titledBorderTitleColor;
     
     public static void reset() {
         buttonBackground = null;
@@ -36,13 +38,12 @@ public class SwingDefaults {
         focusedTableCellBackground = null;
         focusedTableCellBorder = null;
         focusedTableRowBackground = null;
-        focusedTableRowForeground = null;
         tableSelectionBackground = null;
         notDefinedForeground = null;
-        
         textAreaFont = null;
         logPanelErrorColor = null;
         logPanelSuccessColor = null;
+        titledBorderTitleColor = null;
     }
     
     public static Color getButtonBackground() {
@@ -89,37 +90,34 @@ public class SwingDefaults {
 
     public static Color getFocusedTableCellBackground() {
         if (focusedTableCellBackground == null) {
-            Color preferredBackground = colorPreferences != null ? colorPreferences.getFocusedCellBackground() : null;
-            focusedTableCellBackground = preferredBackground != null ? preferredBackground : getColor("Table.selectionBackground");
+            focusedTableCellBackground = colorPreferences != null ? colorPreferences.getFocusedCellBackground() : null;
+            if (focusedTableCellBackground == null) {
+                focusedTableCellBackground = colorTheme.isLight() ? focusedTableRowBackgroundLight : focusedTableRowBackgroundDark;
+            }
         }
         return focusedTableCellBackground;
     }
 
     public static Border getFocusedTableCellBorder() {
         if (focusedTableCellBorder == null) {
-            Color preferredColor = colorPreferences != null ? colorPreferences.getFocusedCellBorderColor() : null;
-            if (preferredColor != null) {
-                focusedTableCellBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(preferredColor), BorderFactory.createEmptyBorder(1, 2, 1, 2)); 
-            } else {
-                focusedTableCellBorder = getBorder("Table.focusCellHighlightBorder");
+            Color borderColor = colorPreferences != null ? colorPreferences.getFocusedCellBorderColor() : null;
+            if (borderColor == null) {
+                borderColor = colorTheme.isLight() ? new Color(4, 137, 186) : new Color(7, 144, 195);
             }
+            focusedTableCellBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(borderColor),
+                    BorderFactory.createEmptyBorder(1, 2, 1, 2));
         }
         return focusedTableCellBorder; 
     }
 
     public static Color getFocusedTableRowBackground() {
         if (focusedTableRowBackground == null) {
-            Color preferredBackground = colorPreferences != null ? colorPreferences.getSelectedRowBackground() : null;
-            focusedTableRowBackground = preferredBackground != null ? preferredBackground : getColor("Table.selectionBackground");
+            focusedTableRowBackground = colorPreferences != null ? colorPreferences.getSelectedRowBackground() : null;
+            if (focusedTableRowBackground == null) {
+                focusedTableRowBackground = colorTheme.isLight() ? focusedTableRowBackgroundLight : focusedTableRowBackgroundDark;
+            }
         }
         return focusedTableRowBackground; 
-    }
-
-    public static Color getFocusedTableRowForeground() {
-        if (focusedTableRowForeground == null) {
-            focusedTableRowForeground = getColor("Table.selectionForeground");
-        }
-        return focusedTableRowForeground; 
     }
 
     public static Color getTableSelectionBackground() {
@@ -164,20 +162,23 @@ public class SwingDefaults {
         }
         return logPanelSuccessColor;
     }
+
+    public static Color getTitledBorderTitleColor() {
+        if (titledBorderTitleColor == null) {
+            // Trying to be close to default titled border color.
+            // As we don't know what TitledBorder.border contains, use Separator.foreground (as FlatLaf does).
+            Color borderColor = getColor("Separator.foreground");
+            if (colorTheme.isLight()) {
+                titledBorderTitleColor = borderColor.darker();
+            } else {
+                titledBorderTitleColor = borderColor.brighter();
+            }
+        }
+        return titledBorderTitleColor;
+    }
     
     
     // ----------- not cached properties ----------- //
-    
-    public static Color getTitledBorderTitleColor() {
-        // Trying to be close to default titled border color.
-        // As we don't know what TitledBorder.border contains, use Separator.foreground (as FlatLaf does).
-        Color borderColor = getColor("Separator.foreground");
-        if (colorTheme.isLight()) {
-            return borderColor.darker();
-        } else {
-            return borderColor.brighter();
-        }
-    }
     
     public static int getCellHeight() {
         return 19;

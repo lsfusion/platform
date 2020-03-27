@@ -93,9 +93,7 @@ public abstract class PropertyRenderer {
                 getComponent().setForeground(SwingDefaults.getNotDefinedForeground());
             }
         } else {
-            if (hasFocus || isInFocusedRow) {
-                getComponent().setForeground(SwingDefaults.getFocusedTableRowForeground());
-            } else if (conditionalForeground != null) {
+            if (conditionalForeground != null) {
                 getComponent().setForeground(conditionalForeground);
             } else if (property != null && property.design.foreground != null) {
                 getComponent().setForeground(property.design.foreground);
