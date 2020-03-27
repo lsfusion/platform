@@ -43,7 +43,7 @@ public class HTMLLinkPropertyRenderer extends PropertyRenderer {
     }
 
     @Override
-    protected void drawBorder(boolean isInFocusedRow, boolean hasFocus) {
+    protected void drawBorder(boolean isInFocusedRow, boolean hasFocus, boolean drawFocusBorder) {
         //do nothing
     }
 

@@ -23,6 +23,7 @@ import lsfusion.interop.form.event.KeyStrokes;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
@@ -50,8 +51,12 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     protected Object currentEditValue;
     protected boolean editPerformed;
     protected boolean commitingValue;
-
+    
     protected ClientPropertyTable(TableModel model, ClientFormController form, ClientGroupObject groupObject) {
+        this(model, form, groupObject, new ClientAbstractCellRenderer());
+    }
+
+    protected ClientPropertyTable(TableModel model, ClientFormController form, ClientGroupObject groupObject, TableCellRenderer tableCellRenderer) {
         super(model);
         
         this.form = form;
@@ -61,7 +66,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
         SwingUtils.setupClientTable(this);
 
-        setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
+        setDefaultRenderer(Object.class, tableCellRenderer);
         setDefaultEditor(Object.class, new ClientAbstractCellEditor(this));
 
         initializeActionMap();

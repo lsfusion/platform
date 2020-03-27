@@ -3,10 +3,12 @@ package lsfusion.client.form.property.panel.view;
 import com.google.common.base.Throwables;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.view.ClientSingleCellRenderer;
 import lsfusion.client.form.property.panel.SingleCellTableModel;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
 
@@ -30,7 +32,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     private final SingleCellTableModel model;
 
     public SingleCellTable(ClientGroupObjectValue columnKey, ClientFormController form) {
-        super(new SingleCellTableModel(columnKey), form, null);
+        super(new SingleCellTableModel(columnKey), form, null, new ClientSingleCellRenderer());
 
         model = (SingleCellTableModel) getModel();
 
@@ -189,5 +191,12 @@ public abstract class SingleCellTable extends ClientPropertyTable {
             editorComp.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, new HashSet<>());
         }
         return editorComp;
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        
+        setBorder(SwingDefaults.getSingleCellTableBorder());
     }
 }

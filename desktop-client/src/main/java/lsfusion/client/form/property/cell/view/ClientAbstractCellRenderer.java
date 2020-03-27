@@ -34,7 +34,13 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
             valueToSet = "";
         }
 
-        currentComp.updateRenderer(valueToSet, isSelected, hasFocus, cellTable.isSelected(row, column), cellTable.getBackgroundColor(row, column), cellTable.getForegroundColor(row, column));
+        currentComp.updateRenderer(valueToSet,
+                isSelected,
+                hasFocus,
+                drawFocusBorder(),
+                cellTable.isSelected(row, column),
+                cellTable.getBackgroundColor(row, column),
+                cellTable.getForegroundColor(row, column));
 
         JComponent comp = currentComp.getComponent();
         if (comp instanceof JButton) {
@@ -48,6 +54,10 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
         renderers.add(comp);
 
         return comp;
+    }
+    
+    protected boolean drawFocusBorder() {
+        return true;
     }
 
     private final List<JComponent> renderers = new ArrayList<>();

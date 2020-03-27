@@ -2,6 +2,7 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.ItemAdapter;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.filter.user.*;
 import lsfusion.client.form.object.table.controller.TableController;
@@ -26,7 +27,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
 
     private final UIHandlers uiHandlers;
 
-    public static final int PREFERRED_HEIGHT = 18;
+    public static final int PREFERRED_HEIGHT = SwingDefaults.getCellHeight() + 2; // 2 for borders
 
     // Icons - загружаем один раз, для экономии
     private static final String DELETE_ICON_PATH = "filtdel.png";

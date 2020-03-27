@@ -29,11 +29,17 @@ public abstract class PropertyRenderer {
         this.value = value;
     }
 
-    public void updateRenderer(Object value, boolean isInFocusedRow, boolean hasFocus) {
-        updateRenderer(value, isInFocusedRow, hasFocus, false, null, null);
+    public void updateRenderer(Object value, boolean isInFocusedRow, boolean hasFocus, boolean drawFocusBorder) {
+        updateRenderer(value, isInFocusedRow, hasFocus, drawFocusBorder, false, null, null);
     }
 
-    public void updateRenderer(Object value, boolean isInFocusedRow, boolean hasFocus, boolean isSelected, Color conditionalBackground, Color conditionalForeground) {
+    public void updateRenderer(Object value,
+                               boolean isInFocusedRow,
+                               boolean hasFocus,
+                               boolean drawFocusBorder,
+                               boolean isSelected,
+                               Color conditionalBackground,
+                               Color conditionalForeground) {
         setValue(value);
 
         if (isSelected && !hasFocus) {
@@ -44,7 +50,7 @@ public abstract class PropertyRenderer {
 
         drawForeground(isInFocusedRow, hasFocus, conditionalForeground);
 
-        drawBorder(isInFocusedRow, hasFocus);
+        drawBorder(isInFocusedRow, hasFocus, drawFocusBorder);
     }
     
     protected boolean showRequiredString() {
@@ -99,8 +105,8 @@ public abstract class PropertyRenderer {
         }
     }
     
-    protected void drawBorder(boolean isInFocusedRow, boolean hasFocus) {
-        if (hasFocus) {
+    protected void drawBorder(boolean isInFocusedRow, boolean hasFocus, boolean drawFocusBorder) {
+        if (drawFocusBorder && hasFocus) {
             getComponent().setBorder(SwingDefaults.getFocusedTableCellBorder());
         } else {
             getComponent().setBorder(getDefaultBorder());

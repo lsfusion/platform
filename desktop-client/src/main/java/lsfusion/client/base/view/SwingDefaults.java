@@ -11,6 +11,7 @@ import static lsfusion.client.controller.MainController.colorTheme;
 public class SwingDefaults {
     private static Color buttonBackground;
     private static Border buttonBorder;
+    private static Border singleCellTableBorder;
     private static Color tableCellBackground;
     private static Color tableCellForeground;
     private static Border tableCellBorder;
@@ -28,6 +29,7 @@ public class SwingDefaults {
     public static void reset() {
         buttonBackground = null;
         buttonBorder = null;
+        singleCellTableBorder = null;
         tableCellBackground = null;
         tableCellForeground = null;
         tableCellBorder = null;
@@ -55,6 +57,13 @@ public class SwingDefaults {
             buttonBorder = getBorder("Button.border");
         }
         return buttonBorder;
+    } 
+
+    public static Border getSingleCellTableBorder() {
+        if (singleCellTableBorder == null) {
+            singleCellTableBorder = getBorder("TextField.border");
+        }
+        return singleCellTableBorder;
     } 
 
     public static Color getTableCellBackground() {
@@ -175,6 +184,7 @@ public class SwingDefaults {
     } 
     
     public static int getSingleCellTableIntercellSpacing() {
+        // to have right height and to be able to draw table border in editor
         return 2;
     }
 }

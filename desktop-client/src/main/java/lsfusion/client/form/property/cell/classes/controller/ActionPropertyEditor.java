@@ -16,7 +16,7 @@ public class ActionPropertyEditor implements PropertyEditor {
     public ActionPropertyEditor(ClientPropertyDraw property) {
         //рисуем эдитор так же, как рендерер
         editorComponent = new ActionPropertyRenderer(property);
-        editorComponent.updateRenderer(true, true, true);
+        editorComponent.updateRenderer(true, true, true, true);
 
         editorComponent.getComponent().addFocusListener(new FocusAdapter() {
             @Override
