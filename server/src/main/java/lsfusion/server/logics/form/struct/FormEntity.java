@@ -904,7 +904,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     // means that group object is apparently used as a group-to-columns (or filter parameter)
     @IdentityLazy
     public boolean hasNoProperties(GroupObjectEntity group) {
-        return getGroupProperties(SetFact.EMPTY(), true).get(group).isEmpty();
+        return getGroupProperties(SetFact.EMPTY(), true).get(group) == null;
     }
 
     @IdentityInstanceLazy
