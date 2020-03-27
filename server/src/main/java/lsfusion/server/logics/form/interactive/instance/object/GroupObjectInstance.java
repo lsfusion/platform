@@ -144,7 +144,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return null;
     }
 
-    private Integer pageSize;
+    public Integer pageSize;
     public int getPageSize() {
         assert !isInTree();
         return pageSize;
@@ -177,12 +177,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             this.curClassView = entity.initClassView;
             this.updated |= UPDATED_CLASSVIEW;
         }
-        if(entity.pageSize != null) {
-            this.pageSize = entity.pageSize;
-        } else {
-            this.pageSize = Settings.get().getPageSizeDefaultValue();
-        }
-        
+        this.pageSize = entity.pageSize;
+
         this.parent = parent;
         this.props = props;
     }
@@ -785,7 +781,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     // вообще касается всего что идет после проверки на hidden, можно было бо обобщить, но пока нет смысла
     private boolean pendingHiddenUpdateKeys;
     private boolean pendingHiddenUpdateObjects;
-    
+
     private boolean hasUpdateEnvironmentIncrementProp(GroupObjectProp propType) { // оптимизация
         return props.get(propType) != null;
     }
@@ -847,7 +843,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         // если изменились класс грида или представление
         boolean updateFilters = refresh || (updated & (UPDATED_GRIDCLASS | UPDATED_CLASSVIEW)) != 0;
-        
+
         boolean objectsUpdated = false;
 
         ImSet<FilterInstance> setFilters = getSetFilters();
@@ -1044,7 +1040,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
                 if (isInTree()) { // если дерево, то без поиска, но возможно с parent'ами
                     assert orderSeeks.values.isEmpty() && !orderSeeks.end;
-                    
+
 //                    if(updateFilters) { // неудобно когда дерево сворачивается каждый раз
 //                        if(expandTable !=null) { // потому как могут уже скажем классы стать не актуальными после применения
 //                            expandTable.drop(sql, env.getOpOwner());
@@ -1115,7 +1111,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 result.gridObjects.exclAdd(this, keys.keyOrderSet());
 
                 updateViewProperty(execEnv, keyTable);
-                
+
                 if(seeks == SEEK_NULL)
                     return MapFact.EMPTY();
 
@@ -1131,7 +1127,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         return null; // ничего не изменилось
     }
-    
+
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
         PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {

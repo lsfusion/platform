@@ -241,6 +241,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             GroupObjectInstance groupObject = groupObjects.get(i);
             groupObject.order = i;
             groupObject.setClassListener(classListener);
+            if(groupObject.pageSize == null)
+                groupObject.pageSize = entity.hasNoProperties(groupObject.entity) ? 0 : Settings.get().getPageSizeDefaultValue();
         }
 
         for (TreeGroupEntity treeGroup : entity.getTreeGroupsIt()) {
@@ -252,7 +254,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
             if (SecurityPolicy.checkPropertyViewPermission(securityPolicies, propertyDrawEntity.getSecurityProperty())) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
-                if (propertyDrawInstance.toDraw == null) // для Instance'ов проставляем не null, так как в runtime'е порядок меняться не будет
+                if (propertyDrawInstance.toDraw == null)
                     propertyDrawInstance.toDraw = instanceFactory.getInstance(propertyDrawEntity.getToDraw(entity));
                 mProperties.add(propertyDrawInstance);
             }
