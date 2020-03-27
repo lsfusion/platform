@@ -140,14 +140,18 @@ public class SwingDefaults {
     
     public static Color getLogPanelErrorColor() {
         if (logPanelErrorColor == null) {
-            logPanelErrorColor = colorTheme.isLight() ? new Color(255, 182, 182) : new Color(100, 0, 0);
+            logPanelErrorColor = colorTheme.isLight() ? new Color(255, 182, 182) : new Color(64, 0, 0);
         }
         return logPanelErrorColor;
     }
     
     public static Color getLogPanelSuccessColor() {
         if (logPanelSuccessColor == null) {
-            logPanelSuccessColor = colorTheme.isLight() ? new Color(182, 255, 182) : new Color(0, 100, 0);
+            // for some reason log panel refuses to draw ColorUIResource color
+            logPanelSuccessColor = new Color(getColor("Component.focusColor").getRGB());
+            if (!colorTheme.isLight()) {
+                logPanelSuccessColor = logPanelSuccessColor.darker();
+            }
         }
         return logPanelSuccessColor;
     }
