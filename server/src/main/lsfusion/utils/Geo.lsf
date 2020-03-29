@@ -1,6 +1,6 @@
 MODULE Geo;
 
-REQUIRE System;
+REQUIRE System, Utils;
 
 CLASS ABSTRACT POI '{geo.poi}';
 TABLE POI(POI);
@@ -100,4 +100,16 @@ DESIGN options {
         }
     }
 }
+
+// POSTGIS support
+
+tailedPolygon(STRING text) = FORMULA 'ST_GeomFromText(\'POLYGON((\' || $1 || \'))\')';
+tailPolygon(STRING text) = text + ',' + left(text, strpos(text, ',') - 1); 
+polygon(STRING text) = tailedPolygon(tailPolygon(text));
+
+point(DOUBLE latitude, DOUBLE longitude) = FORMULA 'ST_MakePoint($1, $2)';
+
+intersects(geometry1, geometry2) = FORMULA NULL BOOLEAN 'NULLIF(ST_Intersects($1,$2), FALSE)'; 
+
+isPointInPolygon(DOUBLE latitude, DOUBLE longitude, STRING polygon) = intersects(point(latitude, longitude), polygon(polygon)); 
 
