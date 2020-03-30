@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
-import lsfusion.interop.form.design.ComponentDesign;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import java.beans.PropertyChangeEvent;
 import java.text.SimpleDateFormat;

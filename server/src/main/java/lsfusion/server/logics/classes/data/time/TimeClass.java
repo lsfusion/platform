@@ -97,7 +97,7 @@ public class TimeClass extends DataClass<LocalTime> {
     }
 
     @Override
-    public Time parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+    public LocalTime parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
         Time cellValue;
         try {
             cellValue = new Time(cell.getDateCellValue().getTime());
