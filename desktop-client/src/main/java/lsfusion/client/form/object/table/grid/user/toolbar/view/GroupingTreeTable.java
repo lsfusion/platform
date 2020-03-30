@@ -24,6 +24,8 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 
+import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
+import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class GroupingTreeTable extends JXTreeTable {
@@ -49,14 +51,14 @@ public class GroupingTreeTable extends JXTreeTable {
         setDefaultRenderer(LocalTime.class, new DefaultTableCellRenderer() {
             @Override
             protected void setValue(Object value) {
-                super.setValue(value != null ? value.toString() : null);
+                super.setValue(value != null ? MainFrame.timeFormat.format(localTimeToSqlTime((LocalTime) value)) : null);
             }
         });
 
         setDefaultRenderer(LocalDateTime.class, new DefaultTableCellRenderer() {
             @Override
             protected void setValue(Object value) {
-                super.setValue(value != null ? MainFrame.dateTimeFormat.format(value) : null);
+                super.setValue(value != null ? MainFrame.dateTimeFormat.format(localDateTimeToSqlTimestamp((LocalDateTime) value)) : null);
             }
         });
         
