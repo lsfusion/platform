@@ -11,13 +11,16 @@ import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
+import java.sql.Date;
 import java.sql.Time;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalTime;
 
+import static lsfusion.base.TimeConverter.localTimeToSqlTime;
+import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
 
 public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
@@ -51,19 +54,16 @@ public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> impleme
         return new TimePropertyRenderer(property);
     }
 
-    public Time parseString(String s) throws ParseException {
+    public LocalTime parseString(String s) throws ParseException {
         try {
-            return new Time(((Date) MainFrame.timeFormat.parseObject(s)).getTime());
+            return sqlTimeToLocalTime(new Time(((Date) MainFrame.timeFormat.parseObject(s)).getTime()));
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.time"), 0);
         }
     }
 
     public String formatString(Object obj) {
-        if (obj != null) {
-            return MainFrame.timeFormat.format(obj);
-        }
-        else return "";
+        return obj != null ? MainFrame.timeFormat.format(localTimeToSqlTime((LocalTime) obj)) : "";
     }
 
     public byte getTypeId() {

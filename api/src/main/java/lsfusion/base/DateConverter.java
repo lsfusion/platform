@@ -6,24 +6,14 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DateConverter {
 
-    public static java.sql.Date getCurrentDate() {
-        return dateToSql(new Date());
-    }
-    public static java.sql.Date dateToSql(Date date) {
-        if (date == null) return null;
-
-        if (date instanceof java.sql.Date)
-            return (java.sql.Date) date;
-        else
-            return new java.sql.Date(date.getYear(), date.getMonth(), date.getDate());
-    }
-    
     public static java.sql.Date safeDateToSql(Date date) {
         if (date == null) return null;
         
@@ -32,17 +22,6 @@ public class DateConverter {
         else {
             return new java.sql.Date(date.getTime());
         }
-    }
-
-    public static void assertDateToSql(Date date) {
-        if(date!=null) {
-            java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-            assert dateToSql(date).equals(sqlDate);
-        }
-    }
-
-    public static Date sqlToDate(java.sql.Date date) {
-        return date;
     }
 
     public static Date stampToDate(Timestamp stamp) {
@@ -165,8 +144,6 @@ public class DateConverter {
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}\\.\\d{1,2}\\.\\d{4}t\\d{1,2}:\\d{2}:\\d{2}$", "dd.MM.yyyy'T'HH:mm:ss");
         DATE_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$", "yyyy-MM-dd HH:mm:ss");
         DATE_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}$", "yyyy-MM-dd'T'HH:mm:ss");
-        DATE_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}$", "yyyy-MM-dd'T'HH:mm:ssXXX");
-        DATE_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}[+-]\\d{2}:\\d{2}$", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "MM/dd/yyyy HH:mm:ss");
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}/\\d{1,2}/\\d{4}t\\d{1,2}:\\d{2}:\\d{2}$", "MM/dd/yyyy'T'HH:mm:ss");
         DATE_FORMAT_REGEXPS.put("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$", "yyyy/MM/dd HH:mm:ss");
@@ -177,16 +154,28 @@ public class DateConverter {
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}t\\d{1,2}:\\d{2}:\\d{2}$", "dd MMMM yyyy'T'HH:mm:ss");
     }
 
-    private static final String DATE_SYMBOLS_REGEXP = "[.-/:]"; 
-    
-    public static Date smartParse(String dateString) {
+    private static final Map<String, String> ZONED_DATE_FORMAT_REGEXPS = new HashMap<>();
+    private static final String DATE_SYMBOLS_REGEXP = "[.-/:]";
+
+    static {
+        ZONED_DATE_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}$", "yyyy-MM-dd'T'HH:mm:ssXXX");
+        ZONED_DATE_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}[+-]\\d{2}:\\d{2}$", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    }
+
+    public static LocalDateTime smartParse(String dateString) {
         dateString = dateString.trim();
         if(dateString.isEmpty())
             return null;            
             
         for (String regexp : DATE_FORMAT_REGEXPS.keySet()) {
             if (dateString.toLowerCase().matches(regexp)) {
-                return parseDate(DATE_FORMAT_REGEXPS.get(regexp), dateString);
+                return LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern(DATE_FORMAT_REGEXPS.get(regexp)));
+            }
+        }
+
+        for (String regexp : ZONED_DATE_FORMAT_REGEXPS.keySet()) {
+            if (dateString.toLowerCase().matches(regexp)) {
+                return ZonedDateTime.parse(dateString, DateTimeFormatter.ofPattern(ZONED_DATE_FORMAT_REGEXPS.get(regexp))).toLocalDateTime();
             }
         }
     
@@ -197,11 +186,19 @@ public class DateConverter {
         throw new ParseException();
     }
 
-    public static Date parseDate(String pattern, String value) {
-        try {
-            return new SimpleDateFormat(pattern).parse(value);
-        } catch (java.text.ParseException e) {
-            return null;
-        }
+    public static LocalDate sqlDateToLocalDate(java.sql.Date value) {
+        return value != null ? value.toLocalDate() : null;
+    }
+
+    public static java.sql.Date localDateToSqlDate(LocalDate value) {
+        return value != null ? java.sql.Date.valueOf(value) : null;
+    }
+
+    public static LocalDateTime sqlTimestampToLocalDateTime(java.sql.Timestamp value) {
+        return value != null ? value.toLocalDateTime() : null;
+    }
+
+    public static java.sql.Timestamp localDateTimeToSqlTimestamp(LocalDateTime value) {
+        return value != null ? java.sql.Timestamp.valueOf(value) : null;
     }
 }

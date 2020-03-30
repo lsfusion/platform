@@ -83,7 +83,8 @@ grammar LsfLogics;
     import java.awt.*;
     import java.util.List;
     import java.util.*;
-    
+    import java.time.*;
+
     import static java.util.Arrays.asList;
     import static lsfusion.server.language.ScriptingLogicsModule.WindowType.*;
 }
@@ -3855,7 +3856,7 @@ scope {
 constraintStatement 
 @init {
 	boolean checked = false;
-	LP<?> property = null; 
+	LP<?> property = null;
 	List<NamedPropertyUsage> propUsages = null;
 	DebugInfo.DebugPoint debugPoint = null; 
 	if (inMainParseState()) {
@@ -4917,15 +4918,15 @@ doubleLiteral returns [double val]
 		{ if (isMinus) $val = -$val; }
 	;
 
-dateLiteral returns [java.sql.Date val]
+dateLiteral returns [LocalDate val]
 	:	date=DATE_LITERAL { $val = self.dateLiteralToDate($date.text); }
 	;
 
-dateTimeLiteral returns [java.sql.Timestamp val]
+dateTimeLiteral returns [LocalDateTime val]
 	:	time=DATETIME_LITERAL { $val = self.dateTimeLiteralToTimestamp($time.text); }
 	;
 
-timeLiteral returns [java.sql.Time val]
+timeLiteral returns [LocalTime val]
 	:	time=TIME_LITERAL { $val = self.timeLiteralToTime($time.text); }
 	;
 

@@ -15,9 +15,9 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 
-import static lsfusion.base.DateConverter.createDateEditFormat;
-import static lsfusion.base.DateConverter.safeDateToSql;
+import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
 
 public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
@@ -65,18 +65,15 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
 
     public Object parseString(String s) throws ParseException {
         try {
-            return safeDateToSql(MainFrame.dateFormat.parse(s));
+            return sqlDateToLocalDate(safeDateToSql(MainFrame.dateFormat.parse(s)));
         } catch (Exception e) {
             throw new ParseException(s +  ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
     }
 
     @Override
-    public String formatString(Object obj) throws ParseException {
-        if (obj != null) {
-            return MainFrame.dateFormat.format(obj);
-        }
-        else return "";
+    public String formatString(Object obj) {
+        return obj != null ? MainFrame.dateFormat.format(localDateToSqlDate((LocalDate) obj)) : "";
     }
 
     @Override

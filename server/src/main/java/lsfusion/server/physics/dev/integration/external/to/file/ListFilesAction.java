@@ -25,7 +25,7 @@ import lsfusion.server.physics.dev.integration.external.to.file.client.ListFiles
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,6 +41,18 @@ public class ListFilesAction extends InternalAction {
         pathInterface = i.next();
         charsetInterface = i.next();
         isClientInterface = i.next();
+    }
+
+    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, LocalDateTime[] values) throws SQLException, SQLHandledException {
+        writeProperty(session, property, values, DateTimeClass.instance);
+    }
+
+    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, String[] values) throws SQLException, SQLHandledException {
+        writeProperty(session, property, values, StringClass.text);
+    }
+
+    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, Boolean[] values) throws SQLException, SQLHandledException {
+        writeProperty(session, property, values, LogicalClass.instance);
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
@@ -70,7 +82,7 @@ public class ListFilesAction extends InternalAction {
 
                 writeProperty(context.getSession(), findProperty("fileName[INTEGER]"), (String[]) filesList.get(0));
                 writeProperty(context.getSession(), findProperty("fileIsDirectory[INTEGER]"), (Boolean[]) filesList.get(1));
-                writeProperty(context.getSession(), findProperty("fileModifiedDateTime[INTEGER]"), (Timestamp[]) filesList.get(2));
+                writeProperty(context.getSession(), findProperty("fileModifiedDateTime[INTEGER]"), (LocalDateTime[]) filesList.get(2));
 
             } else {
                 throw new RuntimeException("ListFiles Error. Path not specified.");
@@ -80,18 +92,6 @@ public class ListFilesAction extends InternalAction {
             throw Throwables.propagate(e);
         }
 
-    }
-
-    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, String[] values) throws SQLException, SQLHandledException {
-        writeProperty(session, property, values, StringClass.text);
-    }
-
-    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, Boolean[] values) throws SQLException, SQLHandledException {
-        writeProperty(session, property, values, LogicalClass.instance);
-    }
-
-    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, Timestamp[] values) throws SQLException, SQLHandledException {
-        writeProperty(session, property, values, DateTimeClass.instance);
     }
 
     public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, Object[] values, ConcreteClass objectClass) throws SQLException, SQLHandledException {

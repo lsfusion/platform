@@ -42,8 +42,9 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.readCalcImplements;
@@ -137,16 +138,16 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
     public void change(Boolean value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, context, objects);
     }
-    public void change(Date value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+    public void change(LocalDate value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, session, objects);
     }
-    public void change(Date value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+    public void change(LocalDate value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, context, objects);
     }
-    public void change(java.sql.Timestamp value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+    public void change(LocalDateTime value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, session, objects);
     }
-    public void change(java.sql.Timestamp value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+    public void change(LocalDateTime value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, context, objects);
     }
     public void change(BigDecimal value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
