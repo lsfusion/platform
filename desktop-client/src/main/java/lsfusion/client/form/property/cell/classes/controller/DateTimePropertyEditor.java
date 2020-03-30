@@ -1,14 +1,15 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
-import lsfusion.base.DateConverter;
-import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.interop.form.design.ComponentDesign;
 
 import java.beans.PropertyChangeEvent;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import static lsfusion.base.DateConverter.*;
 
 public class DateTimePropertyEditor extends DatePropertyEditor {
 
@@ -18,12 +19,12 @@ public class DateTimePropertyEditor extends DatePropertyEditor {
 
     @Override
     public Date valueToDate(Object value) {
-        return value instanceof Timestamp ? DateConverter.stampToDate((Timestamp) value) : null;
+        return value instanceof LocalDateTime ? stampToDate(localDateTimeToSqlTimestamp((LocalDateTime) value)) : null;
     }
 
     @Override
     public Object dateToValue(Date date) {
-        return DateConverter.dateToStamp(date);
+        return sqlTimestampToLocalDateTime(dateToStamp(date));
     }
 
     @Override

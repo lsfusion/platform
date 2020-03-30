@@ -1,11 +1,15 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
-import lsfusion.base.DateConverter;
-import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.interop.form.design.ComponentDesign;
 
-import java.sql.Time;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
+
+import static lsfusion.base.DateConverter.dateToTime;
+import static lsfusion.base.DateConverter.timeToDate;
+import static lsfusion.base.TimeConverter.localTimeToSqlTime;
+import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 
 public class TimePropertyEditor extends DatePropertyEditor {
     public TimePropertyEditor(Object value, SimpleDateFormat format, ClientPropertyDraw property) {
@@ -15,11 +19,11 @@ public class TimePropertyEditor extends DatePropertyEditor {
 
     @Override
     public Date valueToDate(Object value) {
-        return value instanceof Time ? DateConverter.timeToDate((Time) value) : null;
+        return value instanceof LocalTime ? timeToDate(localTimeToSqlTime((LocalTime) value)) : null;
     }
 
     @Override
     public Object dateToValue(Date date) {
-        return DateConverter.dateToTime(date);
+        return sqlTimeToLocalTime(dateToTime(date));
     }
 }

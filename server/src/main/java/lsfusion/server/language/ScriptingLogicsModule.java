@@ -156,6 +156,9 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -3084,29 +3087,29 @@ public class ScriptingLogicsModule extends LogicsModule {
         validateTime(h, mn);
     }
 
-    public java.sql.Date dateLiteralToDate(String text) throws ScriptingErrorLog.SemanticErrorException {
+    public LocalDate dateLiteralToDate(String text) throws ScriptingErrorLog.SemanticErrorException {
         int y = Integer.parseInt(text.substring(0, 4));
         int m = Integer.parseInt(text.substring(5, 7));
         int d = Integer.parseInt(text.substring(8, 10));
         validateDate(y, m, d);
-        return new java.sql.Date(y - 1900, m - 1, d);
+        return LocalDate.of(y, m, d);
     }
 
-    public Timestamp dateTimeLiteralToTimestamp(String text) throws ScriptingErrorLog.SemanticErrorException {
+    public LocalDateTime dateTimeLiteralToTimestamp(String text) throws ScriptingErrorLog.SemanticErrorException {
         int y = Integer.parseInt(text.substring(0, 4));
         int m = Integer.parseInt(text.substring(5, 7));
         int d = Integer.parseInt(text.substring(8, 10));
         int h = Integer.parseInt(text.substring(11, 13));
         int mn = Integer.parseInt(text.substring(14, 16));
         validateDateTime(y, m, d, h, mn);
-        return new Timestamp(y - 1900, m - 1, d, h, mn, 0, 0);
+        return LocalDateTime.of(y, m, d, h, mn);
     }
 
-    public Time timeLiteralToTime(String text) throws ScriptingErrorLog.SemanticErrorException {
+    public LocalTime timeLiteralToTime(String text) throws ScriptingErrorLog.SemanticErrorException {
         int h = Integer.parseInt(text.substring(0, 2));
         int m = Integer.parseInt(text.substring(3, 5));
         validateTime(h, m);
-        return new Time(h, m, 0);
+        return LocalTime.of(h, m);
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,

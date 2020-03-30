@@ -1,19 +1,13 @@
 package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.DateConverter;
-import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GClassViewType;
-import lsfusion.gwt.client.form.property.GPropertyGroupType;
-import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
+import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.interop.form.UpdateMode;
@@ -29,8 +23,12 @@ import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.Time;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
@@ -53,30 +51,19 @@ public class GwtToClientConverter extends ObjectConverter {
         return new Color((c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
     }
 
-    @Converter(from = Date.class)
-    public java.sql.Date convertDate(Date date) {
-        //TODO: this converter shouldn't be used
-        assert false;
-        return DateConverter.safeDateToSql(date);
-    }
-
     @Converter(from = GDateDTO.class)
-    public java.sql.Date convertDate(GDateDTO dto) {
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.set(dto.year + 1900, dto.month, dto.day, 0, 0, 0);
-        gc.set(Calendar.MILLISECOND, 0);
-        return new java.sql.Date(gc.getTimeInMillis());
+    public LocalDate convertDate(GDateDTO dto) {
+        return LocalDate.of(dto.year, dto.month, dto.day);
     }
 
     @Converter(from = GTimeDTO.class)
-    public java.sql.Time convertTime(GTimeDTO dto) {
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.clear(); // reset to zero epoch
-        
-        gc.set(Calendar.HOUR_OF_DAY, dto.hour);
-        gc.set(Calendar.MINUTE, dto.minute);
-        gc.set(Calendar.SECOND, dto.second);
-        return new Time(gc.getTimeInMillis());
+    public LocalTime convertTime(GTimeDTO dto) {
+        return LocalTime.of(dto.hour, dto.minute, dto.second);
+    }
+
+    @Converter(from = GDateTimeDTO.class)
+    public LocalDateTime convertDateTime(GDateTimeDTO dto) {
+        return LocalDateTime.of(dto.year, dto.month, dto.day, dto.hour, dto.minute, dto.second);
     }
 
     @Converter(from = GFont.class)

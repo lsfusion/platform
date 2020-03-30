@@ -19,8 +19,8 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 
@@ -46,14 +46,14 @@ public class GroupingTreeTable extends JXTreeTable {
             }
         });
         
-        setDefaultRenderer(Time.class, new DefaultTableCellRenderer() {
+        setDefaultRenderer(LocalTime.class, new DefaultTableCellRenderer() {
             @Override
             protected void setValue(Object value) {
                 super.setValue(value != null ? value.toString() : null);
             }
         });
 
-        setDefaultRenderer(Timestamp.class, new DefaultTableCellRenderer() {
+        setDefaultRenderer(LocalDateTime.class, new DefaultTableCellRenderer() {
             @Override
             protected void setValue(Object value) {
                 super.setValue(value != null ? MainFrame.dateTimeFormat.format(value) : null);

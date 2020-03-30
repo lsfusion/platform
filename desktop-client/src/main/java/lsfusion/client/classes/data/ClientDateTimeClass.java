@@ -15,10 +15,10 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 
-import static lsfusion.base.DateConverter.createDateTimeEditFormat;
-import static lsfusion.base.DateConverter.dateToStamp;
+import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
 
 public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
@@ -65,7 +65,7 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
 
     public Object parseString(String s) throws ParseException {
         try {
-            return dateToStamp((Date) MainFrame.dateTimeFormat.parseObject(s));
+            return sqlTimestampToLocalDateTime(dateToStamp((Date) MainFrame.dateTimeFormat.parseObject(s)));
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
@@ -73,10 +73,7 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
 
     @Override
     public String formatString(Object obj) {
-        if (obj != null) {
-            return MainFrame.dateTimeFormat.format(obj);
-        }
-        else return "";
+        return obj != null ? MainFrame.dateTimeFormat.format(localDateTimeToSqlTimestamp((LocalDateTime) obj)) : "";
     }
 
     @Override

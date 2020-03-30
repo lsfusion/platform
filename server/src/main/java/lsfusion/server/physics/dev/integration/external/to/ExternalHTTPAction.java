@@ -43,6 +43,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static lsfusion.server.physics.dev.integration.external.to.ExternalHttpMethod.PUT;
@@ -208,8 +209,7 @@ public class ExternalHTTPAction extends ExternalAction {
                 String paramValue = rawCookieParam[1].trim();
 
                 if (paramName.equalsIgnoreCase("expires")) {
-                    Date expiryDate = DateConverter.parseDate("EEE, dd MMM yyyy HH:mm:ssZZZ", paramValue);
-                    cookie.setExpiryDate(expiryDate);
+                    cookie.setExpiryDate(parseDate(paramValue));
                 } else if (paramName.equalsIgnoreCase("max-age")) {
                     long maxAge = Long.parseLong(paramValue);
                     Date expiryDate = new Date(System.currentTimeMillis() + maxAge);
@@ -224,6 +224,14 @@ public class ExternalHTTPAction extends ExternalAction {
             }
         }
         return cookie;
+    }
+
+    private Date parseDate(String value) {
+        try {
+            return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ssZZZ").parse(value);
+        } catch (java.text.ParseException e) {
+            return null;
+        }
     }
 
     public static ObjectValue[] getParams(DataSession session, LAP property, Object[] params, Charset charset) throws ParseException, SQLException, SQLHandledException {

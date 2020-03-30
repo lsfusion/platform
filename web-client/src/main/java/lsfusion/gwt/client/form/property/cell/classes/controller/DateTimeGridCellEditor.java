@@ -5,9 +5,9 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.classes.data.GDateTimeType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -25,7 +25,10 @@ public class DateTimeGridCellEditor extends DateGridCellEditor {
 
     @Override
     protected Date valueAsDate(Object value) {
-        return (Date) value;
+        if (value == null) {
+            return null;
+        }
+        return ((GDateTimeDTO) value).toDateTime();
     }
 
     @Override
@@ -38,7 +41,7 @@ public class DateTimeGridCellEditor extends DateGridCellEditor {
         editBox.getElement().focus();
     }
 
-    protected Timestamp parseString(String value) throws ParseException {
+    protected Object parseString(String value) throws ParseException {
         return GDateTimeType.instance.parseString(value, property.pattern);
     }
 }

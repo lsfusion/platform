@@ -25,9 +25,9 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
 
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteTime;
+import static lsfusion.base.TimeConverter.*;
 
-public class TimeClass extends DataClass<Time> {
+public class TimeClass extends DataClass<LocalTime> {
     public final static TimeClass instance = new TimeClass();
 
     static {
@@ -45,18 +45,18 @@ public class TimeClass extends DataClass<Time> {
     }
 
     protected Class getReportJavaClass() {
-        return Time.class;
+        return LocalTime.class;
     }
 
     public SimpleDateFormat getDefaultFormat() {
         return new SimpleDateFormat("HH:mm:ss");
     }
 
-    public Time parseString(String s) throws ParseException {
+    public LocalTime parseString(String s) throws ParseException {
         try {
-            Time parse;
+            LocalTime parse;
             try {
-                parse = new Time(((Date) getDefaultFormat().parseObject(s)).getTime());
+                parse = sqlTimeToLocalTime(new java.sql.Time(((Date) getDefaultFormat().parseObject(s)).getTime()));
             } catch (java.text.ParseException e) {
                 parse = TimeConverter.smartParse(s);
             }
@@ -67,8 +67,8 @@ public class TimeClass extends DataClass<Time> {
     }
 
     @Override
-    public String formatString(Time value) {
-        return value == null ? null : getTimeFormat().format(value);
+    public String formatString(LocalTime value) {
+        return value == null ? null : getTimeFormat().format(localTimeToSqlTime(value));
     }
 
     public static DateFormat getTimeFormat() {
@@ -135,20 +135,20 @@ public class TimeClass extends DataClass<Time> {
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setTime(num, (Time) value);
+        statement.setTime(num, localTimeToSqlTime((LocalTime) value));
     }
 
     public String getSID() {
         return "TIME";
     }
 
-    public Time getDefaultValue() {
-        return getWriteTime(LocalTime.now());
+    public LocalTime getDefaultValue() {
+        return LocalTime.now();
     }
 
     @Override
-    public Time getInfiniteValue(boolean min) {
-        return min ? new Time(0, 0, 0) : new Time(23, 59, 59);
+    public LocalTime getInfiniteValue(boolean min) {
+        return min ? LocalTime.MIN : LocalTime.MAX;
     }
 
     @Override
@@ -156,12 +156,11 @@ public class TimeClass extends DataClass<Time> {
         return new Stat(Long.MAX_VALUE);
     }
     
-    public Time read(Object value) {
-        if(value == null)
-            return null;
-        if(value instanceof String)
-            return Time.valueOf(((String)value).substring(0, 8));
-        return (Time) value;
+    public LocalTime read(Object value) {
+        if(value instanceof LocalTime)
+            return (LocalTime) value;
+        else
+            return sqlTimeToLocalTime((Time) value);
     }
 
     @Override
@@ -170,15 +169,15 @@ public class TimeClass extends DataClass<Time> {
     }
 
     @Override
-    public void formatXLS(Time object, Cell cell, ExportXLSWriter.Styles styles) {
+    public void formatXLS(LocalTime object, Cell cell, ExportXLSWriter.Styles styles) {
         if (object != null) {
-            cell.setCellValue(object);
+            cell.setCellValue(localTimeToSqlTime(object));
         }
         cell.setCellStyle(styles.time);
     }
 
     @Override
-    public Time read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+    public LocalTime read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
         return super.read(set, syntax, name); //return set.getTime(name); в частности jtds глючит String вместо Time возвращает
     }
 }

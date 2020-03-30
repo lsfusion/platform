@@ -1,7 +1,10 @@
 package lsfusion.client.form.property.cell.classes.view;
 
-import lsfusion.base.DateConverter;
 import lsfusion.client.form.property.ClientPropertyDraw;
+
+import java.time.LocalDate;
+
+import static lsfusion.base.DateConverter.localDateToSqlDate;
 
 public class DatePropertyRenderer extends FormatPropertyRenderer {
 
@@ -11,6 +14,6 @@ public class DatePropertyRenderer extends FormatPropertyRenderer {
 
     @Override
     protected Object preformat(Object value) {
-        return DateConverter.sqlToDate((java.sql.Date) value);
+        return localDateToSqlDate((LocalDate) value);
     }
 }
