@@ -1094,7 +1094,7 @@ public abstract class GroupingDialog extends JDialog {
                 } else if (value instanceof LocalDateTime) {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(localDateTimeToSqlTimestamp((LocalDateTime) value));// in apache.poi 4.1: (LocalDate) value
                 } else if (value instanceof Instant) {
-                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(localDateToSqlDate(LocalDate.from((Instant) value)).toLocalDate());// in apache.poi 4.1: (LocalDate) value
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(instantToSqlTimestamp((Instant) value));// in apache.poi 4.1: (LocalDate) value
                 } else if (value instanceof Boolean) {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, null)).setCellValue((Boolean) value);
                 } else if (value instanceof byte[]) { // здесь ожидается изображение
