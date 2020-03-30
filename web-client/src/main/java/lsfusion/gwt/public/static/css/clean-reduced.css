@@ -35,13 +35,13 @@ a:hover {
 }
 
 select {
-    background: transparent;
+    background: var(--component-background-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
 }
 
 select option {
-    background: var(--background-color);
+    background: var(--component-background-color);
 }
 
 select:focus {
@@ -49,7 +49,7 @@ select:focus {
 }
 
 input, textarea {
-    background-color: var(--background-color);
+    background-color: var(--component-background-color);
     color: var(--text-color);
 }
 
@@ -71,7 +71,7 @@ input, textarea {
     text-decoration: none;
     cursor: pointer;
     font-size: small;
-    background: transparent;
+    background: var(--component-background-color);
     border: 1px solid var(--border-color);
     color: var(--text-color);
 }
@@ -1177,6 +1177,7 @@ input, textarea {
     outline: none;
     font-weight:bold;
     color: var(--text-color);
+    background: var(--component-background-color);
     border-right: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
 }
