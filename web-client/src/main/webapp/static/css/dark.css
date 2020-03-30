@@ -1,18 +1,19 @@
 :root {
     --focus-color: #0790c3;
     --selection-color: rgba(5, 114, 154, 0.24);
-    --border-color: #545454;
-    --scrollbar-color: #424242;
-    --text-color: #cecece;
+    --border-color: #646464;
+    --scrollbar-color: #585C5E;
+    --text-color: #bbbbbb;
     --disabled-text-color: #6b6b6b;
-    --background-color: #2b2b2b;
+    --background-color: #3C3F41;
+    --component-background-color: #45494A;
     --split-border-color: #6b6b6b;
     --split-background-color: #383838;
     --dialog-border-color: #4a4a4a;
     --dialog-outer-border-color: #696969;
     
-    --caption-panel-legend-color: #737373;
-    --null-value-string-color: #656565;
+    --caption-panel-legend-color: #7d7d7d;
+    --null-value-string-color: #757575;
     --required-value-string-color: #c54d4d;
     --not-null-corner-triangle-color: #c30000;
     --close-tab-button-hover-color: #585858;

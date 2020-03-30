@@ -540,6 +540,7 @@ public class MainController {
     // properties which depend on current color theme. 
     public static void updateUI() {
         UIManager.put("Table.gridColor", UIManager.getColor("TableHeader.separatorColor"));
+        UIManager.put("TableHeader.background", UIManager.getColor("Panel.background"));
         UIManager.put("Tree.selectionInactiveBackground", SwingDefaults.getFocusedTableRowBackground()); // JTree in TreeGroupTable draws inactive background on selection
         UIManager.put("TitledBorder.titleColor", SwingDefaults.getTitledBorderTitleColor());
     }

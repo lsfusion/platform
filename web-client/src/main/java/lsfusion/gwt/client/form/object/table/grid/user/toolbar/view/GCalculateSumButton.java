@@ -28,6 +28,7 @@ public abstract class GCalculateSumButton extends GToolbarButton {
                 ? messages.formQueriesUnableToCalculateSum() + " [" + property.caption + "]"
                 : messages.formQueriesSumResult() + " [" + property.caption + "]: ");
         panel.add(text);
+        panel.add(GwtClientUtils.createHorizontalStrut(2));
 
         if (result != null) {
             TextBox valueBox = new TextBox();
