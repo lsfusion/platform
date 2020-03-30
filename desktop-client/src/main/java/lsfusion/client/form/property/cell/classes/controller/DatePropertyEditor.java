@@ -3,7 +3,6 @@ package lsfusion.client.form.property.cell.classes.controller;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.DateConverter;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
@@ -18,9 +17,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EventObject;
+
+import static lsfusion.base.DateConverter.*;
 
 public class DatePropertyEditor extends JDateChooser implements PropertyEditor, ClientPropertyTableEditorComponent {
     protected final SimpleDateFormat format;
@@ -40,11 +42,11 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
     }
 
     public Date valueToDate(Object value) {
-        return value instanceof java.sql.Date ? DateConverter.sqlToDate((java.sql.Date) value) : null;
+        return value instanceof LocalDate ? localDateToSqlDate((LocalDate) value) : null;
     }
     
     public Object dateToValue(Date date) {
-        return DateConverter.safeDateToSql(date);
+        return sqlDateToLocalDate(safeDateToSql(date));
     }
 
     @Override

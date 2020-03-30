@@ -13,8 +13,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
+import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 import static lsfusion.base.file.WriteUtils.appendExtension;
 
 public class FileUtils {
@@ -396,14 +400,14 @@ public class FileUtils {
         if (filesList != null) {
             String[] nameValues = new String[filesList.length];
             Boolean[] isDirectoryValues = new Boolean[filesList.length];
-            Timestamp[] modifiedDateTimeValues = new Timestamp[filesList.length];
+            LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[filesList.length];
             for (int i = 0; i < filesList.length; i++) {
                 File file = filesList[i];
                 nameValues[i] = file.getName();
                 isDirectoryValues[i] = file.isDirectory() ? true : null;
-                modifiedDateTimeValues[i] = new Timestamp(file.lastModified());
+                modifiedDateTimeValues[i] = sqlTimestampToLocalDateTime(new Timestamp(file.lastModified()));
             }
-            result = Arrays.asList((Object) nameValues, isDirectoryValues, modifiedDateTimeValues);
+            result = Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues);
         } else {
             throw new RuntimeException(String.format("Path '%s' not found", url));
         }
@@ -427,14 +431,14 @@ public class FileUtils {
                 FTPFile[] ftpFileList = ftpClient.listFiles();
                 String[] nameValues = new String[ftpFileList.length];
                 Boolean[] isDirectoryValues = new Boolean[ftpFileList.length];
-                Timestamp[] modifiedDateTimeValues = new Timestamp[ftpFileList.length];
+                LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[ftpFileList.length];
                 for (int i = 0; i < ftpFileList.length; i++) {
                     FTPFile file = ftpFileList[i];
                     nameValues[i] = file.getName();
                     isDirectoryValues[i] = file.isDirectory() ? true : null;
-                    modifiedDateTimeValues[i] = new Timestamp(file.getTimestamp().getTimeInMillis());
+                    modifiedDateTimeValues[i] = sqlTimestampToLocalDateTime(new Timestamp(file.getTimestamp().getTimeInMillis()));
                 }
-                result = Arrays.asList((Object) nameValues, isDirectoryValues, modifiedDateTimeValues);
+                result = Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues);
             } else {
                 throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
             }

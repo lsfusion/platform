@@ -33,10 +33,11 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 
@@ -53,7 +54,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 91;
+        return 92;
     }
 
     public static String getPlatformVersion() {
@@ -623,10 +624,7 @@ public class BaseUtils {
         }
 
         if (objectType == 6) {
-            GregorianCalendar gc = new GregorianCalendar();
-            gc.set(inStream.readInt(), inStream.readInt(), inStream.readInt(), 0, 0, 0);
-            gc.set(Calendar.MILLISECOND, 0);
-            return new java.sql.Date(gc.getTimeInMillis());
+            return LocalDate.of(inStream.readInt(), inStream.readInt(), inStream.readInt());
         }
 
         if (objectType == 7) {
@@ -640,11 +638,12 @@ public class BaseUtils {
         }
 
         if (objectType == 8) {
-            return new Timestamp(inStream.readLong());
+            return LocalDateTime.of(inStream.readInt(), inStream.readInt(), inStream.readInt(),
+                    inStream.readInt(), inStream.readInt(),inStream.readInt(), inStream.readInt());
         }
 
         if (objectType == 9) {
-            return new Time(inStream.readLong());
+            return LocalTime.of(inStream.readInt(), inStream.readInt(), inStream.readInt(), inStream.readInt());
         }
 
         if (objectType == 10) {
@@ -718,13 +717,11 @@ public class BaseUtils {
             return;
         }
 
-        if (object instanceof java.sql.Date) {
+        if (object instanceof LocalDate) {
             outStream.writeByte(6);
-            GregorianCalendar gc = new GregorianCalendar();
-            gc.setTime((java.sql.Date) object);
-            outStream.writeInt(gc.get(Calendar.YEAR));
-            outStream.writeInt(gc.get(Calendar.MONTH));
-            outStream.writeInt(gc.get(Calendar.DAY_OF_MONTH));
+            outStream.writeInt(((LocalDate) object).getYear());
+            outStream.writeInt(((LocalDate) object).getMonthValue());
+            outStream.writeInt(((LocalDate) object).getDayOfMonth());
             return;
         }
 
@@ -744,15 +741,24 @@ public class BaseUtils {
             return;
         }
 
-        if (object instanceof Timestamp) {
+        if (object instanceof LocalDateTime) {
             outStream.writeByte(8);
-            outStream.writeLong(((Timestamp) object).getTime());
+            outStream.writeInt(((LocalDateTime) object).getYear());
+            outStream.writeInt(((LocalDateTime) object).getMonthValue());
+            outStream.writeInt(((LocalDateTime) object).getDayOfMonth());
+            outStream.writeInt(((LocalDateTime) object).getHour());
+            outStream.writeInt(((LocalDateTime) object).getMinute());
+            outStream.writeInt(((LocalDateTime) object).getSecond());
+            outStream.writeInt(((LocalDateTime) object).getNano());
             return;
         }
 
-        if (object instanceof Time) {
+        if (object instanceof LocalTime) {
             outStream.writeByte(9);
-            outStream.writeLong(((Time) object).getTime());
+            outStream.writeInt(((LocalTime) object).getHour());
+            outStream.writeInt(((LocalTime) object).getMinute());
+            outStream.writeInt(((LocalTime) object).getSecond());
+            outStream.writeInt(((LocalTime) object).getNano());
             return;
         }
 

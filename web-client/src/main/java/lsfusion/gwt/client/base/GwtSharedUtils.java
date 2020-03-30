@@ -240,16 +240,6 @@ public class GwtSharedUtils {
         return sb.toString();
     }
 
-    public static java.sql.Date safeDateToSql(Date date) {
-        if (date == null) return null;
-
-        if (date instanceof java.sql.Date)
-            return (java.sql.Date) date;
-        else {
-            return new java.sql.Date(date.getTime());
-        }
-    }
-
     public static String stringFormat(final String format, final String... args) {
         String[] split = format.split("%s");
         final StringBuilder msg = new StringBuilder();

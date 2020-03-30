@@ -1,9 +1,11 @@
 package lsfusion.client.form.property.cell.classes.view;
 
-import lsfusion.base.DateConverter;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
+import static lsfusion.base.DateConverter.stampToDate;
 
 public class DateTimePropertyRenderer extends FormatPropertyRenderer {
 
@@ -13,6 +15,6 @@ public class DateTimePropertyRenderer extends FormatPropertyRenderer {
 
     @Override
     protected Object preformat(Object value) {
-        return DateConverter.stampToDate((Timestamp) value);
+        return stampToDate(localDateTimeToSqlTimestamp((LocalDateTime) value));
     }
 }

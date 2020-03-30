@@ -1,12 +1,18 @@
 package lsfusion.interop.form.print;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.DateConverter;
-import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import net.sf.jasperreports.engine.JRRewindableDataSource;
 
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
+
+import static lsfusion.base.DateConverter.*;
+import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 
 public class ReportDataSource implements JRRewindableDataSource {
     private final List<ReportDataSource> childSources = new ArrayList<>();
@@ -62,11 +68,17 @@ public class ReportDataSource implements JRRewindableDataSource {
     }
 
     private Object transformValue(JRField jrField, Object value) {
-        if (Date.class.getName().equals(jrField.getValueClassName()) && value != null) {
-            if (value instanceof java.sql.Timestamp)
-                value = DateConverter.stampToDate((java.sql.Timestamp) value);
-            else
-                value = DateConverter.sqlToDate((java.sql.Date) value);
+        if(value != null) {
+            if (Date.class.getName().equals(jrField.getValueClassName())) {
+                if (value instanceof LocalDateTime)
+                    value = stampToDate(localDateTimeToSqlTimestamp((LocalDateTime) value));
+                else
+                    value = localDateToSqlDate((LocalDate) value);
+            } else if (Time.class.getName().equals(jrField.getValueClassName())) {
+                value = localTimeToSqlTime((LocalTime) value);
+            } else if (Timestamp.class.getName().equals(jrField.getValueClassName())) {
+                value = localDateTimeToSqlTimestamp((LocalDateTime) value);
+            }
         }
 
         if (value instanceof String) {
