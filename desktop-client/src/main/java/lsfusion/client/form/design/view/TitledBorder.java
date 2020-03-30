@@ -59,10 +59,10 @@ public class TitledBorder extends AbstractBorder
     static public final int     TRAILING = 5;
 
     // Space between the border and the component's edge
-    static protected final int EDGE_SPACING = 0;
+    static protected final int EDGE_SPACING = 1;
 
     // Space between the border and text
-    static protected final int TEXT_SPACING = 0;
+    static protected final int TEXT_SPACING = 1;
 
     // Horizontal inset of text that is left or right justified
     static protected final int TEXT_INSET_H = 5;

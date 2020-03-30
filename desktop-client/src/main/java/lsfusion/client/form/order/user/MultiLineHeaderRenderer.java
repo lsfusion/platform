@@ -43,7 +43,8 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
             } else {
                 label.setIcon(null);
             }
-            label.setFont(label.getFont().deriveFont(Font.PLAIN, MainFrame.getUIFontSize(10)));
+            final Font labelFont = label.getFont();
+            label.setFont(labelFont.deriveFont(Font.PLAIN, MainFrame.getUIFontSize(labelFont.getSize())));
         }
         return comp;
     }
