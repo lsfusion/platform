@@ -114,7 +114,6 @@ defaultBackgroundColor '{system.default.background.color}' = DATA COLOR ();
 defaultForegroundColor '{system.default.foreground.color}' = DATA COLOR ();
 
 selectedRowBackgroundColor '{system.selected.row.background.color}' = DATA COLOR ();
-selectedRowBorderColor '{system.selected.row.border.color}' = DATA COLOR ();
 selectedCellBackgroundColor '{system.selected.cell.background.color}' = DATA COLOR ();
 focusedCellBackgroundColor '{system.focused.cell.background.color}' = DATA COLOR ();
 focusedCellBorderColor '{system.focused.cell.border.color}' = DATA COLOR ();
