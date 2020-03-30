@@ -201,4 +201,12 @@ public class DateConverter {
     public static java.sql.Timestamp localDateTimeToSqlTimestamp(LocalDateTime value) {
         return value != null ? java.sql.Timestamp.valueOf(value) : null;
     }
+
+    public static Instant sqlTimestampToInstant(java.sql.Timestamp value) {
+        return value != null ? value.toInstant() : null;
+    }
+
+    public static java.sql.Timestamp instantToSqlTimestamp(Instant value) {
+        return value != null ? java.sql.Timestamp.from(value) : null;
+    }
 }

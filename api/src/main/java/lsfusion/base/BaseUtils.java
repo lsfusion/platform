@@ -36,6 +36,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -55,7 +56,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 109;
+        return 110;
     }
 
     public static String getPlatformVersion() {
@@ -625,34 +626,38 @@ public class BaseUtils {
         }
 
         if (objectType == 6) {
-            return LocalDate.of(inStream.readInt(), inStream.readInt(), inStream.readInt());
-        }
-
-        if (objectType == 7) {
             int len = inStream.readInt();
             return new RawFileData(IOUtils.readBytesFromStream(inStream, len));
         }
 
-        if (objectType == 12) {
+        if (objectType == 7) {
             int len = inStream.readInt();
             return new FileData(IOUtils.readBytesFromStream(inStream, len));
         }
 
         if (objectType == 8) {
+            return new Color(inStream.readInt());
+        }
+
+        if (objectType == 9) {
+            return deserializeBigDecimal(inStream);
+        }
+
+        if (objectType == 10) {
+            return LocalDate.of(inStream.readInt(), inStream.readInt(), inStream.readInt());
+        }
+
+        if (objectType == 11) {
+            return LocalTime.of(inStream.readInt(), inStream.readInt(), inStream.readInt(), inStream.readInt());
+        }
+
+        if (objectType == 12) {
             return LocalDateTime.of(inStream.readInt(), inStream.readInt(), inStream.readInt(),
                     inStream.readInt(), inStream.readInt(),inStream.readInt(), inStream.readInt());
         }
 
-        if (objectType == 9) {
-            return LocalTime.of(inStream.readInt(), inStream.readInt(), inStream.readInt(), inStream.readInt());
-        }
-
-        if (objectType == 10) {
-            return new Color(inStream.readInt());
-        }
-
-        if (objectType == 11) {
-            return deserializeBigDecimal(inStream);
+        if(objectType == 13) {
+            return Instant.ofEpochMilli(inStream.readLong());
         }
 
         throw new IOException();
@@ -718,16 +723,8 @@ public class BaseUtils {
             return;
         }
 
-        if (object instanceof LocalDate) {
-            outStream.writeByte(6);
-            outStream.writeInt(((LocalDate) object).getYear());
-            outStream.writeInt(((LocalDate) object).getMonthValue());
-            outStream.writeInt(((LocalDate) object).getDayOfMonth());
-            return;
-        }
-
         if (object instanceof RawFileData) {
-            outStream.writeByte(7);
+            outStream.writeByte(6);
             byte[] obj = ((RawFileData) object).getBytes();
             outStream.writeInt(obj.length);
             outStream.write(obj);
@@ -735,15 +732,44 @@ public class BaseUtils {
         }
 
         if (object instanceof FileData) {
-            outStream.writeByte(12);
+            outStream.writeByte(7);
             byte[] obj = ((FileData) object).getBytes();
             outStream.writeInt(obj.length);
             outStream.write(obj);
             return;
         }
 
-        if (object instanceof LocalDateTime) {
+        if (object instanceof Color) {
             outStream.writeByte(8);
+            outStream.writeInt(((Color) object).getRGB());
+            return;
+        }
+
+        if (object instanceof BigDecimal) {
+            outStream.writeByte(9);
+            serializeBigDecimal(outStream, (BigDecimal) object);
+            return;
+        }
+
+        if (object instanceof LocalDate) {
+            outStream.writeByte(10);
+            outStream.writeInt(((LocalDate) object).getYear());
+            outStream.writeInt(((LocalDate) object).getMonthValue());
+            outStream.writeInt(((LocalDate) object).getDayOfMonth());
+            return;
+        }
+
+        if (object instanceof LocalTime) {
+            outStream.writeByte(11);
+            outStream.writeInt(((LocalTime) object).getHour());
+            outStream.writeInt(((LocalTime) object).getMinute());
+            outStream.writeInt(((LocalTime) object).getSecond());
+            outStream.writeInt(((LocalTime) object).getNano());
+            return;
+        }
+
+        if (object instanceof LocalDateTime) {
+            outStream.writeByte(12);
             outStream.writeInt(((LocalDateTime) object).getYear());
             outStream.writeInt(((LocalDateTime) object).getMonthValue());
             outStream.writeInt(((LocalDateTime) object).getDayOfMonth());
@@ -754,24 +780,9 @@ public class BaseUtils {
             return;
         }
 
-        if (object instanceof LocalTime) {
-            outStream.writeByte(9);
-            outStream.writeInt(((LocalTime) object).getHour());
-            outStream.writeInt(((LocalTime) object).getMinute());
-            outStream.writeInt(((LocalTime) object).getSecond());
-            outStream.writeInt(((LocalTime) object).getNano());
-            return;
-        }
-
-        if (object instanceof Color) {
-            outStream.writeByte(10);
-            outStream.writeInt(((Color) object).getRGB());
-            return;
-        }
-
-        if (object instanceof BigDecimal) {
-            outStream.writeByte(11);
-            serializeBigDecimal(outStream, (BigDecimal) object);
+        if(object instanceof Instant) {
+            outStream.writeByte(13);
+            outStream.writeLong(((Instant) object).toEpochMilli());
             return;
         }
 

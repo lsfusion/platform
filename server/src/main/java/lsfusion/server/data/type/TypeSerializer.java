@@ -12,10 +12,7 @@ import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.link.*;
-import lsfusion.server.logics.classes.data.time.DateClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.classes.data.time.TimeClass;
-import lsfusion.server.logics.classes.data.time.YearClass;
+import lsfusion.server.logics.classes.data.time.*;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.ByteArrayOutputStream;
@@ -78,6 +75,7 @@ public class TypeSerializer {
         if (type == DataType.DATE) return DateClass.instance;
         if (type == DataType.YEAR) return YearClass.instance;
         if (type == DataType.DATETIME) return DateTimeClass.instance;
+        if (type == DataType.ZDATETIME) return ZDateTimeClass.instance;
         if (type == DataType.TIME) return TimeClass.instance;
         if (type == DataType.COLOR) return ColorClass.instance;
 

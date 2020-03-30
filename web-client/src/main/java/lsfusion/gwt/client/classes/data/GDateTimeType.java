@@ -36,7 +36,7 @@ public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTi
     }
 
     @Override
-    public GDateTimeDTO parseString(String value, String pattern) throws ParseException {
+    public Object parseString(String value, String pattern) throws ParseException {
         return value.isEmpty() ? null : GDateTimeDTO.fromDate(GDateType.parseDate(value, getDefaultDateTimeFormat(), getDefaultDateTimeShortFormat(), getDefaultDateFormat()));
     }
 

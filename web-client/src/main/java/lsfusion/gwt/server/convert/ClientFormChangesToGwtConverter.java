@@ -13,17 +13,13 @@ import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
-import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
-import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
+import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.provider.form.FormSessionObject;
-import lsfusion.interop.form.property.ClassViewType;
 
 import java.awt.*;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -187,5 +183,10 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     @Converter(from = LocalDateTime.class)
     public GDateTimeDTO convertDateTime(LocalDateTime dateTime) {
         return new GDateTimeDTO(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond());
+    }
+
+    @Converter(from = Instant.class)
+    public GZDateTimeDTO convertDateTime(Instant dateTime) {
+        return new GZDateTimeDTO(dateTime.toEpochMilli());
     }
 }

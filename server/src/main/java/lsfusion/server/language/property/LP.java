@@ -43,6 +43,7 @@ import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -148,6 +149,9 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         change((Object)value, session, objects);
     }
     public void change(LocalDateTime value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(Instant value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, context, objects);
     }
     public void change(BigDecimal value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {

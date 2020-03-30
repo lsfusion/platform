@@ -2,6 +2,7 @@ package lsfusion.base;
 
 import org.apache.http.ParseException;
 
+import java.sql.Time;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -26,6 +27,14 @@ public class TimeConverter {
             }
         }
         throw new ParseException("error parsing time: " + timeString);
+    }
+
+    public static Time getWriteTime(Object value) {
+        if(value instanceof LocalTime) {
+            return localTimeToSqlTime((LocalTime) value);
+        } else {
+            return (Time) value;
+        }
     }
 
     public static LocalTime parseTime(String pattern, String value) {

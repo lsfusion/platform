@@ -52,6 +52,7 @@ import java.lang.Boolean;
 import java.lang.Number;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -59,12 +60,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 
-import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
-import static lsfusion.base.DateConverter.localDateToSqlDate;
+import static lsfusion.base.DateConverter.*;
 import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.view.MainFrame.getIntUIFontSize;
-import static lsfusion.client.view.MainFrame.getUIFontSize;
+import static lsfusion.client.view.MainFrame.*;
 
 public abstract class GroupingDialog extends JDialog {
     private final int RECORD_QUANTITY_ID = -1;
@@ -1033,6 +1032,9 @@ public abstract class GroupingDialog extends JDialog {
                 } else if (value instanceof LocalDateTime) {
                     length = ((LocalDateTime) value).format(DateTimeFormatter.ofPattern("M/d/yy")).length();
                     sheet.addCell(new jxl.write.DateTime(column, currentRow, localDateTimeToSqlTimestamp((LocalDateTime) value), createCellFormat(DateFormats.DEFAULT, false)));
+                } else if (value instanceof Instant) {
+                    length = LocalDateTime.from((Instant) value).format(DateTimeFormatter.ofPattern("M/d/yy")).length();
+                    sheet.addCell(new jxl.write.DateTime(column, currentRow, instantToSqlTimestamp((Instant) value), createCellFormat(DateFormats.DEFAULT, false)));
                 } else if (value instanceof Boolean) {
                     length = value.toString().length();
                     sheet.addCell(new jxl.write.Boolean(column, currentRow, (Boolean) value, createCellFormat(null, false)));
@@ -1091,7 +1093,9 @@ public abstract class GroupingDialog extends JDialog {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(localDateToSqlDate((LocalDate) value));// in apache.poi 4.1: (LocalDate) value
                 } else if (value instanceof LocalDateTime) {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(localDateTimeToSqlTimestamp((LocalDateTime) value));// in apache.poi 4.1: (LocalDate) value
-                }else if (value instanceof Boolean) {
+                } else if (value instanceof Instant) {
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(localDateToSqlDate(LocalDate.from((Instant) value)).toLocalDate());// in apache.poi 4.1: (LocalDate) value
+                } else if (value instanceof Boolean) {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, null)).setCellValue((Boolean) value);
                 } else if (value instanceof byte[]) { // здесь ожидается изображение
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, null));

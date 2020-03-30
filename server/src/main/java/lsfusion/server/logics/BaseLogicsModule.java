@@ -701,6 +701,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "Numeric"),
                 getLCPByUniqueName(namePrefix + "Year"),
                 getLCPByUniqueName(namePrefix + "DateTime"),
+                getLCPByUniqueName(namePrefix + "ZDateTime"),
                 getLCPByUniqueName(namePrefix + "Boolean"),
                 getLCPByUniqueName(namePrefix + "Date"),
                 getLCPByUniqueName(namePrefix + "Time"),

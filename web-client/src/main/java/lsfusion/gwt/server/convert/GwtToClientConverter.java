@@ -25,6 +25,7 @@ import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -66,6 +67,11 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GDateTimeDTO.class)
     public LocalDateTime convertDateTime(GDateTimeDTO dto) {
         return LocalDateTime.of(dto.year, dto.month, dto.day, dto.hour, dto.minute, dto.second);
+    }
+
+    @Converter(from = GZDateTimeDTO.class)
+    public Instant convertDateTime(GZDateTimeDTO dto) {
+        return Instant.ofEpochMilli(dto.instant);
     }
 
     @Converter(from = GFont.class)

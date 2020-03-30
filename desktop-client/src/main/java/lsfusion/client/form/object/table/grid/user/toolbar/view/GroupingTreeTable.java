@@ -19,11 +19,13 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 
+import static lsfusion.base.DateConverter.instantToSqlTimestamp;
 import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
 import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -59,6 +61,13 @@ public class GroupingTreeTable extends JXTreeTable {
             @Override
             protected void setValue(Object value) {
                 super.setValue(value != null ? MainFrame.dateTimeFormat.format(localDateTimeToSqlTimestamp((LocalDateTime) value)) : null);
+            }
+        });
+
+        setDefaultRenderer(Instant.class, new DefaultTableCellRenderer() {
+            @Override
+            protected void setValue(Object value) {
+                super.setValue(value != null ? MainFrame.dateTimeFormat.format(instantToSqlTimestamp((Instant) value)) : null);
             }
         });
         

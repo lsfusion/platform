@@ -9,10 +9,7 @@ import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.link.*;
-import lsfusion.server.logics.classes.data.time.DateClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.classes.data.time.TimeClass;
-import lsfusion.server.logics.classes.data.time.YearClass;
+import lsfusion.server.logics.classes.data.time.*;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveConcatenateClassSet;
@@ -88,6 +85,7 @@ public final class ClassCanonicalNameUtils {
         put("BOOLEAN", LogicalClass.instance);
         put("DATE", DateClass.instance);
         put("DATETIME", DateTimeClass.instance );
+        put("ZDATETIME", ZDateTimeClass.instance );
         put("TIME", TimeClass.instance);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
@@ -152,6 +150,7 @@ public final class ClassCanonicalNameUtils {
         put("BOOLEAN", LogicalClass.instance);
         put("DATE", DateClass.instance);
         put("DATETIME", DateTimeClass.instance);
+        put("ZDATETIME", ZDateTimeClass.instance);
         put("TIME", TimeClass.instance);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
