@@ -510,6 +510,7 @@
             <set>
                 <ref bean="setupDrillDownTask"/> <!-- drilldown forms-->
                 <ref bean="initReflectionEventsTask"/> <!-- log forms-->
+                <ref bean="getPropertyListTask"/> <!-- because finalize forms generates event actions, which uses getCheckProperties, thus, getPropertyList (and we don't want to run it with prereadLinks since fill/dropActinChangeProps is not thread-safe) -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

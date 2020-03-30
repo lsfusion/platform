@@ -12,7 +12,18 @@ public class PrereadLinksTask extends GroupPropertiesTask {
         return "Reading property links";
     }
 
+    @Override
+    protected boolean prerun() {
+        getBL().fillActionChangeProps();
+        return true;
+    }
+
     protected void runTask(ActionOrProperty property) {
         BusinessLogics.prereadSortedLinks(property);
+    }
+
+    @Override
+    public void run(Logger logger) {
+        getBL().dropActionChangeProps();
     }
 }
