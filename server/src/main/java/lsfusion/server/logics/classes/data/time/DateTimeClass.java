@@ -23,9 +23,11 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
+import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
 public class DateTimeClass extends DataClass<LocalDateTime> {
@@ -88,7 +90,10 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     }
 
     public LocalDateTime read(Object value) {
-        return (LocalDateTime) value;
+        if(value instanceof LocalDateTime)
+            return (LocalDateTime) value;
+        else
+            return sqlTimestampToLocalDateTime((Timestamp) value);
     }
 
     @Override
