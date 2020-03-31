@@ -207,7 +207,7 @@
         return addClass(element, byClassName);
       };
       executeAggregatorCellRender = function(aggregator, td, val) {
-        if (aggregator.cellRenderer != null) {
+        if (aggregator.cellRender != null) {
           return aggregator.cellRender(td, val, aggregator.property());
         } else {
           return td.textContent = aggregator.format(val);
