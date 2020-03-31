@@ -122,6 +122,7 @@ public class DateConverter {
     private static final Map<String, String> ZONED_DATETIME_FORMAT_REGEXPS = new HashMap<>();
 
     static {
+        DATE_FORMAT_REGEXPS.put("^\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}$", "dd.MM.yy");
         DATE_FORMAT_REGEXPS.put("^\\d{8}$", "yyyyMMdd");
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}-\\d{1,2}-\\d{4}$", "dd-MM-yyyy");
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}\\.\\d{1,2}\\.\\d{4}$", "dd.MM.yyyy");
