@@ -1,5 +1,8 @@
 package lsfusion.client.controller;
 
+import bibliothek.gui.DockUI;
+import bibliothek.gui.dock.util.laf.DefaultLookAndFeelColors;
+import bibliothek.gui.dock.util.laf.LookAndFeelColors;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
@@ -305,6 +308,11 @@ public class MainController {
         // так как он load'ится из временного директория
         System.setSecurityManager(null);
     }
+    
+    public static void setColorPreferences(ColorPreferences icolorPreferences) {
+        colorPreferences = icolorPreferences;
+        SwingDefaults.resetTableSelectionProperties();
+    }
 
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
 //        FocusOwnerTracer.installFocusTracer();
@@ -326,6 +334,19 @@ public class MainController {
         UIManager.put("Table.intercellSpacing", new Dimension(1, 1));
         UIManager.put("Tree.border", BorderFactory.createEmptyBorder());
         UIManager.put("TextComponent.selectAllOnFocusPolicy", "never");
+
+        DockUI.getDefaultDockUI().registerColors(".*", new DefaultLookAndFeelColors() {
+            @Override
+            public Color getColor(String key) {
+                switch (key) {
+                    case LookAndFeelColors.TITLE_SELECTION_BACKGROUND:
+                        return SwingDefaults.getFocusedTableRowBackground();
+                    case LookAndFeelColors.TITLE_SELECTION_FOREGROUND:
+                        return SwingDefaults.getTableCellForeground();
+                }
+                return super.getColor(key);
+            }
+        });
         
         updateUI();
         
@@ -558,7 +579,7 @@ public class MainController {
             updateUI();
             FlatLaf.updateUI();
 
-            for (ColorThemeChangeListener colorThemeChangeListener : colorThemeChangeListeners) {
+            for (ColorThemeChangeListener colorThemeChangeListener : new HashSet<>(colorThemeChangeListeners)) {
                 colorThemeChangeListener.colorThemeChanged();
             }
         }

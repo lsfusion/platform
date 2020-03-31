@@ -23,6 +23,7 @@ public abstract class NavigatorView {
         } else {
             component = iComponent;   
         }
+        component.setBorder(BorderFactory.createEmptyBorder());
         
         this.controller = controller;
     }

@@ -197,6 +197,6 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     public void updateUI() {
         super.updateUI();
         
-        setBorder(SwingDefaults.getSingleCellTableBorder());
+        setBorder(SwingDefaults.getTextFieldBorder());
     }
 }

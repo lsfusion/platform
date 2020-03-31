@@ -1,5 +1,11 @@
 package lsfusion.client.view;
 
+import bibliothek.extension.gui.dock.theme.EclipseTheme;
+import bibliothek.extension.gui.dock.theme.eclipse.OwnedRectEclipseBorder;
+import bibliothek.extension.gui.dock.theme.eclipse.stack.EclipseTabPane;
+import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.*;
+import bibliothek.gui.DockController;
+import bibliothek.gui.Dockable;
 import bibliothek.gui.dock.common.CContentArea;
 import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CGrid;
@@ -14,13 +20,17 @@ import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
+import bibliothek.gui.dock.util.color.ColorManager;
 import com.google.common.base.Throwables;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.base.view.ClientDockable;
+import lsfusion.client.base.view.ColorThemeChangeListener;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.AsyncListener;
 import lsfusion.client.controller.remote.RmiQueue;
@@ -47,6 +57,7 @@ import org.apache.log4j.Logger;
 import org.jboss.netty.util.internal.NonReentrantLock;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -135,6 +146,28 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         navigatorController = new NavigatorController(mainNavigator);
 
         mainControl = new CControl(this);
+        
+        ReflectionUtils.setPrivateFieldValue(DockController.class, mainControl.getController(), "colors", new ColorManager(mainControl.getController()) {
+            @Override
+            public Color get(String id) {
+                if (id.equals("stack.border") || 
+                        id.equals("stack.tab.border") || 
+                        id.equals("stack.tab.border.selected") || 
+                        id.equals("stack.tab.border.selected.focused") || 
+                        id.equals("stack.tab.border.selected.focuslost") ||
+                        id.equals("stack.tab.border.disabled")) {
+                    return SwingDefaults.getDockableBorderColor();
+                } else if (id.equals("stack.tab.text") ||
+                        id.equals("stack.tab.text.selected") ||
+                        id.equals("stack.tab.text.selected.focused") ||
+                        id.equals("stack.tab.text.selected.focuslost") ||
+                        id.equals("stack.tab.text.disabled")) {
+                    return SwingDefaults.getTableCellForeground();
+                }
+                return super.get(id);
+            }
+        });
+
 
         formsController = new FormsController(mainControl, mainNavigator);
 
@@ -244,10 +277,53 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     public void clearForms() {
         formsController.getForms().clear();
     }
+    
+    class ClientRectGradientPainter extends RectGradientPainter implements ColorThemeChangeListener {
+        public ClientRectGradientPainter(EclipseTabPane pane, Dockable dockable) {
+            super(pane, dockable);
+            MainController.addColorThemeChangeListener(this);
+        }
+
+        @Override
+        public void colorThemeChanged() {
+            getPane().updateFullBorder();
+        }
+    }
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
     private void initDockStations(NavigatorData navigatorData) {
-        mainControl.setTheme(ThemeMap.KEY_FLAT_THEME);
+        mainControl.getThemes().remove(ThemeMap.KEY_BASIC_THEME);
+        mainControl.getThemes().remove(ThemeMap.KEY_BUBBLE_THEME);
+        mainControl.getThemes().remove(ThemeMap.KEY_FLAT_THEME);
+        mainControl.getThemes().remove(ThemeMap.KEY_SMOOTH_THEME);
+        
+        mainControl.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
+        
+        // c/p ArchGradientPainter.FACTORY
+        mainControl.getController().getProperties().set(EclipseTheme.TAB_PAINTER, new TabPainter(){
+            public TabComponent createTabComponent(EclipseTabPane pane, Dockable dockable ){
+                return new ClientRectGradientPainter(pane, dockable);
+            }
+
+            public TabPanePainter createDecorationPainter( EclipseTabPane pane ){
+                return new LinePainter( pane );
+            }
+
+            public InvisibleTab createInvisibleTab( InvisibleTabPane pane, Dockable dockable ){
+                return new DefaultInvisibleTab( pane, dockable );
+            }
+
+            public Border getFullBorder( BorderedComponent owner, DockController controller, Dockable dockable ){
+                return new OwnedRectEclipseBorder( owner, controller, true );
+            }
+        });
+        
+        mainControl.getController().getProperties().set(EclipseTheme.BORDER_MODIFIER, border -> {
+            if (border != null) {
+                return BorderFactory.createLineBorder(SwingDefaults.getDockableBorderColor());
+            }
+            return null;
+        });
 
         loadLayout();
 
@@ -424,7 +500,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     private void setupMenu() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createFileMenu());
-        menuBar.add(createViewMenu());
+//        menuBar.add(createViewMenu());
 //        menuBar.add(createOptionsMenu());
         menuBar.add(createWindowMenu());
         menuBar.add(createHelpMenu());

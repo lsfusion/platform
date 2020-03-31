@@ -103,7 +103,7 @@ public abstract class MainFrame extends JFrame {
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
             MainController.configurationAccessAllowed = clientSettings.configurationAccessAllowed;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
-            MainController.colorPreferences = clientSettings.colorPreferences;
+            MainController.setColorPreferences(clientSettings.colorPreferences);
 
             Locale userLocale = userPreferences.locale;
             Locale.setDefault(userLocale);

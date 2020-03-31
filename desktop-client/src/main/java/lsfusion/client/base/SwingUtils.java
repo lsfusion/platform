@@ -466,7 +466,7 @@ public class SwingUtils {
 
         table.setIntercellSpacing(new Dimension(getSingleCellTableIntercellSpacing(), getSingleCellTableIntercellSpacing()));
 
-        table.setBorder(SwingDefaults.getSingleCellTableBorder());
+        table.setBorder(SwingDefaults.getTextFieldBorder());
     }
 
     public static Border randomBorder() {

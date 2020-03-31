@@ -18,6 +18,7 @@ class LogPanel extends JPanel {
         logArea.setLineWrap(true);
         logArea.setWrapStyleWord(true);
         JScrollPane pane = new JScrollPane(logArea);
+        pane.setBorder(BorderFactory.createEmptyBorder());
 
         add(pane, BorderLayout.CENTER);
 

@@ -14,7 +14,7 @@ public class SwingDefaults {
     
     private static Color buttonBackground;
     private static Border buttonBorder;
-    private static Border singleCellTableBorder;
+    private static Border textFieldBorder;
     private static Color tableCellBackground;
     private static Color tableCellForeground;
     private static Border tableCellBorder;
@@ -27,23 +27,31 @@ public class SwingDefaults {
     private static Color logPanelErrorColor;
     private static Color logPanelSuccessColor;
     private static Color titledBorderTitleColor;
+    private static Color dockableBorderColor;
     
     public static void reset() {
         buttonBackground = null;
         buttonBorder = null;
-        singleCellTableBorder = null;
+        textFieldBorder = null;
         tableCellBackground = null;
         tableCellForeground = null;
         tableCellBorder = null;
-        focusedTableCellBackground = null;
-        focusedTableCellBorder = null;
-        focusedTableRowBackground = null;
-        tableSelectionBackground = null;
         notDefinedForeground = null;
         textAreaFont = null;
         logPanelErrorColor = null;
         logPanelSuccessColor = null;
         titledBorderTitleColor = null;
+        dockableBorderColor = null;
+        
+        resetTableSelectionProperties();
+    }
+    
+    // properties are initialized before receiving color preferences
+    public static void resetTableSelectionProperties() {
+        focusedTableCellBackground = null;
+        focusedTableCellBorder = null;
+        focusedTableRowBackground = null;
+        tableSelectionBackground = null;
     }
     
     public static Color getButtonBackground() {
@@ -60,11 +68,11 @@ public class SwingDefaults {
         return buttonBorder;
     } 
 
-    public static Border getSingleCellTableBorder() {
-        if (singleCellTableBorder == null) {
-            singleCellTableBorder = getBorder("TextField.border");
+    public static Border getTextFieldBorder() {
+        if (textFieldBorder == null) {
+            textFieldBorder = getBorder("TextField.border");
         }
-        return singleCellTableBorder;
+        return textFieldBorder;
     } 
 
     public static Color getTableCellBackground() {
@@ -175,6 +183,13 @@ public class SwingDefaults {
             }
         }
         return titledBorderTitleColor;
+    }
+    
+    public static Color getDockableBorderColor() {
+        if (dockableBorderColor == null) {
+            dockableBorderColor = getColor("Component.borderColor");
+        }
+        return dockableBorderColor;
     }
     
     
