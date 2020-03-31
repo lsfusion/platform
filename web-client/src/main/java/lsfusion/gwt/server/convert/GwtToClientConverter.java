@@ -97,13 +97,13 @@ public class GwtToClientConverter extends ObjectConverter {
         return outStream.toByteArray();
     }
 
-    public static void serializeGroupObjectValue(DataOutputStream dataStream, GGroupObjectValue groupObjectValue) {
+    public void serializeGroupObjectValue(DataOutputStream dataStream, GGroupObjectValue groupObjectValue) {
         try {
             int size = groupObjectValue.size();
             dataStream.writeInt(size);
             for (int i = 0; i < size; ++i) {
                 dataStream.writeInt(groupObjectValue.getKey(i));
-                serializeObject(dataStream, groupObjectValue.getValue(i));
+                serializeObject(dataStream, convertOrCast(groupObjectValue.getValue(i)));
             }
         } catch (IOException e) {
             Throwables.propagate(e);
