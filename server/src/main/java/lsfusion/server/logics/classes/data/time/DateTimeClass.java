@@ -87,7 +87,10 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     }
 
     public LocalDateTime read(Object value) {
-        return (LocalDateTime) value;
+        if(value instanceof LocalDateTime)
+            return (LocalDateTime) value;
+        else
+            return sqlTimestampToLocalDateTime((Timestamp) value);
     }
 
     @Override

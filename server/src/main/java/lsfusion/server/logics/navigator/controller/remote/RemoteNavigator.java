@@ -309,7 +309,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
             for (Map.Entry<Long, UserActivity> userActivity : userActivityMap.entrySet()) {
                 DataObject customUserObject = session.getDataObject(businessLogics.authenticationLM.customUser, userActivity.getKey());
-                businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue().time), session, customUserObject);
+                businessLogics.authenticationLM.lastActivityCustomUser.change(getWriteDateTime(new Timestamp(userActivity.getValue().time)), session, customUserObject);
                 businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
 
             }
