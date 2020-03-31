@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 public class GDateDTO implements Serializable {
     public int year;
@@ -28,5 +29,18 @@ public class GDateDTO implements Serializable {
     @Override
     public String toString() {
         return toDate().toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GDateDTO)) return false;
+        GDateDTO gDateDTO = (GDateDTO) o;
+        return year == gDateDTO.year && month == gDateDTO.month && day == gDateDTO.day;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(year, month, day);
     }
 }

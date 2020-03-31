@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes;
 import java.io.Serializable;
 import java.sql.Time;
 import java.util.Date;
+import java.util.Objects;
 
 public class GTimeDTO implements Serializable {
     public int hour;
@@ -29,5 +30,18 @@ public class GTimeDTO implements Serializable {
     @Override
     public String toString() {
         return toTime().toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GTimeDTO)) return false;
+        GTimeDTO gTimeDTO = (GTimeDTO) o;
+        return hour == gTimeDTO.hour && minute == gTimeDTO.minute && second == gTimeDTO.second;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hour, minute, second);
     }
 }

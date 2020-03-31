@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Objects;
 
 public class GDateTimeDTO implements Serializable {
     public int year;
@@ -35,5 +36,18 @@ public class GDateTimeDTO implements Serializable {
     @Override
     public String toString() {
         return toDateTime().toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GDateTimeDTO)) return false;
+        GDateTimeDTO that = (GDateTimeDTO) o;
+        return year == that.year && month == that.month && day == that.day && hour == that.hour && minute == that.minute && second == that.second;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(year, month, day, hour, minute, second);
     }
 }
