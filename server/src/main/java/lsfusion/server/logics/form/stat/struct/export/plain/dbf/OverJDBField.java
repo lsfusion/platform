@@ -8,10 +8,10 @@ import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.localDateTimeToSqlTimestamp;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.localDateToSqlDate;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
 
 public class OverJDBField extends JDBField {
 
@@ -99,16 +99,16 @@ public class OverJDBField extends JDBField {
             }
             if (obj instanceof Date) {
                 Date date = (Date) obj;
-                SimpleDateFormat simpledateformat = new SimpleDateFormat("yyyyMMdd");
-                return simpledateformat.format(date);
+                return new SimpleDateFormat("yyyyMMdd").format(date);
             } else if (obj instanceof LocalDate) {
                 Date date = localDateToSqlDate((LocalDate) obj);
-                SimpleDateFormat simpledateformat = new SimpleDateFormat("yyyyMMdd");
-                return simpledateformat.format(date);
+                return new SimpleDateFormat("yyyyMMdd").format(date);
             } else if (obj instanceof LocalDateTime) {
                 Date date = localDateTimeToSqlTimestamp((LocalDateTime) obj);
-                SimpleDateFormat simpledateformat = new SimpleDateFormat("yyyyMMdd");
-                return simpledateformat.format(date);
+                return new SimpleDateFormat("yyyyMMdd").format(date);
+            } else if (obj instanceof LocalTime) {
+                Date date = localTimeToSqlTime((LocalTime) obj);
+                return new SimpleDateFormat("yyyyMMdd").format(date);
             } else {
                 throw new JDBFException("Expected a Date, got " + obj.getClass() + ".");
             }
