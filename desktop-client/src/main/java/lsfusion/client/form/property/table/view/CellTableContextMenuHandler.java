@@ -13,7 +13,6 @@ import java.awt.event.MouseEvent;
 import static javax.swing.SwingUtilities.isRightMouseButton;
 
 public class CellTableContextMenuHandler {
-    private final ClientPropertyContextMenuPopup menu = new ClientPropertyContextMenuPopup();
     private final CellTableInterface cellTable;
     private final JTable jTable;
 
@@ -53,7 +52,7 @@ public class CellTableContextMenuHandler {
 
     private void showContextMenu(final int rowIndex, final int columnIndex, final Point point) {
         ClientPropertyDraw property = cellTable.getProperty(rowIndex, columnIndex);
-        menu.show(property, jTable, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
+        new ClientPropertyContextMenuPopup().show(property, jTable, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
             @Override
             public void onMenuItemSelected(final String actionSID) {
                 RmiQueue.runAction(new Runnable() {

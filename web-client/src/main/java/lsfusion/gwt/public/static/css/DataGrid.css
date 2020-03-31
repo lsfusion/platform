@@ -17,10 +17,12 @@
 /* ----- GGridPropertyTable ----- */
 .dataGridWidget {
     border: 1px solid var(--border-color);
+    background: var(--component-background-color);
     cursor: default;
 }
 
 .dataGridHeader {
+    background: var(--background-color);
 }
 
 .dataGridHeaderCell {
@@ -94,7 +96,9 @@
 }
 
 /* ----- GSinglePropertyTable ----- */
-.dataGridWidget-single {}
+.dataGridWidget-single {
+    background: var(--component-background-color);
+}
 
 .dataGridHeader-single {}
 .dataGridHeaderCell-single {}

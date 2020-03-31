@@ -156,6 +156,9 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         model.setProperty(property);
 
         int minimumHeight = property.getValueHeight(this);
+        // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
+        minimumHeight += getRowMargin();
+                
         Dimension valueSize = new Dimension(property.getValueWidth(this), minimumHeight);
         setMinimumSize(valueSize);
         setPreferredSize(valueSize);
@@ -167,7 +170,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             PropertyRenderer renderer = getProperty().getRendererComponent();
-            renderer.updateRenderer(value, isSelected, hasFocus);
+            renderer.updateRenderer(value, isSelected, hasFocus, false);
             return renderer.getComponent();
         }
     }

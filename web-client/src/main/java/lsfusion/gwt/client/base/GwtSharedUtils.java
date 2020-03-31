@@ -242,16 +242,6 @@ public class GwtSharedUtils {
         return sb.toString();
     }
 
-    public static java.sql.Date safeDateToSql(Date date) {
-        if (date == null) return null;
-
-        if (date instanceof java.sql.Date)
-            return (java.sql.Date) date;
-        else {
-            return new java.sql.Date(date.getTime());
-        }
-    }
-    
     public static <T extends JavaScriptObject> JsArray<T> toArray(Collection<T> collection) {
         JsArray<T> array = JavaScriptObject.createArray().cast();
         for(T element : collection)

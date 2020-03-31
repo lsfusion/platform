@@ -1,16 +1,15 @@
 package lsfusion.client.form.object.table.grid.controller;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.FlatRolloverButton;
+import lsfusion.client.base.view.ThemedFlatRolloverButton;
 import lsfusion.client.classes.data.ClientIntegralClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
-import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -35,18 +34,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class GridController extends AbstractTableController {
-    private static final ImageIcon PRINT_XLS_ICON = new ImageIcon(FilterView.class.getResource("/images/excelbw.png"));
-    private static final ImageIcon PRINT_GROUP_ICON = new ImageIcon(FilterView.class.getResource("/images/reportbw.png"));
-    private static final ImageIcon GROUP_CHANGE_ICON = new ImageIcon(FilterView.class.getResource("/images/groupchange.png"));
-    public static final ImageIcon USER_PREFERENCES_ICON = new ImageIcon(FilterView.class.getResource("/images/userPreferences.png"));
-    private static final ImageIcon UPDATE_ICON = new ImageIcon(FilterView.class.getResource("/images/update.png"));
-    private static final ImageIcon OK_ICON = new ImageIcon(FilterView.class.getResource("/images/ok.png"));
+    private static final String PRINT_XLS_ICON_PATH = "excelbw.png";
+    private static final String PRINT_GROUP_ICON_PATH = "reportbw.png";
+    private static final String GROUP_CHANGE_ICON_PATH = "groupchange.png";
+    public static final String USER_PREFERENCES_ICON_PATH = "userPreferences.png";
+    private static final String UPDATE_ICON_PATH = "update.png";
+    private static final String OK_ICON_PATH = "ok.png";
 
     private final ClientGroupObject groupObject;
 
@@ -122,7 +123,7 @@ public class GridController extends AbstractTableController {
 
         if (groupObject.toolbar.showGroupChange && table instanceof GridTable) {
             addToolbarSeparator();
-            ToolbarGridButton groupChangeButton = new ToolbarGridButton(GROUP_CHANGE_ICON, getString("form.grid.group.groupchange") + " (F12)") {
+            ToolbarGridButton groupChangeButton = new ToolbarGridButton(GROUP_CHANGE_ICON_PATH, getString("form.grid.group.groupchange") + " (F12)") {
                 @Override
                 public void addListener() {
                     addActionListener(e -> {
@@ -191,7 +192,7 @@ public class GridController extends AbstractTableController {
         }
 
         if (groupObject.toolbar.showPrint) {
-            addToToolbar(new ToolbarGridButton(PRINT_GROUP_ICON, getString("form.grid.print.grid")) {
+            addToToolbar(new ToolbarGridButton(PRINT_GROUP_ICON_PATH, getString("form.grid.print.grid")) {
                 @Override
                 public void addListener() {
                     addActionListener(e -> RmiQueue.runAction(() -> formController.runSingleGroupReport(GridController.this)));
@@ -200,7 +201,7 @@ public class GridController extends AbstractTableController {
         }
 
         if (groupObject.toolbar.showXls) {
-            addToToolbar(new ToolbarGridButton(PRINT_XLS_ICON, getString("form.grid.export.to.xlsx")) {
+            addToToolbar(new ToolbarGridButton(PRINT_XLS_ICON_PATH, getString("form.grid.export.to.xlsx")) {
                 @Override
                 public void addListener() {
                     addActionListener(e -> RmiQueue.runAction(() -> formController.runSingleGroupXlsExport(GridController.this)));
@@ -239,7 +240,7 @@ public class GridController extends AbstractTableController {
                     }
                 }
             });
-            userPreferencesButton = new ToolbarGridButton(USER_PREFERENCES_ICON, getUserPreferencesButtonTooltip());
+            userPreferencesButton = new ToolbarGridButton(USER_PREFERENCES_ICON_PATH, getUserPreferencesButtonTooltip());
             userPreferencesButton.showBackground(table.hasUserPreferences());
 
             userPreferencesButton.addActionListener(e -> {
@@ -260,7 +261,7 @@ public class GridController extends AbstractTableController {
             addToToolbar(userPreferencesButton);
         }
 
-        manualUpdateTableButton = new ToolbarGridButton(UPDATE_ICON, getString("form.grid.manual.update")) {
+        manualUpdateTableButton = new ToolbarGridButton(UPDATE_ICON_PATH, getString("form.grid.manual.update")) {
             @Override
             public void addListener() {
                 addActionListener(e -> RmiQueue.runAction(() -> {
@@ -271,7 +272,7 @@ public class GridController extends AbstractTableController {
         };
         addToToolbar(manualUpdateTableButton);
 
-        forceUpdateTableButton = new FlatRolloverButton(getString("form.grid.update"), OK_ICON);
+        forceUpdateTableButton = new ThemedFlatRolloverButton(OK_ICON_PATH, getString("form.grid.update"));
         forceUpdateTableButton.setAlignmentY(Component.TOP_ALIGNMENT);
         forceUpdateTableButton.addActionListener(e -> RmiQueue.runAction(() -> {
             formController.changeMode(groupObject, UpdateMode.FORCE);

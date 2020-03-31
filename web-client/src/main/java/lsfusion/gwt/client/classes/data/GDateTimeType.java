@@ -5,13 +5,13 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateTimeGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.DateGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -36,12 +36,8 @@ public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTi
     }
 
     @Override
-    public Timestamp parseString(String value, String pattern) throws ParseException {
-        if (value.isEmpty()) {
-            return null;
-        }
-        Date date = GDateType.parseDate(value, getDefaultDateTimeFormat(), getDefaultDateTimeShortFormat(), getDefaultDateFormat());
-        return new Timestamp(date.getTime());
+    public Object parseString(String value, String pattern) throws ParseException {
+        return value.isEmpty() ? null : GDateTimeDTO.fromDate(GDateType.parseDate(value, getDefaultDateTimeFormat(), getDefaultDateTimeShortFormat(), getDefaultDateFormat()));
     }
 
     private static Date wideFormattableDateTime = null;

@@ -116,6 +116,7 @@ import lsfusion.server.physics.exec.db.table.MapKeysTable;
 import lsfusion.server.physics.exec.db.table.TableFactory;
 
 import java.sql.SQLException;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -2149,11 +2150,15 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return SetFact.EMPTY();
     }
     
-    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path) {
+    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
         if(path != null)
             path = path.addExcl(this);
+        else {
+            if(!marks.add(this))
+                return false;
+        }
         for(Property depend : getDepends())
-            if(depend.checkRecursions(abstractPath, path))
+            if(depend.checkRecursions(abstractPath, path, marks))
                 return true;
         return false;
     }

@@ -4,7 +4,6 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,12 +18,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     TextFieldPropertyEditor(ClientPropertyDraw property) {
         super();
 
-        setBorder(new EmptyBorder(0, 3, 0, 0));
+        setBorder(BorderFactory.createEmptyBorder(1, 3, 1, 2));
         setOpaque(true);
 
         if (property != null) {
             if (property.design != null) {
-                property.design.designCell(this);
+                property.design.designComponent(this);
             }
 
             Integer valueAlignment = property.getSwingValueAlignment();

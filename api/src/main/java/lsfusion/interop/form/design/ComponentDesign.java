@@ -3,6 +3,7 @@ package lsfusion.interop.form.design;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.context.ContextObject;
 import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.interop.base.view.ColorTheme;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +27,10 @@ public class ComponentDesign extends ContextObject implements Serializable {
         return imageHolder != null ? imageHolder.getImage() : null;
     }
 
+    public ImageIcon getImage(ColorTheme colorTheme) {
+        return imageHolder != null ? imageHolder.getImage(colorTheme) : null;
+    }
+
     public void setImage(String imagePath) {
         ImageIcon image = ResourceUtils.readImage(imagePath);
         if (image != null) {
@@ -41,33 +46,22 @@ public class ComponentDesign extends ContextObject implements Serializable {
         return imageHolder;
     }
 
-    public void designCell(JComponent comp) {
-        designComponent(comp, Color.white); // а то по умолчанию background у Label - серый
-    }
-
     public void designComponent(JComponent comp) {
-        designComponent(comp, null);
-        if (getImage() != null && comp instanceof AbstractButton) {
-            AbstractButton button = (AbstractButton) comp;
-            button.setIcon(getImage());
-        }
-    }
-
-    private void designComponent(JComponent comp, Color defaultBackground) {
-
-        if (font != null) {
-            comp.setFont(getFont(comp));
-        }
+        installFont(comp);
 
         if (background != null) {
             comp.setBackground(background);
             comp.setOpaque(true);
-        } else if (defaultBackground != null) {
-            comp.setBackground(defaultBackground);
         }
 
         if (foreground != null) {
             comp.setForeground(foreground);
+        }
+    }
+    
+    public void installFont(JComponent comp) {
+        if (font != null) {
+            comp.setFont(getFont(comp));
         }
     }
 

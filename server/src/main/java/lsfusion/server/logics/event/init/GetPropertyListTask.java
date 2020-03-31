@@ -10,6 +10,7 @@ public class GetPropertyListTask extends SimpleBLTask {
     }
 
     public void run(Logger logger) {
+        getBL().propertyListInitialized = true;
         getBL().getPropertyList();
     }
 }

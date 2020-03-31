@@ -879,7 +879,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public boolean isEditable(Cell.Context context) {
         GPropertyDraw property = getProperty(context);
-        if (property != null && !property.isReadOnly() && !(property.baseType instanceof GObjectType)) {
+        if (property != null && !property.isReadOnly()) {
             GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
             GridColumn column = (GridColumn) getColumn(context.getColumn());
             return column != null && rowRecord != null && !rowRecord.isReadonly(column.columnID);

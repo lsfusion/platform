@@ -549,7 +549,7 @@ public class ScriptingFormEntity {
     }
 
     private <P extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addGroundPropertyObject(PropertyObjectEntity<P> groundProperty, boolean back) {
-        LP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
+        LP<C> defaultColorProp = back ? LM.baseLM.defaultBackgroundColor : LM.baseLM.defaultForegroundColor;
         PropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
         PropertyMapImplement<?, P> mapImpl = PropertyFact.createAnd(groundProperty.property.interfaces,
                 new PropertyMapImplement<>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);

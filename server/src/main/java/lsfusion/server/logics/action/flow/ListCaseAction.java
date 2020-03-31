@@ -19,6 +19,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 public abstract class ListCaseAction extends KeepContextAction {
@@ -106,14 +107,14 @@ public abstract class ListCaseAction extends KeepContextAction {
         }
     }
 
-    public void markRecursions() {
+    public void markRecursions(Set<Action> marks) {
         assert isAbstract();
-        markRecursions(SetFact.EMPTY());
+        markRecursions(SetFact.EMPTY(), marks);
     }
 
     @Override
-    protected void markRecursions(ImSet<ListCaseAction> recursiveActions) {
-        super.markRecursions(recursiveActions.addExcl(this)); // // пока исходим из того что рекурсивными могут быть только abstract'ы
+    protected void markRecursions(ImSet<ListCaseAction> recursiveActions, Set<Action> marks) {
+        super.markRecursions(recursiveActions.addExcl(this), marks); // // пока исходим из того что рекурсивными могут быть только abstract'ы
     }
 
     protected abstract ImList<ActionMapImplement<?, PropertyInterface>> getListActions();

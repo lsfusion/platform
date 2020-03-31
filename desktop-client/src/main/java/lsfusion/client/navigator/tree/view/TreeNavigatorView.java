@@ -1,6 +1,7 @@
 package lsfusion.client.navigator.tree.view;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.tree.ClientTree;
@@ -87,7 +88,7 @@ public class TreeNavigatorView extends NavigatorView {
 
         @Override
         public Icon getIcon() {
-            return getTypedObject().imageHolder.getImage();
+            return getTypedObject().imageHolder.getImage(MainController.colorTheme);
         }
     }
 }

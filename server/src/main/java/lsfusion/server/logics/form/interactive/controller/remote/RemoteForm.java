@@ -14,7 +14,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
-import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
@@ -47,7 +46,10 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
-import lsfusion.server.logics.form.interactive.instance.object.*;
+import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
+import lsfusion.server.logics.form.interactive.instance.object.GroupMode;
+import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -138,20 +140,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             logger.trace("getUserPreferences Action");
         }
         
-        return result;
-    }
-
-    /**
-     * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
-     */
-    public ColorPreferences getColorPreferences() throws RemoteException {
-
-        ColorPreferences result = form.loadColorPreferences();
-
-        if (logger.isTraceEnabled()) {
-            logger.trace("getColorPreferences Action");
-        }
-
         return result;
     }
 
@@ -802,7 +790,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     public Object[] getImmutableMethods() {
         try {
-            return new Object[]{getUserPreferences(), getColorPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw()};
+            return new Object[]{getUserPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw()};
         } catch (RemoteException e) {
             return null;
         }

@@ -1,5 +1,7 @@
 package lsfusion.client.form.property.cell.classes.view;
 
+import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 
@@ -10,7 +12,6 @@ import java.awt.*;
 public class ActionPropertyRenderer extends PropertyRenderer {
     private static final String defaultCaption = "...";
     private Icon defaultIcon;
-    private Border defaultBorder;
 
     private JButton button;
 
@@ -18,33 +19,23 @@ public class ActionPropertyRenderer extends PropertyRenderer {
         super(property);
 
         getComponent().setFocusPainted(false);
-        
-        defaultBorder = getComponent().getBorder();
     }
 
     public JButton getComponent() {
         if (button == null) {
-            button = new JButton();
+            button = property != null ? new JButton(property.design.getImage(MainController.colorTheme)) : new JButton();
         }
         return button;
     }
-    
-    @Override
-    protected void initDesign() {
-        if (property != null) {
-            property.design.designComponent(getComponent());
-        }
-        defaultBackground = getComponent().getBackground();
-    }
 
     @Override
-    protected Color getDefaultBackground() {
-        return value == null ? Color.WHITE : super.getDefaultBackground();
+    public Color getDefaultBackground() {
+        return SwingDefaults.getButtonBackground();
     }
 
     @Override
     protected Border getDefaultBorder() {
-        return value == null ? super.getDefaultBorder() : defaultBorder;
+        return SwingDefaults.getButtonBorder();
     }
 
     public void setValue(Object value) {

@@ -3,6 +3,7 @@ package lsfusion.client.base.log;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.exception.RemoteInternalException;
@@ -82,17 +83,17 @@ public final class Log {
         }
     }
 
-    private static void provideSuccessFeedback(String message) {
+    private static void provideSuccessFeedback() {
         LogPanel logPanel = getLogPanel();
         if (logPanel != null) {
-            logPanel.setTemporaryBackground(Color.green);
+            logPanel.setTemporaryBackground(SwingDefaults.getLogPanelSuccessColor());
         }
     }
 
     private static void provideErrorFeedback() {
         LogPanel logPanel = getLogPanel();
         if (logPanel != null) {
-            logPanel.setTemporaryBackground(Color.red);
+            logPanel.setTemporaryBackground(SwingDefaults.getLogPanelErrorColor());
             logPanel.provideErrorFeedback();
         }
     }
@@ -105,7 +106,7 @@ public final class Log {
         printmsg(message);
         logger.info(message);
         if (successFeedback) {
-            provideSuccessFeedback(message);
+            provideSuccessFeedback();
         }
     }
 

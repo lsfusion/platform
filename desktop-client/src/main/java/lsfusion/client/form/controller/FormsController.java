@@ -8,7 +8,10 @@ import bibliothek.gui.dock.common.event.CDockableLocationEvent;
 import bibliothek.gui.dock.common.event.CDockableLocationListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
+import bibliothek.gui.dock.facile.lookandfeel.DockableCollector;
+import bibliothek.gui.dock.support.lookandfeel.LookAndFeelUtilities;
 import lsfusion.client.base.view.ClientDockable;
+import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.print.view.ClientReportDockable;
 import lsfusion.client.form.print.view.EditReportInvoker;
@@ -24,7 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FormsController {
+public class FormsController implements ColorThemeChangeListener {
     private CControl control;
 
     private ClientDockableFactory dockableFactory;
@@ -39,6 +42,7 @@ public class FormsController {
     public List<ClientDockable> openedForms = new ArrayList<>();
 
     private ClientDockable prevFocusPage = null;
+    DockableCollector dockableCollector;
 
     public FormsController(CControl control, ClientNavigator mainNavigator) {
         this.control = control;
@@ -46,7 +50,10 @@ public class FormsController {
         this.formArea = control.createWorkingArea("Form area");
         this.forms = new DockableRepository();
 
+        dockableCollector = new DockableCollector(control.intern());
+
         control.addMultipleDockableFactory("page", dockableFactory);
+        MainController.addColorThemeChangeListener(this);
     }
 
     public DockableRepository getForms() {
@@ -119,6 +126,11 @@ public class FormsController {
 
     public void openReport(File file) throws JRException {
         openForm(new ClientReportDockable(file, this));
+    }
+
+    @Override
+    public void colorThemeChanged() {
+        LookAndFeelUtilities.updateUI(dockableCollector.listComponents());
     }
 
     private class ClientDockableFactory implements MultipleCDockableFactory<ClientDockable, ClientDockableLayout> {

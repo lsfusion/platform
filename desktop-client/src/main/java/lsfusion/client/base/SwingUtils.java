@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.lambda.ERunnable;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
@@ -26,6 +27,7 @@ import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static lsfusion.client.base.view.SwingDefaults.getSingleCellTableIntercellSpacing;
 
 public class SwingUtils {
 
@@ -462,9 +464,9 @@ public class SwingUtils {
             }
         });
 
-        table.getColumnModel().setColumnMargin(2);
-        table.setRowMargin(2);
-        table.setBorder(BorderFactory.createLineBorder(Color.gray));
+        table.setIntercellSpacing(new Dimension(getSingleCellTableIntercellSpacing(), getSingleCellTableIntercellSpacing()));
+
+        table.setBorder(SwingDefaults.getSingleCellTableBorder());
     }
 
     public static Border randomBorder() {

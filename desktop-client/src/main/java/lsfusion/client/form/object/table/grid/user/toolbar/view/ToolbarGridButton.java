@@ -1,24 +1,19 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
-import lsfusion.client.base.view.FlatRolloverButton;
+import lsfusion.client.base.view.ThemedFlatRolloverButton;
 
-import javax.swing.*;
 import java.awt.*;
 
-public class ToolbarGridButton extends FlatRolloverButton {
+public class ToolbarGridButton extends ThemedFlatRolloverButton {
     public final static Dimension DEFAULT_SIZE = new Dimension(20, 20);
 
     public ToolbarGridButton(String iconPath, String toolTipText) {
-        this(new ImageIcon(ToolbarGridButton.class.getResource(iconPath)), toolTipText);
+        this(iconPath, toolTipText, DEFAULT_SIZE);
     }
-
-    public ToolbarGridButton(Icon icon, String toolTipText) {
-        this(icon, toolTipText, DEFAULT_SIZE);
-
-    }
-    public ToolbarGridButton(Icon icon, String toolTipText, Dimension buttonSize) {
-        super();
-        setIcon(icon);
+    public ToolbarGridButton(String iconPath, String toolTipText, Dimension buttonSize) {
+        super(iconPath);
+        putClientProperty("Button.arc", 5);
+        putClientProperty("Component.arc", 5);
         setAlignmentY(Component.TOP_ALIGNMENT);
         setMinimumSize(buttonSize);
         setPreferredSize(buttonSize);

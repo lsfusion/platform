@@ -5,7 +5,6 @@ import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.PendingRemoteObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.UpdateMode;
-import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
@@ -37,19 +36,6 @@ public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterfac
                 @Override
                 public FormUserPreferences call() throws Exception {
                     return target.getUserPreferences();
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public ColorPreferences getColorPreferences() throws RemoteException {
-        try {
-            return callImmutableMethod("getColorPreferences", new Callable<ColorPreferences>() {
-                @Override
-                public ColorPreferences call() throws Exception {
-                    return target.getColorPreferences();
                 }
             });
         } catch (Exception e) {

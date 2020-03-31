@@ -29,8 +29,11 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         public final String color;
         public final Object line;
         public final String icon;
+
+        // should be polymorphed later
         public final Double latitude;
         public final Double longitude;
+        public final String polygon;
 
         private final boolean groupEquals;
 
@@ -40,11 +43,13 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             color = getMarkerColor(object);
             line = getLine(object);
             icon = getIcon(object);
+
             latitude = getLatitude(object);
             longitude = getLongitude(object);
+            polygon = getPolygon(object);
 
             Boolean ge = getGroupEquals(object);
-            this.groupEquals = ge != null && ge;
+            groupEquals = ge != null && ge;
 
             this.key = key;
         }
@@ -59,7 +64,8 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
                     Objects.equals(line, that.line) &&
                     Objects.equals(icon, that.icon) &&
                     Objects.equals(latitude, that.latitude) &&
-                    Objects.equals(longitude, that.longitude);
+                    Objects.equals(longitude, that.longitude) &&
+                    Objects.equals(polygon, that.polygon);
 
             return Objects.equals(key, that.key);
         }
@@ -67,10 +73,51 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         @Override
         public int hashCode() {
             if(groupEquals)
-                return Objects.hash(color, line, icon, latitude, longitude);
+                return Objects.hash(color, line, icon, latitude, longitude, polygon);
 
             return key.hashCode();
         }
+    }
+
+    protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {
+        changeProperty("latitude", lat, object);
+        changeProperty("longitude", lng, object);
+    }
+
+    protected void changePolygonProperty(JavaScriptObject object, JsArray<WrapperObject> latlngs) {
+        changeProperty("polygon", getPolygon(latlngs), object);
+    }
+
+    private static String getPolygon(JsArray<WrapperObject> latlngs) {
+        String result = "";
+        for(int i=0,size=latlngs.length();i<size;i++) {
+            WrapperObject pointObject = latlngs.get(i);
+            result = (result.isEmpty() ? "" : result + ",") + (pointObject.getValue("lat") + " " + pointObject.getValue("lng"));
+        }
+        return result;
+    }
+
+    private static double safeParse(String[] array, int index) {
+        if(index >= array.length)
+            return 0;
+
+        try {
+            return Double.parseDouble(array[index]);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static JsArray<JavaScriptObject> getLatLngs(String polygon) {
+        if(polygon == null)
+            return null;
+
+        JsArray<JavaScriptObject> result = JavaScriptObject.createArray().cast();
+        for(String pointString : polygon.split(",")) {
+            String[] pointArray = pointString.trim().split(" ");
+            result.push(getLatLng(safeParse(pointArray, 0), safeParse(pointArray, 1)));
+        }
+        return result;
     }
 
     private JavaScriptObject map;
@@ -97,18 +144,28 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
                 groupMarkers.add(groupMarker);
         }
 
+        boolean markerCreated = false;
         Map<GroupMarker, JavaScriptObject> oldMarkers = new HashMap<>(markers);
         for(int i=0,size=groupMarkers.size();i<size;i++) {
             GroupMarker groupMarker = groupMarkers.get(i);
 
             JavaScriptObject marker = oldMarkers.remove(groupMarker);
             if(marker == null) {
-                marker = createMarker(map, recordElement, fromObject(groupMarker.key), markerClusters);
+                marker = createMarker(map, recordElement, groupMarker.polygon != null, fromObject(groupMarker.key), markerClusters);
+                markerCreated = true;
                 markers.put(groupMarker, marker);
             }
 
+            boolean isReadOnly = true;
+            if(!groupMarker.groupEquals && Objects.equals(groupMarker.key, getCurrentKey())) {
+                if (groupMarker.polygon != null)
+                    isReadOnly = isReadOnly("polygon", groupMarker.key);
+                else
+                    isReadOnly = isReadOnly("latitude", groupMarker.key) && isReadOnly("longitude", groupMarker.key);
+            }
+
             String filterStyle = createFilter(groupMarker.color);
-            updateMarker(map, marker, groupMarker.latitude, groupMarker.longitude, groupMarker.icon, groupMarker.color, filterStyle);
+            updateMarker(map, marker, groupMarker.latitude, groupMarker.longitude, getLatLngs(groupMarker.polygon), isReadOnly, groupMarker.icon, groupMarker.color, filterStyle);
 
             if(groupMarker.line != null)
                 routes.computeIfAbsent(groupMarker.line, o -> JavaScriptObject.createArray().cast()).push(marker);
@@ -124,8 +181,9 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         for(JsArray<JavaScriptObject> route : routes.values())
             if(route.length() > 1)
                 lines.add(createLine(map, route));
-        
-        fitBounds(map, GwtSharedUtils.toArray(markers.values()));
+
+        if(markerCreated && !markers.isEmpty())
+            fitBounds(map, GwtSharedUtils.toArray(markers.values()));
     }
 
     protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters)/*-{
@@ -136,9 +194,11 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+        map.setView([0,0], 6); // we need to set view to have editing and dragging fields initialized
+
         map.addLayer(markerClusters);
-        
-        return map;            
+
+        return map;
     }-*/;
 
     protected native JavaScriptObject createMarkerClusters()/*-{
@@ -181,24 +241,52 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
                 return L.divIcon({
                     html: "<div class=\"leaflet-marker-cluster\" style=\"background:" + backgroundColor + ";\">" +
                         "<div class=\"leaflet-marker-cluster-text\">" + cluster.getChildCount() + "</div>" +
-                        "</div>"
+                        "</div>",
+                    className: '' // removing leaflet-div-icon because we don't want it as white box
                 });
             }
         });
     }-*/;
 
-    protected native JavaScriptObject createMarker(JavaScriptObject map, com.google.gwt.dom.client.Element popupElement, JavaScriptObject key, JavaScriptObject markerClusters)/*-{
+    protected static native JavaScriptObject getLatLng(Double latitude, Double longitude)/*-{
+        var L = $wnd.L;
+        return L.latLng(latitude, longitude);
+    }-*/;
+
+    protected native JavaScriptObject createMarker(JavaScriptObject map, com.google.gwt.dom.client.Element popupElement, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters)/*-{
         var L = $wnd.L;
 
-        var marker = L.marker([0, 0]);
-        
+        var thisObject = this;
+
+        var marker;
+        if(polygon) {
+            marker = L.polygon([L.latLng(0, 1), L.latLng(1, -1), L.latLng(-1, -1)]);
+
+            marker.on('edit', function (e) {
+                thisObject.@GMap::changePolygonProperty(*)(key, marker.getLatLngs()[0]); // https://github.com/Leaflet/Leaflet/issues/5212
+            });
+        } else {
+            marker = L.marker([0, 0]);
+
+            var superDragEnd = marker.editing._onDragEnd; // there is a bug with clustering, when you drag marker to cluster, nullpointer happens
+            marker.editing._onDragEnd = function(t) {
+                if(this._map != null)
+                    superDragEnd.call(this, t);
+            };
+
+            marker.on('dragend', function (e) {
+                var latlng = marker.getLatLng();
+                thisObject.@GMap::changePointProperty(*)(key, latlng.lat, latlng.lng);
+            });
+        }
+
         if (popupElement !== null)
             marker.bindPopup(popupElement, {maxWidth: Number.MAX_SAFE_INTEGER});
-        var thisObject = this;
         marker.on('click', function (e) {
             thisObject.@GMap::changeSimpleGroupObject(*)(key);
         });
-        
+
+//        marker = marker.addTo(map);
         markerClusters.addLayer(marker);
         
         return marker;
@@ -206,6 +294,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
     protected native void removeMarker(JavaScriptObject marker, JavaScriptObject markerClusters)/*-{
         markerClusters.removeLayer(marker);
+//        marker.remove();
     }-*/;
 
     protected native void appendSVG(JavaScriptObject map, com.google.gwt.dom.client.Element svg)/*-{
@@ -226,6 +315,10 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
     protected native static Double getLongitude(JavaScriptObject element)/*-{
         return element.longitude;
+    }-*/;
+
+    protected native static String getPolygon(JavaScriptObject element)/*-{
+        return element.polygon;
     }-*/;
 
     protected static native String getIcon(JavaScriptObject element)/*-{
@@ -296,14 +389,31 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         return svgStyle;
     }
     
-    protected native void updateMarker(JavaScriptObject map, JavaScriptObject marker, Double latitude, Double longitude, String icon, String color, String filterStyle)/*-{
+    protected native void updateMarker(JavaScriptObject map, JavaScriptObject marker, Double latitude, Double longitude, JsArray<JavaScriptObject> poly, boolean isReadOnly, String icon, String color, String filterStyle)/*-{
         var L = $wnd.L;
 
-        marker.setLatLng([latitude != null ? latitude : 0, longitude != null ? longitude : 0]);
+        if(poly != null || marker.dragging != null) // we need to disable editing before changing icon + check for dragging because of clustering (when there is no dragging which is used by editing)
+            marker.editing.disable();
 
-        var iconUrl = icon != null ? icon : L.Icon.Default.prototype._getIconUrl('icon');
-        var myIcon = L.divIcon({html: "<img src=" + iconUrl + " alt=\"\" tabindex=\"0\">", className: filterStyle ? filterStyle : ''});
-        marker.setIcon(myIcon);
+        if(poly != null) {
+            marker.setLatLngs(poly);
+        } else {
+            marker.setLatLng([latitude != null ? latitude : 0, longitude != null ? longitude : 0]);
+
+            var iconUrl = icon != null ? icon : L.Icon.Default.prototype._getIconUrl('icon');
+            var myIcon = L.divIcon({
+                html: "<img src=" + iconUrl + " alt=\"\" tabindex=\"0\">",
+                className: filterStyle ? filterStyle : ''
+            });
+            marker.setIcon(myIcon);
+        }
+
+        if(!isReadOnly) {
+            if (poly != null)
+                marker.editing = new L.Edit.Poly(marker); // there is a bug in plugin (with editing after setLatLngs) https://github.com/Leaflet/Leaflet.draw/issues/650
+            if (poly != null || marker.dragging != null)
+                marker.editing.enable()
+        }
 
         marker.color = color;
     }-*/;
@@ -311,8 +421,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
     protected native void fitBounds(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
         var L = $wnd.L;
 
-        if(markers.length > 0)
-            map.fitBounds(new L.featureGroup(markers).getBounds());
+        map.fitBounds(new L.featureGroup(markers).getBounds());
     }-*/;
 
     @Override

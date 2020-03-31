@@ -896,6 +896,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new StaticDataGenerator.Hierarchy(getGroupHierarchy(supportGroupColumns, valueGroups), groupProperties, valueGroups);
     }
 
+    // means that group object is apparently used as a group-to-columns (or filter parameter)
+    @IdentityLazy
+    public boolean hasNoProperties(GroupObjectEntity group) {
+        return getGroupProperties(SetFact.EMPTY(), true).get(group) == null;
+    }
+
     @IdentityInstanceLazy
     public StaticDataGenerator.Hierarchy getImportHierarchy() {
         return getHierarchy(false, SetFact.EMPTY(), null);

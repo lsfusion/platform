@@ -23,11 +23,14 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
-import static lsfusion.base.DateConverter.*;
+import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
+import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
+import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
-public class DateTimeClass extends DataClass<Timestamp> {
+public class DateTimeClass extends DataClass<LocalDateTime> {
 
     public final static DateTimeClass instance = new DateTimeClass();
 
@@ -42,7 +45,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     public Class getReportJavaClass() {
-        return Timestamp.class;
+        return LocalDateTime.class;
     }
 
     public void fillReportDrawField(ReportDrawField reportField) {
@@ -59,7 +62,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return compClass instanceof DateTimeClass ? this : null;
     }
 
-    public Timestamp getDefaultValue() {
+    public LocalDateTime getDefaultValue() {
         return getWriteDateTime(LocalDateTime.now());
     }
 
@@ -86,19 +89,20 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return syntax.getDateTimeSQL();
     }
 
-    public Timestamp read(Object value) {
-        if (value instanceof Timestamp) return (Timestamp) value;
-        if (value instanceof java.util.Date) return dateToStamp((java.util.Date) value);
-        else return null;
+    public LocalDateTime read(Object value) {
+        if(value instanceof LocalDateTime)
+            return (LocalDateTime) value;
+        else
+            return sqlTimestampToLocalDateTime((Timestamp) value);
     }
 
     @Override
-    public Timestamp read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return set.getTimestamp(name);
+    public LocalDateTime read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        return sqlTimestampToLocalDateTime(set.getTimestamp(name));
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setTimestamp(num, (Timestamp) value);
+        statement.setTimestamp(num, localDateTimeToSqlTimestamp((LocalDateTime) value));
     }
 
     @Override
@@ -125,38 +129,31 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public Timestamp parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws java.text.ParseException {
+    public LocalDateTime parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws java.text.ParseException {
         return readDBF(dbfRecord.getDate(fieldName));
     }
     @Override
-    public Timestamp parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        java.util.Date cellValue;
+    public LocalDateTime parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        LocalDateTime cellValue;
         try {
-            cellValue = cell.getDateCellValue();
+            cellValue = sqlTimestampToLocalDateTime(new Timestamp(cell.getDateCellValue().getTime()));//in apache.poi 4.1: cell.getLocalDateTimeCellValue();
         } catch (IllegalStateException e) {
             return super.parseXLS(cell, formulaValue);
         }
         return readXLS(cellValue);
     }
 
-    public Timestamp parseString(String s) throws ParseException {
+    public LocalDateTime parseString(String s) throws ParseException {
         try {
-            java.util.Date parse = null;
-            try {
-                parse = getDateTimeFormat().parse(s);
-            } catch (java.text.ParseException e) {
-                parse = DateConverter.smartParse(s);
-            }
-            
-            return dateToStamp(parse);
+            return DateConverter.smartParse(s);
         } catch (Exception e) {
             throw new ParseException("error parsing datetime: " + s, e);
         }
     }
 
     @Override
-    public String formatString(Timestamp value) {
-        return value == null ? null : getDateTimeFormat().format(value);
+    public String formatString(LocalDateTime value) {
+        return value == null ? null : getDateTimeFormat().format(localDateTimeToSqlTimestamp(value));
     }
 
     public static DateFormat getDateTimeFormat() {
@@ -172,8 +169,8 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public Timestamp getInfiniteValue(boolean min) {
-        return min ? new Timestamp(0) : new Timestamp(Long.MAX_VALUE);
+    public LocalDateTime getInfiniteValue(boolean min) {
+        return min ? LocalDateTime.MIN : LocalDateTime.MAX;
     }
 
     @Override
@@ -187,9 +184,9 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public void formatXLS(Timestamp object, Cell cell, ExportXLSWriter.Styles styles) {
+    public void formatXLS(LocalDateTime object, Cell cell, ExportXLSWriter.Styles styles) {
         if(object != null) {
-            cell.setCellValue(object);
+            cell.setCellValue(localDateTimeToSqlTimestamp(object)); //no need to convert in apache.poi 4.1
         }
         cell.setCellStyle(styles.dateTime);
     }

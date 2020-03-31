@@ -1,5 +1,6 @@
 package lsfusion.client.navigator.view;
 
+import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.controller.INavigatorController;
@@ -10,7 +11,6 @@ import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Set;
@@ -22,7 +22,12 @@ public class ToolBarNavigatorView extends NavigatorView {
     private ClientNavigatorElement selected;
 
     public ToolBarNavigatorView(ClientToolBarNavigatorWindow iWindow, INavigatorController controller) {
-        super(iWindow, new JToolBar("Toolbar", iWindow.type), controller);
+        super(iWindow, new JToolBar("Toolbar", iWindow.type) {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+            }
+        }, controller);
         window = iWindow;
 
         toolBar = (JToolBar) getComponent();
@@ -50,22 +55,25 @@ public class ToolBarNavigatorView extends NavigatorView {
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int indent) {
+        JToggleButton button = new JToggleButton(element.toString()) {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                setIcon(new IndentedIcon(element.imageHolder.getImage(MainController.colorTheme), indent));
+            }
+        };
+        button.setIcon(new IndentedIcon(element.imageHolder.getImage(MainController.colorTheme), indent));
 
-        JToggleButton button = new JToggleButton(element.toString());
         button.setToolTipText(element.getTooltip());
         button.addMouseListener(new NavigatorMouseAdapter(element));
-        button.setIcon(new IndentedIcon(element.imageHolder.getImage(), indent));
         button.setVerticalTextPosition(window.verticalTextPosition);
         button.setHorizontalTextPosition(window.horizontalTextPosition);
         button.setVerticalAlignment(window.verticalAlignment);
         button.setHorizontalAlignment(window.horizontalAlignment);
-//        button.setAlignmentY(window.alignmentY);
-//        button.setAlignmentX(window.alignmentX);
         button.setFocusable(false);
         button.getModel().setArmed(true);
 
         if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorFolder.class)) {
-            button.setForeground(Color.blue);
             button.setSelected(true);
         }
 

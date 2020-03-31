@@ -16,6 +16,7 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
@@ -61,6 +62,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -68,6 +70,7 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
@@ -238,6 +241,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         boolean showDetailedInfo;
         boolean devMode;
         ColorTheme colorTheme;
+        ColorPreferences colorPreferences;
 
         try (DataSession session = createSession()) {
             currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
@@ -252,11 +256,18 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             String colorThemeStaticName = (String) businessLogics.authenticationLM.colorThemeStaticName.read(session, user);
             String colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null; 
             colorTheme = BaseUtils.nvl(ColorTheme.get(colorThemeString), ColorTheme.DEFAULT);
+
+            Color selectedRowBackground = (Color) businessLogics.serviceLM.overrideSelectedRowBackgroundColor.read(session);
+            Color selectedCellBackground = (Color) businessLogics.serviceLM.overrideSelectedCellBackgroundColor.read(session);
+            Color focusedCellBackground = (Color) businessLogics.serviceLM.overrideFocusedCellBackgroundColor.read(session);
+            Color focusedCellBorder = (Color) businessLogics.serviceLM.overrideFocusedCellBorderColor.read(session);
+            colorPreferences = new ColorPreferences(selectedRowBackground, selectedCellBackground,
+                    focusedCellBackground, focusedCellBorder);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, devMode, showDetailedInfo, forbidDuplicateForms, colorTheme);
+                useRequestTimeout, devMode, showDetailedInfo, forbidDuplicateForms, colorTheme, colorPreferences);
     }
 
     public void gainedFocus(FormInstance form) {
@@ -306,7 +317,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
             for (Map.Entry<Long, UserActivity> userActivity : userActivityMap.entrySet()) {
                 DataObject customUserObject = session.getDataObject(businessLogics.authenticationLM.customUser, userActivity.getKey());
-                businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue().time), session, customUserObject);
+                businessLogics.authenticationLM.lastActivityCustomUser.change(getWriteDateTime(new Timestamp(userActivity.getValue().time)), session, customUserObject);
                 businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
 
             }

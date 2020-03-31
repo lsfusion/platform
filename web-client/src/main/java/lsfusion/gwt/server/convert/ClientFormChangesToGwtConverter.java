@@ -13,20 +13,20 @@ import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
-import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
-import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
+import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.provider.form.FormSessionObject;
-import lsfusion.interop.form.property.ClassViewType;
 
 import java.awt.*;
-import java.sql.Date;
-import java.sql.Time;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientFormChangesToGwtConverter extends ObjectConverter {
@@ -165,23 +165,28 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     public GGroupObjectValue convertGroupObjectValue(ClientGroupObjectValue clientGroupObjValue) {
         GGroupObjectValueBuilder groupObjectValue = new GGroupObjectValueBuilder();
         for (Map.Entry<ClientObject, Object> keyPart : clientGroupObjValue.entrySet()) {
-            groupObjectValue.put(keyPart.getKey().ID, keyPart.getValue());
+            groupObjectValue.put(keyPart.getKey().ID, convertOrCast(keyPart.getValue()));
         }
         return groupObjectValue.toGroupObjectValue();
     }
 
-    @Converter(from = Date.class)
-    public GDateDTO convertDate(Date gDate) {
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTime(gDate);
-        return new GDateDTO(gc.get(Calendar.DAY_OF_MONTH), gc.get(Calendar.MONTH), gc.get(Calendar.YEAR) - 1900);
+    @Converter(from = LocalDate.class)
+    public GDateDTO convertDate(LocalDate gDate) {
+        return new GDateDTO(gDate.getYear(), gDate.getMonthValue(), gDate.getDayOfMonth());
     }
 
-    @Converter(from = Time.class)
-    public GTimeDTO convertTime(Time time) {
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.clear();
-        gc.setTime(time);
-        return new GTimeDTO(gc.get(Calendar.HOUR_OF_DAY), gc.get(Calendar.MINUTE), gc.get(Calendar.SECOND));
+    @Converter(from = LocalTime.class)
+    public GTimeDTO convertTime(LocalTime time) {
+        return new GTimeDTO(time.getHour(), time.getMinute(), time.getSecond());
+    }
+
+    @Converter(from = LocalDateTime.class)
+    public GDateTimeDTO convertDateTime(LocalDateTime dateTime) {
+        return new GDateTimeDTO(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond());
+    }
+
+    @Converter(from = Instant.class)
+    public GZDateTimeDTO convertDateTime(Instant dateTime) {
+        return new GZDateTimeDTO(dateTime.toEpochMilli());
     }
 }

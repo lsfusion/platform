@@ -184,6 +184,9 @@ input[type=checkbox]:focus {
     width: auto;
     height: auto;
 }
+.ResizableWindow .resize-edge {
+    background: var(--dialog-border-color);
+}
 
 .ResizableWindow .resize-edge-nw .dragdrop-handle {
     cursor: nw-resize;
@@ -218,7 +221,6 @@ input[type=checkbox]:focus {
 }
 
 .ResizableWindow .dragdrop-handle {
-    background: var(--dialog-border-color);
 }
 
 /* ------------ Panel Renderer related styles ------------ */
@@ -398,7 +400,6 @@ input[type=checkbox]:focus {
 .popup {
     background-color: var(--background-color);
     border: 1px outset var(--border-color);
-    padding: 2px;
 }
 
 .popup-sumBox {
@@ -499,6 +500,7 @@ input[type=checkbox]:focus {
     overflow-y: auto;
     overflow-x: hidden;
     border: 1px solid var(--border-color);
+    background: var(--component-background-color);
     padding: 2px 3px;
     margin: 1px;
 }
@@ -524,9 +526,7 @@ input[type=checkbox]:focus {
     background-color: var(--selection-color);
 }
 
-.draggableListBoxItem .dragdrop-handle {
-    background-color: var(--background-color);
-}
+.draggableListBoxItem .dragdrop-handle {}
 
 .userPreferencesDualList .dragdrop-movable-panel {
     opacity: 0.5;
@@ -808,12 +808,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     border-radius: unset !important;
 }
 
-.leaflet-marker-icon {
-    margin: 0 !important;
-    width: 0 !important;
-    height: 0 !important;
-}
-
 .leaflet-marker-icon img {
     position: absolute;
     bottom: 0;
@@ -827,8 +821,8 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     width: 40px;
     height: 40px;
     position: absolute;
-    left: -21px;
-    top: -40px;
+    left: -15px; /* -half size + margin marker icon (6) - border */
+    top: -15px; /* -half size + margin marker icon (6) - border */
     border: 1px solid var(--border-color);
 }
 
@@ -852,6 +846,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     width: 20px;
     display: block;
     border: none;
+    background: transparent;
 }
 
 .toolbarButton:hover {

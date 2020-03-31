@@ -812,7 +812,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return getPropertyListWithGraph(ApplyFilter.NO).first;
     }
 
-    private void fillActionChangeProps() { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
+    public void fillActionChangeProps() { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
         for (Action property : getOrderActions()) {
             if (!property.getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
                 ImMap<Property, Boolean> change = ((Action<?>) property).getChangeExtProps();
@@ -822,12 +822,20 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    private void dropActionChangeProps() { // для экономии памяти - симметричное удаление ссылок
+    public void dropActionChangeProps() { // для экономии памяти - симметричное удаление ссылок
         for (Action property : getOrderActions()) {
             if (!property.getEvents().isEmpty()) {
                 ImMap<Property, Boolean> change = ((Action<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++)
                     change.getKey(i).dropActionChangeProps();
+            }
+        }
+    }
+
+    public static void prereadSortedLinks(ActionOrProperty<?> property) {
+        if(property.links == null) {
+            for (Link link : property.getSortedLinks(true)) {
+                prereadSortedLinks(link.to);
             }
         }
     }
@@ -841,11 +849,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             linksMap.add(property, linksIn);
 
             ImOrderSet<Link> links = property.getSortedLinks(events);
-            for (int i = 0,size = links.size(); i < size; i++) {
-                Link link = links.get(i);
+            for (Link link : links)
                 if (!removedLinks.contains(link) && component.contains(link.to) == include)
                     buildOrder(link.to, linksMap, order, removedLinks, include, component, events, true, checkNotRecursive).add(link);
-            }
             if(order != null)
                 order.add(property);
         }
@@ -1270,8 +1276,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             out.println(debugInfo.getString());
         }
     }
+    public boolean propertyListInitialized;
     public Pair<ImOrderSet<ActionOrProperty>, Graph<ActionOrProperty>> calcPropertyListWithGraph(ApplyFilter filter, DebugInfoWriter debugInfoWriter) {
-        // жестковато тут конечно написано, но пока не сильно времени жрет
+        assert propertyListInitialized;
 
         fillActionChangeProps();
 
@@ -1309,11 +1316,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             graph = buildGraph(result, firstRemoved.addExcl(secondRemoved));
         }
 
-        for(ActionOrProperty property : result) {
+        for(ActionOrProperty property : result)
             property.dropLinks();
-            if(property instanceof Property)
-                ((Property)property).dropActionChangeProps();
-        }
+
+        dropActionChangeProps();
+
         return new Pair<>(result, graph);
     }
 

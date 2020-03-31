@@ -22,10 +22,7 @@ import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.link.*;
-import lsfusion.server.logics.classes.data.time.DateClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.classes.data.time.TimeClass;
-import lsfusion.server.logics.classes.data.time.YearClass;
+import lsfusion.server.logics.classes.data.time.*;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 
 import java.sql.SQLException;
@@ -41,6 +38,7 @@ public class AnyValuePropertyHolder {
     private final LP numericProperty;
     private final LP yearProperty;
     private final LP dateTimeProperty;
+    private final LP zDateTimeProperty;
     private final LP logicalProperty;
     private final LP dateProperty;
     private final LP timeProperty;
@@ -71,7 +69,7 @@ public class AnyValuePropertyHolder {
     private final LP tableLinkProperty;
 
     public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty,
-                                  LP<?> dateTimeProperty, LP<?> logicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
+                                  LP<?> dateTimeProperty, LP<?> zDateTimeProperty, LP<?> logicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
                                   LP<?> pdfFileProperty, LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty,
                                   LP<?> textFileProperty, LP<?> csvFileProperty, LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
                                   LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> rawLinkProperty,
@@ -87,6 +85,7 @@ public class AnyValuePropertyHolder {
                 && numericProperty.property.getType().getCompatible(NumericClass.get(0, 0)) != null
                 && yearProperty.property.getType() == YearClass.instance
                 && dateTimeProperty.property.getType() == DateTimeClass.instance
+                && zDateTimeProperty.property.getType() == ZDateTimeClass.instance
                 && logicalProperty.property.getType() == LogicalClass.instance
                 && dateProperty.property.getType() == DateClass.instance
                 && timeProperty.property.getType() == TimeClass.instance
@@ -127,6 +126,7 @@ public class AnyValuePropertyHolder {
         this.numericProperty = numericProperty;
         this.yearProperty = yearProperty;
         this.dateTimeProperty = dateTimeProperty;
+        this.zDateTimeProperty = zDateTimeProperty;
         this.logicalProperty = logicalProperty;
         this.dateProperty = dateProperty;
         this.timeProperty = timeProperty;
@@ -178,6 +178,8 @@ public class AnyValuePropertyHolder {
             return numericProperty;
         } else if (valueType instanceof DateTimeClass) {
             return dateTimeProperty;
+        } else if (valueType instanceof ZDateTimeClass) {
+            return zDateTimeProperty;
         } else if (valueType instanceof LogicalClass) {
             return logicalProperty;
         } else if (valueType instanceof DateClass) {
@@ -254,7 +256,7 @@ public class AnyValuePropertyHolder {
                 // numbers
                 numericProperty, longProperty, intProperty, doubleProperty,
                 // date / times
-                dateTimeProperty, dateProperty, timeProperty, yearProperty,
+                dateTimeProperty, zDateTimeProperty, dateProperty, timeProperty, yearProperty,
                 // links
                 customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty,  excelLinkProperty,
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,

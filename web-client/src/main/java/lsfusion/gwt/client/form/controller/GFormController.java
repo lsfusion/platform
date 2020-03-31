@@ -384,9 +384,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> defaultOrders = groupDefaultOrders();
         for(Map.Entry<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> entry : defaultOrders.entrySet()) {
             GGroupObject groupObject = entry.getKey();
-            GTableController groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(groupObject);
-            if (groupObjectLogicsSupplier != null)
-                groupObjectLogicsSupplier.changeOrders(groupObject, entry.getValue(), true);
+            getGroupObjectLogicsSupplier(groupObject).changeOrders(groupObject, entry.getValue(), true);
         }
     }
 
@@ -738,7 +736,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }, direct);
     }
 
-    public GGroupObjectValueBuilder getFullCurrentKey() {
+    public GGroupObjectValue getFullCurrentKey(GGroupObjectValue propertyKey) {
         GGroupObjectValueBuilder fullKey = new GGroupObjectValueBuilder();
 
         for (GGridController group : controllers.values()) {
@@ -752,14 +750,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         }
 
-        return fullKey;
-    }
+        fullKey.putAll(propertyKey);
 
-    public GGroupObjectValue getFullCurrentKey(GGroupObjectValue columnKey) {
-        GGroupObjectValueBuilder fullKey = getFullCurrentKey();
-        if (columnKey != null) {
-            fullKey.putAll(columnKey);
-        }
         return fullKey.toGroupObjectValue();
     }
 
@@ -773,26 +765,25 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             return groupObjectController;
         }
 
-        return group.parent != null
-                ? treeControllers.get(group.parent)
-                : null;
+        return treeControllers.get(group.parent);
     }
 
     public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
-        GTableController controller = getGroupObjectLogicsSupplier(property.groupObject);
-
-        GGroupObjectValue propertyKey;
-        if (controller != null && property.grid) {
-            GGroupObjectValue currentKey = controller.getCurrentKey();
-            if(currentKey.isEmpty())
+        GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
+        if(property.grid) {
+            rowKey = getGroupObjectLogicsSupplier(property.groupObject).getCurrentKey();
+            if(rowKey.isEmpty())
                 return;
-            propertyKey = columnKey != null ? new GGroupObjectValueBuilder(currentKey, columnKey).toGroupObjectValue() : currentKey;
-        } else 
-            propertyKey = columnKey;
+        }
+        changeProperty(property, rowKey, columnKey, value, oldValue);
+    }
 
-        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(columnKey), value, null), new ServerResponseCallback());
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
+        GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKey);
 
-        putToDoubleNativeMap(pendingChangePropertyRequests, property, propertyKey, new Change(requestIndex, value, oldValue, property.canUseChangeValueForRendering()));
+        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(fullKey), value, null), new ServerResponseCallback());
+
+        putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(requestIndex, value, oldValue, property.canUseChangeValueForRendering()));
     }
 
     public boolean isAsyncModifyObject(GPropertyDraw property) {

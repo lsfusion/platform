@@ -20,17 +20,18 @@ import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
 
-public class DateClass extends DataClass<Date> {
+public class DateClass extends DataClass<LocalDate> {
 
     public final static DateClass instance = new DateClass();
 
@@ -43,7 +44,7 @@ public class DateClass extends DataClass<Date> {
     public int getReportPreferredWidth() { return 70; }
 
     public Class getReportJavaClass() {
-        return java.util.Date.class;
+        return LocalDate.class;
     }
 
     public void fillReportDrawField(ReportDrawField reportField) {
@@ -60,7 +61,7 @@ public class DateClass extends DataClass<Date> {
         return compClass instanceof DateClass?this:null;
     }
 
-    public Date getDefaultValue() {
+    public LocalDate getDefaultValue() {
         return getWriteDate(LocalDate.now());
     }
 
@@ -87,18 +88,20 @@ public class DateClass extends DataClass<Date> {
         return syntax.getDateSQL();
     }
 
-    public Date read(Object value) {
-        DateConverter.assertDateToSql((java.util.Date)value);
-        return safeDateToSql((java.util.Date)value);
+    public LocalDate read(Object value) {
+        if(value instanceof LocalDate)
+            return (LocalDate) value;
+        else
+            return sqlDateToLocalDate(safeDateToSql((Date) value));
     }
 
     @Override
-    public Date read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return set.getDate(name);
+    public LocalDate read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        return sqlDateToLocalDate(set.getDate(name));
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setDate(num, (Date)value);
+        statement.setDate(num, localDateToSqlDate(((LocalDate) value)));
     }
 
     @Override
@@ -131,37 +134,31 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
-    public Date parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws java.text.ParseException {
+    public LocalDate parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws java.text.ParseException {
         return readDBF(dbfRecord.getDate(fieldName));
     }
     @Override
-    public Date parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        java.util.Date cellValue;
+    public LocalDate parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        LocalDate cellValue;
         try {
-            cellValue = cell.getDateCellValue();
+            cellValue = sqlDateToLocalDate(safeDateToSql(cell.getDateCellValue()));//in apache.poi 4.1: cell.getLocalDateTimeCellValue().toLocalDate();
         } catch (IllegalStateException e) {
             return super.parseXLS(cell, formulaValue); // if cell can not parse date, we'll try to parse it as a string
         }
         return readXLS(cellValue);
     }
 
-    public Date parseString(String s) throws ParseException {
+    public LocalDate parseString(String s) throws ParseException {
         try {
-            java.util.Date parse;
-            try {
-                parse = getDateFormat().parse(s);
-                DateConverter.assertDateToSql(parse);
-            } catch (java.text.ParseException e) {
-                parse = DateConverter.smartParse(s);
-            }
-            return safeDateToSql(parse);
+            LocalDateTime result = DateConverter.smartParse(s);
+            return result != null ? result.toLocalDate() : null;
         } catch (Exception e) {
             throw new ParseException("error parsing date: " + s, e);
         }
     }
 
-    public String formatString(Date value) {
-        return value == null ? null : getDateFormat().format(value);
+    public String formatString(LocalDate value) {
+        return value == null ? null : getDateFormat().format(localDateToSqlDate(value));
     }
 
     public String getSID() {
@@ -169,8 +166,8 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
-    public Date getInfiniteValue(boolean min) {
-        return DateConverter.dateToSql(new java.util.Date(min ? 0 : Long.MAX_VALUE));
+    public LocalDate getInfiniteValue(boolean min) {
+        return min ? LocalDate.MIN : LocalDate.MAX;
     }
 
     @Override
@@ -179,9 +176,9 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
-    public void formatXLS(Date object, Cell cell, ExportXLSWriter.Styles styles) {
+    public void formatXLS(LocalDate object, Cell cell, ExportXLSWriter.Styles styles) {
         if (object != null) {
-            cell.setCellValue(object);
+            cell.setCellValue(localDateToSqlDate(object)); //no need to convert in apache.poi 4.1
         }
         cell.setCellStyle(styles.date);
     }

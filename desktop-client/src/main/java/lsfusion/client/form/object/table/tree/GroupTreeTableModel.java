@@ -132,7 +132,7 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
                 return propReadOnly == null || propReadOnly.get(((TreeGroupNode) node).key) == null;
             }
         }
-        return false;
+        return true;
     }
 
     public Object getPropertyValue(Object node, ClientPropertyDraw property) {

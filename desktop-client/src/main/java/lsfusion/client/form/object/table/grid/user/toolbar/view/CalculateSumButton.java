@@ -1,20 +1,17 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
-import lsfusion.base.ResourceUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.StartupProperties;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import java.awt.*;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 
 public abstract class CalculateSumButton extends ToolbarGridButton {
-    private static final ImageIcon sumIcon = ResourceUtils.readImage("sum.png");
+    private static final String SUM_ICON_PATH = "sum.png";
 
     public CalculateSumButton() {
-        super(sumIcon, ClientResourceBundle.getString("form.queries.calculate.sum"));
+        super(SUM_ICON_PATH, ClientResourceBundle.getString("form.queries.calculate.sum"));
     }
 
     public abstract void addListener();
@@ -23,8 +20,6 @@ public abstract class CalculateSumButton extends ToolbarGridButton {
         JPopupMenu menu = new JPopupMenu();
         JLabel label;
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(192, 192, 255));
-        menu.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.GRAY, Color.LIGHT_GRAY));
 
         if (sum != null) {
             label = new JLabel(ClientResourceBundle.getString("form.queries.sum.result") + " [" + caption + "]: ");

@@ -73,6 +73,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GDateTimeType.instance;
     }
 
+    @Converter(from = ClientZDateTimeClass.class)
+    public GZDateTimeType convertDateTimeClass(ClientZDateTimeClass clientDateTimeClass) {
+        return GZDateTimeType.instance;
+    }
+
     private <T extends GFileType> T initializeFileClass(ClientFileClass clientFileClass, T fileClass) {
         fileClass.multiple = clientFileClass.multiple;
         fileClass.storeName = clientFileClass.storeName;
