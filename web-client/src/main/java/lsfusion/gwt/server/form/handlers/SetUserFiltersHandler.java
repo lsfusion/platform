@@ -30,18 +30,18 @@ public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUs
             public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
                 List<byte[]> filters = new ArrayList<>();
                 try {
+                    GwtToClientConverter converter = GwtToClientConverter.getInstance();
+
                     for (GPropertyFilterDTO filter : action.filters) {
                         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
                         DataOutputStream outStream = new DataOutputStream(byteStream);
                         outStream.writeInt(filter.propertyID);
                         outStream.writeBoolean(filter.columnKey != null);
                         if (filter.columnKey != null)
-                            GwtToClientConverter.serializeGroupObjectValue(outStream, filter.columnKey);
+                            converter.serializeGroupObjectValue(outStream, filter.columnKey);
                         outStream.writeBoolean(filter.negation);
                         outStream.writeByte(filter.compareByte);
                         outStream.writeByte(filter.filterValue.typeID);
-
-                        GwtToClientConverter converter = GwtToClientConverter.getInstance();
 
                         switch (filter.filterValue.typeID) {
                             case 0:
