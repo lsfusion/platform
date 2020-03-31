@@ -6,7 +6,12 @@ import com.hexiong.jdbf.JDBField;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
+
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.localDateTimeToSqlTimestamp;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.localDateToSqlDate;
 
 public class OverJDBField extends JDBField {
 
@@ -94,6 +99,14 @@ public class OverJDBField extends JDBField {
             }
             if (obj instanceof Date) {
                 Date date = (Date) obj;
+                SimpleDateFormat simpledateformat = new SimpleDateFormat("yyyyMMdd");
+                return simpledateformat.format(date);
+            } else if (obj instanceof LocalDate) {
+                Date date = localDateToSqlDate((LocalDate) obj);
+                SimpleDateFormat simpledateformat = new SimpleDateFormat("yyyyMMdd");
+                return simpledateformat.format(date);
+            } else if (obj instanceof LocalDateTime) {
+                Date date = localDateTimeToSqlTimestamp((LocalDateTime) obj);
                 SimpleDateFormat simpledateformat = new SimpleDateFormat("yyyyMMdd");
                 return simpledateformat.format(date);
             } else {

@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
@@ -87,7 +88,10 @@ public class DateClass extends DataClass<LocalDate> {
     }
 
     public LocalDate read(Object value) {
-        return (LocalDate) value;
+        if(value instanceof LocalDate)
+            return (LocalDate) value;
+        else
+            return sqlDateToLocalDate(safeDateToSql((Date) value));
     }
 
     @Override
