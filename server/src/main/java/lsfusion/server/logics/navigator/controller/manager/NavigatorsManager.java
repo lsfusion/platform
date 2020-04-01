@@ -200,4 +200,20 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             }
         }
     }
+
+    public void shutdownConnection(DataObject connectionObject) {
+        synchronized (navigators) {
+            for (RemoteNavigator navigator : navigators) {
+                if (navigator != null) {
+                    try {
+                        if (navigator.getConnection() != null && navigator.getConnection().equals(connectionObject)) {
+                            navigator.close();
+                        }
+                    } catch (RemoteException e) {
+                        logger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.shutdown.client}"), e);
+                    }
+                }
+            }
+        }
+    }
 }
