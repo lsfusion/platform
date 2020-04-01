@@ -344,7 +344,7 @@ public class SplitWindowElement extends WindowElement {
             DockLayoutPanel.Direction direction = windowDirections.get(child);
             if (direction != CENTER) {
                 String sizeString = storage.getItem(child.getStorageSizeKey());
-                Double storedSize = sizeString != null ? Double.valueOf(sizeString) : null;
+                Double storedSize = sizeString != null && !sizeString.equals("null") ? Double.valueOf(sizeString) : null; // it seems that somewhy sizeString can be null
                 if (storedSize != null) {
                     if (direction == NORTH || direction == SOUTH) {
                         child.pixelHeight = storedSize;
