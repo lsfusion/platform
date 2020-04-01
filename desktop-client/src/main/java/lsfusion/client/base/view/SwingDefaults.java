@@ -9,8 +9,8 @@ import static lsfusion.client.controller.MainController.colorPreferences;
 import static lsfusion.client.controller.MainController.colorTheme;
 
 public class SwingDefaults {
-    final static Color focusedTableRowBackgroundLight = new Color(4, 137, 186, 23);
-    final static Color focusedTableRowBackgroundDark = new Color(5, 114, 154, 61);
+    final static Color selectionColorLight = new Color(4, 137, 186, 23);
+    final static Color selectionColorDark = new Color(5, 114, 154, 61);
     
     private static Color buttonBackground;
     private static Border buttonBorder;
@@ -100,7 +100,7 @@ public class SwingDefaults {
         if (focusedTableCellBackground == null) {
             focusedTableCellBackground = colorPreferences != null ? colorPreferences.getFocusedCellBackground() : null;
             if (focusedTableCellBackground == null) {
-                focusedTableCellBackground = colorTheme.isLight() ? focusedTableRowBackgroundLight : focusedTableRowBackgroundDark;
+                focusedTableCellBackground = getSelectionColor();
             }
         }
         return focusedTableCellBackground;
@@ -122,7 +122,7 @@ public class SwingDefaults {
         if (focusedTableRowBackground == null) {
             focusedTableRowBackground = colorPreferences != null ? colorPreferences.getSelectedRowBackground() : null;
             if (focusedTableRowBackground == null) {
-                focusedTableRowBackground = colorTheme.isLight() ? focusedTableRowBackgroundLight : focusedTableRowBackgroundDark;
+                focusedTableRowBackground = getSelectionColor();
             }
         }
         return focusedTableRowBackground; 
@@ -202,5 +202,9 @@ public class SwingDefaults {
     public static int getSingleCellTableIntercellSpacing() {
         // to have right height and to be able to draw table border in editor
         return 2;
+    }
+    
+    public static Color getSelectionColor() {
+        return colorTheme.isLight() ? selectionColorLight : selectionColorDark;
     }
 }

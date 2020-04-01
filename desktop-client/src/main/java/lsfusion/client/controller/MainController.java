@@ -340,7 +340,7 @@ public class MainController {
             public Color getColor(String key) {
                 switch (key) {
                     case LookAndFeelColors.TITLE_SELECTION_BACKGROUND:
-                        return SwingDefaults.getFocusedTableRowBackground();
+                        return SwingDefaults.getSelectionColor();
                     case LookAndFeelColors.TITLE_SELECTION_FOREGROUND:
                         return SwingDefaults.getTableCellForeground();
                 }

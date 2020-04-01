@@ -202,6 +202,8 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
                     updatePageSizes(this);
                 }
             };
+            
+            proxyPanel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
             proxyPanel.add(childView, new FlexConstraints(child.getAlignment(), child.getFlex()));
 
