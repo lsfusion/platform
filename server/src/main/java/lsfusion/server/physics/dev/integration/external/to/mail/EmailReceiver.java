@@ -400,8 +400,8 @@ public class EmailReceiver {
     private Object getIMAPBodyPartContent(IMAPBodyPart bp) throws MessagingException, IOException {
         Object content = null;
         String encoding = bp.getEncoding();
-        if(encoding != null && encoding.equals("8bit")) {
-            content = MimeUtility.decode(bp.getInputStream(), "8bit");
+        if(encoding != null && (encoding.equals("8bit") || encoding.equals("quoted-printable"))) {
+            content = MimeUtility.decode(bp.getInputStream(), encoding);
         }
         return content;
     }
