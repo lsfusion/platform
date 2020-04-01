@@ -380,18 +380,22 @@ public class EmailReceiver {
                         f.deleteOnExit();
                 }
             } else {
-                Object content = bp instanceof IMAPBodyPart ? getIMAPBodyPartContent((IMAPBodyPart) bp) : null;
-                if(content == null) {
-                    content = bp.getContent();
+                try {
+                    Object content = bp instanceof IMAPBodyPart ? getIMAPBodyPartContent((IMAPBodyPart) bp) : null;
+                    if(content == null) {
+                        content = bp.getContent();
+                    }
+                    if (content instanceof BASE64DecoderStream) {
+                        RawFileData byteArray = new RawFileData((BASE64DecoderStream) content);
+                        String fileName = decodeFileName(bp.getFileName());
+                        attachments.putAll(unpack(byteArray, fileName, unpack));
+                    } else if (content instanceof MimeMultipart) {
+                        body = getMultipartBody(subjectEmail, (Multipart) content, unpack).message;
+                    } else
+                        body = String.valueOf(content);
+                } catch (IOException e) {
+                    throw new RuntimeException("Email subject: " + subjectEmail, e);
                 }
-                if (content instanceof BASE64DecoderStream) {
-                    RawFileData byteArray = new RawFileData((BASE64DecoderStream) content);
-                    String fileName = decodeFileName(bp.getFileName());
-                    attachments.putAll(unpack(byteArray, fileName, unpack));
-                } else if (content instanceof MimeMultipart) {
-                    body = getMultipartBody(subjectEmail, (Multipart) content, unpack).message;
-                } else
-                    body = String.valueOf(content);
             }
         }
         return new MultipartBody(body, attachments);
