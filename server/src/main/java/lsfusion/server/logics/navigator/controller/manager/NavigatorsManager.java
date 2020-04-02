@@ -181,39 +181,37 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
     }
 
     public void pushNotificationCustomUser(DataObject connectionObject, EnvStackRunnable run) {
-        synchronized (navigators) { // могут быть закрывающиеся навигаторы, проверка с синхронизацией внутри вызова
-            boolean found = false;
-            for (RemoteNavigator navigator : navigators) {
-                if(navigator != null) {
-                    try {
-                        if (navigator.getConnection() != null && navigator.getConnection().equals(connectionObject)) {
-                            if (!found) {
-                                navigator.pushNotification(run);
-                                found = true;
-                            } else
-                                ServerLoggers.assertLog(false, "Two RemoteNavigators with same connection");
-                        }
-                    } catch (RemoteException e) {
-                        logger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.push.action}"), e);
-                    }
-                }
+        RemoteNavigator navigator = findNavigator(connectionObject);
+        if (navigator != null) {
+            try {
+                navigator.pushNotification(run);
+            } catch (RemoteException e) {
+                logger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.push.action}"), e);
             }
         }
     }
 
     public void shutdownConnection(DataObject connectionObject) {
+        RemoteNavigator navigator = findNavigator(connectionObject);
+        if (navigator != null) {
+            try {
+                navigator.close();
+            } catch (RemoteException e) {
+                logger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.shutdown.client}"), e);
+            }
+        }
+    }
+
+    private RemoteNavigator findNavigator(DataObject connectionObject) {
         synchronized (navigators) {
             for (RemoteNavigator navigator : navigators) {
                 if (navigator != null) {
-                    try {
-                        if (navigator.getConnection() != null && navigator.getConnection().equals(connectionObject)) {
-                            navigator.close();
-                        }
-                    } catch (RemoteException e) {
-                        logger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.shutdown.client}"), e);
+                    if (navigator.getConnection() != null && navigator.getConnection().equals(connectionObject)) {
+                        return navigator;
                     }
                 }
             }
+            return null;
         }
     }
 }
