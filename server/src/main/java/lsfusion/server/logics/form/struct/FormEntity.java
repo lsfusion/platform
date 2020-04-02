@@ -894,8 +894,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getGroupProperties(valueGroups, supportGroupColumns);
 
         ImSet<GroupObjectEntity> excludeGroupObjects = valueGroups;
-        if(Settings.get().getBackwardCompatibilityVersion() > 3)
-            excludeGroupObjects = excludeGroupObjects.merge(getGroups().filterFn(group -> hasNoProperties(group, groupProperties)));
+        if(supportGroupColumns && Settings.get().getBackwardCompatibilityVersion() > 3)
+            excludeGroupObjects = excludeGroupObjects.merge(getGroups().filterFn(group -> !group.isSubReport && hasNoProperties(group, groupProperties)));
 
         ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> filteredGroupProperties = groupProperties;
         if(filter != null)
