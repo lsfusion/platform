@@ -111,7 +111,9 @@ objectClassName '{system.object.class.name.object}' (Object o) = staticCaption(o
 prevObjectClassName '{system.object.class.name.object}' (Object o) = staticCaption(PREV(objectClass(o)));
 
 defaultBackgroundColor '{system.default.background.color}' = DATA COLOR ();
+defaultOverrideBackgroundColor '{system.default.background.color}' = OVERRIDE defaultBackgroundColor(), RGB(255, 255, 0) MATERIALIZED;
 defaultForegroundColor '{system.default.foreground.color}' = DATA COLOR ();
+defaultOverrideForegroundColor '{system.default.foreground.color}' = OVERRIDE defaultForegroundColor(), RGB(255, 0, 0) MATERIALIZED;
 
 selectedRowBackgroundColor '{system.selected.row.background.color}' = DATA COLOR ();
 selectedCellBackgroundColor '{system.selected.cell.background.color}' = DATA COLOR ();
