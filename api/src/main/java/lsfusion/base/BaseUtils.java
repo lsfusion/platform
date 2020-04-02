@@ -38,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 
@@ -2129,6 +2130,29 @@ public class BaseUtils {
         return "" + dayOfMonth + " " + monthsRussian[calendar.get(Calendar.MONTH)] + (noYear ? "" : (" " + calendar.get(Calendar.YEAR)));
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
+    public static String formatRussian(LocalDate date) {
+        return formatRussian(date, false, false);
+    }
+
+    public static String formatRussian(LocalDate date, boolean noYear) {
+        return formatRussian(date, false, false, noYear);
+    }
+
+    public static String formatRussian(LocalDate date, boolean quotes, boolean leadZero) {
+        return formatRussian(date, quotes, leadZero, false);
+    }
+
+    public static String formatRussian(LocalDate date, boolean quotes, boolean leadZero, boolean noYear) {
+        String dayOfMonth = String.valueOf(date.getDayOfMonth());
+        if ((leadZero) && (dayOfMonth.length() == 1))
+            dayOfMonth = "0" + dayOfMonth;
+        if (quotes)
+            dayOfMonth = "«" + dayOfMonth + "»";
+
+        return "" + dayOfMonth + " " + monthsRussian[date.getMonthValue() - 1] + (noYear ? "" : (" " + date.getYear()));
+    }
+
     public static String[] monthsEnglish = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
     @SuppressWarnings({"UnusedDeclaration"})
@@ -2157,6 +2181,21 @@ public class BaseUtils {
 
         return "" + monthsEnglish[calendar.get(Calendar.MONTH)] + " " + dayOfMonth + ", " + calendar.get(Calendar.YEAR);
 
+    }
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    public static String formatEnglish(LocalDate date) {
+        return formatEnglish(date, false, false);
+    }
+
+    public static String formatEnglish(LocalDate date, boolean quotes, boolean leadZero) {
+        String dayOfMonth = String.valueOf(date.getDayOfMonth());
+        if ((leadZero) && (dayOfMonth.length() == 1))
+            dayOfMonth = "0" + dayOfMonth;
+        if (quotes)
+            dayOfMonth = "“" + dayOfMonth + "”";
+
+        return "" + monthsEnglish[date.getMonthValue() - 1] + " " + dayOfMonth + ", " + date.getYear();
     }
 
     public static String justInitials(String fullName, boolean lastNameFirst, boolean revert) {
@@ -2524,6 +2563,14 @@ public class BaseUtils {
 
     public static String dateToString(String format, Date d) {
         return new SimpleDateFormat(format).format(d);
+    }
+
+    public static String dateToString(LocalDate d) {
+        return dateToString("dd/MM/yyyy", d);
+    }
+
+    public static String dateToString(String format, LocalDate d) {
+        return d != null ? d.format(DateTimeFormatter.ofPattern(format)) : "";
     }
 
     public static String packWords(String string, int reqLength) {
