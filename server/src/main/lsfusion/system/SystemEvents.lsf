@@ -106,9 +106,11 @@ disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionS
 currentLaunch = DATA Launch();
 launch = DATA Launch(Connection);
 
+serverShutdown INTERNAL  'lsfusion.server.physics.admin.systemevents.ShutdownAction' (Connection);
 shutdown '{system.events.shutdown}' (Connection connection)  { 
     IF connectionStatus(connection) == ConnectionStatus.connectedConnection THEN {
             NEWSESSION { NEWTHREAD shutdown(); CONNECTION connection; }
+            serverShutdown(connection);
         }
 } CONFIRM;
 
