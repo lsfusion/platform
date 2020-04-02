@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
@@ -150,6 +152,13 @@ public class DateClass extends DataClass<LocalDate> {
 
     public LocalDate parseString(String s) throws ParseException {
         try {
+            //try to parse with default locale formats
+            for(FormatStyle formatStyle : new FormatStyle[]{FormatStyle.MEDIUM, FormatStyle.SHORT}) {
+                try {
+                    return LocalDate.parse(s, DateTimeFormatter.ofLocalizedDate(formatStyle));
+                } catch (Exception ignored) {
+                }
+            }
             LocalDateTime result = DateConverter.smartParse(s);
             return result != null ? result.toLocalDate() : null;
         } catch (Exception e) {

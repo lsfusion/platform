@@ -23,11 +23,11 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
-import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
 public class DateTimeClass extends DataClass<LocalDateTime> {
@@ -145,6 +145,16 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
 
     public LocalDateTime parseString(String s) throws ParseException {
         try {
+            //try to parse with default locale formats
+            FormatStyle[] formatStyles = new FormatStyle[]{FormatStyle.MEDIUM, FormatStyle.SHORT};
+            for(FormatStyle dateStyle : formatStyles) {
+                for(FormatStyle timeStyle : formatStyles) {
+                    try {
+                        return LocalDateTime.parse(s, DateTimeFormatter.ofLocalizedDateTime(dateStyle, timeStyle));
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
             return DateConverter.smartParse(s);
         } catch (Exception e) {
             throw new ParseException("error parsing datetime: " + s, e);

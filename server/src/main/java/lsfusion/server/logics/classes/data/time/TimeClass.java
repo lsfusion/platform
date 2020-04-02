@@ -23,9 +23,11 @@ import java.sql.Time;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
-import static lsfusion.base.TimeConverter.*;
+import static lsfusion.base.TimeConverter.localTimeToSqlTime;
+import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 
 public class TimeClass extends DataClass<LocalTime> {
     public final static TimeClass instance = new TimeClass();
@@ -48,19 +50,16 @@ public class TimeClass extends DataClass<LocalTime> {
         return LocalTime.class;
     }
 
-    public SimpleDateFormat getDefaultFormat() {
-        return new SimpleDateFormat("HH:mm:ss");
-    }
-
     public LocalTime parseString(String s) throws ParseException {
         try {
-            LocalTime parse;
-            try {
-                parse = sqlTimeToLocalTime(new java.sql.Time(((Date) getDefaultFormat().parseObject(s)).getTime()));
-            } catch (java.text.ParseException e) {
-                parse = TimeConverter.smartParse(s);
+            //try to parse with default locale formats
+            for(FormatStyle formatStyle : new FormatStyle[]{FormatStyle.MEDIUM, FormatStyle.SHORT}) {
+                try {
+                    return LocalTime.parse(s, DateTimeFormatter.ofLocalizedTime(formatStyle));
+                } catch (Exception ignored) {
+                }
             }
-            return parse;
+            return TimeConverter.smartParse(s);
         } catch (Exception e) {
             throw new ParseException("error parsing time: " + s, e);
         }
