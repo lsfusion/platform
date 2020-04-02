@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -39,17 +40,17 @@ public class GPivot extends GStateTableView {
     }
 
     // we need key / value view since pivot
-    private JsArray<JsArrayString> getData(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions) {
-        JsArray<JsArrayString> array = JavaScriptObject.createArray().cast();
+    private JsArray<JsArrayMixed> getData(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings) {
+        JsArray<JsArrayMixed> array = JavaScriptObject.createArray().cast();
 
         array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
 
         // getting values
         for (GGroupObjectValue key : keys != null && !keys.isEmpty() ? keys : Collections.singleton((GGroupObjectValue) null)) { // can be null if manual update
-            JsArrayString rowValues = getValues(key);
+            JsArrayMixed rowValues = getValues(key, convertDataToStrings);
 
             for (String aggrCaption : aggrCaptions) { // putting columns to rows
-                JsArrayString aggrRowValues = clone(rowValues);
+                JsArrayMixed aggrRowValues = clone(rowValues);
                 aggrRowValues.push(aggrCaption);
                 array.push(aggrRowValues);
             }
@@ -57,26 +58,30 @@ public class GPivot extends GStateTableView {
         return array;
     }
 
-    private JsArrayString getValues(GGroupObjectValue key) {
-        JsArrayString rowValues = JavaScriptObject.createArray().cast();
+    private JsArrayMixed getValues(GGroupObjectValue key, boolean convertDataToStrings) {
+        JsArrayMixed rowValues = JavaScriptObject.createArray().cast();
         for (int i = 0; i < properties.size(); i++) {
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
             Map<GGroupObjectValue, Object> propValues = values.get(i);
             List<Map<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(i);
 
+            GridCellRenderer renderer = null;
+            if(convertDataToStrings)
+                renderer = properties.get(i).getGridCellRenderer();
+
             for (GGroupObjectValue columnKey : propColumnKeys) {
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                pushValue(rowValues, propValues, fullKey);
+                pushValue(rowValues, propValues, fullKey, renderer);
                 for (Map<GGroupObjectValue, Object> propLastAggr : propLastAggrs) {
-                    pushValue(rowValues, propLastAggr, fullKey);
+                    pushValue(rowValues, propLastAggr, fullKey, renderer);
                 }
             }
         }
         return rowValues;
     }
 
-    private JsArrayString getCaptions(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions) {
+    private JsArrayMixed getCaptions(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions) {
         // we need correct formulas order
         List<GPropertyDraw> orderedProperties = new ArrayList<>();
         fillPropertiesOrder(properties, orderedProperties, new HashSet<>());
@@ -126,7 +131,7 @@ public class GPivot extends GStateTableView {
         }
 
         // ordering in inital order (all other lists are actually sets)
-        JsArrayString rowCaptions = JavaScriptObject.createArray().cast();
+        JsArrayMixed rowCaptions = JavaScriptObject.createArray().cast();
         for (int i = 0; i < properties.size(); i++)
             for (String column : orderedColumns.get(properties.get(i)))
                 rowCaptions.push(column);
@@ -135,9 +140,9 @@ public class GPivot extends GStateTableView {
         return rowCaptions;
     }
 
-    private void pushValue(JsArrayString rowValues, Map<GGroupObjectValue, Object> propValues, GGroupObjectValue fullKey) {
+    private void pushValue(JsArrayMixed rowValues, Map<GGroupObjectValue, Object> propValues, GGroupObjectValue fullKey, GridCellRenderer cellRenderer) {
         Object value = propValues.get(fullKey);
-        rowValues.push(value != null ? value.toString() : null);
+        rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value) : value) : null);
     }
 
     private String getPropertyCaption(Map<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -157,9 +162,11 @@ public class GPivot extends GStateTableView {
         aggrCaptions = new ArrayList<>();
         Aggregator aggregator = Aggregator.create();
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
-        JavaScriptObject data = getData(columnMap, aggregator, aggrCaptions, systemColumns); // convertToObjects()
+        boolean convertDataToStrings = false; // so far we'll not use renderer formatters and we'll rely on native toString (if we decide to do it we'll have to track renderer type and rerender everything if this type changes that can may lead to some blinking)
+        JavaScriptObject data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings); // convertToObjects()
         config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
-
+        config = overrideCallbacks(config, getCallbacks());
+        
         int rowHeight = 0;
         for(GPropertyDraw property : properties) {
             int columnMinimumHeight = property.getValueHeight(font);
@@ -303,6 +310,12 @@ public class GPivot extends GStateTableView {
         });
     }-*/;
 
+    private native WrapperObject overrideCallbacks(WrapperObject config, JavaScriptObject callbacks)/*-{
+        return Object.assign({}, config, {
+            callbacks: callbacks
+        });
+    }-*/;
+    
     private List<String> createAggrColumns(WrapperObject inclusions) {
         JsArrayString columnValues = inclusions.getArrayString(COLUMN);
         if (columnValues == null)
@@ -314,20 +327,18 @@ public class GPivot extends GStateTableView {
         return result;
     }
 
-//    private boolean isSubTotal(String rendererName) {
-//        return rendererName != null && rendererName.contains("Subtotal");
-//    }
+//    private boolean isTable = true;
 
     private void onRefresh(WrapperObject config, JsArrayString rows, JsArrayString cols, WrapperObject inclusions, String aggregatorName, String rendererName) {
-        // to get rid of blinking always use SubtotalPivotData
-//        boolean wasSubTotal = isSubTotal((String) this.config.getValue("rendererName"));
-
         this.config = config;
 
-//        boolean isSubTotal = isSubTotal(rendererName);
-//        if(isSubTotal != wasSubTotal) {
-//            this.config = overrideDataClass(this.config, isSubTotal);
-//            overwriteConfig = true;
+        // see convertDataToStrings comment
+//        boolean isTable = rendererName != null && rendererName.contains("Table");
+//        if(isTable != this.isTable) {
+//            this.isTable = isTable;
+//
+//            this.config = overrideDataClass(this.config, isTable);
+//            rerender();
 //        }
 
         List<GPropertyDraw> properties = new ArrayList<>();
@@ -573,7 +584,6 @@ public class GPivot extends GStateTableView {
     }
 
     public native JavaScriptObject getAggregator(Aggregator aggregator, Object aggrFunc) /*-{
-        var instance = this;
         return function () {
             return function () {
                 return {
@@ -585,27 +595,93 @@ public class GPivot extends GStateTableView {
                     value: function () {
                         return aggregator.@Aggregator::value(*)(this.state, aggrFunc);
                     },
-                    property: function () {
-                        return aggregator.@Aggregator::property(*)(this.state);
-                    },
-                    format : $wnd.$.pivotUtilities.numberFormat(), // to be removed later when all cells will be rendered with renderCell
-                    cellRender: function (element, value, columns) {
-                        if(columns != null)
-                            instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderCell(*)(element, value, columns);
-                        else if(value != null) // default behaviour, to be removed later when all cells will be rendered with renderCell
-                            element.textContent = $wnd.$.pivotUtilities.numberFormat()(value);
-                    },
                     numInputs: 0
                 }
             }
         }
     }-*/;
 
-    public void renderCell(Element jsElement, JavaScriptObject value, String column) {
+    public void renderValueCell(Element jsElement, JavaScriptObject value, JsArrayString rowKey, JsArrayString columnKeys) {
         GPropertyTableBuilder.renderTD(rowHeight, jsElement);
+        JsArrayString cols = config.getArrayString("cols");
+        for (int i = 0; i < columnKeys.length(); ++i) {
+            if (cols.get(i).equals(COLUMN)) {  
+                String column = columnKeys.get(i);
+                GridCellRenderer<?> renderer = columnMap.get(column).property.getGridCellRenderer();
+                renderer.render(jsElement, font, value, false);
+                return;
+            }
+        }
+            
+        try {
+            String numStr = NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())); 
+            jsElement.setPropertyString("textContent", numStr);
+        } catch (Exception ignored) {
+            jsElement.setPropertyObject("textContent", value);
+        }
+    }
 
-        GridCellRenderer renderer = columnMap.get(column).property.getGridCellRenderer();
-        renderer.render(jsElement, font, value, false);
+    public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow) {
+        GPropertyTableBuilder.renderTD(rowHeight, th);
+        if (isArrow) {
+            renderArrow(th, isExpanded);    
+        } else {
+            if (attrName != null) {
+                if (!attrName.equals(COLUMN)) {
+                    GridCellRenderer<?> renderer = columnMap.get(attrName).property.getGridCellRenderer();
+                    renderer.render(th, font, value, false);
+                } else {
+                    th.setPropertyObject("textContent", value);
+                }
+            }
+            if (attrName == null) {
+                th.setPropertyString("textContent", "Totals");
+            }
+        }
+    }
+    
+    public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
+        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
+        if (isArrow) {
+            renderArrow(jsElement, isExpanded);
+        } else {
+            if (colKeyValues.length() > 0) {
+                JsArrayString cols = config.getArrayString("cols");
+                String lastValue = cols.get(colKeyValues.length() - 1);
+                if (!isSubtotal && lastValue != null && !lastValue.equals(COLUMN)) {
+                    GridCellRenderer<?> renderer = columnMap.get(lastValue).property.getGridCellRenderer();
+                    renderer.render(jsElement, font, value, false);
+                } else {
+                    jsElement.setPropertyObject("textContent", value);
+                }
+            }
+            if (colKeyValues.length() == 0) {
+                jsElement.setPropertyString("textContent", "Totals");
+            }
+        }
+    } 
+    
+    public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
+        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
+        if (isArrow) {
+            renderArrow(jsElement, isExpanded);
+        } else {
+            jsElement.setPropertyObject("textContent", value);
+        }
+    }
+
+    private void renderArrow(Element jsElement, Boolean isExpanded) {
+        jsElement.setPropertyString("textContent", getArrow(isExpanded));
+    }
+
+    private static String getArrow(Boolean isExpanded) {
+        final String arrowCollapsed = " \u25B6 ";
+        final String arrowExpanded = " \u25E2 ";
+
+        String arrow = "";
+        if (isExpanded != null)
+            arrow = isExpanded ? arrowExpanded : arrowCollapsed;
+        return arrow;
     }
 
     private static class ColumnAggregator extends JavaScriptObject {
@@ -833,4 +909,42 @@ public class GPivot extends GStateTableView {
 
         return aggr;
     }
+
+    public native JavaScriptObject getCallbacks() /*-{
+        var instance = this;
+        
+        return {
+            valueCellDblClickHandler: function (td, rowKeyValues, colKeyValues) {
+                alert("col: " + colKeyValues + ", row: " + rowKeyValues + ", val: " + td.textContent);
+            },
+            
+            rowAttrHeaderDblClickHandler: function (th, rowKeyValues, attrName) {
+                alert("row: " + rowKeyValues + ", rowKey: " + attrName + ", val: " + th.textContent);
+            },
+            
+            colAttrHeaderDblClickHandler: function (element, colKeyValues, isSubtotal) {
+                alert("col: " + colKeyValues + ", isSubtotal: " + isSubtotal + ", val: " + element.textContent);
+            },
+            
+            axisHeaderDblClickHandler: function (element, attrName) {
+                alert("key: " + attrName + ", val: " + element.textContent);
+            },
+            
+            renderValueCell: function (td, value, rowKeyValues, colKeyValues) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderValueCell(*)(td, value, rowKeyValues, colKeyValues);
+            },
+
+            renderRowAttrHeaderCell: function (th, value, rowKeyValues, attrName, isExpanded, isArrow) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderRowAttrCell(*)(th, value, rowKeyValues, attrName, isExpanded, isArrow);
+            },
+
+            renderColAttrHeaderCell: function (element, value, colKeyValues, isSubtotal, isExpanded, isArrow) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderColAttrCell(*)(element, value, colKeyValues, isSubtotal, isExpanded, isArrow);
+            },
+
+            renderAxisHeaderCell: function (element, value, attrName, isExpanded, isArrow) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderAxisCell(*)(element, value, attrName, isExpanded, isArrow);
+            }
+        }
+    }-*/;
 }

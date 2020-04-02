@@ -13,7 +13,7 @@ public class DateGridCellRenderer extends FormatGridCellRenderer<Object, DateTim
     }
 
     @Override
-    protected String castToString(Object value) {
+    public String format(Object value) {
         if (value instanceof GDateDTO) {
             return format.format(((GDateDTO) value).toDate());
         } else if (value instanceof GTimeDTO) {

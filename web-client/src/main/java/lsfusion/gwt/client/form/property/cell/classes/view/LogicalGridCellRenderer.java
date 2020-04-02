@@ -55,4 +55,9 @@ public class LogicalGridCellRenderer extends GridCellRenderer {
         boolean checked = value != null && (Boolean) value;
         return GwtClientUtils.getModuleImagePath("checkbox_" + (checked ? "checked" : "unchecked") + ".png");
     }
+
+    @Override
+    public String format(Object value) {
+        return (value != null) && ((Boolean) value) ? "TRUE" : "FALSE";
+    }
 }

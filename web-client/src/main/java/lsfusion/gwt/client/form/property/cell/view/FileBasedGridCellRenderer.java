@@ -59,4 +59,8 @@ public abstract class FileBasedGridCellRenderer extends GridCellRenderer {
     protected FileBasedGridCellRenderer(GPropertyDraw property) {
         this.property = property;
     }
+
+    public String format(Object value) {
+        return value == null ? "" : value.toString();
+    }
 }

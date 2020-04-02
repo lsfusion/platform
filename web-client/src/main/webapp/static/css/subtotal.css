@@ -1,5 +1,4 @@
     body {
-        font-family: Verdana;
     }
 
     /* AxisLabel */
@@ -9,25 +8,30 @@
     table.pvtTable .pvtAxisLabel.expanded {
 	    white-space: nowrap;
     }
+    table.pvtTable .pvtAxisLabel.expanded .axisHeaderArrowDiv {
+        cursor: zoom-out !important;
+    }
     table.pvtTable .pvtAxisLabel.expanded.zoom {
         cursor: zoom-out !important;
     }
     table.pvtTable .pvtAxisLabel.collapsed {
 	    white-space: nowrap;
     }
-    table.pvtTable .pvtAxisLabel.collapsed.zoom {
+    table.pvtTable .pvtAxisLabel.collapsed .axisHeaderArrowDiv {
         cursor: zoom-in !important;
+    }
+    table.pvtTable .pvtAxisLabel.collapsed.zoom {
+        cursor: zoom-out !important;
     }
 
     /* RowLabel */
     table.pvtTable tbody tr th.pvtRowLabel {
 	    vertical-align: top !important;
 	    white-space: nowrap !important;
-        background-color: white !important;
     }
     table.pvtTable tbody tr th.pvtRowLabel.rowexpanded {
     }
-    table.pvtTable tbody tr th.pvtRowLabel.rowexpanded.zoom {
+    table.pvtTable tbody tr th.pvtRowLabel.rowexpanded.zoom  {
         cursor: zoom-out !important;
     }
     table.pvtTable tbody tr th.pvtRowLabel.rowcollapsed {
@@ -38,41 +42,60 @@
 
     /* RowLabelFiller */
     table.pvtTable .pvtRowLabelFiller {
-        background-color: white;
     }
 
     /* RowSubtotal */
     table.pvtTable .pvtRowSubtotal {
-        font-weight:bold;
     }
     table.pvtTable tr td.pvtRowSubtotal.rowcollapsed {
-	    background-color: #EFEFEF !important;
     }
 
     /* ColLabel */
     table.pvtTable thead tr th.pvtColLabel {
 	    white-space: nowrap;
     }
-    table.pvtTable thead tr th.pvtColLabel.colexpanded {
+    table.pvtTable thead tr th.pvtColLabel.colexpanded .colAttrHeaderArrowDiv {
 	    cursor: zoom-out !important;
     }
-    table.pvtTable thead tr th.pvtColLabel.colcollapsed {
+    table.pvtTable thead tr th.pvtColLabel.colcollapsed .colAttrHeaderArrowDiv {
 	    cursor: zoom-in !important;
     }
 
     /* ColLabelFiller */
     table.pvtTable .pvtColLabelFiller {
-        background-color: #EFEFEF !important;
     }
 
     /* ColSubtotal */
     table.pvtTable .pvtColSubtotal {
-        font-weight:bold;
     }
     table.pvtTable tr td.pvtColSubtotal {
-	    background-color: #EFEFEF !important;
     }
 
+    table.pvtTable thead tr .wrapperDiv {
+        display: flex;
+    }
+
+    table.pvtTable thead tr .axisHeaderArrowDiv {
+        flex: 0 0 auto; 
+        justify-content: left; 
+        padding-right: 5px;"    
+    }
+    
+    table.pvtTable thead tr .axisHeaderTextDiv {
+        flex: 1 1 auto; 
+        justify-content: center
+    }
+    
+    table.pvtTable thead tr .colAttrHeaderArrowDiv {
+        flex: 0 0 auto; 
+        justify-content: left; 
+        padding-right: 5px;"    
+    }
+    
+    table.pvtTable thead tr .colAttrHeaderTextDiv {
+        flex: 1 1 auto; 
+        justify-content: center
+    }
 
     /*
     *

@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.design.GFont;
 
-public abstract class GridCellRenderer {
+public abstract class GridCellRenderer<T> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     protected final String EMPTY_VALUE = messages.formRendererEmpty();
     protected final String NOT_DEFINED_VALUE = messages.formRendererNotDefined();
@@ -19,4 +19,6 @@ public abstract class GridCellRenderer {
 
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
     }
+
+    public abstract String format(T value);
 }

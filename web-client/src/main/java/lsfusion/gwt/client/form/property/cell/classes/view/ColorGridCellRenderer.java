@@ -6,7 +6,7 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
-public class ColorGridCellRenderer extends GridCellRenderer {
+public class ColorGridCellRenderer extends GridCellRenderer<Object> {
     @Override
     public void renderStatic(Element element, GFont font, boolean isSingle) {
         element.setInnerText(EscapeUtils.UNICODE_NBSP);
@@ -23,5 +23,10 @@ public class ColorGridCellRenderer extends GridCellRenderer {
 
     private String getColorValue(Object value) {
         return value == null ? "" : value.toString();
+    }
+
+    @Override
+    public String format(Object value) {
+        return getColorValue(value);
     }
 }

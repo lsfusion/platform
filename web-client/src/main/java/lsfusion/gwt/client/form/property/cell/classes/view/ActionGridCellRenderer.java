@@ -60,8 +60,8 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
     }
 
     @Override
-    protected String castToString(Object value) {
-        return (value == null) && ((Boolean) value) ? "" : "...";
+    public String format(Object value) {
+        return (value != null) && ((Boolean) value) ? "..." : "";
     }
 
     private void setImage(ImageElement img, boolean enabled) {

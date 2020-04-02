@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -46,7 +47,7 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
         }
     }
 
-    public final native JsArrayString clone(JsArrayString array) /*-{
+    public final native JsArrayMixed clone(JsArrayMixed array) /*-{
         n = array.length;
         var clone = [];
         for(var i = 0; i < n; i++) {

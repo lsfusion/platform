@@ -17,7 +17,7 @@ public class StringGridCellRenderer extends StringBasedGridCellRenderer<String> 
     }
 
     @Override
-    protected String castToString(String value) {
+    public String format(String value) {
         if (echoSymbols) {
             return multiplyString(EscapeUtils.UNICODE_BULLET, 6);
         } else if (!isVarString) {

@@ -8,7 +8,7 @@ public class DoubleGridCellRenderer extends NumberGridCellRenderer {
     }
 
     @Override
-    protected String castToString(Number value) {
+    public String format(Number value) {
         assert value != null;
         return format.format(new Double(value.toString()));
     }

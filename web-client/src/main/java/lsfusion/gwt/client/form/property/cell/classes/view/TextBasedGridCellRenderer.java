@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 import static lsfusion.gwt.client.base.GwtClientUtils.CELL_HORIZONTAL_PADDING;
 
-public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
+public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
     protected GPropertyDraw property;
 
     TextBasedGridCellRenderer(GPropertyDraw property) {
@@ -64,7 +64,7 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
             element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
             setInnerText(element, null);
         } else {
-            String stringValue = unicodeEscape(castToString((T) value));
+            String stringValue = unicodeEscape(format((T) value));
             setInnerText(element, stringValue);
             element.setTitle(property.echoSymbols ? "" : stringValue);
         }
@@ -72,5 +72,5 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
 
     protected abstract void setInnerText(Element element, String innerText);
 
-    protected abstract String castToString(T value);
+    public abstract String format(T value);
 }

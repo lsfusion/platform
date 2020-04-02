@@ -9,7 +9,7 @@ public class NumberGridCellRenderer extends FormatGridCellRenderer<Number, Numbe
     }
 
     @Override
-    protected String castToString(Number value) {
+    public String format(Number value) {
         return format.format(value);
     }
 }

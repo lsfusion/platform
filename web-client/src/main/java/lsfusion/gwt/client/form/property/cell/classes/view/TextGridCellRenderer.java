@@ -42,7 +42,7 @@ public class TextGridCellRenderer extends StringBasedGridCellRenderer {
     }
 
     @Override
-    protected String castToString(Object value) {
+    public String format(Object value) {
         return (String) value;
     }
 }
