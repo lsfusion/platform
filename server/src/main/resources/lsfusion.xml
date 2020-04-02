@@ -16,6 +16,7 @@
             <map>
                 <entry key="innerGroupExprs" value="${settings.innerGroupExprs:}"/>
                 <entry key="packOnCacheComplexity" value="${settings.packOnCacheComplexity:}"/>
+                <entry key="backwardCompatibilityVersion" value="${settings.backwardCompatibilityVersion:}"/>
                 <entry key="LRUOftenCleanPeriod" value="${settings.LRUOftenCleanPeriod:}"/>
                 <entry key="LRUOftenExpireSecond" value="${settings.LRUOftenExpireSecond:}"/>
                 <entry key="LRUOftenProceedBucket" value="${settings.LRUOftenProceedBucket:}"/>

@@ -2415,7 +2415,19 @@ public class Settings implements Cloneable {
     public void setStacktraceInSQLSession(boolean stacktraceInSQLSession) {
         this.stacktraceInSQLSession = stacktraceInSQLSession;
     }
-    
+
+    // version for backward compatibility
+    // 3 - version: building hierarchy includes groups without properties
+    private int backwardCompatibilityVersion = 999999;
+
+    public int getBackwardCompatibilityVersion() {
+        return backwardCompatibilityVersion;
+    }
+
+    public void setBackwardCompatibilityVersion(int backwardCompatibilityVersion) {
+        this.backwardCompatibilityVersion = backwardCompatibilityVersion;
+    }
+
     private boolean useRequestTimeout = true;
 
     public boolean isUseRequestTimeout() {

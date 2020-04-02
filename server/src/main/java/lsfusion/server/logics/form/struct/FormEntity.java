@@ -63,6 +63,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -891,15 +892,26 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     private StaticDataGenerator.Hierarchy getHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, BiFunction<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>, ImOrderSet<PropertyDrawEntity>> filter) {
         ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getGroupProperties(valueGroups, supportGroupColumns);
+
+        ImSet<GroupObjectEntity> excludeGroupObjects = valueGroups;
+        if(Settings.get().getBackwardCompatibilityVersion() > 3)
+            excludeGroupObjects = excludeGroupObjects.merge(getGroups().filterFn(group -> hasNoProperties(group, groupProperties)));
+
+        ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> filteredGroupProperties = groupProperties;
         if(filter != null)
-            groupProperties = groupProperties.mapValues(filter);
-        return new StaticDataGenerator.Hierarchy(getGroupHierarchy(supportGroupColumns, valueGroups), groupProperties, valueGroups);
+            filteredGroupProperties = filteredGroupProperties.mapValues(filter);
+
+        return new StaticDataGenerator.Hierarchy(getGroupHierarchy(supportGroupColumns, excludeGroupObjects), filteredGroupProperties, valueGroups);
     }
 
     // means that group object is apparently used as a group-to-columns (or filter parameter)
+    private static boolean hasNoProperties(GroupObjectEntity group, ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties) {
+        return groupProperties.get(group) == null;
+    }
+
     @IdentityLazy
     public boolean hasNoProperties(GroupObjectEntity group) {
-        return getGroupProperties(SetFact.EMPTY(), true).get(group) == null;
+        return hasNoProperties(group, getGroupProperties(SetFact.EMPTY(), true));
     }
 
     @IdentityInstanceLazy
