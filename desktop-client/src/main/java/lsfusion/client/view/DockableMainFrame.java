@@ -301,6 +301,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         mainControl.getThemes().remove(ThemeMap.KEY_BUBBLE_THEME);
         mainControl.getThemes().remove(ThemeMap.KEY_FLAT_THEME);
         mainControl.getThemes().remove(ThemeMap.KEY_SMOOTH_THEME);
+
+        loadLayout();
         
         mainControl.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
         
@@ -329,8 +331,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             }
             return null;
         });
-
-        loadLayout();
 
         // создаем все окна и их виды
         initWindows(navigatorData);
