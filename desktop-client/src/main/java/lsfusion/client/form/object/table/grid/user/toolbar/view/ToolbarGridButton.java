@@ -4,8 +4,10 @@ import lsfusion.client.base.view.ThemedFlatRolloverButton;
 
 import java.awt.*;
 
+import static lsfusion.client.base.view.SwingDefaults.getComponentHeight;
+
 public class ToolbarGridButton extends ThemedFlatRolloverButton {
-    public final static Dimension DEFAULT_SIZE = new Dimension(20, 20);
+    public final static Dimension DEFAULT_SIZE = new Dimension(getComponentHeight(), getComponentHeight());
 
     public ToolbarGridButton(String iconPath, String toolTipText) {
         this(iconPath, toolTipText, DEFAULT_SIZE);

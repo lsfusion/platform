@@ -686,4 +686,11 @@ public class GwtClientUtils {
     public static String replaceDotSeparator(String value) {
         return value.replace('.', ',');
     }
+
+
+    public static int VALUE_HEIGHT = 20;
+    public static String VALUE_HEIGHT_STRING = VALUE_HEIGHT + "px";
+    
+    public static int COMPONENT_HEIGHT = VALUE_HEIGHT + 2; // 2 for borders
+    public static String COMPONENT_HEIGHT_STRING = COMPONENT_HEIGHT + "px";
 }

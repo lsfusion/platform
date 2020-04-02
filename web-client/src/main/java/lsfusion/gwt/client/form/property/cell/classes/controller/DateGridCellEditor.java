@@ -12,6 +12,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DatePicker;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -62,6 +63,7 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
 
         editBox = new TextBox();
         editBox.addStyleName("dateTimeEditorBox");
+        editBox.setHeight(GwtClientUtils.VALUE_HEIGHT_STRING);
         panel.add(editBox);
 
         datePicker = new DatePicker();

@@ -219,7 +219,11 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
     @Override
     public Dimension getPreferredSize() {
-        return overrideSize(super.getPreferredSize(), property.valueSize);  // тут видимо потому что caption'а нет
+        final Dimension baseSize = super.getPreferredSize();
+        final int propertyValueWidth = property.getValueWidth();
+        final int borderCorrection = SwingDefaults.getButtonBorderWidth() * 2;
+        final int overrideWidth = propertyValueWidth > -1 ? propertyValueWidth + borderCorrection : baseSize.width;
+        return overrideSize(baseSize, new Dimension(overrideWidth, property.getValueHeight(this) + borderCorrection));  // тут видимо потому что caption'а нет
     }
 
     @Override

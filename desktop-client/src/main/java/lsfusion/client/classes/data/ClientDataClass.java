@@ -62,7 +62,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         if (design.font != null) {
             return comp.getFontMetrics(design.getFont(comp)).getHeight() * charHeight;
         }
-        return SwingDefaults.getCellHeight() * charHeight;
+        return SwingDefaults.getValueHeight() * charHeight;
     }
 
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {

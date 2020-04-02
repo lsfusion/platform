@@ -604,10 +604,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         setFocusable(hasFocusableCells);
 
         if (model.getColumnCount() != 0) {
-
-            if (getRowHeight() != rowHeight) {
-                // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
-                setRowHeight(rowHeight + getRowMargin());
+            // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
+            int newRowHeight = rowHeight + getRowMargin();
+            if (getRowHeight() != newRowHeight) {
+                setRowHeight(newRowHeight);
             }
 
             repaint();

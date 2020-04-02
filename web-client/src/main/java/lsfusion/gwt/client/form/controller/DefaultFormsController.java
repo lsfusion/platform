@@ -9,6 +9,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.view.FormDockable;
@@ -27,7 +28,7 @@ public abstract class DefaultFormsController implements FormsController {
 
     public DefaultFormsController(String tabSID) {
         this.tabSID = tabSID;
-        tabsPanel = new TabLayoutPanel(21, Style.Unit.PX);
+        tabsPanel = new TabLayoutPanel(GwtClientUtils.VALUE_HEIGHT + 1, Style.Unit.PX); // 1px for one side border
         tabsPanel.setVisible(false);
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override

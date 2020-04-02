@@ -2,6 +2,8 @@ package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
 import lsfusion.gwt.client.base.view.ImageButton;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.COMPONENT_HEIGHT_STRING;
+
 public abstract class GToolbarButton extends ImageButton {
     public GToolbarButton(String imagePath) {
         this(imagePath, "");
@@ -9,6 +11,8 @@ public abstract class GToolbarButton extends ImageButton {
 
     public GToolbarButton(String caption, String imagePath, String tooltipText) {
         super(caption, imagePath);
+        
+        setSize(COMPONENT_HEIGHT_STRING, COMPONENT_HEIGHT_STRING);
 
         addStyleName("toolbarButton");
         setTitle(tooltipText);

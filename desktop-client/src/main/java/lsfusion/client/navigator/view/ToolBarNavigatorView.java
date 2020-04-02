@@ -11,6 +11,7 @@ import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         window = iWindow;
 
         toolBar = (JToolBar) getComponent();
-        toolBar.setLayout(new FlexLayout(toolBar, iWindow.type == SwingConstants.VERTICAL, Alignment.START));
+        toolBar.setLayout(new FlexLayout(toolBar, iWindow.isVertical(), Alignment.START));
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
         toolBar.setFocusable(false);
@@ -72,6 +73,9 @@ public class ToolBarNavigatorView extends NavigatorView {
         button.setHorizontalAlignment(window.horizontalAlignment);
         button.setFocusable(false);
         button.getModel().setArmed(true);
+        if (window.isVertical()) {
+            button.setPreferredSize(new Dimension(button.getPreferredSize().width, 30));
+        }
 
         if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorFolder.class)) {
             button.setSelected(true);

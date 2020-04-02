@@ -1,5 +1,6 @@
 package lsfusion.client.form.filter.user.view;
 
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
@@ -9,7 +10,7 @@ import java.util.Vector;
 class QueryConditionComboBox extends JComboBox {
 
     public Dimension getPreferredSize() {
-        return new Dimension(super.getPreferredSize().width, MainFrame.getIntUIFontSize(QueryConditionView.PREFERRED_HEIGHT));
+        return new Dimension(super.getPreferredSize().width, MainFrame.getIntUIFontSize(SwingDefaults.getComponentHeight()));
     }
 
     @Override

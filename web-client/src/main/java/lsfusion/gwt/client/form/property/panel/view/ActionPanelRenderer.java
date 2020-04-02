@@ -73,9 +73,14 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             }
         });
 
-        int baseHeight = property.valueHeight;
+        int borderWidth = 2;
+        int baseHeight = property.getValueHeight(null);
         if (baseHeight > -1) {
-            button.setHeight(baseHeight + "px");
+            button.setHeight(baseHeight + borderWidth + "px");
+        }
+        int baseWidth = property.valueWidth;
+        if (baseWidth > -1) {
+            button.setWidth(baseWidth + + borderWidth + "px");
         }
         if (property.font != null) {
             property.font.apply(button.getLabel().getElement().getStyle());
@@ -85,18 +90,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
         button.setFocusable(property.focusable);
 
-        finishLayoutSetup();
-
         initUIHandlers(iform);
-    }
-
-    private void finishLayoutSetup() {
-        if (property.isVerticallyStretched()) {
-            button.getElement().getStyle().clearHeight();
-        }
-        if (property.isHorizontallyStretched()) {
-            button.getElement().getStyle().clearWidth();
-        }
     }
 
     private void initUIHandlers(GFormController iform) {

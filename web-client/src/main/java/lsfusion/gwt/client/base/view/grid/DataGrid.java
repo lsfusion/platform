@@ -29,6 +29,7 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.Cell.Context;
 import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
@@ -194,7 +195,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     int oldLocalSelectedRow = -1;
     int oldLocalSelectedCol = -1;
 
-    private int rowHeight = 19;
+    private int rowHeight = GwtClientUtils.VALUE_HEIGHT;
 
     private int pageIncrement = 30;
 

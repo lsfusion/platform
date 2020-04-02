@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -8,6 +9,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 
@@ -198,6 +200,10 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
 
         ClickDelegatePanel delWidget = new ClickDelegatePanel(widget);
         delWidget.setStyleName(STYLENAME_DEFAULT);
+        delWidget.setHeight(GwtClientUtils.VALUE_HEIGHT_STRING);
+        final Style delWidgetStyle = delWidget.getElement().getStyle();
+        delWidgetStyle.setDisplay(Style.Display.FLEX);
+        delWidgetStyle.setProperty("alignItems", "center");
 
         panel.add(delWidget, beforeIndex + 1, GFlexAlignment.STRETCH, 0);
 

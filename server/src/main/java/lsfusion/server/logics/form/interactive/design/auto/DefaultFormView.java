@@ -226,11 +226,13 @@ public class DefaultFormView extends FormView {
         toolbarLeftContainer.setType(ContainerType.CONTAINERH);
         toolbarLeftContainer.childrenAlignment = Alignment.START;
         toolbarLeftContainer.setFlex(0);
+        toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
 
         ContainerView toolbarRightContainer = createContainer(null, null, DefaultFormView.getToolbarRightContainerSID(), version);
         toolbarRightContainer.setType(ContainerType.CONTAINERH);
         toolbarRightContainer.childrenAlignment = Alignment.END;
         toolbarRightContainer.setFlex(1);
+        toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
 
         toolbarLeftContainer.add(editFunction, version);
         toolbarLeftContainer.add(logMessage, version); // otherwise it will go to OBJECTS container which has types COLUMNS and this type doesnt respect SHOWIF
@@ -385,6 +387,7 @@ public class DefaultFormView extends FormView {
     @Override
     public RegularFilterGroupView addRegularFilterGroup(RegularFilterGroupEntity filterGroup, Version version) {
         RegularFilterGroupView view = super.addRegularFilterGroup(filterGroup, version);
+        view.setAlignment(FlexAlignment.CENTER);
         addRegularFilterGroupView(view, version);
         return view;
     }

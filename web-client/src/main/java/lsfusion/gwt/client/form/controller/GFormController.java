@@ -275,6 +275,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
 
         filterBox.addStyleName("comboBoxFilter");
+        filterBox.setHeight(GwtClientUtils.COMPONENT_HEIGHT_STRING);
 
         addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {

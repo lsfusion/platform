@@ -177,9 +177,6 @@ input, textarea {
     font-weight: bold;
     border-bottom: 1px solid var(--dialog-outer-border-color);
 }
-.gwt-DialogBox .filterDialogCaption {
-    padding-top: 3px;
-}
 .gwt-DialogBox .dialogContent {
 }
 .gwt-DialogBox .dialogMiddleCenter {
@@ -907,7 +904,7 @@ input, textarea {
 }
 .gwt-TabBar .gwt-TabBarItem {
     margin-left: 4px;
-    padding: 3px 6px 2px;
+    padding: 0 12px;
     cursor: pointer;
     cursor: hand;
     font-weight: normal;
@@ -1294,7 +1291,7 @@ td.datePickerMonth {
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
     margin: 0 2px;
-    padding: 2px 3px 4px 5px;
+    padding: 1px 3px 2px 5px;
     cursor: pointer;
     cursor: hand;
     font-weight: normal;
@@ -1304,6 +1301,10 @@ td.datePickerMonth {
     border-right: 1px solid var(--border-color);
     min-width: 19px;
 }
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelTabInner {
+    height: 100%;
+}
+
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected {
     cursor: default;
     background: var(--selection-color);

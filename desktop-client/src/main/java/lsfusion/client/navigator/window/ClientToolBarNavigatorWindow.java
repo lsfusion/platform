@@ -3,6 +3,7 @@ package lsfusion.client.navigator.window;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.view.ToolBarNavigatorView;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -34,6 +35,10 @@ public class ClientToolBarNavigatorWindow extends ClientNavigatorWindow {
 
         alignmentY = inStream.readFloat();
         alignmentX = inStream.readFloat();
+    }
+    
+    public boolean isVertical() {
+        return type == SwingConstants.VERTICAL;
     }
 
     @Override

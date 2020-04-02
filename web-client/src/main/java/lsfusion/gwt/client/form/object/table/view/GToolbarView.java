@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 
 public class GToolbarView extends ResizableHorizontalPanel {
-    private int BUTTON_HEIGHT = 20;
     private boolean isEmpty = true;
     
     public void addComponent(Widget tool) {
@@ -23,7 +22,7 @@ public class GToolbarView extends ResizableHorizontalPanel {
     
     public void addSeparator() {
         if (!isEmpty()) {
-            addComponent(GwtClientUtils.createVerticalSeparator(BUTTON_HEIGHT));
+            addComponent(GwtClientUtils.createVerticalSeparator(GwtClientUtils.COMPONENT_HEIGHT));
         }
     }
 

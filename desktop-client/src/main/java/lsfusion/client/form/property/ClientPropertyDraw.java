@@ -198,6 +198,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey) {
         return baseType.getPanelView(this, columnKey, form);
     }
+    
+    public int getValueWidth() {
+        if (valueSize != null) {
+            return valueSize.width;
+        }
+        return -1;
+    }
 
     public int getValueWidth(JComponent comp) {
         if (valueSize != null && valueSize.width > -1) {

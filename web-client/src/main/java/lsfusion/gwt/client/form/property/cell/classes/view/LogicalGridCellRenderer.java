@@ -29,10 +29,11 @@ public class LogicalGridCellRenderer extends GridCellRenderer {
             checkStyle = img.getStyle();
             checkStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
         } else {
-            InputElement input = element.appendChild(Document.get().createCheckInputElement());
-            input.setTabIndex(-1);
-            checkStyle = input.getStyle();
-            checkStyle.setProperty("pointerEvents", "none");
+            DivElement checkWrapper = element.appendChild(Document.get().createDivElement());
+            checkWrapper.addClassName("logicalRendererWrapper");
+            
+            InputElement input = checkWrapper.appendChild(Document.get().createCheckInputElement());
+            input.addClassName("logicalRendererCheckBox");
         }
 
         if (!isSingle) element.getStyle().setPosition(Style.Position.RELATIVE);
@@ -44,7 +45,7 @@ public class LogicalGridCellRenderer extends GridCellRenderer {
             ImageElement img = element.getFirstChild().cast();
             img.setSrc(getCBImagePath(value));
         } else {
-            InputElement input = element.getFirstChild().cast();
+            InputElement input = element.getFirstChild().getFirstChild().cast();
             input.setChecked(value != null && (Boolean) value);
         }
     }

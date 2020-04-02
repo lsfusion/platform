@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import static lsfusion.client.base.view.SwingDefaults.getComponentHeight;
+
 public class QueryConditionView extends JPanel implements FilterValueListener {
     public interface UIHandlers {
         void conditionChanged();
@@ -26,8 +28,6 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
     }
 
     private final UIHandlers uiHandlers;
-
-    public static final int PREFERRED_HEIGHT = SwingDefaults.getCellHeight() + 2; // 2 for borders
 
     // Icons - загружаем один раз, для экономии
     private static final String DELETE_ICON_PATH = "filtdel.png";
@@ -66,7 +66,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
         centerPanel.add(propertyView);
 
         negationView = new JCheckBox(ClientResourceBundle.getString("form.queries.not"));
-        negationView.setPreferredSize(new Dimension(negationView.getPreferredSize().width, PREFERRED_HEIGHT));
+        negationView.setPreferredSize(new Dimension(negationView.getPreferredSize().width, getComponentHeight()));
         centerPanel.add(negationView);
 
         compareView = new QueryConditionComboBox(Compare.values());
@@ -143,7 +143,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        delButton = new ToolbarGridButton(DELETE_ICON_PATH, ClientResourceBundle.getString("form.queries.filter.remove.condition"), new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
+        delButton = new ToolbarGridButton(DELETE_ICON_PATH, ClientResourceBundle.getString("form.queries.filter.remove.condition"), new Dimension(getComponentHeight(), SwingDefaults.getComponentHeight()));
         delButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 RmiQueue.runAction(new Runnable() {

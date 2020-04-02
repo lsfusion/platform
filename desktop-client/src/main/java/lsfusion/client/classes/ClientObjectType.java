@@ -47,7 +47,7 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         if (design.font != null) {
             return comp.getFontMetrics(design.getFont(comp)).getHeight() * charHeight;
         }
-        return SwingDefaults.getCellHeight() * charHeight;
+        return SwingDefaults.getValueHeight() * charHeight;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

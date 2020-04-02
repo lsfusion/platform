@@ -285,6 +285,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         }
 
         @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(super.getPreferredSize().width, SwingDefaults.getComponentHeight());
+        }
+
+        @Override
         public void colorThemeChanged() {
             getPane().updateFullBorder();
         }

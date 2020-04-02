@@ -334,6 +334,8 @@ public class MainController {
         UIManager.put("Table.intercellSpacing", new Dimension(1, 1));
         UIManager.put("Tree.border", BorderFactory.createEmptyBorder());
         UIManager.put("TextComponent.selectAllOnFocusPolicy", "never");
+        UIManager.put("Button.default.borderWidth", SwingDefaults.getButtonBorderWidth()); // differs in light and dark themes. make equal to have equal height.
+        UIManager.put("TabbedPane.tabHeight", SwingDefaults.getComponentHeight());
 
         DockUI.getDefaultDockUI().registerColors(".*", new DefaultLookAndFeelColors() {
             @Override

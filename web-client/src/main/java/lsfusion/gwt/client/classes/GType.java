@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes;
 
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
@@ -41,7 +42,7 @@ public abstract class GType implements Serializable {
 
     public abstract int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor);
     public int getDefaultHeight(GFont font) {
-        return font == null || font.size == null ? 19 : GFontMetrics.getSymbolHeight(font);
+        return font == null || font.size == null ? GwtClientUtils.VALUE_HEIGHT : GFontMetrics.getSymbolHeight(font);
     }
 
     public abstract GCompare[] getFilterCompares();

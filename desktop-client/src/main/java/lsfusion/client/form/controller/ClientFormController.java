@@ -14,6 +14,7 @@ import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.view.ItemAdapter;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.dispatch.DispatcherListener;
@@ -437,6 +438,8 @@ public class ClientFormController implements AsyncListener {
                 });
             }
         });
+
+        comboBox.setPreferredSize(new Dimension(comboBox.getPreferredSize().width, SwingDefaults.getComponentHeight()));
 
         addFilterView(filterGroup, comboBox);
     }

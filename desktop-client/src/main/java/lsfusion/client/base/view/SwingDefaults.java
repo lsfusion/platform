@@ -195,9 +195,17 @@ public class SwingDefaults {
     
     // ----------- not cached properties ----------- //
     
-    public static int getCellHeight() {
-        return 19;
+    public static int getValueHeight() {
+        return 20;
     } 
+    
+    public static int getButtonBorderWidth() {
+        return 1;
+    }
+    
+    public static int getComponentHeight() {
+        return getValueHeight() + 2; // supposing all components have border width = 1px
+    }
     
     public static int getSingleCellTableIntercellSpacing() {
         // to have right height and to be able to draw table border in editor

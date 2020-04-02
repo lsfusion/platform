@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.ui.ListBox;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +10,7 @@ import java.util.List;
 public class GFilterConditionListBox extends ListBox {
     public GFilterConditionListBox() {
         addStyleName("filterListBox");
+        setHeight(GwtClientUtils.COMPONENT_HEIGHT_STRING);
     }
     
     List<Object> items = new ArrayList<>();
