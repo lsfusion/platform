@@ -9,8 +9,11 @@ import static lsfusion.client.controller.MainController.colorPreferences;
 import static lsfusion.client.controller.MainController.colorTheme;
 
 public class SwingDefaults {
-    final static Color selectionColorLight = new Color(4, 137, 186, 23);
-    final static Color selectionColorDark = new Color(5, 114, 154, 61);
+    // no transparent colors as they are not drawn correctly sometimes.   
+    final static Color selectionColorLight = new Color(211, 229, 232);
+    final static Color selectionColorDark = new Color(44, 71, 81);
+    final static Color focusedTableCellBorderColorLight = new Color(4, 137, 186);
+    final static Color focusedTableCellBorderColorDark = new Color(7, 144, 195);
     
     private static Color buttonBackground;
     private static Border buttonBorder;
@@ -25,7 +28,6 @@ public class SwingDefaults {
     private static Color notDefinedForeground;
     private static Font textAreaFont;
     private static Color logPanelErrorColor;
-    private static Color logPanelSuccessColor;
     private static Color titledBorderTitleColor;
     private static Color dockableBorderColor;
     
@@ -39,7 +41,6 @@ public class SwingDefaults {
         notDefinedForeground = null;
         textAreaFont = null;
         logPanelErrorColor = null;
-        logPanelSuccessColor = null;
         titledBorderTitleColor = null;
         dockableBorderColor = null;
         
@@ -110,7 +111,7 @@ public class SwingDefaults {
         if (focusedTableCellBorder == null) {
             Color borderColor = colorPreferences != null ? colorPreferences.getFocusedCellBorderColor() : null;
             if (borderColor == null) {
-                borderColor = colorTheme.isLight() ? new Color(4, 137, 186) : new Color(7, 144, 195);
+                borderColor = getSelectionBorderColor();
             }
             focusedTableCellBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(borderColor),
                     BorderFactory.createEmptyBorder(1, 2, 1, 2));
@@ -159,17 +160,6 @@ public class SwingDefaults {
         }
         return logPanelErrorColor;
     }
-    
-    public static Color getLogPanelSuccessColor() {
-        if (logPanelSuccessColor == null) {
-            // for some reason log panel refuses to draw ColorUIResource color
-            logPanelSuccessColor = new Color(getColor("Component.focusColor").getRGB());
-            if (!colorTheme.isLight()) {
-                logPanelSuccessColor = logPanelSuccessColor.darker();
-            }
-        }
-        return logPanelSuccessColor;
-    }
 
     public static Color getTitledBorderTitleColor() {
         if (titledBorderTitleColor == null) {
@@ -185,7 +175,7 @@ public class SwingDefaults {
         return titledBorderTitleColor;
     }
     
-    public static Color getDockableBorderColor() {
+    public static Color getComponentBorderColor() {
         if (dockableBorderColor == null) {
             dockableBorderColor = getColor("Component.borderColor");
         }
@@ -214,5 +204,9 @@ public class SwingDefaults {
     
     public static Color getSelectionColor() {
         return colorTheme.isLight() ? selectionColorLight : selectionColorDark;
+    }
+    
+    public static Color getSelectionBorderColor() {
+        return colorTheme.isLight() ? focusedTableCellBorderColorLight : focusedTableCellBorderColorDark;
     }
 }

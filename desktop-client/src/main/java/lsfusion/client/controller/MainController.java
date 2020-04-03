@@ -1,8 +1,5 @@
 package lsfusion.client.controller;
 
-import bibliothek.gui.DockUI;
-import bibliothek.gui.dock.util.laf.DefaultLookAndFeelColors;
-import bibliothek.gui.dock.util.laf.LookAndFeelColors;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
@@ -337,19 +334,6 @@ public class MainController {
         UIManager.put("Button.default.borderWidth", SwingDefaults.getButtonBorderWidth()); // differs in light and dark themes. make equal to have equal height.
         UIManager.put("TabbedPane.tabHeight", SwingDefaults.getComponentHeight());
 
-        DockUI.getDefaultDockUI().registerColors(".*", new DefaultLookAndFeelColors() {
-            @Override
-            public Color getColor(String key) {
-                switch (key) {
-                    case LookAndFeelColors.TITLE_SELECTION_BACKGROUND:
-                        return SwingDefaults.getSelectionColor();
-                    case LookAndFeelColors.TITLE_SELECTION_FOREGROUND:
-                        return SwingDefaults.getTableCellForeground();
-                }
-                return super.getColor(key);
-            }
-        });
-        
         updateUI();
         
         // при первом использовании rich-editora во время редактирования, его создание тормозит...
@@ -565,7 +549,12 @@ public class MainController {
         UIManager.put("Table.gridColor", UIManager.getColor("TableHeader.separatorColor"));
         UIManager.put("TableHeader.background", UIManager.getColor("Panel.background"));
         UIManager.put("Tree.selectionInactiveBackground", SwingDefaults.getFocusedTableRowBackground()); // JTree in TreeGroupTable draws inactive background on selection
+        UIManager.put("Table.cellFocusColor", SwingDefaults.getSelectionBorderColor()); // mostly for tree table. has no effect as tree has no focus 
         UIManager.put("TitledBorder.titleColor", SwingDefaults.getTitledBorderTitleColor());
+        // toolbar buttons
+        UIManager.put("ToggleButton.toolbar.pressedBackground", SwingDefaults.getSelectionColor());
+        UIManager.put("ToggleButton.toolbar.hoverBackground", SwingDefaults.getSelectionColor());
+        UIManager.put("ToggleButton.toolbar.selectedBackground", SwingDefaults.getSelectionColor());
     }
 
     public static void changeColorTheme(ColorTheme newColorTheme) {

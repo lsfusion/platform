@@ -1,11 +1,11 @@
 :root {
     --focus-color: #0489BA;
-    --selection-color: rgba(4, 137, 186, 0.09);
+    --selection-color: #D3E5E8;
     --border-color: #d1d1d1;
     --scrollbar-color: #DCDCDC;
     --text-color: black;
     --disabled-text-color: #888;
-    --background-color: #FAFBFC;
+    --background-color: #F2F2F2;
     --component-background-color: white;
     --split-border-color: #a9a9a9;
     --split-background-color: #F1F1F1;

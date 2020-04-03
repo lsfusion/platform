@@ -2,6 +2,7 @@ package lsfusion.client.form.design.view;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
@@ -144,10 +145,6 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     public class TabbedPane extends JTabbedPane {
-        //JTabbedPane.getPrefferedSize() возвращает некорректное значение,
-        //приходится вот так хардкодить, чтобы его компенсировать
-        private static final int hackedTabInsetsHeight = 6;
-
         public TabbedPane() {
             super(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
         }
@@ -187,8 +184,6 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
                 pref.width += d.width;
                 pref.height += d.height;
             }
-
-            pref.height += hackedTabInsetsHeight;
 
             return pref;
         }
@@ -242,7 +237,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         int selected = tabbedPane.getSelectedIndex();
         if (selected != -1) {
             Dimension dimensions = getChildMaxPreferredSize(containerViews, selected);
-            dimensions.height += 32 + 5; //little extra for borders, etc., пока захардкодим 32 в высоту tab header'а
+            dimensions.height += SwingDefaults.getComponentHeight() + 5; //little extra for borders, etc., getComponentHeight() - tab height
             return dimensions;
         }
         return new Dimension(0, 0);

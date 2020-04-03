@@ -156,13 +156,20 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                         id.equals("stack.tab.border.selected.focused") || 
                         id.equals("stack.tab.border.selected.focuslost") ||
                         id.equals("stack.tab.border.disabled")) {
-                    return SwingDefaults.getDockableBorderColor();
+                    return SwingDefaults.getComponentBorderColor();
                 } else if (id.equals("stack.tab.text") ||
                         id.equals("stack.tab.text.selected") ||
                         id.equals("stack.tab.text.selected.focused") ||
                         id.equals("stack.tab.text.selected.focuslost") ||
                         id.equals("stack.tab.text.disabled")) {
                     return SwingDefaults.getTableCellForeground();
+                } else if (id.equals("stack.tab.top.selected") ||
+                        id.equals("stack.tab.top.selected.focused") ||
+                        id.equals("stack.tab.top.selected.focuslost") ||
+                        id.equals("stack.tab.bottom.selected") ||
+                        id.equals("stack.tab.bottom.selected.focused") ||
+                        id.equals("stack.tab.bottom.selected.focuslost")) {
+                    return SwingDefaults.getSelectionColor();
                 }
                 return super.get(id);
             }
@@ -327,7 +334,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         
         mainControl.getController().getProperties().set(EclipseTheme.BORDER_MODIFIER, border -> {
             if (border != null) {
-                return BorderFactory.createLineBorder(SwingDefaults.getDockableBorderColor());
+                return BorderFactory.createLineBorder(SwingDefaults.getComponentBorderColor());
             }
             return null;
         });

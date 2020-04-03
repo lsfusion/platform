@@ -11,13 +11,21 @@ import lsfusion.interop.base.view.FlexLayout;
 import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Set;
 
-public class ToolBarNavigatorView extends NavigatorView {
+import static javax.swing.BorderFactory.*;
+import static lsfusion.client.base.view.SwingDefaults.getComponentBorderColor;
+import static lsfusion.client.base.view.SwingDefaults.getSelectionColor;
 
+public class ToolBarNavigatorView extends NavigatorView {
+    private final Border NORMAL_BORDER = createEmptyBorder(3, 8, 3, 8);
+    
     private final JToolBar toolBar;
     private final ClientToolBarNavigatorWindow window;
     private ClientNavigatorElement selected;
@@ -61,6 +69,9 @@ public class ToolBarNavigatorView extends NavigatorView {
             public void updateUI() {
                 super.updateUI();
                 setIcon(new IndentedIcon(element.imageHolder.getImage(MainController.colorTheme), indent));
+                if (isSelected()) {
+                    setBorder(getSelectionBorder());
+                }
             }
         };
         button.setIcon(new IndentedIcon(element.imageHolder.getImage(MainController.colorTheme), indent));
@@ -76,6 +87,32 @@ public class ToolBarNavigatorView extends NavigatorView {
         if (window.isVertical()) {
             button.setPreferredSize(new Dimension(button.getPreferredSize().width, 30));
         }
+        
+        button.setBorder(NORMAL_BORDER);
+
+        button.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                button.setBorder(getSelectionBorder());
+            } else {
+                button.setBorder(NORMAL_BORDER);
+            }
+        });
+        
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (!button.isSelected()) {
+                    button.setBorder(getSelectionBorder());
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!button.isSelected()) {
+                    button.setBorder(NORMAL_BORDER);
+                }
+            }
+        });
 
         if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorFolder.class)) {
             button.setSelected(true);
@@ -90,6 +127,14 @@ public class ToolBarNavigatorView extends NavigatorView {
                 }
             }
         }
+    }
+    
+    private Border getSelectionBorder() {
+        Border insidePaddingBorder = createEmptyBorder(2, 6, 2, 6);
+        Border outsideComponetnBorder = createLineBorder(getComponentBorderColor());
+        // for some reason 1px vertical lines without color (no background) are drawn with empty padding border only 
+        MatteBorder insideBackgroundHackBorder = createMatteBorder(0, 1, 0, 1, getSelectionColor());
+        return createCompoundBorder(createCompoundBorder(outsideComponetnBorder, insideBackgroundHackBorder), insidePaddingBorder);
     }
 
     @Override

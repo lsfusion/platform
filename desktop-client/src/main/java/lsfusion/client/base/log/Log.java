@@ -86,7 +86,7 @@ public final class Log {
     private static void provideSuccessFeedback() {
         LogPanel logPanel = getLogPanel();
         if (logPanel != null) {
-            logPanel.setTemporaryBackground(SwingDefaults.getLogPanelSuccessColor());
+            logPanel.setTemporaryBackground(SwingDefaults.getSelectionColor());
         }
     }
 
