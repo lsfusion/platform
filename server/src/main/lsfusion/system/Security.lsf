@@ -177,17 +177,6 @@ WHEN CHANGED (permissionView(UserRole ur, ActionOrProperty p)) DO {
 namePermissionView (UserRole ur, ActionOrProperty p) = staticName(permissionView(ur, p));
 captionPermissionView '{security.view}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionView(ur, p), Permission.permit) CHARWIDTH 10;         
 
-// --- Global + Roles --- //
-
-permitRolesView (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permissionView(userRole, property) == Permission.permit;
-forbidRolesView (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permissionView(userRole, property) == Permission.forbid;
-
-forbidView (User user, ActionOrProperty property) = forbidRolesView(user, property) AND NOT permitRolesView(user, property);    
-
-// ----- Change ----- //
-
-// --- Global --- //
-
 // - Permit - //
 //remove after onStarted
 dataPermitChange = DATA BOOLEAN (PropertyGroup);
@@ -238,30 +227,11 @@ namePermissionChange (UserRole ur, ActionOrProperty p) = staticName(permissionCh
 foregroundPermissionChange (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionChange(ur, p);             
 captionPermissionChange '{security.change}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionChange(ur, p), Permission.permit) CHARWIDTH 10;      
     
-// --- Global + Roles --- //
-
-permitRolesChange (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permissionChange(userRole, property) == Permission.permit;
-forbidRolesChange (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permissionChange(userRole, property) == Permission.forbid;
-
-forbidChange (User user, ActionOrProperty property) = forbidRolesChange (user, property) AND NOT permitRolesChange(user, property);
-
 copy (UserRole from, UserRole to) +{
     dataPermissionView(to, ActionOrProperty property) <- dataPermissionView(from, property);
     dataPermissionChange(to, ActionOrProperty property) <- dataPermissionChange(from, property);
     dataPermissionView(to, PropertyGroup propertyGroup) <- dataPermissionView(from, propertyGroup);
     dataPermissionChange(to, PropertyGroup propertyGroup) <- dataPermissionChange(from, propertyGroup);
-}
-
-// ------ Property policy caches ----------- //
-
-cachePropertyPolicy '{security.cache.property.policy}' = DATA BOOLEAN (User) CHARWIDTH 10;
-updatePropertyPolicyCaches  INTERNAL  'lsfusion.server.physics.admin.authentication.security.policy.UpdatePropertyPolicyCachesProperty' (User);
-WHEN [GROUP SUM 1 IF (CHANGED(forbidView(User user, ActionOrProperty actionOrProperty) AND cachePropertyPolicy(user)) OR 
-                      CHANGED(forbidChange(user, actionOrProperty) AND cachePropertyPolicy(user))) BY user](User user) DO
-    updatePropertyPolicyCaches(user);
-onStarted() + { 
-    FOR cachePropertyPolicy(User user) DO 
-        updatePropertyPolicyCaches(user);
 }
 
 // ------- Navigator ------- //
@@ -521,7 +491,7 @@ FORM securityPolicy '{security.form.policy}'
     // Users
     OBJECTS u = CustomUser
     PROPERTIES(u) READONLY name, login, nameMainRole
-    PROPERTIES(u) dataForbidDuplicateForms, dataForbidChangePassword, dataForbidEditProfile, cachePropertyPolicy
+    PROPERTIES(u) dataForbidDuplicateForms, dataForbidChangePassword, dataForbidEditProfile
     FILTERS has(u, ur)
 ;
 
