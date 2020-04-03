@@ -375,41 +375,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     private LRUSVSMap<Long, ImCol<ImMap<String, Object>>> propertyPolicyCache = new LRUSVSMap<>(LRUUtil.G2);
 
-    private ImCol<ImMap<String, Object>> readPropertyPolicy(ExecutionContext context, DataSession session, DataObject userObject, boolean cache, boolean reupdateCache) throws SQLException, SQLHandledException {
-
-        ImCol<ImMap<String, Object>> result;
-        if(cache && !reupdateCache) {
-            result = propertyPolicyCache.get((long) userObject.object);
-            if (result != null)
-                return result;
-        }
-
-        Modifier modifier = context != null ? context.getModifier() : session.getModifier();
-        
-        Expr userExpr;QueryBuilder<String, String> qp = new QueryBuilder<>(SetFact.toExclSet("userId", "propertyCN"));
-        Expr actionOrPropertyExpr = qp.getMapExprs().get("propertyCN");
-        userExpr = qp.getMapExprs().get("userId");
-        Expr propExpr = reflectionLM.canonicalNameActionOrProperty.getExpr(modifier, actionOrPropertyExpr);
-        qp.and(propExpr.getWhere());
-        qp.and(userExpr.compare(userObject, Compare.EQUALS));
-        qp.and(securityLM.forbidViewUserProperty.getExpr(modifier, userExpr, actionOrPropertyExpr).getWhere().or(
-                securityLM.forbidChangeUserProperty.getExpr(modifier, userExpr, actionOrPropertyExpr).getWhere()));
-
-        qp.addProperty("cn", propExpr);
-        qp.addProperty("forbidView", securityLM.forbidViewUserProperty.getExpr(modifier, userExpr, actionOrPropertyExpr));
-        qp.addProperty("forbidChange", securityLM.forbidChangeUserProperty.getExpr(modifier, userExpr, actionOrPropertyExpr));
-
-        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = context != null ? qp.execute(context) : qp.execute(session);
-        result = queryResult.values();
-        if(cache)
-            propertyPolicyCache.put((long)userObject.object, result);
-        return result;
-    }
-    
-    public void updatePropertyPolicyCaches(ExecutionContext context, DataObject userObject) throws SQLException, SQLHandledException {
-        readPropertyPolicy(context, null, userObject, true, true);
-    }
-
     public void setUserParameters(DataObject customUser, String firstName, String lastName, String email, List<String> userRoleSIDs, DataSession session) {
         try {
             if (firstName != null)
