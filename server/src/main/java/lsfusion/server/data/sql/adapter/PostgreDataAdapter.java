@@ -126,7 +126,14 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password + "&connectTimeout=" + (int) (connectTimeout / 1000));
+        long started = System.currentTimeMillis();
+        try {
+            return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password + "&connectTimeout=" + (int) (connectTimeout / 1000));
+        } finally {
+            long elapsed = System.currentTimeMillis() - started;
+            if(elapsed > connectTimeout)
+                logger.error("Too long getConnection : timeout - " + connectTimeout + ", actual time - " + elapsed);
+        }
     }
 
     @Override
