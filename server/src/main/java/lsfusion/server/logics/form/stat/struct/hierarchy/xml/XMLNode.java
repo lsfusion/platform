@@ -143,7 +143,11 @@ public class XMLNode implements Node<XMLNode> {
                 stringValue = childElement != null ? getFullText(childElement) : null; // array and objects will be ignored (see getText implementation)
             }
         }
-        return type.parseXML(stringValue);
+        try {
+            return type.parseXML(stringValue);
+        } catch (ParseException e) {
+            throw new ParseException(e.getMessage() + String.format(" (tag %s)", key), e);
+        }
     }
 
     @Override
