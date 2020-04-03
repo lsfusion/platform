@@ -12,7 +12,6 @@ import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
@@ -130,11 +129,10 @@ public class ToolBarNavigatorView extends NavigatorView {
     }
     
     private Border getSelectionBorder() {
-        Border insidePaddingBorder = createEmptyBorder(2, 6, 2, 6);
+        // to avoid empty transparent vertical lines draw selection color instead of empty border 
+        Border insidePaddingBorder = createMatteBorder(2, 7, 2, 7, getSelectionColor());
         Border outsideComponetnBorder = createLineBorder(getComponentBorderColor());
-        // for some reason 1px vertical lines without color (no background) are drawn with empty padding border only 
-        MatteBorder insideBackgroundHackBorder = createMatteBorder(0, 1, 0, 1, getSelectionColor());
-        return createCompoundBorder(createCompoundBorder(outsideComponetnBorder, insideBackgroundHackBorder), insidePaddingBorder);
+        return createCompoundBorder(outsideComponetnBorder, insidePaddingBorder);
     }
 
     @Override

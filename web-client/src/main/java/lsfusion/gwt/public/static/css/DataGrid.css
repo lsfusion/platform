@@ -17,6 +17,7 @@
 /* ----- GGridPropertyTable ----- */
 .dataGridWidget {
     border: 1px solid var(--border-color);
+    border-radius: var(--table-border-radius);
     background: var(--component-background-color);
     cursor: default;
 }
@@ -98,6 +99,7 @@
 /* ----- GSinglePropertyTable ----- */
 .dataGridWidget-single {
     background: var(--component-background-color);
+    border-radius: var(--textfield-border-radius);
 }
 
 .dataGridHeader-single {}

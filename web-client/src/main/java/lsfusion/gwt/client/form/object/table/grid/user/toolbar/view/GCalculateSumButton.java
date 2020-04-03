@@ -33,6 +33,7 @@ public abstract class GCalculateSumButton extends GToolbarButton {
         if (result != null) {
             TextBox valueBox = new TextBox();
             valueBox.addStyleName("popup-sumBox");
+            valueBox.setHeight(GwtClientUtils.VALUE_HEIGHT_STRING);
             panel.add(valueBox);
             NumberFormat format = NumberFormat.getDecimalFormat();
             if(result instanceof BigDecimal)

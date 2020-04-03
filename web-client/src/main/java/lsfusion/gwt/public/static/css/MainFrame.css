@@ -65,6 +65,7 @@ button::-moz-focus-inner {
 
 .gwt-ToggleButton {
     white-space: nowrap;
+    border-radius: var(--button-border-radius);
 }
 
 input[type=checkbox] {
@@ -251,6 +252,7 @@ input[type=checkbox]:focus {
 .dataPanelRendererGridPanel {
     border: 1px solid var(--border-color);
     position: relative;
+    border-radius: var(--textfield-border-radius);
 }
 
 .dataPanelRendererFocusPanel {
@@ -260,6 +262,7 @@ input[type=checkbox]:focus {
     left: -1px;
     right: -1px;
     border: 1px solid var(--focus-color);
+    border-radius: var(--textfield-border-radius);
 }
 
 .actionPanelRenderer {
@@ -278,6 +281,7 @@ input[type=checkbox]:focus {
     border: 1px solid var(--border-color);
     margin: 1em 1px 1px 1px;
     padding: 2px 1px 1px 1px;
+    border-radius: var(--panel-border-radius);
 }
 
 .captionPanelLegend {
@@ -397,12 +401,14 @@ input[type=checkbox]:focus {
 
 .dataFilterValueTablePanel {
     border: 1px solid var(--border-color);
+    border-radius: var(--textfield-border-radius);
     margin: 2px 2px 2px 1px;
     min-height: 16px !important;
 }
 
 .dataFilterValueTablePanelFocused {
     border: 1px solid var(--focus-color);
+    border-radius: var(--textfield-border-radius);
 }
 
 .filterDialogHeader {
@@ -427,7 +433,7 @@ input[type=checkbox]:focus {
 }
 
 .popup-sumBox {
-    padding: 2px;
+    padding: 0 2px;
     text-align: right;
     width: 8em;
 }
@@ -524,6 +530,7 @@ input[type=checkbox]:focus {
     overflow-y: auto;
     overflow-x: hidden;
     border: 1px solid var(--border-color);
+    border-radius: var(--table-border-radius);
     background: var(--component-background-color);
     padding: 2px 3px;
     margin: 1px;
@@ -631,7 +638,7 @@ input[type=checkbox]:focus {
 
 .pvtAxisContainer li span.pvtAttr {
     border: 1px solid var(--border-color);
-    border-radius: 0;
+    border-radius: var(--combobox-border-radius);
     color: var(--text-color);
 }
 
@@ -642,6 +649,7 @@ input[type=checkbox]:focus {
 
 .pvtTable {
     width: 100%;
+    border-radius: var(--table-border-radius);
 }
 
 .pvtUi {

@@ -12,6 +12,15 @@
  *    }
  */
 
+:root {
+    --button-border-radius: 3px;
+    --combobox-border-radius: 2px;
+    --textfield-border-radius: var(--combobox-border-radius);
+    --table-border-radius: var(--combobox-border-radius);
+    --panel-border-radius: var(--combobox-border-radius);
+    --tab-border-radius: var(--combobox-border-radius) var(--combobox-border-radius) 0 0;
+}
+
 pre {
     font-family: "courier new", courier, sans-serif;
     font-size: small;
@@ -38,6 +47,7 @@ select {
     background: var(--component-background-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
+    border-radius: var(--combobox-border-radius);
 }
 
 select option {
@@ -51,6 +61,7 @@ select:focus {
 input, textarea {
     background-color: var(--component-background-color);
     color: var(--text-color);
+    border-radius: var(--textfield-border-radius);;
 }
 
 /**
@@ -74,6 +85,7 @@ input, textarea {
     background: var(--component-background-color);
     border: 1px solid var(--border-color);
     color: var(--text-color);
+    border-radius: var(--button-border-radius);;
 }
 .gwt-Button:active, .button:active {
     border: 1px inset var(--button-active-border-color);
@@ -912,6 +924,7 @@ input, textarea {
     border-top: 1px solid var(--border-color);
     border-left: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
+    border-radius: var(--tab-border-radius);
 }
 .gwt-TabBar .gwt-TabBarItem-selected {
     cursor: default;
@@ -943,6 +956,7 @@ input, textarea {
     border-color: var(--border-color);
     border-style: solid;
     border-width: 1px;
+    border-radius: var(--panel-border-radius);
     /*overflow: visible; *//* вероятно помогает избежать непрерывной перерисовки в FF */
     overflow: hidden;
     padding: 1px;
@@ -1284,6 +1298,7 @@ td.datePickerMonth {
     border-color: var(--border-color);
     border-style: solid;
     border-width: 1px;
+    border-radius: var(--panel-border-radius);
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
     overflow: hidden;
@@ -1299,6 +1314,7 @@ td.datePickerMonth {
     border-top: 1px solid var(--border-color);
     border-left: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
+    border-radius: var(--tab-border-radius);
     min-width: 19px;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTabInner {

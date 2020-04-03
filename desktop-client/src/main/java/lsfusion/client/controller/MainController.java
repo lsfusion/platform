@@ -322,9 +322,6 @@ public class MainController {
         FlatLightLaf newLookAndFeel = new FlatLightLaf();
         UIManager.setLookAndFeel(newLookAndFeel);
 
-        UIManager.put("Button.arc", 0);
-        UIManager.put("Component.arc", 0);
-        UIManager.put("CheckBox.arc", 0);
         UIManager.put("Button.default.boldText", false);
         UIManager.put("Table.showHorizontalLines", true);
         UIManager.put("Table.showVerticalLines", true);
