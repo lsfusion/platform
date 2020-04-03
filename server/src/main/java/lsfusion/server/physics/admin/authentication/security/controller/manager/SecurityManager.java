@@ -370,7 +370,16 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     public Boolean getPermissionValue(Object permission) {
-        return permission != null ? permission.equals("Security_Permission.permit") : null;
+        if (permission != null) {
+            switch ((String) permission) {
+                case "Security_Permission.permit":
+                    return true;
+                case "Security_Permission.forbid":
+                    return false;
+                default: //Security_Permission.default
+                    return null;
+            }
+        } else return null;
     }
 
     private LRUSVSMap<Long, ImCol<ImMap<String, Object>>> propertyPolicyCache = new LRUSVSMap<>(LRUUtil.G2);

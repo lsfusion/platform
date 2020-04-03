@@ -84,7 +84,8 @@ copy (UserRole from, UserRole to) +{ transactTimeout(to) <- transactTimeout(from
 
 CLASS Permission {
     permit '{security.permit}',
-    forbid '{security.forbid}'
+    forbid '{security.forbid}',
+    default '{security.default}'
 }
 
 parentPermissionForeground() = IF isDarkTheme() THEN RGB(167,167,167) ELSE RGB(109,109,109);
