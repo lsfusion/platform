@@ -63,7 +63,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
@@ -476,7 +476,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public MetaExternal getMetaExternal(final ImSet<SecurityPolicy> policies) {
+    public MetaExternal getMetaExternal(final BaseSecurityPolicy policy) {
         final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties(SetFact.EMPTY(), false);
 
         return new MetaExternal(getGroups().mapValues(new Function<GroupObjectEntity, GroupMetaExternal>() {
@@ -487,7 +487,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
                 return new GroupMetaExternal(properties.getSet().mapValues(new Function<PropertyDrawEntity, PropMetaExternal>() {
                     public PropMetaExternal apply(PropertyDrawEntity value) {
-                        Pair<ObjectEntity, Boolean> newDelete = ((PropertyDrawEntity<?>) value).getAddRemove(FormEntity.this, policies);
+                        Pair<ObjectEntity, Boolean> newDelete = ((PropertyDrawEntity<?>) value).getAddRemove(FormEntity.this, policy);
                         return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete != null ? newDelete.second : null);
                     }
                 }));
@@ -523,7 +523,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public boolean hasNoChange() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            ActionObjectEntity<?> eventAction = property.getEventAction(ServerResponse.CHANGE, this, SetFact.EMPTY()); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
+            ActionObjectEntity<?> eventAction = property.getEventAction(ServerResponse.CHANGE, this, new BaseSecurityPolicy()); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
             if (eventAction != null && eventAction.property.hasFlow(ChangeFlowType.FORMCHANGE) && !eventAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
                 return false;
         }

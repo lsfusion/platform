@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -19,6 +20,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
@@ -42,10 +44,10 @@ import lsfusion.server.physics.admin.authentication.LDAPAuthenticationService;
 import lsfusion.server.physics.admin.authentication.LDAPParameters;
 import lsfusion.server.physics.admin.authentication.UserInfo;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.AddSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
-import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -60,9 +62,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger systemLogger = ServerLoggers.systemLogger;
 
     @Deprecated
-    public static SecurityPolicy serverSecurityPolicy = new SecurityPolicy();
+    public static BaseSecurityPolicy baseServerSecurityPolicy = new BaseSecurityPolicy();
 
-    public SecurityPolicy defaultPolicy;
+    public Map<String, AddSecurityPolicy> cachedSecurityPolicies = new HashMap<>();
 
     private BusinessLogics businessLogics;
     private DBManager dbManager;
@@ -108,8 +110,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         this.authenticationLM = businessLogics.authenticationLM;
         this.securityLM = businessLogics.securityLM;
         this.reflectionLM = businessLogics.reflectionLM;
-
-        defaultPolicy = new SecurityPolicy();
 
         for (FormEntity formEntity : businessLogics.getAllForms())
             formEntity.proceedAllEventActions((eventAction, drawAction) -> {
@@ -230,22 +230,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public SecurityPolicy readSecurityPolicy(DataSession session, DataObject userObject) {
-        // политика по умолчанию из кода
-        List<SecurityPolicy> securityPolicies = new ArrayList<>();
-        
-        securityPolicies.add(defaultPolicy);
-
-        // политика для роли из формы "Политика безопасности"
-        applyNavigatorElementDefinedUserPolicy(securityPolicies, userObject, session);
-
-        SecurityPolicy resultPolicy = new SecurityPolicy(-1);
-        for (SecurityPolicy policy : securityPolicies) {
-            resultPolicy.override(policy);
-        }
-        return resultPolicy;
-    }
-
     public void authenticateUser(DataSession session, DataObject userObject, String login, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (authenticationLM.useLDAP.read(session) != null) {
             String server = (String) authenticationLM.serverLDAP.read(session);
@@ -282,101 +266,110 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             throw new LoginException();
     }
 
-    private void applyNavigatorElementPolicy(ImCol<ImMap<String, Object>> neQueryValues, SecurityPolicy policy) {
-        Map<String, ImMap<String, Object>> neMap = new HashMap<>();
-        for (ImMap<String, Object> valueMap : neQueryValues) {
-            neMap.put(((String) valueMap.get("canonicalName")).trim(), valueMap);
-        }
-
-        for (NavigatorElement ne : businessLogics.LM.root.getOrderedChildrenList()) {
-            String canonicalName = ne.getCanonicalName();
-            if (neMap.containsKey(canonicalName)) {
-                ImMap<String, Object> valueMap = neMap.get(canonicalName);
-                NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
-                Boolean permission = getPermissionValue(valueMap.get("permission"));
-                if(permission != null) {
-                    if(permission)
-                        policy.navigator.permit(element);
-                    else
-                        policy.navigator.deny(element);
-                }
-            }
-        }
-    }
-    
-    private void applyNavigatorElementDefinedUserPolicy(List<SecurityPolicy> securityPolicies, DataObject userObject, DataSession session) {
-        SecurityPolicy policy = new SecurityPolicy(-1);
+    public BaseSecurityPolicy getSecurityPolicy(DataSession session, DataObject userObject) {
+        List<AddSecurityPolicy> policies = new ArrayList<>();
         try {
-            QueryBuilder<String, String> qu = new QueryBuilder<>(SetFact.toExclSet("userId"));
-            Expr userExpr = qu.getMapExprs().get("userId");
-            qu.and(userExpr.compare(userObject, Compare.EQUALS));
-            qu.addProperty("forbidViewAllSetupPolicies", securityLM.forbidViewAllSetupPolicies.getExpr(session.getModifier(), userExpr));
-            qu.addProperty("forbidChangeAllSetupPolicies", securityLM.forbidChangeAllSetupPolicies.getExpr(session.getModifier(), userExpr));
-            qu.addProperty("forbidEditObjects", securityLM.forbidEditObjects.getExpr(session.getModifier(), userExpr));
-
-            qu.addProperty("cachePropertyPolicy", securityLM.cachePropertyPolicyUser.getExpr(session.getModifier(), userExpr));
-
-            boolean cachePropertyPolicy = false;
-            boolean forbidViewAllSetupPolicies = false;
-            boolean forbidChangeAllSetupPolicies = false;
-            boolean forbidEditObjects = false;
-
-            ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session).values();
-            for (ImMap<String, Object> valueMap : userPermissionValues) {
-                cachePropertyPolicy = valueMap.get("cachePropertyPolicy") != null;
-                forbidViewAllSetupPolicies = valueMap.get("forbidViewAllSetupPolicies") != null;
-                forbidChangeAllSetupPolicies = valueMap.get("forbidChangeAllSetupPolicies") != null;
-                forbidEditObjects = valueMap.get("forbidEditObjects") != null;
-            }
-
-            QueryBuilder<String, String> qne = new QueryBuilder<>(SetFact.toExclSet("userId", "neId"));
-            Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
-            Expr permissionUserNeExpr = securityLM.permissionUserNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("userId"), qne.getMapExprs().get("neId"));
-
-            qne.and(nameExpr.getWhere());
-            qne.and(qne.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
-            qne.and(permissionUserNeExpr.getWhere());
-
-            qne.addProperty("canonicalName", nameExpr);
-            qne.addProperty("permission", permissionUserNeExpr);
-
-            applyNavigatorElementPolicy(qne.execute(session).values(), policy);
-
-            ImCol<ImMap<String, Object>> propValues = readPropertyPolicy(null, session, userObject, cachePropertyPolicy, false);
-            for (ImMap<String, Object> valueMap : propValues) {
-                String cn = ((String) valueMap.get("cn")).trim();
-                try {
-                    LAP<?, ?> prop = businessLogics.findPropertyElseAction(cn);
-                    if (prop != null) {
-                        if (valueMap.get("forbidView") != null)
-                            policy.property.view.deny(prop);
-                        if (valueMap.get("forbidChange") != null)
-                            policy.property.change.deny(prop);
-                    } else {
-                       startLogger.debug(String.format("Property '%s' is not found when applying security policy", cn));
-                    }
-                } catch (CanonicalNameUtils.ParseException e) {
-                    startLogger.debug(String.format("Canonical name parsing error: '%s' when applying security policy", e.getMessage()));
+            Map<String, DataObject> userRolesMap = readUserRolesMap(session, userObject);
+            for (Map.Entry<String, DataObject> userRoleEntry : userRolesMap.entrySet()) {
+                AddSecurityPolicy policy = cachedSecurityPolicies.get(userRoleEntry.getKey());
+                if (policy == null) {
+                    policy = readSecurityPolicy(userRoleEntry.getValue(), session);
+                    cachedSecurityPolicies.put(userRoleEntry.getKey(), policy);
                 }
+                policies.add(policy);
             }
-
-            policy.editObjects = !forbidEditObjects;
-            if(forbidViewAllSetupPolicies || forbidChangeAllSetupPolicies) {
-                for (ActionOrProperty prop : LM.propertyPolicyGroup.getIndexedPropChildren().keyIt()) {
-                    if(forbidViewAllSetupPolicies)
-                        policy.property.view.deny(prop);
-                    if(forbidChangeAllSetupPolicies)
-                        policy.property.change.deny(prop);
-                }
-            }
-
-            securityPolicies.add(policy);
+            return new BaseSecurityPolicy(policies);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
-    Boolean getPermissionValue(Object permission) {
+    private AddSecurityPolicy readSecurityPolicy(DataObject userRoleObject, DataSession session) throws SQLException, SQLHandledException {
+        AddSecurityPolicy policy = new AddSecurityPolicy();
+
+        KeyExpr navigatorElementExpr = new KeyExpr("navigatorElement");
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.singletonRev("navigatorElement", navigatorElementExpr));
+        query.addProperty("canonicalName", reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), navigatorElementExpr));
+        query.addProperty("permission", securityLM.permissionUserRoleNavigatorElement.getExpr(session.getModifier(), userRoleObject.getExpr(), navigatorElementExpr));
+        query.and(reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), navigatorElementExpr).getWhere());
+        query.and(securityLM.permissionUserRoleNavigatorElement.getExpr(session.getModifier(), userRoleObject.getExpr(), navigatorElementExpr).getWhere());
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> queryResult = query.execute(session);
+        for (ImMap<Object, Object> entry : queryResult.values()) {
+            String canonicalName = (String) entry.get("canonicalName");
+            NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
+            if(element != null) {
+                policy.navigator.setPermission(element, getPermissionValue(entry.get("permission")));
+            } else {
+                startLogger.debug(String.format("NavigatorElement '%s' is not found when applying security policy", canonicalName));
+            }
+        }
+
+        policy.forbidEditObjects = securityLM.forbidEditObjects.read(session, userRoleObject) != null;
+
+        boolean forbidViewAllSetupPolicies = securityLM.forbidViewAllSetupPolicies.read(session, userRoleObject) != null;
+        boolean forbidChangeAllSetupPolicies = securityLM.forbidChangeAllSetupPolicies.read(session, userRoleObject) != null;
+        if(forbidViewAllSetupPolicies || forbidChangeAllSetupPolicies) {
+            for (ActionOrProperty prop : LM.propertyPolicyGroup.getIndexedPropChildren().keyIt()) {
+                if(forbidViewAllSetupPolicies)
+                    policy.propertyView.setPermission(prop, false);
+                if(forbidChangeAllSetupPolicies)
+                    policy.propertyChange.setPermission(prop, false);
+            }
+        }
+
+        KeyExpr actionOrPropertyExpr = new KeyExpr("actionOrProperty");
+        query = new QueryBuilder<>(MapFact.singletonRev("actionOrProperty", actionOrPropertyExpr));
+        query.addProperty("canonicalName", reflectionLM.canonicalNameActionOrProperty.getExpr(session.getModifier(), actionOrPropertyExpr));
+        query.addProperty("permissionView", securityLM.permissionViewUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr));
+        query.addProperty("permissionChange", securityLM.permissionChangeUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr));
+
+        query.and(reflectionLM.canonicalNameActionOrProperty.getExpr(session.getModifier(), actionOrPropertyExpr).getWhere());
+        query.and(securityLM.permissionViewUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr).getWhere().or(
+                securityLM.permissionChangeUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr).getWhere()
+        ));
+
+        queryResult = query.execute(session);
+        for (ImMap<Object, Object> entry : queryResult.values()) {
+
+            String canonicalName = (String) entry.get("canonicalName");
+            try {
+                LAP<?, ?> property = businessLogics.findPropertyElseAction(canonicalName);
+
+                if (property != null) {
+                    ActionOrProperty<?> actionOrProperty = property.getActionOrProperty();
+                    policy.propertyView.setPermission(actionOrProperty, getPermissionValue(entry.get("permissionView")));
+                    policy.propertyChange.setPermission(actionOrProperty, getPermissionValue(entry.get("permissionChange")));
+                } else {
+                    startLogger.debug(String.format("Property '%s' is not found when applying security policy", canonicalName));
+                }
+            } catch (Exception e) {}
+
+        }
+
+        return policy;
+    }
+
+    private Map<String, DataObject> readUserRolesMap(DataSession session, DataObject userObject) throws SQLException, SQLHandledException {
+        Map<String, DataObject> userRolesMap = new HashMap<>();
+
+        KeyExpr userRoleExpr = new KeyExpr("userRole");
+        QueryBuilder<Object, Object> userRoleQuery = new QueryBuilder<>(MapFact.singletonRev("userRole", userRoleExpr));
+        userRoleQuery.addProperty("sidUserRole", securityLM.sidUserRole.getExpr(session.getModifier(), userRoleExpr));
+        userRoleQuery.and(securityLM.hasUserRole.getExpr(session.getModifier(), userObject.getExpr(), userRoleExpr).getWhere());
+
+        ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> queryResult = userRoleQuery.executeClasses(session);
+
+        for (int i = 0, size = queryResult.size(); i < size; i++) {
+            ImMap<Object, DataObject> resultKeys = queryResult.getKey(i);
+            ImMap<Object, ObjectValue> resultValues = queryResult.getValue(i);
+
+            userRolesMap.put((String) resultValues.get("sidUserRole").getValue(), resultKeys.get("userRole"));
+        }
+        return userRolesMap;
+    }
+
+    public Boolean getPermissionValue(Object permission) {
         return permission != null ? permission.equals("Security_Permission.permit") : null;
     }
 

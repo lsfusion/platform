@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.interactive.controller.context;
 
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.logics.LogicsInstance;
@@ -9,7 +8,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 
 import java.util.Locale;
@@ -54,8 +53,9 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
         return form.getRemoteFormListener();
     }
 
-    public ImSet<SecurityPolicy> getSecurityPolicies() {
-        return form.form.securityPolicies;
+    @Override
+    protected BaseSecurityPolicy getSecurityPolicy() {
+        return form.form.securityPolicy;
     }
 
     public FocusListener getFocusListener() {

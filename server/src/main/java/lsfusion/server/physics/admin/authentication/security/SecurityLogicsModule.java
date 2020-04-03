@@ -32,9 +32,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP forbidChangeAllSetupPolicies;
     public LP forbidEditObjects;
 
-    public LP<?> permissionUserNavigatorElement;
-
-    public LP cachePropertyPolicyUser;
+    public LP<?> permissionUserRoleNavigatorElement;
+    public LP<?> permissionViewUserRoleActionOrProperty;
+    public LP<?> permissionChangeUserRoleActionOrProperty;
 
     public LP sidUserRole;
     public LP userRoleSID;
@@ -94,9 +94,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidDuplicateFormsCustomUser = findProperty("forbidDuplicateForms[CustomUser]");
         showDetailedInfoCustomUser = findProperty("showDetailedInfo[CustomUser]");
 
-        forbidViewAllSetupPolicies = findProperty("forbidViewAllSetupPolicies[User]");
-        forbidChangeAllSetupPolicies = findProperty("forbidChangeAllSetupPolicies[User]");
-        forbidEditObjects = findProperty("forbidEditObjects[User]");
+        forbidViewAllSetupPolicies = findProperty("forbidViewAllSetupPolicies[UserRole]");
+        forbidChangeAllSetupPolicies = findProperty("forbidChangeAllSetupPolicies[UserRole]");
+        forbidEditObjects = findProperty("forbidEditObjects[UserRole]");
 
         // Разрешения для каждого свойства
         forbidViewUserProperty = findProperty("forbidView[User,ActionOrProperty]");
@@ -105,9 +105,10 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // ---- Политики для логики представлений
 
         // Разрешения для каждого элемента
-        permissionUserNavigatorElement = findProperty("namePermission[User,NavigatorElement]");
+        permissionUserRoleNavigatorElement = findProperty("namePermission[UserRole,NavigatorElement]");
 
-        cachePropertyPolicyUser = findProperty("cachePropertyPolicy[User]");
+        permissionViewUserRoleActionOrProperty = findProperty("namePermissionView[UserRole,ActionOrProperty]");
+        permissionChangeUserRoleActionOrProperty = findProperty("namePermissionChange[UserRole,ActionOrProperty]");
 
         propertyPolicyForm = findForm("propertyPolicy");
         actionPolicyForm = findForm("actionPolicy");

@@ -1,44 +1,16 @@
 package lsfusion.server.physics.admin.authentication.security.policy;
 
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
-public class SecurityPolicy {
-    public final long ID;
-    public Boolean editObjects;
+public interface SecurityPolicy {
 
-    public SecurityPolicy() {
-        this(-1);
-    }
+    Boolean checkNavigatorPermission(NavigatorElement navigatorElement);
 
-    public SecurityPolicy(long ID) {
-        this.ID = ID;
-    }
+    Boolean checkPropertyViewPermission(ActionOrProperty property);
 
-    public PropertySecurityPolicy property = new PropertySecurityPolicy();
-    public NavigatorSecurityPolicy navigator = new NavigatorSecurityPolicy();
+    Boolean checkPropertyChangePermission(ActionOrProperty property);
 
-    public void override(SecurityPolicy policy) {
-        property.override(policy.property);
-        navigator.override(policy.navigator);
-
-        if (policy.editObjects != null) {
-            editObjects = policy.editObjects;
-        }
-    }
-
-    public static boolean checkPropertyViewPermission(ImSet<SecurityPolicy> securityPolicies, ActionOrProperty property) {
-        for(SecurityPolicy securityPolicy : securityPolicies)
-            if(!securityPolicy.property.view.checkPermission(property))
-                return false;
-        return true;
-    }
-
-    public static boolean checkPropertyChangePermission(ImSet<SecurityPolicy> securityPolicies, ActionOrProperty property) {
-        for(SecurityPolicy securityPolicy : securityPolicies)
-            if(!securityPolicy.property.change.checkPermission(property))
-                return false;
-        return true;
-    }
+    boolean checkForbidEditObjects();
 
 }
