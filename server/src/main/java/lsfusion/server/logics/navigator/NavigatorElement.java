@@ -16,7 +16,7 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
@@ -99,13 +99,6 @@ public abstract class NavigatorElement {
         return result;
     }
 
-    /** Возвращает предков перед их потомками */
-    public List<NavigatorElement> getOrderedChildrenList() {
-        List<NavigatorElement> orderedList = new ArrayList<>();
-        fillChildrenRecursive(orderedList);
-        return orderedList;
-    }
-
     /** Прямой обход (Pre-order traversal) дерева. Возвращает сначала предков, потом его потомков */
     private void fillChildrenRecursive(Collection<NavigatorElement> result) {
         result.add(this);
@@ -114,16 +107,15 @@ public abstract class NavigatorElement {
         }
     }
     
-    public ImOrderMap<NavigatorElement, List<String>> getChildrenMap(SecurityPolicy securityPolicy) {
-        if (securityPolicy != null && !securityPolicy.navigator.checkPermission(this)) {
-            return MapFact.EMPTYORDER();
-        }
-
+    public ImOrderMap<NavigatorElement, List<String>> getChildrenMap(BaseSecurityPolicy securityPolicy) {
         if (isLeafElement()) {
             //leaf element
-            return singletonOrder(this, Collections.emptyList());
+            if(securityPolicy.checkNavigatorPermission(this)) {
+                return singletonOrder(this, Collections.emptyList());
+            } else {
+                return MapFact.EMPTYORDER();
+            }
         }
-
 
         List<String> childrenSids = new ArrayList<>();
         List<ImOrderMap<NavigatorElement, List<String>>> childrenMaps = new ArrayList<>();

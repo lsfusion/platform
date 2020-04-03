@@ -52,7 +52,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.log.UserActivity;
@@ -88,7 +88,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private DataObject connection;
 
-    public SecurityPolicy securityPolicy;
+    public BaseSecurityPolicy securityPolicy;
 
     private ClientCallBackController client;
     
@@ -120,7 +120,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, stack, session);
         
         localePreferences = readLocalePreferences(session, user, businessLogics, clientLanguage, clientCountry, stack);
-        securityPolicy = logicsInstance.getSecurityManager().readSecurityPolicy(session, user);
+        securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
     }
 
     private LocalePreferences readLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -534,7 +534,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
             }
 
-            if (!securityPolicy.navigator.checkPermission(element)) {
+            if (!securityPolicy.checkNavigatorPermission(element)) {
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
             }
 

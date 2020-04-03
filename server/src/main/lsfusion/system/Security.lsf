@@ -35,7 +35,7 @@ rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE '{security.this.role.is.assigned.to.user}';
     
-WHEN SETCHANGED (login(CustomUser u)) DO {
+WHEN SETCHANGED (login(User u)) DO {
     mainRole(u) <- userRoleSID('admin') IF login(u) == 'admin'; 
     in(u, userRoleSID('default')) <- TRUE;        
 }
@@ -102,13 +102,8 @@ forbidEditProfile(CustomUser u) += OVERRIDE dataForbidEditProfile(u), forbidEdit
 
 // Setup policies
 forbidViewAllSetupPolicies '{security.view.security.policy.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-forbidViewAllSetupPolicies (User user) = forbidViewAllSetupPolicies(mainRole(user));
-
 forbidChangeAllSetupPolicies '{security.change.security.policy.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-forbidChangeAllSetupPolicies (User user) = forbidChangeAllSetupPolicies(mainRole(user));
-
 forbidEditObjects '{security.forbid.edit.objects}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-forbidEditObjects (User user) = forbidEditObjects(mainRole(user));
 
 copy (UserRole from, UserRole to) +{
     forbidChangePassword(to) <- forbidChangePassword(from);
@@ -143,6 +138,9 @@ dataForbidView = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
 
 // --- Roles --- // 
 
+updatePermissionUserRoleNavigatorElement  INTERNAL 'lsfusion.server.logics.navigator.UpdatePermissionAction' (STRING, STRING, STRING);
+updatePermissionUserRoleActionOrProperty  INTERNAL 'lsfusion.server.logics.property.UpdatePermissionAction' (STRING, STRING, STRING, BOOLEAN);
+
 // - Permit - //
 //remove after onStarted
 permitViewAllProperty '{security.permit.view.all.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
@@ -170,7 +168,13 @@ captionPermissionView '{security.view}' (UserRole ur, PropertyGroup g) = staticC
 
 dataPermissionView = DATA Permission (UserRole, ActionOrProperty);          
 foregroundPermissionView (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionView(ur, p);    
+
 permissionView '{security.view}' (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionView(ur, p), nearestParentPermissionView(ur, parent(p));
+WHEN CHANGED (permissionView(UserRole ur, ActionOrProperty p)) DO {
+    updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionView(ur, p)), NULL);
+}
+
+namePermissionView (UserRole ur, ActionOrProperty p) = staticName(permissionView(ur, p));
 captionPermissionView '{security.view}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionView(ur, p), Permission.permit) CHARWIDTH 10;         
 
 // --- Global + Roles --- //
@@ -224,8 +228,13 @@ permissionChange (UserRole ur, PropertyGroup g) = OVERRIDE dataPermissionChange(
 captionPermissionChange '{security.change}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionChange(ur, g), Permission.permit) CHARWIDTH 10;
 
 dataPermissionChange = DATA Permission (UserRole, ActionOrProperty);
-permissionChange (UserRole ur, ActionOrProperty p) = 
-    OVERRIDE dataPermissionChange(ur, p), nearestParentPermissionChange(ur, parent(p));
+
+permissionChange (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionChange(ur, p), nearestParentPermissionChange(ur, parent(p));
+WHEN CHANGED (permissionChange(UserRole ur, ActionOrProperty p)) DO {
+    updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionChange(ur, p)), NULL);
+}
+
+namePermissionChange (UserRole ur, ActionOrProperty p) = staticName(permissionChange(ur, p));
 foregroundPermissionChange (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionChange(ur, p);             
 captionPermissionChange '{security.change}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionChange(ur, p), Permission.permit) CHARWIDTH 10;      
     
@@ -278,15 +287,20 @@ forbid '{security.forbid}' = DATA BOOLEAN (UserRole, NavigatorElement) CHARWIDTH
 dataPermission = DATA Permission (UserRole, NavigatorElement);
 nearestParentPermission (UserRole ur, NavigatorElement e) = GROUP LAST dataPermission(ur, NavigatorElement parent) IF dataPermission(ur, parent) ORDER DESC level(e, parent) MATERIALIZED;
 foregroundPermission (UserRole ur, NavigatorElement e) = parentPermissionForeground() IF NOT dataPermission(ur, e);    
+
 permission (UserRole ur, NavigatorElement e) = OVERRIDE dataPermission(ur, e), nearestParentPermission(ur, e);
+WHEN CHANGED (permission(UserRole ur, NavigatorElement ne)) DO {
+    updatePermissionUserRoleNavigatorElement(sid(ur), canonicalName(ne), staticName(permission(ur, ne)));
+}
+
+namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e));
 captionPermission '{security.permission}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.permit) CHARWIDTH 10;
 
 permit (User user, NavigatorElement navigatorElement) = 
     GROUP MAX permission(UserRole userRole, navigatorElement) IF has(user, userRole) AND permission(userRole, navigatorElement) == Permission.permit;  
 forbid (User user, NavigatorElement navigatorElement) = 
     GROUP MAX permission(UserRole userRole, navigatorElement) IF has(user, userRole) AND permission(userRole, navigatorElement) == Permission.forbid;      
-permission (User user, NavigatorElement navigatorElement) = OVERRIDE permit(user, navigatorElement), forbid(user, navigatorElement), Permission.permit;  
-namePermission(User user, NavigatorElement navigatorElement) = staticName(permission(user, navigatorElement));                
+permission (User user, NavigatorElement navigatorElement) = OVERRIDE permit(user, navigatorElement), forbid(user, navigatorElement), Permission.permit;                  
 
 backgroundPermission (UserRole ur, NavigatorElement e)= 
     childPermissionBackground() IF GROUP SUM 1 IF level(NavigatorElement child, e) AND dataPermission(ur, child) AND 
@@ -401,7 +415,7 @@ createSystemUserRoles() {
         NEW ur = UserRole {
             sid(ur) <- 'readonly';
             name(ur) <- ISTRING[100] ('{security.user.role.readonly}');
-            permissionChange(ur, propertyGroup('System_root')) <- Permission.forbid;
+            dataPermissionChange(ur, propertyGroup('System_root')) <- Permission.forbid;
         }
     }
     

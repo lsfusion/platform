@@ -1,7 +1,6 @@
 package lsfusion.server.logics.navigator.controller.context;
 
 import lsfusion.base.Result;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
@@ -27,7 +26,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnectionContext;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 
 import java.sql.SQLException;
@@ -45,8 +44,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         
         uiContext = new RemoteUIContext() {
             @Override
-            protected ImSet<SecurityPolicy> getSecurityPolicies() {
-                return SetFact.singleton(navigator.securityPolicy);
+            protected BaseSecurityPolicy getSecurityPolicy() {
+                return navigator.securityPolicy;
             }
 
             @Override
