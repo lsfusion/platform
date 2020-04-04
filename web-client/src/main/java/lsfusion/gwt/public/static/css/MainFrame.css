@@ -238,7 +238,6 @@ input[type=checkbox]:focus {
 
 .logicalRendererCheckBox {
     margin: 0;
-    tab-index: -1;
     pointer-events: none;
 }
 

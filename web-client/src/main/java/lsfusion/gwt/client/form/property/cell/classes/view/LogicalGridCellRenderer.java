@@ -46,6 +46,7 @@ public class LogicalGridCellRenderer extends GridCellRenderer {
             img.setSrc(getCBImagePath(value));
         } else {
             InputElement input = element.getFirstChild().getFirstChild().cast();
+            input.setTabIndex(-1);
             input.setChecked(value != null && (Boolean) value);
         }
     }
