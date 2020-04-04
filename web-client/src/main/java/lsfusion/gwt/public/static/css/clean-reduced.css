@@ -13,8 +13,8 @@
  */
 
 :root {
-    --button-border-radius: 3px;
-    --combobox-border-radius: 2px;
+    --button-border-radius: 4px;
+    --combobox-border-radius: 3px;
     --textfield-border-radius: var(--combobox-border-radius);
     --table-border-radius: var(--combobox-border-radius);
     --panel-border-radius: var(--combobox-border-radius);
