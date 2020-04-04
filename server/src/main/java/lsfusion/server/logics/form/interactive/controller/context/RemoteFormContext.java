@@ -8,7 +8,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
-import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 
 import java.util.Locale;
@@ -54,7 +54,7 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
     }
 
     @Override
-    protected BaseSecurityPolicy getSecurityPolicy() {
+    protected SecurityPolicy getSecurityPolicy() {
         return form.form.securityPolicy;
     }
 

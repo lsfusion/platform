@@ -42,7 +42,7 @@ import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
@@ -195,11 +195,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     }
 
-    public DataClass getRequestInputType(FormEntity form, BaseSecurityPolicy policy) {
+    public DataClass getRequestInputType(FormEntity form, SecurityPolicy policy) {
         return getRequestInputType(CHANGE, form, policy, optimisticAsync);
     }
 
-    public DataClass getWYSRequestInputType(FormEntity form, BaseSecurityPolicy policy) {
+    public DataClass getWYSRequestInputType(FormEntity form, SecurityPolicy policy) {
         return getRequestInputType(CHANGE_WYS, form, policy, true); // wys is optimistic by default
     }
     
@@ -211,7 +211,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getValueProperty();
     }
 
-    public DataClass getRequestInputType(String actionSID, FormEntity form, BaseSecurityPolicy securityPolicy, boolean optimistic) {
+    public DataClass getRequestInputType(String actionSID, FormEntity form, SecurityPolicy securityPolicy, boolean optimistic) {
         if (isProperty()) { // optimization
             ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, securityPolicy);
 
@@ -222,7 +222,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, BaseSecurityPolicy policy) {
+    public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, SecurityPolicy policy) {
         ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEventAction(CHANGE, form, policy);
         if(changeAction!=null)
             return changeAction.getAddRemove(form);
@@ -236,7 +236,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return isEdit;
     }
     
-    private boolean checkPermission(Action eventAction, String eventActionSID, SQLCallable<Boolean> checkReadOnly, BaseSecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
+    private boolean checkPermission(Action eventAction, String eventActionSID, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
         ActionOrProperty securityProperty;
         if (isEdit(eventActionSID) && !eventAction.ignoreReadOnlyPolicy()) { // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit) 
             if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
@@ -253,11 +253,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return securityPolicy.checkPropertyChangePermission(securityProperty);
     }
 
-    private boolean forbidEditObjects(String eventActionSID, BaseSecurityPolicy securityPolicy) {
+    private boolean forbidEditObjects(String eventActionSID, SecurityPolicy securityPolicy) {
         return EDIT_OBJECT.equals(eventActionSID) && (securityPolicy.checkForbidEditObjects());
     }
 
-    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, BaseSecurityPolicy securityPolicy) {
+    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SecurityPolicy securityPolicy) {
         try {
             return getEventAction(actionId, form, null, securityPolicy);
         } catch (SQLException | SQLHandledException e) {
@@ -266,7 +266,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     }
     
-    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SQLCallable<Boolean> checkReadOnly, BaseSecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
+    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
         ActionObjectEntity<?> eventAction = getEventAction(actionId, form);
 
         if (eventAction != null && !checkPermission(eventAction.property, actionId, checkReadOnly, securityPolicy))

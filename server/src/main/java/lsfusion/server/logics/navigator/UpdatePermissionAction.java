@@ -5,7 +5,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
-import lsfusion.server.physics.admin.authentication.security.policy.AddSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.RoleSecurityPolicy;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
@@ -34,7 +34,7 @@ public class UpdatePermissionAction extends InternalAction {
         if(userRole != null && navigatorElement != null) {
             SecurityManager securityManager = getLogicsInstance().getSecurityManager();
             Boolean permission = securityManager.getPermissionValue(context.getKeyValue(staticNamePermissionInterface).getValue());
-            AddSecurityPolicy securityPolicy = securityManager.cachedSecurityPolicies.get(userRole);
+            RoleSecurityPolicy securityPolicy = securityManager.cachedSecurityPolicies.get(userRole);
             if (securityPolicy != null) {
                 securityPolicy.navigator.setPermission(context.getBL().findNavigatorElement(navigatorElement), permission);
             }

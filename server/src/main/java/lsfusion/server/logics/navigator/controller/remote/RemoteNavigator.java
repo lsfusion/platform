@@ -52,7 +52,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
-import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.log.UserActivity;
@@ -88,7 +88,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private DataObject connection;
 
-    public BaseSecurityPolicy securityPolicy;
+    public SecurityPolicy securityPolicy;
 
     private ClientCallBackController client;
     

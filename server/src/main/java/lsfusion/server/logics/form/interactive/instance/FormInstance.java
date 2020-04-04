@@ -105,7 +105,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.LogTime;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -154,7 +154,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public final InstanceFactory instanceFactory;
 
-    public final BaseSecurityPolicy securityPolicy;
+    public final SecurityPolicy securityPolicy;
 
     private final ImOrderSet<GroupObjectInstance> groups;
 
@@ -199,7 +199,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, BaseSecurityPolicy securityPolicy,
+    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,

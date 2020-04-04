@@ -5,7 +5,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
-import lsfusion.server.physics.admin.authentication.security.policy.AddSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.RoleSecurityPolicy;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
@@ -38,13 +38,10 @@ public class UpdatePermissionAction extends InternalAction {
         boolean change = context.getKeyValue(changeInterface).getValue() != null;
         if(userRole != null && actionOrProperty != null) {
             SecurityManager securityManager = getLogicsInstance().getSecurityManager();
-            AddSecurityPolicy securityPolicy = securityManager.cachedSecurityPolicies.get(userRole);
+            RoleSecurityPolicy securityPolicy = securityManager.cachedSecurityPolicies.get(userRole);
             if (securityPolicy != null) {
-                if(change) {
-                    securityPolicy.propertyChange.setPermission(context.getBL().findPropertyElseAction(actionOrProperty), securityManager.getPermissionValue(permission));
-                } else {
-                    securityPolicy.propertyView.setPermission(context.getBL().findPropertyElseAction(actionOrProperty), securityManager.getPermissionValue(permission));
-                }
+                (change ? securityPolicy.propertyChange : securityPolicy.propertyView).
+                        setPermission(context.getBL().findPropertyElseAction(actionOrProperty), securityManager.getPermissionValue(permission));
             }
         }
     }

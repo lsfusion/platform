@@ -25,8 +25,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP forbidDuplicateFormsCustomUser;
     public LP showDetailedInfoCustomUser;
 
-    public LP forbidViewAllSetupPolicies;
-    public LP forbidChangeAllSetupPolicies;
     public LP forbidEditObjects;
 
     public LP<?> permissionUserRoleNavigatorElement;
@@ -91,8 +89,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidDuplicateFormsCustomUser = findProperty("forbidDuplicateForms[CustomUser]");
         showDetailedInfoCustomUser = findProperty("showDetailedInfo[CustomUser]");
 
-        forbidViewAllSetupPolicies = findProperty("forbidViewAllSetupPolicies[UserRole]");
-        forbidChangeAllSetupPolicies = findProperty("forbidChangeAllSetupPolicies[UserRole]");
         forbidEditObjects = findProperty("forbidEditObjects[UserRole]");
 
         // ---- Политики для логики представлений

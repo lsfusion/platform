@@ -22,7 +22,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
-import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -30,7 +30,7 @@ import java.util.Map;
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements AggrReaderInstance {
 
-    public ActionObjectInstance getEventAction(String actionId, FormInstance formInstance, SQLCallable<Boolean> checkReadOnly, BaseSecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
+    public ActionObjectInstance getEventAction(String actionId, FormInstance formInstance, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
         ActionObjectEntity<?> eventAction = entity.getEventAction(actionId, formInstance.entity, checkReadOnly, securityPolicy);
         if(eventAction!=null)
             return formInstance.instanceFactory.getInstance(eventAction);

@@ -6,7 +6,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -16,10 +15,8 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
-import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -30,10 +27,8 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
@@ -44,8 +39,8 @@ import lsfusion.server.physics.admin.authentication.LDAPAuthenticationService;
 import lsfusion.server.physics.admin.authentication.LDAPParameters;
 import lsfusion.server.physics.admin.authentication.UserInfo;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
-import lsfusion.server.physics.admin.authentication.security.policy.AddSecurityPolicy;
-import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.RoleSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -56,15 +51,16 @@ import org.springframework.util.Assert;
 import javax.naming.CommunicationException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;
     private static final Logger systemLogger = ServerLoggers.systemLogger;
 
     @Deprecated
-    public static BaseSecurityPolicy baseServerSecurityPolicy = new BaseSecurityPolicy();
+    public static SecurityPolicy baseServerSecurityPolicy = new SecurityPolicy();
 
-    public Map<String, AddSecurityPolicy> cachedSecurityPolicies = new HashMap<>();
+    public ConcurrentHashMap<String, RoleSecurityPolicy> cachedSecurityPolicies = new ConcurrentHashMap<>();
 
     private BusinessLogics businessLogics;
     private DBManager dbManager;
@@ -266,26 +262,26 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             throw new LoginException();
     }
 
-    public BaseSecurityPolicy getSecurityPolicy(DataSession session, DataObject userObject) {
-        List<AddSecurityPolicy> policies = new ArrayList<>();
+    public SecurityPolicy getSecurityPolicy(DataSession session, DataObject userObject) {
+        List<RoleSecurityPolicy> policies = new ArrayList<>();
         try {
             Map<String, DataObject> userRolesMap = readUserRolesMap(session, userObject);
             for (Map.Entry<String, DataObject> userRoleEntry : userRolesMap.entrySet()) {
-                AddSecurityPolicy policy = cachedSecurityPolicies.get(userRoleEntry.getKey());
+                RoleSecurityPolicy policy = cachedSecurityPolicies.get(userRoleEntry.getKey());
                 if (policy == null) {
                     policy = readSecurityPolicy(userRoleEntry.getValue(), session);
                     cachedSecurityPolicies.put(userRoleEntry.getKey(), policy);
                 }
                 policies.add(policy);
             }
-            return new BaseSecurityPolicy(policies);
+            return new SecurityPolicy(policies);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private AddSecurityPolicy readSecurityPolicy(DataObject userRoleObject, DataSession session) throws SQLException, SQLHandledException {
-        AddSecurityPolicy policy = new AddSecurityPolicy();
+    private RoleSecurityPolicy readSecurityPolicy(DataObject userRoleObject, DataSession session) throws SQLException, SQLHandledException {
+        RoleSecurityPolicy policy = new RoleSecurityPolicy();
 
         KeyExpr navigatorElementExpr = new KeyExpr("navigatorElement");
         QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.singletonRev("navigatorElement", navigatorElementExpr));
@@ -306,17 +302,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
 
         policy.forbidEditObjects = securityLM.forbidEditObjects.read(session, userRoleObject) != null;
-
-        boolean forbidViewAllSetupPolicies = securityLM.forbidViewAllSetupPolicies.read(session, userRoleObject) != null;
-        boolean forbidChangeAllSetupPolicies = securityLM.forbidChangeAllSetupPolicies.read(session, userRoleObject) != null;
-        if(forbidViewAllSetupPolicies || forbidChangeAllSetupPolicies) {
-            for (ActionOrProperty prop : LM.propertyPolicyGroup.getIndexedPropChildren().keyIt()) {
-                if(forbidViewAllSetupPolicies)
-                    policy.propertyView.setPermission(prop, false);
-                if(forbidChangeAllSetupPolicies)
-                    policy.propertyChange.setPermission(prop, false);
-            }
-        }
 
         KeyExpr actionOrPropertyExpr = new KeyExpr("actionOrProperty");
         query = new QueryBuilder<>(MapFact.singletonRev("actionOrProperty", actionOrPropertyExpr));

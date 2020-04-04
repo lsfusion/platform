@@ -35,7 +35,7 @@ rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE '{security.this.role.is.assigned.to.user}';
     
-WHEN SETCHANGED (login(User u)) DO {
+WHEN SETCHANGED (User u IS User) DO {
     mainRole(u) <- userRoleSID('admin') IF login(u) == 'admin'; 
     in(u, userRoleSID('default')) <- TRUE;        
 }
@@ -102,17 +102,11 @@ dataForbidEditProfile '{security.forbid.edit.profile}' = DATA BOOLEAN (CustomUse
 forbidEditProfile(CustomUser u) += OVERRIDE dataForbidEditProfile(u), forbidEditProfile(mainRole(u));
 
 // Setup policies
-forbidViewAllSetupPolicies '{security.view.security.policy.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-forbidChangeAllSetupPolicies '{security.change.security.policy.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 forbidEditObjects '{security.forbid.edit.objects}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 
 copy (UserRole from, UserRole to) +{
     forbidChangePassword(to) <- forbidChangePassword(from);
-
     forbidEditProfile(to) <- forbidEditProfile(from);
-
-    forbidViewAllSetupPolicies(to) <- forbidViewAllSetupPolicies(from);
-    forbidChangeAllSetupPolicies(to) <- forbidChangeAllSetupPolicies(from);
     forbidEditObjects(to) <- forbidEditObjects(from);
 }
 
@@ -451,9 +445,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur) name, sid
     PROPERTIES(ur) NEW, DELETE
     
-    PROPERTIES(ur) forbidViewAllSetupPolicies, forbidChangeAllSetupPolicies, forbidEditObjects
-
-    PROPERTIES(ur) forbidChangePassword, forbidEditProfile, showDetailedInfo
+    PROPERTIES(ur) forbidEditObjects, forbidChangePassword, forbidEditProfile, showDetailedInfo
 
     PROPERTIES(ur) defaultForms, maximizeDefaultForms, forbidDuplicateForms
     PROPERTIES(ur) transactTimeout

@@ -28,7 +28,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -81,7 +81,7 @@ public abstract class RemoteUIContext extends AbstractContext {
     }
 
     public abstract FocusListener getFocusListener();
-    protected abstract BaseSecurityPolicy getSecurityPolicy();
+    protected abstract SecurityPolicy getSecurityPolicy();
     protected boolean isExternal() {
         return false;
     }

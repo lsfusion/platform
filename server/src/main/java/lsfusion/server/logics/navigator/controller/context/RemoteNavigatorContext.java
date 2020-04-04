@@ -26,7 +26,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnectionContext;
-import lsfusion.server.physics.admin.authentication.security.policy.BaseSecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 
 import java.sql.SQLException;
@@ -44,7 +44,7 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         
         uiContext = new RemoteUIContext() {
             @Override
-            protected BaseSecurityPolicy getSecurityPolicy() {
+            protected SecurityPolicy getSecurityPolicy() {
                 return navigator.securityPolicy;
             }
 
