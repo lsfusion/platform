@@ -69,7 +69,7 @@ public class MainController {
     public static boolean busyDialog;
     public static long busyDialogTimeout;
     public static boolean useRequestTimeout;
-    public static boolean configurationAccessAllowed;
+    public static boolean showDetailedInfo;
     public static boolean forbidDuplicateForms;
     public static long timeDiffServerClientLog = 1000;
     public static ColorPreferences colorPreferences;

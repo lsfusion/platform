@@ -159,7 +159,7 @@ public class GBusyDialog extends WindowBox {
     }
     
     private static boolean inDevMode() {
-        return MainFrame.configurationAccessAllowed;
+        return MainFrame.showDetailedInfo;
     }
 
     public void makeMaskVisible(boolean visible) {

@@ -35,7 +35,7 @@ public abstract class GNavigatorElement implements Serializable {
     }
 
     public String getTooltipText() {
-        return MainFrame.configurationAccessAllowed ?
+        return MainFrame.showDetailedInfo ?
                 GwtSharedUtils.stringFormat("<html><b>%s</b><hr><b>sID:</b> %s<br><b>" + ClientMessages.Instance.get().tooltipPath() 
                         + ":</b> %s</html>", caption, canonicalName, creationPath) : caption;
     }

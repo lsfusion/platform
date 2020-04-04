@@ -101,7 +101,7 @@ public abstract class MainFrame extends JFrame {
             MainController.busyDialog = clientSettings.busyDialog;
             MainController.busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
-            MainController.configurationAccessAllowed = clientSettings.configurationAccessAllowed;
+            MainController.showDetailedInfo = clientSettings.showDetailedInfo;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
             MainController.setColorPreferences(clientSettings.colorPreferences);
 
