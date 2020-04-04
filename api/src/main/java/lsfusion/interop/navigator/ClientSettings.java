@@ -14,13 +14,13 @@ public class ClientSettings implements Serializable {
     public long busyDialogTimeout;
     public boolean useRequestTimeout;
     public boolean devMode;
-    public boolean configurationAccessAllowed;
+    public boolean showDetailedInfo;
     public boolean forbidDuplicateForms;
     public ColorTheme colorTheme;
     public ColorPreferences colorPreferences;
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, 
-                          long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, boolean configurationAccessAllowed, 
+                          long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, boolean showDetailedInfo,
                           boolean forbidDuplicateForms, ColorTheme colorTheme, ColorPreferences colorPreferences) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
@@ -29,7 +29,7 @@ public class ClientSettings implements Serializable {
         this.busyDialogTimeout = busyDialogTimeout;
         this.useRequestTimeout = useRequestTimeout;
         this.devMode = devMode;
-        this.configurationAccessAllowed = configurationAccessAllowed;
+        this.showDetailedInfo = showDetailedInfo;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.colorTheme = colorTheme;
         this.colorPreferences = colorPreferences;

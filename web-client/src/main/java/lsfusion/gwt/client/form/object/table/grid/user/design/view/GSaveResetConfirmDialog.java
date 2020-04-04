@@ -33,7 +33,7 @@ public class GSaveResetConfirmDialog {
         DialogBoxHelper.OptionType[] options;
         Widget contents;
         RadioButton currentUserRB = null;
-        if (!MainFrame.configurationAccessAllowed) {
+        if (!MainFrame.showDetailedInfo) {
             options = new DialogBoxHelper.OptionType[] {DialogBoxHelper.OptionType.YES, DialogBoxHelper.OptionType.NO};
 
             contents = new HTML(save ? messages.formGridPreferencesSureToSave() : messages.formGridPreferencesSureToReset());

@@ -162,7 +162,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     }
 
     public String getTooltip() {
-        return MainController.configurationAccessAllowed ?
+        return MainController.showDetailedInfo ?
                 String.format("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +

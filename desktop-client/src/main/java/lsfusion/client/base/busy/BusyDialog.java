@@ -66,7 +66,7 @@ class BusyDialog extends JDialog {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         
-        if (MainController.configurationAccessAllowed) {
+        if (MainController.showDetailedInfo) {
             btnCopy = new JButton(getString("form.loading.copy"));
             buttonPanel.add(btnCopy);
         }
@@ -103,7 +103,7 @@ class BusyDialog extends JDialog {
 
         int screenWidth = MainFrame.instance.getRootPane().getWidth();
         int screenHeight = MainFrame.instance.getRootPane().getHeight();
-        if (MainController.configurationAccessAllowed) {
+        if (MainController.showDetailedInfo) {
             setMinimumSize(new Dimension((int) (screenWidth * 0.50), (int) (screenHeight * 0.50)));
         } else {
             setMinimumSize(new Dimension((int) (screenWidth * 0.30), getMinimumSize().height));
@@ -125,7 +125,7 @@ class BusyDialog extends JDialog {
     }
 
     private void initUIHandlers(final BusyDialog dialog) {
-        if (MainController.configurationAccessAllowed) {
+        if (MainController.showDetailedInfo) {
             btnCopy.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -183,7 +183,7 @@ class BusyDialog extends JDialog {
             }
         });
 
-        longActionTimer = new Timer(MainController.configurationAccessAllowed ? 5000 : 60000, new ActionListener() {
+        longActionTimer = new Timer(MainController.showDetailedInfo ? 5000 : 60000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnExit.setEnabled(true);
@@ -198,7 +198,7 @@ class BusyDialog extends JDialog {
     public void updateBusyDialog(List<Object> input) {
         Object[] lines = input.toArray();
 
-        if (MainController.configurationAccessAllowed)
+        if (MainController.showDetailedInfo)
             setStackMessageDevMode(lines);
         else
             setStackMessage(lines);
