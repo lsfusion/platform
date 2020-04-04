@@ -79,7 +79,7 @@ public class GwtToClientConverter extends ObjectConverter {
         if (fontInfo == null) {
             return null;
         }
-        return new FontInfo(fontInfo.family, fontInfo.size != null ? fontInfo.size : -1, fontInfo.bold, fontInfo.italic);
+        return new FontInfo(fontInfo.family, fontInfo.size, fontInfo.bold, fontInfo.italic);
     }
 
     @Converter(from = GFilesDTO.class)

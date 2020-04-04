@@ -12,7 +12,7 @@ public class GFont implements Serializable {
     public static final GFont DEFAULT_FONT = new GFont(DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, false, false);
     
     public String family;
-    public Integer size;
+    public int size;
     public boolean bold;
     public boolean italic;
 
@@ -30,7 +30,7 @@ public class GFont implements Serializable {
         if (family != null) {
             style.setProperty("fontFamily", family);
         }
-        if (size != null) {
+        if (size > 0) {
             style.setFontSize(size, Style.Unit.PX);
         }
         style.setFontStyle(italic ? Style.FontStyle.ITALIC : Style.FontStyle.NORMAL);
@@ -52,7 +52,7 @@ public class GFont implements Serializable {
     public int hashCode() {
         if (hashComputed) {
             hash = family != null ? family.hashCode() : 0;
-            hash = 31 * hash + (size != null ? size : 0);
+            hash = 31 * hash + (size);
             hash = 31 * hash + (bold ? 1 : 0);
             hash = 31 * hash + (italic ? 1 : 0);
             hashComputed = true;
@@ -69,6 +69,6 @@ public class GFont implements Serializable {
         return bold == font.bold &&
                italic == font.italic &&
                nullEquals(family, font.family) &&
-               nullEquals(size, font.size);
+               size == font.size;
     }
 }

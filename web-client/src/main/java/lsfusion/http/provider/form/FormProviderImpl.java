@@ -94,7 +94,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         }
         GFont userFont = convertFont(groupObjectUP.fontInfo);
         GGroupObject groupObj = gForm.getGroupObject(groupObjectUP.groupObjectSID);
-        if (groupObj != null && groupObj.grid.font != null && groupObj.grid.font.size != 0) {
+        if (groupObj != null && groupObj.grid.font != null && groupObj.grid.font.size > 0) {
             if (userFont.size == 0) {
                 userFont.size = groupObj.grid.font.size;
             }

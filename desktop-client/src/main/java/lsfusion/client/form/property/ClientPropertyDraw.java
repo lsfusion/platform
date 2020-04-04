@@ -228,7 +228,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         int height = baseType.getDefaultHeight(comp, design, charHeight == 0 ? 1 : charHeight);
         ImageIcon image = design.getImage(MainController.colorTheme);
         if (image != null) // предпочитаемую высоту берем исходя из размера иконки
-            height = Math.max(image.getIconHeight() + 6, height);
+            height = Math.max(image.getIconHeight() + 4, height);
         return height;
     }
 

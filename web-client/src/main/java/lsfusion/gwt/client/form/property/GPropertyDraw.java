@@ -370,7 +370,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return valueHeight;
         }
 
-        return baseType.getDefaultHeight(font != null ? font : parentFont);
+        int height = baseType.getDefaultHeight(font != null ? font : parentFont);
+        final ImageDescription image = getImage();
+        if (image != null && image.height >= 0) {
+            height = Math.max(image.height + 4, height);
+        }
+        return height;
     }
 
     public int getLabelHeight() {

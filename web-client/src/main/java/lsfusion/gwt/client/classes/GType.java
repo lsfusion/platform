@@ -42,7 +42,10 @@ public abstract class GType implements Serializable {
 
     public abstract int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor);
     public int getDefaultHeight(GFont font) {
-        return font == null || font.size == null ? GwtClientUtils.VALUE_HEIGHT : GFontMetrics.getSymbolHeight(font);
+        if (font != null && font.size > 0) {
+            return GFontMetrics.getSymbolHeight(font);
+        }
+        return GwtClientUtils.VALUE_HEIGHT;
     }
 
     public abstract GCompare[] getFilterCompares();

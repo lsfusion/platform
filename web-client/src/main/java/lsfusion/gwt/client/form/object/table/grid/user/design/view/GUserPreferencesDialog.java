@@ -277,14 +277,17 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
 
     private GFont getUserFont() {
         GFont initialFont = getInitialFont();
-        Integer size;
+        int size;
         try {
             size = Integer.parseInt(sizeBox.getValue());
+            if (size <= 0) {
+                size = initialFont.size;
+            }
         } catch(NumberFormatException e) {
             size = initialFont.size;
         }
 
-        return new GFont(initialFont.family, size != 0 ? size : initialFont.size, boldBox.getValue(), italicBox.getValue());
+        return new GFont(initialFont.family, size, boldBox.getValue(), italicBox.getValue());
     }
 
     private Integer getUserPageSize() {
@@ -406,7 +409,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
             }
         }
 
-        sizeBox.setValue((font == null || font.size == null) ? DEFAULT_FONT_SIZE.toString() : font.size.toString());
+        sizeBox.setValue((font == null || font.size == 0) ? DEFAULT_FONT_SIZE.toString() : String.valueOf(font.size));
         boldBox.setValue(font != null && font.bold);
         italicBox.setValue(font != null && font.italic);
 
