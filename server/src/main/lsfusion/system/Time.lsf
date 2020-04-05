@@ -9,6 +9,7 @@ currentZDateTime '{logics.date.current.datetime}' = FORMULA ZDATETIME PG 'CURREN
 toDate(DATETIME dateTime) = DATE(dateTime AS DATETIME);
 toTime(DATETIME dateTime) = TIME(dateTime AS DATETIME);
 toDateTime(DATE date) = DATETIME(date AS DATE);
+toZDateTime(DATE date) = ZDATETIME(date AS DATE);
 
 currentTime '{time.current.time}' = toTime(currentDateTime());
 
@@ -63,12 +64,14 @@ subtractDay(DATETIME dateTime, LONG days) = [ FORMULA DATETIME PG '(($1)-($2)*CA
 sumMinutes(DATETIME dateTime, LONG mins) = [ FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS DATETIME, mins AS LONG);
 sumSeconds(DATETIME dateTime, LONG secs) = [ FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](dateTime AS DATETIME, secs AS LONG);
 subtractSeconds(DATETIME dateTime, LONG secs) = [ FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS DATETIME, secs AS LONG);
+subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
 sumDay(ZDATETIME dateTime, LONG days) = [ FORMULA ZDATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS ZDATETIME, days AS LONG);
 subtractDay(ZDATETIME dateTime, LONG days) = [ FORMULA ZDATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS ZDATETIME, days AS LONG);
 sumMinutes(ZDATETIME dateTime, LONG mins) = [ FORMULA ZDATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS ZDATETIME, mins AS LONG);
 sumSeconds(ZDATETIME dateTime, LONG secs) = [ FORMULA ZDATETIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](dateTime AS ZDATETIME, secs AS LONG);
 subtractSeconds(ZDATETIME dateTime, LONG secs) = [ FORMULA ZDATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS ZDATETIME, secs AS LONG);
+subtractSeconds(ZDATETIME dateTimeFrom, ZDATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS ZDATETIME, dateTimeFrom AS ZDATETIME);
 
 dateTimeToDateTime = FORMULA DATETIME PG 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')',
                                       MS 'CAST($1 AS DATETIME) + CAST($2 AS DATETIME)';
