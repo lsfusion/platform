@@ -13,6 +13,7 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
 
     public LP currentDateTime;
     public LP currentDateTimeSnapshot;
+    public LP currentZDateTimeSnapshot;
     public LP currentDate;
 
     public TimeLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
@@ -25,6 +26,7 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
 
         currentDateTime = findProperty("currentDateTime[]");
         currentDateTimeSnapshot = findProperty("currentDateTimeSnapshot[]");
+        currentZDateTimeSnapshot = findProperty("currentZDateTimeSnapshot[]");
         currentDate = findProperty("currentDate[]");
     }
 }
