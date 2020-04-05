@@ -973,7 +973,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         for(PropertyDrawEntity property : propertyDrawsIt)
             if(property.isGrid(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getSID();
-                if(name.equals("longitude") || name.equals("latitude"))
+                if(name.equals("longitude") || name.equals("latitude") || name.equals("polygon"))
                     return true;
             }
         return false;
