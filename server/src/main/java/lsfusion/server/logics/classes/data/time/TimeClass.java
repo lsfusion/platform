@@ -17,8 +17,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -64,11 +62,7 @@ public class TimeClass extends DataClass<LocalTime> {
 
     @Override
     public String formatString(LocalTime value) {
-        return value == null ? null : getTimeFormat().format(localTimeToSqlTime(value));
-    }
-
-    public static DateFormat getTimeFormat() {
-        return new SimpleDateFormat("HH:mm:ss");
+        return value == null ? null : value.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM));
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

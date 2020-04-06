@@ -2,7 +2,6 @@ package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
-import lsfusion.base.SystemUtils;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -22,7 +21,6 @@ import org.apache.poi.ss.usermodel.CellValue;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -123,12 +121,6 @@ public class DateClass extends DataClass<LocalDate> {
         return "{d '" + value + "'}";
     }
 
-    public static DateFormat getDateFormat() {
-        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-        dateFormat.setTimeZone(SystemUtils.getCurrentTimeZone());  
-        return dateFormat;
-    }
-
     @Override
     public LocalDate parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws java.text.ParseException {
         return readDBF(dbfRecord.getDate(fieldName));
@@ -161,7 +153,7 @@ public class DateClass extends DataClass<LocalDate> {
     }
 
     public String formatString(LocalDate value) {
-        return value == null ? null : getDateFormat().format(localDateToSqlDate(value));
+        return value == null ? null : value.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT));
     }
 
     public String getSID() {
