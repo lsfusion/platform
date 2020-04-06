@@ -247,14 +247,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             securityProperty = eventAction;
         }
 
-        if(forbidEditObjects(eventActionSID, securityPolicy))
+        if(EDIT_OBJECT.equals(eventActionSID) && !securityPolicy.checkPropertyEditObjectsPermission(getEventProperty()))
             return false;
         else
             return securityPolicy.checkPropertyChangePermission(securityProperty);
-    }
-
-    private boolean forbidEditObjects(String eventActionSID, SecurityPolicy securityPolicy) {
-        return EDIT_OBJECT.equals(eventActionSID) && (securityPolicy.checkForbidEditObjects());
     }
 
     public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SecurityPolicy securityPolicy) {

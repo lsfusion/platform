@@ -1,12 +1,21 @@
 package lsfusion.server.logics.controller.init;
 
+import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import org.apache.log4j.Logger;
 
-import static lsfusion.server.base.controller.thread.ThreadLocalContext.getLogicsInstance;
-
 public class PrereadCachesTask extends SimpleBLTask {
+
+    private SecurityManager securityManager;
+
+    public SecurityManager getSecurityManager() {
+        return securityManager;
+    }
+
+    public void setSecurityManager(SecurityManager securityManager) {
+        this.securityManager = securityManager;
+    }
 
     public String getCaption() {
         return "Prereading properties graph";
@@ -18,7 +27,7 @@ public class PrereadCachesTask extends SimpleBLTask {
                 getBL().prereadCaches();
             }
             if (!Settings.get().isDisablePrereadSecurityPolicies()) {
-                getLogicsInstance().getSecurityManager().prereadSecurityPolicies();
+                getSecurityManager().prereadSecurityPolicies();
             }
         }
     }

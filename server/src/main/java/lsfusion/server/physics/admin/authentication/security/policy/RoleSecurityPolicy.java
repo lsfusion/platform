@@ -7,8 +7,7 @@ public class RoleSecurityPolicy {
     public ElementSecurityPolicy navigator = new ElementSecurityPolicy<NavigatorElement>();
     public ElementSecurityPolicy propertyView = new ElementSecurityPolicy<ActionOrProperty>();
     public ElementSecurityPolicy propertyChange = new ElementSecurityPolicy<ActionOrProperty>();
-
-    public boolean forbidEditObjects;
+    public ElementSecurityPolicy propertyEditObjects = new ElementSecurityPolicy<ActionOrProperty>();
 
     public RoleSecurityPolicy() {
 
@@ -26,7 +25,7 @@ public class RoleSecurityPolicy {
         return this.propertyChange.checkPermission(property);
     }
 
-    public boolean checkForbidEditObjects() {
-        return forbidEditObjects;
+    public Boolean checkPropertyEditObjectsPermission(ActionOrProperty property) {
+        return this.propertyEditObjects.checkPermission(property);
     }
 }

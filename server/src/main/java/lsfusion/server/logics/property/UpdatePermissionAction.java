@@ -5,18 +5,17 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
+import lsfusion.server.physics.admin.authentication.security.policy.ElementSecurityPolicy;
 import lsfusion.server.physics.admin.authentication.security.policy.RoleSecurityPolicy;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
 
-import static lsfusion.server.base.controller.thread.ThreadLocalContext.getLogicsInstance;
-
 public class UpdatePermissionAction extends InternalAction {
     private final ClassPropertyInterface sidUserRoleInterface;
     private final ClassPropertyInterface canonicalNameActionOrPropertyInterface;
     private final ClassPropertyInterface staticNamePermissionInterface;
-    private final ClassPropertyInterface changeInterface;
+    private final ClassPropertyInterface typeInterface;
 
     public UpdatePermissionAction(SecurityLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
@@ -25,7 +24,7 @@ public class UpdatePermissionAction extends InternalAction {
         sidUserRoleInterface = i.next();
         canonicalNameActionOrPropertyInterface = i.next();
         staticNamePermissionInterface = i.next();
-        changeInterface = i.next();
+        typeInterface = i.next();
 
     }
 
@@ -35,19 +34,14 @@ public class UpdatePermissionAction extends InternalAction {
         String userRole = (String) context.getKeyValue(sidUserRoleInterface).getValue();
         String actionOrProperty = (String) context.getKeyValue(canonicalNameActionOrPropertyInterface).getValue();
         String permission = (String) context.getKeyValue(staticNamePermissionInterface).getValue();
-        boolean change = context.getKeyValue(changeInterface).getValue() != null;
-        if(userRole != null && actionOrProperty != null) {
-            SecurityManager securityManager = getLogicsInstance().getSecurityManager();
-            RoleSecurityPolicy securityPolicy = securityManager.cachedSecurityPolicies.get(userRole);
-            if (securityPolicy != null) {
-                (change ? securityPolicy.propertyChange : securityPolicy.propertyView).
-                        setPermission(context.getBL().findPropertyElseAction(actionOrProperty), securityManager.getPermissionValue(permission));
+        String type = (String) context.getKeyValue(typeInterface).getValue();
+        SecurityManager securityManager = context.getLogicsInstance().getSecurityManager();
+        RoleSecurityPolicy sp = securityManager.cachedSecurityPolicies.get(userRole);
+        if (sp != null) {
+            ElementSecurityPolicy esp = type.equals("view") ? sp.propertyView : type.equals("change") ? sp.propertyChange : type.equals("editObjects") ? sp.propertyEditObjects : null;
+            if(esp != null) {
+                esp.setPermission(context.getBL().findPropertyElseAction(actionOrProperty), securityManager.getPermissionValue(permission));
             }
         }
-    }
-
-    @Override
-    protected boolean allowNulls() {
-        return true;
     }
 }

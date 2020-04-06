@@ -644,6 +644,7 @@
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
+        <property name="securityManager" ref="securityManager"/>
     </bean>
 
     <bean id="prereadPropertyCachesTask" class="lsfusion.server.logics.property.controller.init.PrereadPropertyCachesTask">

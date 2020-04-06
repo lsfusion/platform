@@ -25,11 +25,10 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP forbidDuplicateFormsCustomUser;
     public LP showDetailedInfoCustomUser;
 
-    public LP forbidEditObjects;
-
     public LP<?> permissionUserRoleNavigatorElement;
     public LP<?> permissionViewUserRoleActionOrProperty;
     public LP<?> permissionChangeUserRoleActionOrProperty;
+    public LP<?> permissionEditObjectsUserRoleActionOrProperty;
 
     public LP sidUserRole;
     public LP userRoleSID;
@@ -89,8 +88,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidDuplicateFormsCustomUser = findProperty("forbidDuplicateForms[CustomUser]");
         showDetailedInfoCustomUser = findProperty("showDetailedInfo[CustomUser]");
 
-        forbidEditObjects = findProperty("forbidEditObjects[UserRole]");
-
         // ---- Политики для логики представлений
 
         // Разрешения для каждого элемента
@@ -98,6 +95,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
         permissionViewUserRoleActionOrProperty = findProperty("namePermissionView[UserRole,ActionOrProperty]");
         permissionChangeUserRoleActionOrProperty = findProperty("namePermissionChange[UserRole,ActionOrProperty]");
+        permissionEditObjectsUserRoleActionOrProperty = findProperty("namePermissionEditObjects[UserRole,ActionOrProperty]");
 
         propertyPolicyForm = findForm("propertyPolicy");
         actionPolicyForm = findForm("actionPolicy");

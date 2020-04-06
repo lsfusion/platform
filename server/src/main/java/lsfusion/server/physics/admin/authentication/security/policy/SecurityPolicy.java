@@ -19,16 +19,20 @@ public class SecurityPolicy {
         this.policies = policies;
     }
 
-    public Boolean checkNavigatorPermission(NavigatorElement navigatorElement) {
+    public boolean checkNavigatorPermission(NavigatorElement navigatorElement) {
         return checkPermission(policy -> policy.checkNavigatorPermission(navigatorElement));
     }
 
-    public Boolean checkPropertyViewPermission(ActionOrProperty property) {
+    public boolean checkPropertyViewPermission(ActionOrProperty property) {
         return checkPermission(policy -> policy.checkPropertyViewPermission(property));
     }
 
-    public Boolean checkPropertyChangePermission(ActionOrProperty property) {
+    public boolean checkPropertyChangePermission(ActionOrProperty property) {
         return checkPermission(policy -> policy.checkPropertyChangePermission(property));
+    }
+
+    public boolean checkPropertyEditObjectsPermission(ActionOrProperty property) {
+        return checkPermission(policy -> policy.checkPropertyEditObjectsPermission(property));
     }
 
     public Boolean checkPermission(Function<RoleSecurityPolicy, Boolean> checkPermission) {
@@ -43,14 +47,5 @@ public class SecurityPolicy {
             }
         }
         return result;
-    }
-
-    public boolean checkForbidEditObjects() {
-        for(RoleSecurityPolicy policy : policies) {
-            if(!policy.checkForbidEditObjects()) {
-                return false;
-            }
-        }
-        return true;
     }
 }

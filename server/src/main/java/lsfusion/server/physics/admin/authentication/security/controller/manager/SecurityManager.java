@@ -312,17 +312,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             }
         }
 
-        policy.forbidEditObjects = securityLM.forbidEditObjects.read(session, userRoleObject) != null;
-
         KeyExpr actionOrPropertyExpr = new KeyExpr("actionOrProperty");
         query = new QueryBuilder<>(MapFact.singletonRev("actionOrProperty", actionOrPropertyExpr));
         query.addProperty("canonicalName", reflectionLM.canonicalNameActionOrProperty.getExpr(session.getModifier(), actionOrPropertyExpr));
         query.addProperty("permissionView", securityLM.permissionViewUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr));
         query.addProperty("permissionChange", securityLM.permissionChangeUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr));
+        query.addProperty("permissionEditObjects", securityLM.permissionChangeUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr));
 
         query.and(reflectionLM.canonicalNameActionOrProperty.getExpr(session.getModifier(), actionOrPropertyExpr).getWhere());
         query.and(securityLM.permissionViewUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr).getWhere().or(
-                securityLM.permissionChangeUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr).getWhere()
+                securityLM.permissionChangeUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr).getWhere()).or(
+                securityLM.permissionEditObjectsUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr).getWhere()
         ));
 
         queryResult = query.execute(session);
@@ -336,6 +336,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     ActionOrProperty<?> actionOrProperty = property.getActionOrProperty();
                     policy.propertyView.setPermission(actionOrProperty, getPermissionValue(entry.get("permissionView")));
                     policy.propertyChange.setPermission(actionOrProperty, getPermissionValue(entry.get("permissionChange")));
+                    policy.propertyEditObjects.setPermission(actionOrProperty, getPermissionValue(entry.get("permissionEditObjects")));
                 } else {
                     startLogger.debug(String.format("Property '%s' is not found when applying security policy", canonicalName));
                 }
