@@ -548,6 +548,7 @@ public class MainController {
         UIManager.put("Tree.selectionInactiveBackground", SwingDefaults.getFocusedTableRowBackground()); // JTree in TreeGroupTable draws inactive background on selection
         UIManager.put("Table.cellFocusColor", SwingDefaults.getSelectionBorderColor()); // mostly for tree table. has no effect as tree has no focus 
         UIManager.put("TitledBorder.titleColor", SwingDefaults.getTitledBorderTitleColor());
+        UIManager.put("TabbedPane.underlineColor", SwingDefaults.getTabbedPaneUnderlineColor());
         // toolbar buttons
         UIManager.put("ToggleButton.toolbar.pressedBackground", SwingDefaults.getSelectionColor());
         UIManager.put("ToggleButton.toolbar.hoverBackground", SwingDefaults.getSelectionColor());
