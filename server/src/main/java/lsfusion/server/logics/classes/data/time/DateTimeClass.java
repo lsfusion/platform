@@ -19,9 +19,10 @@ import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 
-import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -164,11 +165,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
 
     @Override
     public String formatString(LocalDateTime value) {
-        return value == null ? null : getDateTimeFormat().format(localDateTimeToSqlTimestamp(value));
-    }
-
-    public static DateFormat getDateTimeFormat() {
-        return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+        return value == null ? null : value.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM));
     }
 
     public String getSID() {
