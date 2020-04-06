@@ -4,6 +4,8 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import org.apache.log4j.Logger;
 
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.getLogicsInstance;
+
 public class PrereadCachesTask extends SimpleBLTask {
 
     public String getCaption() {
@@ -11,8 +13,13 @@ public class PrereadCachesTask extends SimpleBLTask {
     }
 
     public void run(Logger logger) {
-        if (!SystemProperties.lightStart && !Settings.get().isDisablePrereadCaches()) {
-            getBL().prereadCaches();
+        if (!SystemProperties.lightStart) {
+            if (!Settings.get().isDisablePrereadCaches()) {
+                getBL().prereadCaches();
+            }
+            if (!Settings.get().isDisablePrereadSecurityPolicies()) {
+                getLogicsInstance().getSecurityManager().prereadSecurityPolicies();
+            }
         }
     }
 }

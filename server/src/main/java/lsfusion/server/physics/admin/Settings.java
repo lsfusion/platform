@@ -2228,7 +2228,17 @@ public class Settings implements Cloneable {
     public void setDisablePrereadCaches(boolean disablePrereadCaches) {
         this.disablePrereadCaches = disablePrereadCaches;
     }
-    
+
+    private boolean disablePrereadSecurityPolicies = false;
+
+    public boolean isDisablePrereadSecurityPolicies() {
+        return disablePrereadSecurityPolicies;
+    }
+
+    public void setDisablePrereadSecurityPolicies(boolean disablePrereadSecurityPolicies) {
+        this.disablePrereadSecurityPolicies = disablePrereadSecurityPolicies;
+    }
+
     private int subQueryLargeDepth = 6; // высокая глубина, подозрение на бесконечное проталкивание (смотрим только на cost при проталкивании)
     private int subQueryInfiniteDepth = 12; //  бесконечная глубина, считаем что бесконечное проталкивание (ничего не проталкиваем)
 

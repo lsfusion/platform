@@ -280,6 +280,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    public void prereadSecurityPolicies() {
+        try (DataSession session = createSession()) {
+            Map<String, DataObject> userRolesMap = readUserRolesMap(session, null);
+            for (Map.Entry<String, DataObject> userRoleEntry : userRolesMap.entrySet()) {
+                cachedSecurityPolicies.put(userRoleEntry.getKey(), readSecurityPolicy(userRoleEntry.getValue(), session));
+            }
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     private RoleSecurityPolicy readSecurityPolicy(DataObject userRoleObject, DataSession session) throws SQLException, SQLHandledException {
         RoleSecurityPolicy policy = new RoleSecurityPolicy();
 
@@ -341,7 +352,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         KeyExpr userRoleExpr = new KeyExpr("userRole");
         QueryBuilder<Object, Object> userRoleQuery = new QueryBuilder<>(MapFact.singletonRev("userRole", userRoleExpr));
         userRoleQuery.addProperty("sidUserRole", securityLM.sidUserRole.getExpr(session.getModifier(), userRoleExpr));
-        userRoleQuery.and(securityLM.hasUserRole.getExpr(session.getModifier(), userObject.getExpr(), userRoleExpr).getWhere());
+        userRoleQuery.and(securityLM.sidUserRole.getExpr(session.getModifier(), userRoleExpr).getWhere());
+        if(userObject != null) {
+            userRoleQuery.and(securityLM.hasUserRole.getExpr(session.getModifier(), userObject.getExpr(), userRoleExpr).getWhere());
+        }
 
         ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> queryResult = userRoleQuery.executeClasses(session);
 
