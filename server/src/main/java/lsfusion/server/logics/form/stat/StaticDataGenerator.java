@@ -70,9 +70,9 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             boolean checkShallowGroups = Settings.get().getBackwardCompatibilityVersion() > 3;
             return new StaticDataGenerator.ReportHierarchy(groupHierarchy.getReportHierarchy(group -> {
                 if(!checkShallowGroups)
-                    return true;
+                    return false;
                 ImOrderSet<PropertyDrawEntity> groupProperties = properties.get(group);
-                return groupProperties != null && !groupProperties.isEmpty();
+                return groupProperties == null || groupProperties.isEmpty();
             }), this);
         }
         
