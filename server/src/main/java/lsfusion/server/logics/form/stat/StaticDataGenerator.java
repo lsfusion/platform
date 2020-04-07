@@ -67,8 +67,13 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         private final ImSet<GroupObjectEntity> valueGroups; // all groups that are not in groupHierarchy
 
         public StaticDataGenerator.ReportHierarchy getReportHierarchy() {
-            ImSet<GroupObjectEntity> shallowGroups = Settings.get().getBackwardCompatibilityVersion() > 3 ? properties.filterFnValues(ImList::isEmpty).keys() : SetFact.EMPTY();
-            return new StaticDataGenerator.ReportHierarchy(groupHierarchy.getReportHierarchy(shallowGroups), this);
+            boolean checkShallowGroups = Settings.get().getBackwardCompatibilityVersion() > 3;
+            return new StaticDataGenerator.ReportHierarchy(groupHierarchy.getReportHierarchy(group -> {
+                if(!checkShallowGroups)
+                    return true;
+                ImOrderSet<PropertyDrawEntity> groupProperties = properties.get(group);
+                return groupProperties != null && !groupProperties.isEmpty();
+            }), this);
         }
         
         @IdentityInstanceLazy
