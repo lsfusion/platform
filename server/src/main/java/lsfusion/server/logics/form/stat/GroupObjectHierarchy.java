@@ -14,6 +14,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class GroupObjectHierarchy {
 
@@ -109,9 +110,7 @@ public class GroupObjectHierarchy {
         }
     }
 
-    // strictly speaking it's needed only for Interactive single group reports
-    @IdentityInstanceLazy
-    public ReportHierarchy getReportHierarchy(ImSet<GroupObjectEntity> shallowGroups) {
+    public ReportHierarchy getReportHierarchy(Predicate<GroupObjectEntity> shallowGroups) {
         return new ReportHierarchy(root, dependencies, shallowGroups);
     }
 
@@ -120,7 +119,7 @@ public class GroupObjectHierarchy {
         public final ReportNode rootNode;        
         private final Map<ReportNode, List<ReportNode>> dependencies = new HashMap<>();
         
-        private ReportNode createNode(GroupObjectEntity group, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> groupDependencies, ImSet<GroupObjectEntity> shallowGroups) {
+        private ReportNode createNode(GroupObjectEntity group, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> groupDependencies, Predicate<GroupObjectEntity> shallowGroups) {
             List<GroupObjectEntity> groups = new ArrayList<>(); // mutable will be changed in squeeze
             groups.add(group);
             ReportNode thisNode = new ReportNode(groups);
@@ -133,14 +132,14 @@ public class GroupObjectHierarchy {
                     childNodes.add(childNode);
             }
 
-            if(childNodes.isEmpty() && shallowGroups.contains(group))
+            if(childNodes.isEmpty() && shallowGroups.test(group))
                 return null;
 
             dependencies.put(thisNode, childNodes);
             return thisNode;
         } 
 
-        public ReportHierarchy(GroupObjectEntity rootGroup, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependencies, ImSet<GroupObjectEntity> shallowGroups) {
+        public ReportHierarchy(GroupObjectEntity rootGroup, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependencies, Predicate<GroupObjectEntity> shallowGroups) {
 
             rootNode = createNode(rootGroup, dependencies, shallowGroups);
 
