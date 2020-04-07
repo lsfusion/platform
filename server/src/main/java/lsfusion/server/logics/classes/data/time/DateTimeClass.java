@@ -19,11 +19,13 @@ import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 
-import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.format.FormatStyle;
 
 import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
@@ -146,12 +148,12 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     public LocalDateTime parseString(String s) throws ParseException {
         try {
             //try to parse with default locale formats
-            FormatStyle[] formatStyles = new FormatStyle[]{FormatStyle.MEDIUM, FormatStyle.SHORT};
+            FormatStyle[] formatStyles = new FormatStyle[]{FormatStyle.SHORT, FormatStyle.MEDIUM};
             for(FormatStyle dateStyle : formatStyles) {
                 for(FormatStyle timeStyle : formatStyles) {
                     try {
                         return LocalDateTime.parse(s, DateTimeFormatter.ofLocalizedDateTime(dateStyle, timeStyle));
-                    } catch (Exception ignored) {
+                    } catch (DateTimeParseException ignored) {
                     }
                 }
             }
@@ -163,15 +165,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
 
     @Override
     public String formatString(LocalDateTime value) {
-        return value == null ? null : getDateTimeFormat().format(localDateTimeToSqlTimestamp(value));
-    }
-
-    public static DateFormat getDateTimeFormat() {
-        return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
-    }
-
-    public static String format(Date date) {
-        return getDateTimeFormat().format(date);
+        return value == null ? null : value.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM));
     }
 
     public String getSID() {

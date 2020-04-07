@@ -63,7 +63,6 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -414,6 +413,42 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             return applyObject == null ? GroupObjectEntity.NULL : applyObject;
         });
     }
+
+    // correlated with FormGroupHierarchyCreator.addDependenciesToGraph
+//    @IdentityLazy
+//    public ImSet<GroupObjectEntity> getGroupToColumns() {
+//        // first will leave only groups without properties
+//        MSet<GroupObjectEntity> mGroupToColumns = SetFact.mSet();
+//        for(PropertyDrawEntity<?> property : getStaticPropertyDrawsList())
+//            mGroupToColumns.addAll(property.getObjectInstances().group(o -> o.groupTo).keys().removeIncl(property.getColumnGroupObjects().getSet()));
+//        ImSet<GroupObjectEntity> groupToColumns = mGroupToColumns.immutable();
+//
+//        ImOrderSet<GroupObjectEntity> groupList = getGroupsList();
+//        boolean stop = false;
+//        while(!stop) {
+//            stop = true;
+//            for (FilterEntity<?> fixedFilter : getFixedFilters()) {
+//                ImOrderSet<GroupObjectEntity> objects = groupList.filterOrderIncl(fixedFilter.getObjects().group(o -> o.groupTo).keys());
+//                int maxNotGroup = 0;
+//                for(int i = objects.size() - 1; i >= 0; i--) {
+//                    if(!groupToColumns.contains(objects.get(i))) {
+//                        maxNotGroup = i;
+//                        break;
+//                    }
+//                }
+//
+//                if(maxNotGroup > 0) {
+//                    int prevSize = groupToColumns.size();
+//                    groupToColumns = groupToColumns.remove(objects.subOrder(0, maxNotGroup - 1).getSet());
+//                    if(groupToColumns.size() < prevSize) { // if changed groupToColumns need to recheck filters once again
+//                        stop = false;
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        return groupToColumns;
+//    }
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getAllGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects, final boolean supportGroupColumns) {
@@ -893,25 +928,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private StaticDataGenerator.Hierarchy getHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, BiFunction<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>, ImOrderSet<PropertyDrawEntity>> filter) {
         ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getGroupProperties(valueGroups, supportGroupColumns);
 
-        ImSet<GroupObjectEntity> excludeGroupObjects = valueGroups;
-        if(supportGroupColumns && Settings.get().getBackwardCompatibilityVersion() > 3)
-            excludeGroupObjects = excludeGroupObjects.merge(getGroups().filterFn(group -> !group.isSubReport && hasNoProperties(group, groupProperties)));
-
         ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> filteredGroupProperties = groupProperties;
         if(filter != null)
             filteredGroupProperties = filteredGroupProperties.mapValues(filter);
 
-        return new StaticDataGenerator.Hierarchy(getGroupHierarchy(supportGroupColumns, excludeGroupObjects), filteredGroupProperties, valueGroups);
-    }
-
-    // means that group object is apparently used as a group-to-columns (or filter parameter)
-    private static boolean hasNoProperties(GroupObjectEntity group, ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties) {
-        return groupProperties.get(group) == null;
+        return new StaticDataGenerator.Hierarchy(getGroupHierarchy(supportGroupColumns, valueGroups), filteredGroupProperties, valueGroups);
     }
 
     @IdentityLazy
     public boolean hasNoProperties(GroupObjectEntity group) {
-        return hasNoProperties(group, getGroupProperties(SetFact.EMPTY(), true));
+        return getGroupProperties(SetFact.EMPTY(), true).get(group) == null;
     }
 
     @IdentityInstanceLazy
@@ -973,7 +999,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         for(PropertyDrawEntity property : propertyDrawsIt)
             if(property.isGrid(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getSID();
-                if(name.equals("longitude") || name.equals("latitude"))
+                if(name.equals("longitude") || name.equals("latitude") || name.equals("polygon"))
                     return true;
             }
         return false;

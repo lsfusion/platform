@@ -7,10 +7,8 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
-import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.property.Compare;
 
-import javax.swing.*;
 import java.awt.*;
 import java.text.ParseException;
 
@@ -45,5 +43,5 @@ public interface ClientType {
 
     int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property);
 
-    int getDefaultHeight(JComponent comp, ComponentDesign design, int charHeight);
+    int getDefaultCharHeight();
 }

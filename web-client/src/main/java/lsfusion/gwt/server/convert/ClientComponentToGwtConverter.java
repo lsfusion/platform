@@ -133,9 +133,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         if (font == null) {
             return null;
         }
-        if (font.size <= 0) {
-            font.size = GFont.DEFAULT_FONT_SIZE;
-        }
         form.addFont(font);
         return font;
     }
@@ -349,6 +346,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.quickFilterProperty = convertOrCast(clientPropertyDraw.quickFilterProperty);
 
         propertyDraw.charWidth = clientPropertyDraw.charWidth;
+        propertyDraw.charHeight = clientPropertyDraw.charHeight;
 
         if (clientPropertyDraw.valueSize != null) {
             propertyDraw.valueWidth = clientPropertyDraw.valueSize.width;

@@ -37,7 +37,7 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
     public int getFullWidthString(String widthString, FontMetrics fontMetrics, ClientPropertyDraw propertyDraw) {
         int result = super.getFullWidthString(widthString, fontMetrics, propertyDraw);
         if(propertyDraw.isEditableChangeAction()) // добавляем кнопку если не readonly
-            result += 21;
+            result += 18;
         return result;
     }
 

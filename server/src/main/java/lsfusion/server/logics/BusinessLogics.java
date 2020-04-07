@@ -128,6 +128,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -1968,8 +1969,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             try (DataSession session = createSystemTaskSession()) {
                 session.setNoCancelInTransaction(true);
                 LocalDateTime newDataDateTime = LocalDateTime.now();
-                logger.info("Change currentDateTimeSnapshot to " + newDataDateTime);
-                timeLM.currentDateTimeSnapshot.change(getWriteDateTime(newDataDateTime), session);
+                Instant newZDataDateTime = Instant.now();
+                logger.info("Change current time snapshots to " + newDataDateTime + ", " + newZDataDateTime);
+                timeLM.currentDateTimeSnapshot.change(newDataDateTime, session);
+                timeLM.currentZDateTimeSnapshot.change(newZDataDateTime, session);
                 session.applyException(this, stack);
             } catch (Exception e) {
                 logger.error(String.format("ChangeCurrentDate error: %s", e));

@@ -6,6 +6,8 @@ import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.BUTTON_HORIZONTAL_PADDING;
+
 public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
     public ActionGridCellRenderer(GPropertyDraw property) {
         super(property);
@@ -17,7 +19,10 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
 
         element.addClassName("gwt-Button");
         style.setWidth(100, Style.Unit.PCT);
-        style.setPadding(0, Style.Unit.PX);
+        style.setPaddingTop(0, Style.Unit.PX);
+        style.setPaddingBottom(0, Style.Unit.PX);
+        style.setPaddingLeft(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
+        style.setPaddingRight(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
 
         DivElement innerTop = element.appendChild(Document.get().createDivElement());
         innerTop.getStyle().setHeight(50, Style.Unit.PCT);

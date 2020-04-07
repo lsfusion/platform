@@ -1,25 +1,11 @@
 package lsfusion.client.base.view;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class FlatRolloverButton extends JButton {
     private boolean showBackground;
-    private MouseAdapter mouseAdapter = new MouseAdapter() {
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            ((JButton) e.getSource()).setContentAreaFilled(true);
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            ((JButton) e.getSource()).setContentAreaFilled(false);
-            if(showBackground) //setContentAreaFilled(false) do setOpaque(false)
-                setOpaque(true);
-        }
-    };
 
     public FlatRolloverButton() {
         this(null, null);
@@ -41,13 +27,42 @@ public class FlatRolloverButton extends JButton {
     public FlatRolloverButton(Icon icon, String text) {
         super(text, icon);
         setContentAreaFilled(false);
-        addMouseListener(mouseAdapter);
+        
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (!showBackground) {
+                    setContentAreaFilled(true);
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!showBackground) {
+                    setContentAreaFilled(false);
+                }
+            }
+        });
     }
 
     public void showBackground(boolean showBackground) {
-        this.showBackground = showBackground;
-        setOpaque(showBackground);
-        setBackground(showBackground ? new Color(4, 137, 186, 24) : null);
-        setBorder(showBackground ? BorderFactory.createLineBorder(new Color(204,204,204)) : null);
+        if (this.showBackground != showBackground) {
+            this.showBackground = showBackground;
+            setContentAreaFilled(showBackground);
+            updateBackground();
+        }
+    }
+    
+    public void updateBackground() {
+        setBackground(showBackground ? SwingDefaults.getSelectionColor() : null);
+        setBorder(showBackground ? SwingDefaults.getButtonBorder() : null);
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        if (showBackground) {
+            updateBackground();
+        }
     }
 }

@@ -22,8 +22,10 @@ import org.apache.poi.ss.usermodel.CellValue;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.FormatStyle;
 
 import static lsfusion.base.DateConverter.instantToSqlTimestamp;
 import static lsfusion.base.DateConverter.sqlTimestampToInstant;
@@ -40,10 +42,6 @@ public class ZDateTimeClass extends DataClass<Instant> {
 
     public static DateFormat getDateTimeFormat() {
         return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
-    }
-
-    public static String format(Date date) {
-        return getDateTimeFormat().format(date);
     }
 
     public int getReportPreferredWidth() {
@@ -150,7 +148,11 @@ public class ZDateTimeClass extends DataClass<Instant> {
 
     public Instant parseString(String s) throws ParseException {
         try {
-            return DateConverter.smartParse(s).toInstant(ZoneOffset.UTC);
+            try {
+                return Instant.parse(s); // actually DateTimeFormatter.ISO_INSTANT will be used
+            } catch (DateTimeParseException ignored) {
+                return ZonedDateTime.parse(s, DateTimeFormatter.ISO_DATE_TIME).toInstant();
+            }
         } catch (Exception e) {
             throw new ParseException("error parsing datetime: " + s, e);
         }
@@ -158,11 +160,11 @@ public class ZDateTimeClass extends DataClass<Instant> {
 
     @Override
     public String formatString(Instant value) {
-        return value == null ? null : getDateTimeFormat().format(instantToSqlTimestamp(value));
+        return value == null ? null : DateTimeFormatter.ISO_INSTANT.format(value);
     }
 
     public String getSID() {
-        return "DATETIME";
+        return "ZDATETIME";
     }
 
     @Override

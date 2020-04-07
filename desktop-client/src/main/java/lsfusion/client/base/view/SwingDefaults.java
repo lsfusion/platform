@@ -30,6 +30,9 @@ public class SwingDefaults {
     private static Color logPanelErrorColor;
     private static Color titledBorderTitleColor;
     private static Color dockableBorderColor;
+    private static Color tabbedPaneUnderlineColor;
+    private static Insets tableCellMargins;
+    private static Insets buttonMargin;
     
     public static void reset() {
         buttonBackground = null;
@@ -43,6 +46,9 @@ public class SwingDefaults {
         logPanelErrorColor = null;
         titledBorderTitleColor = null;
         dockableBorderColor = null;
+        tabbedPaneUnderlineColor = null;
+        tableCellMargins = null;
+        buttonMargin = null;
         
         resetTableSelectionProperties();
     }
@@ -132,7 +138,7 @@ public class SwingDefaults {
     public static Color getTableSelectionBackground() {
         if (tableSelectionBackground == null) {
             Color preferredBackground = colorPreferences != null ? colorPreferences.getSelectedCellBackground() : null;
-            tableSelectionBackground = preferredBackground != null ? preferredBackground : getColor("Table.selectionInactiveBackground");
+            tableSelectionBackground = preferredBackground != null ? preferredBackground : getSelectionColor();
         }
         return tableSelectionBackground; 
     }
@@ -180,6 +186,27 @@ public class SwingDefaults {
             dockableBorderColor = getColor("Component.borderColor");
         }
         return dockableBorderColor;
+    }
+    
+    public static Color getTabbedPaneUnderlineColor() {
+        if (tabbedPaneUnderlineColor == null) {
+            tabbedPaneUnderlineColor = colorTheme.isLight() ? new Color(177 , 220, 226) : new Color(41, 82, 96);
+        }
+        return tabbedPaneUnderlineColor;
+    }
+    
+    public static Insets getTableCellMargins() {
+        if (tableCellMargins == null) {
+            tableCellMargins = getInsets("Table.cellMargins");
+        }
+        return tableCellMargins;
+    }
+    
+    public static Insets getButtonMargin() {
+        if (buttonMargin == null) {
+            buttonMargin = getInsets("Button.margin");
+        }
+        return buttonMargin;
     }
     
     

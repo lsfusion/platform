@@ -109,9 +109,10 @@ public class GroupObjectHierarchy {
         }
     }
 
+    // strictly speaking it's needed only for Interactive single group reports
     @IdentityInstanceLazy
-    public ReportHierarchy getReportHierarchy() {
-        return new ReportHierarchy(root, dependencies);
+    public ReportHierarchy getReportHierarchy(ImSet<GroupObjectEntity> shallowGroups) {
+        return new ReportHierarchy(root, dependencies, shallowGroups);
     }
 
     public static class ReportHierarchy {
@@ -119,23 +120,29 @@ public class GroupObjectHierarchy {
         public final ReportNode rootNode;        
         private final Map<ReportNode, List<ReportNode>> dependencies = new HashMap<>();
         
-        private ReportNode createNode(GroupObjectEntity group, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> groupDependencies) {
+        private ReportNode createNode(GroupObjectEntity group, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> groupDependencies, ImSet<GroupObjectEntity> shallowGroups) {
             List<GroupObjectEntity> groups = new ArrayList<>(); // mutable will be changed in squeeze
             groups.add(group);
             ReportNode thisNode = new ReportNode(groups);
 
             ImOrderSet<GroupObjectEntity> childGroups = groupDependencies.get(group);
             List<ReportNode> childNodes = new ArrayList<>();
-            for(GroupObjectEntity childGroup : childGroups) // mutable will be changed in squeeze
-                childNodes.add(createNode(childGroup, groupDependencies));
+            for(GroupObjectEntity childGroup : childGroups) { // mutable will be changed in squeeze
+                ReportNode childNode = createNode(childGroup, groupDependencies, shallowGroups);
+                if(childNode != null)
+                    childNodes.add(childNode);
+            }
+
+            if(childNodes.isEmpty() && shallowGroups.contains(group))
+                return null;
 
             dependencies.put(thisNode, childNodes);
             return thisNode;
         } 
 
-        public ReportHierarchy(GroupObjectEntity rootGroup, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependencies) {
+        public ReportHierarchy(GroupObjectEntity rootGroup, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependencies, ImSet<GroupObjectEntity> shallowGroups) {
 
-            rootNode = createNode(rootGroup, dependencies);
+            rootNode = createNode(rootGroup, dependencies, shallowGroups);
 
             squeeze(rootNode);
 

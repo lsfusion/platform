@@ -55,7 +55,6 @@ javaStackTraceCaughtException = DATA LOCAL TEXT();
 lsfStackTraceCaughtException = DATA LOCAL TEXT();
 
 upper = FORMULA 'upper($1)';    
-subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
 formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormApplyAction' () CHANGEKEY 'alt ENTER' IMAGE 'apply.png';
 formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormCancelAction' () CHANGEKEY 'shift ESCAPE' IMAGE 'cancel.png';

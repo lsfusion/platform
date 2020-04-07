@@ -4,9 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.classes.data.time.DateClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.stat.struct.export.plain.ExportMatrixWriter;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -31,13 +28,13 @@ public class ExportXLSWriter extends ExportMatrixWriter {
 
         public Styles(Workbook workbook) {
             date = workbook.createCellStyle();
-            date.setDataFormat(getDateFormat(workbook, DateClass.getDateFormat()));
+            date.setDataFormat(getDateFormat(workbook, DateFormat.getDateInstance(DateFormat.SHORT)));
 
             time = workbook.createCellStyle();
-            time.setDataFormat(getDateFormat(workbook, TimeClass.getTimeFormat()));
+            time.setDataFormat(getDateFormat(workbook, DateFormat.getTimeInstance(DateFormat.MEDIUM)));
 
             dateTime = workbook.createCellStyle();
-            dateTime.setDataFormat(getDateFormat(workbook, DateTimeClass.getDateTimeFormat()));
+            dateTime.setDataFormat(getDateFormat(workbook, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)));
         }
 
         private short getDateFormat(Workbook workbook, DateFormat format) {

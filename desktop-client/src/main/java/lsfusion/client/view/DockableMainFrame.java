@@ -292,6 +292,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         }
 
         @Override
+        public void updateBorder() {
+            // draw no border
+        }
+
+        @Override
         public Dimension getPreferredSize() {
             return new Dimension(super.getPreferredSize().width, SwingDefaults.getComponentHeight());
         }
