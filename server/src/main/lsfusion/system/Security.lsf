@@ -97,27 +97,11 @@ forbidChangePassword '{security.forbid.change.password}' = DATA BOOLEAN (UserRol
 //no equivalent, remove after onstarted
 dataForbidChangePassword '{security.forbid.change.password}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
 
-dataPermissionChangePassword = DATA Permission (UserRole) CHARWIDTH 10;
-permissionChangePassword(UserRole ur) = OVERRIDE dataPermissionChangePassword(ur), Permission.permit;
-foregroundPermissionChangePassword (UserRole ur) = parentPermissionForeground() IF NOT dataPermissionChangePassword(ur);    
-captionPermissionChangePassword '{security.permission.change.password}' (UserRole ur) = staticCaption(permissionChangePassword(ur));
-forbidChangePassword(CustomUser u) += (OVERRIDE 
-    (GROUP MAX permissionChangePassword(UserRole ur) IF has(u, ur) AND permissionChangePassword(ur) == Permission.permit),
-    (GROUP MAX permissionChangePassword(UserRole ur) IF has(u, ur) AND permissionChangePassword(ur) == Permission.forbid)) == Permission.forbid;
-
 // Edit profile
 //remove after onStarted
 forbidEditProfile '{security.forbid.edit.profile}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 //no equivalent, remove after onstarted
 dataForbidEditProfile '{security.forbid.edit.profile}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
-
-dataPermissionEditProfile = DATA Permission (UserRole) CHARWIDTH 10;
-permissionEditProfile(UserRole ur) = OVERRIDE dataPermissionEditProfile(ur), Permission.permit;
-foregroundPermissionEditProfile (UserRole ur) = parentPermissionForeground() IF NOT dataPermissionEditProfile(ur);    
-captionPermissionEditProfile '{security.permission.edit.profile}' (UserRole ur) = staticCaption(permissionEditProfile(ur));
-forbidEditProfile(CustomUser u) += (OVERRIDE 
-    (GROUP MAX permissionEditProfile(UserRole ur) IF has(u, ur) AND permissionEditProfile(ur) == Permission.permit),
-    (GROUP MAX permissionEditProfile(UserRole ur) IF has(u, ur) AND permissionEditProfile(ur) == Permission.forbid)) == Permission.forbid;
 
 //remove after onStarted
 forbidEditObjects '{security.forbid.edit.objects}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
@@ -262,8 +246,6 @@ foregroundPermissionEditObjects (UserRole ur, ActionOrProperty p) = parentPermis
 captionPermissionEditObjects '{security.editObjects}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionEditObjects(ur, p), Permission.permit) CHARWIDTH 10;      
     
 copy (UserRole from, UserRole to) +{
-    dataPermissionChangePassword(to) <- dataPermissionChangePassword(from);
-    dataPermissionEditProfile(to) <- dataPermissionEditProfile(from);
     dataPermissionView(to, ActionOrProperty property) <- dataPermissionView(from, property);
     dataPermissionChange(to, ActionOrProperty property) <- dataPermissionChange(from, property);
     dataPermissionEditObjects(to, ActionOrProperty property) <- dataPermissionEditObjects(from, property);
@@ -477,8 +459,8 @@ onStarted() + {
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE order(ur, policy('allowAll'));        
         
         dataPermissionEditObjects(UserRole ur, propertyGroup('System_root')) <- Permission.forbid WHERE forbidEditObjects(ur);    
-        dataPermissionChangePassword(UserRole ur) <- Permission.forbid WHERE forbidChangePassword(ur);
-        dataPermissionEditProfile(UserRole ur) <- Permission.forbid WHERE forbidEditProfile(ur);
+        dataPermission(UserRole ur, navigatorElementCanonicalName('Authentication.changePasswordAction')) <- Permission.forbid WHERE forbidChangePassword(ur);
+        dataPermission(UserRole ur, navigatorElementCanonicalName('Authentication.editProfile')) <- Permission.forbid WHERE forbidEditProfile(ur);
         
         newPermissionPolicy() <- TRUE;
     }     
@@ -494,9 +476,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur) name, sid
     PROPERTIES(ur) NEW, DELETE
     
-    PROPERTIES(ur) captionPermissionChangePassword FOREGROUND foregroundPermissionChangePassword(ur), 
-                   captionPermissionEditProfile FOREGROUND foregroundPermissionEditProfile(ur),
-                   showDetailedInfo
+    PROPERTIES(ur) showDetailedInfo
 
     PROPERTIES(ur) defaultForms, maximizeDefaultForms, forbidDuplicateForms
     PROPERTIES(ur) transactTimeout
