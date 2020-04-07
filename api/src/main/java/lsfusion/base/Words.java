@@ -88,7 +88,7 @@ public class Words {
         numOfDigitsMap.put(("BYN"), 2);
 
         //RUB
-        decimalPostfix.put(("RUB"), new String[]{"рубль", "рубля", "рублей"});
+        decimalPostfix.put(("RUB"), new String[]{"российский рубль", "российских рубля", "российских рублей"});
         fractalPostfix.put("RUB2", new String[]{"копейка", "копейки", "копеек"});
         sexMap.put(("RUB"), false);
         sexMap.put(("RUB2"), true);
