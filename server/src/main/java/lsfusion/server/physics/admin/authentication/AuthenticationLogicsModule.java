@@ -208,6 +208,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
                 authenticated = false;
             }
         }
-        return true;
+        return authenticated;
     }
 }
