@@ -21,6 +21,7 @@ import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import java.text.ParseException;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
+import static lsfusion.gwt.client.base.GwtClientUtils.CELL_HORIZONTAL_PADDING;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
@@ -170,9 +171,9 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         inputStyle.setOutlineStyle(Style.OutlineStyle.NONE);
         inputStyle.setMargin(0, Style.Unit.PX);
         inputStyle.setPaddingTop(0, Style.Unit.PX);
-        inputStyle.setPaddingRight(4, Style.Unit.PX);
+        inputStyle.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
         inputStyle.setPaddingBottom(0, Style.Unit.PX);
-        inputStyle.setPaddingLeft(4, Style.Unit.PX);
+        inputStyle.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
         inputStyle.setWidth(100, Style.Unit.PCT);
         inputStyle.setHeight(100, Style.Unit.PCT);
 

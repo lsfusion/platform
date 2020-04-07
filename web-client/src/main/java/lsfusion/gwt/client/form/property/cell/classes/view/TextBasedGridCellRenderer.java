@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
+import static lsfusion.gwt.client.base.GwtClientUtils.CELL_HORIZONTAL_PADDING;
 
 public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
     protected GPropertyDraw property;
@@ -40,8 +41,8 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer {
     }
 
     protected void setPadding(Style style) {
-        style.setPaddingRight(4, Style.Unit.PX);
-        style.setPaddingLeft(4, Style.Unit.PX);
+        style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
+        style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
 
         style.setPaddingBottom(0, Style.Unit.PX);
         style.setPaddingTop(0, Style.Unit.PX);

@@ -3,6 +3,7 @@ package lsfusion.client.form.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.*;
 import lsfusion.client.classes.data.ClientFormatClass;
 import lsfusion.client.classes.data.ClientIntegralClass;
@@ -225,10 +226,21 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (valueSize != null && valueSize.height > -1) {
             return valueSize.height;
         }
-        int height = baseType.getDefaultHeight(comp, design, charHeight == 0 ? 1 : charHeight);
+        
+        Insets insets = SwingDefaults.getTableCellMargins(); // suppose buttons have the same padding. to have equal height
+        int insetsHeight = insets.top + insets.bottom;
+        int lines = charHeight == 0 ? baseType.getDefaultCharHeight() : charHeight;
+        int height;
+        if ((design.font != null && design.font.fontSize > 0) || lines > 1) {
+            int lineHeight = comp.getFontMetrics(design.getFont(comp)).getHeight();
+            height = lineHeight * lines + insetsHeight;
+        } else {
+            height = SwingDefaults.getValueHeight();
+        }
+        
         ImageIcon image = design.getImage(MainController.colorTheme);
         if (image != null) // предпочитаемую высоту берем исходя из размера иконки
-            height = Math.max(image.getIconHeight() + 4, height);
+            height = Math.max(image.getIconHeight() + insetsHeight, height);
         return height;
     }
 

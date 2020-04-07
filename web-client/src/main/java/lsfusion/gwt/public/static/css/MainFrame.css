@@ -265,7 +265,6 @@ input[type=checkbox]:focus {
 }
 
 .actionPanelRenderer {
-    padding: 0 14px;
     display: block; /*убираем лишние пикселы снизу при нахождении в ячейке таблицы*/
 }
 

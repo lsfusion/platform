@@ -11,10 +11,8 @@ import lsfusion.client.form.property.cell.classes.controller.rich.RichTextProper
 import lsfusion.client.form.property.cell.classes.view.TextPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
-import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.property.ExtInt;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -50,13 +48,13 @@ public class ClientTextClass extends ClientStringClass implements ClientTypeClas
     }
 
     @Override
-    public int getDefaultHeight(JComponent comp, ComponentDesign design, int charHeight) {
-        return super.getDefaultHeight(comp, design, charHeight == 1 ? 4 : charHeight);
+    public int getDefaultCharHeight() {
+        return 4;
     }
 
     @Override
     public String toString() {
-        return ClientResourceBundle.getString("logics.classes.time") + (rich ? " (rich)" : "");
+        return ClientResourceBundle.getString("logics.classes.text") + (rich ? " (rich)" : "");
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

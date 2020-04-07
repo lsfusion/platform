@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TextGridCellEditor;
@@ -24,8 +23,8 @@ public class GTextType extends GStringType {
     }
 
     @Override
-    public int getDefaultHeight(GFont font) {
-        return super.getDefaultHeight(font) * 4;
+    public int getDefaultCharHeight() {
+        return 4;
     }
 
     @Override

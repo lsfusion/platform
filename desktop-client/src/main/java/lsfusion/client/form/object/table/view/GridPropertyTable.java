@@ -180,6 +180,6 @@ public abstract class GridPropertyTable {
     }
 
     protected int getColumnBaseWidth(int i) {
-        return getColumnPropertyDraw(i).getValueWidth(getTable());
+        return getColumnPropertyDraw(i).getValueWidth(getTable()) + getTable().getColumnModel().getColumnMargin();
     }
 }

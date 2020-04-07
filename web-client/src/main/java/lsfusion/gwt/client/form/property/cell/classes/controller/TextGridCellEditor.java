@@ -8,6 +8,9 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.CELL_HORIZONTAL_PADDING;
+import static lsfusion.gwt.client.base.GwtClientUtils.CELL_VERTICAL_PADDING;
+
 public class TextGridCellEditor extends TextBasedGridCellEditor {
     public TextGridCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property, "textarea");
@@ -27,10 +30,10 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
 
         Style textareaStyle = textArea.getStyle();
         textareaStyle.setBorderWidth(0, Style.Unit.PX);
-        textareaStyle.setPaddingTop(0, Style.Unit.PX);
-        textareaStyle.setPaddingRight(4, Style.Unit.PX);
+        textareaStyle.setPaddingTop(CELL_VERTICAL_PADDING, Style.Unit.PX);
+        textareaStyle.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
         textareaStyle.setPaddingBottom(0, Style.Unit.PX);
-        textareaStyle.setPaddingLeft(4, Style.Unit.PX);
+        textareaStyle.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
         textareaStyle.setWidth(100, Style.Unit.PCT);
         textareaStyle.setHeight(100, Style.Unit.PCT);
         textareaStyle.setProperty("resize", "none");

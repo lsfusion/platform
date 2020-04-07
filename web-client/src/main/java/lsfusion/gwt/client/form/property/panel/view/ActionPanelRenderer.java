@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -25,8 +26,7 @@ import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.getPropertyKeyPressActionSID;
 
@@ -58,6 +58,10 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
         button = new ActionButton(property.imageHolder, property.getEditCaption());
         button.addStyleName("actionPanelRenderer");
+        button.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
+        button.getElement().getStyle().setPaddingBottom(0, Style.Unit.PX);
+        button.getElement().getStyle().setPaddingLeft(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
+        button.getElement().getStyle().setPaddingRight(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
 
         setTooltip(property.caption);
 

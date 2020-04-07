@@ -527,7 +527,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
     
     private void setTableRowHeight(int rowHeight) {
-        // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
+        // cell height/width is calculated without row/column margins (getCellRect()). Row/column margin = intercell spacing.
         int newRowHeight = rowHeight + getRowMargin();
         if (getRowHeight() != newRowHeight && newRowHeight > 0) {
             setRowHeight(newRowHeight);

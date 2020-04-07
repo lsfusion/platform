@@ -14,10 +14,8 @@ import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.classes.DataType;
-import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.property.Compare;
 
-import javax.swing.*;
 import java.awt.*;
 import java.text.ParseException;
 
@@ -35,7 +33,8 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
 
     @Override
     public int getFullWidthString(String widthString, FontMetrics fontMetrics, ClientPropertyDraw propertyDraw) {
-        return fontMetrics.stringWidth(widthString) + 8;
+        Insets insets = SwingDefaults.getTableCellMargins();
+        return fontMetrics.stringWidth(widthString) + insets.left + insets.right;
     }
 
     @Override
@@ -43,11 +42,9 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return getFullWidthString("0000000", fontMetrics, property);
     }
 
-    public int getDefaultHeight(JComponent comp, ComponentDesign design, int charHeight) {
-        if (design.font != null) {
-            return comp.getFontMetrics(design.getFont(comp)).getHeight() * charHeight;
-        }
-        return SwingDefaults.getValueHeight() * charHeight;
+    @Override
+    public int getDefaultCharHeight() {
+        return 1;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

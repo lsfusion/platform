@@ -346,6 +346,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.quickFilterProperty = convertOrCast(clientPropertyDraw.quickFilterProperty);
 
         propertyDraw.charWidth = clientPropertyDraw.charWidth;
+        propertyDraw.charHeight = clientPropertyDraw.charHeight;
 
         if (clientPropertyDraw.valueSize != null) {
             propertyDraw.valueWidth = clientPropertyDraw.valueSize.width;

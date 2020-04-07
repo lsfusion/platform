@@ -155,15 +155,14 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     public void setProperty(ClientPropertyDraw property) {
         model.setProperty(property);
 
-        int minimumHeight = property.getValueHeight(this);
-        // cell height is calculated without row margins (getCellRect()). Row margin = intercell spacing.
-        minimumHeight += getRowMargin();
-                
-        Dimension valueSize = new Dimension(property.getValueWidth(this), minimumHeight);
+        // cell height/width is calculated without row/column margins (getCellRect()). Row/column margin = intercell spacing.
+        int valueHeight = property.getValueHeight(this) + getRowMargin();
+        int valueWidth = property.getValueWidth(this) + getColumnModel().getColumnMargin();
+        Dimension valueSize = new Dimension(valueWidth, valueHeight);
         setMinimumSize(valueSize);
         setPreferredSize(valueSize);
 
-        setRowHeight(minimumHeight);
+        setRowHeight(valueHeight);
     }
 
     private final class Renderer extends JComponent implements TableCellRenderer {

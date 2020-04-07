@@ -13,10 +13,8 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
-import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.property.Compare;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -39,7 +37,8 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     // добавляет поправку на кнопки и другие элементы 
     public int getFullWidthString(String widthString, FontMetrics fontMetrics, ClientPropertyDraw propertyDraw) {
-        return fontMetrics.stringWidth(widthString) + 8;
+        Insets insets = SwingDefaults.getTableCellMargins();
+        return fontMetrics.stringWidth(widthString) + insets.left + insets.right;
     }
     
     public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
@@ -58,14 +57,8 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     @Override
-    public int getDefaultHeight(JComponent comp, ComponentDesign design, int charHeight) {
-        int valueHeight;
-        if (design.font != null && design.font.fontSize > 0) {
-            valueHeight = comp.getFontMetrics(design.getFont(comp)).getHeight();
-        } else {
-            valueHeight = SwingDefaults.getValueHeight();
-        }
-        return valueHeight * charHeight;
+    public int getDefaultCharHeight() {
+        return 1;
     }
 
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {

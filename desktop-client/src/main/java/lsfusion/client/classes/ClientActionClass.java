@@ -1,6 +1,7 @@
 package lsfusion.client.classes;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientDataClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -13,6 +14,7 @@ import lsfusion.client.form.property.panel.view.ActionPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.classes.DataType;
 
+import java.awt.*;
 import java.text.ParseException;
 
 public class ClientActionClass extends ClientDataClass implements ClientTypeClass {
@@ -25,9 +27,14 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return DataType.ACTION;
     }
 
+    public int getFullWidthString(String widthString, FontMetrics fontMetrics, ClientPropertyDraw propertyDraw) {
+        Insets insets = SwingDefaults.getButtonMargin();
+        return fontMetrics.stringWidth(widthString) + insets.left + insets.right;
+    }
+
     @Override
     public String getDefaultWidthString(ClientPropertyDraw propertyDraw) {
-        return "1234567";
+        return "1234";
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

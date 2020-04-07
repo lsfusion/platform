@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
@@ -12,10 +13,10 @@ import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.classes.data.GLongType;
-import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GMouseInputEvent;
@@ -112,6 +113,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GPropertyDraw quickFilterProperty;
 
     public int charWidth;
+    public int charHeight;
 
     public int valueWidth = -1;
     public int valueHeight = -1;
@@ -370,16 +372,23 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return valueHeight;
         }
 
-        int height = baseType.getDefaultHeight(font != null ? font : parentFont);
+        // we don't set padding to cell or button, but count them to have visual padding
+        int insets = GwtClientUtils.CELL_VERTICAL_PADDING * 2;
+        GFont usedFont = font != null ? font : parentFont;
+        int lines = charHeight == 0 ? baseType.getDefaultCharHeight() : charHeight;
+        int height;
+        if ((usedFont != null && usedFont.size > 0) || lines > 1) {
+            int lineHeight = GFontMetrics.getSymbolHeight(font);
+            height = lineHeight * lines + insets;
+        } else {
+            height = GwtClientUtils.VALUE_HEIGHT;
+        }
+        
         final ImageDescription image = getImage();
         if (image != null && image.height >= 0) {
-            height = Math.max(image.height + 4, height);
+            height = Math.max(image.height + insets, height);
         }
         return height;
-    }
-
-    public int getLabelHeight() {
-        return new GStringType(new GExtInt(50), false, false).getDefaultHeight(captionFont);
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {

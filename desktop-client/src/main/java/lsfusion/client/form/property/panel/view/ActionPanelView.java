@@ -219,10 +219,13 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
     @Override
     public Dimension getPreferredSize() {
-        final Dimension baseSize = super.getPreferredSize();
-        final int propertyValueWidth = property.getValueWidth();
-        final int borderCorrection = SwingDefaults.getButtonBorderWidth() * 2;
-        final int overrideWidth = propertyValueWidth > -1 ? propertyValueWidth + borderCorrection : baseSize.width;
+        Dimension baseSize = super.getPreferredSize();
+        int propertyValueWidth = property.getValueWidth();
+        if (propertyValueWidth == -1 && property.charWidth > 0) { // preferred width is perfect otherwise
+            propertyValueWidth = property.getValueWidth(this);
+        }
+        int borderCorrection = SwingDefaults.getButtonBorderWidth() * 2;
+        int overrideWidth = propertyValueWidth > 0 ? propertyValueWidth + borderCorrection : baseSize.width;
         return overrideSize(baseSize, new Dimension(overrideWidth, property.getValueHeight(this) + borderCorrection));  // тут видимо потому что caption'а нет
     }
 

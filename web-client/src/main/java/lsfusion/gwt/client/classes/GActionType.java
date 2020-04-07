@@ -1,8 +1,11 @@
 package lsfusion.gwt.client.classes;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionGridCellRenderer;
@@ -31,8 +34,13 @@ public class GActionType extends GDataType {
     }
 
     @Override
+    public int getFullWidthString(String widthString, GFont font, GWidthStringProcessor widthStringProcessor) {
+        return getFullWidthString(font, widthString, widthStringProcessor) + GwtClientUtils.BUTTON_HORIZONTAL_PADDING * 2;
+    }
+
+    @Override
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        return "1234567";
+        return "1234";
     }
 
     @Override

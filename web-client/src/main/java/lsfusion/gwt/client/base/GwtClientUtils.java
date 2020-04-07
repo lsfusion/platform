@@ -688,9 +688,13 @@ public class GwtClientUtils {
     }
 
 
-    public static int VALUE_HEIGHT = 20;
-    public static String VALUE_HEIGHT_STRING = VALUE_HEIGHT + "px";
+    public static final int VALUE_HEIGHT = 20;
+    public static final String VALUE_HEIGHT_STRING = VALUE_HEIGHT + "px";
     
-    public static int COMPONENT_HEIGHT = VALUE_HEIGHT + 2; // 2 for borders
-    public static String COMPONENT_HEIGHT_STRING = COMPONENT_HEIGHT + "px";
+    public static final int COMPONENT_HEIGHT = VALUE_HEIGHT + 2; // 2 for borders
+    public static final String COMPONENT_HEIGHT_STRING = COMPONENT_HEIGHT + "px";
+    
+    public static final int CELL_VERTICAL_PADDING = 2; // suppose buttons have the same padding. to have equal height
+    public static final int CELL_HORIZONTAL_PADDING = 3;
+    public static final int BUTTON_HORIZONTAL_PADDING = 14;
 }
