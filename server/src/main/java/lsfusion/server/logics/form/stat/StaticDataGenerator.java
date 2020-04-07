@@ -1,13 +1,9 @@
 package lsfusion.server.logics.form.stat;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
@@ -35,6 +31,7 @@ import lsfusion.server.logics.form.struct.order.CompareEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
+import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -68,9 +65,10 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         private final GroupObjectHierarchy groupHierarchy;
         private final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> properties;
         private final ImSet<GroupObjectEntity> valueGroups; // all groups that are not in groupHierarchy
-                
+
         public StaticDataGenerator.ReportHierarchy getReportHierarchy() {
-            return new StaticDataGenerator.ReportHierarchy(groupHierarchy.getReportHierarchy(), this);
+            ImSet<GroupObjectEntity> shallowGroups = Settings.get().getBackwardCompatibilityVersion() > 3 ? properties.filterFnValues(ImList::isEmpty).keys() : SetFact.EMPTY();
+            return new StaticDataGenerator.ReportHierarchy(groupHierarchy.getReportHierarchy(shallowGroups), this);
         }
         
         @IdentityInstanceLazy
@@ -172,11 +170,8 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         
         ImMap<ImOrderSet<GroupObjectEntity>, ImSet<SDP>> columnGroupObjectProps;
         if(supportColumnGroups)
-            columnGroupObjectProps = queryProperties.group(new BaseUtils.Group<ImOrderSet<GroupObjectEntity>, SDP>() { // for group-in-columns
-                public ImOrderSet<GroupObjectEntity> group(SDP key) {
-                    return key.getColumnGroupObjects();
-                }
-            }).addIfNotContains(SetFact.EMPTYORDER(), SetFact.EMPTY()); // we need keys anyway
+            // for group-in-columns
+            columnGroupObjectProps = queryProperties.group(key -> key.getColumnGroupObjects()).addIfNotContains(SetFact.EMPTYORDER(), SetFact.EMPTY()); // we need keys anyway
         else 
             columnGroupObjectProps = MapFact.singleton(SetFact.EMPTYORDER(), queryProperties);
                 
@@ -255,19 +250,13 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                     parentColumnObjects = GroupObjectEntity.getObjects(parentColumnGroupObjects);
                     final ImSet<ObjectEntity> allColumnObjects = parentColumnObjects.addExcl(thisColumnObjects);
 
-                    columnData = keyData.mapMergeOrderSetValues(value -> value.filterIncl(allColumnObjects)).groupOrder(new BaseUtils.Group<ImMap<ObjectEntity, Object>, ImMap<ObjectEntity, Object>>() {
-                        public ImMap<ObjectEntity, Object> group(ImMap<ObjectEntity, Object> key) {
-                            return key.filterIncl(parentColumnObjects);
-                        }
-                    });
+                    columnData = keyData.mapMergeOrderSetValues(value -> value.filterIncl(allColumnObjects)).groupOrder(key -> key.filterIncl(parentColumnObjects));
                 }
                 
                 // reading property values
-                ImMap<ImSet<ObjectEntity>, ImSet<SDP>> groupObjectProps = columnGroupObjectProps.getValue(g).group(new BaseUtils.Group<ImSet<ObjectEntity>, SDP>() {
-                    public ImSet<ObjectEntity> group(SDP key) {
-                        return ((PropertyObjectEntity<?>) key.getPropertyObjectEntity()).getObjectInstances().filter(allObjects.getSet()); // because of the value groups
-                    }
-                });                
+                ImMap<ImSet<ObjectEntity>, ImSet<SDP>> groupObjectProps = columnGroupObjectProps.getValue(g).group(key -> {
+                    return ((PropertyObjectEntity<?>) key.getPropertyObjectEntity()).getObjectInstances().filter(allObjects.getSet()); // because of the value groups
+                });
                 for(int i=0,size=groupObjectProps.size();i<size;i++) {
                     ImSet<ObjectEntity> objects = groupObjectProps.getKey(i);
                     ImSet<SDP> props = groupObjectProps.getValue(i);

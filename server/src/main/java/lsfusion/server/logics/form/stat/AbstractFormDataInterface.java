@@ -45,11 +45,7 @@ public abstract class AbstractFormDataInterface implements FormDataInterface {
     
     // group objects, that will be removed from hierarchy
     private ImSet<GroupObjectEntity> getValueGroupObjects() {
-        return getValueObjects().group(new BaseUtils.Group<GroupObjectEntity, ObjectEntity>() {
-            public GroupObjectEntity group(ObjectEntity key) {
-                return key.groupTo;
-            }
-        }).filterFn((key, value) -> {
+        return getValueObjects().group(key -> key.groupTo).filterFn((key, value) -> {
             return key.getObjects().size() == value.size(); // only groups with all objects
         }).keys();
     }

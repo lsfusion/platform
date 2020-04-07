@@ -137,7 +137,7 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
         if(groupId != null) {
             GroupObjectEntity groupObject = formEntity.getGroupObject(groupId);
             groupObjectHierarchy = formEntity.getSingleGroupObjectHierarchy(groupObject);
-            return new StaticDataGenerator.Hierarchy(groupObjectHierarchy, MapFact.singleton(groupObject, form.getPropertyEntitiesShownInGroup(getInstance(groupObject, form))), getFormEntity().getGroupsList().getSet().filterFn(element -> !groupId.equals(element.getID())));
+            return new StaticDataGenerator.Hierarchy(groupObjectHierarchy, MapFact.singleton(groupObject, form.getPropertyEntitiesShownInGroup(getInstance(groupObject, form))), formEntity.getGroupsList().getSet().filterFn(element -> groupObject.getID() != element.getID()));
         }
         return super.getHierarchy(isReport);
     }
