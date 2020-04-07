@@ -165,19 +165,11 @@ dataPermissionView = DATA Permission (UserRole, ActionOrProperty);
 foregroundPermissionView (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionView(ur, p);    
 
 permissionView '{security.view}' (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionView(ur, p), nearestParentPermissionView(ur, parent(p));
-ON {
-    LOCAL changedPermissionView = BOOLEAN (UserRole, ActionOrProperty);
-    changedPermissionView(UserRole ur, ActionOrProperty p) <- CHANGED(permissionView(ur, p));
-    FOR sid(UserRole ur) DO {
-        IF (GROUP SUM 1 IF changedPermissionView(ur, ActionOrProperty p)) > 100 THEN {
-            dropCachedSecurityPolicy(sid(ur));
-        } ELSE {
-            FOR CHANGED (permissionView(ur, ActionOrProperty p)) DO {
-                updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionView(ur, p)), 'view');
-            }  
-        }
-    }    
-}
+WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionView(ur, ActionOrProperty p))) > 100 DO
+    dropCachedSecurityPolicy(s);
+WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionView(ur, ActionOrProperty p))) <= 100 NOINLINE DO
+    FOR CHANGED (permissionView(ur, ActionOrProperty p)) DO
+        updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionView(ur, p)), 'view');
 
 namePermissionView (UserRole ur, ActionOrProperty p) = staticName(permissionView(ur, p));
 captionPermissionView '{security.view}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionView(ur, p), Permission.permit) CHARWIDTH 10;         
@@ -224,19 +216,11 @@ captionPermissionChange '{security.change}' (UserRole ur, PropertyGroup g) = sta
 dataPermissionChange = DATA Permission (UserRole, ActionOrProperty);
 
 permissionChange (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionChange(ur, p), nearestParentPermissionChange(ur, parent(p));
-ON {
-    LOCAL changedPermissionChange = BOOLEAN (UserRole, ActionOrProperty);
-    changedPermissionChange(UserRole ur, ActionOrProperty p) <- CHANGED(permissionChange(ur, p));
-    FOR sid(UserRole ur) DO {
-        IF (GROUP SUM 1 IF changedPermissionChange(ur, ActionOrProperty p)) > 10 THEN {
-            dropCachedSecurityPolicy(sid(ur));
-        } ELSE {
-            FOR CHANGED (permissionChange(ur, ActionOrProperty p)) DO {
-                updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionChange(ur, p)), 'change');
-            }  
-        }
-    }    
-}
+WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionChange(ur, ActionOrProperty p))) > 100 DO
+    dropCachedSecurityPolicy(s);
+WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionChange(ur, ActionOrProperty p))) <= 100 NOINLINE DO
+    FOR CHANGED (permissionChange(ur, ActionOrProperty p)) DO
+        updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionChange(ur, p)), 'change');
 
 namePermissionChange (UserRole ur, ActionOrProperty p) = staticName(permissionChange(ur, p));
 foregroundPermissionChange (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionChange(ur, p);             
@@ -254,19 +238,11 @@ captionPermissionEditObjects '{security.editObjects}' (UserRole ur, PropertyGrou
 dataPermissionEditObjects = DATA Permission (UserRole, ActionOrProperty);
 
 permissionEditObjects (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionEditObjects(ur, p), nearestParentPermissionEditObjects(ur, parent(p));
-ON {
-    LOCAL changedPermissionEditObjects = BOOLEAN (UserRole, ActionOrProperty);
-    changedPermissionEditObjects(UserRole ur, ActionOrProperty p) <- CHANGED(permissionEditObjects(ur, p));
-    FOR sid(UserRole ur) DO {
-        IF (GROUP SUM 1 IF changedPermissionEditObjects(ur, ActionOrProperty p)) > 100 THEN {
-            dropCachedSecurityPolicy(sid(ur));
-        } ELSE {
-            FOR CHANGED (permissionEditObjects(ur, ActionOrProperty p)) DO {
-                updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionEditObjects(ur, p)), 'change');
-            }  
-        }
-    }    
-}
+WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionEditObjects(ur, ActionOrProperty p))) > 100 DO
+    dropCachedSecurityPolicy(s);
+WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionEditObjects(ur, ActionOrProperty p))) <= 100 NOINLINE DO
+    FOR CHANGED (permissionEditObjects(ur, ActionOrProperty p)) DO
+        updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionChange(ur, p)), 'editObjects');
 
 namePermissionEditObjects (UserRole ur, ActionOrProperty p) = staticName(permissionEditObjects(ur, p));
 foregroundPermissionEditObjects (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionEditObjects(ur, p);             
@@ -306,9 +282,11 @@ nearestParentPermission (UserRole ur, NavigatorElement e) = GROUP LAST dataPermi
 foregroundPermission (UserRole ur, NavigatorElement e) = parentPermissionForeground() IF NOT dataPermission(ur, e);    
 
 permission (UserRole ur, NavigatorElement e) = OVERRIDE dataPermission(ur, e), nearestParentPermission(ur, e);
-WHEN CHANGED (permission(UserRole ur, NavigatorElement ne)) DO {
-    updatePermissionUserRoleNavigatorElement(sid(ur), canonicalName(ne), staticName(permission(ur, ne)));
-}
+WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permission(ur, NavigatorElement ne))) > 100 DO
+    dropCachedSecurityPolicy(s);
+WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permission(ur, NavigatorElement ne))) <= 100 NOINLINE DO
+    FOR CHANGED (permission(ur, NavigatorElement ne)) DO
+        updatePermissionUserRoleNavigatorElement(sid(ur), canonicalName(ne), staticName(permission(ur, ne)));
 
 namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e));
 captionPermission '{security.permission}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.permit) CHARWIDTH 10;
