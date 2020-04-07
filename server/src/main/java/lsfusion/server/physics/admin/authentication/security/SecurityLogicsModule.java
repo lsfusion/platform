@@ -16,11 +16,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass policy;
-    
-    public LP<?> idPolicy;
-    public LP<?> policyId;
-    public LP<?> namePolicy;
-    public LP descriptionPolicy;
 
     public LP forbidDuplicateFormsCustomUser;
     public LP showDetailedInfoCustomUser;
@@ -41,8 +36,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP nameMainRoleUser;
     public LP currentUserTransactTimeout;
     public LP transactTimeoutUser;
-
-    public LA copyAccess;    
 
     public FormEntity propertyPolicyForm;
     public FormEntity actionPolicyForm;
@@ -75,12 +68,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         hasUserRole = findProperty("has[User,UserRole]");
 
         createSystemUserRoles = findAction("createSystemUserRoles[]");
-
-        // ------------------------ Политика безопасности ------------------ //
-        idPolicy = findProperty("id[Policy]");
-        policyId = findProperty("policy[STRING[100]]");
-        namePolicy = findProperty("name[Policy]");
-        descriptionPolicy = findProperty("description[Policy]");
 
         // ---- Политики для доменной логики
 

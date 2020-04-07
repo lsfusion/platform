@@ -18,11 +18,6 @@ sidMainRole (CustomUser user) = sid(mainRole(user));
 
 currentUserMainRoleName () = nameMainRole(currentUser());
 
-// Default main role
-defaultMainRole = DATA UserRole();
-nameDefaultMainRole '{security.name.default.main.role}' = name(defaultMainRole());
-mainRole[User](CustomUser u) <- defaultMainRole() WHEN SET(u IS CustomUser);
-
 // Roles
 TABLE customUserRole (CustomUser, UserRole);
 in '{security.in}' = DATA BOOLEAN (CustomUser, UserRole);
@@ -286,7 +281,7 @@ WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permission(ur, Navi
         updatePermissionUserRoleNavigatorElement(sid(ur), canonicalName(ne), staticName(permission(ur, ne)));
 
 namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e));
-captionPermission '{security.permission}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.permit) CHARWIDTH 10;
+captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.permit) CHARWIDTH 10;
 
 permit (User user, NavigatorElement navigatorElement) = 
     GROUP MAX permission(UserRole userRole, navigatorElement) IF has(user, userRole) AND permission(userRole, navigatorElement) == Permission.permit;  
@@ -308,6 +303,10 @@ copy (UserRole from, UserRole to) +{
 forbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 dataForbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
 forbidDuplicateForms (CustomUser u) = OVERRIDE dataForbidDuplicateForms(u), GROUP MAX forbidDuplicateForms(UserRole ur) IF has(u, ur);
+
+EXTEND FORM customUsers
+    PROPERTIES(u) dataForbidDuplicateForms BEFORE fontSize(u)
+;
 
 showDetailedInfo '{security.user.role.show.detailed.info}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 showDetailedInfo (CustomUser u) = GROUP MAX showDetailedInfo(UserRole ur) IF has(u, ur);
@@ -354,41 +353,17 @@ onDesktopClientStarted() + {  showDefaultForms(); }
 onWebClientStarted() + {  showDefaultForms(); }
 
 // ------------------ Custom policies ---------------- //
+//remove after onStarted
 CLASS Policy '{security.policy}';
 TABLE policy (Policy);
-
 id '{integration.id}' = DATA STRING[100](Policy);
 policy = GROUP AGGR Policy policy BY id(policy);
 name '{security.name.policy}' = DATA ISTRING[100](Policy);
-policyName = GROUP MAX Policy policy BY name(policy) IF NOT id(policy);
 description '{security.description.policy}' = DATA STRING[100] (Policy);
 
+//remove after onStarted
 TABLE userRolePolicy (UserRole, Policy);
 order '{security.order.policy}' = DATA INTEGER (UserRole, Policy);
-
-copy (UserRole from, UserRole to) +{
-    order(to, Policy userPolicy) <- order(from, userPolicy);
-}
-
-//policies migration
-migrated = DATA BOOLEAN();
-onStarted() + {
-    IF NOT migrated() THEN {
-        FOR id(Policy policy) DO {
-            LOCAL oldPolicy = Policy();
-            oldPolicy() <- policyName(name(policy));
-            LOCAL newPolicy = Policy();
-            newPolicy() <- policy(id(policy));
-            
-            IF newPolicy() != oldPolicy() THEN {
-                FOR(name(UserRole role)) DO {
-                    order(role, p) <- order(role, oldPolicy()) WHERE p = newPolicy();
-                }
-            }
-        }
-        migrated() <- TRUE;
-    }
-}
 
 createSystemUserRoles() {
     IF NOT userRoleSID('admin') THEN {
@@ -470,16 +445,12 @@ onStarted() + {
 
 FORM securityPolicy '{security.form.policy}'
  
-    PROPERTIES() nameDefaultMainRole
-
     OBJECTS ur = UserRole
     PROPERTIES(ur) name, sid
     PROPERTIES(ur) NEW, DELETE
     
-    PROPERTIES(ur) showDetailedInfo
+    PROPERTIES(ur) showDetailedInfo, forbidDuplicateForms, transactTimeout, defaultForms, maximizeDefaultForms
 
-    PROPERTIES(ur) defaultForms, maximizeDefaultForms, forbidDuplicateForms
-    PROPERTIES(ur) transactTimeout
     // Navigator elements
     TREE navigatorElements te = NavigatorElement PARENT parent(te)
     PROPERTIES(te) READONLY caption, canonicalName, number
@@ -509,17 +480,6 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur, pr) captionPermissionView FOREGROUND foregroundPermissionView(ur, pr)
     PROPERTIES(ur, pr) captionPermissionChange FOREGROUND foregroundPermissionChange(ur, pr)
     PROPERTIES(ur, pr) captionPermissionEditObjects FOREGROUND foregroundPermissionEditObjects(ur, pr)
-
-    // Custom policy
-    OBJECTS p = Policy
-    PROPERTIES(p) READONLY id, name, description
-    PROPERTIES(ur, p) order
-
-    // Users
-    OBJECTS u = CustomUser
-    PROPERTIES(u) READONLY name, login, nameMainRole
-    PROPERTIES(u) dataForbidDuplicateForms
-    FILTERS has(u, ur)
 ;
 
 DESIGN securityPolicy {
@@ -530,7 +490,6 @@ DESIGN securityPolicy {
             type = SPLITV;
             NEW roleHeader {
                 fill = 1;
-                MOVE PROPERTY(nameDefaultMainRole());
                 MOVE BOX(ur) {
                     GRID(ur) { headerHeight = 60; }
                 }
@@ -552,12 +511,6 @@ DESIGN securityPolicy {
                     caption = '{security.form.properties}';
                     MOVE BOX(TREE properties) { caption = '{security.form.tree}'; }
                     MOVE BOX(pr) { caption = '{security.form.table}'; }
-                }
-                
-                MOVE BOX(p);
-                MOVE BOX(u) {
-                    caption = '{authentication.users}';
-                    GRID(u) { headerHeight = 60; }
                 }
                 
                 NEW roleApplicationScroll {
