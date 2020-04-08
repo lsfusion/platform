@@ -109,16 +109,10 @@ TABLE userRolePropertyGroup (UserRole, PropertyGroup);
 
 // --- Global --- //
 
-// - Permit - //
 //remove after onStarted
 dataPermitView = DATA BOOLEAN (PropertyGroup);
-//remove after onStarted
 dataPermitView = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
-
-// - Forbid - //
-//remove after onStarted
 dataForbidView = DATA BOOLEAN (PropertyGroup) CHARWIDTH 10;
-//remove after onStarted
 dataForbidView = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
 
 // --- Roles --- // 
@@ -127,145 +121,72 @@ updatePermissionUserRoleNavigatorElement  INTERNAL 'lsfusion.server.logics.navig
 updatePermissionUserRoleActionOrProperty  INTERNAL 'lsfusion.server.logics.property.UpdatePermissionAction' (UserRole, STRING, STRING, STRING);
 dropCachedSecurityPolicy  INTERNAL 'lsfusion.server.logics.DropCachedSecurityPolicyAction' (UserRole);
 
-// - Permit - //
 //remove after onStarted
 permitViewAllProperty '{security.permit.view.all.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-//remove after onStarted
 dataPermitView = DATA BOOLEAN (UserRole, PropertyGroup);
-//remove after onStarted
 dataPermitView = DATA BOOLEAN (UserRole, ActionOrProperty);
-
-// - Forbid - //
-//remove after onStarted
 forbidViewAllProperty '{security.forbid.view.all.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-//remove after onStarted
 dataForbidView = DATA BOOLEAN (UserRole, PropertyGroup); 
-//remove after onStarted
 dataForbidView = DATA BOOLEAN (UserRole, ActionOrProperty);     
+
+META initPropertyPermission (type, caption)
+    dataPermission###type = DATA Permission (UserRole, PropertyGroup);
+    nearestParentPermission###type (UserRole ur, PropertyGroup g) =
+        GROUP LAST dataPermission###type(ur, PropertyGroup parent) IF dataPermission###type(ur, parent) ORDER DESC level(g, parent) MATERIALIZED;
+    foregroundPermission###type (UserRole ur, PropertyGroup g) = parentPermissionForeground() IF NOT dataPermission###type(ur, g); 
+    backgroundPermission###type(UserRole ur, PropertyGroup g) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, g) AND dataPermission###type(ur, child) AND 
+        (NOT dataPermission###type(ur, g) OR dataPermission###type(ur, child) != dataPermission###type(ur, g));     
+    permission###type (UserRole ur, PropertyGroup g) = OVERRIDE dataPermission###type(ur, g), nearestParentPermission###type(ur, g);
+    captionPermission###type caption (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permission###type(ur, g), Permission.default) CHARWIDTH 10;
     
-dataPermissionView = DATA Permission (UserRole, PropertyGroup);
-nearestParentPermissionView (UserRole ur, PropertyGroup g) =
-    GROUP LAST dataPermissionView(ur, PropertyGroup parent) IF dataPermissionView(ur, parent) ORDER DESC level(g, parent) MATERIALIZED;    
-foregroundPermissionView (UserRole ur, PropertyGroup g) = parentPermissionForeground() IF NOT dataPermissionView(ur, g);
-backgroundPermissionView(UserRole ur, PropertyGroup p) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, p) AND dataPermissionView(ur, child) AND 
-    (NOT dataPermissionView(ur, p) OR dataPermissionView(ur, child) != dataPermissionView(ur, p));        
-permissionView (UserRole ur, PropertyGroup g) = OVERRIDE dataPermissionView(ur, g), nearestParentPermissionView(ur, g);  
-captionPermissionView '{security.view}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionView(ur, g), Permission.default) CHARWIDTH 10;  
+    dataPermission###type = DATA Permission (UserRole, ActionOrProperty);
+    foregroundPermission###type (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermission###type(ur, p);
+    
+    permission###type (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermission###type(ur, p), nearestParentPermission###type(ur, parent(p));
+    
+    WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission###type(ur, ActionOrProperty p))) > 100 DO
+        dropCachedSecurityPolicy(ur);
+    WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission###type(ur, ActionOrProperty p))) <= 100 NOINLINE DO
+        FOR CHANGED (permission###type(ur, ActionOrProperty p)) DO
+            updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), staticName(permission###type(ur, p)), ''##type);
+            
+    namePermission###type (UserRole ur, ActionOrProperty p) = staticName(permission###type(ur, p));
+    captionPermission###type caption (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permission###type(ur, p), Permission.default) CHARWIDTH 10;
+    
+    copy (UserRole from, UserRole to) +{
+        dataPermission###type(to, ActionOrProperty property) <- dataPermission###type(from, property);
+        dataPermission###type(to, PropertyGroup propertyGroup) <- dataPermission###type(from, propertyGroup);      
+    }                     
+END
+    
+@initPropertyPermission(view, '{security.view}');                
 
-dataPermissionView = DATA Permission (UserRole, ActionOrProperty);          
-foregroundPermissionView (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionView(ur, p);    
+@initPropertyPermission(change, '{security.change}');         
 
-permissionView '{security.view}' (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionView(ur, p), nearestParentPermissionView(ur, parent(p));
-WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionView(ur, ActionOrProperty p))) > 100 DO
-    dropCachedSecurityPolicy(ur);
-WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionView(ur, ActionOrProperty p))) <= 100 NOINLINE DO
-    FOR CHANGED (permissionView(ur, ActionOrProperty p)) DO
-        updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), staticName(permissionView(ur, p)), 'view');
+@initPropertyPermission(editObjects, '{security.editObjects}');       
 
-namePermissionView (UserRole ur, ActionOrProperty p) = staticName(permissionView(ur, p));
-captionPermissionView '{security.view}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionView(ur, p), Permission.default) CHARWIDTH 10;         
-
-// - Permit - //
 //remove after onStarted
 dataPermitChange = DATA BOOLEAN (PropertyGroup);
-//remove after onStarted
 dataPermitChange = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
-
-// - Forbid - //
-//remove after onStarted
 dataForbidChange = DATA BOOLEAN (PropertyGroup) CHARWIDTH 10;
-//remove after onStarted
 dataForbidChange = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
-
-// --- Roles --- // 
-
-// - Permit - //
-//remove after onStarted
 permitChangeAllProperty '{security.permit.change.all.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-//remove after onStarted
 dataPermitChange = DATA BOOLEAN (UserRole, PropertyGroup);
-//remove after onStarted
 dataPermitChange = DATA BOOLEAN (UserRole, ActionOrProperty);
-
-// - Forbid - //
-//remove after onStarted
 forbidChangeAllProperty '{security.forbid.change.all.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-//remove after onStarted    
 dataForbidChange = DATA BOOLEAN (UserRole, PropertyGroup);
-//remove after onStarted
 dataForbidChange = DATA BOOLEAN (UserRole, ActionOrProperty);
-
-dataPermissionChange = DATA Permission (UserRole, PropertyGroup);
-nearestParentPermissionChange (UserRole ur, PropertyGroup g) =
-    GROUP LAST dataPermissionChange(ur, PropertyGroup parent) IF dataPermissionChange(ur, parent) ORDER DESC level(g, parent) MATERIALIZED;         
-foregroundPermissionChange (UserRole ur, PropertyGroup g) = parentPermissionForeground() IF NOT dataPermissionChange(ur, g);  
-backgroundPermissionChange(UserRole ur, PropertyGroup g) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, g) AND dataPermissionChange(ur, child) AND 
-    (NOT dataPermissionChange(ur, child) OR dataPermissionChange(ur, child) != dataPermissionChange(ur, g));    
-permissionChange (UserRole ur, PropertyGroup g) = OVERRIDE dataPermissionChange(ur, g), nearestParentPermissionChange(ur, g);
-captionPermissionChange '{security.change}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionChange(ur, g), Permission.default) CHARWIDTH 10;
-
-dataPermissionChange = DATA Permission (UserRole, ActionOrProperty);
-
-permissionChange (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionChange(ur, p), nearestParentPermissionChange(ur, parent(p));
-WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionChange(ur, ActionOrProperty p))) > 100 DO
-    dropCachedSecurityPolicy(ur);
-WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionChange(ur, ActionOrProperty p))) <= 100 NOINLINE DO
-    FOR CHANGED (permissionChange(ur, ActionOrProperty p)) DO
-        updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), staticName(permissionChange(ur, p)), 'change');
-
-namePermissionChange (UserRole ur, ActionOrProperty p) = staticName(permissionChange(ur, p));
-foregroundPermissionChange (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionChange(ur, p);             
-captionPermissionChange '{security.change}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionChange(ur, p), Permission.default) CHARWIDTH 10;      
-
-dataPermissionEditObjects = DATA Permission (UserRole, PropertyGroup);
-nearestParentPermissionEditObjects (UserRole ur, PropertyGroup g) =
-    GROUP LAST dataPermissionEditObjects(ur, PropertyGroup parent) IF dataPermissionEditObjects(ur, parent) ORDER DESC level(g, parent) MATERIALIZED;         
-foregroundPermissionEditObjects (UserRole ur, PropertyGroup g) = parentPermissionForeground() IF NOT dataPermissionEditObjects(ur, g);  
-backgroundPermissionEditObjects(UserRole ur, PropertyGroup g) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, g) AND dataPermissionEditObjects(ur, child) AND 
-    (NOT dataPermissionEditObjects(ur, child) OR dataPermissionEditObjects(ur, child) != dataPermissionEditObjects(ur, g));    
-permissionEditObjects (UserRole ur, PropertyGroup g) = OVERRIDE dataPermissionEditObjects(ur, g), nearestParentPermissionEditObjects(ur, g);
-captionPermissionEditObjects '{security.editObjects}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionEditObjects(ur, g), Permission.default) CHARWIDTH 10;
-
-dataPermissionEditObjects = DATA Permission (UserRole, ActionOrProperty);
-
-permissionEditObjects (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionEditObjects(ur, p), nearestParentPermissionEditObjects(ur, parent(p));
-WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionEditObjects(ur, ActionOrProperty p))) > 100 DO
-    dropCachedSecurityPolicy(ur);
-WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionEditObjects(ur, ActionOrProperty p))) <= 100 NOINLINE DO
-    FOR CHANGED (permissionEditObjects(ur, ActionOrProperty p)) DO
-        updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), staticName(permissionChange(ur, p)), 'editObjects');
-
-namePermissionEditObjects (UserRole ur, ActionOrProperty p) = staticName(permissionEditObjects(ur, p));
-foregroundPermissionEditObjects (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionEditObjects(ur, p);             
-captionPermissionEditObjects '{security.editObjects}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionEditObjects(ur, p), Permission.default) CHARWIDTH 10;      
-    
-copy (UserRole from, UserRole to) +{
-    dataPermissionView(to, ActionOrProperty property) <- dataPermissionView(from, property);
-    dataPermissionChange(to, ActionOrProperty property) <- dataPermissionChange(from, property);
-    dataPermissionEditObjects(to, ActionOrProperty property) <- dataPermissionEditObjects(from, property);
-    dataPermissionView(to, PropertyGroup propertyGroup) <- dataPermissionView(from, propertyGroup);
-    dataPermissionChange(to, PropertyGroup propertyGroup) <- dataPermissionChange(from, propertyGroup);
-    dataPermissionEditObjects(to, PropertyGroup propertyGroup) <- dataPermissionEditObjects(from, propertyGroup);
-}
 
 // ------- Navigator ------- //
 
 TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
 
-// - Permit - //
 //remove after onStarted
 permit '{security.permit}' = DATA BOOLEAN (NavigatorElement) CHARWIDTH 10;
-//remove after onStarted
 permitAllForms '{security.permit.all.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-//remove after onStarted
 permit '{security.permit}' = DATA BOOLEAN (UserRole, NavigatorElement) CHARWIDTH 10;
-
-// - Forbid - //
-//remove after onStarted
 forbid '{security.forbid}' = DATA BOOLEAN (NavigatorElement) CHARWIDTH 10;
-//remove after onStarted
 forbidAllForms '{security.forbid.all.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-//remove after onStarted
 forbid '{security.forbid}' = DATA BOOLEAN (UserRole, NavigatorElement) CHARWIDTH 10;  
 
 dataPermission = DATA Permission (UserRole, NavigatorElement);
@@ -466,12 +387,6 @@ FORM securityPolicy '{security.form.policy}'
     TREE properties tprs = PropertyGroup PARENT parent(tprs), prs = ActionOrProperty 
     PROPERTIES(tprs) READONLY caption, SID
     PROPERTIES(prs)  READONLY caption, canonicalName
-    PROPERTIES(ur, tprs) captionPermissionView FOREGROUND foregroundPermissionView(ur, tprs) BACKGROUND backgroundPermissionView(ur, tprs)
-    PROPERTIES(ur, tprs) captionPermissionChange FOREGROUND foregroundPermissionChange(ur, tprs) BACKGROUND backgroundPermissionChange(ur, tprs)
-    PROPERTIES(ur, tprs) captionPermissionEditObjects FOREGROUND foregroundPermissionEditObjects(ur, tprs) BACKGROUND backgroundPermissionEditObjects(ur, tprs)
-    PROPERTIES(ur, prs) captionPermissionView FOREGROUND foregroundPermissionView(ur, prs)
-    PROPERTIES(ur, prs) captionPermissionChange FOREGROUND foregroundPermissionChange(ur, prs)
-    PROPERTIES(ur, prs) captionPermissionEditObjects FOREGROUND foregroundPermissionEditObjects(ur, prs)
     PROPERTIES(tprs) READONLY number
     PROPERTIES(prs) READONLY number
     ORDER number(tprs), number(prs)
@@ -479,9 +394,6 @@ FORM securityPolicy '{security.form.policy}'
     
     OBJECTS pr = ActionOrProperty
     PROPERTIES(pr) READONLY caption, canonicalName
-    PROPERTIES(ur, pr) captionPermissionView FOREGROUND foregroundPermissionView(ur, pr)
-    PROPERTIES(ur, pr) captionPermissionChange FOREGROUND foregroundPermissionChange(ur, pr)
-    PROPERTIES(ur, pr) captionPermissionEditObjects FOREGROUND foregroundPermissionEditObjects(ur, pr)
 ;
 
 DESIGN securityPolicy {
@@ -565,9 +477,6 @@ FORM propertyPolicy '{security.form.policy}'
     
     OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
-    PROPERTIES(ur, p) captionPermissionView FOREGROUND foregroundPermissionView(ur, p)
-    PROPERTIES(ur, p) captionPermissionChange FOREGROUND foregroundPermissionChange(ur, p)
-    PROPERTIES(ur, p) captionPermissionEditObjects FOREGROUND foregroundPermissionEditObjects(ur, p)
 ;
 
 DESIGN propertyPolicy {
@@ -600,9 +509,6 @@ FORM actionPolicy '{security.form.policy}'
     
     OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
-    PROPERTIES(ur, p) captionPermissionView FOREGROUND foregroundPermissionView(ur, p)
-    PROPERTIES(ur, p) captionPermissionChange FOREGROUND foregroundPermissionChange(ur, p)
-    PROPERTIES(ur, p) captionPermissionEditObjects FOREGROUND foregroundPermissionEditObjects(ur, p)
 ;
 
 DESIGN actionPolicy {
@@ -622,6 +528,26 @@ DESIGN actionPolicy {
         MOVE BOX(ur);
     }
 }
+
+META designPropertyPermission (type)
+    EXTEND FORM securityPolicy
+        PROPERTIES(ur, tprs) captionPermission###type FOREGROUND foregroundPermission###type(ur, tprs) BACKGROUND backgroundPermission###type(ur, tprs)
+        PROPERTIES(ur, prs) captionPermission###type FOREGROUND foregroundPermission###type(ur, prs)
+        PROPERTIES(ur, pr) captionPermission###type FOREGROUND foregroundPermission###type(ur, pr)
+    ;
+    
+    EXTEND FORM propertyPolicy
+        PROPERTIES(ur, p) captionPermission###type FOREGROUND foregroundPermission###type(ur, p)
+    ;
+    
+    EXTEND FORM actionPolicy
+        PROPERTIES(ur, p) captionPermission###type FOREGROUND foregroundPermission###type(ur, p)
+    ;        
+END
+
+@designPropertyPermission(view);
+@designPropertyPermission(change);
+@designPropertyPermission(editObjects);
 
 initHeapSize '{security.client.init.heap.size}' = DATA STRING[100]();
 maxHeapSize '{security.client.max.heap.size}' = DATA STRING[100]();
