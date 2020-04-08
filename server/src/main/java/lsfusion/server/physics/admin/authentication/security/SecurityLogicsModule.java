@@ -16,47 +16,26 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass policy;
-    
-    public LP<?> idPolicy;
-    public LP<?> policyId;
-    public LP<?> namePolicy;
-    public LP descriptionPolicy;
-    public LP orderUserPolicy;
 
     public LP forbidDuplicateFormsCustomUser;
-    public LP permitViewAllPropertyUser;
-    public LP forbidChangeAllPropertyRole;
-    public LP forbidViewAllPropertyUser;
-    public LP permitChangeAllPropertyUser;
-    public LP forbidViewUserProperty;
-    public LP forbidChangeUserProperty;
+    public LP showDetailedInfoCustomUser;
 
-    public LP forbidViewAllSetupPolicies;
-    public LP forbidChangeAllSetupPolicies;
-    public LP forbidEditObjects;
-
-    public LP permitNavigatorElement;
-    public LP forbidNavigatorElement;
-
-    public LP forbidAllFormsUser;
-    public LP permitAllFormsUser;
-    public LP permitUserNavigatorElement;
-    public LP forbidUserNavigatorElement;
-
-    public LP cachePropertyPolicyUser;
+    public LP<?> permissionUserRoleNavigatorElement;
+    public LP<?> permissionViewUserRoleActionOrProperty;
+    public LP<?> permissionChangeUserRoleActionOrProperty;
+    public LP<?> permissionEditObjectsUserRoleActionOrProperty;
 
     public LP sidUserRole;
     public LP userRoleSID;
     public LP nameUserRole;
     public LP mainRoleCustomUser;
     public LP hasUserRole;
+    public LA<?> createSystemUserRoles;
 
     public LP currentUserMainRoleName;
     public LP nameMainRoleUser;
     public LP currentUserTransactTimeout;
     public LP transactTimeoutUser;
-
-    public LA copyAccess;    
 
     public FormEntity propertyPolicyForm;
     public FormEntity actionPolicyForm;
@@ -88,47 +67,22 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         mainRoleCustomUser = findProperty("mainRole[CustomUser]");
         hasUserRole = findProperty("has[User,UserRole]");
 
-        // ------------------------ Политика безопасности ------------------ //
-        idPolicy = findProperty("id[Policy]");
-        policyId = findProperty("policy[STRING[100]]");
-        namePolicy = findProperty("name[Policy]");
-        descriptionPolicy = findProperty("description[Policy]");
-        orderUserPolicy = findProperty("order[User,Policy]");
+        createSystemUserRoles = findAction("createSystemUserRoles[]");
 
         // ---- Политики для доменной логики
 
         // Разрешения для всех свойств
         forbidDuplicateFormsCustomUser = findProperty("forbidDuplicateForms[CustomUser]");
-        permitViewAllPropertyUser = findProperty("permitViewAllProperty[User]");
-        forbidViewAllPropertyUser = findProperty("forbidViewAllProperty[User]");
-        permitChangeAllPropertyUser = findProperty("permitChangeAllProperty[User]");
-        forbidChangeAllPropertyRole = findProperty("forbidChangeAllProperty[User]");
-
-        forbidViewAllSetupPolicies = findProperty("forbidViewAllSetupPolicies[User]");
-        forbidChangeAllSetupPolicies = findProperty("forbidChangeAllSetupPolicies[User]");
-        forbidEditObjects = findProperty("forbidEditObjects[User]");
-
-        // Разрешения для каждого свойства
-        forbidViewUserProperty = findProperty("forbidView[User,ActionOrProperty]");
-        forbidChangeUserProperty = findProperty("forbidChange[User,ActionOrProperty]");
+        showDetailedInfoCustomUser = findProperty("showDetailedInfo[CustomUser]");
 
         // ---- Политики для логики представлений
 
-        // -- Глобальные разрешения для всех ролей
-        permitNavigatorElement = findProperty("permit[NavigatorElement]");
-        forbidNavigatorElement = findProperty("forbid[NavigatorElement]");
-        
-        // -- Разрешения для каждой роли
-
-        // Разрешения для всех элементов
-        permitAllFormsUser = findProperty("permitAllForms[User]");
-        forbidAllFormsUser = findProperty("forbidAllForms[User]");
-        
         // Разрешения для каждого элемента
-        permitUserNavigatorElement = findProperty("permit[User,NavigatorElement]");
-        forbidUserNavigatorElement = findProperty("forbid[User,NavigatorElement]");
+        permissionUserRoleNavigatorElement = findProperty("namePermission[UserRole,NavigatorElement]");
 
-        cachePropertyPolicyUser = findProperty("cachePropertyPolicy[User]");
+        permissionViewUserRoleActionOrProperty = findProperty("namePermissionView[UserRole,ActionOrProperty]");
+        permissionChangeUserRoleActionOrProperty = findProperty("namePermissionChange[UserRole,ActionOrProperty]");
+        permissionEditObjectsUserRoleActionOrProperty = findProperty("namePermissionEditObjects[UserRole,ActionOrProperty]");
 
         propertyPolicyForm = findForm("propertyPolicy");
         actionPolicyForm = findForm("actionPolicy");

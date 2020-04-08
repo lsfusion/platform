@@ -99,13 +99,6 @@ public abstract class NavigatorElement {
         return result;
     }
 
-    /** Возвращает предков перед их потомками */
-    public List<NavigatorElement> getOrderedChildrenList() {
-        List<NavigatorElement> orderedList = new ArrayList<>();
-        fillChildrenRecursive(orderedList);
-        return orderedList;
-    }
-
     /** Прямой обход (Pre-order traversal) дерева. Возвращает сначала предков, потом его потомков */
     private void fillChildrenRecursive(Collection<NavigatorElement> result) {
         result.add(this);
@@ -115,15 +108,14 @@ public abstract class NavigatorElement {
     }
     
     public ImOrderMap<NavigatorElement, List<String>> getChildrenMap(SecurityPolicy securityPolicy) {
-        if (securityPolicy != null && !securityPolicy.navigator.checkPermission(this)) {
-            return MapFact.EMPTYORDER();
-        }
-
         if (isLeafElement()) {
             //leaf element
-            return singletonOrder(this, Collections.emptyList());
+            if(securityPolicy.checkNavigatorPermission(this)) {
+                return singletonOrder(this, Collections.emptyList());
+            } else {
+                return MapFact.EMPTYORDER();
+            }
         }
-
 
         List<String> childrenSids = new ArrayList<>();
         List<ImOrderMap<NavigatorElement, List<String>>> childrenMaps = new ArrayList<>();

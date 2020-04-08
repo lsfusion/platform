@@ -267,7 +267,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
         String changeKeyText = changeKey == null ? "" : GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), changeKey.toString());
 
-        if (!MainFrame.configurationAccessAllowed) {
+        if (!MainFrame.showDetailedInfo) {
             return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, changeKeyText);
         } else {
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);

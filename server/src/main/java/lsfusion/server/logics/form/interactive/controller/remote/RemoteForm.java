@@ -113,7 +113,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            new ServerSerializationPool(new ServerContext(form.securityPolicies, richDesign, form.BL)).serializeObject(new DataOutputStream(outStream), richDesign);
+            new ServerSerializationPool(new ServerContext(form.securityPolicy, richDesign, form.BL)).serializeObject(new DataOutputStream(outStream), richDesign);
             //            richDesign.serialize(new DataOutputStream(outStream));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -621,7 +621,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             ObjectValue pushChangeObject = null;
             DataClass pushChangeType = null;
             if (pushChange != null) {
-                pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicies);
+                pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy);
                 Object objectPushChange = deserializeObject(pushChange);
                 if(pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
                     ServerLoggers.assertLog(objectPushChange == null, "PUSH CHANGE SHOULD BE NULL");
@@ -819,7 +819,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     @IdentityLazy
     public FormEntity.MetaExternal getMetaExternal() {
-        return form.entity.getMetaExternal(form.securityPolicies);
+        return form.entity.getMetaExternal(form.securityPolicy);
     }
 
     private boolean currentInvocationExternal = false;
@@ -971,7 +971,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         ObjectValue pushChangeObject = null;
         DataObject pushAdd = null;
         if(propertyDraw.isProperty()) {
-            pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.entity, form.securityPolicies);
+            pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.entity, form.securityPolicy);
             if (pushChangeType != null)
                 pushChangeObject = DataObject.getValue(pushChangeType.parseJSON(value), pushChangeType);
             eventAction = ServerResponse.CHANGE_WYS;

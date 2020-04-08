@@ -87,7 +87,7 @@ public class KeyStrokes {
     }
 
     public static boolean isEditObjectEvent(EventObject event) {
-        return isEnterEvent(event);
+        return isBackSpaceEvent(event);
     }
 
     public static boolean isKeyEvent(EventObject event, int keyCode) {

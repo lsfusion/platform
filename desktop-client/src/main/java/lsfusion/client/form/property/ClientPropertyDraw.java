@@ -637,7 +637,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
         String changeKeyText = changeKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, getChangeKeyCaption());
 
-        if (!MainController.configurationAccessAllowed) {
+        if (!MainController.showDetailedInfo) {
             return String.format(TOOL_TIP_FORMAT, propCaption, changeKeyText);
         } else {
             String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);

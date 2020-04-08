@@ -46,7 +46,7 @@ public class LoadingBlocker extends LoadingManager {
             popup.center();
             timer.schedule(GLASS_SCREEN_SHOW_DELAY);
 
-            if (MainFrame.configurationAccessAllowed) {
+            if (MainFrame.showDetailedInfo) {
                 Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
                     @Override
                     public boolean execute() {

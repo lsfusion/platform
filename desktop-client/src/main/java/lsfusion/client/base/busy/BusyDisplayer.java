@@ -100,7 +100,7 @@ public class BusyDisplayer extends TimerTask {
             int loadingTextWidth = gr.getFontMetrics(loadingTextFont).stringWidth(loadingText);
             int loadingTextHeight = gr.getFontMetrics(loadingTextFont).getHeight();
 
-            if (MainController.configurationAccessAllowed) {
+            if (MainController.showDetailedInfo) {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime - lastUpdateTime >= UPDATE_PERIOD) {
                     try {
@@ -131,7 +131,7 @@ public class BusyDisplayer extends TimerTask {
             gr.fillRoundRect(rectX, rectY, rectWidth + 2, rectHeight + 2, 5, 5);
             gr.setColor(Color.WHITE);
             gr.fillRoundRect(rectX, rectY, rectWidth, rectHeight, 5, 5);
-            if (MainController.configurationAccessAllowed) {
+            if (MainController.showDetailedInfo) {
                 gr.fillRoundRect(messageRectX, messageRectY, messageRectWidth, messageRectHeight, 5, 5);
             }
             gr.setColor(Color.BLACK);

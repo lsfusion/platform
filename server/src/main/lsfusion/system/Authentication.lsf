@@ -91,8 +91,6 @@ getAuthToken() {
     exportText() <- currentAuthToken();
 } @@api;
 
-forbidChangePassword = ABSTRACT BOOLEAN (CustomUser);
-
 minHashLength = DATA INTEGER ();
 
 // LDAP
@@ -180,6 +178,8 @@ colorTheme '{authentication.color.theme.user}' = DATA ColorTheme (CustomUser);
 colorThemeStaticName (CustomUser user) = staticName(colorTheme(user));
 name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
 colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(colorTheme(user));
+
+isDarkTheme() = colorTheme(currentUser()) == ColorTheme.dark;
 
 changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
 WHEN CHANGED(colorTheme(CustomUser user)) DO {
@@ -360,13 +360,10 @@ FORM customUsersDialog '{authentication.users}'
 
 DESIGN customUsersDialog { BOX { size = (1024, 768); } }
 
-// User profile
-forbidEditProfile = ABSTRACT BOOLEAN (CustomUser);
-
 FORM editProfile '{navigator.account.edit.profile}'
     OBJECTS u = CustomUser PANEL
     PROPERTIES(u) login READONLY
-    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, fontSize, colorThemeName
+    PROPERTIES(u) firstName, lastName, email, fontSize, colorThemeName
 
     FILTERS u = currentUser()
 ;
@@ -536,11 +533,7 @@ changePassword(CustomUser customUser)  {
 }
 
 changePassword () { 
-    IF forbidChangePassword(currentUser()) THEN {
-        MESSAGE '{authentication.change.password.forbidden}';
-    } ELSE {
-        changePassword(currentUser());
-    }
+    changePassword(currentUser());
 }
 
 NAVIGATOR {

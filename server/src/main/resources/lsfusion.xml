@@ -637,6 +637,16 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
+    <bean id="prereadSecurityPoliciesTask" class="lsfusion.server.logics.controller.init.PrereadSecurityPoliciesTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="syncPropertyParentsTask"/>
+                <ref bean="syncParentsTask"/>
+            </set>
+        </property>
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+
     <!-- Не имеет отношения к reflection manager'у, но желательно чтобы выполнялся после export'а remote объекта -->
     <bean id="prereadCachesTask" class="lsfusion.server.logics.controller.init.PrereadCachesTask">
         <property name="dependencies">
@@ -681,6 +691,7 @@
     <bean id="initReflectionTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
+                <ref bean="prereadSecurityPoliciesTask"/>
                 <ref bean="prereadCachesTask"/>
                 <ref bean="prereadPropertyCachesTask"/>
                 <ref bean="writeModulesHashTask"/>

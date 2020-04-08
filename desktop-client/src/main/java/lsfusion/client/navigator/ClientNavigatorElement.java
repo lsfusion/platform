@@ -121,7 +121,7 @@ public abstract class ClientNavigatorElement {
     }
 
     public String getTooltip() {
-        return MainController.configurationAccessAllowed && creationPath != null ?
+        return MainController.showDetailedInfo && creationPath != null ?
                 String.format("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +

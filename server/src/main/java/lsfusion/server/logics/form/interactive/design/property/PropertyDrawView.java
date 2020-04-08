@@ -5,7 +5,6 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -35,7 +34,6 @@ import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
@@ -122,11 +120,11 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Type getChangeType(ServerContext context) {
-        return entity.getRequestInputType(context.entity, context.securityPolicies);
+        return entity.getRequestInputType(context.entity, context.securityPolicy);
     }
     
     public Type getChangeWYSType(ServerContext context) {
-        return entity.getWYSRequestInputType(context.entity, context.securityPolicies);
+        return entity.getWYSRequestInputType(context.entity, context.securityPolicy);
     }
 
     @Override
@@ -146,7 +144,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Pair<ObjectEntity, Boolean> getAddRemove(ServerContext context) {
-        return entity.getAddRemove(context.entity, context.securityPolicies);
+        return entity.getAddRemove(context.entity, context.securityPolicy);
     }
 
     public LocalizedString getCaption() {
@@ -404,9 +402,8 @@ public class PropertyDrawView extends ComponentView {
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
             LocalizedString caption = contextMenuBindings.getValue(i);
-            ImSet<SecurityPolicy> securityPolicies = context.securityPolicies;
-            ActionObjectEntity<?> eventAction = entity.getEventAction(actionSID, context.entity, securityPolicies);
-            if (eventAction != null && SecurityPolicy.checkPropertyViewPermission(securityPolicies, eventAction.property)) {
+            ActionObjectEntity<?> eventAction = entity.getEventAction(actionSID, context.entity, context.securityPolicy);
+            if (eventAction != null && context.securityPolicy.checkPropertyViewPermission(eventAction.property)) {
                 contextMenuItems.put(actionSID, caption);
             }
         }
@@ -525,10 +522,10 @@ public class PropertyDrawView extends ComponentView {
     }
     
     public boolean hasChangeAction(ServerContext context) {
-        return entity.getEventAction(CHANGE, context.entity, context.securityPolicies) != null;
+        return entity.getEventAction(CHANGE, context.entity, context.securityPolicy) != null;
     }
     public boolean hasEditObjectAction(ServerContext context) {
-        return entity.getEventAction(EDIT_OBJECT, context.entity, context.securityPolicies) != null;
+        return entity.getEventAction(EDIT_OBJECT, context.entity, context.securityPolicy) != null;
     }
     
     public FlexAlignment getValueAlignment() {

@@ -138,7 +138,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
     }
 
     public String getTooltip() {
-        return MainFrame.configurationAccessAllowed ?
+        return MainFrame.showDetailedInfo ?
                 GwtSharedUtils.stringFormat("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +

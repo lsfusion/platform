@@ -34,7 +34,7 @@ public class SaveResetConfirmDialog extends JDialog {
         JComponent contents;
         setResizable(false);
 
-        if (!MainController.configurationAccessAllowed) {
+        if (!MainController.showDetailedInfo) {
             contents = new JLabel(getString(save ? "form.grid.preferences.sure.to.save" : "form.grid.preferences.sure.to.reset"));
         } else {
             JPanel radios = new JPanel();
@@ -115,14 +115,14 @@ public class SaveResetConfirmDialog extends JDialog {
         
         contents.setBorder(new EmptyBorder(5, 10, 0, 10));
 
-        JButton okButton = new JButton(getString(MainController.configurationAccessAllowed ? "dialog.ok" : "dialog.yes"));
+        JButton okButton = new JButton(getString(MainController.showDetailedInfo ? "dialog.ok" : "dialog.yes"));
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 okPressed(callback);
             }
         });
-        JButton cancelButton = new JButton(getString(MainController.configurationAccessAllowed ? "dialog.cancel" : "dialog.no"));
+        JButton cancelButton = new JButton(getString(MainController.showDetailedInfo ? "dialog.cancel" : "dialog.no"));
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

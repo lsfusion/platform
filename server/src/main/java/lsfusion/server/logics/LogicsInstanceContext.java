@@ -105,7 +105,7 @@ public class LogicsInstanceContext extends AbstractContext {
         assert false;
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
-                SetFact.singleton(SecurityManager.serverSecurityPolicy), getFocusListener(), getClassListener(),
+                SecurityManager.baseServerSecurityPolicy, getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
                 checkOnOk, showDrop, interactive, isFloat, false, contextFilters, readonly, getLocale());

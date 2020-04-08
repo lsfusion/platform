@@ -1,67 +1,51 @@
 package lsfusion.server.physics.admin.authentication.security.policy;
 
-import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.classes.user.ConcreteCustomClass;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
 public class SecurityPolicy {
-    public final long ID;
-    public Boolean configurator;
-    public Boolean editObjects;
+
+    List<RoleSecurityPolicy> policies;
 
     public SecurityPolicy() {
-        this(-1);
+        this(new ArrayList<>());
     }
 
-    public SecurityPolicy(long ID) {
-        this.ID = ID;
+    public SecurityPolicy(List<RoleSecurityPolicy> policies) {
+        this.policies = policies;
     }
 
-    public ClassSecurityPolicy cls = new ClassSecurityPolicy();
-    public PropertySecurityPolicy property = new PropertySecurityPolicy();
-    public NavigatorSecurityPolicy navigator = new NavigatorSecurityPolicy();
-    public FormSecurityPolicy form = new FormSecurityPolicy();
+    public boolean checkNavigatorPermission(NavigatorElement navigatorElement) {
+        return checkPermission(policy -> policy.checkNavigatorPermission(navigatorElement));
+    }
 
-    public void override(SecurityPolicy policy) {
-        cls.override(policy.cls);
-        property.override(policy.property);
-        navigator.override(policy.navigator);
-        form.override(policy.form);
-        
-        if (policy.configurator != null) {
-            configurator = policy.configurator;
+    public boolean checkPropertyViewPermission(ActionOrProperty property) {
+        return checkPermission(policy -> policy.checkPropertyViewPermission(property));
+    }
+
+    public boolean checkPropertyChangePermission(ActionOrProperty property) {
+        return checkPermission(policy -> policy.checkPropertyChangePermission(property));
+    }
+
+    public boolean checkPropertyEditObjectsPermission(ActionOrProperty property) {
+        return checkPermission(policy -> policy.checkPropertyEditObjectsPermission(property));
+    }
+
+    public Boolean checkPermission(Function<RoleSecurityPolicy, Boolean> checkPermission) {
+        boolean result = true;
+        for(RoleSecurityPolicy policy : policies) {
+            Boolean permission = checkPermission.apply(policy);
+            if(permission != null) {
+                if(permission)
+                    return true;
+                else
+                    result = false;
+            }
         }
-        if (policy.editObjects != null) {
-            editObjects = policy.editObjects;
-        }
-    }
-
-    public void setReplaceMode(boolean replaceMode) {
-        cls.setReplaceMode(replaceMode);
-        property.setReplaceMode(replaceMode);
-        navigator.replaceMode = replaceMode;
-        form.replaceMode = replaceMode;
-    }
-
-    public static boolean checkPropertyViewPermission(ImSet<SecurityPolicy> securityPolicies, ActionOrProperty property) {
-        for(SecurityPolicy securityPolicy : securityPolicies)
-            if(!securityPolicy.property.view.checkPermission(property))
-                return false;
-        return true;
-    }
-
-    public static boolean checkPropertyChangePermission(ImSet<SecurityPolicy> securityPolicies, ActionOrProperty property) {
-        for(SecurityPolicy securityPolicy : securityPolicies)
-            if(!securityPolicy.property.change.checkPermission(property))
-                return false;
-        return true;
-    }
-
-    public static boolean checkClassChangePermission(ImSet<SecurityPolicy> securityPolicies, ConcreteCustomClass customClass) {
-        for(SecurityPolicy securityPolicy : securityPolicies)
-            if (!securityPolicy.cls.edit.change.checkPermission(customClass))
-                return false;
-        return true;
+        return result;
     }
 }
