@@ -11,7 +11,7 @@ level '{reflection.level}' (PropertyGroup child, PropertyGroup parent) = RECURSI
                                                                       STEP 2l IF parent == parent($parent) MATERIALIZED;
 
 caption '{reflection.caption.property.group}' = DATA STRING[250] (PropertyGroup);
-number '{reflection.number.property.group}' = DATA INTEGER (PropertyGroup);
+number '{reflection.number.property.group}' = DATA INTEGER (PropertyGroup) CHARWIDTH 8;
 SID '{reflection.sid.property.group}' = DATA STRING[100] (PropertyGroup);
 propertyGroup '{reflection.property.group.sid}' (sID) = GROUP AGGR PropertyGroup propertyGroup WHERE propertyGroup IS PropertyGroup BY SID(propertyGroup);
 
@@ -26,7 +26,7 @@ TABLE navigatorElementNavigatorElement(NavigatorElement, NavigatorElement);
 
 caption '{reflection.caption.navigator.element}' = DATA STRING[250] (NavigatorElement);
 canonicalName '{reflection.canonical.name.navigator.element}' = DATA STRING[100] (NavigatorElement);
-number '{reflection.number.navigator.element}' = DATA INTEGER (NavigatorElement) CHARWIDTH 4;
+number '{reflection.number.navigator.element}' = DATA INTEGER (NavigatorElement) CHARWIDTH 8;
 navigatorElementCanonicalName '{reflection.navigator.element}' (sid) = GROUP AGGR NavigatorElement navigatorElement WHERE navigatorElement IS NavigatorElement BY canonicalName(navigatorElement);
 
 parent '{reflection.parent.navigator.element}' = DATA NavigatorElement (NavigatorElement);
@@ -66,7 +66,7 @@ CLASS Action '{reflection.action}' : ActionOrProperty;
 TABLE action (Action);
 
 parent '{reflection.parent.action.or.property}' = DATA PropertyGroup (ActionOrProperty);
-number '{reflection.number.action.or.property}' = DATA INTEGER (ActionOrProperty);
+number '{reflection.number.action.or.property}' = DATA INTEGER (ActionOrProperty) CHARWIDTH 8;
 canonicalName '{reflection.canonical.name.property}' = DATA BPSTRING[512] (Property) IN id;
 canonicalName '{reflection.canonical.name.action}' = DATA BPSTRING[512] (Action) IN id;
 canonicalName '{reflection.canonical.name.action.or.property}' (ActionOrProperty p) = MULTI canonicalName[Property](p), canonicalName[Action](p);

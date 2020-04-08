@@ -151,7 +151,7 @@ foregroundPermissionView (UserRole ur, PropertyGroup g) = parentPermissionForegr
 backgroundPermissionView(UserRole ur, PropertyGroup p) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, p) AND dataPermissionView(ur, child) AND 
     (NOT dataPermissionView(ur, p) OR dataPermissionView(ur, child) != dataPermissionView(ur, p));        
 permissionView (UserRole ur, PropertyGroup g) = OVERRIDE dataPermissionView(ur, g), nearestParentPermissionView(ur, g);  
-captionPermissionView '{security.view}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionView(ur, g), Permission.permit) CHARWIDTH 10;  
+captionPermissionView '{security.view}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionView(ur, g), Permission.default) CHARWIDTH 10;  
 
 dataPermissionView = DATA Permission (UserRole, ActionOrProperty);          
 foregroundPermissionView (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionView(ur, p);    
@@ -164,7 +164,7 @@ WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionView(ur, 
         updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionView(ur, p)), 'view');
 
 namePermissionView (UserRole ur, ActionOrProperty p) = staticName(permissionView(ur, p));
-captionPermissionView '{security.view}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionView(ur, p), Permission.permit) CHARWIDTH 10;         
+captionPermissionView '{security.view}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionView(ur, p), Permission.default) CHARWIDTH 10;         
 
 // - Permit - //
 //remove after onStarted
@@ -203,7 +203,7 @@ foregroundPermissionChange (UserRole ur, PropertyGroup g) = parentPermissionFore
 backgroundPermissionChange(UserRole ur, PropertyGroup g) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, g) AND dataPermissionChange(ur, child) AND 
     (NOT dataPermissionChange(ur, child) OR dataPermissionChange(ur, child) != dataPermissionChange(ur, g));    
 permissionChange (UserRole ur, PropertyGroup g) = OVERRIDE dataPermissionChange(ur, g), nearestParentPermissionChange(ur, g);
-captionPermissionChange '{security.change}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionChange(ur, g), Permission.permit) CHARWIDTH 10;
+captionPermissionChange '{security.change}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionChange(ur, g), Permission.default) CHARWIDTH 10;
 
 dataPermissionChange = DATA Permission (UserRole, ActionOrProperty);
 
@@ -216,7 +216,7 @@ WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionChange(ur
 
 namePermissionChange (UserRole ur, ActionOrProperty p) = staticName(permissionChange(ur, p));
 foregroundPermissionChange (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionChange(ur, p);             
-captionPermissionChange '{security.change}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionChange(ur, p), Permission.permit) CHARWIDTH 10;      
+captionPermissionChange '{security.change}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionChange(ur, p), Permission.default) CHARWIDTH 10;      
 
 dataPermissionEditObjects = DATA Permission (UserRole, PropertyGroup);
 nearestParentPermissionEditObjects (UserRole ur, PropertyGroup g) =
@@ -225,7 +225,7 @@ foregroundPermissionEditObjects (UserRole ur, PropertyGroup g) = parentPermissio
 backgroundPermissionEditObjects(UserRole ur, PropertyGroup g) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, g) AND dataPermissionEditObjects(ur, child) AND 
     (NOT dataPermissionEditObjects(ur, child) OR dataPermissionEditObjects(ur, child) != dataPermissionEditObjects(ur, g));    
 permissionEditObjects (UserRole ur, PropertyGroup g) = OVERRIDE dataPermissionEditObjects(ur, g), nearestParentPermissionEditObjects(ur, g);
-captionPermissionEditObjects '{security.editObjects}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionEditObjects(ur, g), Permission.permit) CHARWIDTH 10;
+captionPermissionEditObjects '{security.editObjects}' (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permissionEditObjects(ur, g), Permission.default) CHARWIDTH 10;
 
 dataPermissionEditObjects = DATA Permission (UserRole, ActionOrProperty);
 
@@ -238,7 +238,7 @@ WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionEditObjec
 
 namePermissionEditObjects (UserRole ur, ActionOrProperty p) = staticName(permissionEditObjects(ur, p));
 foregroundPermissionEditObjects (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionEditObjects(ur, p);             
-captionPermissionEditObjects '{security.editObjects}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionEditObjects(ur, p), Permission.permit) CHARWIDTH 10;      
+captionPermissionEditObjects '{security.editObjects}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionEditObjects(ur, p), Permission.default) CHARWIDTH 10;      
     
 copy (UserRole from, UserRole to) +{
     dataPermissionView(to, ActionOrProperty property) <- dataPermissionView(from, property);
@@ -281,13 +281,11 @@ WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permission(ur, Navi
         updatePermissionUserRoleNavigatorElement(sid(ur), canonicalName(ne), staticName(permission(ur, ne)));
 
 namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e));
-captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.permit) CHARWIDTH 10;
+captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.default) CHARWIDTH 10;
 
-permit (User user, NavigatorElement navigatorElement) = 
-    GROUP MAX permission(UserRole userRole, navigatorElement) IF has(user, userRole) AND permission(userRole, navigatorElement) == Permission.permit;  
-forbid (User user, NavigatorElement navigatorElement) = 
-    GROUP MAX permission(UserRole userRole, navigatorElement) IF has(user, userRole) AND permission(userRole, navigatorElement) == Permission.forbid;      
-permission (User user, NavigatorElement navigatorElement) = OVERRIDE permit(user, navigatorElement), forbid(user, navigatorElement), Permission.permit;                  
+permit (User u, NavigatorElement ne) = 
+    (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.permit) OR NOT 
+    (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.forbid);                  
 
 backgroundPermission (UserRole ur, NavigatorElement e)= 
     childPermissionBackground() IF GROUP SUM 1 IF level(NavigatorElement child, e) AND dataPermission(ur, child) AND 
@@ -475,6 +473,9 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur, prs) captionPermissionView FOREGROUND foregroundPermissionView(ur, prs)
     PROPERTIES(ur, prs) captionPermissionChange FOREGROUND foregroundPermissionChange(ur, prs)
     PROPERTIES(ur, prs) captionPermissionEditObjects FOREGROUND foregroundPermissionEditObjects(ur, prs)
+    PROPERTIES(tprs) READONLY number
+    PROPERTIES(prs) READONLY number
+    ORDER number(tprs), number(prs)
     FILTERS parent(prs) = tprs
     
     OBJECTS pr = ActionOrProperty
@@ -582,7 +583,7 @@ DESIGN propertyPolicy {
         NEW permission {
             type = CONTAINERH;
             alignment = STRETCH;
-            caption = '{security.form.access}';
+            caption = '{security.form.parameters}';
             MOVE PROPERTY(userLoggable(p));
             MOVE PROPERTY(isSetNotNull(p));
         }
@@ -678,8 +679,7 @@ changeFindText () {
 EXTEND FORM findNavigator
     PROPERTIES() findText ON CHANGE changeFindText()
     FILTERS (GROUP SUM 1 IF isISubstring(caption(NavigatorElement child), findText()) AND 
-                            NOT child IS NavigatorFolder AND
-                            permission(currentUser(), child) == Permission.permit AND
+                            NOT child IS NavigatorFolder AND permit(currentUser(), child) AND
                             level(child, e)) 
 ;
 
