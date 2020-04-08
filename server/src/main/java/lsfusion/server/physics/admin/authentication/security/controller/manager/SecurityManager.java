@@ -61,7 +61,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     @Deprecated
     public static SecurityPolicy baseServerSecurityPolicy = new SecurityPolicy();
 
-    public ConcurrentHashMap<String, RoleSecurityPolicy> cachedSecurityPolicies = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Long, RoleSecurityPolicy> cachedSecurityPolicies = new ConcurrentHashMap<>();
 
     private BusinessLogics businessLogics;
     private DBManager dbManager;
@@ -123,6 +123,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private DataObject adminUserRole = null;
     private DataObject adminUser = null;
     private DataObject anonymousUser = null;
     public void initUsers() throws SQLException, SQLHandledException {
@@ -132,6 +133,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
 
         try(DataSession session = createSession()) {
+
+            //created in createSystemUserRoles
+            this.adminUserRole = (DataObject) securityLM.userRoleSID.readClasses(session, new DataObject("admin"));
 
             DataObject adminUser = readUser("admin", session);
             if (adminUser == null) {
@@ -266,13 +270,13 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public SecurityPolicy getSecurityPolicy(DataSession session, DataObject userObject) {
         List<RoleSecurityPolicy> policies = new ArrayList<>();
         try {
-            Map<String, DataObject> userRolesMap = readUserRolesMap(session, userObject);
-            if(!SystemProperties.lightStart || !userRolesMap.containsKey("admin")) {
-                for (Map.Entry<String, DataObject> userRoleEntry : userRolesMap.entrySet()) {
-                    RoleSecurityPolicy policy = cachedSecurityPolicies.get(userRoleEntry.getKey());
+            Set<DataObject> userRoleSet = readUserRoleSet(session, userObject);
+            if(!SystemProperties.lightStart || !userRoleSet.contains(adminUserRole)) {
+                for (DataObject userRole : userRoleSet) {
+                    RoleSecurityPolicy policy = cachedSecurityPolicies.get(userRole.getValue());
                     if (policy == null) {
-                        policy = readSecurityPolicy(userRoleEntry.getValue(), session);
-                        cachedSecurityPolicies.put(userRoleEntry.getKey(), policy);
+                        policy = readSecurityPolicy(userRole, session);
+                        cachedSecurityPolicies.put((Long) userRole.getValue(), policy);
                     }
                     policies.add(policy);
                 }
@@ -285,9 +289,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     public void prereadSecurityPolicies() {
         try (DataSession session = createSession()) {
-            Map<String, DataObject> userRolesMap = readUserRolesMap(session, null);
-            for (Map.Entry<String, DataObject> userRoleEntry : userRolesMap.entrySet()) {
-                cachedSecurityPolicies.put(userRoleEntry.getKey(), readSecurityPolicy(userRoleEntry.getValue(), session));
+            Set<DataObject> userRoleSet = readUserRoleSet(session, null);
+            for (DataObject userRole : userRoleSet) {
+                cachedSecurityPolicies.put((Long) userRole.getValue(), readSecurityPolicy(userRole, session));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -356,26 +360,20 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private Map<String, DataObject> readUserRolesMap(DataSession session, DataObject userObject) throws SQLException, SQLHandledException {
-        Map<String, DataObject> userRolesMap = new HashMap<>();
+    private Set<DataObject> readUserRoleSet(DataSession session, DataObject userObject) throws SQLException, SQLHandledException {
+        Set<DataObject> userRoleSet = new HashSet<>();
 
         KeyExpr userRoleExpr = new KeyExpr("userRole");
         QueryBuilder<Object, Object> userRoleQuery = new QueryBuilder<>(MapFact.singletonRev("userRole", userRoleExpr));
-        userRoleQuery.addProperty("sidUserRole", securityLM.sidUserRole.getExpr(session.getModifier(), userRoleExpr));
-        userRoleQuery.and(securityLM.sidUserRole.getExpr(session.getModifier(), userRoleExpr).getWhere());
+        userRoleQuery.and(LM.is(securityLM.userRole).getExpr(userRoleExpr).getWhere());
         if(userObject != null) {
             userRoleQuery.and(securityLM.hasUserRole.getExpr(session.getModifier(), userObject.getExpr(), userRoleExpr).getWhere());
         }
-
         ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> queryResult = userRoleQuery.executeClasses(session);
-
         for (int i = 0, size = queryResult.size(); i < size; i++) {
-            ImMap<Object, DataObject> resultKeys = queryResult.getKey(i);
-            ImMap<Object, ObjectValue> resultValues = queryResult.getValue(i);
-
-            userRolesMap.put((String) resultValues.get("sidUserRole").getValue(), resultKeys.get("userRole"));
+            userRoleSet.add(queryResult.getKey(i).get("userRole"));
         }
-        return userRolesMap;
+        return userRoleSet;
     }
 
     public Boolean getPermissionValue(Object permission) {

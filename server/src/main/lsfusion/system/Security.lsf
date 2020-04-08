@@ -71,7 +71,6 @@ copy ABSTRACT LIST (UserRole, UserRole);
 // Transaction timeout
 transactTimeout '{security.transact.timeout}' = DATA INTEGER (UserRole);
 transactTimeout '{security.transact.timeout}' (User user) = GROUP MAX transactTimeout(UserRole ur) IF has(user, ur);
-currentUserTransactTimeout () = transactTimeout(currentUser());
 
 copy (UserRole from, UserRole to) +{ transactTimeout(to) <- transactTimeout(from); }
 

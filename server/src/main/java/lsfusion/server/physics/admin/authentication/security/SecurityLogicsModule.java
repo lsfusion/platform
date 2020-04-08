@@ -25,16 +25,12 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP<?> permissionChangeUserRoleActionOrProperty;
     public LP<?> permissionEditObjectsUserRoleActionOrProperty;
 
-    public LP sidUserRole;
     public LP userRoleSID;
-    public LP nameUserRole;
     public LP mainRoleCustomUser;
     public LP hasUserRole;
     public LA<?> createSystemUserRoles;
 
-    public LP currentUserMainRoleName;
     public LP nameMainRoleUser;
-    public LP currentUserTransactTimeout;
     public LP transactTimeoutUser;
 
     public FormEntity propertyPolicyForm;
@@ -55,12 +51,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public void initMainLogic() throws RecognitionException {
         super.initMainLogic();
         // ---- Роли
-        sidUserRole = findProperty("sid[UserRole]");
-        nameUserRole = findProperty("name[UserRole]");
         userRoleSID = findProperty("userRoleSID[STRING[30]]");
-        currentUserMainRoleName = findProperty("currentUserMainRoleName[]");
         nameMainRoleUser = findProperty("nameMainRole[User]");
-        currentUserTransactTimeout = findProperty("currentUserTransactTimeout[]");
         transactTimeoutUser = findProperty("transactTimeout[User]");
 
         // Список ролей для пользователей
