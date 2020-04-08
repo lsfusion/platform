@@ -123,9 +123,9 @@ dataForbidView = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
 
 // --- Roles --- // 
 
-updatePermissionUserRoleNavigatorElement  INTERNAL 'lsfusion.server.logics.navigator.UpdatePermissionAction' (STRING, STRING, STRING);
-updatePermissionUserRoleActionOrProperty  INTERNAL 'lsfusion.server.logics.property.UpdatePermissionAction' (STRING, STRING, STRING, STRING);
-dropCachedSecurityPolicy  INTERNAL 'lsfusion.server.logics.DropCachedSecurityPolicyAction' (STRING);
+updatePermissionUserRoleNavigatorElement  INTERNAL 'lsfusion.server.logics.navigator.UpdatePermissionAction' (UserRole, STRING, STRING);
+updatePermissionUserRoleActionOrProperty  INTERNAL 'lsfusion.server.logics.property.UpdatePermissionAction' (UserRole, STRING, STRING, STRING);
+dropCachedSecurityPolicy  INTERNAL 'lsfusion.server.logics.DropCachedSecurityPolicyAction' (UserRole);
 
 // - Permit - //
 //remove after onStarted
@@ -156,11 +156,11 @@ dataPermissionView = DATA Permission (UserRole, ActionOrProperty);
 foregroundPermissionView (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionView(ur, p);    
 
 permissionView '{security.view}' (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionView(ur, p), nearestParentPermissionView(ur, parent(p));
-WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionView(ur, ActionOrProperty p))) > 100 DO
-    dropCachedSecurityPolicy(s);
-WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionView(ur, ActionOrProperty p))) <= 100 NOINLINE DO
+WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionView(ur, ActionOrProperty p))) > 100 DO
+    dropCachedSecurityPolicy(ur);
+WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionView(ur, ActionOrProperty p))) <= 100 NOINLINE DO
     FOR CHANGED (permissionView(ur, ActionOrProperty p)) DO
-        updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionView(ur, p)), 'view');
+        updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), staticName(permissionView(ur, p)), 'view');
 
 namePermissionView (UserRole ur, ActionOrProperty p) = staticName(permissionView(ur, p));
 captionPermissionView '{security.view}' (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permissionView(ur, p), Permission.default) CHARWIDTH 10;         
@@ -207,11 +207,11 @@ captionPermissionChange '{security.change}' (UserRole ur, PropertyGroup g) = sta
 dataPermissionChange = DATA Permission (UserRole, ActionOrProperty);
 
 permissionChange (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionChange(ur, p), nearestParentPermissionChange(ur, parent(p));
-WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionChange(ur, ActionOrProperty p))) > 100 DO
-    dropCachedSecurityPolicy(s);
-WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionChange(ur, ActionOrProperty p))) <= 100 NOINLINE DO
+WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionChange(ur, ActionOrProperty p))) > 100 DO
+    dropCachedSecurityPolicy(ur);
+WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionChange(ur, ActionOrProperty p))) <= 100 NOINLINE DO
     FOR CHANGED (permissionChange(ur, ActionOrProperty p)) DO
-        updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionChange(ur, p)), 'change');
+        updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), staticName(permissionChange(ur, p)), 'change');
 
 namePermissionChange (UserRole ur, ActionOrProperty p) = staticName(permissionChange(ur, p));
 foregroundPermissionChange (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionChange(ur, p);             
@@ -229,11 +229,11 @@ captionPermissionEditObjects '{security.editObjects}' (UserRole ur, PropertyGrou
 dataPermissionEditObjects = DATA Permission (UserRole, ActionOrProperty);
 
 permissionEditObjects (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermissionEditObjects(ur, p), nearestParentPermissionEditObjects(ur, parent(p));
-WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionEditObjects(ur, ActionOrProperty p))) > 100 DO
-    dropCachedSecurityPolicy(s);
-WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permissionEditObjects(ur, ActionOrProperty p))) <= 100 NOINLINE DO
+WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionEditObjects(ur, ActionOrProperty p))) > 100 DO
+    dropCachedSecurityPolicy(ur);
+WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permissionEditObjects(ur, ActionOrProperty p))) <= 100 NOINLINE DO
     FOR CHANGED (permissionEditObjects(ur, ActionOrProperty p)) DO
-        updatePermissionUserRoleActionOrProperty(sid(ur), canonicalName(p), staticName(permissionChange(ur, p)), 'editObjects');
+        updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), staticName(permissionChange(ur, p)), 'editObjects');
 
 namePermissionEditObjects (UserRole ur, ActionOrProperty p) = staticName(permissionEditObjects(ur, p));
 foregroundPermissionEditObjects (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermissionEditObjects(ur, p);             
@@ -273,11 +273,11 @@ nearestParentPermission (UserRole ur, NavigatorElement e) = GROUP LAST dataPermi
 foregroundPermission (UserRole ur, NavigatorElement e) = parentPermissionForeground() IF NOT dataPermission(ur, e);    
 
 permission (UserRole ur, NavigatorElement e) = OVERRIDE dataPermission(ur, e), nearestParentPermission(ur, e);
-WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permission(ur, NavigatorElement ne))) > 100 DO
-    dropCachedSecurityPolicy(s);
-WHEN STRING s = sid(UserRole ur) AND (GROUP SUM 1 IF CHANGED(permission(ur, NavigatorElement ne))) <= 100 NOINLINE DO
+WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission(ur, NavigatorElement ne))) > 100 DO
+    dropCachedSecurityPolicy(ur);
+WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission(ur, NavigatorElement ne))) <= 100 NOINLINE DO
     FOR CHANGED (permission(ur, NavigatorElement ne)) DO
-        updatePermissionUserRoleNavigatorElement(sid(ur), canonicalName(ne), staticName(permission(ur, ne)));
+        updatePermissionUserRoleNavigatorElement(ur, canonicalName(ne), staticName(permission(ur, ne)));
 
 namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e));
 captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.default) CHARWIDTH 10;
