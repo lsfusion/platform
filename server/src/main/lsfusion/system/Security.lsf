@@ -426,7 +426,9 @@ onStarted() + {
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.forbid WHERE forbidChangeAllProperty(ur);
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE permitChangeAllProperty(ur);
         
-        in(CustomUser u, userRoleSID('readonly')) <- TRUE WHERE GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);                
+        in(CustomUser u, userRoleSID('readonly')) <- TRUE WHERE GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);      
+        in(CustomUser u, userRoleSID('default')) <- TRUE;
+        in(CustomUser u, userRoleSID('admin')) <- TRUE WHERE login(u) == 'admin';          
         showDetailedInfo(UserRole ur) <- TRUE WHERE order(ur, policy('allowConfiguration'));
         
         dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.permit WHERE order(ur, policy('allowAll'));        
@@ -453,9 +455,10 @@ FORM securityPolicy '{security.form.policy}'
 
     // Navigator elements
     TREE navigatorElements te = NavigatorElement PARENT parent(te)
-    PROPERTIES(te) READONLY caption, canonicalName, number
+    PROPERTIES(te) READONLY caption, canonicalName
     PROPERTIES(ur, te) captionPermission FOREGROUND foregroundPermission(ur, te) BACKGROUND backgroundPermission(ur, te)
     PROPERTIES(ur, te) defaultNumber
+    PROPERTIES(te) READONLY number
     ORDER number(te)
 
     OBJECTS f = NavigatorElement
@@ -464,15 +467,14 @@ FORM securityPolicy '{security.form.policy}'
 
     // Properties
     TREE properties tprs = PropertyGroup PARENT parent(tprs), prs = ActionOrProperty 
-    PROPERTIES(tprs) READONLY caption, SID, number
-    PROPERTIES(prs)  READONLY caption, canonicalName, number
+    PROPERTIES(tprs) READONLY caption, SID
+    PROPERTIES(prs)  READONLY caption, canonicalName
     PROPERTIES(ur, tprs) captionPermissionView FOREGROUND foregroundPermissionView(ur, tprs) BACKGROUND backgroundPermissionView(ur, tprs)
     PROPERTIES(ur, tprs) captionPermissionChange FOREGROUND foregroundPermissionChange(ur, tprs) BACKGROUND backgroundPermissionChange(ur, tprs)
     PROPERTIES(ur, tprs) captionPermissionEditObjects FOREGROUND foregroundPermissionEditObjects(ur, tprs) BACKGROUND backgroundPermissionEditObjects(ur, tprs)
     PROPERTIES(ur, prs) captionPermissionView FOREGROUND foregroundPermissionView(ur, prs)
     PROPERTIES(ur, prs) captionPermissionChange FOREGROUND foregroundPermissionChange(ur, prs)
     PROPERTIES(ur, prs) captionPermissionEditObjects FOREGROUND foregroundPermissionEditObjects(ur, prs)
-    ORDER number(tprs), number(prs)
     FILTERS parent(prs) = tprs
     
     OBJECTS pr = ActionOrProperty

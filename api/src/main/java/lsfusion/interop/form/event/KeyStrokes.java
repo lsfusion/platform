@@ -75,7 +75,7 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getEditActionKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
+        return getEnter();
     }
 
     public static KeyStroke getDeleteActionKeyStroke() {

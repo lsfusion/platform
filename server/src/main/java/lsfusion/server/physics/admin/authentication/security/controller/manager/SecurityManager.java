@@ -266,8 +266,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public SecurityPolicy getSecurityPolicy(DataSession session, DataObject userObject) {
         List<RoleSecurityPolicy> policies = new ArrayList<>();
         try {
-            if(!SystemProperties.lightStart || !userObject.getValue().equals(getAdminUser().getValue())) {
-                Map<String, DataObject> userRolesMap = readUserRolesMap(session, userObject);
+            Map<String, DataObject> userRolesMap = readUserRolesMap(session, userObject);
+            if(!SystemProperties.lightStart || !userRolesMap.containsKey("admin")) {
                 for (Map.Entry<String, DataObject> userRoleEntry : userRolesMap.entrySet()) {
                     RoleSecurityPolicy policy = cachedSecurityPolicies.get(userRoleEntry.getKey());
                     if (policy == null) {
