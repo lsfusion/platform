@@ -362,7 +362,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         private boolean isUsed = false;
 
         public ClassFormEntity getForm(final BaseLogicsModule LM) {
-            return form.getDefault(() -> addDefaultForm(LM));
+            ClassFormEntity setForm = form.get();
+            if(setForm != null)
+                return setForm;
+
+            return getDefaultForm(LM);
         }
 
         public ClassFormEntity getPolyForm(final BaseLogicsModule LM, ConcreteCustomClass concreteClass) {
@@ -403,7 +407,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return getFormHolder(CustomClass.this).getForm(LM);
             }
             
-            for(CustomClass parentClass : getParentsIt()) 
+            for(CustomClass parentClass : getParentsListIt())
                 if(parentClass.isChild(baseClass)) {
                     ClassFormEntity parentForm = getFormHolder(parentClass).getRecDefaultForm(baseClass, LM);
                     if(parentForm != null)
@@ -412,7 +416,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             
             return null;            
         }
-        
+
         @IdentityLazy
         protected boolean hasPolyForm() { // есть ли у child'ов хоть одна определенная форма
             ClassFormEntity setForm = form.get(); // хотя с default'ом все равно есть опасность для верхних классов у которых изменится логика polyForm, лучше отдельно кэш сделать
@@ -448,7 +452,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         @IdentityStrongLazy
-        private ClassFormEntity addDefaultForm(BaseLogicsModule LM) {
+        private ClassFormEntity getDefaultForm(BaseLogicsModule LM) {
             ClassFormEntity classForm = createDefaultForm(LM);
             LM.addFormEntity(classForm.form);
             return classForm;

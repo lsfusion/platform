@@ -9,6 +9,4 @@ public interface NFProperty<V> extends NF {
     
     V getNF(Version version);
     V get();
-    
-    V getDefault(NFDefault<V> def);
 }

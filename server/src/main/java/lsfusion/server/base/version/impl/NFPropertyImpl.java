@@ -58,20 +58,4 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
     public K get() {
         return getFinal();
     }
-
-    public K getDefault(NFDefault<K> def) {
-        K value = get();
-        if(value != null)
-            return value;
-        
-        synchronized (this) {
-            value = get();
-            if(value != null)
-                return value;
-            
-            value = def.create();
-            setFinal(value);
-            return value;
-        }
-    }
 }

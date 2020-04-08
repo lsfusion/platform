@@ -64,10 +64,6 @@ public abstract class NFImpl<M, F> extends MutableObject implements NF {
         return (F)changes; 
     }
     
-    protected void setFinal(F set) {
-        changes = set;
-    }
-
     public void finalizeChanges() {
         getFinal();
     }
