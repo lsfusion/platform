@@ -637,7 +637,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
                 String text = MainController.getHelpTitle();
                 JLabel labelName = new JLabel(text);
-                labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN, MainFrame.getIntUIFontSize(12)));
+                labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN, MainFrame.getIntUISize(12)));
                 contentPane.add(labelName);
 
                 dialog.setTitle(about.getText());

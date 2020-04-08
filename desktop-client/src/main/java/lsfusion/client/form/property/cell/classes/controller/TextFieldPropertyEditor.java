@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.util.EventObject;
 
+import static lsfusion.client.base.view.SwingDefaults.getTableCellMargins;
+
 public abstract class TextFieldPropertyEditor extends JFormattedTextField implements PropertyEditor {
     private static final String CANCEL_EDIT_ACTION = "reset-field-edit";
 
@@ -18,7 +20,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     TextFieldPropertyEditor(ClientPropertyDraw property) {
         super();
 
-        setBorder(BorderFactory.createEmptyBorder(1, 3, 1, 2));
+        Insets insets = getTableCellMargins();
+        setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right - 1));
         setOpaque(true);
 
         if (property != null) {

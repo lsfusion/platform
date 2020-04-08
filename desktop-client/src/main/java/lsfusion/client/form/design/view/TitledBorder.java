@@ -702,7 +702,7 @@ public class TitledBorder extends AbstractBorder
         } else if (c != null && (font = c.getFont()) != null) {
             return font;
         }
-        return new Font(Font.DIALOG, Font.PLAIN, MainFrame.getIntUIFontSize(12));
+        return new Font(Font.DIALOG, Font.PLAIN, MainFrame.getIntUISize(12));
     }
 
     private static boolean computeIntersection(Rectangle dest,

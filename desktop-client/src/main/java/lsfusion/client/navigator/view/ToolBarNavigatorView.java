@@ -1,5 +1,6 @@
 package lsfusion.client.navigator.view;
 
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
@@ -84,7 +85,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         button.setFocusable(false);
         button.getModel().setArmed(true);
         if (window.isVertical()) {
-            button.setPreferredSize(new Dimension(button.getPreferredSize().width, 30));
+            button.setPreferredSize(new Dimension(button.getPreferredSize().width, SwingDefaults.getVerticalToolbarNavigatorButtonHeight()));
         }
         
         button.setBorder(NORMAL_BORDER);

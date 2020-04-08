@@ -6,6 +6,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.SplashScreen;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.controller.remote.ReconnectWorker;
@@ -103,7 +104,8 @@ public abstract class MainFrame extends JFrame {
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
             MainController.configurationAccessAllowed = clientSettings.configurationAccessAllowed;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
-            MainController.setColorPreferences(clientSettings.colorPreferences);
+            MainController.colorPreferences = clientSettings.colorPreferences;
+            SwingDefaults.resetClientSettingsProperties();
 
             Locale userLocale = userPreferences.locale;
             Locale.setDefault(userLocale);
@@ -205,29 +207,31 @@ public abstract class MainFrame extends JFrame {
     }
 
     public static Integer fontSize;
-    private static Map<Object, FontUIResource> fontUIDefaults = new HashMap<>();
+    private static Font defaultDefaultFont = null;
     private static void setUIFontSize() {
-        Enumeration keys = UIManager.getDefaults().keys();
-        if (fontSize != null || !fontUIDefaults.isEmpty()) { // skip if fontSize was never set
-            while (keys.hasMoreElements()) {
-                Object key = keys.nextElement();
-                FontUIResource defaultUIFont = fontUIDefaults.get(key);
-                if (defaultUIFont == null) {
-                    Object value = UIManager.get(key);
-                    if (value instanceof FontUIResource) {
-                        defaultUIFont = (FontUIResource) value;
-                        fontUIDefaults.put(key, defaultUIFont);
-                    }
+        if (defaultDefaultFont != null || fontSize != null) { // skip if fontSize was never set
+            if (defaultDefaultFont == null) {
+                defaultDefaultFont = UIManager.getFont("defaultFont");
+            }
+
+            if (defaultDefaultFont != null) {
+                Font newDefaultFont;
+                if (fontSize != null) {
+                    newDefaultFont = new FontUIResource(defaultDefaultFont.deriveFont(getUIFontSize(defaultDefaultFont.getSize())));
+                } else {
+                    newDefaultFont = defaultDefaultFont;
                 }
-                if (defaultUIFont != null) {
-                    UIManager.put(key, new FontUIResource(defaultUIFont.deriveFont(getUIFontSize(defaultUIFont.getSize()))));
-                }
+                UIManager.put("defaultFont", newDefaultFont);
             }
         }
     }
 
     public static float getUIFontSize(int defaultSize) {
         return fontSize != null ? (float) defaultSize * fontSize / 100 : defaultSize;
+    }
+
+    public static int getIntUISize(int defaultSize) {
+        return (int) (getUIFontSize(defaultSize) + 0.5); // as deriveFont() does
     }
 
     private static void startSplashScreen() {
@@ -279,10 +283,6 @@ public abstract class MainFrame extends JFrame {
     }
 
     public ClientFormController currentForm;
-
-    public static int getIntUIFontSize(int defaultSize) {
-        return (int) (getUIFontSize(defaultSize) + 0.5); // as deriveFont() does
-    }
 
     public void setCurrentForm(ClientFormController currentForm) {
         this.currentForm = currentForm;

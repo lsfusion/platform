@@ -181,7 +181,7 @@ public class RichEditorPane extends JPanel {
 //        addActionToToolbar(new SpecialCharAction(););
         addActionToToolbar(new HTMLImageAction(), Icons.image);
 
-        Font comboFont = new Font("Dialog", Font.PLAIN, MainFrame.getIntUIFontSize(12));
+        Font comboFont = new Font("Dialog", Font.PLAIN, MainFrame.getIntUISize(12));
 
 //        toolbar.addSeparator();
 //        createParagraphCombo(comboFont);

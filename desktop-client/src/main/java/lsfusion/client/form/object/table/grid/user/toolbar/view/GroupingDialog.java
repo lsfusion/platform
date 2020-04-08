@@ -63,7 +63,8 @@ import java.util.*;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.view.MainFrame.*;
+import static lsfusion.client.view.MainFrame.getIntUISize;
+import static lsfusion.client.view.MainFrame.getUIFontSize;
 
 public abstract class GroupingDialog extends JDialog {
     private final int RECORD_QUANTITY_ID = -1;
@@ -726,7 +727,7 @@ public abstract class GroupingDialog extends JDialog {
             button.setContentAreaFilled(false);
             button.setOpaque(true);
             button.setFocusable(false);
-            Dimension buttonSize = new Dimension(getIntUIFontSize(14), getIntUIFontSize(14));
+            Dimension buttonSize = new Dimension(getIntUISize(14), getIntUISize(14));
             button.setFont(button.getFont().deriveFont(button.getFont().getStyle(), getUIFontSize(8)));
             button.setMaximumSize(buttonSize);
             button.setPreferredSize(buttonSize);

@@ -6,6 +6,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientTextClass;
@@ -60,9 +61,8 @@ import java.util.*;
 import static java.lang.Math.max;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static lsfusion.client.base.view.SwingDefaults.getTableHeaderHeight;
 import static lsfusion.client.form.controller.ClientFormController.PasteData;
-import static lsfusion.client.form.object.table.grid.view.GridTable.DEFAULT_HEADER_HEIGHT;
-import static lsfusion.client.form.object.table.grid.view.GridTable.DEFAULT_PREFERRED_SIZE;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyEventActionSID;
 import static lsfusion.client.form.property.cell.EditBindingMap.isEditableAwareEditEvent;
 
@@ -288,7 +288,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     @Override
     public Dimension getPreferredScrollableViewportSize() {
-        return treeGroup.autoSize ? getPreferredSize() : DEFAULT_PREFERRED_SIZE;
+        return treeGroup.autoSize ? getPreferredSize() : SwingDefaults.getTablePreferredSize();
     }
 
     private void ordersCleared(ClientGroupObject groupObject) {
@@ -924,7 +924,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             @Override
             public Dimension getPreferredSize() {
                 Dimension pref = super.getPreferredSize();
-                return new Dimension(pref.width, DEFAULT_HEADER_HEIGHT);
+                return new Dimension(pref.width, getTableHeaderHeight());
             }
         };
         jxTableHeader.setReorderingAllowed(false);

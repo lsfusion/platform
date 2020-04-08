@@ -5,7 +5,6 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.event.KeyStrokes;
 
@@ -16,6 +15,8 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.EventObject;
+
+import static lsfusion.client.base.view.SwingDefaults.getTableCellMargins;
 
 
 @SuppressWarnings({"FieldCanBeLocal"})
@@ -44,14 +45,12 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         setViewportView(textArea);
         setPreferredSize(new Dimension(200, 200));
         dialog = new JDialog(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
-        Font defaultFont = SwingDefaults.getTextAreaFont();
-        textArea.setFont(defaultFont.deriveFont((float) MainFrame.getIntUIFontSize(defaultFont.getSize())));
         if (design != null) {
             design.designComponent(textArea);
         }
         textArea.setBackground(SwingDefaults.getTableCellBackground());
-        textArea.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 1));
-
+        Insets insets = getTableCellMargins();
+        textArea.setBorder(BorderFactory.createEmptyBorder(insets.top - 1, insets.left - 1, insets.bottom, insets.right - 1));
 
         String msgString1 = ClientResourceBundle.getString("form.editor.text");
         Object[] array = {msgString1, this};

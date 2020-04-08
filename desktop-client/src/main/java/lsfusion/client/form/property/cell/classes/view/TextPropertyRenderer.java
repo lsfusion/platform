@@ -19,7 +19,7 @@ public class TextPropertyRenderer extends PropertyRenderer {
         this.rich = rich;
 
         getComponent().setOpaque(true);
-        getComponent().setFont(new Font("Tahoma", Font.PLAIN, MainFrame.getIntUIFontSize(10)));
+        getComponent().setFont(new Font("Tahoma", Font.PLAIN, MainFrame.getIntUISize(10)));
         getComponent().setEditable(false);
         getComponent().setEditorKitForContentType("text/html", new RichEditorKit());
     }

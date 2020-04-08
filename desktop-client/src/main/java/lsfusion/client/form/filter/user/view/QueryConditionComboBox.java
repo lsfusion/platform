@@ -10,7 +10,7 @@ import java.util.Vector;
 class QueryConditionComboBox extends JComboBox {
 
     public Dimension getPreferredSize() {
-        return new Dimension(super.getPreferredSize().width, MainFrame.getIntUIFontSize(SwingDefaults.getComponentHeight()));
+        return new Dimension(super.getPreferredSize().width, MainFrame.getIntUISize(SwingDefaults.getComponentHeight()));
     }
 
     @Override

@@ -1,5 +1,7 @@
 package lsfusion.client.base.view;
 
+import com.formdev.flatlaf.ui.FlatTableCellBorder;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
@@ -7,6 +9,7 @@ import java.awt.*;
 import static javax.swing.UIManager.*;
 import static lsfusion.client.controller.MainController.colorPreferences;
 import static lsfusion.client.controller.MainController.colorTheme;
+import static lsfusion.client.view.MainFrame.getIntUISize;
 
 public class SwingDefaults {
     // no transparent colors as they are not drawn correctly sometimes.   
@@ -26,13 +29,17 @@ public class SwingDefaults {
     private static Color focusedTableRowBackground;
     private static Color tableSelectionBackground;
     private static Color notDefinedForeground;
-    private static Font textAreaFont;
     private static Color logPanelErrorColor;
     private static Color titledBorderTitleColor;
     private static Color dockableBorderColor;
     private static Color tabbedPaneUnderlineColor;
     private static Insets tableCellMargins;
     private static Insets buttonMargin;
+    private static Integer valueHeight;
+    private static Integer tableHeaderHeight;
+    private static Dimension tablePreferredSize;
+    private static Integer tableMaxPreferredHeight;
+    private static Integer verticalToolbarNavigatorButtonHeight;
     
     public static void reset() {
         buttonBackground = null;
@@ -42,23 +49,28 @@ public class SwingDefaults {
         tableCellForeground = null;
         tableCellBorder = null;
         notDefinedForeground = null;
-        textAreaFont = null;
         logPanelErrorColor = null;
         titledBorderTitleColor = null;
         dockableBorderColor = null;
         tabbedPaneUnderlineColor = null;
-        tableCellMargins = null;
         buttonMargin = null;
         
-        resetTableSelectionProperties();
+        resetClientSettingsProperties();
     }
     
-    // properties are initialized before receiving color preferences
-    public static void resetTableSelectionProperties() {
+    // properties are initialized before receiving client settings
+    // everything that might be changed by fontSize or colorPreferences
+    public static void resetClientSettingsProperties() {
         focusedTableCellBackground = null;
         focusedTableCellBorder = null;
         focusedTableRowBackground = null;
         tableSelectionBackground = null;
+        valueHeight = null;
+        tableCellMargins = null;
+        tableHeaderHeight = null;
+        tablePreferredSize = null;
+        tableMaxPreferredHeight = null;
+        verticalToolbarNavigatorButtonHeight = null;
     }
     
     public static Color getButtonBackground() {
@@ -119,8 +131,9 @@ public class SwingDefaults {
             if (borderColor == null) {
                 borderColor = getSelectionBorderColor();
             }
+            Insets insets = getTableCellMargins();
             focusedTableCellBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(borderColor),
-                    BorderFactory.createEmptyBorder(1, 2, 1, 2));
+                    BorderFactory.createEmptyBorder(insets.top - 1, insets.left - 1, insets.bottom - 1, insets.right - 1));
         }
         return focusedTableCellBorder; 
     }
@@ -151,13 +164,6 @@ public class SwingDefaults {
             }
         }
         return notDefinedForeground;
-    }
-
-    public static Font getTextAreaFont() {
-        if (textAreaFont == null) {
-            textAreaFont = getFont("TextArea.font");
-        }
-        return textAreaFont;
     }
     
     public static Color getLogPanelErrorColor() {
@@ -197,7 +203,12 @@ public class SwingDefaults {
     
     public static Insets getTableCellMargins() {
         if (tableCellMargins == null) {
-            tableCellMargins = getInsets("Table.cellMargins");
+            Border border = getTableCellBorder();
+            if (border instanceof FlatTableCellBorder) {
+                tableCellMargins = ((FlatTableCellBorder) border).getBorderInsets(); // increases when fontSize is increased.
+            } else {
+                tableCellMargins = getInsets("Table.cellMargins"); // fallback property to avoid null checks. this value is permanent.
+            }
         }
         return tableCellMargins;
     }
@@ -209,12 +220,44 @@ public class SwingDefaults {
         return buttonMargin;
     }
     
+    public static int getValueHeight() {
+        if (valueHeight == null) {
+            valueHeight = getIntUISize(20);
+        }
+        return valueHeight;
+    }
+    
+    public static int getTableHeaderHeight() {
+        if (tableHeaderHeight == null) {
+            tableHeaderHeight = getIntUISize(34);
+        }
+        return tableHeaderHeight;
+    } 
+
+    public static Dimension getTablePreferredSize() {
+        if (tablePreferredSize == null) {
+            tablePreferredSize = new Dimension(getIntUISize(130), getIntUISize(70) - getTableHeaderHeight());
+        }
+        return tablePreferredSize;
+    } 
+
+    public static int getTableMaxPreferredHeight() {
+        if (tableMaxPreferredHeight == null) {
+            tableMaxPreferredHeight = getIntUISize(70);
+        }
+        return tableMaxPreferredHeight;
+    } 
+
+    public static int getVerticalToolbarNavigatorButtonHeight() {
+        if (verticalToolbarNavigatorButtonHeight == null) {
+            verticalToolbarNavigatorButtonHeight = getIntUISize(30);
+        }
+        return verticalToolbarNavigatorButtonHeight;
+    } 
+
     
     // ----------- not cached properties ----------- //
     
-    public static int getValueHeight() {
-        return 20;
-    } 
     
     public static int getButtonBorderWidth() {
         return 1;

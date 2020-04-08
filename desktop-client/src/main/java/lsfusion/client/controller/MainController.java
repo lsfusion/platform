@@ -306,11 +306,6 @@ public class MainController {
         System.setSecurityManager(null);
     }
     
-    public static void setColorPreferences(ColorPreferences icolorPreferences) {
-        colorPreferences = icolorPreferences;
-        SwingDefaults.resetTableSelectionProperties();
-    }
-
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
 //        FocusOwnerTracer.installFocusTracer();
 

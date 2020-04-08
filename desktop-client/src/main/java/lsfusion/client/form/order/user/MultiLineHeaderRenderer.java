@@ -1,7 +1,6 @@
 package lsfusion.client.form.order.user;
 
 import lsfusion.client.base.view.ClientImages;
-import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
@@ -43,8 +42,6 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
             } else {
                 label.setIcon(null);
             }
-            final Font labelFont = label.getFont();
-            label.setFont(labelFont.deriveFont(Font.PLAIN, MainFrame.getUIFontSize(labelFont.getSize())));
         }
         return comp;
     }

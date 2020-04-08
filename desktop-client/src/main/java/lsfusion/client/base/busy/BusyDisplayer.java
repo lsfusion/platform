@@ -86,7 +86,7 @@ public class BusyDisplayer extends TimerTask {
 
         Graphics gr = window.getGraphics();
         if (gr != null && canvas != null) {
-            Font loadingTextFont = new Font("Dialog", Font.BOLD, MainFrame.getIntUIFontSize(15));
+            Font loadingTextFont = new Font("Dialog", Font.BOLD, MainFrame.getIntUISize(15));
             String loadingText = ClientResourceBundle.getString("form.loading");
             int segmentHeight = 25;
             int segmentWidth = 10;
@@ -141,7 +141,7 @@ public class BusyDisplayer extends TimerTask {
             gr.drawString(loadingText, rectX + (rectWidth - loadingTextWidth) / 2, rectY + loadingTextHeight);
 
             if (currentMessage != null) {
-                Font actionMessageFont = new Font("Dialog", Font.PLAIN, MainFrame.getIntUIFontSize(10));
+                Font actionMessageFont = new Font("Dialog", Font.PLAIN, MainFrame.getIntUISize(10));
                 gr.setFont(actionMessageFont);
                 String[] splittedActionMessage = currentMessage.split(" ");
                 String output = "";

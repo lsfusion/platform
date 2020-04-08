@@ -158,7 +158,7 @@ public final class Log {
             messagePanel.add(new JScrollPane(createDataTable(titles, data)));
         }
 
-        Font logFont = new Font("Tahoma", Font.PLAIN, MainFrame.getIntUIFontSize(12));
+        Font logFont = new Font("Tahoma", Font.PLAIN, MainFrame.getIntUISize(12));
         JTextArea javaStackTA = new JTextArea(javaStack, 7, 60);
         javaStackTA.setFont(logFont);
         javaStackTA.setForeground(Color.RED);

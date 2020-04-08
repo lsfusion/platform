@@ -118,7 +118,7 @@ public class GroupingTreeTable extends JXTreeTable {
             }
         }
         // специально для картинок увеличиваем высоту рядов
-        setRowHeight(MainFrame.getIntUIFontSize(needToExpandRows ? EXPANDED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT) + getRowMargin());
+        setRowHeight(MainFrame.getIntUISize(needToExpandRows ? EXPANDED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT) + getRowMargin());
     }
     
     private void setDefaultOrder(java.util.List<ClientPropertyDraw> columnProperties) {

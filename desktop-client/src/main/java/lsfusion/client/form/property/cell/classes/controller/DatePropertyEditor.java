@@ -9,7 +9,6 @@ import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
@@ -23,6 +22,7 @@ import java.util.Date;
 import java.util.EventObject;
 
 import static lsfusion.base.DateConverter.*;
+import static lsfusion.client.base.view.SwingDefaults.getTableCellMargins;
 
 public class DatePropertyEditor extends JDateChooser implements PropertyEditor, ClientPropertyTableEditorComponent {
     protected final SimpleDateFormat format;
@@ -164,7 +164,8 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
                 }
             }
 
-            setBorder(new EmptyBorder(0, 3, 1, 2));
+            Insets insets = getTableCellMargins();
+            setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right - 1));
         }
 
         @Override
