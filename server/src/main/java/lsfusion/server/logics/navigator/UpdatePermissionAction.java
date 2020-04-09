@@ -11,7 +11,7 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import java.util.Iterator;
 
 public class UpdatePermissionAction extends InternalAction {
-    private final ClassPropertyInterface sidUserRoleInterface;
+    private final ClassPropertyInterface userRoleInterface;
     private final ClassPropertyInterface canonicalNameNavigatorElementInterface;
     private final ClassPropertyInterface staticNamePermissionInterface;
 
@@ -19,7 +19,7 @@ public class UpdatePermissionAction extends InternalAction {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
-        sidUserRoleInterface = i.next();
+        userRoleInterface = i.next();
         canonicalNameNavigatorElementInterface = i.next();
         staticNamePermissionInterface = i.next();
     }
@@ -27,7 +27,7 @@ public class UpdatePermissionAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
-        String userRole = (String) context.getKeyValue(sidUserRoleInterface).getValue();
+        Long userRole = (Long) context.getDataKeyValue(userRoleInterface).getValue();
         String navigatorElement = (String) context.getKeyValue(canonicalNameNavigatorElementInterface).getValue();
         if(userRole != null && navigatorElement != null) {
             SecurityManager securityManager = context.getLogicsInstance().getSecurityManager();
