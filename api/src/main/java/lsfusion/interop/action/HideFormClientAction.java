@@ -1,13 +1,13 @@
 package lsfusion.interop.action;
 
-import java.io.IOException;
-
 public class HideFormClientAction extends ExecuteClientAction {
 
-    public final int closeFormDelay;
+    public final int closeConfirmedDelay;
+    public final int closeNotConfirmedDelay;
 
-    public HideFormClientAction(int closeFormDelay) {
-        this.closeFormDelay = closeFormDelay;
+    public HideFormClientAction(int closeConfirmedDelay, int closeNotConfirmedDelay) {
+        this.closeConfirmedDelay = closeConfirmedDelay;
+        this.closeNotConfirmedDelay = closeNotConfirmedDelay;
     }
 
     public void execute(ClientActionDispatcher dispatcher) {

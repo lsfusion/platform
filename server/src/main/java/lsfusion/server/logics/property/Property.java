@@ -1083,6 +1083,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         PropertyField field = new PropertyField(dbName, getType());
         fieldClassWhere = getClassWhere(mapTable, field);
+//        if(!fieldClassWhere.filterKeys(mapTable.table.getTableKeys()).meansCompatible(mapTable.table.getClasses()))
+//            field = field;
         mapTable.table.addField(field, fieldClassWhere);
 
         this.field = field;

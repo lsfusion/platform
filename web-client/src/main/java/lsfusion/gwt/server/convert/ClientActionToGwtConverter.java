@@ -27,6 +27,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 
@@ -91,8 +94,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = HideFormClientAction.class)
     public GHideFormAction convertAction(HideFormClientAction action, final String formID, final MainDispatchServlet servlet) {
-        BaseUtils.runLater(action.closeFormDelay, servlet.getFormProvider().delayedRemoveFormSessionObject(formID)); // adding the same delay (closeFormDelay) as in deactivateAndCloseLater
-        return new GHideFormAction();
+        servlet.getFormProvider().scheduleRemoveFormSessionObject(formID, action.closeNotConfirmedDelay);
+        return new GHideFormAction(action.closeConfirmedDelay);
     }
 
     @Converter(from = LogMessageClientAction.class)

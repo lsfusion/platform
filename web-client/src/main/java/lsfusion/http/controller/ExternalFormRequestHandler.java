@@ -85,8 +85,8 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                     Pair<Long, String> result = formSessionObject.remoteForm.changeExternal(jsonObject.getLong("requestIndex"), jsonObject.getLong("lastReceivedRequestIndex"), data);
                     jsonResult = result.second;
                 } else {
-                    int closeFormDelay = formSessionObject.remoteForm.closeExternal();
-                    BaseUtils.runLater(closeFormDelay, formProvider.delayedRemoveFormSessionObject(formID));
+                    formSessionObject.remoteForm.close();
+                    formProvider.scheduleRemoveFormSessionObject(formID, 1000);
                     jsonResult = "{}";
                 }
             }

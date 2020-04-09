@@ -105,6 +105,4 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     // external
     
     Pair<Long, String> changeExternal(long requestIndex, long lastReceivedRequestIndex, String json) throws RemoteException;
-
-    int closeExternal() throws RemoteException;
 }

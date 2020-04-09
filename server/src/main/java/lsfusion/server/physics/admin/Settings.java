@@ -2168,14 +2168,23 @@ public class Settings implements Cloneable {
         this.extendedSQLConnectionLog = extendedSQLConnectionLog;
     }
 
-    private int closeFormDelay = 5000;
+    private int closeConfirmedDelay = 5000; // 5 seconds
+    private int closeNotConfirmedDelay = 300000; // 5 minutes, if after 5 minutes there is no response from client close the form anyway
 
-    public int getCloseFormDelay() {
-        return closeFormDelay;
+    public int getCloseConfirmedDelay() {
+        return closeConfirmedDelay;
     }
 
-    public void setCloseFormDelay(int closeFormDelay) {
-        this.closeFormDelay = closeFormDelay;
+    public void setCloseConfirmedDelay(int closeConfirmedDelay) {
+        this.closeConfirmedDelay = closeConfirmedDelay;
+    }
+
+    public int getCloseNotConfirmedDelay() {
+        return closeNotConfirmedDelay;
+    }
+
+    public void setCloseNotConfirmedDelay(int closeNotConfirmedDelay) {
+        this.closeNotConfirmedDelay = closeNotConfirmedDelay;
     }
 
     private int waitSchedulerCanceledDelay = 5000;
@@ -2186,17 +2195,6 @@ public class Settings implements Cloneable {
 
     public void setWaitSchedulerCanceledDelay(int waitSchedulerCanceledDelay) {
         this.waitSchedulerCanceledDelay = waitSchedulerCanceledDelay;
-    }
-
-    private boolean disableAsyncClose = false; // проблема в том что DataSession не синхронизирована (assertion, что синхронизация обеспечивается модальностью вызовов), а unreferenced нарушает этот assertion (и непонятно как ее обойти, да и не понятно имеет ли смысл)
-    // та же проблема по идее с unreferenced
-
-    public boolean isDisableAsyncClose() {
-        return disableAsyncClose;
-    }
-
-    public void setDisableAsyncClose(boolean disableAsyncClose) {
-        this.disableAsyncClose = disableAsyncClose;
     }
 
     private boolean disableFinalized = false; // есть вопрос с синхронизацией explicitClose FormInstance

@@ -10,7 +10,7 @@ import java.util.List;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
-public class PendingRemoteObject extends RemoteObject implements PendingRemoteInterface {
+public abstract class PendingRemoteObject extends RemoteObject implements PendingRemoteInterface {
 
     public PendingRemoteObject() {
         super();

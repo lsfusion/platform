@@ -733,17 +733,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    protected boolean isUnreferencedSyncedClient() { // если ушли все ссылки считаем синхронизированным, так как клиент уже ни к чему обращаться не может
-        return true;
-    }
-
-    @Override
     public Object getProfiledObject() {
         return "n";
-    }
-
-    @Override
-    public synchronized void close() throws RemoteException { // without this RemoteContextAspect will not be weaved
-        super.close();
     }
 }

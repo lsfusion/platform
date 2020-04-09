@@ -188,11 +188,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    protected boolean isUnreferencedSyncedClient() { // если ушли все ссылки считаем синхронизированным, так как клиент уже ни к чему обращаться не может
-        return true;
-    }
-
-    @Override
     public List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
         try {
             return FormInstance.saveAndGetCustomReportPathList(businessLogics.findForm(formSID), recreate);

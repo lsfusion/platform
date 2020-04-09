@@ -14,7 +14,7 @@ public abstract class FormActionHandler<A extends FormAction<R>, R extends Resul
         super(servlet);
     }
 
-    private FormProvider getFormProvider() {
+    protected FormProvider getFormProvider() {
         return servlet.getFormProvider();
     }
     public FormSessionObject getFormSessionObject(String formSessionID) throws SessionInvalidatedException {

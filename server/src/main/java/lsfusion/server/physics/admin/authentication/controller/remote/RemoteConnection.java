@@ -257,10 +257,6 @@ public abstract class RemoteConnection extends RemoteRequestObject {
         }
     }
 
-    public synchronized void close() throws RemoteException {
-        deactivateAndCloseLater(true);
-    }
-
     @Override
     protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack) {
         return null;

@@ -2403,7 +2403,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private void formHide(ExecutionContext context) {
         ServerLoggers.remoteLifeLog("FORM HIDE : " + this);
-        context.delayUserInteraction(new HideFormClientAction(Settings.get().getCloseFormDelay()));
+        context.delayUserInteraction(new HideFormClientAction(Settings.get().getCloseConfirmedDelay(), Settings.get().getCloseNotConfirmedDelay()));
         // здесь не делаем close, так как нет RemoteForm + надо делать closeLater, так как могут остаться еще запросы к форме которые возможно надо обработать, так что это делается prepareRemoteChangesResponse
     }
 

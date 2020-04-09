@@ -98,7 +98,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GHideFormAction action) {
-        form.hideForm();
+        form.hideForm(action.closeDelay);
     }
 
     @Override

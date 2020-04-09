@@ -5,6 +5,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.ExternalRequest;
@@ -272,9 +273,5 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
         
         super.onClose();
-    }
-    @Override
-    public synchronized void close() throws RemoteException { // without this RemoteContextAspect will not be weaved
-        super.close();
     }
 }

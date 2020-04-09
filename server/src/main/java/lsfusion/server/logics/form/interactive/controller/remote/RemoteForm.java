@@ -698,7 +698,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
             }
-            deactivateAndCloseLater(true);
+            deactivateAndCloseLater(false);
         }
 
         return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
@@ -992,16 +992,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             eventAction = ServerResponse.CHANGE;
         }
         form.executeEventAction(propertyDraw, eventAction, currentObjects, pushChangeObject, pushChangeType, pushAdd, false, stack);
-    }
-
-    @Override
-    public int closeExternal() {
-        try {
-            return deactivateAndCloseLater(false);
-        } catch (Throwable t) {
-            ServerLoggers.sqlSuppLog(t);
-            return 0;
-        }
     }
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???

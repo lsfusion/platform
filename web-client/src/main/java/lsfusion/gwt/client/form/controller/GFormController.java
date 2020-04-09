@@ -92,7 +92,7 @@ import static lsfusion.gwt.client.form.event.GKeyStroke.isPossibleEditKeyEvent;
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
     private static final int ASYNC_TIME_OUT = 50;
 
-    private final FormDispatchAsync dispatcher;
+    private FormDispatchAsync dispatcher;
 
     private final GFormActionDispatcher actionDispatcher;
 
@@ -1087,16 +1087,25 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    protected void onFormHidden() {
+    protected void onFormHidden(int closeDelay) {
         setFiltersVisible(false);
-        dispatcher.close();
+        FormDispatchAsync closeDispatcher = dispatcher;
+        Scheduler.get().scheduleDeferred(() -> {
+            closeDispatcher.execute(new Close(closeDelay), new ErrorHandlingCallback<VoidResult>() {
+                @Override
+                public void failure(Throwable caught) { // supressing errors
+                }
+            });
+            closeDispatcher.close();
+        });
+//        dispatcher = null; // so far there are no null checks (for example, like in desktop-client), so changePageSize can be called after (apparently close will suppress it)
     }
 
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
     private boolean formHidden;
-    public void hideForm() {
+    public void hideForm(int closeDelay) {
         if(!formHidden) {
-            onFormHidden();
+            onFormHidden(closeDelay);
             formHidden = true;
         }
     }

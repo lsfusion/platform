@@ -23,6 +23,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObject implements Unreferenced, ProfiledObject { // AutoCloseable in offline mode (with port = -1)
 
@@ -42,6 +44,21 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     protected Context context;
+
+    private static ScheduledExecutorService closeExecutor = ExecutorFactory.createCloseScheduledThreadService(3);
+    private void scheduleClose(long delay, Runnable run) {
+        closeExecutor.schedule(() -> {
+            ThreadInfo threadInfo = EventThreadInfo.TIMER(ContextAwarePendingRemoteObject.this);
+            ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true, threadInfo);
+            try {
+                run.run();
+            } catch (Throwable t) {
+                ServerLoggers.remoteLogger.error("FORM CLOSE: ", t);
+            } finally {
+                ThreadLocalContext.aspectAfterRmi(threadInfo);
+            }
+        }, delay, TimeUnit.MILLISECONDS);
+    }
 
     protected ExecutorService pausablesExecutor;
     private final String sID;
@@ -110,10 +127,6 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         return true;
     }
 
-    protected boolean isUnreferencedSyncedClient() {
-        return false;
-    }
-
     @Override
     public void unreferenced() {
         if(!isEnabledUnreferenced())
@@ -124,7 +137,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         try {
             ServerLoggers.remoteLifeLog("REMOTE OBJECT UNREFERENCED " + this);
 
-            deactivateAndCloseLater(isUnreferencedSyncedClient());
+            deactivateAndCloseLater(true); // if it's unreferenced no more requests can come from clients, so we'll consider it confirmed
         } finally {
             ThreadLocalContext.aspectAfterRmi(threadInfo);
         }
@@ -178,30 +191,18 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         }
     }
 
-    public synchronized int deactivateAndCloseLater(final boolean syncedOnClient) {
-        if(Settings.get().isDisableAsyncClose() && !syncedOnClient)
-            return 0;
+    public void close() throws RemoteException { // client confirmed close
+        deactivateAndCloseLater(true);
+    }
 
-        final int delay = Settings.get().getCloseFormDelay();
-        // тут надо бы на ContextAwareDaemonThreadFactory переделать
-        BaseUtils.runLater(delay, () -> {
-            ThreadInfo threadInfo = EventThreadInfo.TIMER(ContextAwarePendingRemoteObject.this);
-            ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true, threadInfo);
+    public void deactivateAndCloseLater(final boolean confirmedClient) {
+        scheduleClose(confirmedClient ? Settings.get().getCloseConfirmedDelay() : Settings.get().getCloseNotConfirmedDelay(), () -> {
             try {
-                try {
-                    deactivate();  // it's important to call it in runLater, otherwise it will deactivate itself (in sleep there will be Interrupted exception)
-
-                    ThreadUtils.sleep(delay); // даем время на deactivate (interrupt)
-                } finally {
-                    explicitClose();
-                }
-            } catch (Throwable t) {
-                ServerLoggers.remoteLogger.error("deactivateAndCloseLater: ", t);
+                deactivate();  // it's important to call it not in remote call context, otherwise it will deactivate itself
             } finally {
-                ThreadLocalContext.aspectAfterRmi(threadInfo);
+                scheduleClose(Settings.get().getCloseConfirmedDelay(), this::explicitClose); // give some more time deactivate (interrupt)
             }
         });
-        return delay;
     }
 
     private boolean closed;

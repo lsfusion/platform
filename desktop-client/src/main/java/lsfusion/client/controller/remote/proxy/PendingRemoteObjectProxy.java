@@ -25,4 +25,9 @@ public abstract class PendingRemoteObjectProxy<T extends PendingRemoteInterface>
     public void interrupt(boolean cancelable) throws RemoteException {
         target.interrupt(cancelable);
     }
+
+    @Override
+    public void close() throws RemoteException {
+        target.close();
+    }
 }

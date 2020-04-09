@@ -3,6 +3,7 @@ package lsfusion.client.form.controller.remote.proxy;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.PendingRemoteObjectProxy;
+import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterface> implements RemoteFormInterface {
+public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterface> implements RemoteFormInterface {
 
     public static final Map<String, byte[]> cachedRichDesign = new HashMap<>();
     public static void dropCaches() {
@@ -297,34 +298,4 @@ public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterfac
         logRemoteMethodEndCall("changeProperty", result);
         return result;
     }
-
-    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
-        logRemoteMethodStartCall("continueServerInvocation");
-        ServerResponse result = target.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
-        logRemoteMethodEndCall("continueServerInvocation", result);
-        return result;
-    }
-
-    public ServerResponse throwInServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException {
-        logRemoteMethodStartCall("throwInServerInvocation");
-        ServerResponse result = target.throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
-        logRemoteMethodEndCall("throwInServerInvocation", result);
-        return result;
-    }
-
-    @Override
-    public boolean isInServerInvocation(long requestIndex) throws RemoteException {
-        logRemoteMethodStartCall("isInServerInvocation");
-        boolean result = target.isInServerInvocation(requestIndex);
-        logRemoteMethodEndCall("isInServerInvocation", result);
-        return result;
-    }
-
-    public int closeExternal() throws RemoteException {
-        logRemoteMethodStartCall("closeExternal");
-        int result = target.closeExternal();
-        logRemoteMethodEndVoidCall("closeExternal");
-        return result;
-    }
-
 }

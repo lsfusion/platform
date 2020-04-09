@@ -61,6 +61,11 @@ public class ExecutorFactory {
         return threadFactory;
     }
 
+    // here we'll manage context manually (since we don't create this scheduled threadService
+    public static ScheduledExecutorService createCloseScheduledThreadService(Integer threads) {
+        return Executors.newScheduledThreadPool(threads);
+    }
+
     public static ScheduledExecutorService createMonitorScheduledThreadService(Integer threads, final MonitorServer monitorServer) {
 
         ThreadFactory threadFactory = createMonitorThreadFactory(monitorServer);

@@ -1,6 +1,5 @@
 package lsfusion.http.provider.form;
 
-import com.google.common.base.Throwables;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
@@ -11,6 +10,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPrefere
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.provider.SessionInvalidatedException;
@@ -29,6 +29,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static lsfusion.gwt.server.convert.StaticConverters.convertFont;
@@ -126,18 +129,6 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         currentForms.put(formSessionID, formSessionObject);
     }
 
-    public Runnable delayedRemoveFormSessionObject(final String formSessionID) {
-        return new Runnable() {
-            public void run() {
-                try {
-                    removeFormSessionObject(formSessionID);
-                } catch (SessionInvalidatedException e) {
-                    throw Throwables.propagate(e);
-                }
-            }
-        };
-    }
-
     private void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException {
         FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID);
         currentForms.remove(formSessionID);
@@ -152,9 +143,22 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         Collection<String> formSessionIDs = new HashSet<>(currentForms.keySet());
         for (String formSessionID : formSessionIDs) {
             if (currentForms.get(formSessionID).navigatorID.equals(sessionID)) {
-                removeFormSessionObject(formSessionID); // maybe it's better to call remoteForm.close (just like navigators are closed in LogicsAndNavigatorProviderImpl), if there are opeened tabs (because if there are not such tabs, RemoteNavigator.close will do all the work) - but it is a rare case, so will do it later 
+                try {
+                    removeFormSessionObject(formSessionID); // maybe it's better to call remoteForm.close (just like navigators are closed in LogicsAndNavigatorProviderImpl), if there are opeened tabs (because if there are not such tabs, RemoteNavigator.close will do all the work) - but it is a rare case, so will do it later
+                } catch (SessionInvalidatedException e) {
+                }
             }
         }
+    }
+
+    private static final ScheduledExecutorService closeExecutor = Executors.newScheduledThreadPool(5);
+    public void scheduleRemoveFormSessionObject(final String formSessionID, long delay) {
+        closeExecutor.schedule(() -> {
+            try {
+                removeFormSessionObject(formSessionID);
+            } catch (Throwable e) { // we need to suppress to not stop scheduler
+            }
+        }, delay, TimeUnit.MILLISECONDS);
     }
 
     @Override

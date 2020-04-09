@@ -24,8 +24,6 @@ public interface RemoteNavigatorInterface extends RemoteRequestInterface {
 
     void logClientException(String hostname, Throwable t) throws RemoteException;
 
-    void close() throws RemoteException;
-
     // separate methods, because used really often (and it will be an overhead using virtual navigator actions anyway)
 
     ClientCallBackInterface getClientCallBack() throws RemoteException;

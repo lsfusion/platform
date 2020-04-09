@@ -78,10 +78,7 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -1383,10 +1380,19 @@ public class ClientFormController implements AsyncListener {
         return new FormUserPreferences(groupObjectGeneralPreferencesList, groupObjectUserPreferencesList);
     }
 
+    private static ExecutorService closeService = Executors.newCachedThreadPool();
+
     protected void onFormHidden() {
         if (autoRefreshScheduler != null) {
             autoRefreshScheduler.shutdown();
         }
+        RemoteFormInterface closeRemoteForm = remoteForm;
+        closeService.submit(() -> {
+            try {
+                closeRemoteForm.close();
+            } catch (RemoteException ignored) {
+            }
+        });
         remoteForm = null;
     }
 
