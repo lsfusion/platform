@@ -1,15 +1,16 @@
 :root {
     --focus-color: #0489BA;
     --selection-color: #D3E5E8;
-    --border-color: #d1d1d1;
     --scrollbar-color: #DCDCDC;
     --text-color: black;
     --disabled-text-color: #888;
     --background-color: #F2F2F2;
     --component-background-color: white;
-    --split-border-color: #a9a9a9;
-    --split-background-color: #F1F1F1;
-    --dialog-border-color: #F1F1F1;
+    --split-border-color: #A9A9A9;
+    --dialog-border-color: var(--scrollbar-color);
+    --component-border-color: #c4c4c4;
+    --panel-border-color: #D1D1D1;
+    --grid-separator-border-color: #E6E6E6;
     --dialog-outer-border-color: #bbb;
     
     --caption-panel-legend-color: #929292; 

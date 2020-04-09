@@ -46,7 +46,7 @@ a:hover {
 select {
     background: var(--component-background-color);
     color: var(--text-color);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     border-radius: var(--combobox-border-radius);
 }
 
@@ -83,7 +83,7 @@ input, textarea {
     cursor: pointer;
     font-size: small;
     background: var(--component-background-color);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     color: var(--text-color);
     border-radius: var(--button-border-radius);;
 }
@@ -335,7 +335,7 @@ input, textarea {
     padding: 0px;
     margin: 0px;
     border: 0px;
-    border-left: 1px solid var(--border-color);
+    border-left: 1px solid var(--component-border-color);
     background: white;
 }
 .gwt-MenuBar-horizontal .gwt-MenuItemSeparator .menuSeparatorInner {
@@ -361,7 +361,7 @@ input, textarea {
     height: 1px;
     padding: 0px;
     border: 0px;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--component-border-color);
     overflow: hidden;
 }
 .gwt-MenuBar-vertical .subMenuIcon {
@@ -447,7 +447,7 @@ input, textarea {
 
 .gwt-PasswordTextBox {
     padding: 5px 4px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     border-top: 1px solid #999;
     font-size: 100%;
 }
@@ -596,7 +596,7 @@ input, textarea {
     cursor: hand;
 }
 .gwt-PushButton-down-disabled {
-    border: 1px outset var(--border-color);
+    border: 1px outset var(--component-border-color);
     cursor: default;
     opacity: 0.5;
     filter: alpha(opacity=45);
@@ -799,7 +799,7 @@ input, textarea {
 
 .gwt-SuggestBox {
     padding: 5px 4px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     border-top: 1px solid #999;
     font-size: 100%;
 }
@@ -921,9 +921,9 @@ input, textarea {
     cursor: hand;
     font-weight: normal;
     text-align: center;
-    border-top: 1px solid var(--border-color);
-    border-left: 1px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
+    border-top: 1px solid var(--panel-border-color);
+    border-left: 1px solid var(--panel-border-color);
+    border-right: 1px solid var(--panel-border-color);
     border-radius: var(--tab-border-radius);
 }
 .gwt-TabBar .gwt-TabBarItem-selected {
@@ -953,7 +953,7 @@ input, textarea {
     margin: 0 1px 1px;
 }
 .gwt-TabPanelBottom {
-    border-color: var(--border-color);
+    border-color: var(--panel-border-color);
     border-style: solid;
     border-width: 1px;
     border-radius: var(--panel-border-radius);
@@ -962,7 +962,7 @@ input, textarea {
     padding: 1px;
 }
 .gwt-DecoratedTabBar {
-    background: var(--border-color);
+    background: var(--panel-border-color);
     padding-top: 6px;
 }
 .gwt-DecoratedTabBar .gwt-TabBarFirst {
@@ -1050,7 +1050,7 @@ input, textarea {
 
 .gwt-TextArea {
     padding: 4px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     border-top: 1px solid #666;
     font-size: 100%;
 }
@@ -1060,7 +1060,7 @@ input, textarea {
 
 .gwt-TextBox {
     padding: 5px 4px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     font-size: small;
 }
 .gwt-TextBox-readonly {
@@ -1126,7 +1126,7 @@ input, textarea {
 }
 .gwt-ToggleButton-down-disabled {
     background-position: 0 -513px;
-    border: 1px inset var(--border-color);
+    border: 1px inset var(--component-border-color);
     cursor: default;
     opacity: .5;
     zoom: 1;
@@ -1154,7 +1154,7 @@ input, textarea {
 
 .gwt-DateBox {
     padding: 5px 4px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     border-top: 1px solid #999;
     font-size: 100%;
 }
@@ -1168,7 +1168,7 @@ input, textarea {
 }
 
 .gwt-DatePicker {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     cursor: default;
 }
 .gwt-DatePicker td,
@@ -1189,8 +1189,8 @@ input, textarea {
     font-weight:bold;
     color: var(--text-color);
     background: var(--component-background-color);
-    border-right: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
+    border-bottom: 1px solid var(--grid-separator-border-color);
 }
 .datePickerDays td:last-of-type,
 .datePickerDays td:last-of-type .datePickerDay {
@@ -1295,7 +1295,7 @@ td.datePickerMonth {
     width: 100% !important;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContentContainer {
-    border-color: var(--border-color);
+    border-color: var(--panel-border-color);
     border-style: solid;
     border-width: 1px;
     border-radius: var(--panel-border-radius);
@@ -1311,9 +1311,9 @@ td.datePickerMonth {
     cursor: hand;
     font-weight: normal;
     text-align: center;
-    border-top: 1px solid var(--border-color);
-    border-left: 1px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
+    border-top: 1px solid var(--panel-border-color);
+    border-left: 1px solid var(--panel-border-color);
+    border-right: 1px solid var(--panel-border-color);
     border-radius: var(--tab-border-radius);
     min-width: 19px;
 }
@@ -1340,7 +1340,6 @@ td.datePickerMonth {
     margin: 0 2px;
     border-left: 1px solid var(--split-border-color);
     border-right: 1px solid var(--split-border-color);
-    background: var(--split-background-color);
 }
 
 .gwt-SplitLayoutPanel-VDragger {
@@ -1349,5 +1348,4 @@ td.datePickerMonth {
     margin: 2px 0;
     border-top: 1px solid var(--split-border-color);
     border-bottom: 1px solid var(--split-border-color);
-    background: var(--split-background-color);
 }

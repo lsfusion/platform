@@ -697,4 +697,6 @@ public class GwtClientUtils {
     public static final int CELL_VERTICAL_PADDING = 2; // suppose buttons have the same padding. to have equal height
     public static final int CELL_HORIZONTAL_PADDING = 3;
     public static final int BUTTON_HORIZONTAL_PADDING = 14;
+    
+    public static final int DEFAULT_FONT_PT_SIZE = 9;
 }

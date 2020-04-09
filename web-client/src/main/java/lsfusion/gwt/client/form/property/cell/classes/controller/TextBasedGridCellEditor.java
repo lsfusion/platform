@@ -21,8 +21,7 @@ import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import java.text.ParseException;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
-import static lsfusion.gwt.client.base.GwtClientUtils.CELL_HORIZONTAL_PADDING;
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 
 public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
@@ -185,7 +184,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
             font.apply(inputStyle);
         }
         if (font == null || font.size == 0) {
-            inputStyle.setFontSize(8, Style.Unit.PT);
+            inputStyle.setFontSize(DEFAULT_FONT_PT_SIZE, Style.Unit.PT);
         }
         cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
         cellParent.getStyle().setPadding(0, Style.Unit.PX);

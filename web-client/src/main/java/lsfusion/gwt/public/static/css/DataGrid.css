@@ -16,7 +16,7 @@
 
 /* ----- GGridPropertyTable ----- */
 .dataGridWidget {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     border-radius: var(--table-border-radius);
     background: var(--component-background-color);
     cursor: default;
@@ -27,16 +27,16 @@
 }
 
 .dataGridHeaderCell {
-    border-left: 1px solid var(--border-color);
+    border-left: 1px solid var(--grid-separator-border-color);
     padding: 0 2px;
     font-weight: normal;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--grid-separator-border-color);
 }
 
 .dataGridFirstHeaderCell {}
 
 .dataGridLastHeaderCell {
-    border-right: 1px solid var(--border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
 }
 
 .dataGridFooter {}
@@ -48,8 +48,8 @@
 }
 
 .dataGridCell {
-    border-bottom: 1px solid var(--border-color);
-    border-left: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--grid-separator-border-color);
+    border-left: 1px solid var(--grid-separator-border-color);
 
     padding: 0;
 
@@ -68,7 +68,7 @@
 .dataGridFirstCell {}
 
 .dataGridLastCell {
-    border-right: 1px solid var(--border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
 }
 
 .dataGridKeyboardSelectedRow {
@@ -116,8 +116,6 @@
 }
 
 .dataGridCell-single {
-    font-size: 8pt;
-
     padding: 0;
 
     overflow: hidden;

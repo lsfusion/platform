@@ -148,7 +148,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     @Override
     protected void onBlur() {
         super.onBlur();
-        changeBorder("var(--border-color)");
+        changeBorder("var(--component-border-color)");
     }
 
     public void changeBorder(String color) {

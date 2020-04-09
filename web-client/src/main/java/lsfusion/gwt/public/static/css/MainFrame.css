@@ -1,15 +1,17 @@
 body, textarea, button, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
 .messageBox-messageContainer, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
-.filterDialogHeader, .customFontPresenter {
-    font-size: 8pt;
+.filterDialogHeader, .dataGridCell-single, .gwt-ProgressBar-shell .gwt-ProgressBar-text,
+.pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text], .customFontPresenter {
+    font-size: 9pt;
 }
 
-   body, textarea, select, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
+body, textarea, select, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
 .gwt-SuggestBox, .gwt-TextArea, .gwt-TextBox, .textBasedGridCellEditor, .leaflet-container {
     font-family: Arial Unicode MS, Arial, sans-serif;
     font-family: Montserrat, Arial Unicode MS, Arial, sans-serif;
     font-family: Roboto, Arial Unicode MS, Arial, sans-serif;
     font-family: 'Open Sans', Arial Unicode MS, Arial, sans-serif;
+    font-family: 'Segoe UI', Arial Unicode MS, Arial, sans-serif;
 }
 
 body, html {
@@ -23,7 +25,7 @@ body {
     scrollbar-width: thin;
     /*ie*/
     scrollbar-face-color: var(--scrollbar-color);
-    scrollbar-arrow-color: var(--border-color);
+    scrollbar-arrow-color: var(--component-border-color);
 }
 
 ::-webkit-scrollbar-track {
@@ -40,7 +42,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--border-color);
+    background: var(--component-border-color);
 }
 
 ::-webkit-scrollbar-corner {
@@ -249,7 +251,7 @@ input[type=checkbox]:focus {
 }
 
 .dataPanelRendererGridPanel {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     position: relative;
     border-radius: var(--textfield-border-radius);
 }
@@ -276,7 +278,7 @@ input[type=checkbox]:focus {
 .captionPanelContainer {
     overflow: visible;
     position: relative;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--panel-border-color);
     margin: 1em 1px 1px 1px;
     padding: 2px 1px 1px 1px;
     border-radius: var(--panel-border-radius);
@@ -361,12 +363,12 @@ input[type=checkbox]:focus {
 }
 
 .toolbarSelectedNavigatorButton {
-    border: solid 1px var(--border-color);
+    border: solid 1px var(--component-border-color);
     background: var(--selection-color);
 }
 
 .toolbarNavigatorButton:hover {
-    border: solid 1px var(--border-color);
+    border: solid 1px var(--component-border-color);
     background: var(--selection-color);
 }
 
@@ -398,7 +400,7 @@ input[type=checkbox]:focus {
 }
 
 .dataFilterValueTablePanel {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     border-radius: var(--textfield-border-radius);
     margin: 2px 2px 2px 1px;
     min-height: 16px !important;
@@ -427,7 +429,7 @@ input[type=checkbox]:focus {
 /* ------------ Popups  ------------ */
 .popup {
     background-color: var(--background-color);
-    border: 1px outset var(--border-color);
+    border: 1px outset var(--component-border-color);
 }
 
 .popup-sumBox {
@@ -446,7 +448,7 @@ input[type=checkbox]:focus {
     font-weight: bold;
     text-align: center;
     display: block;
-    border: 2px dashed var(--border-color);
+    border: 2px dashed var(--component-border-color);
     border-radius: 7px;
 }
 
@@ -456,7 +458,7 @@ input[type=checkbox]:focus {
 }
 
 .gwt-ProgressBar-shell {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     background-color: #AAAAAA;
     width: 50%;
     height: 12pt;
@@ -470,7 +472,6 @@ input[type=checkbox]:focus {
     padding: 0px;
     margin: 0px;
     color: white;
-    font-size: 8pt;
 }
 
 .upFileNameLabel {
@@ -501,7 +502,7 @@ input[type=checkbox]:focus {
 
 .stackMessage {
     margin: 5px 5px 5px 5px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--panel-border-color);
     padding: 5px;
     overflow-wrap: break-word;
     word-wrap: break-word;
@@ -527,7 +528,7 @@ input[type=checkbox]:focus {
     outline: none;
     overflow-y: auto;
     overflow-x: hidden;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     border-radius: var(--table-border-radius);
     background: var(--component-background-color);
     padding: 2px 3px;
@@ -618,7 +619,7 @@ input[type=checkbox]:focus {
 .pivotTable {
     overflow-x: auto;
     overflow-y: auto;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--panel-border-color);
 }
 
 .pivotTable:focus {
@@ -626,7 +627,7 @@ input[type=checkbox]:focus {
 }
 
 .pvtAxisContainer {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--panel-border-color);
     background-color: transparent;
 }
 
@@ -635,13 +636,14 @@ input[type=checkbox]:focus {
 }
 
 .pvtAxisContainer li span.pvtAttr {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     border-radius: var(--combobox-border-radius);
     color: var(--text-color);
+    background-color: var(--component-background-color);
 }
 
 .pvtVals {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--panel-border-color);
     background-color: transparent;
 }
 
@@ -655,35 +657,28 @@ input[type=checkbox]:focus {
     width: 100%;
 }
 
-.pvtUnused li span.pvtAttr {
-    background: transparent;
-}
-
 .pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
     background: var(--selection-color);
 }
 
-table.pvtTable, table.pvtTable tbody tr td, table.pvtTable thead tr td {
-    border: 1px solid var(--border-color);
+table.pvtTable {
+    border: 1px solid var(--component-border-color);
+    color: var(--text-color);
+}
+
+table.pvtTable tbody tr td, table.pvtTable thead tr td {
+    border: 1px solid var(--grid-separator-border-color);
     color: var(--text-color);
 }
 
 table.pvtTable thead tr th, table.pvtTable tbody tr th {
-    background-color: transparent;
-    border: 1px solid var(--border-color);
-}
-
-table.pvtTable tbody tr td {
-    background-color: transparent;
+    border: 1px solid var(--grid-separator-border-color);
 }
 
 .pvtCols, .pvtRendererArea {
     width: 100%;
 }
 
-.pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text] {
-    font-size: 8pt;
-}
 
 .pvtAggregator {
     margin-bottom: 1px;
@@ -694,8 +689,8 @@ table.pvtTable tbody tr td {
 }
 
 .pvtCheckContainer {
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
+    border-top: 1px solid var(--panel-border-color);
+    border-bottom: 1px solid var(--panel-border-color);
 }
 
 .pvtCheckContainer p {
@@ -703,7 +698,7 @@ table.pvtTable tbody tr td {
 }
 
 .pvtFilterBox {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
     background-color: var(--background-color);
 }
 
@@ -724,7 +719,7 @@ table.pvtTable tbody tr td {
 }
 
 .pvtFilterBox input[type=text] {
-    border: 1px solid var(--border-color)
+    border: 1px solid var(--component-border-color)
 }
 
 .pvtUi {
@@ -733,7 +728,7 @@ table.pvtTable tbody tr td {
 }
 
 .pvtRows, .pvtCols {
-    border: 1px solid var(--border-color);;
+    border: 1px solid var(--panel-border-color);;
 }
 
 .pvtColumnsTable {
@@ -791,7 +786,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 /* ------------ Leaflet components  ------------ */
 .leaflet-container {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
 }
 
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
@@ -812,12 +807,12 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .leaflet-popup-scrolled {
-    border-bottom: 1px solid var(--border-color);
-    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--component-border-color);
+    border-top: 1px solid var(--component-border-color);
 }
 
 .leaflet-bar a, .leaflet-bar a:first-child:hover {
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--component-border-color);
 }
 
 .leaflet-bar a:hover {
@@ -853,7 +848,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     position: absolute;
     left: -15px; /* -half size + margin marker icon (6) - border */
     top: -15px; /* -half size + margin marker icon (6) - border */
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
 }
 
 .leaflet-marker-cluster-text {
@@ -878,7 +873,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .toolbarButton:hover {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--component-border-color);
 }
 
 .toolbarItem {
@@ -941,6 +936,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .verticalSeparator {
-    border-left: 1px solid var(--border-color);
+    border-left: 1px solid var(--panel-border-color);
 }
 

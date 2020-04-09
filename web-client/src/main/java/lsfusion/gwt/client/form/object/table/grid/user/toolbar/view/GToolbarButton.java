@@ -28,6 +28,6 @@ public abstract class GToolbarButton extends ImageButton {
 
     public void showBackground(boolean showBackground) {
         getElement().getStyle().setBackgroundColor(showBackground ? "var(--selection-color)" : "");
-        getElement().getStyle().setProperty("border", showBackground ? "1px solid var(--border-color)" : "");
+        getElement().getStyle().setProperty("border", showBackground ? "1px solid var(--component-border-color)" : "");
     }
 }

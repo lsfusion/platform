@@ -8,8 +8,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.CELL_HORIZONTAL_PADDING;
-import static lsfusion.gwt.client.base.GwtClientUtils.CELL_VERTICAL_PADDING;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 
 public class TextGridCellEditor extends TextBasedGridCellEditor {
     public TextGridCellEditor(EditManager editManager, GPropertyDraw property) {
@@ -48,7 +47,7 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
         if (font != null) {
             font.apply(textareaStyle);
         }
-        textareaStyle.setFontSize(8, Style.Unit.PT);
+        textareaStyle.setFontSize(DEFAULT_FONT_PT_SIZE, Style.Unit.PT);
 
         cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
         cellParent.getStyle().setPadding(0, Style.Unit.PX);
