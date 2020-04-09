@@ -222,10 +222,6 @@ forbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (UserRol
 dataForbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (CustomUser);
 forbidDuplicateForms (CustomUser u) = OVERRIDE dataForbidDuplicateForms(u), GROUP MAX forbidDuplicateForms(UserRole ur) IF has(u, ur);
 
-EXTEND FORM customUsers
-    PROPERTIES(u) dataForbidDuplicateForms BEFORE fontSize(u)
-;
-
 showDetailedInfo '{security.user.role.show.detailed.info}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 showDetailedInfo (CustomUser u) = GROUP MAX showDetailedInfo(UserRole ur) IF has(u, ur);
 
@@ -394,6 +390,12 @@ FORM securityPolicy '{security.form.policy}'
     
     OBJECTS pr = ActionOrProperty
     PROPERTIES(pr) READONLY caption, canonicalName
+    
+    // Users
+    OBJECTS u = CustomUser
+    PROPERTIES(u) READONLY name, login, nameMainRole
+    PROPERTIES(u) dataForbidDuplicateForms
+    FILTERS has(u, ur)
 ;
 
 DESIGN securityPolicy {
@@ -425,6 +427,11 @@ DESIGN securityPolicy {
                     caption = '{security.form.properties}';
                     MOVE BOX(TREE properties) { caption = '{security.form.tree}'; }
                     MOVE BOX(pr) { caption = '{security.form.table}'; }
+                }
+                
+                MOVE BOX(u) {
+                    caption = '{authentication.users}';
+                    GRID(u) { headerHeight = 60; }
                 }
                 
                 NEW roleApplicationScroll {
