@@ -16,12 +16,13 @@ public class ClientSettings implements Serializable {
     public boolean devMode;
     public boolean showDetailedInfo;
     public boolean forbidDuplicateForms;
+    public boolean showNotDefinedStrings;
     public ColorTheme colorTheme;
     public ColorPreferences colorPreferences;
 
-    public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, 
+    public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
                           long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, boolean showDetailedInfo,
-                          boolean forbidDuplicateForms, ColorTheme colorTheme, ColorPreferences colorPreferences) {
+                          boolean forbidDuplicateForms, boolean showNotDefinedStrings, ColorTheme colorTheme, ColorPreferences colorPreferences) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -31,6 +32,7 @@ public class ClientSettings implements Serializable {
         this.devMode = devMode;
         this.showDetailedInfo = showDetailedInfo;
         this.forbidDuplicateForms = forbidDuplicateForms;
+        this.showNotDefinedStrings = showNotDefinedStrings;
         this.colorTheme = colorTheme;
         this.colorPreferences = colorPreferences;
     }

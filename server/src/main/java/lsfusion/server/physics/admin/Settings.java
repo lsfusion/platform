@@ -2560,4 +2560,14 @@ public class Settings implements Cloneable {
     public void setExternalHttpServerThreadCount(int externalHttpServerThreadCount) {
         this.externalHttpServerThreadCount = externalHttpServerThreadCount;
     }
+
+    private boolean showNotDefinedStrings = false;
+
+    public boolean isShowNotDefinedStrings() {
+        return showNotDefinedStrings;
+    }
+
+    public void setShowNotDefinedStrings(boolean showNotDefinedStrings) {
+        this.showNotDefinedStrings = showNotDefinedStrings;
+    }
 }

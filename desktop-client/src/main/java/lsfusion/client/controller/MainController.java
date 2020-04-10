@@ -69,6 +69,7 @@ public class MainController {
     public static boolean busyDialog;
     public static long busyDialogTimeout;
     public static boolean useRequestTimeout;
+    public static boolean showNotDefinedStrings;
     public static boolean showDetailedInfo;
     public static boolean forbidDuplicateForms;
     public static long timeDiffServerClientLog = 1000;

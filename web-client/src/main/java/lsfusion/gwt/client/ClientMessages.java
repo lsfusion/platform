@@ -23,6 +23,7 @@ public interface ClientMessages extends Messages {
     String panel();
     String hide();
 
+    String formRendererEmpty();
     String formRendererNotDefined();
     String formRendererRequired();
 

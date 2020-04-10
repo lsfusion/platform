@@ -20,6 +20,6 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
         ClientSettings clientSettings = getRemoteNavigator(action).getClientSettings();
         GColorTheme colorTheme = GColorTheme.valueOf(clientSettings.colorTheme.name());
         return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout,
-                clientSettings.devMode, clientSettings.showDetailedInfo, clientSettings.forbidDuplicateForms, colorTheme);
+                clientSettings.devMode, clientSettings.showDetailedInfo, clientSettings.forbidDuplicateForms, clientSettings.showNotDefinedStrings, colorTheme);
     }
 }
