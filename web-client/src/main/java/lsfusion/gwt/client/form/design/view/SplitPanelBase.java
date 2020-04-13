@@ -10,7 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.design.GComponent;
 
 public abstract class SplitPanelBase<P extends Panel> {
-    public final static int DEFAULT_SPLITTER_SIZE = 2;
+    public final static int DEFAULT_SPLITTER_SIZE = 6; // with borders
 
     protected final P panel;
 
@@ -195,7 +195,6 @@ public abstract class SplitPanelBase<P extends Panel> {
     protected class HSplitter extends Splitter {
         public HSplitter() {
             setStyleName("gwt-SplitLayoutPanel-HDragger");
-            setWidth(DEFAULT_SPLITTER_SIZE + "px");
         }
 
         @Override
@@ -207,7 +206,6 @@ public abstract class SplitPanelBase<P extends Panel> {
     protected class VSplitter extends Splitter {
         public VSplitter() {
             setStyleName("gwt-SplitLayoutPanel-VDragger");
-            setHeight(DEFAULT_SPLITTER_SIZE + "px");
         }
 
         @Override

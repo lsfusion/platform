@@ -16,7 +16,7 @@ public class SplitWindowElement extends WindowElement {
     // храним вместе с порядком и направлением, чтобы знать, куда вставлять элемент при его видимости
     protected LinkedHashMap<WindowElement, DockLayoutPanel.Direction> windowDirections = new LinkedHashMap<>();
 
-    private SplitLayoutPanel splitPanel = new SplitLayoutPanel();
+    private SplitLayoutPanel splitPanel = new SplitLayoutPanel(6); // with borders
 
     public SplitWindowElement(WindowsController main, int x, int y, int width, int height) {
         super(main, x, y, width, height);

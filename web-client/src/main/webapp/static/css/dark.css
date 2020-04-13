@@ -6,7 +6,7 @@
     --disabled-text-color: #6b6b6b;
     --background-color: #3C3F41;
     --component-background-color: #45494A;
-    --split-border-color: #2A2C2D;
+    --split-border-color: var(--component-border-color);
     --dialog-border-color: var(--scrollbar-color);
     --component-border-color: #646464;
     --panel-border-color: #515151;

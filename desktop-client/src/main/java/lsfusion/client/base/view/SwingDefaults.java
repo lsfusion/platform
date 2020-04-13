@@ -279,4 +279,8 @@ public class SwingDefaults {
     public static Color getSelectionBorderColor() {
         return colorTheme.isLight() ? focusedTableCellBorderColorLight : focusedTableCellBorderColorDark;
     }
+    
+    public static int splitDividerWidth() {
+        return 6;
+    }
 }

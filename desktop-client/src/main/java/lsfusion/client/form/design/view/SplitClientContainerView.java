@@ -7,11 +7,15 @@ import lsfusion.interop.form.design.CachableLayout;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
 import java.util.Map;
 
 import static java.lang.Math.max;
+import static javax.swing.BorderFactory.createMatteBorder;
+import static lsfusion.client.base.view.SwingDefaults.getComponentBorderColor;
+import static lsfusion.client.base.view.SwingDefaults.splitDividerWidth;
 import static lsfusion.interop.form.design.CachableLayout.*;
 
 public class SplitClientContainerView extends AbstractClientContainerView {
@@ -148,14 +152,19 @@ public class SplitClientContainerView extends AbstractClientContainerView {
     public JComponentPanel getView() {
         return panel;
     }
+    
+    public boolean isVertical() {
+        return container.isSplitVertical();
+    }
 
     private class SplitPane extends JSplitPane {
         public SplitPane() {
-            super(container.isSplitVertical() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT, false);
+            super(isVertical() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT, false);
 
             setBorder(null);
 
-            ((BasicSplitPaneUI) getUI()).getDivider().setBorder(BorderFactory.createEtchedBorder());
+            setDividerSize(splitDividerWidth());
+            updateDividerBorder();
 
             //удаляем default actions
             getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getF6(), "none");
@@ -176,7 +185,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
             Dimension left = leftView != null ? sizeGetter.get(leftView) : new Dimension(0, 0);
             Dimension right = rightView != null ? sizeGetter.get(rightView) : new Dimension(0, 0);
 
-            if (container.isSplitVertical()) {
+            if (isVertical()) {
                 result.width = limitedSum(result.width, max(left.width, right.width));
                 result.height = limitedSum(result.height, left.height, right.height);
             } else {
@@ -192,15 +201,28 @@ public class SplitClientContainerView extends AbstractClientContainerView {
             //не останавливаемся в поиске validate-root, а идём дальше вверх до верхнего контейнера
             return false;
         }
+        
+        private void updateDividerBorder() {
+            int hBorderWidth = isVertical() ? 1 : 0;
+            int vBorderWidth = isVertical() ? 0 : 1;
+            Border dividerBorder = createMatteBorder(hBorderWidth, vBorderWidth, hBorderWidth, vBorderWidth, getComponentBorderColor());
+            ((BasicSplitPaneUI) getUI()).getDivider().setBorder(dividerBorder);
+        }
+
+        @Override
+        public void updateUI() {
+            super.updateUI();
+            updateDividerBorder();
+        }
     }
 
     public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
         Dimension pref = super.getMaxPreferredSize(containerViews);
 
-        if (container.isSplitVertical()) {
-            pref.height += 5; // пока хардкодим ширину сплиттера (в preferred size она вообще не учитывается) 
+        if (isVertical()) {
+            pref.height += splitDividerWidth(); // пока хардкодим ширину сплиттера (в preferred size она вообще не учитывается) 
         } else {
-            pref.width += 5;
+            pref.width += splitDividerWidth();
         }
 
         return pref;
