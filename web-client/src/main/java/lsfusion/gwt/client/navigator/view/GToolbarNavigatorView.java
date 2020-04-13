@@ -19,6 +19,7 @@ import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import java.util.Set;
 
 public class GToolbarNavigatorView extends GNavigatorView {
+    private static final int PADDING_H = 7;
     private static final int PADDING_STEP = 15;
     private CellPanel panel;
     private boolean vertical;
@@ -58,6 +59,12 @@ public class GToolbarNavigatorView extends GNavigatorView {
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
         final ImageButton button = new AppImageButton(element.image, element.caption, verticalTextAlign, !vertical);
+        Style buttonStyle = button.getElement().getStyle();
+        buttonStyle.setPaddingTop(5, Style.Unit.PX);
+        buttonStyle.setPaddingBottom(5, Style.Unit.PX);
+        buttonStyle.setPaddingLeft(PADDING_H, Style.Unit.PX);
+        buttonStyle.setPaddingRight(PADDING_H, Style.Unit.PX);
+        
         button.addMouseDownHandler(new MouseDownHandler() {
             @Override
             public void onMouseDown(MouseDownEvent event) {
@@ -115,7 +122,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
         }
         if (vertical) {
             button.setWidth("100%");
-            button.getElement().getStyle().setPaddingLeft(7 + PADDING_STEP * step, Style.Unit.PX);
+            button.getElement().getStyle().setPaddingLeft(PADDING_H + PADDING_STEP * step, Style.Unit.PX);
         }
 
         panel.add(button);
