@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.classes.view;
 
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.LabelPropertyRenderer;
 
@@ -18,12 +19,12 @@ public class StringPropertyRenderer extends LabelPropertyRenderer {
     }
 
     public void setValue(Object value) {
-        super.setValue(value);
+        super.setValue(value != null && value.toString().isEmpty() && !MainController.showNotDefinedStrings ? null : value);
 
         if (value != null) {
-            getComponent().setText(echoSymbols ? "******" : value.toString());
+            getComponent().setText(echoSymbols ? "******" : (value.toString().isEmpty() && !MainController.showNotDefinedStrings ? EMPTY_STRING : value.toString()));
         } else if (property == null || !property.isEditableNotNull()) {
-            getComponent().setText(EMPTY_STRING);
+            getComponent().setText(MainController.showNotDefinedStrings ? NOT_DEFINED_STRING : "");
         }
     }
 }

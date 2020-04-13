@@ -9,18 +9,20 @@ public class GetClientSettingsResult implements Result {
     public boolean devMode;
     public boolean showDetailedInfo;
     public boolean forbidDuplicateForms;
+    public boolean showNotDefinedStrings;
     public GColorTheme colorTheme;
 
     public GetClientSettingsResult() {
     }
 
     public GetClientSettingsResult(boolean busyDialog, long busyDialogTimeout, boolean devMode, boolean showDetailedInfo,
-                                   boolean forbidDuplicateForms, GColorTheme colorTheme) {
+                                   boolean forbidDuplicateForms, boolean showNotDefinedStrings, GColorTheme colorTheme) {
         this.busyDialog = busyDialog;
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.showDetailedInfo = showDetailedInfo;
         this.forbidDuplicateForms = forbidDuplicateForms;
+        this.showNotDefinedStrings = showNotDefinedStrings;
         this.colorTheme = colorTheme;
     }
 }

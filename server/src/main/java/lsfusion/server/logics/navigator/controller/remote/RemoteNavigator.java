@@ -267,7 +267,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             throw Throwables.propagate(e);
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, devMode, showDetailedInfo, forbidDuplicateForms, colorTheme, colorPreferences);
+                useRequestTimeout, devMode, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
+                colorTheme, colorPreferences);
     }
 
     public void gainedFocus(FormInstance form) {

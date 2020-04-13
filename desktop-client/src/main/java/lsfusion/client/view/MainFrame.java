@@ -104,6 +104,7 @@ public abstract class MainFrame extends JFrame {
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
             MainController.showDetailedInfo = clientSettings.showDetailedInfo;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
+            MainController.showNotDefinedStrings = clientSettings.showNotDefinedStrings;
             MainController.colorPreferences = clientSettings.colorPreferences;
             SwingDefaults.resetClientSettingsProperties();
 

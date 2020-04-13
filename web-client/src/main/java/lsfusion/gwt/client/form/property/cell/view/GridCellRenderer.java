@@ -6,7 +6,8 @@ import lsfusion.gwt.client.form.design.GFont;
 
 public abstract class GridCellRenderer {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    protected final String EMPTY_VALUE = messages.formRendererNotDefined();
+    protected final String EMPTY_VALUE = messages.formRendererEmpty();
+    protected final String NOT_DEFINED_VALUE = messages.formRendererNotDefined();
     protected final String REQUIRED_VALUE = messages.formRendererRequired();
 
     public void render(Element element, GFont font, Object value, boolean isSingle) {

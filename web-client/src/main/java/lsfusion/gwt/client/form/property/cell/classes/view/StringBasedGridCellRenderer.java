@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRenderer<T> {
     StringBasedGridCellRenderer(GPropertyDraw property) {
@@ -15,13 +16,17 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
                 element.addClassName("requiredValueString");
                 element.removeClassName("nullValueString");
             } else {
-                setInnerContent(element, EMPTY_VALUE);
+                setInnerContent(element, MainFrame.showNotDefinedStrings ? NOT_DEFINED_VALUE : "");
                 element.addClassName("nullValueString");
                 element.removeClassName("requiredValueString");
             }
         } else {
-            setInnerContent(element, innerText);
-            element.removeClassName("nullValueString");
+            boolean empty = innerText.isEmpty() && !MainFrame.showNotDefinedStrings;
+            setInnerContent(element, empty ? EMPTY_VALUE : innerText);
+            if(empty)
+                element.addClassName("nullValueString");
+            else
+                element.removeClassName("nullValueString");
             element.removeClassName("requiredValueString");
         }
     }

@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.classes.view;
 
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorKit;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorPane;
@@ -42,21 +43,22 @@ public class TextPropertyRenderer extends PropertyRenderer {
     }
 
     public void setValue(Object value) {
-        super.setValue(value);
+        super.setValue(value != null && value.toString().isEmpty() && !MainController.showNotDefinedStrings ? null : value);
         if (value == null) {
             getComponent().setContentType("text");
             if (property != null && property.isEditableNotNull()) {
                 getComponent().setText(REQUIRED_STRING);
             } else {
-                getComponent().setText(EMPTY_STRING);
+                getComponent().setText(MainController.showNotDefinedStrings ? NOT_DEFINED_STRING : "");
             }
         } else {
+            String text = value.toString().isEmpty() && !MainController.showNotDefinedStrings ? EMPTY_STRING : value.toString();
             if (rich) {
                 getComponent().setContentType("text/html");
-                RichEditorPane.setText(getComponent(), value.toString());
+                RichEditorPane.setText(getComponent(), text);
             } else {
                 getComponent().setContentType("text");
-                getComponent().setText(value.toString());
+                getComponent().setText(text);
             }
         }
     }
