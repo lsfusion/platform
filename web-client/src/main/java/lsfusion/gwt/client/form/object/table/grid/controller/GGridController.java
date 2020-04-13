@@ -5,9 +5,9 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.SimpleImageButton;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -159,7 +159,7 @@ public class GGridController extends GAbstractTableController {
     private GToolbarButton pivotTableButton;
     private GToolbarButton settingsButton;
     private GToolbarButton manualUpdateTableButton;
-    private ImageButton forceUpdateTableButton;
+    private SimpleImageButton forceUpdateTableButton;
 
     private GToolbarButton mapTableButton;
 
@@ -292,7 +292,7 @@ public class GGridController extends GAbstractTableController {
         };
         addToToolbar(manualUpdateTableButton);
 
-        forceUpdateTableButton = new ImageButton(messages.formGridUpdate(), "ok.png");
+        forceUpdateTableButton = new SimpleImageButton(messages.formGridUpdate(), "ok.png");
         forceUpdateTableButton.addClickHandler(event -> {
                     formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE);
                 });

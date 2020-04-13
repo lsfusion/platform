@@ -58,10 +58,11 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
         button = new ActionButton(property.imageHolder, property.getEditCaption());
         button.addStyleName("actionPanelRenderer");
-        button.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
-        button.getElement().getStyle().setPaddingBottom(0, Style.Unit.PX);
-        button.getElement().getStyle().setPaddingLeft(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
-        button.getElement().getStyle().setPaddingRight(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
+        Style buttonStyle = button.getElement().getStyle();
+        buttonStyle.setPaddingTop(0, Style.Unit.PX);
+        buttonStyle.setPaddingBottom(0, Style.Unit.PX);
+        buttonStyle.setPaddingLeft(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
+        buttonStyle.setPaddingRight(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
 
         setTooltip(property.caption);
 
@@ -81,12 +82,12 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         int baseHeight = property.getValueHeight(null);
         if (baseHeight > -1) {
             // min-height instead of height to be able to stretch vertically
-            button.getElement().getStyle().setProperty("minHeight", baseHeight + borderWidth + "px");
+            buttonStyle.setProperty("minHeight", baseHeight + borderWidth + "px");
         }
         int baseWidth = property.valueWidth;
         if (baseWidth > -1) {
             // min-width instead of width to be able to stretch horizontally
-            button.getElement().getStyle().setProperty("minWidth", baseWidth + borderWidth + "px");
+            buttonStyle.setProperty("minWidth", baseWidth + borderWidth + "px");
         }
         if (property.font != null) {
             property.font.apply(button.getLabel().getElement().getStyle());
