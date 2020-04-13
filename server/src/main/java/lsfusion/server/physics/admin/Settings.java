@@ -1227,6 +1227,16 @@ public class Settings implements Cloneable {
         this.queryRowCountPessLimit = queryRowCountPessLimit;
     }
 
+    private boolean useDeleteFromInsteadOfTruncateForTempTables = false;
+
+    public boolean isUseDeleteFromInsteadOfTruncateForTempTables() {
+        return useDeleteFromInsteadOfTruncateForTempTables;
+    }
+
+    public void setUseDeleteFromInsteadOfTruncateForTempTables(boolean useDeleteFromInsteadOfTruncateForTempTables) {
+        this.useDeleteFromInsteadOfTruncateForTempTables = useDeleteFromInsteadOfTruncateForTempTables;
+    }
+
     private int queryRowCountOptDivider = 50; // когда предполагаемый объем потребления памяти, превысит заданную часть, кидать exception
 
     public int getQueryRowCountOptDivider() {

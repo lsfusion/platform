@@ -2370,21 +2370,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void truncate(DBTable table, OperationOwner owner) throws SQLException {
-        truncate(table.getName(syntax), owner, register(table, TableOwner.global, TableChange.REMOVE));
+        truncate(table.getName(syntax), owner, TableOwner.global, register(table, TableOwner.global, TableChange.REMOVE));
     }
     
     public void truncateSession(String table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
 
 //        lastOwner.put(table, tableOwner instanceof SessionTableUsage ? ((SessionTableUsage) tableOwner).stack + '\n' + ExceptionUtils.getStackTrace(): null);
-        truncate(syntax.getSessionTableName(table), owner, register(table, tableOwner, TableChange.REMOVE));
+        truncate(syntax.getSessionTableName(table), owner, tableOwner, register(table, tableOwner, TableChange.REMOVE));
     }
 
-    public void truncate(String table, OperationOwner owner, RegisterChange registerChange) throws SQLException {
+    public void truncate(String table, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         if(problemInTransaction == null) {
-            executeDDL("TRUNCATE TABLE " + table, StaticExecuteEnvironmentImpl.NOREADONLY, owner, registerChange); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
-//            executeDML("DELETE FROM " + syntax.getSessionTableName(table), owner, tableOwner);
+            if(Settings.get().isUseDeleteFromInsteadOfTruncateForTempTables())
+                executeDML("DELETE FROM " + syntax.getSessionTableName(table), owner, tableOwner, registerChange);
+            else
+                executeDDL("TRUNCATE TABLE " + table, StaticExecuteEnvironmentImpl.NOREADONLY, owner, registerChange); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
         }
     }
 
