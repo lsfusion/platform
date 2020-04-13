@@ -15,9 +15,11 @@ import lsfusion.server.logics.classes.data.time.TimeClass;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -139,40 +141,18 @@ public abstract class ImportPlainIterator {
         return wheresList;
     }
 
-    protected boolean ignoreRow() {
-        boolean ignoreRow = false;
-        try {
-            for (Where where : wheresList) {
-
-                boolean conditionResult;
-                if(where.isRow()) {
-                    conditionResult = ignoreRowIndexCondition(where.not, getRowIndex(), where.sign, where.value);
-                } else {
-                    Type fieldType = fieldTypes.get(where.field);
-                    if (fieldType == null || !mapping.containsKey(where.field)) {
-                        throw Throwables.propagate(new RuntimeException(String.format("Incorrect WHERE in IMPORT: no such column '%s'", where.field)));
-                    }
-
-                    Object fieldValue = getPropValue(mapping.get(where.field), fieldType);
-                    if(fieldValue != null) {
-                        if (fieldType == DateClass.instance || fieldType == TimeClass.instance || fieldType == DateTimeClass.instance) {
-                            conditionResult = ignoreRowDateCondition(where.not, (Date) fieldValue, where.sign, (Date) fieldType.parseString(where.value));
-                        } else if (fieldType instanceof NumericClass) {
-                            conditionResult = ignoreRowNumericCondition(where.not, (BigDecimal) fieldValue, where.sign, (BigDecimal) fieldType.parseString(where.value));
-                        } else {
-                            conditionResult = ignoreRowStringCondition(where.not, String.valueOf(fieldValue), where.sign, where.value);
-                        }
-                    } else {
-                        conditionResult = true;
-                    }
-                }
-
-                ignoreRow = where.isAnd() ? (ignoreRow | conditionResult) : where.isOr() ? (ignoreRow & conditionResult) : conditionResult;
-            }
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-        return ignoreRow;
+    private static int compare(Object field1, Object field2) {
+        if (field1 instanceof LocalDate) {
+            return ((LocalDate) field1).compareTo((LocalDate) field2);
+        } else if (field1 instanceof LocalTime) {
+            return ((LocalTime) field1).compareTo((LocalTime) field2);
+        } else if (field1 instanceof LocalDateTime) {
+            return ((LocalDateTime) field1).compareTo((LocalDateTime) field2);
+        } else if (field1 instanceof BigDecimal) {
+            return ((BigDecimal) field1).compareTo((BigDecimal) field2);
+        } else if (field1 instanceof String) {
+            return ((String) field1).compareTo((String) field2);
+        } else return 0;
     }
 
     private boolean ignoreRowIndexCondition(boolean not, Integer fieldValue, String sign, String value) {
@@ -208,89 +188,66 @@ public abstract class ImportPlainIterator {
         return not != ignoreRow;
     }
 
-    private boolean ignoreRowNumericCondition(boolean not, BigDecimal fieldValue, String sign, BigDecimal value) {
+    protected boolean ignoreRow() {
         boolean ignoreRow = false;
-        if (sign.equals(IN)) {
-            throw new UnsupportedOperationException("IMPORT WHERE IN is not supported for numeric fields");
-        } else {
-            switch (sign) {
-                case EQ:
-                    if (!fieldValue.equals(value))
-                        ignoreRow = true;
-                    break;
-                case GE:
-                    if (fieldValue.compareTo(value) < 0)
-                        ignoreRow = true;
-                    break;
-                case GT:
-                    if (fieldValue.compareTo(value) <= 0)
-                        ignoreRow = true;
-                    break;
-                case LE:
-                    if (fieldValue.compareTo(value) > 0)
-                        ignoreRow = true;
-                    break;
-                case LT:
-                    if (fieldValue.compareTo(value) >= 0)
-                        ignoreRow = true;
-                    break;
+        try {
+            for (Where where : wheresList) {
+
+                boolean conditionResult;
+                if(where.isRow()) {
+                    conditionResult = ignoreRowIndexCondition(where.not, getRowIndex(), where.sign, where.value);
+                } else {
+                    Type fieldType = fieldTypes.get(where.field);
+                    if (fieldType == null || !mapping.containsKey(where.field)) {
+                        throw Throwables.propagate(new RuntimeException(String.format("Incorrect WHERE in IMPORT: no such column '%s'", where.field)));
+                    }
+
+                    Object fieldValue = getPropValue(mapping.get(where.field), fieldType);
+                    if(fieldValue != null) {
+                        if (fieldType == DateClass.instance || fieldType == TimeClass.instance || fieldType == DateTimeClass.instance || fieldType instanceof NumericClass) {
+                            conditionResult = ignoreRowCondition(where.not, fieldValue, where.sign, fieldType.parseString(where.value));
+                        } else {
+                            conditionResult = ignoreRowCondition(where.not, String.valueOf(fieldValue), where.sign, where.value);
+                        }
+                    } else {
+                        conditionResult = true;
+                    }
+                }
+
+                ignoreRow = where.isAnd() ? (ignoreRow | conditionResult) : where.isOr() ? (ignoreRow & conditionResult) : conditionResult;
             }
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
-        return not != ignoreRow;
+        return ignoreRow;
     }
 
-    private boolean ignoreRowStringCondition(boolean not, String fieldValue, String sign, String value) {
+    private boolean ignoreRowCondition(boolean not, Object fieldValue, String sign, Object value) {
         boolean ignoreRow = false;
         if (sign.equals(IN)) {
-            List<String> stringValues = splitIn(value);
-            ignoreRow = !stringValues.contains(fieldValue);
-        } else {
-            switch (sign) {
-                case EQ:
-                    if (!fieldValue.equals(value))
-                        ignoreRow = true;
-                    break;
-                case GE:
-                    if (fieldValue.compareTo(value) < 0)
-                        ignoreRow = true;
-                    break;
-                case GT:
-                    if (fieldValue.compareTo(value) <= 0)
-                        ignoreRow = true;
-                    break;
-                case LE:
-                    if (fieldValue.compareTo(value) > 0)
-                        ignoreRow = true;
-                    break;
-                case LT:
-                    if (fieldValue.compareTo(value) >= 0)
-                        ignoreRow = true;
-                    break;
+            if(fieldValue instanceof String && value instanceof String) {
+                List<String> stringValues = splitIn((String) value);
+                ignoreRow = !stringValues.contains(fieldValue);
+            } else {
+                throw new UnsupportedOperationException("IMPORT WHERE IN is not supported for numeric / date fields");
             }
-        }
-        return not != ignoreRow;
-    }
-
-    private boolean ignoreRowDateCondition(boolean not, Date fieldValue, String sign, Date value) {
-        boolean ignoreRow = false;
-        if (sign.equals(IN)) {
-            throw new UnsupportedOperationException("IMPORT WHERE IN is not supported for date fields");
         } else {
+            int compareResult = compare(fieldValue, value);
             switch (sign) {
                 case EQ:
-                    ignoreRow = fieldValue.compareTo(value) != 0;
+                    ignoreRow = compareResult != 0;
                     break;
                 case GE:
-                    ignoreRow = fieldValue.compareTo(value) < 0;
+                    ignoreRow = compareResult < 0;
                     break;
                 case GT:
-                    ignoreRow = fieldValue.compareTo(value) <= 0;;
+                    ignoreRow = compareResult <= 0;
                     break;
                 case LE:
-                    ignoreRow = fieldValue.compareTo(value) >= 0;;
+                    ignoreRow = compareResult > 0;
                     break;
                 case LT:
-                    ignoreRow = fieldValue.compareTo(value) > 0;
+                    ignoreRow = compareResult >= 0;
                     break;
             }
         }
