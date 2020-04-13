@@ -1,6 +1,7 @@
 package lsfusion.client.base.busy;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.ProgressBar;
@@ -15,12 +16,11 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.swing.BorderFactory.*;
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.base.view.SwingDefaults.getComponentBorderColor;
 
 class BusyDialog extends JDialog {
-    private static final Color NEW_STACK_MESSAGE_BACKGROUND = new Color(232, 232, 249);
-    private static final Color STACK_MESSAGE_BORDER_COLOR = new Color(198, 198, 198); 
-
     private TopProgressBarPanel topProgressBarPanel;
     private Timer longActionTimer;
     private JButton btnCopy;
@@ -308,7 +308,7 @@ class BusyDialog extends JDialog {
             str += lines.get(i) + (i == lines.size() - 1 ? "" : "\n");
         }
         textArea.setText(str);
-        textArea.setBackground(changed ? NEW_STACK_MESSAGE_BACKGROUND : null);
+        textArea.setBackground(changed ? SwingDefaults.getSelectionColor() : null);
         
         textArea.addComponentListener(new ComponentAdapter() {
             @Override
@@ -317,7 +317,7 @@ class BusyDialog extends JDialog {
             }
         });
 
-        textArea.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(STACK_MESSAGE_BORDER_COLOR, 1), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        textArea.setBorder(createCompoundBorder(createLineBorder(getComponentBorderColor(), 1), createEmptyBorder(5, 5, 5, 5)));
 
         return textArea;
     }
