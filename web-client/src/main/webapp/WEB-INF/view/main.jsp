@@ -13,7 +13,7 @@
         <link id="themeCss" rel="stylesheet" type="text/css" href="static/css/light.css"/>
 
         <style>
-            @import url('https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i|Roboto:400,400i,700,700i|Open+Sans:400,400i,700,700i&display=swap&subset=cyrillic');
+            @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i&display=swap&subset=cyrillic');
         </style>
         
         <style type="text/css">

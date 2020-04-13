@@ -5,13 +5,9 @@ body, textarea, button, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .g
     font-size: 9pt;
 }
 
-body, textarea, select, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
+body, textarea, select, button, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
 .gwt-SuggestBox, .gwt-TextArea, .gwt-TextBox, .textBasedGridCellEditor, .leaflet-container {
-    font-family: Arial Unicode MS, Arial, sans-serif;
-    font-family: Montserrat, Arial Unicode MS, Arial, sans-serif;
-    font-family: Roboto, Arial Unicode MS, Arial, sans-serif;
-    font-family: 'Open Sans', Arial Unicode MS, Arial, sans-serif;
-    font-family: 'Segoe UI', Arial Unicode MS, Arial, sans-serif;
+    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
 }
 
 body, html {
