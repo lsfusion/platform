@@ -76,6 +76,9 @@ public interface SQLSyntax {
     String getDateTimeType();
     int getDateTimeSQL();
 
+    String getZDateTimeType();
+    int getZDateTimeSQL();
+
     String getTimeType();
     int getTimeSQL();
 

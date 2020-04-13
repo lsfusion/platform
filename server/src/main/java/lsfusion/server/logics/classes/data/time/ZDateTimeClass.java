@@ -71,7 +71,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getDateTimeType();
+        return syntax.getZDateTimeType();
     }
 
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
@@ -91,7 +91,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
     }
 
     public int getSQL(SQLSyntax syntax) {
-        return syntax.getDateTimeSQL();
+        return syntax.getZDateTimeSQL();
     }
 
     public Instant read(Object value) {

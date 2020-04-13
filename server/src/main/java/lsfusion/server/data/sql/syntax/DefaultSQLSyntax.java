@@ -121,8 +121,16 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return "timestamp";
     }
 
+    public String getZDateTimeType() {
+        return "timestamptz";
+    }
+
     public int getDateTimeSQL() {
         return Types.TIMESTAMP;
+    }
+
+    public int getZDateTimeSQL() {
+        return Types.TIMESTAMP_WITH_TIMEZONE;
     }
 
     public String getTimeType() {
