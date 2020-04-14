@@ -250,7 +250,8 @@ public interface SQLSyntax {
     boolean useFailedTimeInDeadlockPriority();
 
     String getAnalyze(String table);
-    
+    String getVacuum(String table);
+
     String getAnalyze();    
     String getVacuumDB();
 

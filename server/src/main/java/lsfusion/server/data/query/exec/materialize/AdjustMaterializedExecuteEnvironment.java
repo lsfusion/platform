@@ -428,7 +428,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
     }
 
     private static void drop(MaterializedQuery query, SQLSession session, OperationOwner owner) throws SQLException {
-        session.lockedReturnTemporaryTable(query.tableName, query.owner, owner);
+        session.lockedReturnTemporaryTable(query.tableName, query.owner, owner, query.count);
     }
 
     private class SubQueryEnv {
