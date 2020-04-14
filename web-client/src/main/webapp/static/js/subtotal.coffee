@@ -729,10 +729,11 @@ callWithJQuery ($) ->
                     collapseHiddenColSubtotal h, opts
                 else 
                     collapseShowColSubtotal h, opts
-            p = h.parent
-            while p
-                p.th.colSpan -= colSpan
-                p = p.parent
+            if not hasClass h.th, classColHide        
+                p = h.parent
+                while p
+                    p.th.colSpan -= colSpan
+                    p = p.parent
             h.clickStatus = clickStatusCollapsed
             h.onClick = expandCol
             axisHeaders.ah[h.col].expandedCount--
@@ -876,7 +877,10 @@ callWithJQuery ($) ->
             adjustRowAxisHeader axisHeaders, h.col, opts
     
         collapseColAxis = (axisHeaders, col, attrs, opts) ->
-            axisHeaders.collapseAttrHeader axisHeaders, h, opts for h in axisHeaders.ah[i].attrHeaders when h.clickStatus is clickStatusExpanded and h.children.length isnt 0 and colSubtotalIsEnabled opts, i for i in [attrs.length-2..col] by -1
+            for i in [attrs.length-2..col] by -1
+                if colSubtotalIsEnabled opts, i
+                    for h in axisHeaders.ah[i].attrHeaders when h.clickStatus is clickStatusExpanded and h.children.length isnt 0
+                        axisHeaders.collapseAttrHeader axisHeaders, h, opts
 
         collapseRowAxis = (axisHeaders, row, attrs, opts) ->
             for i in [axisHeaders.ah.length-2..row] by -1

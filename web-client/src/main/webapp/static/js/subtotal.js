@@ -1031,10 +1031,12 @@
             collapseShowColSubtotal(h, opts);
           }
         }
-        p = h.parent;
-        while (p) {
-          p.th.colSpan -= colSpan;
-          p = p.parent;
+        if (!hasClass(h.th, classColHide)) {
+          p = h.parent;
+          while (p) {
+            p.th.colSpan -= colSpan;
+            p = p.parent;
+          }
         }
         h.clickStatus = clickStatusCollapsed;
         h.onClick = expandCol;
@@ -1281,18 +1283,22 @@
         var h, k, ref, ref1, results;
         results = [];
         for (i = k = ref = attrs.length - 2, ref1 = col; k >= ref1; i = k += -1) {
-          results.push((function() {
-            var l, len1, ref2, results1;
-            ref2 = axisHeaders.ah[i].attrHeaders;
-            results1 = [];
-            for (l = 0, len1 = ref2.length; l < len1; l++) {
-              h = ref2[l];
-              if (h.clickStatus === clickStatusExpanded && h.children.length !== 0 && colSubtotalIsEnabled(opts, i)) {
-                results1.push(axisHeaders.collapseAttrHeader(axisHeaders, h, opts));
+          if (colSubtotalIsEnabled(opts, i)) {
+            results.push((function() {
+              var l, len1, ref2, results1;
+              ref2 = axisHeaders.ah[i].attrHeaders;
+              results1 = [];
+              for (l = 0, len1 = ref2.length; l < len1; l++) {
+                h = ref2[l];
+                if (h.clickStatus === clickStatusExpanded && h.children.length !== 0) {
+                  results1.push(axisHeaders.collapseAttrHeader(axisHeaders, h, opts));
+                }
               }
-            }
-            return results1;
-          })());
+              return results1;
+            })());
+          } else {
+            results.push(void 0);
+          }
         }
         return results;
       };
