@@ -803,12 +803,12 @@ callWithJQuery ($) ->
         collapseShowRowSubtotal = (h, opts) ->
             renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, false
             for cell in h.tr.querySelectorAll "th, td"
-                removeClass cell, "#{classRowExpanded} #{classRowHide}"
-                addClass cell, "#{classRowCollapsed} #{classRowShow}"
+                removeClass cell, "#{classRowExpanded}"
+                addClass cell, "#{classRowCollapsed}"
             if h.sTr
                 for cell in h.sTr.querySelectorAll "th, td"
-                    removeClass cell, "#{classRowExpanded} #{classRowHide}"
-                    addClass cell, "#{classRowCollapsed} #{classRowShow}"
+                    removeClass cell, "#{classRowExpanded}"
+                    addClass cell, "#{classRowCollapsed}"
 
         collapseChildRow = (ch, h, opts) ->
             collapseChildRow ch[chKey], h, opts for chKey in ch.children

@@ -1132,16 +1132,16 @@
         ref = h.tr.querySelectorAll("th, td");
         for (k = 0, len1 = ref.length; k < len1; k++) {
           cell = ref[k];
-          removeClass(cell, classRowExpanded + " " + classRowHide);
-          addClass(cell, classRowCollapsed + " " + classRowShow);
+          removeClass(cell, "" + classRowExpanded);
+          addClass(cell, "" + classRowCollapsed);
         }
         if (h.sTr) {
           ref1 = h.sTr.querySelectorAll("th, td");
           results = [];
           for (l = 0, len2 = ref1.length; l < len2; l++) {
             cell = ref1[l];
-            removeClass(cell, classRowExpanded + " " + classRowHide);
-            results.push(addClass(cell, classRowCollapsed + " " + classRowShow));
+            removeClass(cell, "" + classRowExpanded);
+            results.push(addClass(cell, "" + classRowCollapsed));
           }
           return results;
         }
