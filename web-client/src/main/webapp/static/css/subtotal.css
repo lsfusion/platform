@@ -21,7 +21,7 @@
         cursor: zoom-in !important;
     }
     table.pvtTable .pvtAxisLabel.collapsed.zoom {
-        cursor: zoom-out !important;
+        cursor: zoom-in !important;
     }
 
     /* RowLabel */
