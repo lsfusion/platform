@@ -1078,7 +1078,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
-                returnTemporaryTable(table, owner, opOwner, t instanceof lsfusion.server.data.sql.exception.SQLTimeoutException || fill.canBeNotEmptyIfFailed()); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка)
+                returnTemporaryTable(table, owner, opOwner, t instanceof lsfusion.server.data.sql.exception.SQLTimeoutException || fill.canBeNotEmptyIfFailed(), null); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка)
                 try { ServerLoggers.assertLog(problemInTransaction != null || (!Settings.get().isCheckSessionCount() || getSessionCount(table, opOwner) == 0), "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             }
@@ -1108,7 +1108,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 if(isExplainTemporaryTablesEnabled())
                     fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExecutionStackAspect.getExStackTrace());
                 lastReturnedStamp.put(entry.getKey(), System.currentTimeMillis());
-                truncateSession(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
+                truncateSession(entry.getKey(), opOwner, null, (tableOwner == null ? TableOwner.none : tableOwner));
                 logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey() + ", DEBUG INFO : " + sessionDebugInfo.get(entry.getKey())); // потом надо будет больше инфы по owner'у добавить, в основном keysTable из-за pendingCleaners 
                 iterator.remove();
             }
@@ -1117,15 +1117,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
 //    private final Map<String, String> lastOwner = new HashMap<String, String>();
 
-    public void returnTemporaryTable(final SessionTable table, TableOwner owner, final OperationOwner opOwner) throws SQLException {
-        lockedReturnTemporaryTable(table.getName(), owner, opOwner);
+    public void returnTemporaryTable(final SessionTable table, TableOwner owner, final OperationOwner opOwner, int count) throws SQLException {
+        lockedReturnTemporaryTable(table.getName(), owner, opOwner, count);
     }
 
-    public void lockedReturnTemporaryTable(String name, TableOwner owner, OperationOwner opOwner) throws SQLException {
+    public void lockedReturnTemporaryTable(String name, TableOwner owner, OperationOwner opOwner, int count) throws SQLException {
         lockRead(opOwner);
 
         try {
-            returnTemporaryTable(name, owner, opOwner, true);
+            returnTemporaryTable(name, owner, opOwner, true, count);
         } finally {
             unlockRead();
         }
@@ -1136,7 +1136,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return OperationOwner.unknown;
     }
 
-    public void returnTemporaryTable(final String table, final TableOwner owner, final OperationOwner opOwner, boolean truncate) throws SQLException {
+    public void returnTemporaryTable(final String table, final TableOwner owner, final OperationOwner opOwner, boolean truncate, Integer count) throws SQLException {
         temporaryTablesLock.lock();
 
         try {
@@ -1145,7 +1145,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 fifo.add("RETURN " + getCurrentTimeStamp() + " " + truncate + " " + table + " " + privateConnection.temporary + " " + BaseUtils.nullToString(sessionTablesMap.get(table)) +  " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
-                runSuppressed(() -> truncateSession(table, opOwner, owner), firstException);
+                runSuppressed(() -> truncateSession(table, opOwner, count, owner), firstException);
                 if(firstException.result != null) {
                     runSuppressed(() -> {
                         lastReturnedStamp.remove(table);
@@ -2370,23 +2370,26 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void truncate(DBTable table, OperationOwner owner) throws SQLException {
-        truncate(table.getName(syntax), owner, TableOwner.global, register(table, TableOwner.global, TableChange.REMOVE));
+        truncate(table.getName(syntax), owner, TableOwner.global, false, register(table, TableOwner.global, TableChange.REMOVE));
     }
     
-    public void truncateSession(String table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
+    public void truncateSession(String table, OperationOwner owner, Integer count, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
 
 //        lastOwner.put(table, tableOwner instanceof SessionTableUsage ? ((SessionTableUsage) tableOwner).stack + '\n' + ExceptionUtils.getStackTrace(): null);
-        truncate(syntax.getSessionTableName(table), owner, tableOwner, register(table, tableOwner, TableChange.REMOVE));
+        boolean useDeleteForm = count == null ? Settings.get().isDeleteFromInsteadOfTruncateForTempTablesUnknown() : count < Settings.get().getDeleteFromInsteadOfTruncateForTempTablesThreshold();
+        truncate(syntax.getSessionTableName(table), owner, tableOwner, useDeleteForm, register(table, tableOwner,  useDeleteForm ? TableChange.DELETE : TableChange.REMOVE));
     }
 
-    public void truncate(String table, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) throws SQLException {
+    public void truncate(String table, OperationOwner owner, TableOwner tableOwner, boolean useDeleteFrom, RegisterChange registerChange) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         if(problemInTransaction == null) {
-            if(Settings.get().isUseDeleteFromInsteadOfTruncateForTempTables())
-                executeDML("DELETE FROM " + syntax.getSessionTableName(table), owner, tableOwner, registerChange);
-            else
-                executeDDL("TRUNCATE TABLE " + table, StaticExecuteEnvironmentImpl.NOREADONLY, owner, registerChange); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
+            String tableName = syntax.getSessionTableName(table);
+            if(useDeleteFrom) {
+                executeDML("DELETE FROM " + tableName, owner, tableOwner, registerChange);
+                executeDML(syntax.getVacuum(tableName), owner, tableOwner, registerChange);
+            } else
+                executeDDL("TRUNCATE TABLE " + tableName, StaticExecuteEnvironmentImpl.NOREADONLY, owner, registerChange); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
         }
     }
 

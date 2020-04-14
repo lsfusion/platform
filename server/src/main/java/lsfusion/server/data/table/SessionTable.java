@@ -555,7 +555,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                     moveData.and(prevJoin.getWhere());
                     moveData.addProperties(prevJoin.getExprs());
                     session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner), owner);
-                    session.returnTemporaryTable(SessionTable.this, owner, opOwner);
+                    session.returnTemporaryTable(SessionTable.this, owner, opOwner, count);
                     return null;
                 }
             }, new Pair<>(classes, propertyClasses), owner, opOwner);
@@ -583,7 +583,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                 moveData.addProperties(prevJoin.getExprs());
                 moveData.addProperties(DataObject.getMapExprs(addProps));
                 session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner), owner);
-                session.returnTemporaryTable(SessionTable.this, owner, opOwner);
+                session.returnTemporaryTable(SessionTable.this, owner, opOwner, count);
                 return null;
             }
         }, andFieldsClassWheres(classes, propertyClasses, addKeys, addProps), owner, opOwner);
@@ -621,7 +621,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                         moveData.addProperty(prop, GroupExpr.create(groupKeys, prevJoin.getExpr(prop), GroupType.ASSERTSINGLE(), moveData.getMapExprs())); // не может быть недетерминированности, так как просто копирование из таблицы в таблицу
                 }
                 session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner), owner);
-                session.returnTemporaryTable(SessionTable.this, owner, opOwner);
+                session.returnTemporaryTable(SessionTable.this, owner, opOwner, count);
                 return null;
             }
         }, removeFieldsClassWheres(classes, propertyClasses, removeKeys, removeProps), owner, opOwner);
@@ -636,7 +636,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     }
 
     public void drop(SQLSession session, TableOwner owner, OperationOwner opOwner) throws SQLException {
-        session.returnTemporaryTable(this, owner, opOwner);
+        session.returnTemporaryTable(this, owner, opOwner, count);
     }
     public void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner, boolean assertNotExists) throws SQLException {
         session.rollReturnTemporaryTable(this, owner, opOwner, assertNotExists);

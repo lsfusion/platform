@@ -581,6 +581,9 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     public String getAnalyze(String table) {
         return "ANALYZE " + table;
     }
+    public String getVacuum(String table) {
+        return "VACUUM " + table;
+    }
 
     @Override
     public String getDeadlockPriority(Long priority) {

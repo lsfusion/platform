@@ -1227,14 +1227,23 @@ public class Settings implements Cloneable {
         this.queryRowCountPessLimit = queryRowCountPessLimit;
     }
 
-    private boolean useDeleteFromInsteadOfTruncateForTempTables = false;
+    private int deleteFromInsteadOfTruncateForTempTablesThreshold = 0; // less then - use deleteFrom
+    private boolean deleteFromInsteadOfTruncateForTempTablesUnknown = false; // unknown - use deleteFrom
 
-    public boolean isUseDeleteFromInsteadOfTruncateForTempTables() {
-        return useDeleteFromInsteadOfTruncateForTempTables;
+    public int getDeleteFromInsteadOfTruncateForTempTablesThreshold() {
+        return deleteFromInsteadOfTruncateForTempTablesThreshold;
     }
 
-    public void setUseDeleteFromInsteadOfTruncateForTempTables(boolean useDeleteFromInsteadOfTruncateForTempTables) {
-        this.useDeleteFromInsteadOfTruncateForTempTables = useDeleteFromInsteadOfTruncateForTempTables;
+    public void setDeleteFromInsteadOfTruncateForTempTablesThreshold(int deleteFromInsteadOfTruncateForTempTablesThreshold) {
+        this.deleteFromInsteadOfTruncateForTempTablesThreshold = deleteFromInsteadOfTruncateForTempTablesThreshold;
+    }
+
+    public boolean isDeleteFromInsteadOfTruncateForTempTablesUnknown() {
+        return deleteFromInsteadOfTruncateForTempTablesUnknown;
+    }
+
+    public void setDeleteFromInsteadOfTruncateForTempTablesUnknown(boolean deleteFromInsteadOfTruncateForTempTablesUnknown) {
+        this.deleteFromInsteadOfTruncateForTempTablesUnknown = deleteFromInsteadOfTruncateForTempTablesUnknown;
     }
 
     private int queryRowCountOptDivider = 50; // когда предполагаемый объем потребления памяти, превысит заданную часть, кидать exception
