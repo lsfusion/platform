@@ -19,6 +19,7 @@ public class SwingDefaults {
     final static Color focusedTableCellBorderColorDark = new Color(7, 144, 195);
     
     private static Color buttonBackground;
+    private static Color buttonHoverBackground;
     private static Border buttonBorder;
     private static Border textFieldBorder;
     private static Color tableCellBackground;
@@ -35,6 +36,7 @@ public class SwingDefaults {
     private static Color tabbedPaneUnderlineColor;
     private static Insets tableCellMargins;
     private static Insets buttonMargin;
+    private static Insets toggleButtonMargin;
     private static Integer valueHeight;
     private static Integer tableHeaderHeight;
     private static Dimension tablePreferredSize;
@@ -43,6 +45,7 @@ public class SwingDefaults {
     
     public static void reset() {
         buttonBackground = null;
+        buttonHoverBackground = null;
         buttonBorder = null;
         textFieldBorder = null;
         tableCellBackground = null;
@@ -54,6 +57,7 @@ public class SwingDefaults {
         dockableBorderColor = null;
         tabbedPaneUnderlineColor = null;
         buttonMargin = null;
+        toggleButtonMargin = null;
         
         resetClientSettingsProperties();
     }
@@ -78,6 +82,13 @@ public class SwingDefaults {
             buttonBackground = getColor("Button.background");
         }
         return buttonBackground; 
+    }
+
+    public static Color getButtonHoverBackground() {
+        if (buttonHoverBackground == null) {
+            buttonHoverBackground = getColor("Button.toolbar.hoverBackground");
+        }
+        return buttonHoverBackground; 
     }
 
     public static Border getButtonBorder() {
@@ -218,6 +229,13 @@ public class SwingDefaults {
             buttonMargin = getInsets("Button.margin");
         }
         return buttonMargin;
+    }
+    
+    public static Insets getToggleButtonMargin() { // for toolbar navigator
+        if (toggleButtonMargin == null) {
+            toggleButtonMargin = new Insets(2, 7, 2, 7);
+        }
+        return toggleButtonMargin;
     }
     
     public static int getValueHeight() {

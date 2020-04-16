@@ -119,7 +119,11 @@ input[type=checkbox]:focus {
 }
 
 .closeTabButton:hover {
-    background: var(--close-tab-button-hover-color);
+    background: var(--component-hover-background-color);
+}
+
+.closeTabButton:active { /* should come after ':hover' */
+    background: var(--component-active-background-color);
 }
 
 .closeTabButton[disabled] {
@@ -360,12 +364,19 @@ input[type=checkbox]:focus {
 
 .toolbarSelectedNavigatorButton {
     border: solid 1px var(--component-border-color);
-    background: var(--selection-color);
+    background-color: var(--selection-color);
 }
 
 .toolbarNavigatorButton:hover {
-    border: solid 1px var(--component-border-color);
-    background: var(--selection-color);
+    background-color: var(--component-hover-background-color);
+}
+
+.toolbarSelectedNavigatorButton:hover {
+    background-color: var(--selection-color);
+}
+
+.toolbarNavigatorButton:active { /* should come after ':hover' */
+    background-color: var(--component-active-background-color);
 }
 
 .panelNavigatorView {
@@ -812,7 +823,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .leaflet-bar a:hover {
-    background-color: var(--close-tab-button-hover-color) !important;
+    background-color: var(--component-hover-background-color) !important;
 }
 
 .leaflet-control-zoom-in, .leaflet-control-zoom-out {
@@ -869,7 +880,12 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .toolbarButton:hover {
-    border: 1px solid var(--component-border-color);
+    background-color: var(--button-hover-background-color);
+    border: 1px solid var(--focus-color);
+}
+
+.toolbarButton:active { /* should come after ':hover' */
+    background-color: var(--component-active-background-color);
 }
 
 .toolbarItem {

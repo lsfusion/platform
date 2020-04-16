@@ -17,10 +17,12 @@
     --null-value-string-color: #757575;
     --required-value-string-color: #c54d4d;
     --not-null-corner-triangle-color: #c30000;
-    --close-tab-button-hover-color: #585858;
     --close-tab-button-disabled-color: #5d5d5d;
     --button-disabled-hover-border-color: #6b6b6b;
-    --button-active-border-color: #6b6b6b;
+    --button-hover-background-color: #53585A;
+    --button-active-background-color: #5B5F62;
+    --component-hover-background-color: #4C5052;
+    --component-active-background-color: #5B5F62;
     --leaflet-control-transparent-background: rgba(43, 43, 43, 0.85);
 
     --date-picker-day-is-weekend-background-color: #3e3e3e;

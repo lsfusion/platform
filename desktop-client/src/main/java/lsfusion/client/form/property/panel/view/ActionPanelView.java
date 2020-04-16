@@ -191,17 +191,12 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public boolean forceEdit() {
-        doClick(20);
+        doClick(0);
         return true;
     }
 
     public void setCaption(String caption) {
         caption = property.getEditCaption(caption);
-        if (BaseUtils.isRedundantString(caption)) {
-            setMargin(new Insets(2, 2, 2, 2));
-        } else {
-            setMargin(new Insets(2, 14, 2, 14));
-        }
         setText(caption);
     }
 

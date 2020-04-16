@@ -326,6 +326,7 @@ public class MainController {
         UIManager.put("TextComponent.selectAllOnFocusPolicy", "never");
         UIManager.put("Button.default.borderWidth", SwingDefaults.getButtonBorderWidth()); // differs in light and dark themes. make equal to have equal height.
         UIManager.put("TabbedPane.tabHeight", SwingDefaults.getComponentHeight());
+        UIManager.put("ToggleButton.margin", SwingDefaults.getToggleButtonMargin());
 
         updateUI();
         
@@ -545,10 +546,7 @@ public class MainController {
         UIManager.put("Table.cellFocusColor", SwingDefaults.getSelectionBorderColor()); // mostly for tree table. has no effect as tree has no focus 
         UIManager.put("TitledBorder.titleColor", SwingDefaults.getTitledBorderTitleColor());
         UIManager.put("TabbedPane.underlineColor", SwingDefaults.getTabbedPaneUnderlineColor());
-        // toolbar buttons
-        UIManager.put("ToggleButton.toolbar.pressedBackground", SwingDefaults.getSelectionColor());
-        UIManager.put("ToggleButton.toolbar.hoverBackground", SwingDefaults.getSelectionColor());
-        UIManager.put("ToggleButton.toolbar.selectedBackground", SwingDefaults.getSelectionColor());
+        UIManager.put("ToggleButton.selectedBackground", SwingDefaults.getSelectionColor());
     }
 
     public static void changeColorTheme(ColorTheme newColorTheme) {

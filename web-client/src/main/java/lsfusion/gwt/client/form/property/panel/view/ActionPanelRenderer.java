@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageHolder;
@@ -106,7 +107,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, false), null), new GFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getEventTarget().cast() == button.getElement()) {
             @Override
             public void pressed(EventTarget eventTarget) {
-                click(eventTarget);
+                click(eventTarget, true);
             }
 
             @Override
@@ -124,7 +125,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             @Override
             public void onClick(ClickEvent event) {
                 assert !form.isEditing();
-                click(null);
+                click(null, false);
             }
         });
         button.addDomHandler(new ContextMenuHandler() {
@@ -155,7 +156,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         iform.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
             @Override
             public void pressed(EventTarget eventTarget) {
-                click(eventTarget);
+                click(eventTarget, true);
             }
             @Override
             public boolean showing() {
@@ -174,7 +175,19 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         }
     }
 
-    private void click(EventTarget ifocusTargetAfterEdit) {
+    private void click(EventTarget ifocusTargetAfterEdit, boolean fakeClick) {
+        if (fakeClick) {
+            button.addStyleName("activeButton");
+            Timer t = new Timer() {
+                @Override
+                public void run() {
+                    button.removeStyleName("activeButton");
+                    cancel();
+                }
+            };
+            t.schedule(400);
+        }
+        
         focusTargetAfterEdit = ifocusTargetAfterEdit;
         editDispatcher.executePropertyEventAction(property, columnKey, GEditBindingMap.CHANGE);
     }
