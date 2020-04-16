@@ -11,15 +11,8 @@ import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CGrid;
 import bibliothek.gui.dock.common.SingleCDockable;
 import bibliothek.gui.dock.common.intern.CSetting;
-import bibliothek.gui.dock.common.menu.CLayoutChoiceMenuPiece;
-import bibliothek.gui.dock.common.menu.CPreferenceMenuPiece;
-import bibliothek.gui.dock.common.menu.CThemeMenuPiece;
-import bibliothek.gui.dock.common.menu.SingleCDockableListMenuPiece;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.common.theme.ThemeMap;
-import bibliothek.gui.dock.facile.menu.RootMenuPiece;
-import bibliothek.gui.dock.facile.menu.SubmenuPiece;
-import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import bibliothek.gui.dock.util.color.ColorManager;
 import com.google.common.base.Throwables;
 import lsfusion.base.ReflectionUtils;
@@ -52,14 +45,11 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.navigator.window.WindowType;
-import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 import org.jboss.netty.util.internal.NonReentrantLock;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -179,8 +169,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         formsController = new FormsController(mainControl, mainNavigator);
 
         initDockStations(navigatorData);
-
-        setupMenu();
 
         navigatorController.update();
 
@@ -514,16 +502,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         windowDockables.put(formsController.getFormArea(), formsWindow);
     }
 
-    private void setupMenu() {
-        JMenuBar menuBar = new JMenuBar();
-        menuBar.add(createFileMenu());
-//        menuBar.add(createViewMenu());
-//        menuBar.add(createOptionsMenu());
-        menuBar.add(createWindowMenu());
-        menuBar.add(createHelpMenu());
-        setJMenuBar(menuBar);
-    }
-
     private CGrid createGrid() {
         CGrid grid = new CGrid(mainControl);
         for (Map.Entry<SingleCDockable, ClientAbstractWindow> entry : windowDockables.entrySet()) {
@@ -537,118 +515,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         for (Map.Entry<SingleCDockable, ClientAbstractWindow> entry : windowDockables.entrySet()) {
             entry.getKey().setVisible(entry.getValue().visible);
         }
-    }
-
-    private JMenu createWindowMenu() {
-        RootMenuPiece dockableMenu = new RootMenuPiece(getString("layout.menu.window"), false, new SingleCDockableListMenuPiece(mainControl));
-        dockableMenu.add(new SeparatingMenuPiece(new CLayoutChoiceMenuPiece(mainControl, false), true, false, false));
-
-        final JMenuItem reload = new JMenuItem((getString("layout.menu.window.default.location")));
-        reload.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // deploy почему-то вываливается с ошибкой... похоже на баг в DockingFrames,
-                // но т.к. в данном случае мы контролируем, что ложить в лэйаут, то просто выраубаем валидацию..
-                // mainControl.getContentArea().deploy(createGrid()); <=> ...dropTree(.., true)
-                mainControl.getContentArea().getCenter().dropTree(createGrid().toTree(), false);
-
-                setDefaultVisible();
-                navigatorController.update();
-
-                // удаляем файл с расположением, чтобы этим же действием лечить возможные нестыковки синхронизации в разных версиях DockingFrames
-                File layoutFile = new File(baseDir, "layout.data");
-                if (layoutFile.exists()) {
-                    try {
-                        layoutFile.delete();
-                    } catch (SecurityException ignored) {}
-                }
-            }
-        });
-        dockableMenu.getMenu().addSeparator();
-        dockableMenu.getMenu().add(reload);
-
-        return dockableMenu.getMenu();
-    }
-
-    private JMenu createViewMenu() {
-        RootMenuPiece layout = new RootMenuPiece(getString("layout.menu.view"), false);
-        // todo: изменение LAF пока не работает
-//        layout.add(new SubmenuPiece(getString("layout.menu.view.look.and.feel"), true, new CLookAndFeelMenuPiece(mainControl)));
-        layout.add(new SubmenuPiece(getString("layout.menu.view.theme"), true, new CThemeMenuPiece(mainControl)));
-        layout.add(CPreferenceMenuPiece.setup(mainControl));
-
-        return layout.getMenu();
-    }
-
-    private JMenu createFileMenu() {
-
-        JMenu menu = new JMenu(getString("layout.menu.file"));
-
-        JMenuItem openReport = new JMenuItem(getString("layout.menu.file.open.report"));
-        openReport.setToolTipText(getString("layout.menu.file.opens.previously.saved.report"));
-
-        openReport.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                JFileChooser chooser = new JFileChooser();
-                chooser.addChoosableFileFilter(new FileNameExtensionFilter(getString("layout.menu.file.jasperReports.reports"), "jrprint"));
-                if (chooser.showOpenDialog(DockableMainFrame.this) == JFileChooser.APPROVE_OPTION) {
-                    try {
-                        formsController.openReport(chooser.getSelectedFile());
-                    } catch (JRException e) {
-                        throw new RuntimeException(getString("layout.menu.file.error.opening.saved.report"), e);
-                    }
-                }
-            }
-        });
-        menu.add(openReport);
-
-        menu.addSeparator();
-
-        final JMenuItem exit = new JMenuItem(getString("layout.menu.file.exit"));
-        exit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                WindowEvent wev = new WindowEvent(DockableMainFrame.this, WindowEvent.WINDOW_CLOSING);
-                Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
-            }
-        });
-
-        menu.add(exit);
-
-        return menu;
-    }
-
-    private JMenu createOptionsMenu() {
-        return new JMenu(getString("layout.menu.options"));
-    }
-
-    private JMenu createHelpMenu() {
-        JMenu menu = new JMenu(getString("layout.menu.help"));
-        final JMenuItem about = new JMenuItem(getString("layout.menu.help.about"));
-        about.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JDialog dialog = new JDialog(DockableMainFrame.this, true);
-                Container contentPane = dialog.getContentPane();
-                contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-
-                JLabel label = new JLabel(MainController.getLogo());
-                label.setBorder(new EmptyBorder(10, 10, 10, 10));
-                contentPane.add(label);
-                contentPane.add(new JSeparator(JSeparator.HORIZONTAL));
-
-                String text = MainController.getHelpTitle();
-                JLabel labelName = new JLabel(text);
-                labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN, MainFrame.getIntUISize(12)));
-                contentPane.add(labelName);
-
-                dialog.setTitle(about.getText());
-                dialog.pack();
-                dialog.setResizable(false);
-                dialog.setLocationRelativeTo(DockableMainFrame.this);
-                dialog.setVisible(true);
-            }
-        });
-        menu.add(about);
-        return menu;
     }
 
     public void activateForm(String formCanonicalName) {
