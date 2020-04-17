@@ -58,7 +58,7 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
 
         //забираем фокус после того как завершили редактирвоание
         //SwingUtilities2.adjustFocus(table);
-        Class swingUtilities2Class = ReflectionUtils.classForName("SwingUtilities2");
+        Class swingUtilities2Class = ReflectionUtils.classForName("sun.swing.SwingUtilities2");
         if(swingUtilities2Class != null) {
             ReflectionUtils.getStaticMethodValue(swingUtilities2Class, "adjustFocus", new Class[] {JComponent.class}, new Object[] {table});
         }
@@ -132,7 +132,7 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
         Point p2 = SwingUtilities.convertPoint(table, p, editorComponent);
         dispatchComponent = SwingUtilities.getDeepestComponentAt(editorComponent, p2.x, p2.y);
         //SwingUtilities2.setSkipClickCount(dispatchComponent, e.getClickCount() - 1);
-        Class swingUtilities2Class = ReflectionUtils.classForName("SwingUtilities2");
+        Class swingUtilities2Class = ReflectionUtils.classForName("sun.swing.SwingUtilities2");
         if(swingUtilities2Class != null) {
             ReflectionUtils.invokeStaticMethod(swingUtilities2Class, "setSkipClickCount",
                     new Class[]{Component.class, int.class}, new Object[] {dispatchComponent, e.getClickCount() - 1});
