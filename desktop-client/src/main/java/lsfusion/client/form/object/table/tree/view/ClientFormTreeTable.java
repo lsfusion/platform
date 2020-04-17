@@ -71,7 +71,7 @@ public abstract class ClientFormTreeTable extends JXTreeTable implements TableTr
     private void enumerateNodes(TreePath currentPath, NodeProccessor nodeProccessor) {
         TreeNode parentNode = (TreeNode) currentPath.getLastPathComponent();
         if (parentNode.getChildCount() >= 0) {
-            Enumeration<MutableTreeTableNode> en = parentNode.children();
+            Enumeration<MutableTreeTableNode> en = (Enumeration<MutableTreeTableNode>) parentNode.children();
             while (en.hasMoreElements()) {
                 enumerateNodes(currentPath.pathByAddingChild(en.nextElement()), nodeProccessor);
             }

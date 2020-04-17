@@ -2,6 +2,7 @@ package lsfusion.server.base.controller.stack;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.interop.ProgressBar;
@@ -240,10 +241,11 @@ public class ExecutionStackAspect {
 
             long allocatedBytesOnStart = 0;
             ThreadMXBean threadMXBean = null;
+            Class threadMXBeanClass = ReflectionUtils.classForName("com.sun.management.ThreadMXBean");
             if (isExplainAllocationEnabled()) {
                 threadMXBean = ManagementFactory.getThreadMXBean();
-                if (threadMXBean instanceof com.sun.management.ThreadMXBean) {
-                    allocatedBytesOnStart = ((com.sun.management.ThreadMXBean) threadMXBean).getThreadAllocatedBytes(Thread.currentThread().getId());
+                if (threadMXBeanClass != null && threadMXBeanClass.isInstance(threadMXBean)) {
+                    allocatedBytesOnStart = ReflectionUtils.getMethodValue(threadMXBeanClass, threadMXBean, "getThreadAllocatedBytes", new Class[]{long.class}, new Object[] {Thread.currentThread().getId()});
                 }
             }
 
@@ -265,8 +267,8 @@ public class ExecutionStackAspect {
                 );
             }
 
-            if (isExplainAllocationEnabled() && threadMXBean instanceof com.sun.management.ThreadMXBean) {
-                long allocatedBytes = ((com.sun.management.ThreadMXBean) threadMXBean).getThreadAllocatedBytes(Thread.currentThread().getId()) - allocatedBytesOnStart;
+            if (isExplainAllocationEnabled() && threadMXBeanClass != null && threadMXBeanClass.isInstance(threadMXBean)) {
+                long allocatedBytes = (long) ReflectionUtils.getMethodValue(threadMXBeanClass, threadMXBean, "getThreadAllocatedBytes", new Class[]{long.class}, new Object[]{Thread.currentThread().getId()}) - allocatedBytesOnStart;
                 if (allocatedBytes > Settings.get().getAllocatedBytesThreshold()) {
                     ServerLoggers.allocatedBytesLogger.info("Allocated bytes: " + (allocatedBytes) + " : " + item);
                 }

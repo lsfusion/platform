@@ -49,8 +49,8 @@ public class ZipClientSocketFactory extends ZipSocketFactory implements RMIClien
         in.defaultReadObject();
 
         String hostName = threadRealHostName.get();
-        if (hostName == null)
-            throw new RuntimeException("Real host name should be provided in ZipClientSocketFactory.threadRealHostName");
+        if (hostName == null) //fails on login getAndCheckServerSettings
+            hostName = "localhost";//throw new RuntimeException("Real host name should be provided in ZipClientSocketFactory.threadRealHostName");
         this.realHostName = hostName;
     }
     private void readObjectNoData() {

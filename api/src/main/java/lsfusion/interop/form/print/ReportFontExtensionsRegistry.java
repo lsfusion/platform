@@ -8,10 +8,6 @@ import net.sf.jasperreports.engine.fonts.*;
 import net.sf.jasperreports.extensions.ExtensionsRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import sun.font.FontManager;
-import sun.font.FontManagerFactory;
-import sun.font.PhysicalFont;
-import sun.font.SunFontManager;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -90,60 +86,68 @@ public class ReportFontExtensionsRegistry implements ExtensionsRegistry {
     public void addPhysicalFontFamilies(DefaultJasperReportsContext context) {
         HashMap<String, SimpleFontFamily> nameToFamily = new HashMap<>();
 
-        FontManager fm = FontManagerFactory.getInstance();
-        SunFontManager sfm = fm instanceof SunFontManager ? (SunFontManager) fm : null;
-        if (sfm != null) {
-            PhysicalFont[] allFonts = null;
-            try {
-                allFonts = ReflectionUtils.getPrivateMethodValue(SunFontManager.class, sfm, "getPhysicalFonts", new Class[0], new Object[0]);
-            } catch (Exception ignored) {
-            }
+        Class fontManagerFactoryClass = ReflectionUtils.classForName("sun.font.FontManagerFactory");
+        Class sunFontManagerClass = ReflectionUtils.classForName("sun.font.SunFontManager");
+        Class physicalFontClass = ReflectionUtils.classForName("sun.font.PhysicalFont");
+        if(fontManagerFactoryClass != null && sunFontManagerClass != null) {
 
-            if (allFonts != null) {
-                for (PhysicalFont font : allFonts) {
-                    String fontFamily = font.getFamilyName(Locale.getDefault());
+            //FontManager fm = FontManagerFactory.getInstance();
+            Object fm = ReflectionUtils.getPrivateMethodValue(fontManagerFactoryClass, null, "getInstance", new Class[0], new Object[0]);
+            if (sunFontManagerClass.isInstance(fm)) {
+                Object[] allFonts = null;
+                try {
+                    allFonts = ReflectionUtils.getPrivateMethodValue(sunFontManagerClass, fm, "getPhysicalFonts", new Class[0], new Object[0]);
+                } catch (Exception ignored) {
+                }
 
-                    SimpleFontFamily ff = nameToFamily.get(fontFamily);
-                    if (ff == null) {
-                        ff = new SimpleFontFamily(context);
-                        nameToFamily.put(fontFamily, ff);
-                    }
+                if (allFonts != null) {
+                    for (Object font : allFonts) {
 
-                    ff.setName(fontFamily);
-                    ff.setPdfEmbedded(true);
-                    ff.setPdfEncoding(BaseFont.IDENTITY_H);
+                        //String fontFamily = font.getFamilyName(Locale.getDefault());
+                        String fontFamily = ReflectionUtils.getMethodValue(physicalFontClass, font, "getFamilyName", new Class[] {Locale.class}, new Object[] {Locale.getDefault()});
 
-                    String fontPath = null;
-                    try {
-                        fontPath = (String) ReflectionUtils.getPrivateFieldValue(PhysicalFont.class, font, "platName");
-                    } catch (Exception ignored) {
-                    }
-                    if (fontPath != null) {
-                        int style = font.getStyle();
+                        SimpleFontFamily ff = nameToFamily.get(fontFamily);
+                        if (ff == null) {
+                            ff = new SimpleFontFamily(context);
+                            nameToFamily.put(fontFamily, ff);
+                        }
 
-                        if (((style & Font.BOLD) > 0) && ((style & Font.ITALIC) > 0)) {
-                            SimpleFontFace boldItalicFace = new SimpleFontFace(context);
-                            if (setFontFaceTtf(boldItalicFace, fontPath)) {
-                                boldItalicFace.setPdf(fontPath);
-                                ff.setBoldItalicFace(boldItalicFace);
-                            }
-                        } else if ((style & Font.BOLD) > 0) {
-                            SimpleFontFace boldFace = new SimpleFontFace(context);
-                            if (setFontFaceTtf(boldFace, fontPath)) {
-                                boldFace.setPdf(fontPath);
-                                ff.setBoldFace(boldFace);
-                            }
-                        } else if ((style & Font.ITALIC) > 0) {
-                            SimpleFontFace italicFace = new SimpleFontFace(context);
-                            if (setFontFaceTtf(italicFace, fontPath)) {
-                                italicFace.setPdf(fontPath);
-                                ff.setItalicFace(italicFace);
-                            }
-                        } else {
-                            SimpleFontFace normalFace = new SimpleFontFace(context);
-                            if (setFontFaceTtf(normalFace, fontPath)) {
-                                normalFace.setPdf(fontPath);
-                                ff.setNormalFace(normalFace);
+                        ff.setName(fontFamily);
+                        ff.setPdfEmbedded(true);
+                        ff.setPdfEncoding(BaseFont.IDENTITY_H);
+
+                        String fontPath = null;
+                        try {
+                            fontPath = (String) ReflectionUtils.getPrivateFieldValue(physicalFontClass, font, "platName");
+                        } catch (Exception ignored) {
+                        }
+                        if (fontPath != null) {
+                            int style = ReflectionUtils.getMethodValue(physicalFontClass, font, "getStyle", new Class[0], new Object[0]);
+
+                            if (((style & Font.BOLD) > 0) && ((style & Font.ITALIC) > 0)) {
+                                SimpleFontFace boldItalicFace = new SimpleFontFace(context);
+                                if (setFontFaceTtf(boldItalicFace, fontPath)) {
+                                    boldItalicFace.setPdf(fontPath);
+                                    ff.setBoldItalicFace(boldItalicFace);
+                                }
+                            } else if ((style & Font.BOLD) > 0) {
+                                SimpleFontFace boldFace = new SimpleFontFace(context);
+                                if (setFontFaceTtf(boldFace, fontPath)) {
+                                    boldFace.setPdf(fontPath);
+                                    ff.setBoldFace(boldFace);
+                                }
+                            } else if ((style & Font.ITALIC) > 0) {
+                                SimpleFontFace italicFace = new SimpleFontFace(context);
+                                if (setFontFaceTtf(italicFace, fontPath)) {
+                                    italicFace.setPdf(fontPath);
+                                    ff.setItalicFace(italicFace);
+                                }
+                            } else {
+                                SimpleFontFace normalFace = new SimpleFontFace(context);
+                                if (setFontFaceTtf(normalFace, fontPath)) {
+                                    normalFace.setPdf(fontPath);
+                                    ff.setNormalFace(normalFace);
+                                }
                             }
                         }
                     }

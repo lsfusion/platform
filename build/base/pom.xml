@@ -132,9 +132,9 @@
                     <!--<version>3.1</version>-->
                 </plugin>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>1.11</version>
+                        <groupId>com.nickwongdev</groupId>
+                        <artifactId>aspectj-maven-plugin</artifactId>
+                        <version>1.12.1</version>
                     <configuration>
                         <!--для вывода в консоль при дебаге-->
                         <!--<showWeaveInfo>true</showWeaveInfo>-->

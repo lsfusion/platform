@@ -1,10 +1,7 @@
 package lsfusion.server.data.sql;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.Result;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashMap;
@@ -186,9 +183,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap(threadAllocatedBytesBMap);
         threadAllocatedBytesBMap.clear();
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
-        if (tBean instanceof com.sun.management.ThreadMXBean) {
+        Class threadMXBeanClass = ReflectionUtils.classForName("com.sun.management.ThreadMXBean");
+        if (threadMXBeanClass != null && threadMXBeanClass.isInstance(tBean)) {
             long[] allThreadIds = tBean.getAllThreadIds();
-            long[] threadAllocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(allThreadIds);
+            long[] threadAllocatedBytes = ReflectionUtils.getMethodValue(threadMXBeanClass, tBean, "getThreadAllocatedBytes", new Class[]{long[].class}, new Object[]{allThreadIds});
             for (int i=0;i<allThreadIds.length;i++) {
                 threadAllocatedBytesBMap.put(allThreadIds[i], threadAllocatedBytes[i]);
             }
