@@ -89,7 +89,7 @@ input, textarea {
 }
 .gwt-Button:hover, button:hover {
     background-color: var(--button-hover-background-color);
-    border: 1px solid var(--focus-color);
+    border: 1px solid var(--component-hover-border-color);
 }
 .gwt-Button:focus, button:focus { /* should come after ':hover' */
     background-color: var(--selection-color);
@@ -941,9 +941,9 @@ input, textarea {
 }
 
 .gwt-TabBar .gwt-TabBarItem:hover {
-    border-top: 1px solid var(--focus-color);
-    border-left: 1px solid var(--focus-color);
-    border-right: 1px solid var(--focus-color);
+    border-top: 1px solid var(--component-hover-border-color);
+    border-left: 1px solid var(--component-hover-border-color);
+    border-right: 1px solid var(--component-hover-border-color);
     background: var(--component-hover-background-color);
 }
 
@@ -1314,7 +1314,7 @@ td.datePickerMonth {
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
     margin: 0 2px;
-    padding: 1px 3px 2px 5px;
+    padding: 0 3px 1px 5px;
     cursor: pointer;
     cursor: hand;
     font-weight: normal;
@@ -1335,9 +1335,9 @@ td.datePickerMonth {
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab:hover {
-    border-top: 1px solid var(--focus-color);
-    border-left: 1px solid var(--focus-color);
-    border-right: 1px solid var(--focus-color);
+    border-top: 1px solid var(--component-hover-border-color);
+    border-left: 1px solid var(--component-hover-border-color);
+    border-right: 1px solid var(--component-hover-border-color);
     background: var(--component-hover-background-color);
 }
 

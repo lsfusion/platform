@@ -14,6 +14,8 @@ import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.VALUE_HEIGHT;
+
 public final class FormDockable {
     private TabWidget tabWidget;
     private ContentWidget contentWidget;
@@ -187,6 +189,7 @@ public final class FormDockable {
             };
             closeButton.setText(EscapeUtils.UNICODE_CROSS);
             closeButton.setStyleName("closeTabButton");
+            closeButton.setSize(VALUE_HEIGHT - 2 + "px", VALUE_HEIGHT - 2 + "px");
 
             FlexPanel labelWrapper = new FlexPanel();
             labelWrapper.getElement().addClassName("tabLayoutPanelTabTitleWrapper");

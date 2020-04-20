@@ -21,8 +21,9 @@
     --button-disabled-hover-border-color: #6b6b6b;
     --button-hover-background-color: #53585A;
     --button-active-background-color: #5B5F62;
-    --component-hover-background-color: #4C5052;
-    --component-active-background-color: #5B5F62;
+    --component-hover-border-color: #467F93;
+    --component-hover-background-color: #46494B;
+    --component-active-background-color: #505355;
     --leaflet-control-transparent-background: rgba(43, 43, 43, 0.85);
 
     --date-picker-day-is-weekend-background-color: #3e3e3e;

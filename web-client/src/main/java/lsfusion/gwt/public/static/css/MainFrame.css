@@ -105,9 +105,7 @@ input[type=checkbox]:focus {
 }
 
 .closeTabButton {
-    height: 17px;
-    width: 17px;
-    padding: 0 0 1px 0;
+    padding: 0;
     margin-left: 2px;
     border: 0;
     border-radius: 3px;
@@ -119,6 +117,7 @@ input[type=checkbox]:focus {
 }
 
 .closeTabButton:hover {
+    border: 1px solid var(--component-hover-border-color);
     background: var(--component-hover-background-color);
 }
 
@@ -368,6 +367,7 @@ input[type=checkbox]:focus {
 }
 
 .toolbarNavigatorButton:hover {
+    border: 1px solid var(--component-hover-border-color);
     background-color: var(--component-hover-background-color);
 }
 
@@ -880,8 +880,8 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .toolbarButton:hover {
-    background-color: var(--button-hover-background-color);
-    border: 1px solid var(--focus-color);
+    background-color: var(--component-hover-background-color);
+    border: 1px solid var(--component-hover-border-color);
 }
 
 .toolbarButton:active { /* should come after ':hover' */

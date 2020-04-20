@@ -19,8 +19,9 @@ public class SwingDefaults {
     final static Color focusedTableCellBorderColorDark = new Color(7, 144, 195);
     
     private static Color buttonBackground;
-    private static Color buttonHoverBackground;
     private static Border buttonBorder;
+    private static Color toggleButtonHoverBackground;
+    private static Color toggleButtonPressedBackground;
     private static Border textFieldBorder;
     private static Color tableCellBackground;
     private static Color tableCellForeground;
@@ -45,8 +46,9 @@ public class SwingDefaults {
     
     public static void reset() {
         buttonBackground = null;
-        buttonHoverBackground = null;
         buttonBorder = null;
+        toggleButtonHoverBackground = null;
+        toggleButtonPressedBackground = null;
         textFieldBorder = null;
         tableCellBackground = null;
         tableCellForeground = null;
@@ -84,19 +86,26 @@ public class SwingDefaults {
         return buttonBackground; 
     }
 
-    public static Color getButtonHoverBackground() {
-        if (buttonHoverBackground == null) {
-            buttonHoverBackground = getColor("Button.toolbar.hoverBackground");
-        }
-        return buttonHoverBackground; 
-    }
-
     public static Border getButtonBorder() {
         if (buttonBorder == null) {
             buttonBorder = getBorder("Button.border");
         }
         return buttonBorder;
     } 
+
+    public static Color getToggleButtonHoverBackground() {
+        if (toggleButtonHoverBackground == null) {
+            toggleButtonHoverBackground = colorTheme.isLight() ? new Color(230, 230, 230) : new Color(70, 73, 75);
+        }
+        return toggleButtonHoverBackground;
+    }
+
+    public static Color getToggleButtonPressedBackground() {
+        if (toggleButtonPressedBackground == null) {
+            toggleButtonPressedBackground = colorTheme.isLight() ? new Color(222, 222, 222) : new Color(80, 83, 85);
+        }
+        return toggleButtonPressedBackground;
+    }
 
     public static Border getTextFieldBorder() {
         if (textFieldBorder == null) {

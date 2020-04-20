@@ -65,9 +65,9 @@ public class GToolbarNavigatorView extends GNavigatorView {
         buttonStyle.setPaddingLeft(PADDING_H, Style.Unit.PX);
         buttonStyle.setPaddingRight(PADDING_H, Style.Unit.PX);
         
-        button.addMouseDownHandler(new MouseDownHandler() {
+        button.addMouseUpHandler(new MouseUpHandler() {
             @Override
-            public void onMouseDown(MouseDownEvent event) {
+            public void onMouseUp(MouseUpEvent event) {
                 TooltipManager.get().hideTooltip();
                 selected = element;
                 navigatorController.update();

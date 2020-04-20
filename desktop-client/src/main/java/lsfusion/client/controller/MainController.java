@@ -547,6 +547,7 @@ public class MainController {
         UIManager.put("TitledBorder.titleColor", SwingDefaults.getTitledBorderTitleColor());
         UIManager.put("TabbedPane.underlineColor", SwingDefaults.getTabbedPaneUnderlineColor());
         UIManager.put("ToggleButton.selectedBackground", SwingDefaults.getSelectionColor());
+        UIManager.put("ToggleButton.pressedBackground", SwingDefaults.getToggleButtonPressedBackground());
     }
 
     public static void changeColorTheme(ColorTheme newColorTheme) {

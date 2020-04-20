@@ -21,8 +21,8 @@ import java.awt.event.MouseEvent;
 import java.util.Set;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
-import static lsfusion.client.base.view.SwingDefaults.getButtonHoverBackground;
 import static lsfusion.client.base.view.SwingDefaults.getSelectionColor;
+import static lsfusion.client.base.view.SwingDefaults.getToggleButtonHoverBackground;
 
 public class ToolBarNavigatorView extends NavigatorView {
     private final JPanel toolBarPanel;
@@ -98,7 +98,7 @@ public class ToolBarNavigatorView extends NavigatorView {
                 if (!button.isSelected()) {
                     button.setBorder(getSelectionBorder());
                 }
-                button.setBackground(getButtonHoverBackground());
+                button.setBackground(getToggleButtonHoverBackground());
             }
 
             @Override
