@@ -104,11 +104,7 @@ public class FileUtils {
 
             ftpClient.connect(srcProperties.server, srcProperties.port);
             if (ftpClient.login(srcProperties.username, srcProperties.password)) {
-                if(srcProperties.passiveMode) {
-                    ftpClient.enterLocalPassiveMode();
-                }
-                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-                ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+                configureFTPClient(ftpClient, srcProperties);
 
                 boolean done = ftpClient.rename(appendExtension(srcProperties.remoteFile, extension), appendExtension(destProperties.remoteFile, extension));
                 if (!done) {
@@ -171,10 +167,7 @@ public class FileUtils {
             }
             ftpClient.connect(properties.server, properties.port);
             ftpClient.login(properties.username, properties.password);
-            if(properties.passiveMode) {
-                ftpClient.enterLocalPassiveMode();
-            }
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            configureFTPClient(ftpClient, properties);
 
             boolean done = ftpClient.deleteFile(properties.remoteFile);
             if (!done) {
@@ -260,10 +253,7 @@ public class FileUtils {
 
             ftpClient.connect(ftpPath.server, ftpPath.port);
             if (ftpClient.login(ftpPath.username, ftpPath.password)) {
-                if(ftpPath.passiveMode) {
-                    ftpClient.enterLocalPassiveMode();
-                }
-                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                configureFTPClient(ftpClient, ftpPath);
 
                 boolean dirExists = true;
                 String[] directories = ftpPath.remoteFile.split("/");
@@ -352,9 +342,7 @@ public class FileUtils {
                 ftpClient.setControlEncoding(ftpPath.charset);
             ftpClient.connect(ftpPath.server, ftpPath.port);
             ftpClient.login(ftpPath.username, ftpPath.password);
-            if(ftpPath.passiveMode) {
-                ftpClient.enterLocalPassiveMode();
-            }
+            configureFTPClient(ftpClient, ftpPath);
 
             boolean exists;
             //check file existence
@@ -422,9 +410,7 @@ public class FileUtils {
             ftpClient.setControlEncoding(ftpPath.charset != null ? ftpPath.charset : charset);
             ftpClient.connect(ftpPath.server, ftpPath.port);
             ftpClient.login(ftpPath.username, ftpPath.password);
-            if(ftpPath.passiveMode) {
-                ftpClient.enterLocalPassiveMode();
-            }
+            configureFTPClient(ftpClient, ftpPath);
 
             List<Object> result;
             if (ftpPath.remoteFile == null || ftpPath.remoteFile.isEmpty() || ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
@@ -454,6 +440,16 @@ public class FileUtils {
     public static void safeDelete(File file) {
         if (file != null && !file.delete()) {
             file.deleteOnExit();
+        }
+    }
+
+    private static void configureFTPClient(FTPClient ftpClient, FTPPath ftpPath) throws IOException {
+        if (ftpPath.passiveMode) {
+            ftpClient.enterLocalPassiveMode();
+        }
+        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+        if (ftpPath.binaryTransferMode) {
+            ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
         }
     }
 }
