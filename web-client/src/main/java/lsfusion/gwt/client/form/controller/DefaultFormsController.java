@@ -60,48 +60,24 @@ public abstract class DefaultFormsController implements FormsController {
         if(forbidDuplicate && MainFrame.forbidDuplicateForms && formsList.contains(form.sID)) {
             tabsPanel.selectTab(formsList.indexOf(form.sID));
             return null;
-        } else {
-            return openFormAfterFontsInitialization(null, form, modalityType, initFilterEvent, hiddenHandler);
-        }
-    }
-
-    private Widget openFormAfterFontsInitialization(final FormDockable dockable, final GForm form, final GModalityType modalityType, final EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
-        // перед открытием формы необходимо рассчитать размеры используемых шрифтов
-        return openForm(dockable, form, modalityType, initFilterEvent, hiddenHandler);
-//        return GFontMetrics.calculateFontMetrics(form.usedFonts, new GFontMetrics.MetricsCallback() {
-//            @Override
-//            public Widget metricsCalculated() {
-//                return openForm(dockable, form, modalityType, initFilterEvent, hiddenHandler);
-//            }
-//        });
-    }
-
-    private Widget openForm(FormDockable dockable, final GForm form, GModalityType modalityType, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
-        if (!GWT.isScript()) {
-            form.caption += "(" + form.sID + ")";
         }
         if (modalityType.isModalWindow()) {
             ModalForm modalForm = showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
             registerForm(modalForm.getForm());
+            return null;
         } else {
-            if (dockable == null) {
-                dockable = addDockable(new FormDockable(), form.sID);
-            }
+            FormDockable dockable = addDockable(new FormDockable(form), form.sID);
             dockable.initialize(this, form); // initialize should be after addDockable, otherwise offsetTop and other sizes are not recalculated in preAfterUpdateTableData, and it breaks scrolling (for example LAST option at form opening)
             registerForm(dockable.getForm());
 
-            final FormDockable finalDockable = dockable;
-            dockable.setHiddenHandler(new WindowHiddenHandler() {
-                @Override
-                public void onHidden() {
-                    if (hiddenHandler != null) {
-                        hiddenHandler.onHidden();
-                    }
-                    removeDockable(finalDockable, form.sID);
+            dockable.setHiddenHandler(() -> {
+                if (hiddenHandler != null) {
+                    hiddenHandler.onHidden();
                 }
+                removeDockable(dockable, form.sID);
             });
+            return dockable.getContentWidget();
         }
-        return dockable == null ? null : dockable.getContentWidget();
     }
 
     public void selectTab(Widget widget) {

@@ -171,7 +171,7 @@ public class GridController extends AbstractTableController {
                     addActionListener(e -> RmiQueue.runAction(() -> {
                         try {
                             ClientPropertyDraw property = table.getCurrentProperty();
-                            String caption = property.getCaption();
+                            String caption = property.getPropertyCaption();
                             if (property.baseType instanceof ClientIntegralClass) {
                                 ClientGroupObjectValue columnKey = ((GridTable) table).getTableModel().getColumnKey(Math.max(((GridTable) table).getSelectedColumn(), 0));
                                 Object sum = formController.calculateSum(property.getID(), columnKey.serialize());
@@ -314,7 +314,7 @@ public class GridController extends AbstractTableController {
         {
             if (read instanceof ClientPropertyDraw) {
                 ClientPropertyDraw property = (ClientPropertyDraw) read;
-                if (property.groupObject == groupObject && property.shouldBeDrawn(formController) && !fc.updateProperties.contains(property)) {
+                if (property.groupObject == groupObject && !fc.updateProperties.contains(property)) {
                     ImageLinkPropertyRenderer.clearChache(property);
 
                     addDrawProperty(property);
@@ -346,7 +346,7 @@ public class GridController extends AbstractTableController {
         // Затем их свойства
         for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
             ClientPropertyReader propertyRead = readProperty.getKey();
-            if (propertyRead.getGroupObject() == groupObject && propertyRead.shouldBeDrawn(formController)) {
+            if (propertyRead.getGroupObject() == groupObject) {
                 propertyRead.update(readProperty.getValue(), fc.updateProperties.contains(propertyRead), this);
             }
         }

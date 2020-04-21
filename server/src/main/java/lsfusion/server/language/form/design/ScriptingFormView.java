@@ -68,7 +68,7 @@ public class ScriptingFormView {
             errLog.emitAlreadyDefinedError(parser, "component", sid);
         }
 
-        ContainerView container = view.createContainer(null, null, sid, version);
+        ContainerView container = view.createContainer(null, sid, version);
         
         moveComponent(container, parentComponent, pos, anchorComponent, version);
 

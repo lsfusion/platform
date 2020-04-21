@@ -35,6 +35,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -1169,7 +1170,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 ComponentView drawComponent = getDrawComponent(property);
                 if(!isDesignHidden(drawComponent)) {
                     ComponentView localHideableContainer = drawComponent.getLocalHideableContainer();
-                    if (localHideableContainer == null) // cheat \ оптимизация
+                    if (localHideableContainer == null) // cheat / optimization
                         return null;
                     result = result.addItem(localHideableContainer);
                 }
@@ -1191,6 +1192,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             result = result.addAll(drawContainers);
         }
         return result;
+    }
+
+    @IdentityLazy
+    public ImSet<ContainerView> getPropertyContainers() {
+        MExclSet<ContainerView> mContainers = SetFact.mExclSet();
+        getRichDesign().mainContainer.fillPropertyContainers(mContainers);
+        return mContainers.immutable();
     }
 
     public void setReadOnlyIf(PropertyDrawEntity property, PropertyObjectEntity condition) {

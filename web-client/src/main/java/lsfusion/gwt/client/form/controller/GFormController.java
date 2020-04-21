@@ -45,7 +45,6 @@ import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.event.*;
@@ -132,10 +131,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return formsController;
     }
 
-    public GFormController(FormsController formsController, GForm gForm) {
-        this(formsController, gForm, false, false);
-    }
-
     public GFormController(FormsController formsController, GForm gForm, final boolean isModal, boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
 
@@ -160,6 +155,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         setFillWidget(formLayout);
+
+        updateFormCaption();
 
         initializeControllers();
 
@@ -611,12 +608,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             block();
         }
 
-        Widget blockingWidget = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, new WindowHiddenHandler() {
-            @Override
-            public void onHidden() {
-                unblock();
-                handler.onHidden();
-            }
+        Widget blockingWidget = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, () -> {
+            unblock();
+            handler.onHidden();
         });
 
         if (modalityType == GModalityType.DOCKED_MODAL) {
@@ -951,16 +945,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void activateTab(GComponent component) {
-        GContainer parentContainer = component.container;
-        if(parentContainer != null && parentContainer.isTabbed()) {
-            GAbstractContainerView containerView = getFormLayout().getContainerView(parentContainer);
-            if(containerView instanceof TabbedContainerView) {
-                Map<Integer, Integer> tabMap = getTabMap((TabbedContainerView) containerView, parentContainer);
-                Integer index = tabMap.get(component.ID);
-                if(index != null)
-                    ((TabbedContainerView) containerView).activateTab(index);
-            }
-        }
+        if(component.isTab())
+            ((TabbedContainerView)formLayout.getContainerView(component.container)).activateTab(component);
     }
 
     public void countRecords(final GGroupObject groupObject) {
@@ -1101,6 +1087,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 //        dispatcher = null; // so far there are no null checks (for example, like in desktop-client), so changePageSize can be called after (apparently close will suppress it)
     }
 
+    public void updateFormCaption() {
+        String caption = form.mainContainer.caption;
+        setFormCaption(caption, form.getTooltip(caption));
+    }
+
+    public void setFormCaption(String caption, String tooltip) {
+        throw new UnsupportedOperationException();
+    }
+
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
     private boolean formHidden;
     public void hideForm(int closeDelay) {
@@ -1227,6 +1222,19 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     @Override
     public void interrupt(boolean cancelable) {
         dispatcher.executePriority(new Interrupt(cancelable), new ErrorHandlingCallback<VoidResult>());
+    }
+
+    public void setContainerCaption(GContainer container, String caption) {
+        container.caption = caption;
+
+        // update captions (actually we could've set them directly to the containers, but tabbed pane physically adds / removes that views, so the check if there is a tab is required there)
+        GFormLayout layout = formLayout;
+        if(container.isTab())
+            ((TabbedContainerView)layout.getContainerView(container.container)).updateTabCaption(container);
+        else if(container.main)
+            updateFormCaption();
+        else
+            layout.getContainerView(container).updateCaption();
     }
 
     private static final class Change {

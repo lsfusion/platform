@@ -1,13 +1,12 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -17,53 +16,64 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {
 
-    protected interface TabbedDelegate {
-        HandlerRegistration addSelectionHandler(SelectionHandler<Integer> selectionHandler);
+    protected final Panel panel;
 
-        boolean remove(int index);
-
-        void insertTab(GComponent child, Widget childView, String tabTitle, int index);
-
-        int getSelectedTab();
-
-        int getWidgetCount();
-
-        void selectTab(int i);
-
-        Widget asWidget();
-
-        int getTabBarHeight();
-    }
-
-    protected final TabbedDelegate tabbedDelegate;
+    private final Widget view;
 
     protected final ArrayList<GComponent> visibleChildren = new ArrayList<>();
 
     protected GComponent currentChild;
 
-    public TabbedContainerView(final GFormController formController, final GContainer container, final TabbedDelegate delegate) {
+    public static class Panel extends FlexTabbedPanel {
+
+        public void insertTab(GComponent child, Widget childView, String tabTitle, int index) {
+            FlexPanel proxyPanel = new FlexPanel(true);
+            proxyPanel.add(childView, child.getAlignment(), child.getFlex());
+
+            child.installPaddings(proxyPanel);
+
+            insert(proxyPanel, tabTitle, index);
+        }
+    }
+
+    public TabbedContainerView(final GFormController formController, final GContainer container) {
         super(container);
 
         assert container.isTabbed();
 
-        tabbedDelegate = delegate;
+        panel = new Panel();
 
         if (container.children.size() > 0) {
             currentChild = container.children.get(0);
         }
 
-        tabbedDelegate.addSelectionHandler(new SelectionHandler<Integer>() {
-            @Override
-            public void onSelection(SelectionEvent<Integer> e) {
-                onTabSelected(e.getSelectedItem(), formController, container);
-                scheduleOnResize(tabbedDelegate.asWidget());
-            }
+        panel.addSelectionHandler(e -> {
+            onTabSelected(e.getSelectedItem(), formController, container);
+            scheduleOnResize(panel.asWidget());
         });
+
+        view = initBorder(panel);
     }
 
-    public void activateTab(int i) {
-        currentChild = container.children.get(i);  // изменение сервер уже в курсе об изменениях, поэтому пометим так
-        tabbedDelegate.selectTab(i);
+    private int getTabIndex(GComponent component) {
+        for(int i=0,size=visibleChildren.size();i<size;i++)
+            if(visibleChildren.get(i).equals(component))
+                return i;
+        return -1;
+    }
+
+    public void activateTab(GComponent component) {
+        int index = getTabIndex(component);
+        if(index >= 0) {
+            currentChild = component;
+            panel.selectTab(index);
+        }
+    }
+
+    public void updateTabCaption(GContainer container) {
+        int index = getTabIndex(container);
+        if(index >= 0)
+            panel.setTabCaption(index, container.caption);
     }
 
     protected void onTabSelected(int selectedIndex, GFormController formController, GContainer container) {
@@ -85,14 +95,14 @@ public class TabbedContainerView extends GAbstractContainerView {
     protected void removeImpl(int index, GComponent child, Widget view) {
         int visibleIndex = visibleChildren.indexOf(child);
         if (visibleIndex != -1) {
-            tabbedDelegate.remove(visibleIndex);
+            panel.remove(visibleIndex);
             visibleChildren.remove(visibleIndex);
         }
     }
 
     @Override
     public Widget getView() {
-        return tabbedDelegate.asWidget();
+        return view;
     }
 
     @Override
@@ -108,11 +118,12 @@ public class TabbedContainerView extends GAbstractContainerView {
                 if (index == -1) {
                     index = relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
-                    tabbedDelegate.insertTab(child, childView, getTabTitle(child), index);
+                    panel.insertTab(child, childView, getTabTitle(child), index);
+                    // updateTabCaption(child);
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
-                tabbedDelegate.remove(index);
+                panel.remove(index);
             }
         }
         ensureTabSelection();
@@ -120,18 +131,18 @@ public class TabbedContainerView extends GAbstractContainerView {
 
     @Override
     public Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
-        int selected = tabbedDelegate.getSelectedTab();
+        int selected = panel.getSelectedTab();
         if (selected != -1) {
             Dimension dimensions = getChildMaxPreferredSize(containerViews, selected);
-            dimensions.height += tabbedDelegate.getTabBarHeight() + 5; //little extra for borders, etc.
+            dimensions.height += panel.getTabBarHeight() + 5; //little extra for borders, etc.
             return dimensions;
         }
         return new Dimension(0, 0);
     }
 
     private void ensureTabSelection() {
-        if (tabbedDelegate.getSelectedTab() == -1 && tabbedDelegate.getWidgetCount() != 0) {
-            tabbedDelegate.selectTab(0);
+        if (panel.getSelectedTab() == -1 && panel.getWidgetCount() != 0) {
+            panel.selectTab(0);
         }
     }
 

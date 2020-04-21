@@ -40,6 +40,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public ClientComponent() {
     }
 
+    public boolean isTab() {
+        return container != null && container.isTabbed();
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, container);

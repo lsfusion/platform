@@ -2,9 +2,9 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.Alignment;
-import lsfusion.interop.form.design.ContainerAdder;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -74,38 +74,31 @@ public class GroupObjectContainerSet {
         return toolbarContainer;
     }
 
-    public static GroupObjectContainerSet create(GroupObjectView group, ContainerFactory<ContainerView> factory,
-                                                 ContainerAdder<ContainerView, ComponentView, LocalizedString> adder) {
+    public static GroupObjectContainerSet create(GroupObjectView group, ContainerFactory<ContainerView> factory, Version version) {
 
         GroupObjectContainerSet set = new GroupObjectContainerSet();
         String sid = group.getPropertyGroupContainerSID();
 
         set.boxContainer = factory.createContainer(); // контейнер всей группы
         set.boxContainer.setCaption(group.getCaption());
-        set.boxContainer.setDescription(LocalizedString.create("{form.layout.group.objects}"));
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
 
         set.gridBoxContainer = factory.createContainer(); // контейнер грида внутрь
-        set.gridBoxContainer.setDescription(LocalizedString.create("{form.layout.grid.part}"));
         set.gridBoxContainer.setSID(DefaultFormView.getGridBoxContainerSID(sid));
 
         set.panelContainer = factory.createContainer(); // контейнер панели
-        set.panelContainer.setDescription(LocalizedString.create("{form.layout.panel}"));
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID(sid));
 
         set.groupContainer = factory.createContainer();
         set.groupContainer.setSID(DefaultFormView.getGOGroupContainerSID("," + sid));
 
         set.toolbarBoxContainer = factory.createContainer(); // контейнер всех управляющих объектов
-        set.toolbarBoxContainer.setDescription(LocalizedString.create("{form.layout.control.objects}"));
         set.toolbarBoxContainer.setSID(DefaultFormView.getToolbarBoxContainerSID(sid));
 
         set.toolbarContainer = factory.createContainer(); // контейнер тулбара
-        set.toolbarContainer.setDescription(LocalizedString.create("{form.layout.toolbar.props.container}"));
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID(sid));
 
         set.filtersContainer = factory.createContainer(); // контейнер фильтров
-        set.filtersContainer.setDescription(LocalizedString.create("{form.layout.filters.container}"));
         set.filtersContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
 
         set.toolbarRightContainer = factory.createContainer();
@@ -118,34 +111,34 @@ public class GroupObjectContainerSet {
         set.boxContainer.setChildrenAlignment(Alignment.START);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
-        adder.add(set.boxContainer, set.gridBoxContainer);
-        adder.add(set.boxContainer, set.toolbarBoxContainer);
-        adder.add(set.boxContainer, group.getUserFilter());
-        adder.add(set.boxContainer, set.panelContainer);
+        set.boxContainer.add(set.gridBoxContainer, version);
+        set.boxContainer.add(set.toolbarBoxContainer, version);
+        set.boxContainer.add(group.getUserFilter(), version);
+        set.boxContainer.add(set.panelContainer, version);
 
         set.gridBoxContainer.setType(ContainerType.HORIZONTAL_SPLIT_PANE);
         set.gridBoxContainer.setAlignment(FlexAlignment.STRETCH);
         set.gridBoxContainer.setFlex(1);
-        adder.add(set.gridBoxContainer, group.getGrid());
+        set.gridBoxContainer.add(group.getGrid(), version);
 
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarBoxContainer.setChildrenAlignment(Alignment.START);
-        adder.add(set.toolbarBoxContainer, set.toolbarLeftContainer);
-        adder.add(set.toolbarBoxContainer, set.toolbarRightContainer);
+        set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
+        set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
 
         set.toolbarLeftContainer.setType(ContainerType.CONTAINERH);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.CENTER);
         set.toolbarLeftContainer.setChildrenAlignment(Alignment.END);
-        adder.add(set.toolbarLeftContainer, group.getToolbarSystem());
+        set.toolbarLeftContainer.add(group.getToolbarSystem(), version);
 
         set.toolbarRightContainer.setType(ContainerType.CONTAINERH);
         set.toolbarRightContainer.setAlignment(FlexAlignment.CENTER);
         set.toolbarRightContainer.setChildrenAlignment(Alignment.END);
         set.toolbarRightContainer.setFlex(1);
-        adder.add(set.toolbarRightContainer, group.getCalculations());
-        adder.add(set.toolbarRightContainer, set.filtersContainer);
-        adder.add(set.toolbarRightContainer, set.toolbarContainer);
+        set.toolbarRightContainer.add(group.getCalculations(), version);
+        set.toolbarRightContainer.add(set.filtersContainer, version);
+        set.toolbarRightContainer.add(set.toolbarContainer, version);
 
         set.filtersContainer.setType(ContainerType.CONTAINERH);
         set.filtersContainer.setAlignment(FlexAlignment.CENTER);
@@ -157,7 +150,7 @@ public class GroupObjectContainerSet {
         set.panelContainer.setType(ContainerType.CONTAINERV);
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
         set.panelContainer.setChildrenAlignment(Alignment.START);
-        adder.add(set.panelContainer, set.groupContainer);
+        set.panelContainer.add(set.groupContainer, version);
 
         set.groupContainer.setType(ContainerType.COLUMNS);
         set.groupContainer.setColumns(4);

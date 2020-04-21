@@ -25,36 +25,31 @@ public final class FormDockable {
 
     private WindowHiddenHandler hiddenHandler;
 
-    private boolean initialized = false;
-
-    public FormDockable(String caption) {
-        tabWidget = new TabWidget(caption);
-        tabWidget.setBlocked(true);
-
-        contentWidget = new ContentWidget(new LoadingWidget());
-    }
-
-    public FormDockable() {
+    public FormDockable(GForm form) {
         tabWidget = new TabWidget("");
+        tabWidget.setBlocked(false);
+
         contentWidget = new ContentWidget(null);
     }
 
+    public void setCaption(String caption, String tooltip) {
+        tabWidget.setTitle(caption);
+        tabWidget.setTooltip(tooltip);
+    }
+
     public void initialize(final FormsController formsController, final GForm gForm) {
-        if (initialized) {
-            throw new IllegalStateException("Form dockable has already been initialized");
-        }
-        initialized = true;
-
-        tabWidget.setTitle(gForm.caption);
-        tabWidget.setBlocked(false);
-
-        form = new GFormController(formsController, gForm) {
+        form = new GFormController(formsController, gForm, false, false) {
             @Override
             public void onFormHidden(int closeDelay) {
                 super.onFormHidden(closeDelay);
                 if (hiddenHandler != null) {
                     hiddenHandler.onHidden();
                 }
+            }
+
+            @Override
+            public void setFormCaption(String caption, String tooltip) {
+                setCaption(caption, tooltip);
             }
 
             @Override
@@ -175,6 +170,8 @@ public final class FormDockable {
         private Label label;
         private Button closeButton;
 
+        private String tooltip;
+
         public TabWidget(String title) {
             addStyleName("tabLayoutPanelTabWidget");
             
@@ -198,19 +195,16 @@ public final class FormDockable {
             
             add(closeButton, GFlexAlignment.CENTER);
 
-            closeButton.addClickHandler(new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent event) {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    closePressed();
-                }
+            closeButton.addClickHandler(event -> {
+                event.stopPropagation();
+                event.preventDefault();
+                closePressed();
             });
 
             TooltipManager.registerWidget(this, new TooltipManager.TooltipHelper() {
                 @Override
                 public String getTooltip() {
-                    return form != null ? form.getForm().getTooltip() : "";
+                    return tooltip != null ? tooltip : null;
                 }
 
                 @Override
@@ -226,6 +220,9 @@ public final class FormDockable {
 
         public void setTitle(String title) {
             label.setText(title);
+        }
+        public void setTooltip(String tooltip) {
+            this.tooltip = tooltip;
         }
     }
 

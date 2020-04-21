@@ -96,7 +96,7 @@ public class TreeGroupController extends AbstractTableController {
             for (ClientPropertyReader read : fc.properties.keySet()) {
                 if (read instanceof ClientPropertyDraw) {
                     ClientPropertyDraw property = (ClientPropertyDraw) read;
-                    if (!fc.updateProperties.contains(property) && property.groupObject == group && property.shouldBeDrawn(formController)) {
+                    if (!fc.updateProperties.contains(property) && property.groupObject == group) {
                         addDrawProperty(group, property);
 
                         //пока не поддерживаем группы в колонках в дереве, поэтому делаем
@@ -117,7 +117,7 @@ public class TreeGroupController extends AbstractTableController {
             // обновляем значения свойств
             for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
                 ClientPropertyReader propertyRead = readProperty.getKey();
-                if (propertyRead.getGroupObject() == group && propertyRead.shouldBeDrawn(formController)) {
+                if (propertyRead.getGroupObject() == group) {
                     propertyRead.update(readProperty.getValue(), fc.updateProperties.contains(propertyRead), this);
                 }
             }

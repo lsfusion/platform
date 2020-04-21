@@ -385,10 +385,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return "";
     }
 
-    public boolean shouldBeDrawn(ClientFormController form) {
-        return baseType.shouldBeDrawn(form);
-    }
-
     public byte getType() {
         return PropertyReadType.DRAW;
     }
@@ -584,6 +580,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     @Override
     public String getCaption() {
+        return getPropertyCaption();
+    }
+
+    public String getPropertyCaption() {
         return caption;
     }
 
@@ -669,10 +669,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.getGroupObject();
         }
 
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return ClientPropertyDraw.this.shouldBeDrawn(form);
-        }
-
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             controller.updatePropertyCaptions(ClientPropertyDraw.this, readKeys);
         }
@@ -689,10 +685,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public class ShowIfReader implements ClientPropertyReader {
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
         public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
@@ -713,10 +705,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.getGroupObject();
         }
 
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return false;
-        }
-
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
         }
 
@@ -732,10 +720,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public class ReadOnlyReader implements ClientPropertyReader {
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
@@ -763,10 +747,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.getGroupObject();
         }
 
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return ClientPropertyDraw.this.shouldBeDrawn(form);
-        }
-
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
 //            controller.updateReadOnlyValues(ClientPropertyDraw.this, readKeys);
         }
@@ -785,10 +765,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.getGroupObject();
         }
 
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return ClientPropertyDraw.this.shouldBeDrawn(form);
-        }
-
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             controller.updateCellBackgroundValues(ClientPropertyDraw.this, readKeys);
         }
@@ -805,10 +781,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public class ForegroundReader implements ClientPropertyReader {
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {

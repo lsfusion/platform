@@ -411,8 +411,8 @@ public class ReportDesignGenerator {
     }
 
     private String getNodeName(ReportNode node) {
-        String nodeName = node.getName(formView);
-        return nodeName != null && (printType == FormPrintType.XLS || printType == FormPrintType.XLSX) ?
+        String nodeName = node.getName(formInterface.getFormEntity().getSID());
+        return printType == FormPrintType.XLS || printType == FormPrintType.XLSX ?
                 nodeName.replaceAll("[\\\\/*?:\\[\\],]", "_") : nodeName; //forbidden characters: /\*?:[],
     }
 }

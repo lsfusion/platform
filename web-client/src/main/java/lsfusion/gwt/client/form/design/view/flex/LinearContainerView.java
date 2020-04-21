@@ -7,15 +7,16 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.BeforeSelectionTabHandler;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
+import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 
-public class FlexLinearContainerView extends GAbstractContainerView {
+public class LinearContainerView extends GAbstractContainerView {
     private final FlexPanel panel;
 
     private final Widget view;
 
     private final boolean hasSeveralFlexes;
 
-    public FlexLinearContainerView(GContainer container) {
+    public LinearContainerView(GContainer container) {
         super(container);
 
         assert container.isLinear();
@@ -23,9 +24,9 @@ public class FlexLinearContainerView extends GAbstractContainerView {
         panel = new FlexPanel(container.isVertical(), container.getFlexJustify());
         panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
 
-        view = wrapWithFlexCaption(panel);
-
         hasSeveralFlexes = container.getFlexCount() > 1;
+
+        view = initBorder(panel);
     }
 
     @Override
@@ -43,12 +44,12 @@ public class FlexLinearContainerView extends GAbstractContainerView {
             add(panel, view, index, child.getAlignment(), child.getFlex(), child, vertical);
         }
 
-        if(child.getFlex() > 0 && hasSeveralFlexes && view instanceof FlexTabbedContainerView.Panel)
-            ((FlexTabbedContainerView.Panel)view).addBeforeSelectionTabHandler(new BeforeSelectionTabHandler() {
+        if(child.getFlex() > 0 && hasSeveralFlexes && view instanceof TabbedContainerView.Panel)
+            ((TabbedContainerView.Panel)view).addBeforeSelectionTabHandler(new BeforeSelectionTabHandler() {
                 @Override
                 public void onBeforeSelection(int tabIndex) {
                     if(tabIndex > 0)
-                        panel.fixFlexBasis((FlexTabbedContainerView.Panel)view);
+                        panel.fixFlexBasis((TabbedContainerView.Panel)view);
                 }
             });
     }

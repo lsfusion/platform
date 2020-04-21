@@ -131,6 +131,8 @@ public class ClientFormChanges {
                 return clientForm.getGroupObject(inStream.readInt()).rowForegroundReader;
             case PropertyReadType.LAST:
                 return clientForm.getProperty(inStream.readInt()).lastReaders.get(inStream.readInt());
+            case PropertyReadType.CONTAINER_CAPTION:
+                return clientForm.findContainerByID(inStream.readInt()).captionReader;
             default:
                 throw new IOException();
         }

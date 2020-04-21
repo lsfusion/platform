@@ -49,8 +49,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         
         editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 
-        setCaption(property.getCaption());
-        setToolTip(property.getCaption());
+        setCaption(property.getPropertyCaption());
+        setToolTip(property.getPropertyCaption());
 
         if (property.isReadOnly()) {
             setEnabled(false);

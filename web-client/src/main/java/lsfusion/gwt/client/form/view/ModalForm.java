@@ -23,7 +23,8 @@ public class ModalForm extends ResizableModalWindow {
     private final GFormController form;
 
     public ModalForm(FormsController formsController, GForm gForm, boolean isDialog, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
-        super(gForm.caption, gForm.getTooltip(), hiddenHandler);
+        super(hiddenHandler);
+
         this.initFilterEvent = initFilterEvent;
 
         form = new GFormController(formsController, gForm, true, isDialog) {
@@ -32,6 +33,11 @@ public class ModalForm extends ResizableModalWindow {
                 super.onFormHidden(closeDelay);
                 ModalForm.this.hide();
                 unregisterForm();
+            }
+
+            @Override
+            public void setFormCaption(String caption, String tooltip) {
+                setCaption(caption, tooltip);
             }
 
             @Override
@@ -50,6 +56,11 @@ public class ModalForm extends ResizableModalWindow {
 
         //сразу добавляем в DOM, чтобы можно было посчитать естественную ширину элементов
         attach();
+    }
+
+    public void setCaption(String caption, String tooltip) {
+        setCaption(caption);
+        setTooltip(tooltip);
     }
 
     public GFormController getForm() {

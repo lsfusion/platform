@@ -9,7 +9,6 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexCaptionPanel;
 import lsfusion.gwt.client.form.object.table.view.GridPanel;
-import lsfusion.gwt.client.form.design.view.table.TableCaptionPanel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,23 +137,31 @@ public abstract class GAbstractContainerView {
     }
 
     protected Dimension addCaptionDimensions(Dimension dimension) {
-        if (needCaption()) {
+        if (hasCaption()) {
             dimension.width += 10;
             dimension.height += 20;
         }
         return dimension;
     }
 
-    private boolean needCaption() { // не top, не tabbed и есть caption
-        return (container.container != null && !container.container.isTabbed()) && container.caption != null;
+    private FlexCaptionPanel titledBorder;
+
+    private boolean hasCaption() { // не top, не tabbed и есть caption
+        return !container.isTab() && !container.main && container.caption != null;
     }
 
-    protected FlexPanel wrapWithFlexCaption(FlexPanel view) {
-        return needCaption() ? new FlexCaptionPanel(container.caption, view) : view;
+    protected FlexPanel initBorder(FlexPanel view) {
+        if(hasCaption()) {
+            titledBorder = new FlexCaptionPanel(container.caption, view);
+            // updateCaption();
+            return titledBorder;
+        }
+        return view;
     }
 
-    protected Widget wrapWithTableCaption(Widget content) {
-        return needCaption() ? new TableCaptionPanel(container.caption, content) : content;
+    public void updateCaption() {
+        assert hasCaption();
+        titledBorder.setCaption(container.caption);
     }
 
     public void onResize() {

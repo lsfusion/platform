@@ -31,7 +31,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public JComponentPanel getView() {
+    public ContainerViewPanel getPanel() {
         return panel;
     }
 }

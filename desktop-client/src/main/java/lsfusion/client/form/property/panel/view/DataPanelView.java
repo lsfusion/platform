@@ -69,7 +69,7 @@ public class DataPanelView extends JPanel implements PanelView {
         add(table, new FlexConstraints(FlexAlignment.STRETCH, 1));
 
         setOpaque(false);
-        setToolTip(property.getCaption());
+        setToolTip(property.getPropertyCaption());
 
         property.installMargins(this);
 

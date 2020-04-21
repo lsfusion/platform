@@ -149,7 +149,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
         wasRVisible = rVisible;
     }
 
-    public JComponentPanel getView() {
+    public ContainerViewPanel getPanel() {
         return panel;
     }
     

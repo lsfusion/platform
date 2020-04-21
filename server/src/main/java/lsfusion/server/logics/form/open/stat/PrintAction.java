@@ -107,10 +107,11 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
             if (exportFile != null)
                 writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password));
             else {
+                String formCaption = staticType == FormPrintType.PRINT ? formReportManager.readFormCaption() : null;
                 //printer and sheet/password options doesn't intersect
                 String printer = printerInterface != null ? (String)context.getKeyObject(printerInterface) : null;
                 List<ReportPath> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
-                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, form.getSID(), syncType, reportData, staticType, printer, SystemProperties.inDevMode, password, sheetName));
+                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, formCaption, form.getSID(), syncType, reportData, staticType, printer, SystemProperties.inDevMode, password, sheetName));
                 formPageCount.change(pageCount, context);
             }
         }

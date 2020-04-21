@@ -43,7 +43,7 @@ public class ScrollClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public JComponentPanel getView() {
+    public ContainerViewPanel getPanel() {
         return panel;
     }
 }

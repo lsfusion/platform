@@ -132,6 +132,6 @@ public class ClientToolbar extends ClientComponent {
 
     @Override
     public String toString() {
-        return getCaption() + "[sid:" + getSID() + "]";
+        return ClientResourceBundle.getString("logics.toolbar") + "[sid:" + getSID() + "]";
     }
 }

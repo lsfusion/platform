@@ -75,10 +75,6 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     protected abstract PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property);
 
-    public boolean shouldBeDrawn(ClientFormController form) {
-        return true;
-    }
-
     public String getConfirmMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");
     }

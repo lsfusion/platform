@@ -13,12 +13,13 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         super(target);
     }
     
-    public void setCaption(LocalizedString caption) {
-        target.caption = caption;
-    }
-
-    public void setDescription(LocalizedString description) {
-        target.description = description;
+    public void setCaption(Object caption) {
+        if(caption instanceof LocalizedString)
+            target.caption = (LocalizedString) caption;
+        else {
+            target.caption = LocalizedString.NONAME;
+            target.propertyCaption = (PropertyObjectEntity<?>) caption;
+        }
     }
 
     public void setType(ContainerType type) {

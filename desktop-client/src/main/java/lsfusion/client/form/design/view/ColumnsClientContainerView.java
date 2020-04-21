@@ -115,7 +115,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public JComponentPanel getView() {
+    public ContainerViewPanel getPanel() {
         return panel;
     }
 }

@@ -95,11 +95,14 @@ public class GFormChanges {
                 return form.getGroupObject(readerId).rowForegroundReader;
             case GPropertyReadType.LAST:
                 return form.getProperty(readerId).lastReaders.get(index);
+            case GPropertyReadType.CONTAINER_CAPTION:
+                return form.findContainerByID(readerId).captionReader;
             default:
                 return null;
         }
     }
 
+    // should correspond PropertyReadType
     public class GPropertyReadType {
         public final static byte DRAW = 0;
         public final static byte CAPTION = 1;
@@ -111,5 +114,6 @@ public class GFormChanges {
         public final static byte ROW_BACKGROUND = 7;
         public final static byte ROW_FOREGROUND = 8;
         public final static byte LAST = 9;
+        public final static byte CONTAINER_CAPTION = 10;
     }
 }

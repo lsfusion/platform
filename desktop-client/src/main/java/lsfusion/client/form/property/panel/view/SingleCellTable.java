@@ -46,7 +46,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     }
 
     public void setProperty(ClientPropertyDraw property) {
-        setName(property.getCaption());
+        setName(property.getPropertyCaption());
         model.setProperty(property);
 
         // cell height/width is calculated without row/column margins (getCellRect()). Row/column margin = intercell spacing.

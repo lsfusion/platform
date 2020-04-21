@@ -88,12 +88,12 @@ public class DefaultFormView extends FormView {
     public DefaultFormView(FormEntity formEntity, Version version) {
         super(formEntity, version);
 
-        caption = entity.getCaption();
+        mainContainer.setCaption(entity.getCaption());
         canonicalName = entity.getSID();
         creationPath = entity.getCreationPath();
         autoRefresh = entity.autoRefresh;
 
-        FormContainerSet formSet = FormContainerSet.fillContainers(this, containerFactory, new ContainerView.VersionContainerAdder(version));
+        FormContainerSet formSet = FormContainerSet.fillContainers(this, containerFactory, version);
         
         objectsContainer = formSet.getObjectsContainer();
         addComponentToMapping(objectsContainer, version);
@@ -222,13 +222,13 @@ public class DefaultFormView extends FormView {
 
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
 
-        ContainerView toolbarLeftContainer = createContainer(null, null, DefaultFormView.getToolbarLeftContainerSID(), version);
+        ContainerView toolbarLeftContainer = createContainer(null, DefaultFormView.getToolbarLeftContainerSID(), version);
         toolbarLeftContainer.setType(ContainerType.CONTAINERH);
         toolbarLeftContainer.childrenAlignment = Alignment.START;
         toolbarLeftContainer.setFlex(0);
         toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
 
-        ContainerView toolbarRightContainer = createContainer(null, null, DefaultFormView.getToolbarRightContainerSID(), version);
+        ContainerView toolbarRightContainer = createContainer(null, DefaultFormView.getToolbarRightContainerSID(), version);
         toolbarRightContainer.setType(ContainerType.CONTAINERH);
         toolbarRightContainer.childrenAlignment = Alignment.END;
         toolbarRightContainer.setFlex(1);
@@ -261,7 +261,7 @@ public class DefaultFormView extends FormView {
     }
     private void addGroupObjectView(GroupObjectView groupObject, GroupObjectEntity neighbourGroupObject, boolean isRightNeigbour, Version version) {
         if(!groupObject.entity.isInTree()) {
-            GroupObjectContainerSet groupSet = GroupObjectContainerSet.create(groupObject, containerFactory, new ContainerView.VersionContainerAdder(version));
+            GroupObjectContainerSet groupSet = GroupObjectContainerSet.create(groupObject, containerFactory, version);
 
             addPropertyGroupContainerView(groupSet.getBoxContainer(), neighbourGroupObject, isRightNeigbour, version);
 
@@ -320,7 +320,7 @@ public class DefaultFormView extends FormView {
         addTreeGroupView(treeGroup, null, false, version);
     }
     private void addTreeGroupView(TreeGroupView treeGroup, GroupObjectEntity neighbour, boolean isRightNeigbour, Version version) {
-        TreeGroupContainerSet treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory, new ContainerView.VersionContainerAdder(version));
+        TreeGroupContainerSet treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory, version);
         
         addPropertyGroupContainerView(treeSet.getBoxContainer(), neighbour, isRightNeigbour, version);
 
@@ -500,7 +500,7 @@ public class DefaultFormView extends FormView {
             // first we'll create containers for upper groups to get right component order
             getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version), version);
 
-            propGroupContainer = createContainer(currentGroup.caption, null, getPropGroupContainerSID(currentGroup, propertyContainer), Version.global());
+            propGroupContainer = createContainer(currentGroup.caption, getPropGroupContainerSID(currentGroup, propertyContainer), Version.global());
             propGroupContainer.setType(ContainerType.COLUMNS);
             propGroupContainer.columns = 4;
 

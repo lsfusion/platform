@@ -17,12 +17,8 @@ public class FormViewProxy extends ViewProxy<FormView> {
         mainContainerProxy = new ContainerViewProxy(target.mainContainer);
     }
 
-    public void setKeyStroke(KeyStroke keyStroke) {
-        target.keyStroke = keyStroke;
-    }
-
     public void setCaption(LocalizedString caption) {
-        target.caption = caption;
+        mainContainerProxy.setCaption(caption);
     }
 
     public void setOverridePageWidth(Integer overridePageWidth) {
@@ -73,9 +69,5 @@ public class FormViewProxy extends ViewProxy<FormView> {
 
     public void setType(ContainerType type) {
         mainContainerProxy.setType(type);
-    }
-
-    public void setDescription(LocalizedString description) {
-        mainContainerProxy.setDescription(description);
     }
 }

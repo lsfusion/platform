@@ -19,7 +19,7 @@ public class UserPreferencesPropertyListItem {
     }
 
     public String getDefaultCaption() {
-        return property.getCaption();
+        return property.getPropertyCaption();
     }
 
     public String getUserCaption(boolean ignoreDefault) {

@@ -50,6 +50,7 @@ import org.jboss.netty.util.internal.NonReentrantLock;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -401,8 +402,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public Integer runReport(final List<ReportPath> customReportPathList, final String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException {
-        return runReport(isModal, generationData, printerName, new EditReportInvoker() {
+    public Integer runReport(final List<ReportPath> customReportPathList, final String formCaption, final String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException {
+        return runReport(isModal, formCaption, generationData, printerName, new EditReportInvoker() {
             @Override
             public boolean hasCustomReports() throws RemoteException {
                 return !customReportPathList.isEmpty();
@@ -447,11 +448,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public Integer runReport(boolean isModal, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+    public Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         if (isModal) {
-            return ReportDialog.showReportDialog(generationData, printerName, editInvoker);
+            return ReportDialog.showReportDialog(generationData, formCaption, printerName, editInvoker);
         } else {
-            return formsController.openReport(generationData, printerName, editInvoker);
+            return formsController.openReport(generationData, formCaption, printerName, editInvoker);
         }
     }
 

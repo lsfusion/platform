@@ -1,5 +1,7 @@
 package lsfusion.server.logics.form.struct.property;
 
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.PropertyReadType;
 
@@ -100,7 +102,9 @@ public enum PropertyDrawExtraType {
             return "{logics.foreground}";
         }
     };
-    
+
+    public static final ImSet<PropertyDrawExtraType> extras = SetFact.toSet(values());
+
     public ReportFieldExtraType getReportExtraType() {
         throw new UnsupportedOperationException();
     }

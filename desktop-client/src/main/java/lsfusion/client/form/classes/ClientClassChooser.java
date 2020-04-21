@@ -50,6 +50,6 @@ public class ClientClassChooser extends ClientComponent {
 
     @Override
     public String toString() {
-        return getCaption() + " (" + object.toString() + ")" + "[sid:" + getSID() + "]";
+        return ClientResourceBundle.getString("logics.classtree") + " (" + object.toString() + ")" + "[sid:" + getSID() + "]";
     }
 }

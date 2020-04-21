@@ -38,12 +38,9 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        formsController.openForm(action.form, action.modalityType, action.forbidDuplicate, null, new WindowHiddenHandler() {
-            @Override
-            public void onHidden() {
-                if (action.modalityType.isModal()) {
-                    continueDispatching();
-                }
+        formsController.openForm(action.form, action.modalityType, action.forbidDuplicate, null, () -> {
+            if (action.modalityType.isModal()) {
+                continueDispatching();
             }
         });
     }

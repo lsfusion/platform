@@ -20,4 +20,6 @@ public class PropertyReadType {
     public final static byte ROW_FOREGROUND = 8;
 
     public final static byte LAST = 9;
+
+    public final static byte CONTAINER_CAPTION = 10;
 }

@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class ReportDialog extends JDialog {
     public static Integer pageCount;
-    public ReportDialog(JFrame owner, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException, JRException {
+    public ReportDialog(JFrame owner, String formCaption, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException, JRException {
         super(owner, true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
@@ -28,7 +28,7 @@ public class ReportDialog extends JDialog {
         final ReportViewer viewer = new ReportViewer(print, printerName, editInvoker);
         double realZoom = viewer.getRealZoom();
 
-        setTitle(print.getName());
+        setTitle(formCaption);
         setSize(SwingUtils.clipToScreen(new Dimension((int)(print.getPageWidth() * realZoom + 100),
                                                       (int)(print.getPageHeight() * realZoom + 150))));
         setLocationRelativeTo(owner);
@@ -36,9 +36,9 @@ public class ReportDialog extends JDialog {
         getContentPane().add(viewer);
     }
 
-    public static Integer showReportDialog(ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
+    public static Integer showReportDialog(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
         try {
-            ReportDialog dlg = new ReportDialog(MainFrame.instance, generationData, printerName, editInvoker);
+            ReportDialog dlg = new ReportDialog(MainFrame.instance, formCaption, generationData, printerName, editInvoker);
             dlg.setVisible(true);
             return pageCount;
         } catch (JRException e) {

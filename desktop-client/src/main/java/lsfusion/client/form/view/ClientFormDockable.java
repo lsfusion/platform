@@ -17,7 +17,7 @@ public class ClientFormDockable extends ClientDockable {
     public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, FormsController formsController, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) throws IOException {
         super(canonicalName, formsController);
 
-        clientForm = new ClientFormController(canonicalName, formSID, remoteForm, firstChanges, navigator) {
+        clientForm = new ClientFormController(canonicalName, formSID, remoteForm, firstChanges, navigator, false, false) {
             @Override
             public void onFormHidden() {
                 if (control() != null) {
@@ -28,6 +28,11 @@ public class ClientFormDockable extends ClientDockable {
                     closeListener.formClosed(false);
                 }
                 super.onFormHidden();
+            }
+
+            @Override
+            public void setFormCaption(String caption, String tooltip) {
+                setCaption(caption, tooltip);
             }
 
             @Override
@@ -56,7 +61,12 @@ public class ClientFormDockable extends ClientDockable {
             }
         };
 
-        setContent(clientForm.getCaption(), clientForm.getTooltip(), clientForm.getLayout());
+        setContent(clientForm.getLayout());
+    }
+
+    public void setCaption(String caption, String tooltip) {
+        setTitleText(caption);
+        setTitleToolTip(tooltip);
     }
 
     @Override

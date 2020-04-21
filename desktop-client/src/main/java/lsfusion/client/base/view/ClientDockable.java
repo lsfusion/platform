@@ -86,11 +86,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
         return canonicalName;
     }
 
-    protected void setContent(String caption, Container contentContainer) {
-        setContent(caption, null, contentContainer);
-    }
-
-    protected void setContent(String caption, String tooltip, Container contentContainer) {
+    protected void setContent(Container contentContainer) {
         this.contentContainer = contentContainer;
         this.contentLayerUI = new ShadowLayerUI();
         this.contentLayer = new JXLayer(contentContainer, contentLayerUI);
@@ -107,10 +103,6 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
         });
 
         getContentPane().add(contentLayer);
-
-        setTitleText(caption);
-        if(tooltip != null)
-            setTitleToolTip(tooltip);
     }
 
     public void blockView() {
