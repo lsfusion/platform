@@ -135,7 +135,7 @@ public class SendEmailAction extends SystemExplicitAction {
     private Map<String, Message.RecipientType> getRecipientEmails(ExecutionContext context) throws SQLException, SQLHandledException {
         assert recipients.size() == recipientTypes.size();
 
-        Pattern p = Pattern.compile("^([A-Za-z0-9_-]+\\.)*[A-Za-z0-9_-]+@[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*\\.[A-Za-z]{2,10}$");
+        Pattern p = Pattern.compile("^([A-Za-z0-9'_-]+\\.)*[A-Za-z0-9'_-]+@[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*\\.[A-Za-z]{2,10}$");
 
         Map<String, Message.RecipientType> recipientEmails = new HashMap<>();
         for (int i = 0; i < recipients.size(); ++i) {
