@@ -53,8 +53,8 @@ public class Cost {
         return this == o || (o instanceof Cost && rows.equals(((Cost) o).rows));
     }
 
-    public int getDefaultTimeout() {
-        return BaseUtils.max(rows.getCount() * Settings.get().getTimeoutNanosPerRow() / 1000000, 1);
+    public long getDefaultTimeout() {
+        return BaseUtils.max(rows.getCount() * Settings.get().getTimeoutNanosPerRow() / 1000, Settings.get().getTimeoutMinMillis());
     }
 
     public int hashCode() {

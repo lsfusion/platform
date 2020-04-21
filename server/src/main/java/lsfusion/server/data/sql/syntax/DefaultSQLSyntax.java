@@ -389,6 +389,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     public void setACID(Statement statement, boolean acid) throws SQLException {
     }
 
+    public void setQueryTimeout(Statement statement, long setTimeout) throws SQLException {
+        throw new UnsupportedOperationException();
+    }
+
     public String getMetaName(String name) {
         return name;
     }

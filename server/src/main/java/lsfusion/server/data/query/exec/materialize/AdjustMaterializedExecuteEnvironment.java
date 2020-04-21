@@ -143,9 +143,9 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
         Step step = snapshot.step;
 
-        int stepTimeout = step.getTimeout();
-        if(stepTimeout != 0 && runtime / 1000 > stepTimeout && stepTimeout < snapshot.secondsFromTransactStart) { // если на самом деле больше timeout, то по сути можно считать failed
-            innerFailed(command, snapshot, " [SUCCEEDED - RUN : " + (runtime / 1000) + ", STEP : " + stepTimeout + ", TRANSACT : " + snapshot.secondsFromTransactStart + "]");
+        long stepTimeout = step.getTimeout();
+        if(stepTimeout != 0 && runtime > stepTimeout && stepTimeout < snapshot.secondsFromTransactStart * 1000) { // если на самом деле больше timeout, то по сути можно считать failed
+            innerFailed(command, snapshot, " [SUCCEEDED - RUN : " + runtime + ", STEP : " + stepTimeout + ", TRANSACT : " + snapshot.secondsFromTransactStart * 1000 + "]");
             return;
         }
 
@@ -162,7 +162,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             if(runBack == null)
                 break;
 
-            long adjtime = totalTime / 1000; // millis -> seconds
+            long adjtime = totalTime; // millis -> seconds
             if(adjtime > runBack.getTimeout() * coeff) { // если время выполнения превысило время материализации, пробуем с увеличенным timeout'ом
                 runBack.setTimeout((int) adjtime);
                 mBackSteps.exclAdd(runBack);
@@ -174,7 +174,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         boolean failedBefore = outerEnv.getSnapshot() != null; // не очень красиво конечно
         ImOrderSet<Step> backSteps = mBackSteps.immutableOrder();
         if(failedBefore || !backSteps.isEmpty())
-            log("SUCCEEDED" + (failedBefore ? " (AFTER FAILURE)" : "" ) + " TIME (" + (runtime / 1000) + " OF " + snapshot.setTimeout + ")" + (snapshot.usedPessQuery()?" USED PESSIMISTIC QUERY":"") + (backSteps.isEmpty() ? "" : " - BACK"), step, backSteps);
+            log("SUCCEEDED" + (failedBefore ? " (AFTER FAILURE)" : "" ) + " TIME (" + (runtime) + " OF " + snapshot.setTimeout + ")" + (snapshot.usedPessQuery()?" USED PESSIMISTIC QUERY":"") + (backSteps.isEmpty() ? "" : " - BACK"), step, backSteps);
     }
 
     public void innerFailed(SQLCommand command, Snapshot snapshot, String outerMessage) {
@@ -212,7 +212,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         if(Settings.get().isNoDisablingNestedLoop()) {
             Step nextStep = getCachedNextStep(step, command, step.subQueries.getSet().addExcl(materializedQueries.keys())); // по идее коррелировано с assertSameMaterialized
             if (nextStep.isLastStep())
-                step.setTimeout(100*60*60*60);
+                step.setTimeout(100*60*60*60*1000L);
         }
     }
     
@@ -422,7 +422,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         }
     }
 
-    private static int getDefaultTimeout(SQLCommand command, ImMap<SQLQuery, MaterializedQuery> queries) {
+    private static long getDefaultTimeout(SQLCommand command, ImMap<SQLQuery, MaterializedQuery> queries) {
         Cost baseCost = command.getCost(queries.mapValues(value -> new Stat(value.count)));
         return baseCost.getDefaultTimeout();
     }
@@ -457,14 +457,14 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             return disableNestedLoop;
         }
 
-        private int timeout; // время за которое запрос обязан выполнится иначе его нет смысла выполнять
+        private long timeout; // estimated execution time (in millis), after which it is considered to be something wrong with the query
         public boolean recheck; // mutable часть - есть вероятность (а точнее не было случая что он не выполнился) что он выполнится за timeout
 
-        public int getTimeout() {
+        public long getTimeout() {
             return timeout;
         }
 
-        public void setTimeout(int timeout) {
+        public void setTimeout(long timeout) {
             this.timeout = timeout;
         }
 
@@ -484,11 +484,6 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             assert disableNestedLoop;
             assert !previous.disableNestedLoop;
             timeout = 0;
-        }
-
-        public Step(Step previous) {
-            this(previous, SetFact.EMPTYORDER(), false);
-            timeout = Integer.MAX_VALUE;
         }
 
         public int getIndex() {
@@ -543,7 +538,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         public boolean isTransactTimeout = false;
         public boolean needConnectionLock;
         public boolean disableNestedLoop;
-        public int setTimeout;
+        public long setTimeout; // in millis
         public boolean needSavePoint;
         public boolean useSavePoint;
         
@@ -650,7 +645,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                 }
 
                 if(!useSavePoint) // if not using savepoints, increasing timeout to the time from transaction start
-                    setTimeout = BaseUtils.max(setTimeout, secondsFromTransactStart);
+                    setTimeout = BaseUtils.max(setTimeout, secondsFromTransactStart * 1000);
             }
 
             if(session.syntax.supportsDisableNestedLoop()) {
@@ -714,7 +709,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
         public void beforeExec(Statement statement, SQLSession session) throws SQLException {
             if(setTimeout > 0)
-                statement.setQueryTimeout(setTimeout);
+                session.syntax.setQueryTimeout(statement, setTimeout);
         }
 
         public boolean hasRepeatCommand() {
