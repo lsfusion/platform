@@ -1495,16 +1495,25 @@ public class Settings implements Cloneable {
         this.defaultTypeExecuteEnvironment = defaultTypeExecuteEnvironment;
     }
 
-    private int timeoutNanosPerRow = 20;
+    private long timeoutNanosPerRow = 20;
+    private long timeoutMinMillis = 100;
 
-    public int getTimeoutNanosPerRow() {
+    public long getTimeoutNanosPerRow() {
         return timeoutNanosPerRow;
     }
 
-    public void setTimeoutNanosPerRow(int timeoutNanosPerRow) {
+    public void setTimeoutNanosPerRow(long timeoutNanosPerRow) {
         this.timeoutNanosPerRow = timeoutNanosPerRow;
     }
-    
+
+    public long getTimeoutMinMillis() {
+        return timeoutMinMillis;
+    }
+
+    public void setTimeoutMinMillis(long timeoutMinMillis) {
+        this.timeoutMinMillis = timeoutMinMillis;
+    }
+
     private boolean noDisablingNestedLoop = true;
 
     public boolean isNoDisablingNestedLoop() {
