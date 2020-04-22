@@ -212,9 +212,11 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         if(Settings.get().isNoDisablingNestedLoop()) {
             Step nextStep = getCachedNextStep(step, command, step.subQueries.getSet().addExcl(materializedQueries.keys())); // по идее коррелировано с assertSameMaterialized
             if (nextStep.isLastStep())
-                step.setTimeout(100*60*60*60*1000L);
+                step.setTimeout(ALOT);
         }
     }
+
+    public static final long ALOT = 100*60*60*60*1000L;
     
     private static void setDefaultTimeout(Step step, SQLCommand command, ImMap<SQLQuery, MaterializedQuery> materializedQueries) {
         step.setTimeout(BaseUtils.max(step.getTimeout(), getDefaultTimeout(command, materializedQueries)));
@@ -708,7 +710,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         }
 
         public void beforeExec(Statement statement, SQLSession session) throws SQLException {
-            if(setTimeout > 0)
+            if(setTimeout > 0 && setTimeout < ALOT)
                 session.syntax.setQueryTimeout(statement, setTimeout);
         }
 
