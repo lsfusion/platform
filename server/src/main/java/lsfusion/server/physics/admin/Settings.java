@@ -1602,44 +1602,14 @@ public class Settings implements Cloneable {
         this.explainThreshold = explainThreshold;
     }
 
-    private boolean useCastDivisionOperands = true;
+    private boolean useMaxDivisionLength = false;
 
-    public boolean isUseCastDivisionOperands() {
-        return useCastDivisionOperands;
+    public boolean isUseMaxDivisionLength() {
+        return useMaxDivisionLength;
     }
 
-    public void setUseCastDivisionOperands(boolean useCastDivisionOperands) {
-        this.useCastDivisionOperands = useCastDivisionOperands;
-    }
-
-    private boolean useSafeDivision = true;
-
-    public boolean isUseSafeDivision() {
-        return useSafeDivision;
-    }
-
-    public void setUseSafeDivision(boolean useSafeDivision) {
-        this.useSafeDivision = useSafeDivision;
-    }
-
-    private boolean useSafeScaleCast = false; // использовать safeCast, вместо cast (актуально только для useScaleOpType - 1
-
-    public boolean isUseSafeScaleCast() {
-        return useSafeScaleCast;
-    }
-
-    public void setUseSafeScaleCast(boolean useSafeScaleCast) {
-        this.useSafeScaleCast = useSafeScaleCast;
-    }
-
-    private int useScaleOpType = 1; // целая и дробная часть : MAX (0+1), SUM (2), соотвественно при 1 - идет CAST к типу (SAFE или не SAFE) определяется useSafeScaleCast, 2 - пока не реализовано поэтому работает как 0
-
-    public int getUseScaleOpType() {
-        return useScaleOpType;
-    }
-
-    public void setUseScaleOpType(int useScaleOpType) {
-        this.useScaleOpType = useScaleOpType;
+    public void setUseMaxDivisionLength(boolean useMaxDivisionLength) {
+        this.useMaxDivisionLength = useMaxDivisionLength;
     }
 
     public boolean disableCompiledSubQueries = false;
