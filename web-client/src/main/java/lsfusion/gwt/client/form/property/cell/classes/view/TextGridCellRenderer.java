@@ -6,8 +6,8 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.CELL_HORIZONTAL_PADDING;
-import static lsfusion.gwt.client.base.GwtClientUtils.CELL_VERTICAL_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.CELL_VERTICAL_PADDING;
 
 public class TextGridCellRenderer extends StringBasedGridCellRenderer {
     private final boolean rich;

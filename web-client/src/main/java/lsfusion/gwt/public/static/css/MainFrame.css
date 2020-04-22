@@ -253,16 +253,11 @@ input[type=checkbox]:focus {
     border: 1px solid var(--component-border-color);
     position: relative;
     border-radius: var(--textfield-border-radius);
+    overflow: hidden; /* to hide inner corners */
 }
 
-.dataPanelRendererFocusPanel {
-    position: absolute;
-    top: -1px;
-    bottom: -1px;
-    left: -1px;
-    right: -1px;
+.dataPanelRendererGridPanelFocused {
     border: 1px solid var(--focus-color);
-    border-radius: var(--textfield-border-radius);
 }
 
 .actionPanelRenderer {

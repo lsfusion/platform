@@ -29,13 +29,14 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.Cell.Context;
 import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
 import lsfusion.gwt.client.base.view.grid.cell.HasCell;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.*;
 
@@ -43,6 +44,9 @@ import static com.google.gwt.dom.client.Style.OutlineStyle;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TD;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TH;
 import static java.lang.Math.min;
+import static lsfusion.gwt.client.base.GwtClientUtils.mixedColor;
+import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBorderColor;
+import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundColor;
 
 /**
  * Abstract base class for tabular views that supports paging and columns.
@@ -195,7 +199,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     int oldLocalSelectedRow = -1;
     int oldLocalSelectedCol = -1;
 
-    private int rowHeight = GwtClientUtils.VALUE_HEIGHT;
+    private int rowHeight = StyleDefaults.VALUE_HEIGHT;
 
     private int pageIncrement = 30;
 
@@ -1804,12 +1808,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow <= tableRowCount) {
             // if old row index is out of bounds only by 1, than we still need to clean top cell, which is in bounds
             TableRowElement oldTR = rows.getItem(oldLocalSelectedRow);
-            if (oldTR != null && oldLocalSelectedRow != newLocalSelectedRow) {
-                setRowStyleName(oldTR, selectedRowStyle, selectedRowCellStyle, false);
+            boolean rowChanged = oldLocalSelectedRow != newLocalSelectedRow;
+            if (oldTR != null && rowChanged) {
+                updateSelectedRowCellsBackground(oldTR, oldLocalSelectedRow, false);
             }
-            if (oldLocalSelectedRow != newLocalSelectedRow || oldLocalSelectedCol != newLocalSelectedCol) {
+            if (rowChanged || oldLocalSelectedCol != newLocalSelectedCol) {
                 if (oldLocalSelectedCol >= 0 && oldLocalSelectedCol < getColumnCount()) {
-                    setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, rows, headerRows, false);
+                    setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, rows, headerRows, false, !rowChanged);
                 }
             }
         }
@@ -1817,15 +1822,39 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < tableRowCount) {
             TableRowElement newTR = rows.getItem(newLocalSelectedRow);
 
-            setRowStyleName(newTR, selectedRowStyle, selectedRowCellStyle, focusable && (isFocused || !isRemoveKeyboardStylesOnBlur()));
-            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRows, focusable && isFocused);
+            boolean setSelected = focusable && (isFocused || !isRemoveKeyboardStylesOnBlur());
+            updateSelectedRowCellsBackground(newTR, newLocalSelectedRow , setSelected);
+
+            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRows, focusable && isFocused, setSelected);
 
             oldLocalSelectedRow = newLocalSelectedRow;
             oldLocalSelectedCol = newLocalSelectedCol;
         }
     }
+    
+    private void updateSelectedRowCellsBackground(TableRowElement tr, int localSelectedRow, boolean selected) {
+        NodeList<TableCellElement> cells = tr.getCells();
+        for (int i = 0; i < cells.getLength(); i++) {
+            String background = null;
+            if (tableBuilder instanceof GPropertyTableBuilder<?>) {
+                background = ((GPropertyTableBuilder<T>) tableBuilder).getBackground(getRowValue(localSelectedRow), localSelectedRow, i);
+            }
+            Style tdStyle = cells.getItem(i).getStyle();
+            if (selected) {
+                if (background != null) {
+                    tdStyle.setBackgroundColor(mixedColor(background, getSelectedRowBackgroundColor()));
+                } else {
+                    tdStyle.setBackgroundColor(getSelectedRowBackgroundColor());
+                }
+            } else if (background != null) {
+                tdStyle.setBackgroundColor(background);
+            } else {
+                tdStyle.clearBackgroundColor();
+            }
+        }
+    }
 
-    private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, NodeList<TableRowElement> headerRows, boolean focused) {
+    private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, NodeList<TableRowElement> headerRows, boolean focused, boolean inSelectedRow) {
         int rowCount = rows.getLength();
         int columnCount = getColumnCount();
 
@@ -1835,32 +1864,90 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             NodeList<TableCellElement> cells = tr.getCells();
             TableCellElement td = cells.getItem(column);
             if (td != null) {
-                setStyleName(td, focusedCellStyle, focused && column != columnCount - 1);
-                setStyleName(td, focusedCellLastInRowStyle, focused && column == columnCount - 1);
+                String background = null;
+                if (tableBuilder instanceof GPropertyTableBuilder<?>) {
+                    background = ((GPropertyTableBuilder<T>) tableBuilder).getBackground(getRowValue(row), row, column);
+                }
+
+                Style tdStyle = td.getStyle();
+                if (focused) {
+                    if (background == null) {
+                        tdStyle.setBackgroundColor(StyleDefaults.getFocusedCellBackgroundColor());
+                    } else {
+                        tdStyle.setBackgroundColor(background);
+                    }
+                } else if (!inSelectedRow && background != null) { // is painted as selected row
+                    tdStyle.setBackgroundColor(background);
+                }
+
+                if (drawFocusedCellBorder()) {
+                    setFocusedCellBorder(td, focused);
+                    setFocusedCellLastInRowBorder(td, focused && column == columnCount - 1);
+                }
             }
 
-            if (column < columnCount - 1) {
+            if (drawFocusedCellBorder() && column < columnCount - 1) {
                 TableCellElement rightTD = cells.getItem(column + 1);
                 if (rightTD != null) {
-                    setStyleName(rightTD, rightOfFocusedCellStyle, focused);
+                    setRightOfFocusedCellBorder(rightTD, focused);
                 }
             }
         }
 
-        if (row == 0 && headerRows != null) {
-            TableRowElement headerTR = headerRows.getItem(0);
-            if (headerTR != null) {
-                TableCellElement headerCell = headerTR.getCells().getItem(column);
-                if (headerCell != null) {
-                    setStyleName(headerCell, topOfFocusedCellStyle, focused);
+        if (drawFocusedCellBorder()) {
+            if (row == 0 && headerRows != null) {
+                TableRowElement headerTR = headerRows.getItem(0);
+                if (headerTR != null) {
+                    TableCellElement headerCell = headerTR.getCells().getItem(column);
+                    if (headerCell != null) {
+                        setTopOfFocusedCellBorder(headerCell, focused);
+                    }
+                }
+            } else if (row > 0 && row <= rowCount) {
+                TableCellElement topTD = rows.getItem(row - 1).getCells().getItem(column);
+                if (topTD != null) {
+                    setTopOfFocusedCellBorder(topTD, focused);
                 }
             }
-        } else if (row > 0 && row <= rowCount) {
-            TableCellElement topTD = rows.getItem(row - 1).getCells().getItem(column);
-            if (topTD != null) {
-                setStyleName(topTD, topOfFocusedCellStyle, focused);
-            }
         }
+    }
+    
+    private void setFocusedCellBorder(TableCellElement td, boolean focused) {
+        if (focused) {
+            td.getStyle().setProperty("borderBottom", "1px solid " + getFocusedCellBorderColor());
+            td.getStyle().setProperty("borderLeft", "1px solid " + getFocusedCellBorderColor());
+        } else {
+            td.getStyle().clearProperty("borderBottom");
+            td.getStyle().clearProperty("borderLeft");
+        }
+    }
+    
+    private void setFocusedCellLastInRowBorder(TableCellElement td, boolean focused) {
+        if (focused) {
+            td.getStyle().setProperty("borderRight", "1px solid " + getFocusedCellBorderColor());
+        } else {
+            td.getStyle().clearProperty("borderRight");
+        }
+    }
+    
+    private void setRightOfFocusedCellBorder(TableCellElement td, boolean focused) {
+        if (focused) {
+            td.getStyle().setProperty("borderLeft", "1px solid " + getFocusedCellBorderColor());
+        } else {
+            td.getStyle().clearProperty("borderLeft");
+        }
+    }
+
+    private void setTopOfFocusedCellBorder(TableCellElement td, boolean focused) {
+        if (focused) {
+            td.getStyle().setProperty("borderBottom", "1px solid " + getFocusedCellBorderColor());
+        } else {
+            td.getStyle().clearProperty("borderBottom");
+        }
+    }
+    
+    protected boolean drawFocusedCellBorder() {
+        return true;
     }
 
     private void updateHeadersImpl(boolean columnsChanged) {

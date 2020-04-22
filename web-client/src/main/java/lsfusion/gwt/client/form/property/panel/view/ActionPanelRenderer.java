@@ -27,9 +27,11 @@ import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.getPropertyKeyPressActionSID;
+import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
 

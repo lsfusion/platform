@@ -98,6 +98,11 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
         cell.update();
     }
 
+    @Override
+    protected boolean drawFocusedCellBorder() {
+        return false;
+    }
+
     public void focusOnValue() {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override

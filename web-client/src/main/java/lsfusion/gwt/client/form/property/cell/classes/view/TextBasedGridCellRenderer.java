@@ -7,7 +7,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
-import static lsfusion.gwt.client.base.GwtClientUtils.CELL_HORIZONTAL_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
 public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
     protected GPropertyDraw property;

@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 
@@ -22,7 +23,7 @@ public class GToolbarView extends ResizableHorizontalPanel {
     
     public void addSeparator() {
         if (!isEmpty()) {
-            addComponent(GwtClientUtils.createVerticalSeparator(GwtClientUtils.COMPONENT_HEIGHT));
+            addComponent(GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT));
         }
     }
 

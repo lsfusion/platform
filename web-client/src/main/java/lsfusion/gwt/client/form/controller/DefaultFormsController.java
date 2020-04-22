@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
@@ -9,13 +8,13 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,7 @@ public abstract class DefaultFormsController implements FormsController {
 
     public DefaultFormsController(String tabSID) {
         this.tabSID = tabSID;
-        tabsPanel = new TabLayoutPanel(GwtClientUtils.VALUE_HEIGHT + 1, Style.Unit.PX); // 1px for one side border
+        tabsPanel = new TabLayoutPanel(StyleDefaults.VALUE_HEIGHT + 1, Style.Unit.PX); // 1px for one side border
         tabsPanel.setVisible(false);
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override

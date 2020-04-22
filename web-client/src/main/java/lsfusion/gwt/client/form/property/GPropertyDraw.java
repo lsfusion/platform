@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
@@ -32,6 +31,7 @@ import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.io.Serializable;
 import java.text.ParseException;
@@ -373,7 +373,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
 
         // we don't set padding to cell or button, but count them to have visual padding
-        int insets = GwtClientUtils.CELL_VERTICAL_PADDING * 2;
+        int insets = StyleDefaults.CELL_VERTICAL_PADDING * 2;
         GFont usedFont = font != null ? font : parentFont;
         int lines = charHeight == 0 ? baseType.getDefaultCharHeight() : charHeight;
         int height;
@@ -381,7 +381,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             int lineHeight = GFontMetrics.getSymbolHeight(font);
             height = lineHeight * lines + insets;
         } else {
-            height = GwtClientUtils.VALUE_HEIGHT;
+            height = StyleDefaults.VALUE_HEIGHT;
         }
         
         final ImageDescription image = getImage();

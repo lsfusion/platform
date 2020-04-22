@@ -39,6 +39,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
@@ -74,6 +75,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     
     public static GColorTheme colorTheme = GColorTheme.DEFAULT;
     public static List<ColorThemeChangeListener> colorThemeChangeListeners = new ArrayList<>(); 
+    
+    public static GColorPreferences colorPreferences;
 
     private final String tabSID = GwtSharedUtils.randomString(25);
 
@@ -151,6 +154,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 forbidDuplicateForms = result.forbidDuplicateForms;
                 showNotDefinedStrings = result.showNotDefinedStrings;
                 changeColorTheme(result.colorTheme);
+                colorPreferences = result.colorPreferences;
             }
         });
 
@@ -303,6 +307,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
             Element cssLink = Document.get().getElementById("themeCss");
             cssLink.setAttribute("href", "static/css/" + colorTheme.getSid() + ".css");
+            
+            StyleDefaults.reset();
 
             for (ColorThemeChangeListener colorThemeChangeListener : colorThemeChangeListeners) {
                 colorThemeChangeListener.colorThemeChanged();

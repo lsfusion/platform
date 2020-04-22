@@ -687,16 +687,25 @@ public class GwtClientUtils {
         return value.replace('.', ',');
     }
 
-
-    public static final int VALUE_HEIGHT = 20;
-    public static final String VALUE_HEIGHT_STRING = VALUE_HEIGHT + "px";
+    public static int toRGB(String color) {
+        if (color != null) {
+            try {
+                return Integer.parseInt(color.startsWith("#") ? color.substring(1) : color, 16);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        }
+        return -1;
+    }
     
-    public static final int COMPONENT_HEIGHT = VALUE_HEIGHT + 2; // 2 for borders
-    public static final String COMPONENT_HEIGHT_STRING = COMPONENT_HEIGHT + "px";
-    
-    public static final int CELL_VERTICAL_PADDING = 2; // suppose buttons have the same padding. to have equal height
-    public static final int CELL_HORIZONTAL_PADDING = 3;
-    public static final int BUTTON_HORIZONTAL_PADDING = 14;
-    
-    public static final int DEFAULT_FONT_PT_SIZE = 9;
+    public static String mixedColor(String color1, String color2) {
+        int rgb1 = toRGB(color1);
+        int rgb2 = toRGB(color2);
+        if (rgb1 == -1) {
+            return rgb2 != -1 ? color2 : null;
+        } else if (rgb2 == -1) {
+            return color1;
+        }
+        return "#" + Integer.toHexString(rgb1 & rgb2);
+    }
 }

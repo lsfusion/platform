@@ -14,7 +14,7 @@ import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.VALUE_HEIGHT;
+import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 
 public final class FormDockable {
     private TabWidget tabWidget;

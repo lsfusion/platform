@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.classes.data;
 
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.classes.GType;
@@ -10,6 +9,7 @@ import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import static lsfusion.gwt.client.form.filter.user.GCompare.*;
 
@@ -29,7 +29,7 @@ public abstract class GDataType extends GType implements GClass {
     }
 
     public int getFullWidthString(String widthString, GFont font, GWidthStringProcessor widthStringProcessor) {
-        return getFullWidthString(font, widthString, widthStringProcessor) + GwtClientUtils.CELL_HORIZONTAL_PADDING * 2;
+        return getFullWidthString(font, widthString, widthStringProcessor) + StyleDefaults.CELL_HORIZONTAL_PADDING * 2;
     }
 
     protected int getDefaultCharWidth() {

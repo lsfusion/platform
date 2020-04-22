@@ -73,6 +73,7 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
+import lsfusion.gwt.client.view.StyleDefaults;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
@@ -272,7 +273,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
 
         filterBox.addStyleName("comboBoxFilter");
-        filterBox.setHeight(GwtClientUtils.COMPONENT_HEIGHT_STRING);
+        filterBox.setHeight(StyleDefaults.COMPONENT_HEIGHT_STRING);
 
         addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {

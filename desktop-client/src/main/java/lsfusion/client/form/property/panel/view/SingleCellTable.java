@@ -168,8 +168,13 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         setToolTipText(null);
     }
 
-    public boolean isSelected(int row, int column) {
+    public boolean paintSelected(int row, int column) {
         return false;
+    }
+
+    @Override
+    public boolean hasSingleSelection() {
+        return true;
     }
 
     // приходится делать вот таким извращенным способом, поскольку ComponentListener срабатывает после перерисовки формы

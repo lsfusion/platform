@@ -9,9 +9,9 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 /** based on from com.google.gwt.user.client.ui.TabBar */
 public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, TabBar {
@@ -200,7 +200,7 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
 
         ClickDelegatePanel delWidget = new ClickDelegatePanel(widget);
         delWidget.setStyleName(STYLENAME_DEFAULT);
-        delWidget.setHeight(GwtClientUtils.VALUE_HEIGHT_STRING);
+        delWidget.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
         final Style delWidgetStyle = delWidget.getElement().getStyle();
         delWidgetStyle.setDisplay(Style.Display.FLEX);
         delWidgetStyle.setProperty("alignItems", "center");

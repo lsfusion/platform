@@ -171,7 +171,7 @@ public class SwingDefaults {
     public static Color getTableSelectionBackground() {
         if (tableSelectionBackground == null) {
             Color preferredBackground = colorPreferences != null ? colorPreferences.getSelectedCellBackground() : null;
-            tableSelectionBackground = preferredBackground != null ? preferredBackground : getSelectionColor();
+            tableSelectionBackground = preferredBackground != null ? preferredBackground : getColor("Table.selectionInactiveBackground");
         }
         return tableSelectionBackground; 
     }

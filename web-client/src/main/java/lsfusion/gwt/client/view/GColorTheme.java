@@ -18,6 +18,10 @@ public enum GColorTheme {
     public boolean isDefault() {
         return this == DEFAULT;
     }
+    
+    public boolean isLight() {
+        return this == LIGHT;
+    }
 
     public String getFileNameSuffix() {
         return isDefault() ? "" : "_" + getSid();

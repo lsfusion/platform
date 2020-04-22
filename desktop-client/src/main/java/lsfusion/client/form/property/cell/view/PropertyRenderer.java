@@ -30,8 +30,8 @@ public abstract class PropertyRenderer {
         this.value = value;
     }
 
-    public void updateRenderer(Object value, boolean isInFocusedRow, boolean hasFocus, boolean drawFocusBorder) {
-        updateRenderer(value, isInFocusedRow, hasFocus, drawFocusBorder, false, null, null);
+    public void updateRenderer(Object value, boolean isInFocusedRow, boolean hasFocus, boolean drawFocusBorder, boolean tableFocused) {
+        updateRenderer(value, isInFocusedRow, hasFocus, drawFocusBorder, false, false, tableFocused, null, null);
     }
 
     public void updateRenderer(Object value,
@@ -39,14 +39,16 @@ public abstract class PropertyRenderer {
                                boolean hasFocus,
                                boolean drawFocusBorder,
                                boolean isSelected,
+                               boolean hasSingleSelection,
+                               boolean isTableFocused,
                                Color conditionalBackground,
                                Color conditionalForeground) {
         setValue(value);
 
-        if (isSelected && !hasFocus) {
-            paintAsSelected();
-        } else {
+        if (!isSelected || (hasSingleSelection && (hasFocus && isTableFocused || !isTableFocused && isInFocusedRow))) {
             drawBackground(isInFocusedRow, hasFocus, conditionalBackground);
+        } else {
+            paintAsSelected();
         }
 
         drawForeground(isInFocusedRow, hasFocus, conditionalForeground);
@@ -71,10 +73,16 @@ public abstract class PropertyRenderer {
     }
 
     protected void drawBackground(boolean isInFocusedRow, boolean hasFocus, Color conditionalBackground) {
+        Color logicsBackground = conditionalBackground;
+        if (logicsBackground == null && property != null) {
+            logicsBackground = property.design.background;
+        }
+        
         if (hasFocus) {
-            getComponent().setBackground(SwingDefaults.getFocusedTableCellBackground());
+            getComponent().setBackground(logicsBackground != null ? logicsBackground : SwingDefaults.getFocusedTableCellBackground());
         } else if (isInFocusedRow) {
-            getComponent().setBackground(SwingDefaults.getFocusedTableRowBackground());
+            final Color focusedRowBackground = SwingDefaults.getFocusedTableRowBackground();
+            getComponent().setBackground(logicsBackground != null ? new Color(focusedRowBackground.getRGB() & logicsBackground.getRGB()) : focusedRowBackground);
         } else if (conditionalBackground != null) {
             getComponent().setBackground(conditionalBackground);
         } else if (property != null && property.design.background != null) {

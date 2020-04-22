@@ -152,6 +152,11 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
         return columnKey;
     }
 
+    @Override
+    protected boolean drawFocusedCellBorder() {
+        return false;
+    }
+
     public GPropertyDraw getProperty(Cell.Context context) {
         assert context.getIndex() == 0 && context.getColumn() == 0;
         return property;

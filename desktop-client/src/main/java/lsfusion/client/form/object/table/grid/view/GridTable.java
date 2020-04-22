@@ -1294,8 +1294,13 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         return new Pair<>(getProperty(column), getColumnKey(0, column));
     }
 
-    public boolean isSelected(int row, int column) {
+    public boolean paintSelected(int row, int column) {
         return selectionController.isCellSelected(getColumnProperty(column), rowKeys.get(row));
+    }
+
+    @Override
+    public boolean hasSingleSelection() {
+        return selectionController.hasSingleSelection();
     }
 
     public Color getBackgroundColor(int row, int column) {
