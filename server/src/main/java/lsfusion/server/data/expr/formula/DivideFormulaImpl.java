@@ -35,25 +35,24 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
         }
 
         public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
+            if(isToString)
+                return "(" + src1 + "/" + src2 + ")";
+
             Type type = conversion.getType(type1, type2);
-            if (type != null || isToString) {
-                Settings settings = Settings.get();
-                int scaleProblem;
-                if(settings.isUseCastDivisionOperands() && (scaleProblem = syntax.getFloatingDivisionProblem()) >= 0) {
-                    if(hasDivisionProblem(type1,scaleProblem)) // если может быть больше scaleProblem - в явную прокастим
+            if (type != null) {
+                if(Settings.get().isUseMaxDivisionLength()) {
+                    // cast first param to type to have desired precision
+                    src1 = type.getCast(src1, syntax, env);
+                } else { // I don't know what it was but will be deprecated
+                    int scaleProblem = 16;
+                    if (hasDivisionProblem(type1, scaleProblem)) // если может быть больше scaleProblem - в явную прокастим
                         src1 = type1.getCast(src1, syntax, env);
 
-                    if(hasDivisionProblem(type2, scaleProblem))
+                    if (hasDivisionProblem(type2, scaleProblem))
                         src2 = type2.getCast(src2, syntax, env);
                 }
 
-                String source;
-                if(settings.isUseSafeDivision() && !isToString) {
-                    source = "(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")";
-                } else {
-                    source = "(" + src1 + "/" + src2 + ")";
-                }
-                return getScaleSource(source, type, syntax, env, isToString);
+                return type.getSafeCast("(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")", syntax, env, null);
             }
             return null;
         }
@@ -66,6 +65,6 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
     }
 
     public boolean hasNotNull() {
-        return super.hasNotNull() || Settings.get().isUseSafeDivision();
+        return true;
     }
 }
