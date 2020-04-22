@@ -1836,17 +1836,7 @@ public class Settings implements Cloneable {
         this.savePointCountForExceptions = savePointCountForExceptions;
     }
 
-    private int maxNumericLength = 127;
-
-    public int getMaxNumericLength() {
-        return maxNumericLength;
-    }
-
-    public void setMaxNumericLength(int maxNumericLength) {
-        this.maxNumericLength = maxNumericLength;
-    }
-
-    private int maxNumericPrecision = 32;
+    private int maxNumericPrecision = 127;
 
     public int getMaxNumericPrecision() {
         return maxNumericPrecision;
@@ -1854,6 +1844,16 @@ public class Settings implements Cloneable {
 
     public void setMaxNumericPrecision(int maxNumericPrecision) {
         this.maxNumericPrecision = maxNumericPrecision;
+    }
+
+    private int maxNumericScale = 32;
+
+    public int getMaxNumericScale() {
+        return maxNumericScale;
+    }
+
+    public void setMaxNumericScale(int maxNumericScale) {
+        this.maxNumericScale = maxNumericScale;
     }
 
     private int maxEdgeIterations = 100;

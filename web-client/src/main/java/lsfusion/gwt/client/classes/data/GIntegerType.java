@@ -22,7 +22,7 @@ public class GIntegerType extends GIntegralType {
     }
 
     @Override
-    protected int getLength() {
+    protected int getPrecision() {
         return 8;
     }
 

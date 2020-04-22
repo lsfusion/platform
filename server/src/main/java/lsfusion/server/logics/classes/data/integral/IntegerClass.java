@@ -36,7 +36,7 @@ public class IntegerClass extends IntClass<Integer> {
         return 10;
     }
 
-    public int getPrecision() {
+    public int getScale() {
         return 0;
     }
 
@@ -108,7 +108,7 @@ public class IntegerClass extends IntClass<Integer> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'N', Math.min(getWhole(), 253), getPrecision());
+        return new OverJDBField(fieldName, 'N', Math.min(getWhole(), 253), getScale());
     }
 
     @Override

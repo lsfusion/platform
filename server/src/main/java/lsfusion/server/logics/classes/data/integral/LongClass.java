@@ -37,7 +37,7 @@ public class LongClass extends IntClass<Long> {
         return 20;
     }
 
-    public int getPrecision() {
+    public int getScale() {
         return 0;
     }
 

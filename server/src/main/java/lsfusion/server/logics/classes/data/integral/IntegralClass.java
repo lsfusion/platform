@@ -52,20 +52,20 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
 
     public abstract int getWhole();
-    public abstract int getPrecision();
+    public abstract int getScale();
 
     public IntegralClass getCompatible(DataClass compClass, boolean or) {
         if(!(compClass instanceof IntegralClass)) return null;
 
         IntegralClass integralClass = (IntegralClass)compClass;
-        if(getWhole()>=integralClass.getWhole() && getPrecision()>=integralClass.getPrecision())
+        if(getWhole()>=integralClass.getWhole() && getScale()>=integralClass.getScale())
             return or ? this : integralClass;
-        if(getWhole()<=integralClass.getWhole() && getPrecision()<=integralClass.getPrecision())
+        if(getWhole()<=integralClass.getWhole() && getScale()<=integralClass.getScale())
             return or ? integralClass : this;
         int whole = BaseUtils.cmp(getWhole(), integralClass.getWhole(), or);
-        int precision = BaseUtils.cmp(getPrecision(), integralClass.getPrecision(), or);
+        int scale = BaseUtils.cmp(getScale(), integralClass.getScale(), or);
 
-        return NumericClass.get(whole+precision, precision);
+        return NumericClass.get(whole+scale, scale);
     }
 
     public IntegralClass getMultiply(IntegralClass operator) {
@@ -73,9 +73,9 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
         if (this instanceof NumericClass || operator instanceof NumericClass) {
             int whole = getWhole() + operator.getWhole();
-            int precision = getPrecision() + operator.getPrecision();
+            int scale = getScale() + operator.getScale();
 
-            return NumericClass.get(whole + precision, precision);
+            return NumericClass.get(whole + scale, scale);
         } else {
             return getCompatible(operator, true);
         }
@@ -85,12 +85,12 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 //        if(1==1) return (IntegralClass) getCompatible(operator, true);
 
         if (this instanceof NumericClass || operator instanceof NumericClass) {
-            int whole = getWhole() + operator.getPrecision();
-            int precision = getPrecision() + operator.getWhole();
+            int whole = getWhole() + operator.getScale();
+            int scale = getScale() + operator.getWhole();
             if(Settings.get().isUseMaxDivisionLength())
-                precision = Settings.get().getMaxNumericPrecision();
+                scale = Settings.get().getMaxNumericScale();
 
-            return NumericClass.get(whole + precision, precision);
+            return NumericClass.get(whole + scale, scale);
         } else {
             return getCompatible(operator, true);
         }

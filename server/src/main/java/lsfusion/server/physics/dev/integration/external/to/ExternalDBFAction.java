@@ -107,7 +107,7 @@ public class ExternalDBFAction extends ExternalAction {
             else if (type instanceof IntegerClass)
                 dbfFields.add(new NumField2(field, 10, 0));
             else if (type instanceof NumericClass)
-                dbfFields.add(new NumField2(field, 10, ((NumericClass) type).getPrecision()));
+                dbfFields.add(new NumField2(field, 10, ((NumericClass) type).getScale()));
             else if (type instanceof ObjectType)
                 dbfFields.add(new NumField2(field, 10, 0));
             else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {

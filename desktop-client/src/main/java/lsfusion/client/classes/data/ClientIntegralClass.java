@@ -31,11 +31,11 @@ abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat
     protected ClientIntegralClass() {
     }
 
-    protected abstract int getLength();
+    protected abstract int getPrecision();
     
     @Override
     public int getDefaultCharWidth() {
-        int lengthValue = getLength();
+        int lengthValue = getPrecision();
         return BaseUtils.min(lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7)), 10);
     }
 

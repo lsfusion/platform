@@ -131,7 +131,8 @@ public class JDBCTable {
             case Types.NUMERIC:
             case Types.DECIMAL:
                 int precision = metaData.getPrecision(column);
-                return NumericClass.get(metaData.getScale(column) + precision, precision);
+                int scale = metaData.getScale(column);
+                return NumericClass.get(scale + precision, scale);
             case Types.CHAR:
             case Types.NCHAR:
                 precision = metaData.getPrecision(column);

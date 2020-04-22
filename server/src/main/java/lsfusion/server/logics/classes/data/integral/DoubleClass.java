@@ -37,7 +37,7 @@ public class DoubleClass extends IntegralClass<Double> {
         return 99999;
     }
 
-    public int getPrecision() {
+    public int getScale() {
         return 99999;
     }
 

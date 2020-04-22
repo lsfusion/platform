@@ -135,9 +135,9 @@ public final class ClassCanonicalNameUtils {
                 name = name.substring("ISTRING[".length(), name.length() - 1);
                 return StringClass.getvi(new ExtInt(Integer.parseInt(name)));
             } else if (name.startsWith("NUMERIC[")) {
-                String length = name.substring("NUMERIC[".length(), name.indexOf(","));
-                String precision = name.substring(name.indexOf(",") + 1, name.length() - 1);
-                return NumericClass.get(Integer.parseInt(length), Integer.parseInt(precision));
+                String precision = name.substring("NUMERIC[".length(), name.indexOf(","));
+                String scale = name.substring(name.indexOf(",") + 1, name.length() - 1);
+                return NumericClass.get(Integer.parseInt(precision), Integer.parseInt(scale));
             }            
         }
         return null;

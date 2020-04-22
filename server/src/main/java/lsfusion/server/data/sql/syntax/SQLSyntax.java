@@ -64,7 +64,7 @@ public interface SQLSyntax {
     String getVarStringType(int length);
     int getVarStringSQL();
 
-    String getNumericType(ExtInt length, ExtInt precision);
+    String getNumericType(ExtInt precision, ExtInt scale);
     int getNumericSQL();
 
     String getIntegerType();

@@ -30,23 +30,23 @@ public class ClientNumericClass extends ClientDoubleClass {
             return ClientResourceBundle.getString("logics.classes.number");
         }
     };
-    public final ExtInt length;
     public final ExtInt precision;
+    public final ExtInt scale;
 
-    public ClientNumericClass(ExtInt length, ExtInt precision) {
-        this.length = length;
+    public ClientNumericClass(ExtInt precision, ExtInt scale) {
         this.precision = precision;
+        this.scale = scale;
     }
 
     @Override
-    protected int getLength() {
-        //as in server Settings
-        return length.isUnlimited() ? 127 : length.value;
-    }
-
     protected int getPrecision() {
         //as in server Settings
-        return precision.isUnlimited() ? 32 : precision.value;
+        return precision.isUnlimited() ? 127 : precision.value;
+    }
+
+    protected int getScale() {
+        //as in server Settings
+        return scale.isUnlimited() ? 32 : scale.value;
     }
 
     @Override
@@ -58,20 +58,20 @@ public class ClientNumericClass extends ClientDoubleClass {
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
 
-        length.serialize(outStream);
         precision.serialize(outStream);
+        scale.serialize(outStream);
     }
 
     public NumberFormat getDefaultFormat() {
         NumberFormat format = super.getDefaultFormat();
-        format.setMaximumIntegerDigits(getLength() - getPrecision());
-        format.setMaximumFractionDigits(getPrecision());
+        format.setMaximumIntegerDigits(getPrecision() - getScale());
+        format.setMaximumFractionDigits(getScale());
         return format;
     }
 
     @Override
     public String toString() {
-        return ClientResourceBundle.getString("logics.classes.number") + (length.isUnlimited() ? "" : ('[' + length.value + ',' + precision.value + ']'));
+        return ClientResourceBundle.getString("logics.classes.number") + (precision.isUnlimited() ? "" : ('[' + precision.value + ',' + scale.value + ']'));
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {

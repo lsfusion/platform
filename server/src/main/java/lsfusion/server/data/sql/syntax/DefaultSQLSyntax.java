@@ -93,8 +93,8 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return Types.VARCHAR;
     }
 
-    public String getNumericType(ExtInt length, ExtInt precision) {
-        return length.isUnlimited() ? "numeric" : ("numeric(" + length + "," + precision + ")");
+    public String getNumericType(ExtInt precision, ExtInt scale) {
+        return precision.isUnlimited() ? "numeric" : ("numeric(" + precision + "," + scale + ")");
     }
 
     public int getNumericSQL() {
