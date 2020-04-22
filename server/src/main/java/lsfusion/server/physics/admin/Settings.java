@@ -1602,7 +1602,7 @@ public class Settings implements Cloneable {
         this.explainThreshold = explainThreshold;
     }
 
-    private boolean useMaxDivisionLength = false;
+    private boolean useMaxDivisionLength = true;
 
     public boolean isUseMaxDivisionLength() {
         return useMaxDivisionLength;
