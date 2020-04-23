@@ -275,10 +275,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     @IdentityLazy
     public boolean uses(Property property) {
-        for(Property usedProp : getUsedProps())
-            if(Property.depends(usedProp, property))
-                return true;
-        return false;
+        return Property.depends(getUsedProps(), property);
     }
 
     @IdentityLazy
