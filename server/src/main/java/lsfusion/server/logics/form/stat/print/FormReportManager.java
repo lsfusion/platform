@@ -9,6 +9,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.print.FormPrintType;
@@ -261,14 +263,19 @@ public abstract class FormReportManager extends FormDataManager {
     private void saveAutoReportDesigns(Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs, StaticDataGenerator.ReportHierarchy hierarchy, boolean recreateCustom, FormPrintType printType, String reportPrefix) throws JRException, IOException, SQLException, SQLHandledException {
 
         ImMap<GroupObjectHierarchy.ReportNode, String> customReportFileNames = null;
-        if(recreateCustom) {
+        if(recreateCustom)
             customReportFileNames = getCustomReportFileNames(hierarchy, printType, reportPrefix);
-        }
-            
+
         for (Map.Entry<GroupObjectHierarchy.ReportNode, JasperDesign> entry : designs.entrySet()) {
             GroupObjectHierarchy.ReportNode node = entry.getKey();
-            ReportPath defaultCustomReportPath = recreateCustom ? getCustomReportPath(customReportFileNames.get(node)) : 
-                                                                    getDefaultCustomReportPath("/" + reportsDir + getReportFileName(node, printType.getFormatPrefix() + reportPrefix));
+            ReportPath defaultCustomReportPath;
+            if(recreateCustom) {
+                String nodeFileName = customReportFileNames.get(node);
+                if(nodeFileName == null) // file (not file name) is provided (do nothing)
+                    continue;
+                defaultCustomReportPath = getCustomReportPath(nodeFileName);
+            } else
+                defaultCustomReportPath = getDefaultCustomReportPath("/" + reportsDir + getReportFileName(node, printType.getFormatPrefix() + reportPrefix));
             String reportName = defaultCustomReportPath.customPath;
             
             new File(reportName).getParentFile().mkdirs();
@@ -279,49 +286,98 @@ public abstract class FormReportManager extends FormDataManager {
         }
     }
 
-    private String getCustomReportPropFileName(PropertyObjectEntity reportPathProp, String reportPrefix) throws SQLException, SQLHandledException {
+    private ReportSource getCustomReportPropSource(PropertyObjectEntity reportPathProp, String reportPrefix) throws SQLException, SQLHandledException {
         if (reportPathProp != null) {
-            String reportPath = (String) reportInterface.read(reportPathProp);
-            if (reportPath != null) {
-                return findCustomReportFileName(reportPrefix + reportPath.trim());
+            Object readReport = reportInterface.read(reportPathProp);
+            if(readReport instanceof FileData) {
+                FileData fileReport = (FileData) readReport;
+                if(fileReport.getExtension().equals("path"))
+                    readReport = new String(fileReport.getBytes());
+                else
+                    readReport = fileReport.getRawFile();
+            }
+
+            if(readReport instanceof String) {
+                String fileName = findCustomReportFileName(reportPrefix + ((String) readReport).trim());
+                if(fileName != null)
+                    return new ResourceReportSource(fileName);
+            } else if(readReport instanceof RawFileData) {
+                return new FileReportSource(((RawFileData) readReport).getBytes());
             }
         }
         return null;
     }
-    
+
+    // for debug / develop purposes
     private ImMap<GroupObjectHierarchy.ReportNode, String> getCustomReportFileNames(StaticDataGenerator.ReportHierarchy hierarchy, FormPrintType printType, String reportPrefix) throws SQLException, SQLHandledException {
+        ImMap<GroupObjectHierarchy.ReportNode, ReportSource> reportSources = getCustomReportSources(hierarchy, printType, reportPrefix);
+        return reportSources.filterFnValues(element -> element instanceof ResourceReportSource).mapValues(reportSource -> ((ResourceReportSource)reportSource).fileName);
+    }
+    private ImMap<GroupObjectHierarchy.ReportNode, ReportSource> getCustomReportSources(StaticDataGenerator.ReportHierarchy hierarchy, FormPrintType printType, String reportPrefix) throws SQLException, SQLHandledException {
         ImSet<GroupObjectHierarchy.ReportNode> reportNodes = hierarchy.reportHierarchy.getAllNodes();
-        ImValueMap<GroupObjectHierarchy.ReportNode, String> mResult = reportNodes.mapItValues();
+        ImValueMap<GroupObjectHierarchy.ReportNode, ReportSource> mResult = reportNodes.mapItValues();
         for (int i=0,size=reportNodes.size();i<size;i++) {
             GroupObjectHierarchy.ReportNode reportNode = reportNodes.get(i);
-            String fileName = null;
+            ReportSource reportSource = null;
             String formatPrefix = printType.getFormatPrefix();
             if(!formatPrefix.isEmpty()) // optimization
-                fileName = getCustomReportFileName(reportNode, formatPrefix + reportPrefix);
-            if (fileName == null)
-                fileName = getCustomReportFileName(reportNode, reportPrefix);
-            mResult.mapValue(i, fileName);
+                reportSource = getCustomReportFileName(reportNode, formatPrefix + reportPrefix);
+            if (reportSource == null)
+                reportSource = getCustomReportFileName(reportNode, reportPrefix);
+            mResult.mapValue(i, reportSource);
         }
         return mResult.immutableValue();
     }
 
-    private String getCustomReportFileName(GroupObjectHierarchy.ReportNode reportNode, String reportPrefix) throws SQLException, SQLHandledException {
-        String resourceName = getCustomReportPropFileName(reportNode.getReportPathProp(getFormEntity()), reportPrefix);
-        if (resourceName == null) {
-            resourceName = findCustomReportFileName(getReportFileName(reportNode, reportPrefix));
+    private interface ReportSource {
+        InputStream getInputStream();
+    }
+
+    private static class ResourceReportSource implements ReportSource {
+        public final String fileName;
+
+        public ResourceReportSource(String fileName) {
+            this.fileName = fileName;
         }
-        return resourceName;
+
+        public InputStream getInputStream() {
+            return getClass().getResourceAsStream(fileName);
+        }
+    }
+
+    private static class FileReportSource implements ReportSource {
+        public final byte[] file;
+
+        public FileReportSource(byte[] file) {
+            this.file = file;
+        }
+
+        public InputStream getInputStream() {
+            return new ByteArrayInputStream(file);
+        }
+    }
+
+    private ReportSource getCustomReportFileName(GroupObjectHierarchy.ReportNode reportNode, String reportPrefix) throws SQLException, SQLHandledException {
+        ReportSource reportSource = getCustomReportPropSource(reportNode.getReportPathProp(getFormEntity()), reportPrefix);
+        if(reportSource != null)
+            return reportSource;
+
+        String fileName = findCustomReportFileName(getReportFileName(reportNode, reportPrefix));
+        if(fileName != null)
+            return new ResourceReportSource(fileName);
+
+        return null;
     }
 
     private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getCustomReportDesigns(StaticDataGenerator.ReportHierarchy hierarchy, FormPrintType printType, String reportPrefix) throws SQLException, SQLHandledException {
         try {
             Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = new HashMap<>();
-            ImMap<GroupObjectHierarchy.ReportNode, String> fileNames = getCustomReportFileNames(hierarchy, printType, reportPrefix);
+            ImMap<GroupObjectHierarchy.ReportNode, ReportSource> fileNames = getCustomReportSources(hierarchy, printType, reportPrefix);
             for(int i=0,size=fileNames.size();i<size;i++) {
-                String fileName = fileNames.getValue(i);
-                if(fileName == null) // если какого-то не хватает считаем что custom design'а нет
+                ReportSource reportSource = fileNames.getValue(i);
+                if(reportSource == null) // if some design is missing we'll consider that there's no custom design at all
                     return null;
-                JasperDesign subreport = JRXmlLoader.load(getClass().getResourceAsStream(fileName));
+                JasperDesign subreport = JRXmlLoader.load(reportSource.getInputStream());
                 designs.put(fileNames.getKey(i), subreport);
             }
             return designs;
