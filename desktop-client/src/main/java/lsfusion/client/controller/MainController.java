@@ -546,6 +546,8 @@ public class MainController {
         UIManager.put("Table.cellFocusColor", SwingDefaults.getSelectionBorderColor()); // mostly for tree table. has no effect as tree has no focus 
         UIManager.put("TitledBorder.titleColor", SwingDefaults.getTitledBorderTitleColor());
         UIManager.put("TabbedPane.underlineColor", SwingDefaults.getTabbedPaneUnderlineColor());
+        UIManager.put("TabbedPane.hoverColor", SwingDefaults.getToggleButtonHoverBackground());
+        UIManager.put("TabbedPane.focusColor", SwingDefaults.getTabbedPaneFocusColor());
         UIManager.put("ToggleButton.selectedBackground", SwingDefaults.getSelectionColor());
         UIManager.put("ToggleButton.pressedBackground", SwingDefaults.getToggleButtonPressedBackground());
     }

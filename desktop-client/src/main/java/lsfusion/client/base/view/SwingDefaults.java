@@ -35,6 +35,7 @@ public class SwingDefaults {
     private static Color titledBorderTitleColor;
     private static Color dockableBorderColor;
     private static Color tabbedPaneUnderlineColor;
+    private static Color tabbedPaneFocusColor;
     private static Insets tableCellMargins;
     private static Insets buttonMargin;
     private static Insets toggleButtonMargin;
@@ -58,6 +59,7 @@ public class SwingDefaults {
         titledBorderTitleColor = null;
         dockableBorderColor = null;
         tabbedPaneUnderlineColor = null;
+        tabbedPaneFocusColor = null;
         buttonMargin = null;
         toggleButtonMargin = null;
         
@@ -219,6 +221,13 @@ public class SwingDefaults {
             tabbedPaneUnderlineColor = colorTheme.isLight() ? new Color(177 , 220, 226) : new Color(41, 82, 96);
         }
         return tabbedPaneUnderlineColor;
+    }
+    
+    public static Color getTabbedPaneFocusColor() {
+        if (tabbedPaneFocusColor == null) {
+            tabbedPaneFocusColor = colorTheme.isLight() ? new Color(215, 232, 234) : new Color(61, 83, 91);
+        }
+        return tabbedPaneFocusColor;
     }
     
     public static Insets getTableCellMargins() {
