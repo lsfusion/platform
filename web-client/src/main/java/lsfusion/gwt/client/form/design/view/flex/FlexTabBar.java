@@ -27,7 +27,7 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
     public FlexTabBar() {
         initWidget(panel);
 
-        sinkEvents(Event.ONCLICK);
+        sinkEvents(Event.ONMOUSEDOWN);
 
         setStyleName("gwt-TabBar");
         getElement().getStyle().setProperty("flexWrap", "wrap");
@@ -268,7 +268,7 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
 
             initWidget(focusablePanel);
 
-            sinkEvents(Event.ONCLICK | Event.ONKEYDOWN);
+            sinkEvents(Event.ONMOUSEDOWN | Event.ONKEYDOWN);
         }
 
         @Override
@@ -311,7 +311,7 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
 
             // No need for call to super.
             switch (DOM.eventGetType(event)) {
-                case Event.ONCLICK:
+                case Event.ONMOUSEDOWN:
                     FlexTabBar.this.selectTabByTabWidget(this);
                     break;
 
