@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -16,7 +17,7 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
                 element.addClassName("requiredValueString");
                 element.removeClassName("nullValueString");
             } else {
-                setInnerContent(element, MainFrame.showNotDefinedStrings ? NOT_DEFINED_VALUE : "");
+                setInnerContent(element, MainFrame.showNotDefinedStrings ? NOT_DEFINED_VALUE : EscapeUtils.UNICODE_NBSP);
                 element.addClassName("nullValueString");
                 element.removeClassName("requiredValueString");
             }
