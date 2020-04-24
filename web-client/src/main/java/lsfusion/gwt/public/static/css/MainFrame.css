@@ -924,6 +924,12 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     color: var(--required-value-string-color);
 }
 
+.redUnderline {
+    background: var(--required-value-string-color);
+    height: 1px;
+    margin-bottom: 5px;
+}
+
 .floatRight {
     float: right;
 }

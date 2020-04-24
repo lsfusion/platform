@@ -127,7 +127,7 @@ public abstract class PropertyRenderer {
     }
 
     protected String getRequiredStringValue() {
-        return MainController.showNotDefinedStrings ? REQUIRED_STRING : (/*"<html>" + */StringUtils.repeat('_', property.getValueWidth(getComponent()))/* + "</html>"*/);
+        return MainController.showNotDefinedStrings ? REQUIRED_STRING : "";
     }
 }
 

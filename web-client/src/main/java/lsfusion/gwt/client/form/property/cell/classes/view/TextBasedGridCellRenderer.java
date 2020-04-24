@@ -75,19 +75,7 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
 
     public abstract String format(T value);
 
-    //copy from org.apache.commons.lang3.StringUtils
-    private static String repeat(final char ch, final int repeat) {
-        if (repeat <= 0) {
-            return "";
-        }
-        final char[] buf = new char[repeat];
-        for (int i = repeat - 1; i >= 0; i--) {
-            buf[i] = ch;
-        }
-        return new String(buf);
-    }
-
     protected String getRequiredStringValue() {
-        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : repeat('_', property.getValueWidth(null));
+        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : "<div class=\"redUnderline\"></div>";
     }
 }
