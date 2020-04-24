@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
@@ -75,7 +76,7 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
     public abstract String format(T value);
 
     //copy from org.apache.commons.lang3.StringUtils
-    protected static String repeat(final char ch, final int repeat) {
+    private static String repeat(final char ch, final int repeat) {
         if (repeat <= 0) {
             return "";
         }
@@ -84,5 +85,9 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
             buf[i] = ch;
         }
         return new String(buf);
+    }
+
+    protected String getRequiredStringValue() {
+        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : repeat('_', property.getValueWidth(null));
     }
 }

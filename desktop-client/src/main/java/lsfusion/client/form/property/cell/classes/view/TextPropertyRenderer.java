@@ -48,7 +48,7 @@ public class TextPropertyRenderer extends PropertyRenderer {
         if (value == null) {
             getComponent().setContentType("text");
             if (property != null && property.isEditableNotNull()) {
-                getComponent().setText(MainController.showNotDefinedStrings ? REQUIRED_STRING : StringUtils.repeat('_', property.getValueWidth(getComponent())));
+                getComponent().setText(getRequiredStringValue());
             } else {
                 getComponent().setText(MainController.showNotDefinedStrings ? NOT_DEFINED_STRING : "");
             }
