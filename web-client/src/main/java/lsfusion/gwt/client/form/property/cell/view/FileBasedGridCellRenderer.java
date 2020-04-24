@@ -32,7 +32,7 @@ public abstract class FileBasedGridCellRenderer extends GridCellRenderer {
             setBasedEmptyElement(element);
         } else {
             element.getStyle().clearPadding();
-            element.removeClassName("requiredValueString");
+            element.removeClassName("requiredValueFile");
             element.setTitle("");
 
             ImageElement img = element.appendChild(Document.get().createImageElement());
@@ -51,7 +51,7 @@ public abstract class FileBasedGridCellRenderer extends GridCellRenderer {
         element.getStyle().setPaddingLeft(4, Style.Unit.PX);
         element.setInnerText(REQUIRED_VALUE);
         element.setTitle(REQUIRED_VALUE);
-        element.addClassName("requiredValueString");
+        element.addClassName("requiredValueFile");
     }
 
     protected abstract String getFilePath(Object value);

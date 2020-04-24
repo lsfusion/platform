@@ -922,6 +922,11 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .requiredValueString {
     color: var(--required-value-string-color);
+    text-decoration: underline;
+}
+
+.requiredValueFile {
+    color: var(--required-value-string-color);
 }
 
 .floatRight {

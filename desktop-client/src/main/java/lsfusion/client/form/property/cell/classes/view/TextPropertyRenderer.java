@@ -6,6 +6,7 @@ import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorKit;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorPane;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.view.MainFrame;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,7 +48,7 @@ public class TextPropertyRenderer extends PropertyRenderer {
         if (value == null) {
             getComponent().setContentType("text");
             if (property != null && property.isEditableNotNull()) {
-                getComponent().setText(REQUIRED_STRING);
+                getComponent().setText(MainController.showNotDefinedStrings ? REQUIRED_STRING : StringUtils.repeat('_', property.getValueWidth(getComponent())));
             } else {
                 getComponent().setText(MainController.showNotDefinedStrings ? NOT_DEFINED_STRING : "");
             }
