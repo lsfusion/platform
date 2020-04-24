@@ -1836,7 +1836,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         NodeList<TableCellElement> cells = tr.getCells();
         for (int i = 0; i < cells.getLength(); i++) {
             String background = null;
-            if (tableBuilder instanceof GPropertyTableBuilder<?>) {
+            if (tableBuilder instanceof GPropertyTableBuilder<?> && isRowWithinBounds(localSelectedRow)) {
                 background = ((GPropertyTableBuilder<T>) tableBuilder).getBackground(getRowValue(localSelectedRow), localSelectedRow, i);
             }
             Style tdStyle = cells.getItem(i).getStyle();
@@ -1865,7 +1865,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             TableCellElement td = cells.getItem(column);
             if (td != null) {
                 String background = null;
-                if (tableBuilder instanceof GPropertyTableBuilder<?>) {
+                if (tableBuilder instanceof GPropertyTableBuilder<?> && isRowWithinBounds(row)) {
                     background = ((GPropertyTableBuilder<T>) tableBuilder).getBackground(getRowValue(row), row, column);
                 }
 
