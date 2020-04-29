@@ -1,6 +1,54 @@
     body {
+        font-family: Verdana;
     }
 
+    .outerdiv {
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+    }
+    /*
+    .scrollablediv {
+      position: absolute;
+      left: 0px;
+      right: 0px;
+      top: 0px;
+      bottom: 0px;
+      overflow-x: auto;
+    }
+    */
+    .headerdiv {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        overflow: hidden;
+    }
+
+    .headertable {
+        table-layout: fixed;
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+    }
+
+    .bodydiv {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+    }
+
+    .bodytable {
+        table-layout: fixed;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
     /* AxisLabel */
     table.pvtTable .pvtAxisLabel {
 	    white-space: nowrap;
@@ -78,7 +126,7 @@
     table.pvtTable thead tr .axisHeaderArrowDiv {
         flex: 0 0 auto; 
         justify-content: left; 
-        padding-right: 5px;"    
+        padding-right: 5px;    
     }
     
     table.pvtTable thead tr .axisHeaderTextDiv {
@@ -89,7 +137,7 @@
     table.pvtTable thead tr .colAttrHeaderArrowDiv {
         flex: 0 0 auto; 
         justify-content: left; 
-        padding-right: 5px;"    
+        padding-right: 5px;    
     }
     
     table.pvtTable thead tr .colAttrHeaderTextDiv {

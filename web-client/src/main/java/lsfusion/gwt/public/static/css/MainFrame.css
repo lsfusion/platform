@@ -656,7 +656,7 @@ input[type=checkbox]:focus {
 
 .pvtUi {
     color: var(--text-color);
-    width: 100%;
+    /* width: 100%; */
 }
 
 .pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
@@ -664,7 +664,7 @@ input[type=checkbox]:focus {
 }
 
 table.pvtTable {
-    border: 1px solid var(--component-border-color);
+    /* border: 1px solid var(--component-border-color); */
     color: var(--text-color);
 }
 
@@ -675,6 +675,7 @@ table.pvtTable tbody tr td, table.pvtTable thead tr td {
 
 table.pvtTable thead tr th, table.pvtTable tbody tr th {
     border: 1px solid var(--grid-separator-border-color);
+    overflow: hidden; 
 }
 
 .pvtCols, .pvtRendererArea {

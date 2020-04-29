@@ -207,7 +207,7 @@ callWithJQuery ($) ->
             else 
                 th.textContent = if isArrow then arrowText isExpanded else value
             
-        createColAttrHeaderTH = (colKey, isSubtotal, className, value, isExpanded, attributes) ->
+        createColAttrHeaderTH = (colKey, isSubtotal, className, value, isExpanded, colsWidth, attributes) ->
             th = createElement "th", className, attributes
             textElement = th
             if isExpanded?
@@ -215,6 +215,8 @@ callWithJQuery ($) ->
                 textElement = th.textDiv
                 
             textElement.ondblclick = (event) -> callbacks.colAttrHeaderDblClickHandler textElement, colKey, isSubtotal if callbacks?
+            if colKey.length == colAttrs.length or isSubtotal or colKey.length == 0
+                colsWidth.push getColumnWidth(true, colKey, null, false)      
             renderColAttrHeader th, value, colKey, isSubtotal, isExpanded, false
             return th
 
@@ -448,7 +450,7 @@ callWithJQuery ($) ->
                 else if row == 0 and colAttrs.length > 0
                     tr.appendChild createElement "th", null, {rowspan: rowsNumber - colAttrs.length}      
 
-            return [colAxisHeaders, rowAxisHeaders]
+            return [colAxisHeaders, rowAxisHeaders, trs]
 
         firstIndexInGroup = (splitPositions, groupIndex) ->
             return if groupIndex == 0 then 0 else splitPositions[groupIndex-1] + 1
@@ -466,9 +468,9 @@ callWithJQuery ($) ->
                 return false
             return splitPositions.indexOf(index) != -1    
 
-        buildColHeader = (axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts) ->
+        buildColHeader = (axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts, colsWidth) ->
             # DF Recurse
-            buildColHeader axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts for chKey in h.children
+            buildColHeader axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts, colsWidth for chKey in h.children
             # Process
             ah = axisHeaders.ah[h.col]
             ah.attrHeaders.push h
@@ -477,7 +479,7 @@ callWithJQuery ($) ->
             h.onClick = collapseCol
 
             isExpanded = true if colSubtotalIsEnabled(opts.colSubtotalDisplay, h.col) and h.children.length isnt 0
-            h.th = createColAttrHeaderTH h.key, false, "pvtColLabel #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", h.value, isExpanded,
+            h.th = createColAttrHeaderTH h.key, false, "pvtColLabel #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", h.value, isExpanded, colsWidth,
                 "data-colnode": h.node    
                 "colspan": h.childrenSpan if h.children.length isnt 0
                 
@@ -490,7 +492,7 @@ callWithJQuery ($) ->
                     h.th.arrowDiv.onclick = (event) ->
                         event = event || window.event
                         h.onClick axisHeaders, h, opts.colSubtotalDisplay 
-                h.sTh = createColAttrHeaderTH h.key, true, "pvtColLabelFiller #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", ""
+                h.sTh = createColAttrHeaderTH h.key, true, "pvtColLabelFiller #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", "", undefined, colsWidth 
                 h.sTh.setAttribute "data-colnode", h.node
                 h.sTh.rowSpan = colAttrs.length-h.col
                 replaceClass h.sTh, classColShow, classColHide if opts.colSubtotalDisplay.hideOnExpand
@@ -505,8 +507,8 @@ callWithJQuery ($) ->
             node.counter++ 
 
 
-        buildRowTotalsHeader = (tr, span) ->
-            th = createColAttrHeaderTH [], false, "pvtTotalLabel rowTotal", "", undefined, 
+        buildRowTotalsHeader = (tr, span, colsWidth) ->
+            th = createColAttrHeaderTH [], false, "pvtTotalLabel rowTotal", "", undefined, colsWidth,  
                 rowspan: span
             tr.appendChild th
 
@@ -692,13 +694,13 @@ callWithJQuery ($) ->
                 ah.onClick = collapseRowAxis
 
         hideChildCol = (ch) ->
-            $(ch.th).closest 'table.pvtTable'
+            $(ch.th).closest 'div.outerdiv'
                 .find "tbody tr td[data-colnode=\"#{ch.node}\"], th[data-colnode=\"#{ch.node}\"]" 
                 .removeClass classColShow 
                 .addClass classColHide
 
         collapseHiddenColSubtotal = (h, opts) ->
-            $(h.th).closest 'table.pvtTable'
+            $(h.th).closest 'div.outerdiv'
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
                 .removeClass classColExpanded
                 .addClass classColCollapsed
@@ -707,7 +709,7 @@ callWithJQuery ($) ->
             h.th.colSpan = 1
             
         collapseShowColSubtotal = (h, opts) ->
-            $(h.th).closest 'table.pvtTable'
+            $(h.th).closest 'div.outerdiv'
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
                 .removeClass classColExpanded
                 .addClass classColCollapsed
@@ -740,13 +742,13 @@ callWithJQuery ($) ->
             adjustColAxisHeader axisHeaders, h.col, opts
 
         showChildCol = (ch) ->
-            $(ch.th).closest 'table.pvtTable'
+            $(ch.th).closest 'div.outerdiv'
                 .find "tbody tr td[data-colnode=\"#{ch.node}\"], th[data-colnode=\"#{ch.node}\"]" 
                 .removeClass classColHide
                 .addClass classColShow
 
         expandHideColSubtotal = (h) ->
-            $(h.th).closest 'table.pvtTable'
+            $(h.th).closest 'div.outerdiv'
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
                 .removeClass "#{classColCollapsed} #{classColShow}" 
                 .addClass "#{classColExpanded} #{classColHide}" 
@@ -754,7 +756,7 @@ callWithJQuery ($) ->
             renderColAttrHeader h.th, h.value, h.key, false, true, true
 
         expandShowColSubtotal = (h) ->
-            $(h.th).closest 'table.pvtTable'
+            $(h.th).closest 'div.outerdiv'
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
                 .removeClass "#{classColCollapsed} #{classColHide}"
                 .addClass "#{classColExpanded} #{classColShow}"
@@ -892,6 +894,55 @@ callWithJQuery ($) ->
             axisHeaders.expandAttrHeader axisHeaders, h, opts for h in axisHeaders.ah[i].attrHeaders for i in [0..col] 
             # when h.clickStatus is clickStatusCollapsed and h.children.length isnt 0 for i in [0..col] 
 
+        createColGroup = (columnWidths) ->
+            colgroup = createElement "colgroup"
+            for width in columnWidths
+                col = createElement "col", null, { style :  "width: #{width}px"}
+                colgroup.appendChild col
+            return colgroup
+        
+        getColumnWidth = (isAttrColumn, colKeyValues, axisValues, isArrow) ->
+            if callbacks?
+                return callbacks.getColumnWidth isAttrColumn, colKeyValues, axisValues, isArrow, rowSplitPositions.length - 1
+            else
+                return if isArrow then 15 + 10 * (rowSplitPositions.length - 1) else 50
+            
+        rowHeaderColsWidth = (trs) ->
+            if trs.length > 0
+                colCnt = findAxisHeadersColCount trs[0]
+                columns = ([] for i in [0...colCnt])
+                colsWidth = (0 for i in [0...colCnt])
+                
+                first = 0
+                if arrowColumnIsNeeded() 
+                    colsWidth[0] = getColumnWidth false, null, null, true
+                    first = 1
+
+                lastShift = 0                    
+                if colAttrs.length > 0
+                    colsWidth[colCnt-1] = getColumnWidth false, null, [], false
+                    lastShift = 1
+                    
+                for tr in trs
+                    curColumn = first
+                    for i in [first...(tr.cells.length - lastShift)]
+                        th = tr.cells[i]
+                        columns[curColumn].push th.textContent if th.textContent
+                        curColumn += th.colSpan
+                
+                for i in [first...(colCnt - lastShift)] 
+                    colsWidth[i] = getColumnWidth false, null, columns[i], false  
+                return colsWidth
+            else    
+                return [getColumnWidth(false, null, [], false)]
+            
+        findAxisHeadersColCount = (tr) ->
+            colCnt = 0
+            for i in [0...tr.cells.length]
+                th = tr.cells[i]
+                colCnt += th.colSpan
+            return colCnt
+            
         main = (rowAttrs, rowKeys, colAttrs, colKeys) ->
             rowAttrHeaders = []
             colAttrHeaders = []
@@ -899,29 +950,47 @@ callWithJQuery ($) ->
             colKeyHeaders = processColKeys colKeys if colAttrs.length isnt 0 and colKeys.length isnt 0
             rowKeyHeaders = processRowKeys rowKeys, "pvtRowLabel", rowSplitPositions if rowAttrs.length isnt 0 and rowKeys.length isnt 0
 
-            resultTable = createElement "table", "pvtTable", {style: "display: none;"}
+            outerDiv = createElement "div", "outerdiv"
+
+            headerHeight = 27 * Math.max(colAttrs.length, rowSplitPositions.length);            
+            headerDiv = createElement "div", "headerdiv", { style: "height: #{headerHeight}px" } 
+            headerSizeDiv = createElement "div"
+            headerTable = createElement "table", "headertable pvtTable"
 
             thead = createElement "thead"
-            resultTable.appendChild thead
 
-            [colAxisHeaders, rowAxisHeaders] = buildAxisHeaders thead, rowAttrs, colAttrs, opts
+            outerDiv.appendChild headerDiv
+            headerDiv.appendChild headerSizeDiv
+            headerSizeDiv.appendChild headerTable
+            headerTable.appendChild thead
+
+            [colAxisHeaders, rowAxisHeaders, trs] = buildAxisHeaders thead, rowAttrs, colAttrs, opts
+            colsWidth = rowHeaderColsWidth trs
 
             if colAttrs.length isnt 0 
                 overallSpan = 0
                 if colKeyHeaders?
                     node = counter: 0
                     for chKey in colKeyHeaders.children
-                        buildColHeader colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts 
+                        buildColHeader colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts, colsWidth 
                         overallSpan += colKeyHeaders[chKey].th.colSpan
 
-                buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length
+                buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length, colsWidth
                 rowAttrHeadersCount = rowSplitPositions.length
-                rowAxisHeaders.ah[0].tr.appendChild createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length} if rowAttrHeadersCount > colAttrs.length       
+                rowAxisHeaders.ah[0].tr.appendChild createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length} if rowAttrHeadersCount > colAttrs.length
 
+            bodyDiv = createElement "div", "bodydiv", { style: "top: #{headerHeight}px"}
+            bodySizeDiv = createElement "div"
+            bodyTable = createElement "table", "bodytable pvtTable"
             tbody = createElement "tbody"
-            resultTable.appendChild tbody
+
+            outerDiv.appendChild bodyDiv
+            bodyDiv.appendChild bodySizeDiv
+            bodySizeDiv.appendChild bodyTable
+            bodyTable.appendChild tbody
+            
             if rowAttrs.length isnt 0
-                buildRowTotalsHeader rowAxisHeaders.ah[0].tr, rowSplitPositions.length if colAttrs.length is 0
+                buildRowTotalsHeader rowAxisHeaders.ah[0].tr, rowSplitPositions.length, colsWidth if colAttrs.length is 0
                 if rowKeyHeaders?
                     node = counter: 0
                     buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, opts for chKey in rowKeyHeaders.children
@@ -934,11 +1003,23 @@ callWithJQuery ($) ->
             collapseColAxis colAxisHeaders, opts.colSubtotalDisplay.collapseAt, colAttrs, opts.colSubtotalDisplay
             collapseRowAxis rowAxisHeaders, opts.rowSubtotalDisplay.collapseAt, rowAttrs, opts.rowSubtotalDisplay
 
-            resultTable.setAttribute "data-numrows", rowKeys.length
-            resultTable.setAttribute "data-numcols", colKeys.length
-            resultTable.style.display = ""
+            headerTable.setAttribute "data-numrows", rowKeys.length
+            headerTable.setAttribute "data-numcols", colKeys.length
+            headerTable.style.display = ""
+            
+            bodyTable.setAttribute "data-numrows", rowKeys.length
+            bodyTable.setAttribute "data-numcols", colKeys.length
+            bodyTable.style.display = ""
 
-            return resultTable
+            headerTable.insertBefore createColGroup(colsWidth), headerTable.firstChild
+            bodyTable.insertBefore createColGroup(colsWidth), bodyTable.firstChild
+            
+            scrollWidth = 8
+            colsWidthSum = colsWidth.reduce (sum, w) -> sum + w
+            headerSizeDiv.setAttribute "style", "min-width: #{colsWidthSum + scrollWidth}px"
+            bodySizeDiv.setAttribute "style", "min-width: #{colsWidthSum}px"
+            
+            return outerDiv
 
         return main rowAttrs, rowKeys, colAttrs, colKeys
 
