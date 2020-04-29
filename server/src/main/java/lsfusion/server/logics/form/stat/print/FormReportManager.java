@@ -291,10 +291,11 @@ public abstract class FormReportManager extends FormDataManager {
             Object readReport = reportInterface.read(reportPathProp);
             if(readReport instanceof FileData) {
                 FileData fileReport = (FileData) readReport;
+                RawFileData rawFile = fileReport.getRawFile();
                 if(fileReport.getExtension().equals("path"))
-                    readReport = new String(fileReport.getBytes());
+                    readReport = new String(rawFile.getBytes());
                 else
-                    readReport = fileReport.getRawFile();
+                    readReport = rawFile;
             }
 
             if(readReport instanceof String) {
@@ -382,8 +383,9 @@ public abstract class FormReportManager extends FormDataManager {
             }
             return designs;
         } catch (JRException e) {
-            systemLogger.error("Error loading custom report design: ", e);
-            return null;
+            throw new RuntimeException(localize("{form.instance.error.loading.design}"), e);
+//            systemLogger.error("Error loading custom report design: ", e);
+//            return null;
         }
     }
 
