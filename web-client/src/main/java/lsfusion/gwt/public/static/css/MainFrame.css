@@ -619,8 +619,6 @@ input[type=checkbox]:focus {
 /* ------------ Pivot Table  ------------ */
 
 .pivotTable {
-    overflow-x: auto;
-    overflow-y: auto;
     border: 1px solid var(--panel-border-color);
 }
 
@@ -656,7 +654,25 @@ input[type=checkbox]:focus {
 
 .pvtUi {
     color: var(--text-color);
+    /* width: 100%; */
+}
+
+.pvtUiWrapperDiv {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.pvtUiCellVDiv {
+    height: 100%;
+    overflow: hidden auto;
+}
+
+.pvtUiCellHDiv {
     width: 100%;
+    overflow: auto hidden;
 }
 
 .pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
@@ -664,23 +680,35 @@ input[type=checkbox]:focus {
 }
 
 table.pvtTable {
-    border: 1px solid var(--component-border-color);
+    /* border: 1px solid var(--component-border-color); */
     color: var(--text-color);
 }
 
 table.pvtTable tbody tr td, table.pvtTable thead tr td {
     border: 1px solid var(--grid-separator-border-color);
     color: var(--text-color);
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 table.pvtTable thead tr th, table.pvtTable tbody tr th {
     border: 1px solid var(--grid-separator-border-color);
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .pvtCols, .pvtRendererArea {
     width: 100%;
 }
 
+.pvtRendererScrollDiv {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+}
 
 .pvtAggregator {
     margin-bottom: 1px;
@@ -727,6 +755,7 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
 .pvtUi {
     /*to stretch last empty paxis*/
     height:100%;
+    width: 100%;
 }
 
 .pvtRows, .pvtCols {

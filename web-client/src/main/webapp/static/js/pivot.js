@@ -1197,7 +1197,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotTable, pvtColumns, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, x;
+      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1277,7 +1277,8 @@
           "class": "pvtUi"
         }).attr("cellpadding", 5);
         rendererControl = $("<td>").addClass("pvtUiCell");
-        renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControl).bind("change", function() {
+        rendererControlDiv = $("<div>").appendTo(rendererControl);
+        renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControlDiv).bind("change", function() {
           return refresh();
         });
         ref = opts.renderers;
@@ -1286,6 +1287,7 @@
           $("<option>").val(x).html(x).appendTo(renderer);
         }
         unused = $("<td>").addClass('pvtAxisContainer pvtUnused pvtUiCell');
+        unusedDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(unused);
         shownAttributes = (function() {
           var results;
           results = [];
@@ -1466,7 +1468,7 @@
           if (hasExcludedItem) {
             attrElem.addClass('pvtFilteredAttribute');
           }
-          return unused.append(attrElem).append(valueList);
+          return unusedDiv.append(attrElem).append(valueList);
         };
         for (i in shownInDragDrop) {
           if (!hasProp.call(shownInDragDrop, i)) continue;
@@ -1513,19 +1515,23 @@
           $(this).html(ordering[$(this).data("order")].colSymbol);
           return refresh();
         });
-        $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
+        aggrSelector = $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1);
+        $("<div>").appendTo(aggrSelector).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
         pvtColumns = $("<td>").addClass('pvtHorizList pvtCols pvtUiCell');
+        pvtColumnsDiv = $("<div>").addClass('pvtUiCellHDiv').appendTo(pvtColumns);
         tr1.append(pvtColumns);
         pvtColumnsTable = $("<table>").addClass('pvtColumnsTable');
-        pvtColumns.append(pvtColumnsTable);
+        pvtColumnsDiv.append(pvtColumnsTable);
         pvtColumnsRow = $("<tr>");
         pvtColumnsTable.append(pvtColumnsRow);
-        tr2 = $("<tr>").appendTo(uiTable);
+        tr2 = $("<tr>").appendTo(uiTable).attr("style", "height:100%");
         pvtRows = $("<td>").addClass('pvtRows pvtUiCell').attr("valign", "top");
+        pvtRowsDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(pvtRows);
         tr2.append(pvtRows);
         pvtRowsTable = $("<table>").addClass('pvtRowsTable');
-        pvtRows.append(pvtRowsTable);
+        pvtRowsDiv.append(pvtRowsTable);
         pivotTable = $("<td>").attr("valign", "top").addClass('pvtRendererArea').appendTo(tr2);
+        pivotScrollDiv = $("<div>").addClass('pvtRendererScrollDiv').appendTo(pivotTable);
         if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
           uiTable.find('.uiTableRow:nth-child(1)').prepend(rendererControl);
           uiTable.find('tr:nth-child(2)').prepend(unused);
@@ -1750,7 +1756,7 @@
             if (opts.onRefresh != null) {
               opts.onRefresh(pivotUIOptions);
             }
-            pivotTable.pivot(materializedInput, subopts);
+            pivotScrollDiv.pivot(materializedInput, subopts);
             _this.data("pivotUIOptions", pivotUIOptions);
             if (opts.autoSortUnusedAttrs) {
               unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");

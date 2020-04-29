@@ -1,6 +1,49 @@
     body {
+        font-family: Verdana;
     }
 
+    .subtotalouterdiv {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow: hidden; 
+    }
+
+    .subtotalouterdiv .headerdiv {
+        flex: 0 1 auto;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .subtotalouterdiv .headertable {
+        table-layout: fixed;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .subtotalouterdiv .bodydiv {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        top: -1px;
+    }
+
+    .subtotalouterdiv .scrolldiv {
+        position: relative;
+        overflow: auto;
+        height: 100%;
+    }
+
+    .subtotalouterdiv .bodytable {
+        table-layout: fixed;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
     /* AxisLabel */
     table.pvtTable .pvtAxisLabel {
 	    white-space: nowrap;
@@ -78,7 +121,7 @@
     table.pvtTable thead tr .axisHeaderArrowDiv {
         flex: 0 0 auto; 
         justify-content: left; 
-        padding-right: 5px;"    
+        padding-right: 5px;    
     }
     
     table.pvtTable thead tr .axisHeaderTextDiv {
@@ -89,7 +132,7 @@
     table.pvtTable thead tr .colAttrHeaderArrowDiv {
         flex: 0 0 auto; 
         justify-content: left; 
-        padding-right: 5px;"    
+        padding-right: 5px;    
     }
     
     table.pvtTable thead tr .colAttrHeaderTextDiv {
@@ -102,6 +145,10 @@
     * IMPORTANT: Please do not remove the lines below this point
     *
     */
+    .subtotalouterdiv col.colhide {
+        display: none;    
+    }
+    
     table.pvtTable tr .rowhide {
         display: none;
     }
