@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.panel.view;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -63,9 +64,9 @@ public class DataPanelViewTable extends SingleCellTable {
         super.paintComponent(g);
 
         if (getProperty().notNull) {
-            SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, Color.RED, 0, 0, getWidth(), getHeight());
+            SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, SwingDefaults.getNotNullColor(), 0, 0, getWidth(), getHeight());
         } else if (getProperty().hasChangeAction) {
-            SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, new Color(120, 170, 208), 0, 0, getWidth(), getHeight());
+            SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, SwingDefaults.getHasChangeActionColor(), 0, 0, getWidth(), getHeight());
         }
     }
 

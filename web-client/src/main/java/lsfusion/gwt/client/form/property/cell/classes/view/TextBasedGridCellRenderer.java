@@ -76,6 +76,6 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
     public abstract String format(T value);
 
     protected String getRequiredStringValue() {
-        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : "<div class=\"underlineOuter\"><div class=\"underlineInner\"></div>";
+        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : "<div class=\"notNullLineOuter\"><div class=\"notNullLineInner\"></div>";
     }
 }

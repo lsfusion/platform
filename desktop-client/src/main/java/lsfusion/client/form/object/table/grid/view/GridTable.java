@@ -62,7 +62,6 @@ import static java.lang.Math.max;
 import static java.lang.String.valueOf;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.base.SwingUtils.paintRightBottomCornerTriangle;
 import static lsfusion.client.form.controller.ClientFormController.PasteData;
 
 public class GridTable extends ClientPropertyTable implements ClientTableView {
@@ -1891,9 +1890,9 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
                 ClientPropertyDraw property = model.getColumnProperty(modelIndex);
                 if (property.notNull) {
-                    paintRightBottomCornerTriangle((Graphics2D) g, 5, Color.RED, x - 1, - 1, w, h); // -1/-1 - не залазим на границы
+                    SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 5, SwingDefaults.getNotNullColor(), x - 1, - 1, w, h); // -1/-1 - не залазим на границы
                 } else if (property.hasChangeAction) {
-                    paintRightBottomCornerTriangle((Graphics2D) g, 5, new Color(120, 170, 208), x - 1, - 1, w, h);
+                    SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 5, SwingDefaults.getHasChangeActionColor(), x - 1, - 1, w, h);
                 }
             }
         }

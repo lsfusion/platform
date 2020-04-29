@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.cell.classes.view;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorKit;
@@ -42,7 +43,7 @@ public class TextPropertyRenderer extends PropertyRenderer {
 
     private void paintTextComponent(Graphics g) {
         if(isEditableNotNull && !MainController.showNotDefinedStrings) {
-            SwingUtils.drawHorizontalLine((Graphics2D) g, Color.RED, 0, getComponent().getWidth(), getComponent().getHeight() - 5);
+            SwingUtils.drawHorizontalLine((Graphics2D) g, SwingDefaults.getNotNullColor(), 2, getComponent().getWidth() - 2, getComponent().getHeight() - 4);
         }
     }
 

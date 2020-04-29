@@ -924,16 +924,16 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     color: var(--required-value-string-color);
 }
 
-.underlineOuter {
+.notNullLineOuter {
     height: 100%;
     position:relative;
 }
 
-.underlineInner {
-    background: var(--required-value-string-color);
+.notNullLineInner {
+    background: var(--not-null-corner-triangle-color);
     width:100%;
     height: 1px;
-    bottom: 5px;
+    bottom: 3px;
     position:absolute;
 }
 

@@ -4,7 +4,6 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -14,8 +13,6 @@ public abstract class PropertyRenderer {
     public static final String EMPTY_STRING = ClientResourceBundle.getString("form.renderer.empty");
     public static final String NOT_DEFINED_STRING = ClientResourceBundle.getString("form.renderer.not.defined");
     public static final String REQUIRED_STRING = ClientResourceBundle.getString("form.renderer.required");
-
-    public static final Color REQUIRED_FOREGROUND = new Color(188, 63, 60);
 
     protected ClientPropertyDraw property;
     protected Object value;
@@ -98,7 +95,7 @@ public abstract class PropertyRenderer {
         if (value == null) {
             if (property != null && property.isEditableNotNull()) {
                 if (showRequiredString()) {
-                    getComponent().setForeground(REQUIRED_FOREGROUND);
+                    getComponent().setForeground(SwingDefaults.getRequiredForeground());
                 }
             } else if (showNotDefinedString()) {
                 getComponent().setForeground(SwingDefaults.getNotDefinedForeground());

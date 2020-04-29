@@ -43,6 +43,9 @@ public class SwingDefaults {
     private static Color dockableBorderColor;
     private static Color tabbedPaneUnderlineColor;
     private static Color tabbedPaneFocusColor;
+    private static Color notNullColor;
+    private static Color hasChangeActionColor;
+    private static Color requiredForeground;
     private static Insets tableCellMargins;
     private static Insets buttonMargin;
     private static Insets toggleButtonMargin;
@@ -70,6 +73,9 @@ public class SwingDefaults {
         dockableBorderColor = null;
         tabbedPaneUnderlineColor = null;
         tabbedPaneFocusColor = null;
+        notNullColor = null;
+        hasChangeActionColor = null;
+        requiredForeground = null;
         buttonMargin = null;
         toggleButtonMargin = null;
         
@@ -275,6 +281,27 @@ public class SwingDefaults {
             tabbedPaneFocusColor = colorTheme.isLight() ? new Color(215, 232, 234) : new Color(61, 83, 91);
         }
         return tabbedPaneFocusColor;
+    }
+
+    public static Color getNotNullColor() {
+        if (notNullColor == null) {
+            notNullColor = colorTheme.isLight() ? new Color(255, 0, 0) : new Color(195,0,0);
+        }
+        return notNullColor;
+    }
+
+    public static Color getHasChangeActionColor() {
+        if (hasChangeActionColor == null) {
+            hasChangeActionColor = colorTheme.isLight() ? focusedTableCellBorderColorLight : focusedTableCellBorderColorDark;
+        }
+        return hasChangeActionColor;
+    }
+
+    public static Color getRequiredForeground() {
+        if (requiredForeground == null) {
+            requiredForeground = colorTheme.isLight() ? new Color(199, 13, 0) : new Color(197, 77, 77);
+        }
+        return requiredForeground;
     }
     
     public static Insets getTableCellMargins() {
