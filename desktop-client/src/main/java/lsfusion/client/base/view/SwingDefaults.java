@@ -1,25 +1,32 @@
 package lsfusion.client.base.view;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.ui.FlatTableCellBorder;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-import static javax.swing.UIManager.*;
 import static lsfusion.client.controller.MainController.colorPreferences;
 import static lsfusion.client.controller.MainController.colorTheme;
 import static lsfusion.client.view.MainFrame.getIntUISize;
 
 public class SwingDefaults {
-    // no transparent colors as they are not drawn correctly sometimes.   
-    final static Color selectionColorLight = new Color(211, 229, 232);
-    final static Color selectionColorDark = new Color(44, 71, 81);
-    final static Color focusedTableCellBorderColorLight = new Color(4, 137, 186);
-    final static Color focusedTableCellBorderColorDark = new Color(7, 144, 195);
+    private static final UIDefaults lightDefaults = new FlatLightLaf().getDefaults();
+    private static final UIDefaults darkDefaults = new FlatDarkLaf().getDefaults();
     
+    // no transparent colors as they are not drawn correctly sometimes.   
+    private static final Color selectionColorLight = new Color(211, 229, 232);
+    private static final Color selectionColorDark = new Color(44, 71, 81);
+    private static final Color focusedTableCellBorderColorLight = new Color(4, 137, 186);
+    private static final Color focusedTableCellBorderColorDark = new Color(7, 144, 195);
+    
+    private static Color componentFocusBorderColor;
     private static Color buttonBackground;
     private static Border buttonBorder;
+    private static Color buttonHoverBackground;
+    private static Color buttonPressedBackground;
     private static Color toggleButtonHoverBackground;
     private static Color toggleButtonPressedBackground;
     private static Border textFieldBorder;
@@ -35,6 +42,7 @@ public class SwingDefaults {
     private static Color titledBorderTitleColor;
     private static Color dockableBorderColor;
     private static Color tabbedPaneUnderlineColor;
+    private static Color tabbedPaneFocusColor;
     private static Insets tableCellMargins;
     private static Insets buttonMargin;
     private static Insets toggleButtonMargin;
@@ -45,8 +53,11 @@ public class SwingDefaults {
     private static Integer verticalToolbarNavigatorButtonHeight;
     
     public static void reset() {
+        componentFocusBorderColor = null;
         buttonBackground = null;
         buttonBorder = null;
+        buttonHoverBackground = null;
+        buttonPressedBackground = null;
         toggleButtonHoverBackground = null;
         toggleButtonPressedBackground = null;
         textFieldBorder = null;
@@ -58,6 +69,7 @@ public class SwingDefaults {
         titledBorderTitleColor = null;
         dockableBorderColor = null;
         tabbedPaneUnderlineColor = null;
+        tabbedPaneFocusColor = null;
         buttonMargin = null;
         toggleButtonMargin = null;
         
@@ -79,6 +91,29 @@ public class SwingDefaults {
         verticalToolbarNavigatorButtonHeight = null;
     }
     
+    public static Object get(String key) {
+        return (colorTheme.isLight() ? lightDefaults : darkDefaults).get(key);
+    }
+    
+    public static Color getColor(String key) {
+        return (Color) get(key);
+    }
+    
+    public static Border getBorder(String key) {
+        return (Border) get(key);
+    }
+    
+    public static Insets getInsets(String key) {
+        return (Insets) get(key);
+    }
+    
+    public static Color getComponentFocusBorderColor() {
+        if (componentFocusBorderColor == null) {
+            componentFocusBorderColor = colorTheme.isLight() ? new Color(132, 192, 214) : new Color(70, 127, 147);
+        }
+        return componentFocusBorderColor; 
+    }
+
     public static Color getButtonBackground() {
         if (buttonBackground == null) {
             buttonBackground = getColor("Button.background");
@@ -92,6 +127,20 @@ public class SwingDefaults {
         }
         return buttonBorder;
     } 
+
+    public static Color getButtonHoverBackground() {
+        if (buttonHoverBackground == null) {
+            buttonHoverBackground = colorTheme.isLight() ? new Color(247, 247, 247) : new Color(83, 88, 90);
+        }
+        return buttonHoverBackground;
+    }
+
+    public static Color getButtonPressedBackground() {
+        if (buttonPressedBackground == null) {
+            buttonPressedBackground = colorTheme.isLight() ? new Color(230, 230, 230) : new Color(91, 95, 98);
+        }
+        return buttonPressedBackground;
+    }
 
     public static Color getToggleButtonHoverBackground() {
         if (toggleButtonHoverBackground == null) {
@@ -219,6 +268,13 @@ public class SwingDefaults {
             tabbedPaneUnderlineColor = colorTheme.isLight() ? new Color(177 , 220, 226) : new Color(41, 82, 96);
         }
         return tabbedPaneUnderlineColor;
+    }
+    
+    public static Color getTabbedPaneFocusColor() {
+        if (tabbedPaneFocusColor == null) {
+            tabbedPaneFocusColor = colorTheme.isLight() ? new Color(215, 232, 234) : new Color(61, 83, 91);
+        }
+        return tabbedPaneFocusColor;
     }
     
     public static Insets getTableCellMargins() {

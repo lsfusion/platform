@@ -328,7 +328,7 @@ public class MainController {
         UIManager.put("TabbedPane.tabHeight", SwingDefaults.getComponentHeight());
         UIManager.put("ToggleButton.margin", SwingDefaults.getToggleButtonMargin());
 
-        updateUI();
+        setUIDefaults();
         
         // при первом использовании rich-editora во время редактирования, его создание тормозит...
         // возможно, где-то внутри кэшируются какие-то lazy-ресурсы... Чтобы это не напрягало на форме, создаём компонент вхолостую здесь
@@ -539,15 +539,36 @@ public class MainController {
     }
     
     // properties which depend on current color theme. 
-    public static void updateUI() {
-        UIManager.put("Table.gridColor", UIManager.getColor("TableHeader.separatorColor"));
-        UIManager.put("TableHeader.background", UIManager.getColor("Panel.background"));
+    public static void setUIDefaults() {
+        UIManager.put("Table.gridColor", SwingDefaults.getColor("TableHeader.separatorColor"));
+        UIManager.put("TableHeader.background", SwingDefaults.getColor("Panel.background"));
         UIManager.put("Tree.selectionInactiveBackground", SwingDefaults.getFocusedTableRowBackground()); // JTree in TreeGroupTable draws inactive background on selection
         UIManager.put("Table.cellFocusColor", SwingDefaults.getSelectionBorderColor()); // mostly for tree table. has no effect as tree has no focus 
         UIManager.put("TitledBorder.titleColor", SwingDefaults.getTitledBorderTitleColor());
+        
         UIManager.put("TabbedPane.underlineColor", SwingDefaults.getTabbedPaneUnderlineColor());
+        UIManager.put("TabbedPane.hoverColor", SwingDefaults.getToggleButtonHoverBackground());
+        UIManager.put("TabbedPane.focusColor", SwingDefaults.getTabbedPaneFocusColor());
+        
         UIManager.put("ToggleButton.selectedBackground", SwingDefaults.getSelectionColor());
         UIManager.put("ToggleButton.pressedBackground", SwingDefaults.getToggleButtonPressedBackground());
+
+        UIManager.put("Component.focusedBorderColor", SwingDefaults.getComponentFocusBorderColor());
+        UIManager.put("Button.default.focusedBorderColor", SwingDefaults.getComponentFocusBorderColor());
+        UIManager.put("Button.focusedBorderColor", SwingDefaults.getComponentFocusBorderColor());
+        UIManager.put("CheckBox.icon.focusedBorderColor", SwingDefaults.getComponentFocusBorderColor());
+
+        UIManager.put("Button.default.hoverBorderColor", SwingDefaults.getComponentFocusBorderColor());
+        UIManager.put("Button.hoverBorderColor", SwingDefaults.getComponentFocusBorderColor());
+        UIManager.put("CheckBox.icon.hoverBorderColor", SwingDefaults.getComponentFocusBorderColor());
+
+        UIManager.put("Button.default.focusedBackground", SwingDefaults.getSelectionColor());
+        UIManager.put("Button.focusedBackground", SwingDefaults.getSelectionColor());
+        
+        UIManager.put("Button.default.hoverBackground", SwingDefaults.getButtonHoverBackground());
+        UIManager.put("Button.hoverBackground", SwingDefaults.getButtonHoverBackground());
+        UIManager.put("Button.default.pressedBackground", SwingDefaults.getButtonPressedBackground());
+        UIManager.put("Button.pressedBackground", SwingDefaults.getButtonPressedBackground());
     }
 
     public static void changeColorTheme(ColorTheme newColorTheme) {
@@ -555,12 +576,12 @@ public class MainController {
             colorTheme = newColorTheme;
 
             FlatLaf newLookAndFeel = colorTheme.isLight() ? new FlatLightLaf() : new FlatDarkLaf();
-            FlatLaf.install(newLookAndFeel);
-
+            
             ClientImages.reset();
             SwingDefaults.reset();
-
-            updateUI();
+            setUIDefaults();
+            
+            FlatLaf.install(newLookAndFeel);
             FlatLaf.updateUI();
 
             for (ColorThemeChangeListener colorThemeChangeListener : new HashSet<>(colorThemeChangeListeners)) {
