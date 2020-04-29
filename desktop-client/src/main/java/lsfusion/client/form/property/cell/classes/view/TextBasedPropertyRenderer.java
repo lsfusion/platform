@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.cell.classes.view;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.LabelPropertyRenderer;
 
@@ -25,7 +26,7 @@ public class TextBasedPropertyRenderer extends LabelPropertyRenderer {
     @Override
     public void paintLabelComponent(Graphics g) {
         super.paintLabelComponent(g);
-        if(isEditableNotNull) {
+        if(isEditableNotNull && !MainController.showNotDefinedStrings) {
             SwingUtils.drawHorizontalLine((Graphics2D) g, Color.RED, 0, getComponent().getWidth(), getComponent().getHeight() - 5);
         }
     }

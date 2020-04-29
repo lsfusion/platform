@@ -41,7 +41,7 @@ public class TextPropertyRenderer extends PropertyRenderer {
     }
 
     private void paintTextComponent(Graphics g) {
-        if(isEditableNotNull) {
+        if(isEditableNotNull && !MainController.showNotDefinedStrings) {
             SwingUtils.drawHorizontalLine((Graphics2D) g, Color.RED, 0, getComponent().getWidth(), getComponent().getHeight() - 5);
         }
     }
