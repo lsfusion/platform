@@ -2,7 +2,9 @@ package lsfusion.client.form.property.cell.view;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -122,6 +124,10 @@ public abstract class PropertyRenderer {
 
     protected void paintAsSelected() {
         getComponent().setBackground(SwingDefaults.getTableSelectionBackground());
+    }
+
+    protected String getRequiredStringValue() {
+        return MainController.showNotDefinedStrings ? REQUIRED_STRING : "";
     }
 }
 

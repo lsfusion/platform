@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.classes.view;
 
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorKit;
@@ -14,6 +15,7 @@ import java.awt.*;
 public class TextPropertyRenderer extends PropertyRenderer {
     private boolean rich;
     private JEditorPane pane;
+    private boolean isEditableNotNull;
 
     public TextPropertyRenderer(ClientPropertyDraw property, boolean rich) {
         super(property);
@@ -27,9 +29,21 @@ public class TextPropertyRenderer extends PropertyRenderer {
 
     public JEditorPane getComponent() {
         if (pane == null) {
-            pane = new JEditorPane();
+            pane = new JEditorPane() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    paintTextComponent(g);
+                }
+            };
         }
         return pane;
+    }
+
+    private void paintTextComponent(Graphics g) {
+        if(isEditableNotNull) {
+            SwingUtils.drawHorizontalLine((Graphics2D) g, Color.RED, 0, getComponent().getWidth(), getComponent().getHeight() - 5);
+        }
     }
 
     @Override
@@ -44,10 +58,11 @@ public class TextPropertyRenderer extends PropertyRenderer {
 
     public void setValue(Object value) {
         super.setValue(value != null && value.toString().isEmpty() && !MainController.showNotDefinedStrings ? null : value);
+        isEditableNotNull = value == null && property != null && property.isEditableNotNull();
         if (value == null) {
             getComponent().setContentType("text");
-            if (property != null && property.isEditableNotNull()) {
-                getComponent().setText(REQUIRED_STRING);
+            if (isEditableNotNull) {
+                getComponent().setText(getRequiredStringValue());
             } else {
                 getComponent().setText(MainController.showNotDefinedStrings ? NOT_DEFINED_STRING : "");
             }

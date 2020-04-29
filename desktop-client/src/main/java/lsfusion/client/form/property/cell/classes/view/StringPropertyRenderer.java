@@ -2,9 +2,8 @@ package lsfusion.client.form.property.cell.classes.view;
 
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.view.LabelPropertyRenderer;
 
-public class StringPropertyRenderer extends LabelPropertyRenderer {
+public class StringPropertyRenderer extends TextBasedPropertyRenderer {
 
     private final boolean echoSymbols;
 

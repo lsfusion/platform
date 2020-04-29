@@ -13,7 +13,7 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
     protected void setInnerText(Element element, String innerText) {
         if (innerText == null) {
             if (property.isEditableNotNull()) {
-                setInnerContent(element, REQUIRED_VALUE);
+                setInnerHTML(element, getRequiredStringValue());
                 element.addClassName("requiredValueString");
                 element.removeClassName("nullValueString");
             } else {
@@ -34,5 +34,9 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
 
     protected void setInnerContent(Element element, String innerText) {
         element.setInnerText(innerText);
+    }
+
+    protected void setInnerHTML(Element element, String innerHTML) {
+        element.setInnerHTML(innerHTML);
     }
 }
