@@ -20,7 +20,7 @@ public abstract class FormatGridCellRenderer<T, F> extends TextBasedGridCellRend
     protected void setInnerText(Element element, String innerText) {
         if (innerText == null) {
             if (property.isEditableNotNull()) {
-                element.setInnerText(getRequiredStringValue());
+                element.setInnerHTML(getRequiredStringValue());
                 element.addClassName("requiredValueString");
             } else {
                 element.setInnerText(EscapeUtils.UNICODE_NBSP);
