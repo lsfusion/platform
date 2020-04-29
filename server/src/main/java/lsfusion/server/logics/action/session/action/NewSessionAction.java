@@ -47,7 +47,7 @@ public class NewSessionAction extends AroundAspectAction {
         this.explicitMigrateProps = explicitMigrateProps;
 
         // (nested || explicitly nested) and used in action
-        migrateProps = isNested ? null : BaseUtils.remove(BaseUtils.merge(DataSession.keepNested(false), explicitMigrateProps),
+        migrateProps = BaseUtils.remove(BaseUtils.merge(DataSession.keepNested(false), explicitMigrateProps),
                                     (SFunctionSet<SessionDataProperty>) element -> !action.action.uses(element));
 
         finalizeInit();
