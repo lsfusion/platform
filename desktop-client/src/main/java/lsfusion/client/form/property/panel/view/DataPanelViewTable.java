@@ -64,7 +64,7 @@ public class DataPanelViewTable extends SingleCellTable {
         super.paintComponent(g);
 
         if (getProperty().notNull) {
-            SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, SwingDefaults.getNotNullColor(), 0, 0, getWidth(), getHeight());
+            SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, SwingDefaults.getNotNullCornerTriangleColor(), 0, 0, getWidth(), getHeight());
         } else if (getProperty().hasChangeAction) {
             SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, SwingDefaults.getHasChangeActionColor(), 0, 0, getWidth(), getHeight());
         }

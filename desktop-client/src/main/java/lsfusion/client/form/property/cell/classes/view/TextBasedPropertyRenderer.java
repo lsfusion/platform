@@ -28,7 +28,7 @@ public class TextBasedPropertyRenderer extends LabelPropertyRenderer {
     public void paintLabelComponent(Graphics g) {
         super.paintLabelComponent(g);
         if(isEditableNotNull && !MainController.showNotDefinedStrings) {
-            SwingUtils.drawHorizontalLine((Graphics2D) g, SwingDefaults.getNotNullColor(), 2, getComponent().getWidth() - 4, getComponent().getHeight() - 4);
+            SwingUtils.drawHorizontalLine((Graphics2D) g, SwingDefaults.getNotNullLineColor(), 4, getComponent().getWidth() - 6, getComponent().getHeight() - 3);
         }
     }
 }

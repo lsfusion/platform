@@ -43,7 +43,8 @@ public class SwingDefaults {
     private static Color dockableBorderColor;
     private static Color tabbedPaneUnderlineColor;
     private static Color tabbedPaneFocusColor;
-    private static Color notNullColor;
+    private static Color notNullCornerTriangleColor;
+    private static Color notNullLineColor;
     private static Color hasChangeActionColor;
     private static Color requiredForeground;
     private static Insets tableCellMargins;
@@ -73,7 +74,8 @@ public class SwingDefaults {
         dockableBorderColor = null;
         tabbedPaneUnderlineColor = null;
         tabbedPaneFocusColor = null;
-        notNullColor = null;
+        notNullCornerTriangleColor = null;
+        notNullLineColor = null;
         hasChangeActionColor = null;
         requiredForeground = null;
         buttonMargin = null;
@@ -283,11 +285,18 @@ public class SwingDefaults {
         return tabbedPaneFocusColor;
     }
 
-    public static Color getNotNullColor() {
-        if (notNullColor == null) {
-            notNullColor = colorTheme.isLight() ? new Color(255, 0, 0) : new Color(195,0,0);
+    public static Color getNotNullCornerTriangleColor() {
+        if (notNullCornerTriangleColor == null) {
+            notNullCornerTriangleColor = colorTheme.isLight() ? new Color(255, 0, 0) : new Color(195, 0, 0);
         }
-        return notNullColor;
+        return notNullCornerTriangleColor;
+    }
+
+    public static Color getNotNullLineColor() {
+        if (notNullLineColor == null) {
+            notNullLineColor = colorTheme.isLight() ? new Color(255, 184, 184) : new Color(154, 0, 0);
+        }
+        return notNullLineColor;
     }
 
     public static Color getHasChangeActionColor() {
