@@ -9,34 +9,28 @@
         left: 0px;
         right: 0px;
     }
-    /*
-    .scrollablediv {
-      position: absolute;
-      left: 0px;
-      right: 0px;
-      top: 0px;
-      bottom: 0px;
-      overflow-x: auto;
+    
+    .scrolldiv {
+        position: relative;
+        overflow: auto hidden;
+        height: 100%;
     }
-    */
+    
     .headerdiv {
         position: absolute;
         left: 0px;
         right: 0px;
         top: 0px;
-        overflow: hidden;
     }
 
     .headertable {
         table-layout: fixed;
         width: 100%;
         border-collapse: collapse;
-        overflow: hidden;
     }
 
     .bodydiv {
-        overflow-x: hidden;
-        overflow-y: scroll;
+        overflow: visible auto;
         position: absolute;
         bottom: 0px;
         left: 0px;

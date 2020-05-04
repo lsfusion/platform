@@ -951,6 +951,7 @@ callWithJQuery ($) ->
             rowKeyHeaders = processRowKeys rowKeys, "pvtRowLabel", rowSplitPositions if rowAttrs.length isnt 0 and rowKeys.length isnt 0
 
             outerDiv = createElement "div", "outerdiv"
+            scrollDiv = createElement "div", "scrolldiv"
 
             headerHeight = 27 * Math.max(colAttrs.length, rowSplitPositions.length);            
             headerDiv = createElement "div", "headerdiv", { style: "height: #{headerHeight}px" } 
@@ -959,7 +960,8 @@ callWithJQuery ($) ->
 
             thead = createElement "thead"
 
-            outerDiv.appendChild headerDiv
+            outerDiv.appendChild scrollDiv
+            scrollDiv.appendChild headerDiv
             headerDiv.appendChild headerSizeDiv
             headerSizeDiv.appendChild headerTable
             headerTable.appendChild thead
@@ -984,7 +986,7 @@ callWithJQuery ($) ->
             bodyTable = createElement "table", "bodytable pvtTable"
             tbody = createElement "tbody"
 
-            outerDiv.appendChild bodyDiv
+            scrollDiv.appendChild bodyDiv
             bodyDiv.appendChild bodySizeDiv
             bodySizeDiv.appendChild bodyTable
             bodyTable.appendChild tbody
@@ -1016,8 +1018,8 @@ callWithJQuery ($) ->
             
             scrollWidth = 8
             colsWidthSum = colsWidth.reduce (sum, w) -> sum + w
-            headerSizeDiv.setAttribute "style", "min-width: #{colsWidthSum + scrollWidth}px"
-            bodySizeDiv.setAttribute "style", "min-width: #{colsWidthSum}px"
+            headerSizeDiv.setAttribute "style", "min-width: #{colsWidthSum + scrollWidth}px; position: relative"
+            bodySizeDiv.setAttribute "style", "min-width: #{colsWidthSum}px; position: relative"
             
             return outerDiv
 

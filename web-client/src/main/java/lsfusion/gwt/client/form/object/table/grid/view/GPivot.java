@@ -401,6 +401,7 @@ public class GPivot extends GStateTableView {
     protected native void render(com.google.gwt.dom.client.Element element, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns)/*-{
 //        var d = element;
         var d = $doc.createElement('div');
+        d.className = 'pvtUiWrapperDiv';
 
         // Configuration ordering column for group
         config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);

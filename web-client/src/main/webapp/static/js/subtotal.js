@@ -1424,7 +1424,7 @@
         return colCnt;
       };
       main = function(rowAttrs, rowKeys, colAttrs, colKeys) {
-        var bodyDiv, bodySizeDiv, bodyTable, chKey, colAttrHeaders, colAxisHeaders, colKeyHeaders, colsWidth, colsWidthSum, headerDiv, headerHeight, headerSizeDiv, headerTable, k, l, len1, len2, node, outerDiv, overallSpan, ref, ref1, ref2, rowAttrHeaders, rowAttrHeadersCount, rowAxisHeaders, rowKeyHeaders, scrollWidth, tbody, thead, tr, trs;
+        var bodyDiv, bodySizeDiv, bodyTable, chKey, colAttrHeaders, colAxisHeaders, colKeyHeaders, colsWidth, colsWidthSum, headerDiv, headerHeight, headerSizeDiv, headerTable, k, l, len1, len2, node, outerDiv, overallSpan, ref, ref1, ref2, rowAttrHeaders, rowAttrHeadersCount, rowAxisHeaders, rowKeyHeaders, scrollDiv, scrollWidth, tbody, thead, tr, trs;
         rowAttrHeaders = [];
         colAttrHeaders = [];
         if (colAttrs.length !== 0 && colKeys.length !== 0) {
@@ -1434,6 +1434,7 @@
           rowKeyHeaders = processRowKeys(rowKeys, "pvtRowLabel", rowSplitPositions);
         }
         outerDiv = createElement("div", "outerdiv");
+        scrollDiv = createElement("div", "scrolldiv");
         headerHeight = 27 * Math.max(colAttrs.length, rowSplitPositions.length);
         headerDiv = createElement("div", "headerdiv", {
           style: "height: " + headerHeight + "px"
@@ -1441,7 +1442,8 @@
         headerSizeDiv = createElement("div");
         headerTable = createElement("table", "headertable pvtTable");
         thead = createElement("thead");
-        outerDiv.appendChild(headerDiv);
+        outerDiv.appendChild(scrollDiv);
+        scrollDiv.appendChild(headerDiv);
         headerDiv.appendChild(headerSizeDiv);
         headerSizeDiv.appendChild(headerTable);
         headerTable.appendChild(thead);
@@ -1475,7 +1477,7 @@
         bodySizeDiv = createElement("div");
         bodyTable = createElement("table", "bodytable pvtTable");
         tbody = createElement("tbody");
-        outerDiv.appendChild(bodyDiv);
+        scrollDiv.appendChild(bodyDiv);
         bodyDiv.appendChild(bodySizeDiv);
         bodySizeDiv.appendChild(bodyTable);
         bodyTable.appendChild(tbody);
@@ -1514,8 +1516,8 @@
         colsWidthSum = colsWidth.reduce(function(sum, w) {
           return sum + w;
         });
-        headerSizeDiv.setAttribute("style", "min-width: " + (colsWidthSum + scrollWidth) + "px");
-        bodySizeDiv.setAttribute("style", "min-width: " + colsWidthSum + "px");
+        headerSizeDiv.setAttribute("style", "min-width: " + (colsWidthSum + scrollWidth) + "px; position: relative");
+        bodySizeDiv.setAttribute("style", "min-width: " + colsWidthSum + "px; position: relative");
         return outerDiv;
       };
       return main(rowAttrs, rowKeys, colAttrs, colKeys);

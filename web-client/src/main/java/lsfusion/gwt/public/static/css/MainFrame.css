@@ -619,8 +619,6 @@ input[type=checkbox]:focus {
 /* ------------ Pivot Table  ------------ */
 
 .pivotTable {
-    overflow-x: auto;
-    overflow-y: auto;
     border: 1px solid var(--panel-border-color);
 }
 
@@ -657,6 +655,27 @@ input[type=checkbox]:focus {
 .pvtUi {
     color: var(--text-color);
     /* width: 100%; */
+}
+
+.pvtUiWrapperDiv {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.pvtUiCell {
+    position: relative;
+}
+
+.pvtUiCellDiv {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
 }
 
 .pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
