@@ -43,7 +43,7 @@ public class DateClass extends DataClass<LocalDate> {
     public int getReportPreferredWidth() { return 70; }
 
     public Class getReportJavaClass() {
-        return LocalDate.class;
+        return java.util.Date.class;
     }
 
     public void fillReportDrawField(ReportDrawField reportField) {

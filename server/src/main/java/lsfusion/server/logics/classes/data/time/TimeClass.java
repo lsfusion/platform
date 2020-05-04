@@ -42,7 +42,7 @@ public class TimeClass extends DataClass<LocalTime> {
     }
 
     protected Class getReportJavaClass() {
-        return LocalTime.class;
+        return Time.class;
     }
 
     public LocalTime parseString(String s) throws ParseException {
