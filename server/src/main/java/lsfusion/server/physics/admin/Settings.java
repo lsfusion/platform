@@ -2444,6 +2444,16 @@ public class Settings implements Cloneable {
         this.useRequestTimeout = useRequestTimeout;
     }
 
+    private boolean disableNoKeysOptimization = false;
+
+    public boolean isDisableNoKeysOptimization() {
+        return disableNoKeysOptimization;
+    }
+
+    public void setDisableNoKeysOptimization(boolean disableNoKeysOptimization) {
+        this.disableNoKeysOptimization = disableNoKeysOptimization;
+    }
+
     //для блокирующего чтения в операторе READ.
     private boolean blockingFileRead = false;
 
