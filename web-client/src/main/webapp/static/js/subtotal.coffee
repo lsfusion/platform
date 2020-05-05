@@ -951,19 +951,17 @@ callWithJQuery ($) ->
             rowKeyHeaders = processRowKeys rowKeys, "pvtRowLabel", rowSplitPositions if rowAttrs.length isnt 0 and rowKeys.length isnt 0
 
             outerDiv = createElement "div", "outerdiv"
-            scrollDiv = createElement "div", "scrolldiv"
 
             headerHeight = 27 * Math.max(colAttrs.length, rowSplitPositions.length);            
             headerDiv = createElement "div", "headerdiv", { style: "height: #{headerHeight}px" } 
-            headerSizeDiv = createElement "div"
+            headerWidthDiv = createElement "div"
             headerTable = createElement "table", "headertable pvtTable"
 
             thead = createElement "thead"
 
-            outerDiv.appendChild scrollDiv
-            scrollDiv.appendChild headerDiv
-            headerDiv.appendChild headerSizeDiv
-            headerSizeDiv.appendChild headerTable
+            outerDiv.appendChild headerDiv
+            headerDiv.appendChild headerWidthDiv
+            headerWidthDiv.appendChild headerTable
             headerTable.appendChild thead
 
             [colAxisHeaders, rowAxisHeaders, trs] = buildAxisHeaders thead, rowAttrs, colAttrs, opts
@@ -982,13 +980,18 @@ callWithJQuery ($) ->
                 rowAxisHeaders.ah[0].tr.appendChild createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length} if rowAttrHeadersCount > colAttrs.length
 
             bodyDiv = createElement "div", "bodydiv", { style: "top: #{headerHeight}px"}
-            bodySizeDiv = createElement "div"
+            scrollDiv = createElement "div", "scrolldiv"
+            scrollDiv.onscroll = () ->
+                sLeft = scrollDiv.scrollLeft
+                headerDiv.scrollLeft = sLeft
+            bodyWidthDiv = createElement "div"
             bodyTable = createElement "table", "bodytable pvtTable"
             tbody = createElement "tbody"
 
-            scrollDiv.appendChild bodyDiv
-            bodyDiv.appendChild bodySizeDiv
-            bodySizeDiv.appendChild bodyTable
+            outerDiv.appendChild bodyDiv
+            bodyDiv.appendChild scrollDiv
+            scrollDiv.appendChild bodyWidthDiv
+            bodyWidthDiv.appendChild bodyTable
             bodyTable.appendChild tbody
             
             if rowAttrs.length isnt 0
@@ -1018,8 +1021,8 @@ callWithJQuery ($) ->
             
             scrollWidth = 8
             colsWidthSum = colsWidth.reduce (sum, w) -> sum + w
-            headerSizeDiv.setAttribute "style", "min-width: #{colsWidthSum + scrollWidth}px; position: relative"
-            bodySizeDiv.setAttribute "style", "min-width: #{colsWidthSum}px; position: relative"
+            headerWidthDiv.setAttribute "style", "min-width: #{colsWidthSum + scrollWidth}px; position: relative"
+            bodyWidthDiv.setAttribute "style", "min-width: #{colsWidthSum}px; position: relative"
             
             return outerDiv
 

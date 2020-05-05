@@ -4,39 +4,42 @@
 
     .outerdiv {
         position: absolute;
-        top: 0px;
-        bottom: 0px;
-        left: 0px;
-        right: 0px;
-    }
-    
-    .scrolldiv {
-        position: relative;
-        overflow: auto hidden;
-        height: 100%;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow: hidden; 
     }
     
     .headerdiv {
         position: absolute;
-        left: 0px;
-        right: 0px;
-        top: 0px;
+        left: 0;
+        right: 0;
+        top: 0;
+        overflow: hidden;
     }
 
     .headertable {
         table-layout: fixed;
         width: 100%;
         border-collapse: collapse;
+        padding-right: 8px;
     }
 
     .bodydiv {
-        overflow: visible auto;
+        overflow: hidden;
         position: absolute;
-        bottom: 0px;
-        left: 0px;
-        right: 0px;
+        bottom: 0;
+        left: 0;
+        right: 0;
     }
 
+    .scrolldiv {
+        position: relative;
+        overflow: auto;
+        height: 100%;
+    }
+    
     .bodytable {
         table-layout: fixed;
         border-collapse: collapse;
