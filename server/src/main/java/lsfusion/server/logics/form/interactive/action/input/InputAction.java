@@ -51,9 +51,6 @@ public class InputAction extends SystemExplicitAction {
 
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        if(targetProp != null)
-            return getChangeProps(targetProp.property);
-        // тут по хорошему надо getRequestedValue возвращать но для этого BL нужен
-        return MapFact.EMPTY();
+        return getRequestChangeExtProps(1, index -> dataClass, index -> targetProp);
     }
 }

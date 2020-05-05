@@ -5,6 +5,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.WindowFormType;
@@ -74,6 +75,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import static com.google.common.collect.Iterables.size;
 import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.objValuePrefix;
@@ -927,7 +929,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         writeRequested(RequestResult.get(result, type, null), env);
         return result;
     }
-    
+
+    // should correspond getRequestChangeProps
     public void writeRequested(ImList<RequestResult> requestResults, ExecutionEnvironment env) throws SQLException, SQLHandledException {
         LP<?> requestCanceledProperty = getRequestCanceledProperty();
         if (requestResults == null) {
@@ -941,5 +944,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                     requestResult.targetProp.change(requestResult.chosenValue, env);
             }
         }
+    }
+
+    // should correspond writeRequested
+    public ImSet<Property> getRequestChangeProps(int count, Function<Integer, Type> type, Function<Integer, LP> targetProp) {
+        return SetFact.toOrderExclSet(count, i -> {
+            LP prop = targetProp.apply(i);
+            if(prop == null)
+                return getRequestedValueProperty().getLCP(type.apply(i)).property;
+            else
+                return prop.property;
+        }).getSet().addExcl(getRequestCanceledProperty().property);
     }
 }

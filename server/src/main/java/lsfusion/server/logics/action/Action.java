@@ -69,6 +69,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class Action<P extends PropertyInterface> extends ActionOrProperty<P> {
@@ -153,6 +154,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return mResult.immutable();
     }
     // схема с аспектом сделана из-за того что getChangeProps для ChangeClassAction не инвариантен (меняется после компиляции), тоже самое и For с addObject'ом
+    // true - if changed only in new session, false if changed in this session
     @IdentityStartLazy // только компиляция, построение лексикографики
     protected ImMap<Property, Boolean> aspectChangeExtProps() {
         MMap<Property, Boolean> result = MapFact.mMap(addValue);
@@ -276,6 +278,11 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     @IdentityLazy
     public boolean uses(Property property) {
         return Property.depends(getUsedProps(), property);
+    }
+
+    @IdentityLazy
+    public boolean changes(Property property) {
+        return Property.depends(getChangeProps(), property);
     }
 
     @IdentityLazy
@@ -651,5 +658,9 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             return event;
         }
         return null;
+    }
+
+    public ImMap<Property, Boolean> getRequestChangeExtProps(int count, Function<Integer, Type> type, Function<Integer, LP> targetProp) {
+        return getBaseLM().getRequestChangeProps(count, type, targetProp).toMap(false);
     }
 }

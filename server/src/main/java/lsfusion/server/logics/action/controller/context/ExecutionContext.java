@@ -583,7 +583,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
     }
 
-    public void writeRequested(ImList<RequestResult> requestResults) throws SQLException, SQLHandledException {
+    public void writeRequested(ImList<RequestResult> requestResults) throws SQLException, SQLHandledException { // have to be used with getRequestChangeExtProps
         getBL().LM.writeRequested(requestResults, getEnv());
     }
 

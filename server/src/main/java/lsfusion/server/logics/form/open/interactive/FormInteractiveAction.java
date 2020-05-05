@@ -25,6 +25,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -151,6 +152,11 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             }
             context.writeRequested(result);
         }
+    }
+
+    @Override
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+        return getRequestChangeExtProps(inputObjects.size(), i -> inputObjects.get(i).getType(), inputProps::get);
     }
 
     @Override
