@@ -1394,7 +1394,7 @@ public class Settings implements Cloneable {
     public void setTimeoutNanosPerRow(int timeoutNanosPerRow) {
         this.timeoutNanosPerRow = timeoutNanosPerRow;
     }
-    
+
     private boolean noDisablingNestedLoop = true;
 
     public boolean isNoDisablingNestedLoop() {
@@ -2137,7 +2137,7 @@ public class Settings implements Cloneable {
     public void setDisablePrereadCaches(boolean disablePrereadCaches) {
         this.disablePrereadCaches = disablePrereadCaches;
     }
-    
+
     private int subQueryLargeDepth = 6; // высокая глубина, подозрение на бесконечное проталкивание (смотрим только на cost при проталкивании)
     private int subQueryInfiniteDepth = 12; //  бесконечная глубина, считаем что бесконечное проталкивание (ничего не проталкиваем)
 
@@ -2293,7 +2293,7 @@ public class Settings implements Cloneable {
     public void setEnableInteractiveAssertLog(boolean enableInteractiveAssertLog) {
         this.enableInteractiveAssertLog = enableInteractiveAssertLog;
     }
-    
+
     private boolean disablePessQueries = false;
 
     public boolean isDisablePessQueries() {
@@ -2314,7 +2314,7 @@ public class Settings implements Cloneable {
     public void setStacktraceInSQLSession(boolean stacktraceInSQLSession) {
         this.stacktraceInSQLSession = stacktraceInSQLSession;
     }
-    
+
     private boolean useRequestTimeout = true;
 
     public boolean isUseRequestTimeout() {
@@ -2323,6 +2323,16 @@ public class Settings implements Cloneable {
 
     public void setUseRequestTimeout(boolean useRequestTimeout) {
         this.useRequestTimeout = useRequestTimeout;
+    }
+
+    private boolean disableNoKeysOptimization = false;
+
+    public boolean isDisableNoKeysOptimization() {
+        return disableNoKeysOptimization;
+    }
+
+    public void setDisableNoKeysOptimization(boolean disableNoKeysOptimization) {
+        this.disableNoKeysOptimization = disableNoKeysOptimization;
     }
 
     //для блокирующего чтения в операторе READ.

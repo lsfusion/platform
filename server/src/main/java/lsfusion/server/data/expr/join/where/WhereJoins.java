@@ -1850,13 +1850,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return null;
     }
 
-    // если для joins есть единственный KeyExpr и K не keyExpr - проталкиваем
+    // if joins есть has key in value and not key in expr
     public static <K extends Expr> boolean givesNoKeys(QueryJoin<K, ?, ?, ?> removeJoin, KeyExpr keyExpr) {
-        ImMap<K, BaseExpr> joins = removeJoin.getJoins();
-        if(keyExpr != null) // может быть not
+        if(keyExpr != null) { // может быть not
+            ImMap<K, BaseExpr> joins = removeJoin.getJoins();
             for(int i=0,size=joins.size();i<size;i++)
                 if(BaseUtils.hashEquals(keyExpr, joins.getValue(i)) && !(joins.getKey(i) instanceof KeyExpr))
                     return false;
+        }
         return true;
     }
 
