@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.controller.dispatch;
 
+import com.google.gwt.http.client.*;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
@@ -10,6 +12,8 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+
+import java.util.*;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
@@ -222,4 +226,54 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GChangeColorThemeAction action) {
     }
+
+    @Override
+    public Object execute(GHttpClientAction action) throws RequestException {
+
+        /*
+        pauseDispatching();
+        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, action.connectionString);
+        builder.setCallback(new RequestCallback() {
+            public void onError(Request request, Throwable exception) {
+                continueDispatching();
+            }
+
+            public void onResponseReceived(Request request, Response response) {
+                String text = response.getText();
+                byte[] bytes = text.getBytes();
+                continueDispatching(new GExternalHttpResponse(response.getHeader("content-type"), bytes, new HashMap<>(), response.getStatusCode(), response.getStatusText()));
+            }
+        });
+        builder.send();
+        return null;
+        */
+
+        XMLHttpRequest response = getBinaryResource(action.connectionString, action.method.name());
+        String responseText = response.getResponseText();
+        byte[] responseBytes = new byte[responseText.length()];
+        for (int i=0;i<responseText.length();i++) {
+            responseBytes[i] = (byte)(responseText.charAt(i) & 0xff);
+        }
+
+        Map<String, List<String>> responseHeaders = new HashMap<>();
+        for(String responseHeader : response.getAllResponseHeaders().split("\n")) {
+            int index = responseHeader.indexOf(":");
+            if(index >= 0) {
+                responseHeaders.put(responseHeader.substring(0, index), Collections.singletonList(responseHeader.substring(index + 1)));
+            }
+        }
+
+        int statusCode = response.getStatus();
+        String statusText = response.getStatusText();
+        return new GExternalHttpResponse(response.getResponseHeader("content-type"), responseBytes, responseHeaders, statusCode, statusText.isEmpty() ? String.valueOf(statusCode) : statusText);
+    }
+
+    native XMLHttpRequest getBinaryResource(String url, String type) /*-{
+        var req = new XMLHttpRequest();
+        req.open(type, url, false);  // The last parameter determines whether the request is asynchronous.
+        req.overrideMimeType('text/plain; charset=x-user-defined');
+
+        req.send(null);
+        return req;
+    }-*/;
 }

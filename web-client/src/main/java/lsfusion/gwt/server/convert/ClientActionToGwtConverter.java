@@ -21,6 +21,8 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.session.ExternalHttpMethod;
+import lsfusion.interop.session.HttpClientAction;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -174,6 +176,16 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = WriteClientAction.class)
     public GOpenFileAction convertAction(WriteClientAction action) {
         return new GOpenFileAction(FileUtils.saveActionFile(action.file), action.path, action.extension);
+    }
+
+    @Converter(from = HttpClientAction.class)
+    public GHttpClientAction convertAction(HttpClientAction action) {
+        return new GHttpClientAction(convertMethod(action.method), action.connectionString, action.bodyUrl);
+    }
+
+    @Converter(from = ExternalHttpMethod.class)
+    public GExternalHttpMethod convertMethod(ExternalHttpMethod method) {
+        return GExternalHttpMethod.valueOf(method.name());
     }
 
     @Converter(from = ProgressBar.class)
