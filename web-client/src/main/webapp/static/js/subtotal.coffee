@@ -952,8 +952,7 @@ callWithJQuery ($) ->
 
             outerDiv = createElement "div", "outerdiv"
 
-            headerHeight = 27 * Math.max(colAttrs.length, rowSplitPositions.length);            
-            headerDiv = createElement "div", "headerdiv", { style: "height: #{headerHeight}px" } 
+            headerDiv = createElement "div", "headerdiv" 
             headerWidthDiv = createElement "div"
             headerTable = createElement "table", "headertable pvtTable"
 
@@ -979,7 +978,7 @@ callWithJQuery ($) ->
                 rowAttrHeadersCount = rowSplitPositions.length
                 rowAxisHeaders.ah[0].tr.appendChild createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length} if rowAttrHeadersCount > colAttrs.length
 
-            bodyDiv = createElement "div", "bodydiv", { style: "top: #{headerHeight}px"}
+            bodyDiv = createElement "div", "bodydiv"
             scrollDiv = createElement "div", "scrolldiv"
             scrollDiv.onscroll = () ->
                 sLeft = scrollDiv.scrollLeft

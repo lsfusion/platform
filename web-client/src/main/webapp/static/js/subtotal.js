@@ -1424,7 +1424,7 @@
         return colCnt;
       };
       main = function(rowAttrs, rowKeys, colAttrs, colKeys) {
-        var bodyDiv, bodyTable, bodyWidthDiv, chKey, colAttrHeaders, colAxisHeaders, colKeyHeaders, colsWidth, colsWidthSum, headerDiv, headerHeight, headerTable, headerWidthDiv, k, l, len1, len2, node, outerDiv, overallSpan, ref, ref1, ref2, rowAttrHeaders, rowAttrHeadersCount, rowAxisHeaders, rowKeyHeaders, scrollDiv, scrollWidth, tbody, thead, tr, trs;
+        var bodyDiv, bodyTable, bodyWidthDiv, chKey, colAttrHeaders, colAxisHeaders, colKeyHeaders, colsWidth, colsWidthSum, headerDiv, headerTable, headerWidthDiv, k, l, len1, len2, node, outerDiv, overallSpan, ref, ref1, ref2, rowAttrHeaders, rowAttrHeadersCount, rowAxisHeaders, rowKeyHeaders, scrollDiv, scrollWidth, tbody, thead, tr, trs;
         rowAttrHeaders = [];
         colAttrHeaders = [];
         if (colAttrs.length !== 0 && colKeys.length !== 0) {
@@ -1434,10 +1434,7 @@
           rowKeyHeaders = processRowKeys(rowKeys, "pvtRowLabel", rowSplitPositions);
         }
         outerDiv = createElement("div", "outerdiv");
-        headerHeight = 27 * Math.max(colAttrs.length, rowSplitPositions.length);
-        headerDiv = createElement("div", "headerdiv", {
-          style: "height: " + headerHeight + "px"
-        });
+        headerDiv = createElement("div", "headerdiv");
         headerWidthDiv = createElement("div");
         headerTable = createElement("table", "headertable pvtTable");
         thead = createElement("thead");
@@ -1469,9 +1466,7 @@
             }));
           }
         }
-        bodyDiv = createElement("div", "bodydiv", {
-          style: "top: " + headerHeight + "px"
-        });
+        bodyDiv = createElement("div", "bodydiv");
         scrollDiv = createElement("div", "scrolldiv");
         scrollDiv.onscroll = function() {
           var sLeft;
