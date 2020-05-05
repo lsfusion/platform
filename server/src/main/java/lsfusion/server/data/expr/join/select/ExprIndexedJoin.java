@@ -19,6 +19,7 @@ import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.expr.join.query.QueryJoin;
 import lsfusion.server.data.expr.join.where.WhereJoin;
+import lsfusion.server.data.expr.join.where.WhereJoins;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.compile.where.AbstractUpWhere;
 import lsfusion.server.data.query.compile.where.UpWhere;
@@ -203,10 +204,12 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
             }
 
             if(fixedInterval && expr instanceof KeyExpr) { // по идее эта обработка не нужна, но тогда могут появляться висячие ключи (так как a>=1 AND a<=5 будет убивать другие join'ы), хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
-                if(innerKeys == null)
-                    innerKeys = getInnerKeys(wheres, excludeQueryJoin);
-                if(!innerKeys.contains((KeyExpr)expr)) // висячий ключ
-                    fixedInterval = false;
+                if(excludeQueryJoin == null || (WhereJoins.givesNoKeys(excludeQueryJoin, (KeyExpr)expr) && !Settings.get().isDisableNoKeysOptimization())) {
+                    if(innerKeys == null)
+                        innerKeys = getInnerKeys(wheres, excludeQueryJoin);
+                    if(!innerKeys.contains((KeyExpr)expr)) // висячий ключ
+                        fixedInterval = false;
+                }
             }
 
             InnerJoins valueJoins = InnerJoins.EMPTY;
