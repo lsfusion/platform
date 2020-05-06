@@ -246,10 +246,14 @@ public class PostgreDataAdapter extends DataAdapter {
                 commandLine.addArgument("--dbname");
                 commandLine.addArgument(tempDB);
                 commandLine.addArgument(fileBackup);
+
+                Map<String, String> env = new HashMap<>(System.getenv());
+                env.put("PGPASSWORD", password);
+
                 Executor executor = new DefaultExecutor();
                 executor.setExitValue(0);
 
-                executor.execute(commandLine);
+                executor.execute(commandLine, env);
                 return tempDB;
             } catch (IOException e) {
                 logger.error("Error while restoring the database : " + commandLine);
@@ -270,7 +274,10 @@ public class PostgreDataAdapter extends DataAdapter {
         Executor executor = new DefaultExecutor();
         //executor.setExitValue(0);
         try {
-            executor.execute(commandLine);
+            Map<String, String> env = new HashMap<>(System.getenv());
+            env.put("PGPASSWORD", password);
+
+            executor.execute(commandLine, env);
             return true;
         } catch (IOException e) {
             logger.error("Error while creating temp database : " + commandLine);
