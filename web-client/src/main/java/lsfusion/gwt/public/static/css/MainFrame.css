@@ -750,6 +750,7 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
 .pvtUi {
     /*to stretch last empty paxis*/
     height:100%;
+    width: 100%;
 }
 
 .pvtRows, .pvtCols {
