@@ -162,7 +162,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return 0;
     }
 
-    public boolean mapIsOrDependsPreread() {
+    public boolean mapHasPreread(PropertyChanges propertyChanges) {
+        return false;
+    }
+    public boolean mapHasPreread(Modifier modifier) {
         return false;
     }
 

@@ -874,13 +874,45 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return true;
         return false;
     }
+
+    public boolean hasPreread(Modifier modifier) throws SQLException, SQLHandledException {
+        return hasPreread(modifier.getPropertyChanges());
+    }
+    public boolean hasPreread(PropertyChanges propertyChanges) {
+        return hasPreread(propertyChanges.getStruct());
+    }
+    public boolean hasPreread(StructChanges structChanges) {
+        if(!hasGlobalPreread())
+            return false;
+
+        if(Settings.get().isDisableExperimentalFeatures())
+            return true;
+
+        return aspectHasPreread(structChanges);
+    }
+    public boolean aspectHasPreread(StructChanges structChanges) {
+        if(isPreread())
+            return true;
+
+        // should be consistent with aspectGetExpr
+        if(isStored()) {
+            ChangeType usedChange = structChanges.getUsedChange(this);
+            if((usedChange != null && usedChange.isFinal()) || !hasChanges(structChanges))
+                return false; // no hint will be "thrown" (since it requires reading'an expr)
+        }
+
+        for(Property property : getDepends())
+            if(property.hasPreread(structChanges))
+                return true;
+        return false;
+    }
     @IdentityLazy
-    public boolean isOrDependsPreread() {
+    public boolean hasGlobalPreread() {
         if(isPreread())
             return true;
 
         for(Property property : getDepends())
-            if(property.isOrDependsPreread())
+            if(property.hasGlobalPreread())
                 return true;
         return false;
     }
