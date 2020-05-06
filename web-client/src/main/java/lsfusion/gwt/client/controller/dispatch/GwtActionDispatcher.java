@@ -1,13 +1,11 @@
 package lsfusion.gwt.client.controller.dispatch;
 
-import com.google.gwt.http.client.*;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.typedarrays.shared.Uint8Array;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.xhr.client.ReadyStateChangeHandler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -17,7 +15,10 @@ import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
@@ -232,22 +233,18 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public Object execute(GHttpClientAction action) throws RequestException {
+    public Object execute(GHttpClientAction action) {
         pauseDispatching();
         XMLHttpRequest request = XMLHttpRequest.create();
         request.open(action.method.name(), action.connectionString);
         request.setResponseType("arraybuffer");
-        /*request.setRequestHeader("Access-Control-Allow-Origin", "*");*/
         request.send();
-        request.setOnReadyStateChange(new ReadyStateChangeHandler() {
-            @Override
-            public void onReadyStateChange(XMLHttpRequest xhr) {
-                if(xhr.getReadyState() == XMLHttpRequest.DONE) {
-                    ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();
-                    byte[] bytes = arrayBufferToBytes(arrayBuffer);
-                    Map<String, List<String>> responseHeaders = getResponseHeaders(xhr.getAllResponseHeaders());
-                    continueDispatching(new GExternalHttpResponse(xhr.getResponseHeader("content-type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()));
-                }
+        request.setOnReadyStateChange(xhr -> {
+            if(xhr.getReadyState() == XMLHttpRequest.DONE) {
+                ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();
+                byte[] bytes = arrayBufferToBytes(arrayBuffer);
+                Map<String, List<String>> responseHeaders = getResponseHeaders(xhr.getAllResponseHeaders());
+                continueDispatching(new GExternalHttpResponse(xhr.getResponseHeader("content-type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()));
             }
         });
         return null;
@@ -272,23 +269,4 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
         return responseHeaders;
     }
-
-    native String getBinaryResource(String url, String type) /*-{
-        var res;
-        var xhr = new XMLHttpRequest();
-        xhr.open(type, url, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
-
-        xhr.onreadystatechange = function() {//Вызывает функцию при смене состояния.
-            if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-                var a = new FileReader();
-                a.readAsArrayBuffer(this.response);
-                a.onloadend = function() {
-                };
-            }
-        }
-
-        xhr.send(null);
-    }-*/;
 }
