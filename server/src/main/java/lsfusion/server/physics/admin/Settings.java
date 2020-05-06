@@ -2414,14 +2414,14 @@ public class Settings implements Cloneable {
         this.useRequestTimeout = useRequestTimeout;
     }
 
-    private boolean disableNoKeysOptimization = false;
+    private boolean disableExperimentalFeatures = false;
 
-    public boolean isDisableNoKeysOptimization() {
-        return disableNoKeysOptimization;
+    public boolean isDisableExperimentalFeatures() {
+        return disableExperimentalFeatures;
     }
 
-    public void setDisableNoKeysOptimization(boolean disableNoKeysOptimization) {
-        this.disableNoKeysOptimization = disableNoKeysOptimization;
+    public void setDisableExperimentalFeatures(boolean disableExperimentalFeatures) {
+        this.disableExperimentalFeatures = disableExperimentalFeatures;
     }
 
     //для блокирующего чтения в операторе READ.

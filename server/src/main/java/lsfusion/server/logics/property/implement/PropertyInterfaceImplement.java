@@ -57,7 +57,8 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     int mapEstComplexity();
     
     ImSet<DataProperty> mapChangeProps();
-    boolean mapIsOrDependsPreread();
+    boolean mapHasPreread(PropertyChanges propertyChanges);
+    boolean mapHasPreread(Modifier modifier) throws SQLException, SQLHandledException;
 
     long mapComplexity();
     DataChanges mapJoinDataChanges(ImMap<P, ? extends Expr> mapKeys, Expr expr, Where where, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges);

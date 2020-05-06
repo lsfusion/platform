@@ -189,9 +189,13 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getIdentityImplement(mapping);
     }
 
-    public boolean mapIsOrDependsPreread() {
-        return property.isOrDependsPreread();
+    public boolean mapHasPreread(PropertyChanges propertyChanges) {
+        return property.hasPreread(propertyChanges);
     }
+    public boolean mapHasPreread(Modifier modifier) throws SQLException, SQLHandledException {
+        return property.hasPreread(modifier);
+    }
+
     public long mapComplexity() {
         return property.getComplexity();
     }

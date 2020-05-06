@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
-import lsfusion.base.lambda.DProcessor;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.CacheAspect;
 import lsfusion.server.base.caches.CacheStats.CacheType;
@@ -186,6 +185,7 @@ public class MapCacheAspect {
         ServerLoggers.hExInfoLogger.info(jp.getThis() + " " + action + " " + (match ? " MATCH " : "NOMATCH CACHED : " + cached + " CALCED: ") + calced + " ARGS " + Arrays.toString(jp.getArgs()) + (property != null ? "DEP " + property.getRecDepends() : "" ) );
     }
 
+    // needed for check caches
     private static ThreadLocal<Boolean> recursiveUsedChanges = new ThreadLocal<>();
 
     public <K extends PropertyInterface> ImSet<Property> getUsedChanges(Property<K> property, StructChanges implement, ProceedingJoinPoint thisJoinPoint) throws Throwable {
@@ -221,6 +221,28 @@ public class MapCacheAspect {
             "&& target(property) && args(changes)")
     public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, Property property, StructChanges changes) throws Throwable {
         return getUsedChanges(property, changes, thisJoinPoint);
+    }
+
+    public <K extends PropertyInterface> boolean aspectHasPreread(Property<K> property, StructChanges implement, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+
+        assert property.hasGlobalPreread();
+
+        // the same as in getUsedChanges
+        final Object[] filteredArgs = {!implement.isEmpty() ? implement.filterForProperty(property) : implement};
+        boolean result = (boolean) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, filteredArgs, true, CacheAspect.Type.SIMPLE, CacheType.HAS_PREREAD);
+
+        if(checkCaches()) {
+            final Object notFilteredResult = thisJoinPoint.proceed();
+            logCaches(result, notFilteredResult, thisJoinPoint, "HASPREREAD", property);
+        }
+
+        return result;
+    }
+
+    @Around("execution(* lsfusion.server.logics.property.Property.aspectHasPreread(lsfusion.server.logics.action.session.change.StructChanges)) " +
+            "&& target(property) && args(changes)")
+    public Object callAspectHasPreread(ProceedingJoinPoint thisJoinPoint, Property property, StructChanges changes) throws Throwable {
+        return aspectHasPreread(property, changes, thisJoinPoint);
     }
 
     // все равно надо делать класс в котором будет :
@@ -410,7 +432,7 @@ public class MapCacheAspect {
             for(CacheResult<QueryInterfaceImplement<K>, ValuesContext> cache : hashCaches.it()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
                     if(cache.implement.translateValues(mapValues).equals(implement)) {
-                        if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
+                        if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
                             cachedImplement = cache.implement;
                             break;
                         }
@@ -433,7 +455,7 @@ public class MapCacheAspect {
                     if(!(checkCaches && cacheQuery!=null)) {
                         cacheNoBig(implement, hashCaches, query);
                     }
-                    implement.cachedPrereadHintEnabled = prereadHintEnabled(property); 
+                    implement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges);
                 } else
                     cachedImplement.cachedPrereadHintEnabled = true;
 
@@ -536,8 +558,8 @@ public class MapCacheAspect {
     
     // должно быть consistent с SessionModifier.allowPrereadValues
     // нужен чтобы не подцелялись кэши, когда хинты были отключены (так как тогда preread тогда срабатывать не будут)
-    private static boolean prereadHintEnabled(Property property) {
-        if(!property.isOrDependsPreread()) // если не complex, то preread'ов не может быть
+    private static boolean prereadHintEnabled(Property property, PropertyChanges propertyChanges) {
+        if(!property.hasPreread(propertyChanges)) // если не complex, то preread'ов не может быть
             return true;
         SessionModifier modifier = AutoHintsAspect.catchAutoHint.get();
         return modifier != null && modifier.prereadProps.isEmpty(); // если есть SessionModifier и это не preread разрешаем использовать кэш (предполагается что остальные параметры allowPrereadValues уже включены в ключи кэша) 
@@ -560,7 +582,7 @@ public class MapCacheAspect {
             for(CacheResult<JoinExprInterfaceImplement<K>, ExprResult> cache : hashCaches.it()) {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
-                    if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
+                    if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
                         cachedImplement = cache.implement;
                         break;
                     }
@@ -583,7 +605,7 @@ public class MapCacheAspect {
             logger.debug("getExpr - not cached "+property);
             if(cachedImplement == null) { // если кэша не было
                 cacheNoBig(implement, hashCaches, new ExprResult(expr, changedWheres != null ? cacheWheres.toWhere() : null));
-                implement.cachedPrereadHintEnabled = prereadHintEnabled(property);
+                implement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges);
             } else
                 cachedImplement.cachedPrereadHintEnabled = true;
             if(checkCaches && cacheResult != null)
