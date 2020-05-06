@@ -1020,8 +1020,10 @@ callWithJQuery ($) ->
             
             scrollWidth = 8
             colsWidthSum = colsWidth.reduce (sum, w) -> sum + w
-            headerWidthDiv.setAttribute "style", "min-width: #{colsWidthSum + scrollWidth}px; position: relative"
-            bodyWidthDiv.setAttribute "style", "min-width: #{colsWidthSum}px; position: relative"
+#            headerWidthDiv.setAttribute "style", "min-width: #{colsWidthSum + scrollWidth}px; position: relative"
+#            bodyWidthDiv.setAttribute "style", "min-width: #{colsWidthSum}px; position: relative"
+            headerWidthDiv.setAttribute "style", "position: relative"
+            bodyWidthDiv.setAttribute "style", "position: relative"
             
             return outerDiv
 

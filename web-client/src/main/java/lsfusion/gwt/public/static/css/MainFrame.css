@@ -690,11 +690,14 @@ table.pvtTable {
 table.pvtTable tbody tr td, table.pvtTable thead tr td {
     border: 1px solid var(--grid-separator-border-color);
     color: var(--text-color);
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 table.pvtTable thead tr th, table.pvtTable tbody tr th {
     border: 1px solid var(--grid-separator-border-color);
-    overflow: hidden; 
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .pvtCols, .pvtRendererArea {

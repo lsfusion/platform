@@ -688,7 +688,7 @@ public class GPivot extends GStateTableView {
     public int getColumnWidth(boolean isAttributeColumn, JsArrayString colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {
         final int arrowBaseWidth = 15;
         final int defaultTextColumnWidth = 120;
-        final int defaultNumberColumnWidth = 50;
+        final int defaultNumberColumnWidth = 80;
         int width = 0;
         if (isArrow) {
             width = arrowBaseWidth + 10 * arrowLevels;

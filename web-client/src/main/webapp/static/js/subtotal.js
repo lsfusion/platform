@@ -1516,8 +1516,8 @@
         colsWidthSum = colsWidth.reduce(function(sum, w) {
           return sum + w;
         });
-        headerWidthDiv.setAttribute("style", "min-width: " + (colsWidthSum + scrollWidth) + "px; position: relative");
-        bodyWidthDiv.setAttribute("style", "min-width: " + colsWidthSum + "px; position: relative");
+        headerWidthDiv.setAttribute("style", "position: relative");
+        bodyWidthDiv.setAttribute("style", "position: relative");
         return outerDiv;
       };
       return main(rowAttrs, rowKeys, colAttrs, colKeys);
