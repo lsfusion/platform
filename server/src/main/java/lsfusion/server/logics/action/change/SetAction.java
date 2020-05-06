@@ -21,6 +21,7 @@ import lsfusion.server.logics.action.flow.ForAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -106,7 +107,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
 
             Result<SessionTableUsage> rUsedTable = new Result<>();
             try {
-                if (writeFrom.mapIsOrDependsPreread() && PropertyChange.needMaterializeWhere(exprWhere)) // оптимизация с materialize'ингом
+                if (writeFrom.mapHasPreread(context.getModifier()) && PropertyChange.needMaterializeWhere(exprWhere)) // оптимизация с materialize'ингом
                     exprWhere = PropertyChange.materializeWhere("setmwh", changeWhere, session, innerKeys, innerValues, innerExprs, exprWhere, rUsedTable);
 
                 if (!exprWhere.isFalse()) {

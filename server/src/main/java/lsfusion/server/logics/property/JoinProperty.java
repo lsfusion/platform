@@ -100,7 +100,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return false;
 
         // for prereads
-        ImCol<PropertyInterfaceImplement<P>> complexMapping = col.filterCol(PropertyInterfaceImplement::mapIsOrDependsPreread);
+        ImCol<PropertyInterfaceImplement<P>> complexMapping = col.filterCol(implement -> implement.mapHasPreread(propChanges));
         if(!complexMapping.isEmpty()) {
             // сортируем по сложности
             for(PropertyInterfaceImplement<P> mapImpl : complexMapping.sort(Comparator.comparingLong(PropertyInterfaceImplement::mapComplexity))) {
