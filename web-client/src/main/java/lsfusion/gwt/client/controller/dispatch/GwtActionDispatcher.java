@@ -2,8 +2,12 @@ package lsfusion.gwt.client.controller.dispatch;
 
 import com.google.gwt.http.client.*;
 import com.google.gwt.media.client.Audio;
+import com.google.gwt.typedarrays.client.Uint8ArrayNative;
+import com.google.gwt.typedarrays.shared.ArrayBuffer;
+import com.google.gwt.typedarrays.shared.Uint8Array;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.xhr.client.ReadyStateChangeHandler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -229,51 +233,62 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public Object execute(GHttpClientAction action) throws RequestException {
-
-        /*
         pauseDispatching();
-        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, action.connectionString);
-        builder.setCallback(new RequestCallback() {
-            public void onError(Request request, Throwable exception) {
-                continueDispatching();
-            }
-
-            public void onResponseReceived(Request request, Response response) {
-                String text = response.getText();
-                byte[] bytes = text.getBytes();
-                continueDispatching(new GExternalHttpResponse(response.getHeader("content-type"), bytes, new HashMap<>(), response.getStatusCode(), response.getStatusText()));
+        XMLHttpRequest request = XMLHttpRequest.create();
+        request.open(action.method.name(), action.connectionString);
+        request.setResponseType("arraybuffer");
+        /*request.setRequestHeader("Access-Control-Allow-Origin", "*");*/
+        request.send();
+        request.setOnReadyStateChange(new ReadyStateChangeHandler() {
+            @Override
+            public void onReadyStateChange(XMLHttpRequest xhr) {
+                if(xhr.getReadyState() == XMLHttpRequest.DONE) {
+                    ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();
+                    byte[] bytes = arrayBufferToBytes(arrayBuffer);
+                    Map<String, List<String>> responseHeaders = getResponseHeaders(xhr.getAllResponseHeaders());
+                    continueDispatching(new GExternalHttpResponse(xhr.getResponseHeader("content-type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()));
+                }
             }
         });
-        builder.send();
         return null;
-        */
+    }
 
-        XMLHttpRequest response = getBinaryResource(action.connectionString, action.method.name());
-        String responseText = response.getResponseText();
-        byte[] responseBytes = new byte[responseText.length()];
-        for (int i=0;i<responseText.length();i++) {
-            responseBytes[i] = (byte)(responseText.charAt(i) & 0xff);
+    private byte[] arrayBufferToBytes(ArrayBuffer arrayBuffer) {
+        Uint8Array uint8Array = Uint8ArrayNative.create(arrayBuffer);
+        byte[] bytes = new byte[uint8Array.length()];
+        for (int i = 0; i < uint8Array.length(); i++) {
+            bytes[i] = (byte) uint8Array.get(i);
         }
+        return bytes;
+    }
 
+    private Map<String, List<String>> getResponseHeaders(String allResponseHeaders) {
         Map<String, List<String>> responseHeaders = new HashMap<>();
-        for(String responseHeader : response.getAllResponseHeaders().split("\n")) {
+        for(String responseHeader : allResponseHeaders.split("\n")) {
             int index = responseHeader.indexOf(":");
             if(index >= 0) {
                 responseHeaders.put(responseHeader.substring(0, index), Collections.singletonList(responseHeader.substring(index + 1)));
             }
         }
-
-        int statusCode = response.getStatus();
-        String statusText = response.getStatusText();
-        return new GExternalHttpResponse(response.getResponseHeader("content-type"), responseBytes, responseHeaders, statusCode, statusText.isEmpty() ? String.valueOf(statusCode) : statusText);
+        return responseHeaders;
     }
 
-    native XMLHttpRequest getBinaryResource(String url, String type) /*-{
-        var req = new XMLHttpRequest();
-        req.open(type, url, false);  // The last parameter determines whether the request is asynchronous.
-        req.overrideMimeType('text/plain; charset=x-user-defined');
+    native String getBinaryResource(String url, String type) /*-{
+        var res;
+        var xhr = new XMLHttpRequest();
+        xhr.open(type, url, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
 
-        req.send(null);
-        return req;
+        xhr.onreadystatechange = function() {//Вызывает функцию при смене состояния.
+            if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+                var a = new FileReader();
+                a.readAsArrayBuffer(this.response);
+                a.onloadend = function() {
+                };
+            }
+        }
+
+        xhr.send(null);
     }-*/;
 }
