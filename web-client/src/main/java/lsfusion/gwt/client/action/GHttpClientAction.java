@@ -1,30 +1,27 @@
 package lsfusion.gwt.client.action;
 
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.Response;
-
-import java.util.HashMap;
+import java.util.Map;
 
 public class GHttpClientAction implements GAction {
 
     public String connectionString;
     public GExternalHttpMethod method;
     public String bodyUrl;
-    /*Object[] paramList;
-    ImMap<String, String> headers;
-    ImMap<String, String> cookies;
-    CookieStore cookieStore;*/
+    public String[] paramList;
+    public String[] paramTypeList;
+    public Map<String, String> headers;
 
     @SuppressWarnings("UnusedDeclaration")
     public GHttpClientAction() {
     }
 
-    public GHttpClientAction(GExternalHttpMethod method, String connectionString, String bodyUrl) {
+    public GHttpClientAction(GExternalHttpMethod method, String connectionString, String bodyUrl, String[] paramList, String[] paramTypeList, Map<String, String> headers) {
         this.method = method;
         this.connectionString = connectionString;
         this.bodyUrl = bodyUrl;
+        this.paramList = paramList;
+        this.paramTypeList = paramTypeList;
+        this.headers = headers;
     }
 
     @Override

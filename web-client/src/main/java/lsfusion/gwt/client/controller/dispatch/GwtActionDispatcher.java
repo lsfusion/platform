@@ -238,7 +238,36 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         XMLHttpRequest request = XMLHttpRequest.create();
         request.open(action.method.name(), action.connectionString);
         request.setResponseType("arraybuffer");
-        request.send();
+        for(Map.Entry<String, String> header : action.headers.entrySet()) {
+            request.setRequestHeader(header.getKey(), header.getValue());
+        }
+
+        if(action.paramList.length > 1) {
+            String boundary = String.valueOf(Math.random());
+            String newLine = "\r\n";
+            String boundaryMiddle = "--" + boundary + newLine;
+            String boundaryLast = "--" + boundary + "--" + newLine;
+            StringBuilder body = new StringBuilder(newLine);
+            for (int i = 0; i < action.paramList.length; i++) {
+                String part = "name=\"param" + i + "\"" + newLine +  "Content-Type:" + action.paramTypeList[i] + newLine + newLine + action.paramList[i] + newLine;
+                body.append(boundaryMiddle).append(part);
+            }
+            body.append(boundaryLast);
+            request.setRequestHeader("Content-Type", "multipart/mixed; boundary=" + boundary);
+            request.send(body.toString());
+        } else if(action.paramList.length == 1) {
+            request.setRequestHeader("Content-Type", action.paramTypeList[0]);
+            request.send(action.paramList[0]);
+        } else {
+            if(action.bodyUrl !=null) {
+                request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                request.send(action.bodyUrl);
+            } else {
+                request.setRequestHeader("Content-Type", "text/plain");
+                request.send("");
+            }
+        }
+
         request.setOnReadyStateChange(xhr -> {
             if(xhr.getReadyState() == XMLHttpRequest.DONE) {
                 ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();

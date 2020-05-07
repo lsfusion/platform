@@ -1,7 +1,8 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
@@ -22,16 +23,15 @@ import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.HttpClientAction;
+import org.apache.http.entity.ContentType;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 
@@ -180,7 +180,14 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = HttpClientAction.class)
     public GHttpClientAction convertAction(HttpClientAction action) {
-        return new GHttpClientAction(convertMethod(action.method), action.connectionString, action.bodyUrl);
+        String[] paramList = new String[action.paramList.length];
+        String[] paramTypeList = new String[action.paramList.length];
+        for(int i = 0; i < action.paramList.length; i++) {
+            Object param = action.paramList[i];
+            paramList[i] = param instanceof FileData ? new String(((FileData) param).getRawFile().getBytes()) : param != null ? param.toString() : null;
+            paramTypeList[i] = param instanceof FileData ? ExternalUtils.getContentType(((FileData) param).getExtension()).toString() : "text/plain";
+        }
+        return new GHttpClientAction(convertMethod(action.method), action.connectionString, action.bodyUrl, paramList, paramTypeList, action.headers.toJavaMap());
     }
 
     @Converter(from = ExternalHttpMethod.class)
