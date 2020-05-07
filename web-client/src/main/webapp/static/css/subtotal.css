@@ -145,6 +145,10 @@
     * IMPORTANT: Please do not remove the lines below this point
     *
     */
+    .outerdiv col.colhide {
+        display: none;    
+    }
+    
     table.pvtTable tr .rowhide {
         display: none;
     }
