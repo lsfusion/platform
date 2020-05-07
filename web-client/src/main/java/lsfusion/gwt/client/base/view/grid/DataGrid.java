@@ -44,7 +44,8 @@ import static com.google.gwt.dom.client.Style.OutlineStyle;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TD;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TH;
 import static java.lang.Math.min;
-import static lsfusion.gwt.client.base.GwtClientUtils.mixedColor;
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayBackground;
+import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
 import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBorderColor;
 import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundColor;
 
@@ -1842,12 +1843,12 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             Style tdStyle = cells.getItem(i).getStyle();
             if (selected) {
                 if (background != null) {
-                    tdStyle.setBackgroundColor(mixedColor(background, getSelectedRowBackgroundColor()));
+                    tdStyle.setBackgroundColor(mixColors(background, getSelectedRowBackgroundColor()));
                 } else {
                     tdStyle.setBackgroundColor(getSelectedRowBackgroundColor());
                 }
             } else if (background != null) {
-                tdStyle.setBackgroundColor(background);
+                tdStyle.setBackgroundColor(getDisplayBackground(background));
             } else {
                 tdStyle.clearBackgroundColor();
             }
@@ -1874,10 +1875,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                     if (background == null) {
                         tdStyle.setBackgroundColor(StyleDefaults.getFocusedCellBackgroundColor());
                     } else {
-                        tdStyle.setBackgroundColor(background);
+                        tdStyle.setBackgroundColor(getDisplayBackground(background));
                     }
                 } else if (!inSelectedRow && background != null) { // is painted as selected row
-                    tdStyle.setBackgroundColor(background);
+                    tdStyle.setBackgroundColor(getDisplayBackground(background));
                 }
 
                 if (drawFocusedCellBorder()) {

@@ -1,5 +1,6 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.interop.base.view.FlexAlignment;
@@ -41,7 +42,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
             columnsChildren[i] = new ArrayList<>();
         }
 
-        container.design.designComponent(panel);
+        container.design.designComponent(panel, MainController.colorTheme);
     }
 
     private double getColumnFlex(ClientContainer container) {

@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.AppImageButton;
+import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
@@ -260,7 +261,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     public void updateCellBackgroundValue(Object value) {
         if (!nullEquals(background, value)) {
             background = value;
-            button.getElement().getStyle().setBackgroundColor(value == null ? null : value.toString());
+            button.getElement().getStyle().setBackgroundColor(value == null ? null : ColorUtils.getDisplayBackground(value.toString()));
         }
     }
 
@@ -268,7 +269,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     public void updateCellForegroundValue(Object value) {
         if (!nullEquals(foreground, value)) {
             foreground = value;
-            button.getElement().getStyle().setColor(value == null ? null : value.toString());
+            button.getElement().getStyle().setColor(value == null ? null : ColorUtils.getDisplayForeground(value.toString()));
         }
     }
 

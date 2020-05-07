@@ -687,25 +687,9 @@ public class GwtClientUtils {
         return value.replace('.', ',');
     }
 
-    public static int toRGB(String color) {
-        if (color != null) {
-            try {
-                return Integer.parseInt(color.startsWith("#") ? color.substring(1) : color, 16);
-            } catch (NumberFormatException e) {
-                return -1;
-            }
-        }
-        return -1;
-    }
-    
-    public static String mixedColor(String color1, String color2) {
-        int rgb1 = toRGB(color1);
-        int rgb2 = toRGB(color2);
-        if (rgb1 == -1) {
-            return rgb2 != -1 ? color2 : null;
-        } else if (rgb2 == -1) {
-            return color1;
-        }
-        return "#" + Integer.toHexString(rgb1 & rgb2);
+    public static String replicate(char character, int length) {
+        char[] chars = new char[length];
+        Arrays.fill(chars, character);
+        return new String(chars);
     }
 }

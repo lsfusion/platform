@@ -194,7 +194,7 @@ public class SwingDefaults {
 
     public static Color getFocusedTableCellBackground() {
         if (focusedTableCellBackground == null) {
-            focusedTableCellBackground = colorPreferences != null ? colorPreferences.getFocusedCellBackground() : null;
+            focusedTableCellBackground = colorTheme.getDisplayBackground(colorPreferences != null ? colorPreferences.getFocusedCellBackground() : null);
             if (focusedTableCellBackground == null) {
                 focusedTableCellBackground = getSelectionColor();
             }
@@ -204,7 +204,7 @@ public class SwingDefaults {
 
     public static Border getFocusedTableCellBorder() {
         if (focusedTableCellBorder == null) {
-            Color borderColor = colorPreferences != null ? colorPreferences.getFocusedCellBorderColor() : null;
+            Color borderColor = colorTheme.getDisplayBackground(colorPreferences != null ? colorPreferences.getFocusedCellBorderColor() : null);
             if (borderColor == null) {
                 borderColor = getSelectionBorderColor();
             }
@@ -217,7 +217,7 @@ public class SwingDefaults {
 
     public static Color getFocusedTableRowBackground() {
         if (focusedTableRowBackground == null) {
-            focusedTableRowBackground = colorPreferences != null ? colorPreferences.getSelectedRowBackground() : null;
+            focusedTableRowBackground = colorTheme.getDisplayBackground(colorPreferences != null ? colorPreferences.getSelectedRowBackground() : null);
             if (focusedTableRowBackground == null) {
                 focusedTableRowBackground = getSelectionColor();
             }
@@ -227,7 +227,7 @@ public class SwingDefaults {
 
     public static Color getTableSelectionBackground() {
         if (tableSelectionBackground == null) {
-            Color preferredBackground = colorPreferences != null ? colorPreferences.getSelectedCellBackground() : null;
+            Color preferredBackground = colorTheme.getDisplayBackground(colorPreferences != null ? colorPreferences.getSelectedCellBackground() : null);
             tableSelectionBackground = preferredBackground != null ? preferredBackground : getColor("Table.selectionInactiveBackground");
         }
         return tableSelectionBackground; 
