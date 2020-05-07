@@ -1,5 +1,6 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.interop.base.view.FlexAlignment;
@@ -21,7 +22,7 @@ public class ScrollClientContainerView extends AbstractClientContainerView {
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.getHorizontalScrollBar().setUnitIncrement(14);
         
-        container.design.designComponent(scroll);
+        container.design.designComponent(scroll, MainController.colorTheme);
 
         scrollPanel = new JComponentPanel(); // componentSize добавляемого компонента
         scrollPanel.add(scroll, BorderLayout.CENTER);

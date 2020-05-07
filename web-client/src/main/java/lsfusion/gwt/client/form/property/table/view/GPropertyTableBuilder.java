@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.table.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -166,14 +167,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
         if (backgroundColor != null) {
-            td.getStyle().setBackgroundColor(backgroundColor);
+            td.getStyle().setBackgroundColor(ColorUtils.getDisplayBackground(backgroundColor));
         } else {
             td.getStyle().clearBackgroundColor();
         }
 
         String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
         if (foregroundColor != null) {
-            td.getStyle().setColor(foregroundColor);
+            td.getStyle().setColor(ColorUtils.getDisplayForeground(foregroundColor));
         } else {
             td.getStyle().clearColor();
         }

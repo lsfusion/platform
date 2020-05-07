@@ -2,6 +2,7 @@ package lsfusion.gwt.client.view;
 
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayBackground;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class StyleDefaults {
@@ -31,7 +32,7 @@ public class StyleDefaults {
         if (selectedRowBackgroundColor == null) {
             ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
             if (preferredColor != null) {
-                selectedRowBackgroundColor = preferredColor.toString();
+                selectedRowBackgroundColor = getDisplayBackground(preferredColor.toString());
             } else {
                 // should be the same as '--selection-color' in <theme>.css. 
                 // can't use 'var(--selection-color)' because this color may be mixed with background color (converted to int)
@@ -45,7 +46,7 @@ public class StyleDefaults {
         if (focusedCellBackgroundColor == null) {
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
             if (preferredColor != null) {
-                focusedCellBackgroundColor = preferredColor.toString();
+                focusedCellBackgroundColor = getDisplayBackground(preferredColor.toString());
             } else {
                 focusedCellBackgroundColor = "var(--selection-color)";
             }
@@ -57,7 +58,7 @@ public class StyleDefaults {
         if (focusedCellBorderColor == null) {
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBorderColor();
             if (preferredColor != null) {
-                focusedCellBorderColor = preferredColor.toString();
+                focusedCellBorderColor = getDisplayBackground(preferredColor.toString());
             } else {
                 focusedCellBorderColor = "var(--focus-color)";
             }

@@ -27,6 +27,7 @@ import java.awt.event.*;
 
 import static javax.swing.SwingUtilities.isRightMouseButton;
 import static lsfusion.client.base.SwingUtils.overrideSize;
+import static lsfusion.client.controller.MainController.colorTheme;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
@@ -56,7 +57,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             setEnabled(false);
         }
 
-        property.design.designComponent(this);
+        property.design.designComponent(this, MainController.colorTheme);
         if (property.focusable != null) {
             setFocusable(property.focusable);
         } else if (property.changeKey != null) {
@@ -201,7 +202,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setBackgroundColor(Color background) {
-        setBackground(background == null ? SwingDefaults.getButtonBackground() : background);
+        setBackground(background == null ? SwingDefaults.getButtonBackground() : colorTheme.getDisplayBackground(background));
     }
 
     public void setForegroundColor(Color background) {

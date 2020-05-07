@@ -152,6 +152,7 @@ public class DataPanelView extends JPanel implements PanelView {
             return;
         }
 
+        // background is used in PropertyRenderer. so don't modify it according to color theme here.
         table.setBackgroundColor(background);
 
         revalidate();
