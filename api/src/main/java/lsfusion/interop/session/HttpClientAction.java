@@ -10,17 +10,15 @@ import java.io.IOException;
 public class HttpClientAction implements ClientAction {
     public ExternalHttpMethod method;
     public String connectionString;
-    public String bodyUrl;
-    public Object[] paramList;
+    public byte[] body;
     public ImMap<String, String> headers;
     public ImMap<String, String> cookies;
     public CookieStore cookieStore;
 
-    public HttpClientAction(ExternalHttpMethod method, String connectionString, String bodyUrl, Object[] paramList, ImMap<String, String> headers, ImMap<String, String> cookies, CookieStore cookieStore) {
+    public HttpClientAction(ExternalHttpMethod method, String connectionString, byte[] body, ImMap<String, String> headers, ImMap<String, String> cookies, CookieStore cookieStore) {
         this.method = method;
         this.connectionString = connectionString;
-        this.bodyUrl = bodyUrl;
-        this.paramList = paramList;
+        this.body = body;
         this.headers = headers;
         this.cookies = cookies;
         this.cookieStore = cookieStore;
@@ -28,6 +26,6 @@ public class HttpClientAction implements ClientAction {
 
     @Override
     public ExternalHttpResponse dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return ExternalHttpUtils.readHTTP(method, connectionString, bodyUrl, paramList, headers, cookies, cookieStore);
+        return ExternalHttpUtils.sendRequest(method, connectionString, body, headers, cookies, cookieStore);
     }
 }

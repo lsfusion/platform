@@ -241,7 +241,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         for(Map.Entry<String, String> header : action.headers.entrySet()) {
             request.setRequestHeader(header.getKey(), header.getValue());
         }
-        request.send(new String(action.body));
+        sendRequest(request, action.method.hasBody() ? bytesToArrayBuffer(action.body) : null);
 
         request.setOnReadyStateChange(xhr -> {
             if(xhr.getReadyState() == XMLHttpRequest.DONE) {
@@ -252,6 +252,18 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         });
         return null;
+    }
+
+    private native void sendRequest(XMLHttpRequest request, ArrayBuffer body) /*-{
+        request.send(body);
+    }-*/;
+
+    private ArrayBuffer bytesToArrayBuffer(byte[] bytes) {
+        Uint8Array uint8Array = Uint8ArrayNative.create(bytes.length);
+        for (int i = 0; i < uint8Array.length(); i++) {
+            uint8Array.set(i, bytes[i]);
+        }
+        return uint8Array.buffer();
     }
 
     private byte[] arrayBufferToBytes(ArrayBuffer arrayBuffer) {

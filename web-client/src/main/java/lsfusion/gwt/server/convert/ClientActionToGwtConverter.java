@@ -23,9 +23,7 @@ import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
-import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.HttpClientAction;
-import org.apache.http.HttpEntity;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -180,16 +178,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = HttpClientAction.class)
     public GHttpClientAction convertAction(HttpClientAction action) {
-        try {
-            HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(action.paramList, action.bodyUrl, null);
-            byte[] body = IOUtils.readBytesFromStream(httpEntity.getContent());
-            if(!action.headers.containsKey("Content-Type")) {
-                action.headers = action.headers.addExcl("Content-Type", httpEntity.getContentType().getValue());
-            }
-            return new GHttpClientAction(convertMethod(action.method), action.connectionString, body, action.headers.toJavaMap());
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        return new GHttpClientAction(convertMethod(action.method), action.connectionString, action.body, action.headers.toJavaMap());
     }
 
     @Converter(from = ExternalHttpMethod.class)

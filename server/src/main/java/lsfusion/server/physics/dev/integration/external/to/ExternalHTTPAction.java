@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -28,6 +29,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.CookieStore;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ContentType;
@@ -100,11 +102,16 @@ public class ExternalHTTPAction extends ExternalAction {
                 for (int i=0,size=rNotUsedParams.result.size();i<size;i++)
                     paramList[i] = format(context, rNotUsedParams.result.get(i), null); // пока в body ничего не кодируем (так как content-type'ы другие)
 
+                HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, null);
+                byte[] body = IOUtils.readBytesFromStream(entity.getContent());
+                if(method.hasBody() && !headers.containsKey("Content-Type")) {
+                    headers = headers.addExcl("Content-Type", entity.getContentType().getValue());
+                }
                 ExternalHttpResponse response;
                 if (clientAction) {
-                    response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, bodyUrl, paramList, headers, cookies, cookieStore));
+                    response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, body, headers, cookies, cookieStore));
                 } else {
-                    response = ExternalHttpUtils.readHTTP(method, connectionString, bodyUrl, paramList, headers, cookies, cookieStore);
+                    response = ExternalHttpUtils.sendRequest(method, connectionString, body, headers, cookies, cookieStore);
                 }
 
                 ContentType contentType = response.contentType != null ? ContentType.parse(response.contentType) : null;
