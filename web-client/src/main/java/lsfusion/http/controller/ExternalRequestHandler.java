@@ -109,7 +109,6 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             response.setContentType(contentType.getValue());
         if(contentDisposition != null && !hasContentDisposition)
             response.addHeader("Content-Disposition", contentDisposition);
-        response.addHeader("Access-Control-Allow-Origin","*");
         responseEntity.writeTo(response.getOutputStream());
     }
 }
