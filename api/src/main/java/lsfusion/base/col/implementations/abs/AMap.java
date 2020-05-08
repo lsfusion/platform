@@ -13,7 +13,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.NotFunctionSet;
 
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,7 +22,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-public abstract class AMap<K, V> extends AColObject implements ImMap<K, V>, Serializable {
+public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
 
     public String toString() {
         return toString(" - ", ",");

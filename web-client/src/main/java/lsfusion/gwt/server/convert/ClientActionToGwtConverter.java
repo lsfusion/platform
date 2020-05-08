@@ -178,7 +178,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = HttpClientAction.class)
     public GHttpClientAction convertAction(HttpClientAction action) {
-        return new GHttpClientAction(convertMethod(action.method), action.connectionString, action.body, action.headers.toJavaMap());
+        return new GHttpClientAction(convertMethod(action.method), action.connectionString, action.body, action.headers);
     }
 
     @Converter(from = ExternalHttpMethod.class)

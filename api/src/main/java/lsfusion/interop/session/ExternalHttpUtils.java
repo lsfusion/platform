@@ -19,7 +19,7 @@ import java.util.*;
 
 public class ExternalHttpUtils {
 
-    public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, byte[] body, ImMap<String, String> headers, ImMap<String, String> cookies, CookieStore cookieStore) throws IOException {
+    public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, byte[] body, Map<String, String> headers, Map<String, String> cookies, CookieStore cookieStore) throws IOException {
         HttpUriRequest httpRequest;
         switch (method) {
             case GET:
@@ -41,10 +41,10 @@ public class ExternalHttpUtils {
             ((HttpEntityEnclosingRequestBase) httpRequest).setEntity(entity);
         }
 
-        for(int i=0,size=headers.size();i<size;i++)
-            httpRequest.addHeader(headers.getKey(i), headers.getValue(i));
-        for(int i=0,size=cookies.size();i<size;i++) {
-            BasicClientCookie cookie = parseRawCookie(cookies.getKey(i), cookies.getValue(i));
+        for (Map.Entry<String, String> headerEntry : headers.entrySet())
+            httpRequest.addHeader(headerEntry.getKey(), headerEntry.getValue());
+        for (Map.Entry<String, String> cookieEntry : cookies.entrySet()) {
+            BasicClientCookie cookie = parseRawCookie(cookieEntry.getKey(), cookieEntry.getValue());
             cookieStore.addCookie(cookie);
         }
 

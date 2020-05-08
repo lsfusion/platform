@@ -1,21 +1,21 @@
 package lsfusion.interop.session;
 
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
 import org.apache.http.client.CookieStore;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class HttpClientAction implements ClientAction {
     public ExternalHttpMethod method;
     public String connectionString;
     public byte[] body;
-    public ImMap<String, String> headers;
-    public ImMap<String, String> cookies;
+    public Map<String, String> headers;
+    public Map<String, String> cookies;
     public CookieStore cookieStore;
 
-    public HttpClientAction(ExternalHttpMethod method, String connectionString, byte[] body, ImMap<String, String> headers, ImMap<String, String> cookies, CookieStore cookieStore) {
+    public HttpClientAction(ExternalHttpMethod method, String connectionString, byte[] body, Map<String, String> headers, Map<String, String> cookies, CookieStore cookieStore) {
         this.method = method;
         this.connectionString = connectionString;
         this.body = body;

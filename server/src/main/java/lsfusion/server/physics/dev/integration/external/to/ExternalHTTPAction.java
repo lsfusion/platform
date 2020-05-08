@@ -94,8 +94,15 @@ public class ExternalHTTPAction extends ExternalAction {
                 if(bodyUrl != null && !rNotUsedParams.result.isEmpty()) {
                     throw new RuntimeException("All params should be used in BODYURL");
                 }
-                ImMap<String, String> headers = headersProperty != null ? readPropertyValues(context.getEnv(), headersProperty) : MapFact.EMPTY();
-                ImMap<String, String> cookies = cookiesProperty != null ? readPropertyValues(context.getEnv(), cookiesProperty) : MapFact.EMPTY();
+                Map<String, String> headers = new HashMap<>();
+                if(headersProperty != null) {
+                    MapFact.addJavaAll(headers, readPropertyValues(context.getEnv(), headersProperty));
+                }
+                Map<String, String> cookies = new HashMap<>();
+                if(cookiesProperty != null) {
+                    MapFact.addJavaAll(cookies, readPropertyValues(context.getEnv(), cookiesProperty));
+                }
+
                 CookieStore cookieStore = new BasicCookieStore();
 
                 Object[] paramList = new Object[rNotUsedParams.result.size()];
@@ -108,7 +115,7 @@ public class ExternalHTTPAction extends ExternalAction {
                     HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, null);
                     body = IOUtils.readBytesFromStream(entity.getContent());
                     if (!headers.containsKey("Content-Type")) {
-                        headers = headers.addExcl("Content-Type", entity.getContentType().getValue());
+                        headers.put("Content-Type", entity.getContentType().getValue());
                     }
                 }
 
