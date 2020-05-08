@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.action;
 
+import com.google.gwt.http.client.RequestException;
+
 public interface GActionDispatcher {
     void execute(GFormAction action);
 
@@ -40,4 +42,6 @@ public interface GActionDispatcher {
     void execute(GMaximizeFormAction action);
     
     void execute(GChangeColorThemeAction action);
+
+    Object execute(GHttpClientAction action) throws RequestException;
 }

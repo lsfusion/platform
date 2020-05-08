@@ -1,6 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
+import lsfusion.gwt.client.action.GExternalHttpResponse;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -20,6 +21,7 @@ import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPrefer
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.cell.UserInputResult;
+import lsfusion.interop.session.ExternalHttpResponse;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -115,6 +117,11 @@ public class GwtToClientConverter extends ObjectConverter {
         serializeGroupObjectValue(dataStream, groupObjectValue);
 
         return outStream.toByteArray();
+    }
+
+    @Converter(from = GExternalHttpResponse.class)
+    public ExternalHttpResponse convertExternalHttpResponse(GExternalHttpResponse gResponse) {
+        return new ExternalHttpResponse(gResponse.contentType, gResponse.responseBytes, gResponse.responseHeaders, gResponse.statusCode, gResponse.statusText);
     }
 
     public void serializeGroupObjectValue(DataOutputStream dataStream, GGroupObjectValue groupObjectValue) {

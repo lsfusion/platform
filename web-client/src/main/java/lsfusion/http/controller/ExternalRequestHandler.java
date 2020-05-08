@@ -108,7 +108,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         if(contentType != null && !hasContentType)
             response.setContentType(contentType.getValue());
         if(contentDisposition != null && !hasContentDisposition)
-            response.addHeader("Content-Disposition", contentDisposition);        
+            response.addHeader("Content-Disposition", contentDisposition);
         responseEntity.writeTo(response.getOutputStream());
     }
 }

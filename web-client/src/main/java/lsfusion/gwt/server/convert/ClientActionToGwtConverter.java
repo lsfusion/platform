@@ -1,7 +1,8 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.base.BaseUtils;
+import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
+import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
@@ -21,15 +22,14 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.session.ExternalHttpMethod;
+import lsfusion.interop.session.HttpClientAction;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 
@@ -174,6 +174,16 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = WriteClientAction.class)
     public GOpenFileAction convertAction(WriteClientAction action) {
         return new GOpenFileAction(FileUtils.saveActionFile(action.file), action.path, action.extension);
+    }
+
+    @Converter(from = HttpClientAction.class)
+    public GHttpClientAction convertAction(HttpClientAction action) {
+        return new GHttpClientAction(convertMethod(action.method), action.connectionString, action.body, action.headers);
+    }
+
+    @Converter(from = ExternalHttpMethod.class)
+    public GExternalHttpMethod convertMethod(ExternalHttpMethod method) {
+        return GExternalHttpMethod.valueOf(method.name());
     }
 
     @Converter(from = ProgressBar.class)
