@@ -2,7 +2,7 @@
         font-family: Verdana;
     }
 
-    .outerdiv {
+    .subtotalouterdiv {
         display: flex;
         flex-direction: column;
         position: absolute;
@@ -12,33 +12,33 @@
         right: 0;
         overflow: hidden; 
     }
-    
-    .headerdiv {
+
+    .subtotalouterdiv .headerdiv {
         flex: 0 1 auto;
         position: relative;
         overflow: hidden;
     }
 
-    .headertable {
+    .subtotalouterdiv .headertable {
         table-layout: fixed;
         width: 100%;
         border-collapse: collapse;
-        padding-right: 8px;
     }
 
-    .bodydiv {
+    .subtotalouterdiv .bodydiv {
         flex: 1;
         overflow: hidden;
         position: relative;
+        top: -1px;
     }
 
-    .scrolldiv {
+    .subtotalouterdiv .scrolldiv {
         position: relative;
         overflow: auto;
         height: 100%;
     }
-    
-    .bodytable {
+
+    .subtotalouterdiv .bodytable {
         table-layout: fixed;
         border-collapse: collapse;
         width: 100%;
@@ -145,7 +145,7 @@
     * IMPORTANT: Please do not remove the lines below this point
     *
     */
-    .outerdiv col.colhide {
+    .subtotalouterdiv col.colhide {
         display: none;    
     }
     

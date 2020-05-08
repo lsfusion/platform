@@ -694,7 +694,7 @@ callWithJQuery ($) ->
                 ah.onClick = collapseRowAxis
 
         hideChildCol = (ch) ->
-            outerDiv = $(ch.th).closest 'div.outerdiv'
+            outerDiv = $(ch.th).closest 'div.subtotalouterdiv'
             outerDiv
                 .find "tbody tr td[data-colnode=\"#{ch.node}\"], th[data-colnode=\"#{ch.node}\"]" 
                 .removeClass classColShow 
@@ -705,7 +705,7 @@ callWithJQuery ($) ->
             col?.addClass classColHide
             
         collapseHiddenColSubtotal = (h, opts) ->
-            $(h.th).closest 'div.outerdiv'
+            $(h.th).closest 'div.subtotalouterdiv'
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
                 .removeClass classColExpanded
                 .addClass classColCollapsed
@@ -714,7 +714,7 @@ callWithJQuery ($) ->
             h.th.colSpan = 1
             
         collapseShowColSubtotal = (h, opts) ->
-            outerDiv = $(h.th).closest 'div.outerdiv'
+            outerDiv = $(h.th).closest 'div.subtotalouterdiv'
             outerDiv
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
                 .removeClass classColExpanded
@@ -753,7 +753,7 @@ callWithJQuery ($) ->
             adjustColAxisHeader axisHeaders, h.col, opts
 
         showChildCol = (ch) ->
-            outerDiv = $(ch.th).closest 'div.outerdiv'
+            outerDiv = $(ch.th).closest 'div.subtotalouterdiv'
             outerDiv
                 .find "tbody tr td[data-colnode=\"#{ch.node}\"], th[data-colnode=\"#{ch.node}\"]"
                 .removeClass classColHide
@@ -764,7 +764,7 @@ callWithJQuery ($) ->
             col?.addClass classColShow
 
         expandHideColSubtotal = (h) ->
-            outerDiv = $(h.th).closest 'div.outerdiv'
+            outerDiv = $(h.th).closest 'div.subtotalouterdiv'
             outerDiv
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
                 .removeClass "#{classColCollapsed} #{classColShow}" 
@@ -778,7 +778,7 @@ callWithJQuery ($) ->
             renderColAttrHeader h.th, h.value, h.key, false, true, true
 
         expandShowColSubtotal = (h) ->
-            outerDiv = $(h.th).closest 'div.outerdiv'
+            outerDiv = $(h.th).closest 'div.subtotalouterdiv'
             outerDiv
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
                 .removeClass "#{classColCollapsed} #{classColHide}"
@@ -978,17 +978,15 @@ callWithJQuery ($) ->
             colKeyHeaders = processColKeys colKeys if colAttrs.length isnt 0 and colKeys.length isnt 0
             rowKeyHeaders = processRowKeys rowKeys, "pvtRowLabel", rowSplitPositions if rowAttrs.length isnt 0 and rowKeys.length isnt 0
 
-            outerDiv = createElement "div", "outerdiv"
+            outerDiv = createElement "div", "subtotalouterdiv"
 
             headerDiv = createElement "div", "headerdiv" 
-            headerWidthDiv = createElement "div"
             headerTable = createElement "table", "headertable pvtTable"
 
             thead = createElement "thead"
 
             outerDiv.appendChild headerDiv
-            headerDiv.appendChild headerWidthDiv
-            headerWidthDiv.appendChild headerTable
+            headerDiv.appendChild headerTable
             headerTable.appendChild thead
 
             [colAxisHeaders, rowAxisHeaders, trs] = buildAxisHeaders thead, rowAttrs, colAttrs, opts
@@ -1011,14 +1009,12 @@ callWithJQuery ($) ->
             scrollDiv.onscroll = () ->
                 sLeft = scrollDiv.scrollLeft
                 headerDiv.scrollLeft = sLeft
-            bodyWidthDiv = createElement "div"
             bodyTable = createElement "table", "bodytable pvtTable"
             tbody = createElement "tbody"
 
             outerDiv.appendChild bodyDiv
             bodyDiv.appendChild scrollDiv
-            scrollDiv.appendChild bodyWidthDiv
-            bodyWidthDiv.appendChild bodyTable
+            scrollDiv.appendChild bodyTable
             bodyTable.appendChild tbody
             
             if rowAttrs.length isnt 0
@@ -1045,13 +1041,6 @@ callWithJQuery ($) ->
 
             headerTable.insertBefore createColGroup(colsData), headerTable.firstChild
             bodyTable.insertBefore createColGroup(colsData), bodyTable.firstChild
-            
-            scrollWidth = 8
-            colsWidthSum = colsData.reduce (sum, d) -> sum + d.width
-#            headerWidthDiv.setAttribute "style", "min-width: #{colsWidthSum + scrollWidth}px; position: relative"
-#            bodyWidthDiv.setAttribute "style", "min-width: #{colsWidthSum}px; position: relative"
-            headerWidthDiv.setAttribute "style", "position: relative"
-            bodyWidthDiv.setAttribute "style", "position: relative"
             
             return outerDiv
 

@@ -995,7 +995,7 @@
       };
       hideChildCol = function(ch) {
         var col, outerDiv;
-        outerDiv = $(ch.th).closest('div.outerdiv');
+        outerDiv = $(ch.th).closest('div.subtotalouterdiv');
         outerDiv.find("tbody tr td[data-colnode=\"" + ch.node + "\"], th[data-colnode=\"" + ch.node + "\"]").removeClass(classColShow).addClass(classColHide);
         col = outerDiv.find("colgroup col[data-colnode=\"" + ch.node + "\"]");
         if (col != null) {
@@ -1004,7 +1004,7 @@
         return col != null ? col.addClass(classColHide) : void 0;
       };
       collapseHiddenColSubtotal = function(h, opts) {
-        $(h.th).closest('div.outerdiv').find("tbody tr td[data-colnode=\"" + h.node + "\"], th[data-colnode=\"" + h.node + "\"]").removeClass(classColExpanded).addClass(classColCollapsed);
+        $(h.th).closest('div.subtotalouterdiv').find("tbody tr td[data-colnode=\"" + h.node + "\"], th[data-colnode=\"" + h.node + "\"]").removeClass(classColExpanded).addClass(classColCollapsed);
         if (h.children.length !== 0) {
           renderColAttrHeader(h.th, h.value, h.key, false, false, true);
         }
@@ -1012,7 +1012,7 @@
       };
       collapseShowColSubtotal = function(h, opts) {
         var col, outerDiv;
-        outerDiv = $(h.th).closest('div.outerdiv');
+        outerDiv = $(h.th).closest('div.subtotalouterdiv');
         outerDiv.find("tbody tr td[data-colnode=\"" + h.node + "\"], th[data-colnode=\"" + h.node + "\"]").removeClass(classColExpanded).addClass(classColCollapsed).removeClass(classColHide).addClass(classColShow);
         col = outerDiv.find("colgroup col[data-colnode=\"" + h.node + "\"]");
         if (col != null) {
@@ -1068,7 +1068,7 @@
       };
       showChildCol = function(ch) {
         var col, outerDiv;
-        outerDiv = $(ch.th).closest('div.outerdiv');
+        outerDiv = $(ch.th).closest('div.subtotalouterdiv');
         outerDiv.find("tbody tr td[data-colnode=\"" + ch.node + "\"], th[data-colnode=\"" + ch.node + "\"]").removeClass(classColHide).addClass(classColShow);
         col = outerDiv.find("colgroup col[data-colnode=\"" + ch.node + "\"]");
         if (col != null) {
@@ -1078,7 +1078,7 @@
       };
       expandHideColSubtotal = function(h) {
         var col, outerDiv;
-        outerDiv = $(h.th).closest('div.outerdiv');
+        outerDiv = $(h.th).closest('div.subtotalouterdiv');
         outerDiv.find("tbody tr td[data-colnode=\"" + h.node + "\"], th[data-colnode=\"" + h.node + "\"]").removeClass(classColCollapsed + " " + classColShow).addClass(classColExpanded + " " + classColHide);
         col = outerDiv.find("colgroup col[data-colnode=\"" + h.node + "\"]");
         if (col != null) {
@@ -1092,7 +1092,7 @@
       };
       expandShowColSubtotal = function(h) {
         var col, outerDiv;
-        outerDiv = $(h.th).closest('div.outerdiv');
+        outerDiv = $(h.th).closest('div.subtotalouterdiv');
         outerDiv.find("tbody tr td[data-colnode=\"" + h.node + "\"], th[data-colnode=\"" + h.node + "\"]").removeClass(classColCollapsed + " " + classColHide).addClass(classColExpanded + " " + classColShow);
         col = outerDiv.find("colgroup col[data-colnode=\"" + h.node + "\"]");
         if (col != null) {
@@ -1472,7 +1472,7 @@
         return colCnt;
       };
       main = function(rowAttrs, rowKeys, colAttrs, colKeys) {
-        var bodyDiv, bodyTable, bodyWidthDiv, chKey, colAttrHeaders, colAxisHeaders, colKeyHeaders, colsData, colsWidthSum, headerDiv, headerTable, headerWidthDiv, k, l, len1, len2, node, outerDiv, overallSpan, ref, ref1, ref2, rowAttrHeaders, rowAttrHeadersCount, rowAxisHeaders, rowKeyHeaders, scrollDiv, scrollWidth, tbody, thead, tr, trs;
+        var bodyDiv, bodyTable, chKey, colAttrHeaders, colAxisHeaders, colKeyHeaders, colsData, headerDiv, headerTable, k, l, len1, len2, node, outerDiv, overallSpan, ref, ref1, ref2, rowAttrHeaders, rowAttrHeadersCount, rowAxisHeaders, rowKeyHeaders, scrollDiv, tbody, thead, tr, trs;
         rowAttrHeaders = [];
         colAttrHeaders = [];
         if (colAttrs.length !== 0 && colKeys.length !== 0) {
@@ -1481,14 +1481,12 @@
         if (rowAttrs.length !== 0 && rowKeys.length !== 0) {
           rowKeyHeaders = processRowKeys(rowKeys, "pvtRowLabel", rowSplitPositions);
         }
-        outerDiv = createElement("div", "outerdiv");
+        outerDiv = createElement("div", "subtotalouterdiv");
         headerDiv = createElement("div", "headerdiv");
-        headerWidthDiv = createElement("div");
         headerTable = createElement("table", "headertable pvtTable");
         thead = createElement("thead");
         outerDiv.appendChild(headerDiv);
-        headerDiv.appendChild(headerWidthDiv);
-        headerWidthDiv.appendChild(headerTable);
+        headerDiv.appendChild(headerTable);
         headerTable.appendChild(thead);
         ref = buildAxisHeaders(thead, rowAttrs, colAttrs, opts), colAxisHeaders = ref[0], rowAxisHeaders = ref[1], trs = ref[2];
         colsData = rowHeaderColsData(trs);
@@ -1521,13 +1519,11 @@
           sLeft = scrollDiv.scrollLeft;
           return headerDiv.scrollLeft = sLeft;
         };
-        bodyWidthDiv = createElement("div");
         bodyTable = createElement("table", "bodytable pvtTable");
         tbody = createElement("tbody");
         outerDiv.appendChild(bodyDiv);
         bodyDiv.appendChild(scrollDiv);
-        scrollDiv.appendChild(bodyWidthDiv);
-        bodyWidthDiv.appendChild(bodyTable);
+        scrollDiv.appendChild(bodyTable);
         bodyTable.appendChild(tbody);
         if (rowAttrs.length !== 0) {
           if (colAttrs.length === 0) {
@@ -1560,12 +1556,6 @@
         bodyTable.style.display = "";
         headerTable.insertBefore(createColGroup(colsData), headerTable.firstChild);
         bodyTable.insertBefore(createColGroup(colsData), bodyTable.firstChild);
-        scrollWidth = 8;
-        colsWidthSum = colsData.reduce(function(sum, d) {
-          return sum + d.width;
-        });
-        headerWidthDiv.setAttribute("style", "position: relative");
-        bodyWidthDiv.setAttribute("style", "position: relative");
         return outerDiv;
       };
       return main(rowAttrs, rowKeys, colAttrs, colKeys);
