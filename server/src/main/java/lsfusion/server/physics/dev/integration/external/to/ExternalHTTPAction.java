@@ -102,11 +102,16 @@ public class ExternalHTTPAction extends ExternalAction {
                 for (int i=0,size=rNotUsedParams.result.size();i<size;i++)
                     paramList[i] = format(context, rNotUsedParams.result.get(i), null); // пока в body ничего не кодируем (так как content-type'ы другие)
 
-                HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, null);
-                byte[] body = IOUtils.readBytesFromStream(entity.getContent());
-                if(method.hasBody() && !headers.containsKey("Content-Type")) {
-                    headers = headers.addExcl("Content-Type", entity.getContentType().getValue());
+
+                byte[] body = null;
+                if (method.hasBody()) {
+                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, null);
+                    body = IOUtils.readBytesFromStream(entity.getContent());
+                    if (!headers.containsKey("Content-Type")) {
+                        headers = headers.addExcl("Content-Type", entity.getContentType().getValue());
+                    }
                 }
+
                 ExternalHttpResponse response;
                 if (clientAction) {
                     response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, body, headers, cookies, cookieStore));

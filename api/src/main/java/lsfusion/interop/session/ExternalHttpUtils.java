@@ -36,7 +36,7 @@ public class ExternalHttpUtils {
                 httpRequest = new HttpPost(connectionString);
                 break;
         }
-        if(method.hasBody() && httpRequest instanceof HttpEntityEnclosingRequestBase) {
+        if(body != null) {
             HttpEntity entity = new ByteArrayEntity(body);
             ((HttpEntityEnclosingRequestBase) httpRequest).setEntity(entity);
         }

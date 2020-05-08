@@ -241,7 +241,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         for(Map.Entry<String, String> header : action.headers.entrySet()) {
             request.setRequestHeader(header.getKey(), header.getValue());
         }
-        sendRequest(request, action.method.hasBody() ? bytesToArrayBuffer(action.body) : null);
+        sendRequest(request, action.body != null ? bytesToArrayBuffer(action.body) : null);
 
         request.setOnReadyStateChange(xhr -> {
             if(xhr.getReadyState() == XMLHttpRequest.DONE) {
