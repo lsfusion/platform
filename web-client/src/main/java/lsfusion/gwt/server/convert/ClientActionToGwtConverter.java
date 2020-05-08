@@ -1,8 +1,8 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.base.MIMETypeUtils;
+import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
-import lsfusion.base.file.FileData;
+import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
@@ -25,7 +25,7 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.HttpClientAction;
-import org.apache.http.entity.ContentType;
+import org.apache.http.HttpEntity;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -180,14 +180,16 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = HttpClientAction.class)
     public GHttpClientAction convertAction(HttpClientAction action) {
-        String[] paramList = new String[action.paramList.length];
-        String[] paramTypeList = new String[action.paramList.length];
-        for(int i = 0; i < action.paramList.length; i++) {
-            Object param = action.paramList[i];
-            paramList[i] = param instanceof FileData ? new String(((FileData) param).getRawFile().getBytes()) : param != null ? param.toString() : null;
-            paramTypeList[i] = param instanceof FileData ? ExternalUtils.getContentType(((FileData) param).getExtension()).toString() : "text/plain";
+        try {
+            HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(action.paramList, action.bodyUrl, null);
+            byte[] body = IOUtils.readBytesFromStream(httpEntity.getContent());
+            if(!action.headers.containsKey("Content-Type")) {
+                action.headers = action.headers.addExcl("Content-Type", httpEntity.getContentType().getValue());
+            }
+            return new GHttpClientAction(convertMethod(action.method), action.connectionString, body, action.headers.toJavaMap());
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
-        return new GHttpClientAction(convertMethod(action.method), action.connectionString, action.bodyUrl, paramList, paramTypeList, action.headers.toJavaMap());
     }
 
     @Converter(from = ExternalHttpMethod.class)

@@ -6,21 +6,17 @@ public class GHttpClientAction implements GAction {
 
     public String connectionString;
     public GExternalHttpMethod method;
-    public String bodyUrl;
-    public String[] paramList;
-    public String[] paramTypeList;
+    public byte[] body;
     public Map<String, String> headers;
 
     @SuppressWarnings("UnusedDeclaration")
     public GHttpClientAction() {
     }
 
-    public GHttpClientAction(GExternalHttpMethod method, String connectionString, String bodyUrl, String[] paramList, String[] paramTypeList, Map<String, String> headers) {
+    public GHttpClientAction(GExternalHttpMethod method, String connectionString, byte[] body, Map<String, String> headers) {
         this.method = method;
         this.connectionString = connectionString;
-        this.bodyUrl = bodyUrl;
-        this.paramList = paramList;
-        this.paramTypeList = paramTypeList;
+        this.body = body;
         this.headers = headers;
     }
 
