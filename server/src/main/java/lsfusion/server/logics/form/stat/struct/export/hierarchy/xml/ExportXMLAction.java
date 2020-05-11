@@ -13,9 +13,12 @@ import lsfusion.server.logics.form.stat.struct.hierarchy.xml.XMLNode;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.apache.commons.io.IOUtils;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.Namespace;
+import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
@@ -40,8 +43,25 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
     @Override
     protected void writeRootNode(PrintWriter printWriter, XMLNode rootNode) throws IOException {
         Element element = rootNode.element;
-        XMLOutputter xmlOutput = new XMLOutputter();
+        XMLOutputter xmlOutput = new XMLOutputter() {
+            @Override
+            public String escapeElementEntities(String str) {
+                return isXML(str) ? str : super.escapeElementEntities(str);
+            }
+        };
         xmlOutput.setFormat(Format.getPrettyFormat().setEncoding(charset));
         xmlOutput.output(new Document(element), printWriter);
+    }
+
+    private boolean isXML(String str) {
+        boolean isXML = false;
+        if (str.startsWith("<") && str.endsWith(">") && str.contains("/")) {
+            try {
+                new SAXBuilder().build(IOUtils.toInputStream(str));
+                isXML = true;
+            } catch (JDOMException | IOException ignored) {
+            }
+        }
+        return isXML;
     }
 }

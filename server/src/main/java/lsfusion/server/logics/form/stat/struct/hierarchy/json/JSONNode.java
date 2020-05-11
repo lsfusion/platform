@@ -109,10 +109,26 @@ public class JSONNode implements Node<JSONNode> {
 
     public void addValue(JSONNode node, String key, boolean attr, Object value, Type type) {
         try {
-            node.element.put(key, type.formatJSON(value));
+            node.element.put(key, parseObject(type.formatJSON(value)));
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private Object parseObject(Object obj) {
+        Object result = obj;
+        try {
+            if (obj instanceof String) {
+                String str = (String) obj;
+                if (str.startsWith("{") && str.endsWith("}")) {
+                    result = new JSONObject(str);
+                } else if (str.startsWith("[") && str.endsWith("]")) {
+                    result = new JSONArray(str);
+                }
+            }
+        } catch (JSONException ignored) {
+        }
+        return result;
     }
 
     public boolean addMap(JSONNode node, String key, boolean isIndex, Iterable<Pair<Object, JSONNode>> map) {
