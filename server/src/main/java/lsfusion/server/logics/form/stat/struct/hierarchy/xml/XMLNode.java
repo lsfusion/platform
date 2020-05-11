@@ -17,6 +17,7 @@ import org.jdom.output.XMLOutputter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class XMLNode implements Node<XMLNode> {
@@ -199,18 +200,15 @@ public class XMLNode implements Node<XMLNode> {
 
     //check if it's XML inside
     private static List<Content> parseObject(String str) {
-        List<Content> result = new ArrayList<>();
         if (str.matches(".*<.*/.*>.*")) {
             try {
                 List<Content> children = new ArrayList<>(new SAXBuilder().build(IOUtils.toInputStream("<wrap>" + str + "</wrap>")).getRootElement().getContent());
                 children.forEach(Content::detach);
-                result.addAll(children);
+                return children;
             } catch (JDOMException | IOException ignored) {
             }
         }
-        if(result.isEmpty())
-            result.add(new Text(str));
-        return result;
+        return Collections.singletonList(new Text(str));
     }
 
     // because of the difference between edge and node-based approaches we have to set name while adding edges 

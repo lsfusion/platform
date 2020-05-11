@@ -117,14 +117,13 @@ public class JSONNode implements Node<JSONNode> {
 
     //check if it's json inside
     private Object parseObject(Object obj) {
-        Object result = obj;
         try {
             if (obj instanceof String) {
-                result = JSONReader.readObject((String) obj);
+                return JSONReader.readObject((String) obj);
             }
         } catch (Exception ignored) {
         }
-        return result;
+        return obj;
     }
 
     public boolean addMap(JSONNode node, String key, boolean isIndex, Iterable<Pair<Object, JSONNode>> map) {
