@@ -115,18 +115,14 @@ public class JSONNode implements Node<JSONNode> {
         }
     }
 
+    //check if it's json inside
     private Object parseObject(Object obj) {
         Object result = obj;
         try {
             if (obj instanceof String) {
-                String str = (String) obj;
-                if (str.startsWith("{") && str.endsWith("}")) {
-                    result = new JSONObject(str);
-                } else if (str.startsWith("[") && str.endsWith("]")) {
-                    result = new JSONArray(str);
-                }
+                result = JSONReader.readObject((String) obj);
             }
-        } catch (JSONException ignored) {
+        } catch (Exception ignored) {
         }
         return result;
     }

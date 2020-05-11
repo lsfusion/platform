@@ -36,7 +36,11 @@ public class JSONReader {
     }
 
     public static Object readObject(Reader r) throws IOException {
-        return new JSONTokener(readAll(r)).nextValue();
+        return readObject(readAll(r));
+    }
+
+    public static Object readObject(String s) {
+        return new JSONTokener(s).nextValue();
     }
 
     public static void writeObject(Object object, Writer w) {

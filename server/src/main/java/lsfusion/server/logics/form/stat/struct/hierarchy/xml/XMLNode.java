@@ -8,16 +8,15 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.Text;
+import org.apache.commons.io.IOUtils;
+import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class XMLNode implements Node<XMLNode> {
@@ -193,9 +192,25 @@ public class XMLNode implements Node<XMLNode> {
             Result<String> shortKey = new Result<>();
             Namespace namespace = addXMLNamespace(element, key, shortKey, true);
             Element addElement = new Element(shortKey.result, namespace);
-            addElement.setText(stringValue);
+            addElement.addContent(parseObject(stringValue));
             element.addContent(addElement);
         }
+    }
+
+    //check if it's XML inside
+    private static List<Content> parseObject(String str) {
+        List<Content> result = new ArrayList<>();
+        if (str.matches(".*<.*/.*>.*")) {
+            try {
+                List<Content> children = new ArrayList<>(new SAXBuilder().build(IOUtils.toInputStream("<wrap>" + str + "</wrap>")).getRootElement().getContent());
+                children.forEach(Content::detach);
+                result.addAll(children);
+            } catch (JDOMException | IOException ignored) {
+            }
+        }
+        if(result.isEmpty())
+            result.add(new Text(str));
+        return result;
     }
 
     // because of the difference between edge and node-based approaches we have to set name while adding edges 
