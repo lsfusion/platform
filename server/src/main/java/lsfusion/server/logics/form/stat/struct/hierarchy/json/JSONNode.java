@@ -109,10 +109,21 @@ public class JSONNode implements Node<JSONNode> {
 
     public void addValue(JSONNode node, String key, boolean attr, Object value, Type type) {
         try {
-            node.element.put(key, type.formatJSON(value));
+            node.element.put(key, parseObject(type.formatJSON(value)));
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    //check if it's json inside
+    private Object parseObject(Object obj) {
+        try {
+            if (obj instanceof String) {
+                return JSONReader.readObject((String) obj);
+            }
+        } catch (Exception ignored) {
+        }
+        return obj;
     }
 
     public boolean addMap(JSONNode node, String key, boolean isIndex, Iterable<Pair<Object, JSONNode>> map) {
