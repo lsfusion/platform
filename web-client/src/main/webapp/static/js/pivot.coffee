@@ -923,6 +923,10 @@ callWithJQuery ($) ->
                 .addClass('pvtRendererArea')
                 .appendTo(tr2)
 
+            pivotScrollDiv = $("<div>")
+                .addClass('pvtRendererScrollDiv')
+                .appendTo(pivotTable)
+            
             #finally the renderer dropdown and unused attribs are inserted at the requested location
             if opts.unusedAttrsVertical == true or unusedAttrsVerticalAutoOverride
                 uiTable.find('.uiTableRow:nth-child(1)').prepend rendererControl
@@ -1111,7 +1115,7 @@ callWithJQuery ($) ->
                     
                 opts.onRefresh(pivotUIOptions) if opts.onRefresh?
                 
-                pivotTable.pivot(materializedInput,subopts)
+                pivotScrollDiv.pivot(materializedInput,subopts)
 
                 @data "pivotUIOptions", pivotUIOptions
 
