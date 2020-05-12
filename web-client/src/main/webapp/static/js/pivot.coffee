@@ -726,7 +726,7 @@ callWithJQuery ($) ->
 
             #axis list, including the double-click menu
             unused = $("<td>").addClass('pvtAxisContainer pvtUnused pvtUiCell')
-            unusedDiv = $("<div>").addClass('pvtUiCellDiv').appendTo(unused)
+            unusedDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(unused)
             shownAttributes = (a for a of attrValues when a not in opts.hiddenAttributes)
             shownInAggregators = (c for c in shownAttributes when c not in opts.hiddenFromAggregators)
             shownInDragDrop = (c for c in shownAttributes when c not in opts.hiddenFromDragDrop)
@@ -898,7 +898,7 @@ callWithJQuery ($) ->
 
             #column axes
             pvtColumns = $("<td>").addClass('pvtHorizList pvtCols pvtUiCell')
-            pvtColumnsDiv = $("<div>").addClass('pvtUiCellDiv').appendTo(pvtColumns)
+            pvtColumnsDiv = $("<div>").addClass('pvtUiCellHDiv').appendTo(pvtColumns)
             tr1.append pvtColumns
 
             pvtColumnsTable = $("<table>").addClass('pvtColumnsTable')
@@ -911,7 +911,7 @@ callWithJQuery ($) ->
 
             #row axes
             pvtRows = $("<td>").addClass('pvtRows pvtUiCell').attr("valign", "top")
-            pvtRowsDiv = $("<div>").addClass('pvtUiCellDiv').appendTo(pvtRows)
+            pvtRowsDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(pvtRows)
             tr2.append pvtRows
 
             pvtRowsTable = $("<table>").addClass('pvtRowsTable')

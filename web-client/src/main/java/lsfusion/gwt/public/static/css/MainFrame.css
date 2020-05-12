@@ -669,13 +669,14 @@ input[type=checkbox]:focus {
     position: relative;
 }
 
-.pvtUiCellDiv {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    overflow: auto;
+.pvtUiCellVDiv {
+    height: 100%;
+    overflow: hidden auto;
+}
+
+.pvtUiCellHDiv {
+    width: 100%;
+    overflow: auto hidden;
 }
 
 .pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {

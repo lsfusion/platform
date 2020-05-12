@@ -1287,7 +1287,7 @@
           $("<option>").val(x).html(x).appendTo(renderer);
         }
         unused = $("<td>").addClass('pvtAxisContainer pvtUnused pvtUiCell');
-        unusedDiv = $("<div>").addClass('pvtUiCellDiv').appendTo(unused);
+        unusedDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(unused);
         shownAttributes = (function() {
           var results;
           results = [];
@@ -1518,7 +1518,7 @@
         aggrSelector = $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1);
         $("<div>").appendTo(aggrSelector).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
         pvtColumns = $("<td>").addClass('pvtHorizList pvtCols pvtUiCell');
-        pvtColumnsDiv = $("<div>").addClass('pvtUiCellDiv').appendTo(pvtColumns);
+        pvtColumnsDiv = $("<div>").addClass('pvtUiCellHDiv').appendTo(pvtColumns);
         tr1.append(pvtColumns);
         pvtColumnsTable = $("<table>").addClass('pvtColumnsTable');
         pvtColumnsDiv.append(pvtColumnsTable);
@@ -1526,7 +1526,7 @@
         pvtColumnsTable.append(pvtColumnsRow);
         tr2 = $("<tr>").appendTo(uiTable).attr("style", "height:100%");
         pvtRows = $("<td>").addClass('pvtRows pvtUiCell').attr("valign", "top");
-        pvtRowsDiv = $("<div>").addClass('pvtUiCellDiv').appendTo(pvtRows);
+        pvtRowsDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(pvtRows);
         tr2.append(pvtRows);
         pvtRowsTable = $("<table>").addClass('pvtRowsTable');
         pvtRowsDiv.append(pvtRowsTable);
