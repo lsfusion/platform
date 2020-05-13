@@ -241,6 +241,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             propertyDraw.setToDraw(group);
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
             propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getGridViewType(baseLM.gridViewType).property))), PropertyDrawExtraType.SHOWIF);
+
+            addPropertyDrawView(propertyDraw, version); // because it's called after form constructor
         }
     }
 
