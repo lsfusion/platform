@@ -19,6 +19,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventType;
+import lsfusion.interop.form.object.table.grid.GridViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -296,6 +297,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     }
                 }
             }
+
+            if(groupObject.classView.isGrid())
+                changeGridViewType(groupObject, GridViewType.GRID);
         }
 
         for (int i = 0, size = mapObjects.size(); i < size; i++) {
@@ -372,7 +376,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ServerLoggers.remoteLifeLog("FORM OPEN : " + this);
     }
-    
+
+    public void changeGridViewType(GroupObjectInstance groupObject, GridViewType gridViewType) throws SQLException, SQLHandledException {
+        groupObject.changeGridViewType(this, BL.LM.gridViewType, gridViewType);
+    }
+
     public static class DiffForm {
         public final String type;
         public final FormEntity entity;
@@ -796,7 +804,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public PropertyDrawInstance getPropertyDrawIntegration(String groupSID, String sid) {
         for (PropertyDrawInstance property : properties)
             if (((groupSID == null && property.toDraw == null) || (groupSID != null && property.toDraw != null && property.toDraw.getIntegrationSID().equals(groupSID)))
-                    && property.getIntegrationSID().equals(sid))
+                    && sid.equals(property.getIntegrationSID()))
                 return property;
         return null;
     }

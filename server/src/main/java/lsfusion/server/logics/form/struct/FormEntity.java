@@ -233,6 +233,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
     }
 
+    private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
+        if(group.classView.isGrid()) {
+            BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
+
+            PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
+            propertyDraw.setToDraw(group);
+            propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
+            propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getGridViewType(baseLM.gridViewType).property))), PropertyDrawExtraType.SHOWIF);
+        }
+    }
+
     public void finalizeInit(Version version) {
 //        getNFRichDesign(version);
         setRichDesign(createDefaultRichDesign(version), version);
@@ -609,6 +620,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         } else {
             groups.add(group, version);    
         }
+
+        initDefaultGroupElements(group, version);
 
         FormView richDesign = getNFRichDesign(version);
         if (richDesign != null) {

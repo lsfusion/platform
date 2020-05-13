@@ -207,14 +207,15 @@ public class FormChanges {
             throw Throwables.propagate(e);
         }
     }
-    
+
+    // assert that it was filtered by filterPropertiesExternal
     private void serializePropertiesExternal(JSONObject jsonObject, ImSet<PropertyDrawInstance> serializeProps, ImMap<ObjectInstance, DataObject> gridObjectRow) {
         for(PropertyDrawInstance property : serializeProps)
             jsonObject.put(property.getIntegrationSID(), RemoteForm.formatJSONNull(property.getType(), properties.get(property).get(gridObjectRow).getValue()));
     } 
 
     private ImSet<PropertyDrawInstance> filterPropertiesExternal(ImSet<PropertyDrawInstance> serializeProps, final boolean panel) {
-        return serializeProps.filterFn(property -> !property.isGrid() == panel && property.isProperty());
+        return serializeProps.filterFn(property -> !property.isGrid() == panel && property.isProperty() && property.getIntegrationSID() != null);
     } 
 
     public JSONObject serializeExternal() {

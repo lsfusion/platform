@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridViewType;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.classes.*;
@@ -15,6 +16,7 @@ import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.object.table.grid.GridViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -97,6 +99,11 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GClassViewType.class)
     public ClassViewType convertViewType(GClassViewType gViewType) {
         return ClassViewType.valueOf(gViewType.name());
+    }
+
+    @Converter(from = GGridViewType.class)
+    public GridViewType convertViewType(GGridViewType gViewType) {
+        return GridViewType.valueOf(gViewType.name());
     }
 
     @Converter(from = GPropertyGroupType.class)

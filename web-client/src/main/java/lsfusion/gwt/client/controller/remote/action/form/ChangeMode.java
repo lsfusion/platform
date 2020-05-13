@@ -2,6 +2,7 @@ package lsfusion.gwt.client.controller.remote.action.form;
 
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridViewType;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 
 public class ChangeMode extends FormRequestCountingAction<ServerResponseResult> {
@@ -18,9 +19,11 @@ public class ChangeMode extends FormRequestCountingAction<ServerResponseResult> 
     public boolean forceRefresh;
     public GUpdateMode updateMode;
 
+    public GGridViewType viewType;
+
     public ChangeMode() {}
 
-    public ChangeMode(int groupObjectID, boolean setGroup, int[] propertyIDs, GGroupObjectValue[] columnKeys, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode) {
+    public ChangeMode(int groupObjectID, boolean setGroup, int[] propertyIDs, GGroupObjectValue[] columnKeys, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GGridViewType viewType) {
         this.groupObjectID = groupObjectID;
         this.setGroup = setGroup;
         this.propertyIDs = propertyIDs;
@@ -30,5 +33,6 @@ public class ChangeMode extends FormRequestCountingAction<ServerResponseResult> 
         this.pageSize = pageSize;
         this.forceRefresh = forceRefresh;
         this.updateMode = updateMode;
+        this.viewType = viewType;
     }
 }

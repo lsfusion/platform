@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.object.table.grid.GridViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
@@ -322,7 +323,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException {
+    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode, GridViewType gridViewType) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
 
@@ -356,6 +357,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             if(updateMode != null)
                 groupObject.setUpdateMode(updateMode);
+
+            if(gridViewType != null)
+                form.changeGridViewType(groupObject, gridViewType);
         });
     }
 

@@ -22,10 +22,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.view.GUserPreferen
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCalculateSumButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuantityButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
-import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
-import lsfusion.gwt.client.form.object.table.grid.view.GMap;
-import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
-import lsfusion.gwt.client.form.object.table.grid.view.GTableView;
+import lsfusion.gwt.client.form.object.table.grid.view.*;
 import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 
@@ -238,7 +235,7 @@ public class GGridController extends GAbstractTableController {
             public void addListener() {
                 addClickHandler(event -> {
                     setGridTableView();
-                    formController.changeMode(groupObject, false, -1);
+                    formController.changeMode(groupObject, false, -1, GGridViewType.GRID);
                 });
             }
         };
@@ -248,7 +245,7 @@ public class GGridController extends GAbstractTableController {
             public void addListener() {
                 addClickHandler(event -> {
                     setPivotTableView();
-                    formController.changeMode(groupObject, true, 1000);
+                    formController.changeMode(groupObject, true, 1000, GGridViewType.PIVOT);
                 });
             }
         };
@@ -259,7 +256,7 @@ public class GGridController extends GAbstractTableController {
                 public void addListener() {
                     addClickHandler(event -> {
                         setMapTableView();
-                        formController.changeMode(groupObject, false, 1000);
+                        formController.changeMode(groupObject, false, 1000, GGridViewType.MAP);
                     });
                 }
             };
@@ -286,7 +283,7 @@ public class GGridController extends GAbstractTableController {
             public void addListener() {
                 addClickHandler(event -> {
                     setUpdateMode(!manual);
-                    formController.changeMode(groupObject, false, null, null, 0, null, null, false, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
+                    formController.changeMode(groupObject, false, null, null, 0, null, null, false, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO, null);
                 });
             }
         };
@@ -294,7 +291,7 @@ public class GGridController extends GAbstractTableController {
 
         forceUpdateTableButton = new SimpleImageButton(messages.formGridUpdate(), "ok.png");
         forceUpdateTableButton.addClickHandler(event -> {
-                    formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE);
+                    formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE, null);
                 });
         forceUpdateTableButton.addStyleName("actionPanelRenderer");
 
@@ -633,7 +630,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     public void changeGroupMode(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, GPropertyGroupType aggrType) {
-        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, null);
+        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, null, GGridViewType.PIVOT);
     }
 
     @Override
