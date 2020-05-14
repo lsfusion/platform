@@ -60,7 +60,7 @@ public class LogFormEntity extends AutoFormEntity {
             String sID = "param" + index;
 
             GroupObjectEntity paramGroup = new GroupObjectEntity(genID(), sID + "Group");
-            paramGroup.setPanelClassView();
+            paramGroup.setPanelViewType();
 
             ObjectEntity obj = new ObjectEntity(genID(), sID, valueClass, valueClass != null ? valueClass.getCaption() : LocalizedString.NONAME, valueClass == null);
             mParams.exclAdd(obj);

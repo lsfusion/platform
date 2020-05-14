@@ -24,7 +24,7 @@ public class GGroupObject implements Serializable {
     public int ID;
     public String sID;
 
-    public GClassViewType classView;
+    public GClassViewType viewType;
 
     public boolean isRecursive;
     public GTreeGroup parent;

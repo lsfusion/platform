@@ -6,7 +6,6 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
@@ -37,7 +36,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public boolean isMap;
 
-    public ClassViewType classView;
+    public ClassViewType viewType;
 
     public ClientGrid grid;
     public ClientToolbar toolbar;
@@ -116,7 +115,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        classView = pool.readObject(inStream);
+        viewType = pool.readObject(inStream);
 
         pool.deserializeCollection(objects, inStream);
 

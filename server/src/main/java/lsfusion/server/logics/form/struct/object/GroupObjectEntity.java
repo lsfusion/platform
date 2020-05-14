@@ -33,7 +33,6 @@ import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
-import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -173,7 +172,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         super(ID, sID != null ? sID : "groupObj" + ID);
     }
 
-    public ClassViewType classView = DEFAULT;
+    public ClassViewType viewType = DEFAULT;
     public Integer pageSize;
 
     public int getDefaultPageSize() {
@@ -222,20 +221,20 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         isParent = getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity<?>>) i -> properties[i]);
     }
 
-    public void setClassView(ClassViewType type) {
-        classView = type;
+    public void setViewType(ClassViewType type) {
+        viewType = type;
     }
 
-    public void setPanelClassView() {
-        setClassView(ClassViewType.PANEL);
+    public void setPanelViewType() {
+        setViewType(ClassViewType.PANEL);
     }
     
-    public void setGridClassView() {
-        setClassView(ClassViewType.GRID);
+    public void setGridViewType() {
+        setViewType(ClassViewType.GRID);
     }
 
     public boolean isPanel() {
-        return classView.isPanel();
+        return viewType.isPanel();
     }
 
     public Pair<Integer, Integer> getScriptIndex() {

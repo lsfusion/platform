@@ -625,14 +625,14 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Boolean shouldBeLast;
 
         // для всех
-        private ClassViewType forceViewType;
+        private ClassViewType viewType;
         
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form) {
             entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
-            entity.forceViewType = forceViewType;
+            entity.viewType = viewType;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
             entity.eventID = eventID;
@@ -722,8 +722,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(shouldBeLast == null)
                 setShouldBeLast(options.shouldBeLast);
             
-            if(forceViewType == null)
-                setForceViewType(options.forceViewType);
+            if(viewType == null)
+                setViewType(options.viewType);
             
             processors = options.processors.addList(processors);
         }
@@ -825,8 +825,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             this.shouldBeLast = shouldBeLast;
         }
 
-        public void setForceViewType(ClassViewType forceViewType) {
-            this.forceViewType = forceViewType;
+        public void setViewType(ClassViewType viewType) {
+            this.viewType = viewType;
         }
     }
 

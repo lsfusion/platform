@@ -25,15 +25,12 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.formula.CastFormulaImpl;
-import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionExpr;
 import lsfusion.server.data.expr.formula.StringOverrideFormulaImpl;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.RecursiveExpr;
-import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.expr.where.ifs.IfExpr;
@@ -59,10 +56,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.action.session.table.NoPropertyTableUsage;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.OrderClass;
-import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.TextClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
@@ -198,6 +192,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         setGroupMode = groupMode;
     }
 
+    public ClassViewType viewType = ClassViewType.DEFAULT;
+
+    public ImRevMap<ObjectInstance, KeyExpr> getMapKeys() {
+        return KeyExpr.getMapKeys(objects);
+    }
+
+    public Integer order = 0;
+
     public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
 
         this.entity = entity;
@@ -211,21 +213,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         for(ObjectInstance object : objects)
             object.groupTo = this;
 
-        this.classView = entity.classView;
+        this.viewType = entity.viewType;
 
         this.pageSize = entity.pageSize;
 
         this.parent = parent;
         this.props = props;
     }
-
-    public ImRevMap<ObjectInstance, KeyExpr> getMapKeys() {
-        return KeyExpr.getMapKeys(objects);
-    }
-
-    public Integer order = 0;
-
-    public ClassViewType classView = ClassViewType.DEFAULT;
 
     // caches
     public ImSet<FilterInstance> setFilters = null;
@@ -1082,7 +1076,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public Pair<SeekObjects, Integer> updateScroll() {
         Pair<SeekObjects, Integer> scroll = null;
         ImMap<ObjectInstance, DataObject> currentObject;
-        if (classView.isGrid() && !(currentObject = getGroupObjectValue()).isEmpty()) { // scrolling in grid
+        if (viewType.isGrid() && !(currentObject = getGroupObjectValue()).isEmpty()) { // scrolling in grid
             int keyNum = keys.indexOf(currentObject);
             int pageSize = getPageSize();
             if (upKeys && keyNum < pageSize) { // если меньше PageSize осталось и сверху есть ключи
@@ -1106,7 +1100,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImMap<ObjectInstance, DataObject> readKeys(MFormChanges result, boolean updateFilters, boolean updatePageSize, ImMap<ObjectInstance, DataObject> currentObject, SeekObjects seeks, int direction, SQLSession sql, QueryEnvironment env, Modifier modifier, ExecutionEnvironment execEnv, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         updated = (updated | UPDATED_KEYS);
 
-        if (!classView.isGrid()) { // панель
+        if (!viewType.isGrid()) { // панель
             ImMap<ObjectInstance, DataObject> readKeys = seeks.readKeys(sql, env, modifier, baseClass, reallyChanged);
             updateViewProperty(execEnv, readKeys);
             return readKeys;

@@ -739,7 +739,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
-		|	viewType=classViewType { $options.setForceViewType($viewType.type); }
+		|	viewType=classViewType { $options.setViewType($viewType.type); }
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -2450,7 +2450,7 @@ recursiveActionOptions[LA action, String actionName, LocalizedString caption, Ac
 
 semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
     :	inSetting [ps]
-	|	forceViewTypeSetting [property]
+	|	viewTypeSetting [property]
 	|	flexCharWidthSetting [property]
 	|	charWidthSetting [property]
 	|	changeKeySetting [property]
@@ -2579,10 +2579,10 @@ asonEventActionSetting [LA property]
 	:	'ASON' et=formEventType usage=actionOrPropertyUsage
 	;
 
-forceViewTypeSetting [LAP property]
+viewTypeSetting [LAP property]
 @after {
 	if (inMainParseState()) {
-		self.setForceViewType(property, $viewType.type);
+		self.setViewType(property, $viewType.type);
 	}
 }
 	:	viewType=classViewType

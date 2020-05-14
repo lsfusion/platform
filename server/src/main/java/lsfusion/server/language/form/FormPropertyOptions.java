@@ -34,7 +34,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity foreground;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
-    private ClassViewType forceViewType;
+    private ClassViewType viewType;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
@@ -169,12 +169,12 @@ public class FormPropertyOptions {
         this.footer = footer;
     }
 
-    public void setForceViewType(ClassViewType forceViewType) {
-        this.forceViewType = forceViewType;
+    public ClassViewType getViewType() {
+        return viewType;
     }
 
-    public ClassViewType getForceViewType() {
-        return forceViewType;
+    public void setViewType(ClassViewType viewType) {
+        this.viewType = viewType;
     }
 
     public void setToDraw(GroupObjectEntity toDraw) {
@@ -361,7 +361,7 @@ public class FormPropertyOptions {
         merged.setForeground(nvl(overrides.getForeground(), foreground));
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
-        merged.setForceViewType(nvl(overrides.getForceViewType(), forceViewType));
+        merged.setViewType(nvl(overrides.getViewType(), viewType));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));

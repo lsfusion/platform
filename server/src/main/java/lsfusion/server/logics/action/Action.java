@@ -94,8 +94,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         drawOptions.addProcessor(new DefaultProcessor() {
             @Override
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
-                if(entity.forceViewType == null)
-                    entity.forceViewType = ClassViewType.PANEL;
+                if(entity.viewType == null)
+                    entity.viewType = ClassViewType.PANEL;
             }
 
             @Override

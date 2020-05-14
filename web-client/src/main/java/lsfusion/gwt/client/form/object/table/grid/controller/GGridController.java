@@ -42,10 +42,10 @@ public class GGridController extends GAbstractTableController {
     private GTableView table;
 
     private static boolean isGrid(GGroupObject groupObject) {
-        return groupObject != null && groupObject.classView.isGrid();
+        return groupObject != null && groupObject.viewType.isGrid();
     }
     public boolean isGrid() {
-        return groupObject != null && groupObject.classView.isGrid();
+        return groupObject != null && groupObject.viewType.isGrid();
     }
 
     public GGridController(GFormController iformController) {

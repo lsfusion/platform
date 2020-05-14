@@ -26,7 +26,6 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements AggrReaderInstance {
@@ -68,7 +67,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
     @IdentityLazy
     public ImSet<GroupObjectInstance> getColumnGroupObjectsInGrid() {
-        return getColumnGroupObjects().filterFn(element -> element.classView.isGrid());
+        return getColumnGroupObjects().filterFn(element -> element.viewType.isGrid());
     }
     @IdentityLazy
     public ImSet<GroupObjectInstance> getGroupObjectsInGrid() {
@@ -142,7 +141,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public boolean isGrid() {
-        return (toDraw != null ? toDraw.classView : ClassViewType.PANEL).isGrid() && entity.forceViewType.isGrid();
+        return (toDraw != null ? toDraw.viewType : ClassViewType.PANEL).isGrid() && entity.viewType.isGrid();
     }
 
     public String toString() {

@@ -1263,8 +1263,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         eventAction.setAsEventActionFor(eventActionSID, mainProperty);
     }
 
-    public void setForceViewType(LAP property, ClassViewType viewType) {
-        property.setForceViewType(viewType);
+    public void setViewType(LAP property, ClassViewType viewType) {
+        property.setViewType(viewType);
     }
 
     public void setFlexCharWidth(LAP property, Integer charWidth, Boolean flex) {

@@ -63,7 +63,7 @@ public class GridController extends AbstractTableController {
     private boolean forceHidden = false;
 
     public boolean isGrid() {
-        return groupObject != null && groupObject.classView.isGrid();
+        return groupObject != null && groupObject.viewType.isGrid();
     }
 
     public GridController(ClientGroupObject igroupObject, ClientFormController formController, final ClientFormLayout formLayout, GridUserPreferences[] userPreferences) {

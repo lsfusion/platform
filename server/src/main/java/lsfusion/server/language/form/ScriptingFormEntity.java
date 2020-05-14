@@ -124,7 +124,7 @@ public class ScriptingFormEntity {
 
         ClassViewType viewType = groupObject.viewType;
         if (viewType != null)
-            groupObj.setClassView(viewType);
+            groupObj.setViewType(viewType);
 
         if (groupObject.pageSize != null) {
             groupObj.pageSize = groupObject.pageSize;
@@ -469,8 +469,8 @@ public class ScriptingFormEntity {
         }
 
         property.setPropertyExtra(options.getReadOnlyIf(), PropertyDrawExtraType.READONLYIF);
-        if (options.getForceViewType() != null) {
-            property.forceViewType = options.getForceViewType();
+        if (options.getViewType() != null) {
+            property.viewType = options.getViewType();
         }
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();

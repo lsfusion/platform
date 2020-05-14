@@ -142,8 +142,8 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setShouldBeLast(shouldBeLast);
     }
 
-    public void setForceViewType(ClassViewType forceViewType) {
-        getActionOrProperty().drawOptions.setForceViewType(forceViewType);
+    public void setViewType(ClassViewType viewType) {
+        getActionOrProperty().drawOptions.setViewType(viewType);
     }
 
     public void setAskConfirm(boolean askConfirm) {

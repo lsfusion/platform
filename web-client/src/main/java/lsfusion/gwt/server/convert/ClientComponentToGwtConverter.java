@@ -526,7 +526,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
         groupObject.filter = convertOrCast(clientGroupObject.filter);
-        groupObject.classView = GClassViewType.valueOf(clientGroupObject.classView.name());
+        groupObject.viewType = GClassViewType.valueOf(clientGroupObject.viewType.name());
 
         groupObject.isRecursive = clientGroupObject.isRecursive;
         groupObject.isMap = clientGroupObject.isMap;

@@ -298,7 +298,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
 
-            if(groupObject.classView.isGrid())
+            if(groupObject.viewType.isGrid())
                 changeGridViewType(groupObject, GridViewType.GRID);
         }
 
@@ -2036,7 +2036,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             boolean hidden = isHidden(group);
             boolean update = group.toUpdate();
 
-            ImSet<GroupObjectInstance> gridGroups = (group.classView.isGrid() ? SetFact.singleton(group) : SetFact.EMPTY());
+            ImSet<GroupObjectInstance> gridGroups = (group.viewType.isGrid() ? SetFact.singleton(group) : SetFact.EMPTY());
 
             fillChangedReader(group.rowBackgroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
             fillChangedReader(group.rowForegroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
@@ -2135,7 +2135,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     mQueryOrders.add(object, false);
                 }
 
-                if (group.classView.isPanel()) {
+                if (group.viewType.isPanel()) {
                     for (ObjectInstance object : group.objects) {
                         query.and(object.getExpr(query.getMapExprs(), getModifier()).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                     }
