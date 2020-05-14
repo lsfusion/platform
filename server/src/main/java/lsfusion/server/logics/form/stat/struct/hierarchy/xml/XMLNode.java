@@ -186,14 +186,14 @@ public class XMLNode implements Node<XMLNode> {
         }
     }
 
-    private static void addXMLChild(Element element, String key, String stringValue) {
+    private static void addXMLChild(Element element, String key, List<Content> content) {
         if(key.equals("value")) {
-            element.addContent(stringValue);
+            element.addContent(content);
         } else {
             Result<String> shortKey = new Result<>();
             Namespace namespace = addXMLNamespace(element, key, shortKey, true);
             Element addElement = new Element(shortKey.result, namespace);
-            addElement.addContent(parseObject(stringValue));
+            addElement.addContent(content);
             element.addContent(addElement);
         }
     }
@@ -234,7 +234,7 @@ public class XMLNode implements Node<XMLNode> {
         if(attr) {
             addXMLAttributeValue(node.element, key, stringValue);
         } else {
-            addXMLChild(node.element, key, stringValue);
+            addXMLChild(node.element, key, parseObject(stringValue));
         }
     }
 
