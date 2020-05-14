@@ -19,7 +19,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventType;
-import lsfusion.interop.form.object.table.grid.GridViewType;
+import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -299,7 +299,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
 
             if(groupObject.viewType.isGrid())
-                changeGridViewType(groupObject, GridViewType.GRID);
+                changeListViewType(groupObject, ListViewType.GRID);
         }
 
         for (int i = 0, size = mapObjects.size(); i < size; i++) {
@@ -377,8 +377,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ServerLoggers.remoteLifeLog("FORM OPEN : " + this);
     }
 
-    public void changeGridViewType(GroupObjectInstance groupObject, GridViewType gridViewType) throws SQLException, SQLHandledException {
-        groupObject.changeGridViewType(this, BL.LM.gridViewType, gridViewType);
+    public void changeListViewType(GroupObjectInstance groupObject, ListViewType listViewType) throws SQLException, SQLHandledException {
+        groupObject.changeListViewType(this, BL.LM.listViewType, listViewType);
     }
 
     public static class DiffForm {

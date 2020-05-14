@@ -161,12 +161,12 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.treeGroup = treeGroup; // нужно чтобы IsInTree правильно определялось в addScriptingTreeGroupObject, когда идет addGroupObjectView
     }
 
-    private PropertyRevImplement<ClassPropertyInterface, ObjectEntity> gridViewTypeProp;
-    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getGridViewType(ConcreteCustomClass gridViewType) {
-        if (gridViewTypeProp == null) {
-            gridViewTypeProp = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.EMPTY(), gridViewType, LocalNestedType.ALL);
+    private PropertyRevImplement<ClassPropertyInterface, ObjectEntity> listViewTypeProp;
+    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getListViewType(ConcreteCustomClass listViewType) {
+        if (listViewTypeProp == null) {
+            listViewTypeProp = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.EMPTY(), listViewType, LocalNestedType.ALL);
         }
-        return gridViewTypeProp;
+        return listViewTypeProp;
     }
 
     public GroupObjectEntity(int ID, String sID) {
@@ -235,7 +235,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         setViewType(ClassViewType.PANEL);
     }
     
-    public void setGridViewType() {
+    public void setListViewType() {
         setViewType(ClassViewType.GRID);
     }
 

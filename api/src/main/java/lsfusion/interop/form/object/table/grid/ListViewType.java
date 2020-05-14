@@ -1,9 +1,9 @@
 package lsfusion.interop.form.object.table.grid;
 
-public enum GridViewType {
+public enum ListViewType {
     GRID, PIVOT, MAP;
 
-    // should correspond GridViewType in System.lsf
+    // should correspond ListViewType in System.lsf
     public String getObjectName() {
         switch (this) {
             case GRID:

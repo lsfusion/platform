@@ -249,7 +249,7 @@ public class GGridController extends GAbstractTableController {
             public void addListener() {
                 addClickHandler(event -> {
                     setGridTableView();
-                    formController.changeMode(groupObject, false, -1, GGridViewType.GRID);
+                    formController.changeMode(groupObject, false, -1, GListViewType.GRID);
                 });
             }
         };
@@ -259,7 +259,7 @@ public class GGridController extends GAbstractTableController {
             public void addListener() {
                 addClickHandler(event -> {
                     setPivotTableView();
-                    formController.changeMode(groupObject, true, 1000, GGridViewType.PIVOT);
+                    formController.changeMode(groupObject, true, 1000, GListViewType.PIVOT);
                 });
             }
         };
@@ -270,7 +270,7 @@ public class GGridController extends GAbstractTableController {
                 public void addListener() {
                     addClickHandler(event -> {
                         setMapTableView();
-                        formController.changeMode(groupObject, false, 1000, GGridViewType.MAP);
+                        formController.changeMode(groupObject, false, 1000, GListViewType.MAP);
                     });
                 }
             };
@@ -656,7 +656,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     public void changeGroupMode(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, GPropertyGroupType aggrType) {
-        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, null, GGridViewType.PIVOT);
+        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, null, GListViewType.PIVOT);
     }
 
     @Override

@@ -62,7 +62,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPrefere
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
-import lsfusion.gwt.client.form.object.table.grid.view.GGridViewType;
+import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.order.user.GOrder;
@@ -982,10 +982,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     // change group mode with force refresh
-    public void changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize, GGridViewType viewType) {
+    public void changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize, GListViewType viewType) {
         changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null, viewType);
     }
-    public void changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GGridViewType viewType) {
+    public void changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GListViewType viewType) {
         int[] propertyIDs = null;
         GGroupObjectValue[] columnKeys = null;
         if(properties != null) {
