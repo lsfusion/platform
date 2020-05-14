@@ -786,7 +786,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public boolean isAsyncModifyObject(GPropertyDraw property) {
         if (property.addRemove != null) {
             GGridController controller = controllers.get(property.addRemove.object.groupObject);
-            if (controller != null && controller.isGrid()) {
+            if (controller != null && controller.isList()) {
                 return true;
             }
         }
@@ -991,7 +991,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<>();
         List<GGroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<>();
         for (GGridController controller : controllers.values()) {
-            if (controller.isGrid()) {
+            if (controller.isList()) {
                 groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
                 groupObjectGeneralPreferencesList.add(controller.getGeneralGridPreferences());
             }

@@ -67,12 +67,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
     @IdentityLazy
     public ImSet<GroupObjectInstance> getColumnGroupObjectsInGrid() {
-        return getColumnGroupObjects().filterFn(element -> element.viewType.isGrid());
+        return getColumnGroupObjects().filterFn(element -> element.viewType.isList());
     }
     @IdentityLazy
     public ImSet<GroupObjectInstance> getGroupObjectsInGrid() {
         ImSet<GroupObjectInstance> result = getColumnGroupObjectsInGrid();
-        if(isGrid())
+        if(isList())
             result = result.addExcl(toDraw);
         return result;
     }
@@ -140,8 +140,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return PropertyReadType.DRAW;
     }
 
-    public boolean isGrid() {
-        return (toDraw != null ? toDraw.viewType : ClassViewType.PANEL).isGrid() && entity.viewType.isGrid();
+    public boolean isList() {
+        return (toDraw != null ? toDraw.viewType : ClassViewType.PANEL).isList() && entity.viewType.isList();
     }
 
     public String toString() {

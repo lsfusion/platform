@@ -27,12 +27,12 @@ public abstract class GAbstractTableController implements GTableController {
     protected final GToolbarView toolbarView;
     public GFilterController filter;
 
-    public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isGrid) {
+    public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {
         this.formController = formController;
 
         panel = new GPanelController(formController);
 
-        if (toolbar == null || !toolbar.visible || !isGrid) {
+        if (toolbar == null || !toolbar.visible || !isList) {
             toolbarView = null;
         } else {
             toolbarView = new GToolbarView();

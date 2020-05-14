@@ -1965,7 +1965,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             return false;
         }
 
-        if (userPrefsHiddenProperties.contains(drawProperty) && drawProperty.isGrid()) { // панель показывается всегда
+        if (userPrefsHiddenProperties.contains(drawProperty) && drawProperty.isList()) { // панель показывается всегда
             return false;
         }
 
@@ -2013,7 +2013,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             boolean oldPropIsShown = addShownHidden(isShown, drawProperty, newPropIsShown);
 
             if (newPropIsShown) {
-                boolean update = drawProperty.toDraw == null || !drawProperty.isGrid() || drawProperty.toDraw.toUpdate();
+                boolean update = drawProperty.toDraw == null || !drawProperty.isList() || drawProperty.toDraw.toUpdate();
                 boolean hidden = isTabHidden(drawProperty);
 
                 ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
@@ -2036,7 +2036,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             boolean hidden = isHidden(group);
             boolean update = group.toUpdate();
 
-            ImSet<GroupObjectInstance> gridGroups = (group.viewType.isGrid() ? SetFact.singleton(group) : SetFact.EMPTY());
+            ImSet<GroupObjectInstance> gridGroups = (group.viewType.isList() ? SetFact.singleton(group) : SetFact.EMPTY());
 
             fillChangedReader(group.rowBackgroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
             fillChangedReader(group.rowForegroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);

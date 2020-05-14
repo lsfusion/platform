@@ -234,7 +234,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
-        if(group.viewType.isGrid()) {
+        if(group.viewType.isList()) {
             BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
             PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
@@ -999,7 +999,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         FormView formView = getRichDesign();
         ComponentView drawComponent;
         GroupObjectEntity toDraw;
-        if(property.isGrid(this) && (toDraw = property.getToDraw(this)) != null) {
+        if(property.isList(this) && (toDraw = property.getToDraw(this)) != null) {
             if (toDraw.isInTree())
                 drawComponent = formView.get(toDraw.treeGroup);
             else
@@ -1013,7 +1013,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public boolean isMap(GroupObjectEntity entity) {
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
         for(PropertyDrawEntity property : propertyDrawsIt)
-            if(property.isGrid(this) && entity.equals(property.getToDraw(this))) {
+            if(property.isList(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getSID();
                 if(name.equals("longitude") || name.equals("latitude") || name.equals("polygon"))
                     return true;

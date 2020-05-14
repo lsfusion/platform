@@ -170,7 +170,7 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property) {
-        if (property.grid) {
+        if (property.isList) {
             view.addDrawProperty(group, property);
         } else {
             panel.addProperty(property);
@@ -178,7 +178,7 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     public void removeProperty(ClientGroupObject group, ClientPropertyDraw property) {
-        if(property.grid)
+        if(property.isList)
             tree.removeProperty(group, property);
         else
             panel.removeProperty(property);
@@ -186,7 +186,7 @@ public class TreeGroupController extends AbstractTableController {
 
     @Override
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (property.grid) {
+        if (property.isList) {
             tree.updateCellBackgroundValues(property, values);
         } else {
             panel.updateCellBackgroundValues(property, values);
@@ -195,7 +195,7 @@ public class TreeGroupController extends AbstractTableController {
 
     @Override
     public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (property.grid) {
+        if (property.isList) {
             tree.updateCellForegroundValues(property, values);
         } else {
             panel.updateCellForegroundValues(property, values);
@@ -204,7 +204,7 @@ public class TreeGroupController extends AbstractTableController {
 
     @Override
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
-        if (property.grid) {
+        if (property.isList) {
             view.updateDrawPropertyValues(property, values, update);
         } else {
             panel.updatePropertyValues(property, values, update);
@@ -213,21 +213,21 @@ public class TreeGroupController extends AbstractTableController {
 
     @Override
     public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (!property.grid) {
+        if (!property.isList) {
             panel.updatePropertyCaptions(property, values);
         }
     }
 
     @Override
     public void updateShowIfValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (!property.grid) {
+        if (!property.isList) {
             panel.updateShowIfValues(property, values);
         }
     }
 
     @Override
     public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (property.grid) {
+        if (property.isList) {
             tree.updateReadOnlyValues(property, values);
         } else {
             panel.updateReadOnlyValues(property, values);

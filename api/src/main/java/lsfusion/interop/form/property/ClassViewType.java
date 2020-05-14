@@ -16,4 +16,8 @@ public enum ClassViewType {
     public boolean isGrid() {
         return this == GRID;
     }
+
+    public boolean isList() {
+        return isGrid();
+    }
 }

@@ -509,9 +509,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return toDraw != null && toDraw.viewType.isToolbar();
     }
 
-    public boolean isGrid(FormEntity formEntity) {
+    public boolean isList(FormEntity formEntity) {
         GroupObjectEntity toDraw = getToDraw(formEntity);
-        return toDraw != null && toDraw.viewType.isGrid() && (viewType == null || viewType.isGrid());
+        return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
     }
 
     static public String createSID(String name, List<String> mapping) {

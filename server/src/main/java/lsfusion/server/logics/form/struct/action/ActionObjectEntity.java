@@ -34,7 +34,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     public ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity) {
-        if(entity == null || !entity.viewType.isGrid())
+        if(entity == null || !entity.viewType.isList())
             return null;
         
         if(!mapping.valuesSet().containsAll(entity.getObjects())) // in theory it can work when there are not all objects, but for now we'll do without it  

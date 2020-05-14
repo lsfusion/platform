@@ -62,8 +62,8 @@ public class GridController extends AbstractTableController {
 
     private boolean forceHidden = false;
 
-    public boolean isGrid() {
-        return groupObject != null && groupObject.viewType.isGrid();
+    public boolean isList() {
+        return groupObject != null && groupObject.viewType.isList();
     }
 
     public GridController(ClientGroupObject igroupObject, ClientFormController formController, final ClientFormLayout formLayout, GridUserPreferences[] userPreferences) {
@@ -337,7 +337,7 @@ public class GridController extends AbstractTableController {
             }
         }
 
-        if (isGrid()) {
+        if (isList()) {
             if (fc.gridObjects.containsKey(groupObject)) {
                 setRowKeysAndCurrentObject(fc.gridObjects.get(groupObject), fc.objects.get(groupObject));
             }
@@ -352,14 +352,14 @@ public class GridController extends AbstractTableController {
         }
 
         Boolean updateState = null;
-        if(isGrid())
+        if(isList())
             updateState = fc.updateStateObjects.get(groupObject);
 
         update(updateState);
     }
 
     public void addDrawProperty(ClientPropertyDraw property) {
-        if (property.grid) {
+        if (property.isList) {
             table.addProperty(property);
         } else {
             panel.addProperty(property);
@@ -367,7 +367,7 @@ public class GridController extends AbstractTableController {
     }
 
     public void removeProperty(ClientPropertyDraw property) {
-        if (property.grid) {
+        if (property.isList) {
             table.removeProperty(property);
         } else {
             panel.removeProperty(property);
@@ -379,7 +379,7 @@ public class GridController extends AbstractTableController {
     }
 
     public void modifyGroupObject(ClientGroupObjectValue gridObject, boolean add, int position) {
-        assert isGrid();
+        assert isList();
 
         table.modifyGroupObject(gridObject, add, position); // assert что grid!=null
 
@@ -395,7 +395,7 @@ public class GridController extends AbstractTableController {
     }
 
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
-        if (property.grid) {
+        if (property.isList) {
             table.updateColumnKeys(property, groupColumnKeys);
         } else {
             panel.updateColumnKeys(property, groupColumnKeys);
@@ -404,7 +404,7 @@ public class GridController extends AbstractTableController {
 
     @Override
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (property.grid) {
+        if (property.isList) {
             table.updateCellBackgroundValues(property, values);
         } else {
             panel.updateCellBackgroundValues(property, values);
@@ -413,7 +413,7 @@ public class GridController extends AbstractTableController {
 
     @Override
     public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (property.grid) {
+        if (property.isList) {
             table.updateCellForegroundValues(property, values);
         } else {
             panel.updateCellForegroundValues(property, values);
@@ -422,7 +422,7 @@ public class GridController extends AbstractTableController {
 
     @Override
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean updateKeys) {
-        if (property.grid) {
+        if (property.isList) {
             table.updatePropertyValues(property, values, updateKeys);
         } else {
             panel.updatePropertyValues(property, values, updateKeys);
@@ -431,7 +431,7 @@ public class GridController extends AbstractTableController {
 
     @Override
     public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (property.grid) {
+        if (property.isList) {
             table.updatePropertyCaptions(property, values);
         } else {
             panel.updatePropertyCaptions(property, values);
@@ -440,7 +440,7 @@ public class GridController extends AbstractTableController {
 
     @Override
     public void updateShowIfValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (property.grid) {
+        if (property.isList) {
             table.updateShowIfValues(property, values);
         } else {
             panel.updateShowIfValues(property, values);
@@ -449,7 +449,7 @@ public class GridController extends AbstractTableController {
 
     @Override
     public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if (property.grid) {
+        if (property.isList) {
             table.updateReadOnlyValues(property, values);
         } else {
             panel.updateReadOnlyValues(property, values);
@@ -458,7 +458,7 @@ public class GridController extends AbstractTableController {
 
     @Override
     public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> values) {
-        if (isGrid()) {
+        if (isList()) {
             table.updateRowBackgroundValues(values);
         } else {
             if (values != null && !values.isEmpty()) {
@@ -469,7 +469,7 @@ public class GridController extends AbstractTableController {
 
     @Override
     public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> values) {
-        if (isGrid()) {
+        if (isList()) {
             table.updateRowForegroundValues(values);
         } else {
             if (values != null && !values.isEmpty()) {
@@ -522,19 +522,19 @@ public class GridController extends AbstractTableController {
     @Override
     public boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
         assert this.groupObject.equals(groupObject);
-        if(isGrid()) {
+        if(isList()) {
             return changeOrders(orders, alreadySet);
         }
         return false; // doesn't matter
     }
 
     public boolean changeOrders(LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
-        assert isGrid();
+        assert isList();
         return table.changePropertyOrders(orders, alreadySet);
     }
 
     public OrderedMap<ClientPropertyDraw, Boolean> getUserOrders() {
-        boolean hasUserPreferences = isGrid() && table.hasUserPreferences();
+        boolean hasUserPreferences = isList() && table.hasUserPreferences();
         if (hasUserPreferences) return table.getUserOrders(getGroupObjectProperties());
         return null;
     }
@@ -564,7 +564,7 @@ public class GridController extends AbstractTableController {
     }
 
     public boolean isPropertyShown(ClientPropertyDraw property) {
-        if(property.grid)
+        if(property.isList)
             return table.containsProperty(property);
         else
             return panel.containsProperty(property);
@@ -634,7 +634,7 @@ public class GridController extends AbstractTableController {
     }
 
     public boolean isVisible() {
-        return !forceHidden && isGrid();
+        return !forceHidden && isList();
     }
 
     public void updateTable(Boolean updateState) {

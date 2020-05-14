@@ -1076,7 +1076,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public Pair<SeekObjects, Integer> updateScroll() {
         Pair<SeekObjects, Integer> scroll = null;
         ImMap<ObjectInstance, DataObject> currentObject;
-        if (viewType.isGrid() && !(currentObject = getGroupObjectValue()).isEmpty()) { // scrolling in grid
+        if (viewType.isList() && !(currentObject = getGroupObjectValue()).isEmpty()) { // scrolling in grid
             int keyNum = keys.indexOf(currentObject);
             int pageSize = getPageSize();
             if (upKeys && keyNum < pageSize) { // если меньше PageSize осталось и сверху есть ключи
@@ -1100,7 +1100,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImMap<ObjectInstance, DataObject> readKeys(MFormChanges result, boolean updateFilters, boolean updatePageSize, ImMap<ObjectInstance, DataObject> currentObject, SeekObjects seeks, int direction, SQLSession sql, QueryEnvironment env, Modifier modifier, ExecutionEnvironment execEnv, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         updated = (updated | UPDATED_KEYS);
 
-        if (!viewType.isGrid()) { // панель
+        if (!viewType.isList()) { // панель
             ImMap<ObjectInstance, DataObject> readKeys = seeks.readKeys(sql, env, modifier, baseClass, reallyChanged);
             updateViewProperty(execEnv, readKeys);
             return readKeys;

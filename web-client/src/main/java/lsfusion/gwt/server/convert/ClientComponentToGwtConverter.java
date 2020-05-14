@@ -50,10 +50,7 @@ import lsfusion.interop.form.property.PropertyEditType;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.gwt.server.convert.StaticConverters.convertColor;
 
@@ -312,7 +309,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.changeMouse = convertOrCast(clientPropertyDraw.changeMouse);
         propertyDraw.changeMousePriority = clientPropertyDraw.changeMousePriority;
 
-        propertyDraw.grid = clientPropertyDraw.grid;
+        propertyDraw.grid = clientPropertyDraw.isList;
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
 

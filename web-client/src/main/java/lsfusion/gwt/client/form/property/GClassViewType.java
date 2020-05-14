@@ -12,7 +12,7 @@ public enum GClassViewType {
         return this == PANEL || this == TOOLBAR;
     }
 
-    public boolean isHidden() {
-        return this == HIDE;
+    public boolean isList() {
+        return isGrid();
     }
 }
