@@ -403,6 +403,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return form.getDefaultOrders(groupObject);
     }
 
+    public List<List<GPropertyDraw>> getPivotColumns(GGroupObject groupObject) {
+        return form.getPivotColumns(groupObject);
+    }
+
+    public List<List<GPropertyDraw>> getPivotRows(GGroupObject groupObject) {
+        return form.getPivotRows(groupObject);
+    }
+
+    public List<GPropertyDraw> getPivotMeasures(GGroupObject groupObject) {
+        return form.getPivotMeasures(groupObject);
+    }
+
     public void executeNotificationAction(final Integer idNotification) throws IOException {
         syncDispatch(new ExecuteNotification(idNotification), new ServerResponseCallback());
     }

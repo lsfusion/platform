@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -142,8 +143,9 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setShouldBeLast(shouldBeLast);
     }
 
-    public void setViewType(ClassViewType viewType) {
+    public void setViewType(ClassViewType viewType, PivotOptions pivotOptions) {
         getActionOrProperty().drawOptions.setViewType(viewType);
+        getActionOrProperty().drawOptions.setPivotOptions(pivotOptions);
     }
 
     public void setAskConfirm(boolean askConfirm) {

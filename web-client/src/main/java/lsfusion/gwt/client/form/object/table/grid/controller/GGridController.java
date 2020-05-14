@@ -48,6 +48,10 @@ public class GGridController extends GAbstractTableController {
         return groupObject != null && groupObject.viewType.isList();
     }
 
+    public GPivotOptions getPivotOptions() {
+        return groupObject != null ? groupObject.pivotOptions : null;
+    }
+
     public GGridController(GFormController iformController) {
         this(iformController, null, null);
     }
@@ -104,7 +108,17 @@ public class GGridController extends GAbstractTableController {
             configureToolbar();
 
             setUpdateMode(false);
-            setGridTableView();
+            switch (groupObject.viewType) {
+                case PIVOT:
+                    setPivotTableView();
+                    break;
+                case MAP:
+                    setMapTableView();
+                    break;
+                case GRID:
+                default:
+                    setGridTableView();
+            }
         }
     }
     
@@ -569,6 +583,18 @@ public class GGridController extends GAbstractTableController {
         return formController.getDefaultOrders(groupObject);
     }
 
+    public List<List<GPropertyDraw>> getPivotColumns() {
+        return formController.getPivotColumns(groupObject);
+    }
+
+    public List<List<GPropertyDraw>> getPivotRows() {
+        return formController.getPivotRows(groupObject);
+    }
+
+    public List<GPropertyDraw> getPivotMeasures() {
+        return formController.getPivotMeasures(groupObject);
+    }
+
     public GGroupObjectUserPreferences getUserGridPreferences() {
         return table.getCurrentUserGridPreferences();
     }
@@ -684,6 +710,12 @@ public class GGridController extends GAbstractTableController {
                 GPivot pivotTable = (GPivot) table;
                 settingsButton.showBackground(pivotTable.isSettings());
             }
+        }
+    }
+
+    public void setVisibleSettingsButton(boolean visible) {
+        if(settingsButton != null) {
+            settingsButton.setVisible(visible);
         }
     }
 

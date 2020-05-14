@@ -34,6 +34,10 @@ public class GForm implements Serializable, GWidthStringProcessor {
     public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<>();
     public LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = new LinkedHashMap<>();
 
+    public List<List<GPropertyDraw>> pivotColumns = new ArrayList<>();
+    public List<List<GPropertyDraw>> pivotRows = new ArrayList<>();
+    public List<GPropertyDraw> pivotMeasures = new ArrayList<>();
+
     private transient HashMap<Integer, GPropertyDraw> idProps;
     private transient HashMap<Integer, GObject> idObjects;
 
@@ -122,6 +126,38 @@ public class GForm implements Serializable, GWidthStringProcessor {
         for (Map.Entry<GPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
             if (GwtSharedUtils.nullEquals(entry.getKey().groupObject, group)) {
                 result.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return result;
+    }
+
+    public List<List<GPropertyDraw>> getPivotColumns(GGroupObject group) {
+        return getPivotProperties(group, pivotColumns);
+    }
+
+    public List<List<GPropertyDraw>> getPivotRows(GGroupObject group) {
+        return getPivotProperties(group, pivotRows);
+    }
+
+    public List<List<GPropertyDraw>> getPivotProperties(GGroupObject group, List<List<GPropertyDraw>> properties) {
+        List<List<GPropertyDraw>> result = new ArrayList<>();
+        for (List<GPropertyDraw> propertyEntry : properties) {
+            List<GPropertyDraw> resultEntry = new ArrayList<>();
+            for(GPropertyDraw property : propertyEntry) {
+                if (GwtSharedUtils.nullEquals(property.groupObject, group)) {
+                    resultEntry.add(property);
+                }
+            }
+            result.add(resultEntry);
+        }
+        return result;
+    }
+
+    public List<GPropertyDraw> getPivotMeasures(GGroupObject group) {
+        List<GPropertyDraw> result = new ArrayList<>();
+        for (GPropertyDraw property : pivotMeasures) {
+            if (GwtSharedUtils.nullEquals(property.groupObject, group)) {
+                result.add(property);
             }
         }
         return result;

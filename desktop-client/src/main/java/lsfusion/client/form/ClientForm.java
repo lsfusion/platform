@@ -47,6 +47,10 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<>();
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<>();
 
+    public List<List<ClientPropertyDraw>> pivotColumns = new ArrayList<>();
+    public List<List<ClientPropertyDraw>> pivotRows = new ArrayList<>();
+    public List<ClientPropertyDraw> pivotMeasures = new ArrayList<>();
+
     public ClientForm() {
     }
 
@@ -195,10 +199,23 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
             defaultOrders.put(order, inStream.readBoolean());
         }
 
+        pivotColumns = deserializePivot(pool, inStream);
+        pivotRows = deserializePivot(pool, inStream);
+        pivotMeasures = pool.deserializeList(inStream);
+
         canonicalName = pool.readString(inStream);
         creationPath = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
         autoRefresh = inStream.readInt();
+    }
+
+    private List<List<ClientPropertyDraw>> deserializePivot(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
+        List<List<ClientPropertyDraw>> properties = new ArrayList<>();
+        int size = inStream.readInt();
+        for(int i = 0; i < size; i++) {
+            properties.add(pool.deserializeList(inStream));
+        }
+        return properties;
     }
 
     public boolean removePropertyDraw(ClientPropertyDraw clientPropertyDraw) {

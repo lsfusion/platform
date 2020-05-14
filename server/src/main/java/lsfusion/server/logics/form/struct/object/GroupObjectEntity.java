@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.expr.Expr;
@@ -173,6 +174,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     public ClassViewType viewType = DEFAULT;
+    public PivotOptions pivotOptions;
     public Integer pageSize;
 
     public int getDefaultPageSize() {
@@ -221,8 +223,12 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         isParent = getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity<?>>) i -> properties[i]);
     }
 
-    public void setViewType(ClassViewType type) {
-        viewType = type;
+    public void setViewType(ClassViewType viewType) {
+        this.viewType = viewType;
+    }
+
+    public void setPivotOptions(PivotOptions pivotOptions) {
+        this.pivotOptions = pivotOptions;
     }
 
     public void setPanelViewType() {

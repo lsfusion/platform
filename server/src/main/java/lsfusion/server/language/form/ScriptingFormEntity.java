@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.FormEventType;
-import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -122,9 +121,10 @@ public class ScriptingFormEntity {
             }
         }
 
-        ClassViewType viewType = groupObject.viewType;
-        if (viewType != null)
-            groupObj.setViewType(viewType);
+        if (groupObject.viewType != null)
+            groupObj.setViewType(groupObject.viewType);
+        if(groupObject.pivotOptions != null)
+            groupObj.setPivotOptions(groupObject.pivotOptions);
 
         if (groupObject.pageSize != null) {
             groupObj.pageSize = groupObject.pageSize;
@@ -684,6 +684,18 @@ public class ScriptingFormEntity {
             form.addDefaultOrder(properties.get(i), orders.get(i), version);
             form.addDefaultOrderView(properties.get(i), orders.get(i), version);
         }
+    }
+
+    public void addPivotColumns(List<List<PropertyDrawEntity>> columnsList, Version version) {
+        form.addPivotColumns(columnsList, version);
+    }
+
+    public void addPivotRows(List<List<PropertyDrawEntity>> rowsList, Version version) {
+        form.addPivotRows(rowsList, version);
+    }
+
+    public void addPivotMeasures(List<PropertyDrawEntity> measuresList, Version version) {
+        form.addPivotMeasures(measuresList, version);
     }
 
     public void setAsDialogForm(String className, String objectID, Version version) throws ScriptingErrorLog.SemanticErrorException {

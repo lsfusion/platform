@@ -1797,7 +1797,7 @@ public abstract class LogicsModule {
     
     private void setFormActions(LA result) {
         result.setShouldBeLast(true);
-        result.setViewType(ClassViewType.TOOLBAR);
+        result.setViewType(ClassViewType.TOOLBAR, null);
     }
 
     private void setEditActionOptions(LA result) {

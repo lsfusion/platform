@@ -11,6 +11,7 @@ import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
@@ -19,12 +20,55 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import java.util.*;
 
 public class GPivot extends GStateTableView {
+    private List<String> defaultAggrCaptions;
+
     public GPivot(GFormController formController, GGridController gridController) {
         super(formController, gridController);
 
         setStyleName(getElement(), "pivotTable");
 
-        config = getDefaultConfig(COLUMN);
+        GPivotOptions pivotOptions = gridController.getPivotOptions();
+        String rendererName = pivotOptions != null ? pivotOptions.getType() : null;
+        String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
+        if(pivotOptions != null)
+            gridController.setVisibleSettingsButton(pivotOptions.isShowSettings());
+
+        List<List<GPropertyDraw>> pivotColumns = gridController.getPivotColumns();
+        List<String> columns = new ArrayList<String>() {{ add(COLUMN); }};
+        Integer[] splitCols = new Integer[pivotColumns.size()];
+        splitCols[0] = 0;
+        int columnsCount = 0;
+        for(int i = 0; i < pivotColumns.size(); i++) {
+            List<GPropertyDraw> pivotColumn = pivotColumns.get(i);
+            columnsCount += pivotColumn.size();
+            splitCols[i+1] = columnsCount;
+            for (GPropertyDraw property : pivotColumn) {
+                columns.add(property.caption);
+            }
+        }
+
+        List<List<GPropertyDraw>> pivotRows = gridController.getPivotRows();
+        List<String> rows = new ArrayList<>();
+        Integer[] splitRows = new Integer[pivotRows.size()];
+        int rowsCount = -1;
+        for(int i = 0; i < pivotRows.size(); i++) {
+            List<GPropertyDraw> pivotRow = pivotRows.get(i);
+            if(!pivotRow.isEmpty()) {
+                rowsCount += pivotRow.size();
+                splitRows[i] = rowsCount;
+                for (GPropertyDraw property : pivotRow) {
+                    rows.add(property.caption);
+                }
+            }
+        }
+
+        defaultAggrCaptions = new ArrayList<>();
+        List<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
+        for(GPropertyDraw pivotMeasure : pivotMeasures) {
+            defaultAggrCaptions.add(pivotMeasure.caption);
+        }
+
+        config = getDefaultConfig(columns.toArray(), splitCols, rows.toArray(), splitRows, rendererName, aggregationName);
     }
 
     // in theory we can order all properties once, but so far there is no full list of properties
@@ -125,7 +169,7 @@ public class GPivot extends GStateTableView {
 
                 aggregator.setAggregator(caption, columnAggregator);
 
-                if (property.baseType instanceof GIntegralType)
+                if ((defaultAggrCaptions.isEmpty() || defaultAggrCaptions.contains(caption)) && property.baseType instanceof GIntegralType)
                     aggrCaptions.add(caption);
             }
         }
@@ -138,6 +182,20 @@ public class GPivot extends GStateTableView {
         rowCaptions.push(COLUMN); // putting columns to rows
 
         return rowCaptions;
+    }
+
+    private String getAggregationName(GPropertyGroupType aggregation) {
+        if(aggregation != null) {
+            switch (aggregation) {
+                case SUM:
+                    return "Sum";
+                case MAX:
+                    return "Max";
+                case MIN:
+                    return "Min";
+            }
+        }
+        return null;
     }
 
     private void pushValue(JsArrayMixed rowValues, Map<GGroupObjectValue, Object> propValues, GGroupObjectValue fullKey, GridCellRenderer cellRenderer) {
@@ -376,7 +434,7 @@ public class GPivot extends GStateTableView {
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
 
-    private native WrapperObject getDefaultConfig(String columnField)/*-{
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, String rendererName, String aggregatorName)/*-{
         var tpl = $wnd.$.pivotUtilities.aggregatorTemplates;
         var instance = this;
         var renderers = $wnd.$.extend(
@@ -390,8 +448,14 @@ public class GPivot extends GStateTableView {
         return {
             sorters: {}, // Configuration ordering column for group
             dataClass: $wnd.$.pivotUtilities.SubtotalPivotData,
-            cols: [columnField], // inital columns since overwrite is false
+            cols: columns, // inital columns since overwrite is false
+            splitCols: splitCols,
+            rows: rows, // inital rows since overwrite is false
+            splitRows: splitRows,
             renderers: renderers,
+            rendererName: rendererName,
+            aggregatorName: aggregatorName,
+            //inclusions: {'(Колонка)':['dataLatitude']},
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             }

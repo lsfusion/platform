@@ -195,6 +195,22 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return fixedOrders.getListMap();
     }
 
+    private NFOrderSet<List<PropertyDrawEntity>> pivotColumns = NFFact.orderSet();
+    private NFOrderSet<List<PropertyDrawEntity>> pivotRows = NFFact.orderSet();
+    private NFOrderSet<PropertyDrawEntity> pivotMeasures = NFFact.orderSet();
+
+    public ImList<List<PropertyDrawEntity>> getPivotColumnsList() {
+        return pivotColumns.getList();
+    }
+
+    public ImList<List<PropertyDrawEntity>> getPivotRowsList() {
+        return pivotRows.getList();
+    }
+
+    public ImList<PropertyDrawEntity> getPivotMeasuresList() {
+        return pivotMeasures.getList();
+    }
+
     public ModalityType modalityType = ModalityType.DOCKED;
     public int autoRefresh = 0;
 
@@ -1249,6 +1265,24 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public void setPageSize(int pageSize) {
         for (GroupObjectEntity group : getGroupsIt()) {
             group.pageSize = pageSize;
+        }
+    }
+
+    public void addPivotColumns(List<List<PropertyDrawEntity>> columns, Version version) {
+        for(List<PropertyDrawEntity> column : columns) {
+            pivotColumns.add(column, version);
+        }
+    }
+
+    public void addPivotRows(List<List<PropertyDrawEntity>> rows, Version version) {
+        for(List<PropertyDrawEntity> row : rows) {
+            pivotRows.add(row, version);
+        }
+    }
+
+    public void addPivotMeasures(List<PropertyDrawEntity> measures, Version version) {
+        for(PropertyDrawEntity measure : measures) {
+            pivotMeasures.add(measure, version);
         }
     }
 

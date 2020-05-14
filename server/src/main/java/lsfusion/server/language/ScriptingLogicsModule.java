@@ -19,6 +19,7 @@ import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.Version;
@@ -1263,8 +1264,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         eventAction.setAsEventActionFor(eventActionSID, mainProperty);
     }
 
-    public void setViewType(LAP property, ClassViewType viewType) {
-        property.setViewType(viewType);
+    public void setViewType(LAP property, ClassViewType viewType, PivotOptions pivotOptions) {
+        property.setViewType(viewType, pivotOptions);
     }
 
     public void setFlexCharWidth(LAP property, Integer charWidth, Boolean flex) {

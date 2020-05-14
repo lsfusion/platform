@@ -5,6 +5,7 @@ import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GClassViewType;
+import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GRowBackgroundReader;
 import lsfusion.gwt.client.form.property.GRowForegroundReader;
 
@@ -25,6 +26,7 @@ public class GGroupObject implements Serializable {
     public String sID;
 
     public GClassViewType viewType;
+    public GPivotOptions pivotOptions;
 
     public boolean isRecursive;
     public GTreeGroup parent;

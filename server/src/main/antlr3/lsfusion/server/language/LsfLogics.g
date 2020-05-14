@@ -14,6 +14,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
     import lsfusion.interop.form.property.ClassViewType;
+    import lsfusion.interop.form.property.PivotOptions;
     import lsfusion.interop.form.property.PropertyEditType;
     import lsfusion.interop.form.property.PropertyGroupType;
     import lsfusion.interop.form.print.FormPrintType;
@@ -400,6 +401,9 @@ scope {
 		|	filterGroupDeclaration
 		|	extendFilterGroupDeclaration
 		|	formOrderByList
+		|   pivotColumnsList
+		|   pivotRowsList
+		|   pivotMeasuresList
 		|	dialogFormDeclaration
 		|	editFormDeclaration
 		|	reportFilesDeclaration
@@ -540,7 +544,7 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
-	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type); }
+	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.pivotOptions); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
@@ -591,12 +595,25 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 	;
 
-formGroupObjectViewType returns [ClassViewType type]
-	:	viewType=classViewType { $type = $viewType.type; }
+formGroupObjectViewType returns [ClassViewType type, PivotOptions pivotOptions]
+	:	viewType=classViewType { $type = $viewType.type; $pivotOptions = $viewType.pivotOptions; }
 	;
 
-classViewType returns [ClassViewType type]
-	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'GRID' {$type = ClassViewType.GRID;} | 'TOOLBAR' {$type = ClassViewType.TOOLBAR;})
+classViewType returns [ClassViewType type, PivotOptions pivotOptions]
+	:   'PANEL' {$type = ClassViewType.PANEL;}
+	|   'GRID' {$type = ClassViewType.GRID;}
+	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
+	|   'PIVOT' {$type = ClassViewType.PIVOT;} options=pivotOptions { $pivotOptions = $options.options; }
+	|   'MAP' {$type = ClassViewType.MAP;}
+	;
+
+pivotOptions returns [PivotOptions options]
+@init {
+	$options = new PivotOptions();
+}
+	:   (t=stringLiteral { $options.setType($t.val); })?
+	    (a=propertyGroupType { $options.setAggregation($a.type); })?
+	    ('SETTINGS' | 'NOSETTINGS'  { $options.setShowSettings(false); })?
 	;
 
 propertyGroupType returns [PropertyGroupType type]
@@ -739,7 +756,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
-		|	viewType=classViewType { $options.setViewType($viewType.type); }
+		|	viewType=classViewType { $options.setViewType($viewType.type, $viewType.pivotOptions); }
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -1211,6 +1228,47 @@ formOrderByList
 	
 formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = true]
 	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('DESC' { $order = false; })?
+	;
+
+pivotColumnsList
+@init {
+	List<List<PropertyDrawEntity>> pivotColumns = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.addPivotColumns(pivotColumns, self.getVersion());
+	}
+}
+	:	'COLUMN' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*
+	;
+
+pivotRowsList
+@init {
+	List<List<PropertyDrawEntity>> pivotRows = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.addPivotRows(pivotRows, self.getVersion());
+	}
+}
+	:	'ROW' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*
+	;
+
+pivotPropertyDrawList returns [List<PropertyDrawEntity> props = new ArrayList<>()]
+	:	prop=formPropertyDraw { props.add($prop.property); }
+	|   '(' prop=formPropertyDraw { props.add($prop.property); } (',' prop=formPropertyDraw { props.add($prop.property); } )* ')'
+	;
+
+pivotMeasuresList
+@init {
+	List<PropertyDrawEntity> pivotMeasures = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.addPivotMeasures(pivotMeasures, self.getVersion());
+	}
+}
+	:	'MEASURE' measure=formPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=formPropertyDraw { pivotMeasures.add($measure.property); } )*
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2582,7 +2640,7 @@ asonEventActionSetting [LA property]
 viewTypeSetting [LAP property]
 @after {
 	if (inMainParseState()) {
-		self.setViewType(property, $viewType.type);
+		self.setViewType(property, $viewType.type, $viewType.pivotOptions);
 	}
 }
 	:	viewType=classViewType

@@ -1,6 +1,7 @@
 package lsfusion.server.language.form.object;
 
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -17,7 +18,7 @@ public class ScriptingGroupObject {
     public List<ActionObjectEntity> events;
     public List<String> integrationSIDs;
     public ClassViewType viewType;
-    public boolean isInitType;
+    public PivotOptions pivotOptions;
     public Integer pageSize;
     public UpdateType updateType;
     public String propertyGroupName;
@@ -42,8 +43,9 @@ public class ScriptingGroupObject {
         this.integrationSIDs = integrationSIDs;
     }
 
-    public void setViewType(ClassViewType viewType) {
+    public void setViewType(ClassViewType viewType, PivotOptions pivotOptions) {
         this.viewType = viewType;
+        this.pivotOptions = pivotOptions;
     }
 
     public void setPageSize(Integer pageSize) {
