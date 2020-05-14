@@ -665,10 +665,6 @@ input[type=checkbox]:focus {
     right: 0;
 }
 
-.pvtUiCell {
-    position: relative;
-}
-
 .pvtUiCellVDiv {
     height: 100%;
     overflow: hidden auto;
