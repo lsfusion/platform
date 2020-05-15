@@ -105,6 +105,8 @@ callWithJQuery ($) ->
         rowArrowsPadding = 5
         rowArrowsLevelPadding = 10
         
+        emptyTopAttrTH = null
+        
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
         hasClass = (element, className) ->
             regExp = new RegExp "(?:^|\\s)" + className + "(?!\\S)", "g"
@@ -747,6 +749,7 @@ callWithJQuery ($) ->
                 while p
                     p.th.colSpan -= colSpan
                     p = p.parent
+                emptyTopAttrTH?.colSpan -= colSpan    
             h.clickStatus = clickStatusCollapsed
             h.onClick = expandCol
             axisHeaders.ah[h.col].expandedCount--
@@ -821,6 +824,8 @@ callWithJQuery ($) ->
             while p
                 p.th.colSpan += colSpan
                 p = p.parent
+            emptyTopAttrTH?.colSpan += colSpan
+
             h.clickStatus = clickStatusExpanded
             h.onClick = collapseCol
             axisHeaders.ah[h.col].expandedCount++
@@ -1003,7 +1008,9 @@ callWithJQuery ($) ->
 
                 buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length, colsData
                 rowAttrHeadersCount = rowSplitPositions.length
-                rowAxisHeaders.ah[0].tr.appendChild createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length} if rowAttrHeadersCount > colAttrs.length
+                if rowAttrHeadersCount > colAttrs.length
+                    emptyTopAttrTH = createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length}
+                    rowAxisHeaders.ah[0].tr.appendChild emptyTopAttrTH
 
             bodyDiv = createElement "div", "bodydiv"
             scrollDiv = createElement "div", "scrolldiv"
