@@ -1411,8 +1411,8 @@
           }
         }
       };
-      rowHeaderColsData = function(trs) {
-        var colCnt, colsData, columns, curColumn, first, k, l, lastShift, len1, o, ref, ref1, ref2, ref3, th, tr;
+      rowHeaderColsData = function(trs, rowAttrsCnt) {
+        var colCnt, colsData, columns, curColumn, first, k, l, lastShift, o, ref, ref1, ref2, ref3, ref4, ref5, rowIndex, th, tr;
         if (trs.length > 0) {
           colCnt = findAxisHeadersColCount(trs[0]);
           columns = (function() {
@@ -1443,10 +1443,10 @@
             colsData[colCnt - 1].width = getColumnWidth(false, null, [], false);
             lastShift = 1;
           }
-          for (k = 0, len1 = trs.length; k < len1; k++) {
-            tr = trs[k];
+          for (rowIndex = k = ref = trs.length - rowAttrsCnt, ref1 = trs.length; ref <= ref1 ? k < ref1 : k > ref1; rowIndex = ref <= ref1 ? ++k : --k) {
+            tr = trs[rowIndex];
             curColumn = first;
-            for (i = l = ref = first, ref1 = tr.cells.length - lastShift; ref <= ref1 ? l < ref1 : l > ref1; i = ref <= ref1 ? ++l : --l) {
+            for (i = l = ref2 = first, ref3 = tr.cells.length - lastShift; ref2 <= ref3 ? l < ref3 : l > ref3; i = ref2 <= ref3 ? ++l : --l) {
               th = tr.cells[i];
               if (th.textContent) {
                 columns[curColumn].push(th.textContent);
@@ -1454,7 +1454,7 @@
               curColumn += th.colSpan;
             }
           }
-          for (i = o = ref2 = first, ref3 = colCnt - lastShift; ref2 <= ref3 ? o < ref3 : o > ref3; i = ref2 <= ref3 ? ++o : --o) {
+          for (i = o = ref4 = first, ref5 = colCnt - lastShift; ref4 <= ref5 ? o < ref5 : o > ref5; i = ref4 <= ref5 ? ++o : --o) {
             colsData[i].width = getColumnWidth(false, null, columns[i], false);
           }
           return colsData;
@@ -1489,7 +1489,7 @@
         headerDiv.appendChild(headerTable);
         headerTable.appendChild(thead);
         ref = buildAxisHeaders(thead, rowAttrs, colAttrs, opts), colAxisHeaders = ref[0], rowAxisHeaders = ref[1], trs = ref[2];
-        colsData = rowHeaderColsData(trs);
+        colsData = rowHeaderColsData(trs, rowAxisHeaders.ah.length);
         if (colAttrs.length !== 0) {
           overallSpan = 0;
           if (colKeyHeaders != null) {

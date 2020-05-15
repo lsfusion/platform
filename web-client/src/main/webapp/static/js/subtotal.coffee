@@ -935,7 +935,7 @@ callWithJQuery ($) ->
             else
                 return if isArrow then 15 + 10 * (rowSplitPositions.length - 1) else 50
             
-        rowHeaderColsData = (trs) ->
+        rowHeaderColsData = (trs, rowAttrsCnt) ->
             if trs.length > 0
                 colCnt = findAxisHeadersColCount trs[0]
                 columns = ([] for i in [0...colCnt])
@@ -951,7 +951,8 @@ callWithJQuery ($) ->
                     colsData[colCnt-1].width = getColumnWidth false, null, [], false
                     lastShift = 1
                     
-                for tr in trs
+                for rowIndex in [(trs.length-rowAttrsCnt)...trs.length]
+                    tr = trs[rowIndex]
                     curColumn = first
                     for i in [first...(tr.cells.length - lastShift)]
                         th = tr.cells[i]
@@ -990,7 +991,7 @@ callWithJQuery ($) ->
             headerTable.appendChild thead
 
             [colAxisHeaders, rowAxisHeaders, trs] = buildAxisHeaders thead, rowAttrs, colAttrs, opts
-            colsData = rowHeaderColsData trs
+            colsData = rowHeaderColsData trs, rowAxisHeaders.ah.length
 
             if colAttrs.length isnt 0 
                 overallSpan = 0
