@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
+import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.base.caches.ManualLazy;
@@ -48,8 +49,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-
-import static lsfusion.interop.form.property.ClassViewType.DEFAULT;
 
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
 
@@ -173,7 +172,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         super(ID, sID != null ? sID : "groupObj" + ID);
     }
 
-    public ClassViewType viewType = DEFAULT;
+    public ClassViewType viewType = ClassViewType.DEFAULT;
+    public ListViewType listViewType = ListViewType.DEFAULT;
     public PivotOptions pivotOptions;
     public Integer pageSize;
 
@@ -227,16 +227,20 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.viewType = viewType;
     }
 
+    public void setListViewType(ListViewType listViewType) {
+        this.listViewType = listViewType;
+    }
+
     public void setPivotOptions(PivotOptions pivotOptions) {
         this.pivotOptions = pivotOptions;
     }
 
-    public void setPanelViewType() {
+    public void setViewTypePanel() {
         setViewType(ClassViewType.PANEL);
     }
     
-    public void setListViewType() {
-        setViewType(ClassViewType.GRID);
+    public void setViewTypeList() {
+        setViewType(ClassViewType.LIST);
     }
 
     public boolean isPanel() {

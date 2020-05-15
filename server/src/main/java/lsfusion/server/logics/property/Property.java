@@ -397,7 +397,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             @Override
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
                 if(entity.viewType == null)
-                    entity.viewType = ClassViewType.GRID;
+                    entity.viewType = ClassViewType.LIST;
             }
 
             @Override

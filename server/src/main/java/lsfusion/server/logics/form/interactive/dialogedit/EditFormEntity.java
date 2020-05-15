@@ -11,7 +11,7 @@ public class EditFormEntity extends BaseClassFormEntity {
     public EditFormEntity(BaseLogicsModule LM, CustomClass cls) {
         super(LM, cls, cls.caption);
 
-        object.groupTo.setPanelViewType();
+        object.groupTo.setViewTypePanel();
 
         finalizeInit(LM.getVersion());
     }

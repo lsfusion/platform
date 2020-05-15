@@ -3,6 +3,8 @@ package lsfusion.interop.form.object.table.grid;
 public enum ListViewType {
     GRID, PIVOT, MAP;
 
+    public static ListViewType DEFAULT = GRID;
+
     // should correspond ListViewType in System.lsf
     public String getObjectName() {
         switch (this) {

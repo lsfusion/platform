@@ -123,6 +123,8 @@ public class ScriptingFormEntity {
 
         if (groupObject.viewType != null)
             groupObj.setViewType(groupObject.viewType);
+        if (groupObject.listViewType != null)
+            groupObj.setListViewType(groupObject.listViewType);
         if(groupObject.pivotOptions != null)
             groupObj.setPivotOptions(groupObject.pivotOptions);
 

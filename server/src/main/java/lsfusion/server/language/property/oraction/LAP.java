@@ -143,8 +143,11 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setShouldBeLast(shouldBeLast);
     }
 
-    public void setViewType(ClassViewType viewType, PivotOptions pivotOptions) {
+    public void setViewType(ClassViewType viewType) {
         getActionOrProperty().drawOptions.setViewType(viewType);
+    }
+
+    public void setPivotOptions(PivotOptions pivotOptions) {
         getActionOrProperty().drawOptions.setPivotOptions(pivotOptions);
     }
 

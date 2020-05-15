@@ -20,55 +20,11 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import java.util.*;
 
 public class GPivot extends GStateTableView {
-    private List<String> defaultAggrCaptions;
 
     public GPivot(GFormController formController, GGridController gridController) {
         super(formController, gridController);
 
         setStyleName(getElement(), "pivotTable");
-
-        GPivotOptions pivotOptions = gridController.getPivotOptions();
-        String rendererName = pivotOptions != null ? pivotOptions.getType() : null;
-        String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
-        if(pivotOptions != null)
-            gridController.setVisibleSettingsButton(pivotOptions.isShowSettings());
-
-        List<List<GPropertyDraw>> pivotColumns = gridController.getPivotColumns();
-        List<String> columns = new ArrayList<String>() {{ add(COLUMN); }};
-        Integer[] splitCols = new Integer[pivotColumns.size()];
-        splitCols[0] = 0;
-        int columnsCount = 0;
-        for(int i = 0; i < pivotColumns.size(); i++) {
-            List<GPropertyDraw> pivotColumn = pivotColumns.get(i);
-            columnsCount += pivotColumn.size();
-            splitCols[i+1] = columnsCount;
-            for (GPropertyDraw property : pivotColumn) {
-                columns.add(property.caption);
-            }
-        }
-
-        List<List<GPropertyDraw>> pivotRows = gridController.getPivotRows();
-        List<String> rows = new ArrayList<>();
-        Integer[] splitRows = new Integer[pivotRows.size()];
-        int rowsCount = -1;
-        for(int i = 0; i < pivotRows.size(); i++) {
-            List<GPropertyDraw> pivotRow = pivotRows.get(i);
-            if(!pivotRow.isEmpty()) {
-                rowsCount += pivotRow.size();
-                splitRows[i] = rowsCount;
-                for (GPropertyDraw property : pivotRow) {
-                    rows.add(property.caption);
-                }
-            }
-        }
-
-        defaultAggrCaptions = new ArrayList<>();
-        List<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
-        for(GPropertyDraw pivotMeasure : pivotMeasures) {
-            defaultAggrCaptions.add(pivotMeasure.caption);
-        }
-
-        config = getDefaultConfig(columns.toArray(), splitCols, rows.toArray(), splitRows, rendererName, aggregationName);
     }
 
     // in theory we can order all properties once, but so far there is no full list of properties
@@ -169,7 +125,7 @@ public class GPivot extends GStateTableView {
 
                 aggregator.setAggregator(caption, columnAggregator);
 
-                if ((defaultAggrCaptions.isEmpty() || defaultAggrCaptions.contains(caption)) && property.baseType instanceof GIntegralType)
+                if (property.baseType instanceof GIntegralType)
                     aggrCaptions.add(caption);
             }
         }
@@ -214,6 +170,7 @@ public class GPivot extends GStateTableView {
 
     public static final String COLUMN = "(Колонка)";
 
+    public boolean firstUpdateView = true;
     @Override
     protected void updateView() {
         columnMap = new NativeHashMap<>();
@@ -222,6 +179,10 @@ public class GPivot extends GStateTableView {
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
         boolean convertDataToStrings = false; // so far we'll not use renderer formatters and we'll rely on native toString (if we decide to do it we'll have to track renderer type and rerender everything if this type changes that can may lead to some blinking)
         JavaScriptObject data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings); // convertToObjects()
+        if(firstUpdateView) {
+            initDefaultConfig(grid);
+            firstUpdateView = false;
+        }
         config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
         config = overrideCallbacks(config, getCallbacks());
         
@@ -236,6 +197,53 @@ public class GPivot extends GStateTableView {
         aggrCaptions.forEach(jsArray::push);
 
         render(getElement(), data, config, jsArray); // we need to updateRendererState after it is painted
+    }
+
+    private void initDefaultConfig(GGridController gridController) {
+        GPivotOptions pivotOptions = gridController.getPivotOptions();
+        String rendererName = pivotOptions != null ? pivotOptions.getType() : null;
+        String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
+        if(pivotOptions != null)
+            gridController.setVisibleSettingsButton(pivotOptions.isShowSettings());
+
+        List<List<GPropertyDraw>> pivotColumns = gridController.getPivotColumns();
+        List<String> columns = new ArrayList<String>() {{ add(COLUMN); }};
+        Integer[] splitCols = new Integer[pivotColumns.size()];
+        splitCols[0] = 0;
+        int columnsCount = 0;
+        for(int i = 0; i < pivotColumns.size(); i++) {
+            List<GPropertyDraw> pivotColumn = pivotColumns.get(i);
+            columnsCount += pivotColumn.size();
+            splitCols[i+1] = columnsCount;
+            for (GPropertyDraw property : pivotColumn) {
+                columns.add(getPropertyCaption(null, property, null));
+            }
+        }
+
+        List<List<GPropertyDraw>> pivotRows = gridController.getPivotRows();
+        List<String> rows = new ArrayList<>();
+        Integer[] splitRows = new Integer[pivotRows.size()];
+        int rowsCount = -1;
+        for(int i = 0; i < pivotRows.size(); i++) {
+            List<GPropertyDraw> pivotRow = pivotRows.get(i);
+            if(!pivotRow.isEmpty()) {
+                rowsCount += pivotRow.size();
+                splitRows[i] = rowsCount;
+                for (GPropertyDraw property : pivotRow) {
+                    rows.add(getPropertyCaption(null, property, null));
+                }
+            }
+        }
+
+        JsArrayString measures = JavaScriptObject.createArray().cast();
+        List<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
+        for(GPropertyDraw property : pivotMeasures) {
+            measures.push(getPropertyCaption(null, property, null));
+        }
+        WrapperObject inclusions = JavaScriptObject.createObject().cast();
+        inclusions.putValue(COLUMN, measures);
+
+        config = getDefaultConfig(columns.toArray(), splitCols, rows.toArray(), splitRows, inclusions, rendererName, aggregationName);
     }
 
     @Override
@@ -434,7 +442,7 @@ public class GPivot extends GStateTableView {
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
 
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, String rendererName, String aggregatorName)/*-{
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName)/*-{
         var tpl = $wnd.$.pivotUtilities.aggregatorTemplates;
         var instance = this;
         var renderers = $wnd.$.extend(
@@ -455,7 +463,7 @@ public class GPivot extends GStateTableView {
             renderers: renderers,
             rendererName: rendererName,
             aggregatorName: aggregatorName,
-            //inclusions: {'(Колонка)':['dataLatitude']},
+            inclusions: inclusions,
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             }

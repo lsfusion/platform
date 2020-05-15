@@ -17,6 +17,7 @@ import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.object.AbstractGroupObject;
+import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -38,6 +39,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public boolean isMap;
 
     public ClassViewType viewType;
+    public ListViewType listViewType;
     public PivotOptions pivotOptions;
 
     public ClientGrid grid;
@@ -118,6 +120,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         viewType = pool.readObject(inStream);
+        listViewType = pool.readObject(inStream);
         pivotOptions = pool.readObject(inStream);
 
         pool.deserializeCollection(objects, inStream);

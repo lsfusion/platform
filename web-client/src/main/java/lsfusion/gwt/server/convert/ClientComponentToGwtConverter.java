@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculations;
+import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -526,6 +527,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
         groupObject.filter = convertOrCast(clientGroupObject.filter);
         groupObject.viewType = GClassViewType.valueOf(clientGroupObject.viewType.name());
+        groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());
 
         groupObject.pivotOptions = convertOrCast(clientGroupObject.pivotOptions);
 

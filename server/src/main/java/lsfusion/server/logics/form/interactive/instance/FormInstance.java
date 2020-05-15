@@ -298,7 +298,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
 
-            if(groupObject.viewType.isGrid())
+            if(groupObject.viewType.isList())
                 changeListViewType(groupObject, ListViewType.GRID);
         }
 

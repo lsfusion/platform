@@ -4,7 +4,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.property.ClassViewType;
-import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.logics.action.Action;
@@ -36,7 +35,6 @@ public class FormPropertyOptions {
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
-    private PivotOptions pivotOptions;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
@@ -175,13 +173,8 @@ public class FormPropertyOptions {
         return viewType;
     }
 
-    public PivotOptions getPivotOptions() {
-        return pivotOptions;
-    }
-
-    public void setViewType(ClassViewType viewType, PivotOptions pivotOptions) {
+    public void setViewType(ClassViewType viewType) {
         this.viewType = viewType;
-        this.pivotOptions = pivotOptions;
     }
 
     public void setToDraw(GroupObjectEntity toDraw) {
@@ -368,7 +361,7 @@ public class FormPropertyOptions {
         merged.setForeground(nvl(overrides.getForeground(), foreground));
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
-        merged.setViewType(nvl(overrides.getViewType(), viewType), nvl(overrides.getPivotOptions(), pivotOptions));
+        merged.setViewType(nvl(overrides.getViewType(), viewType));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));

@@ -13,6 +13,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.design.Alignment;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
+    import lsfusion.interop.form.object.table.grid.ListViewType;
     import lsfusion.interop.form.property.ClassViewType;
     import lsfusion.interop.form.property.PivotOptions;
     import lsfusion.interop.form.property.PropertyEditType;
@@ -544,7 +545,8 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
-	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.pivotOptions); }
+	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); }
+		|	options=formGroupObjectPivotOptions { $groupObject.setPivotOptions($options.pivotOptions); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
@@ -595,23 +597,37 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 	;
 
-formGroupObjectViewType returns [ClassViewType type, PivotOptions pivotOptions]
-	:	viewType=classViewType { $type = $viewType.type; $pivotOptions = $viewType.pivotOptions; }
+formGroupObjectViewType returns [ClassViewType type, ListViewType listType]
+	:	viewType=groupObjectClassViewType { $type = $viewType.type; $listType = $viewType.listType; }
 	;
 
-classViewType returns [ClassViewType type, PivotOptions pivotOptions]
+groupObjectClassViewType returns [ClassViewType type, ListViewType listType]
 	:   'PANEL' {$type = ClassViewType.PANEL;}
-	|   'GRID' {$type = ClassViewType.GRID;}
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
-	|   'PIVOT' {$type = ClassViewType.PIVOT;} options=pivotOptions { $pivotOptions = $options.options; }
-	|   'MAP' {$type = ClassViewType.MAP;}
+	|   'GRID' {$type = ClassViewType.LIST;}
+    |	lType=listViewType { $listType = $lType.type; }
+	;
+
+propertyClassViewType returns [ClassViewType type]
+	:   'PANEL' {$type = ClassViewType.PANEL;}
+	|   'GRID' {$type = ClassViewType.LIST;}
+	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
+	;
+
+listViewType returns [ListViewType type]
+	:   'PIVOT' {$type = ListViewType.PIVOT;}
+	|   'MAP' {$type = ListViewType.MAP;}
+    ;
+
+formGroupObjectPivotOptions returns [PivotOptions pivotOptions]
+	:	options=pivotOptions { $pivotOptions = $options.options; }
 	;
 
 pivotOptions returns [PivotOptions options]
 @init {
 	$options = new PivotOptions();
 }
-	:   (t=stringLiteral { $options.setType($t.val); })?
+	:   'PIVOTOPTIONS' (t=stringLiteral { $options.setType($t.val); })?
 	    (a=propertyGroupType { $options.setAggregation($a.type); })?
 	    ('SETTINGS' | 'NOSETTINGS'  { $options.setShowSettings(false); })?
 	;
@@ -756,7 +772,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
-		|	viewType=classViewType { $options.setViewType($viewType.type, $viewType.pivotOptions); }
+		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
 		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -2640,10 +2656,10 @@ asonEventActionSetting [LA property]
 viewTypeSetting [LAP property]
 @after {
 	if (inMainParseState()) {
-		self.setViewType(property, $viewType.type, $viewType.pivotOptions);
+		self.setViewType(property, $viewType.type);
 	}
 }
-	:	viewType=classViewType
+	:	viewType=propertyClassViewType
 	;
 
 flexCharWidthSetting [LAP property]

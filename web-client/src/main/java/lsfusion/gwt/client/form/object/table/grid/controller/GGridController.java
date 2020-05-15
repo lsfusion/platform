@@ -108,7 +108,7 @@ public class GGridController extends GAbstractTableController {
             configureToolbar();
 
             setUpdateMode(false);
-            switch (groupObject.viewType) {
+            switch (groupObject.listViewType) {
                 case PIVOT:
                     setPivotTableView();
                     break;

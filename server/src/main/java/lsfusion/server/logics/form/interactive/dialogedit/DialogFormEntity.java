@@ -11,7 +11,7 @@ public class DialogFormEntity extends BaseClassFormEntity {
     public DialogFormEntity(BaseLogicsModule LM, CustomClass cls) {
         super(LM, cls, cls.caption);
 
-        object.groupTo.setListViewType();
+        object.groupTo.setViewTypeList();
 
 //        LM.addObjectActions(this, object);
 

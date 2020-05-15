@@ -1264,8 +1264,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         eventAction.setAsEventActionFor(eventActionSID, mainProperty);
     }
 
-    public void setViewType(LAP property, ClassViewType viewType, PivotOptions pivotOptions) {
-        property.setViewType(viewType, pivotOptions);
+    public void setViewType(LAP property, ClassViewType viewType) {
+        property.setViewType(viewType);
+    }
+
+    public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
+        property.setPivotOptions(pivotOptions);
     }
 
     public void setFlexCharWidth(LAP property, Integer charWidth, Boolean flex) {
