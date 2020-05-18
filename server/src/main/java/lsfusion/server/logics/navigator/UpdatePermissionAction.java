@@ -27,7 +27,7 @@ public class UpdatePermissionAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
-        Long userRole = (Long) context.getDataKeyValue(userRoleInterface).getValue();
+        Long userRole = (Long) context.getKeyValue(userRoleInterface).getValue();
         String navigatorElement = (String) context.getKeyValue(canonicalNameNavigatorElementInterface).getValue();
         if(userRole != null && navigatorElement != null) {
             SecurityManager securityManager = context.getLogicsInstance().getSecurityManager();
