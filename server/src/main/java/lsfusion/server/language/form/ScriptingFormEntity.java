@@ -694,10 +694,10 @@ public class ScriptingFormEntity {
         GroupObjectEntity groupObject = form.getNFGroupObject(groupSID, version);
         if (groupObject != null) {
             groupObject.setPivotOptions(pivotOptions);
-            form.addPivotColumns(pivotColumns, version);
-            form.addPivotRows(pivotRows, version);
-            form.addPivotMeasures(pivotMeasures, version);
         }
+        form.addPivotColumns(pivotColumns, version);
+        form.addPivotRows(pivotRows, version);
+        form.addPivotMeasures(pivotMeasures, version);
     }
 
     public void setAsDialogForm(String className, String objectID, Version version) throws ScriptingErrorLog.SemanticErrorException {

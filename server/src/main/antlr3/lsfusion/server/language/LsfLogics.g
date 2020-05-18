@@ -1243,13 +1243,14 @@ formPivotOptionsDeclaration
 	}
 }
 	:	'PIVOT'
-	        (groupObject=ID
+	    (   (groupObject=ID
 		    (t=stringLiteral { options.setType($t.val); })?
             (a=propertyGroupType { options.setAggregation($a.type); })?
-            ('SETTINGS' | 'NOSETTINGS'  { options.setShowSettings(false); })?)?
-            ('COLUMNS' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*)?
-            ('ROWS' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*)?
-            ('MEASURES' measure=formPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=formPropertyDraw { pivotMeasures.add($measure.property); } )*)?
+            ('SETTINGS' | 'NOSETTINGS'  { options.setShowSettings(false); })?)
+        |   ('COLUMNS' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*)
+        |   ('ROWS' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*)
+        |   ('MEASURES' measure=formPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=formPropertyDraw { pivotMeasures.add($measure.property); } )*)
+        )+
 	;
 
 pivotPropertyDrawList returns [List<PropertyDrawEntity> props = new ArrayList<>()]

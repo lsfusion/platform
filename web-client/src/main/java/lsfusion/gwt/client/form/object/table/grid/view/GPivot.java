@@ -225,7 +225,9 @@ public class GPivot extends GStateTableView {
             }
         }
         WrapperObject inclusions = JavaScriptObject.createObject().cast();
-        inclusions.putValue(COLUMN, measures);
+        if(measures.length() > 0) {
+            inclusions.putValue(COLUMN, measures);
+        }
 
         config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings);
     }
