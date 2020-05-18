@@ -203,48 +203,67 @@ public class GPivot extends GStateTableView {
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         String rendererName = pivotOptions != null ? pivotOptions.getType() : null;
         String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
-        if(pivotOptions != null)
-            gridController.setVisibleSettingsButton(pivotOptions.isShowSettings());
+        settings = pivotOptions == null || pivotOptions.isShowSettings();
+
+        Map<GPropertyDraw, List<String>> columnCaptionsMap = new HashMap<>();
+        columnMap.foreachEntry((key, value) -> columnCaptionsMap.computeIfAbsent(value.property, c -> new ArrayList<>()).add(key));
 
         List<List<GPropertyDraw>> pivotColumns = gridController.getPivotColumns();
-        List<String> columns = new ArrayList<String>() {{ add(COLUMN); }};
-        Integer[] splitCols = new Integer[pivotColumns.size()];
-        splitCols[0] = 0;
-        int columnsCount = 0;
-        for(int i = 0; i < pivotColumns.size(); i++) {
-            List<GPropertyDraw> pivotColumn = pivotColumns.get(i);
-            columnsCount += pivotColumn.size();
-            splitCols[i+1] = columnsCount;
-            for (GPropertyDraw property : pivotColumn) {
-                columns.add(getPropertyCaption(null, property, null));
-            }
-        }
+        Object[] columns = getPivotCaptions(columnCaptionsMap, pivotColumns, COLUMN);
+        Integer[] splitCols = getPivotSplits(pivotColumns, COLUMN);
 
         List<List<GPropertyDraw>> pivotRows = gridController.getPivotRows();
-        List<String> rows = new ArrayList<>();
-        Integer[] splitRows = new Integer[pivotRows.size()];
-        int rowsCount = -1;
-        for(int i = 0; i < pivotRows.size(); i++) {
-            List<GPropertyDraw> pivotRow = pivotRows.get(i);
-            if(!pivotRow.isEmpty()) {
-                rowsCount += pivotRow.size();
-                splitRows[i] = rowsCount;
-                for (GPropertyDraw property : pivotRow) {
-                    rows.add(getPropertyCaption(null, property, null));
-                }
-            }
-        }
+        Object[] rows = getPivotCaptions(columnCaptionsMap, pivotRows, null);
+        Integer[] splitRows = getPivotSplits(pivotRows, null);
 
         JsArrayString measures = JavaScriptObject.createArray().cast();
         List<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
         for(GPropertyDraw property : pivotMeasures) {
-            measures.push(getPropertyCaption(null, property, null));
+            List<String> columnCaptions = columnCaptionsMap.get(property);
+            if(columnCaptions != null)
+                for (String caption : columnCaptions)
+                    measures.push(caption);
         }
         WrapperObject inclusions = JavaScriptObject.createObject().cast();
         inclusions.putValue(COLUMN, measures);
 
-        config = getDefaultConfig(columns.toArray(), splitCols, rows.toArray(), splitRows, inclusions, rendererName, aggregationName);
+        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings);
     }
+
+    private Object[] getPivotCaptions( Map<GPropertyDraw, List<String>> columnCaptionsMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
+        List<String> captions = new ArrayList<>();
+        if(defaultElement != null) {
+            captions.add(defaultElement);
+        }
+        for (List<GPropertyDraw> propertyList : propertiesList) {
+            for (GPropertyDraw property : propertyList) {
+                List<String> columnCaptions = columnCaptionsMap.get(property);
+                if(columnCaptions != null)
+                    captions.addAll(columnCaptions);
+            }
+        }
+        return captions.toArray();
+    }
+
+    private Integer[] getPivotSplits(List<List<GPropertyDraw>> propertiesList, String defaultElement) {
+        List<Integer> sizes = new ArrayList<>();
+        if(defaultElement != null) {
+            sizes.add(1);
+        }
+        for (List<GPropertyDraw> propertyList : propertiesList)
+            if (!propertyList.isEmpty())
+                sizes.add(propertyList.size());
+
+        Integer[] splits = new Integer[propertiesList.size()];
+        int count = -1;
+        for(int i = 0; i < sizes.size(); i++) {
+            count += sizes.get(i);
+            splits[i] = count;
+        }
+
+        return splits;
+    }
+
 
     @Override
     public void runGroupReport(boolean toExcel) {
@@ -298,7 +317,7 @@ public class GPivot extends GStateTableView {
             $wnd.pdfMake.createPdf(docDefinition).download('lsfReport.pdf');
         }-*/;
 
-    private Map<String, Column> columnMap;
+    private NativeHashMap<String, Column> columnMap;
     private List<String> aggrCaptions;
     private WrapperObject config;
     private boolean settings = true;
@@ -442,7 +461,7 @@ public class GPivot extends GStateTableView {
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
 
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName)/*-{
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI)/*-{
         var tpl = $wnd.$.pivotUtilities.aggregatorTemplates;
         var instance = this;
         var renderers = $wnd.$.extend(
@@ -464,6 +483,7 @@ public class GPivot extends GStateTableView {
             rendererName: rendererName,
             aggregatorName: aggregatorName,
             inclusions: inclusions,
+            showUI:showUI,
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             }

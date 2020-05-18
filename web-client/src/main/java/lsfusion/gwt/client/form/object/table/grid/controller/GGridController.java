@@ -713,12 +713,6 @@ public class GGridController extends GAbstractTableController {
         }
     }
 
-    public void setVisibleSettingsButton(boolean visible) {
-        if(settingsButton != null) {
-            settingsButton.setVisible(visible);
-        }
-    }
-
 //    private static void updateTooltip(GGridTable table) {
 //        String tooltip = messages.formGridPreferences() + " (";
 //        if (table.userPreferencesSaved()) {
