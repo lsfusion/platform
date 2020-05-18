@@ -555,7 +555,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = PropertyGroupType.class)
     public GPropertyGroupType convertGroupType(PropertyGroupType groupType) {
-        return GPropertyGroupType.valueOf(groupType.name());
+        return groupType != null ? GPropertyGroupType.valueOf(groupType.name()) : null;
     }
 
     @Cached

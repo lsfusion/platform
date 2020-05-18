@@ -1242,10 +1242,11 @@ formPivotOptionsDeclaration
 		$formStatement::form.addPivotOptions($groupObject.text, options, pivotColumns, pivotRows, pivotMeasures, self.getVersion());
 	}
 }
-	:	'PIVOT' '(' groupObject=ID ')'
+	:	'PIVOT'
+	        (groupObject=ID
 		    (t=stringLiteral { options.setType($t.val); })?
             (a=propertyGroupType { options.setAggregation($a.type); })?
-            ('SETTINGS' | 'NOSETTINGS'  { options.setShowSettings(false); })?
+            ('SETTINGS' | 'NOSETTINGS'  { options.setShowSettings(false); })?)?
             ('COLUMNS' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*)?
             ('ROWS' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*)?
             ('MEASURES' measure=formPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=formPropertyDraw { pivotMeasures.add($measure.property); } )*)?
