@@ -402,9 +402,7 @@ scope {
 		|	filterGroupDeclaration
 		|	extendFilterGroupDeclaration
 		|	formOrderByList
-		|   pivotColumnsList
-		|   pivotRowsList
-		|   pivotMeasuresList
+	    |   formPivotOptionsDeclaration
 		|	dialogFormDeclaration
 		|	editFormDeclaration
 		|	reportFilesDeclaration
@@ -546,7 +544,6 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); }
-		|	options=formGroupObjectPivotOptions { $groupObject.setPivotOptions($options.pivotOptions); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
@@ -618,19 +615,6 @@ listViewType returns [ListViewType type]
 	:   'PIVOT' {$type = ListViewType.PIVOT;}
 	|   'MAP' {$type = ListViewType.MAP;}
     ;
-
-formGroupObjectPivotOptions returns [PivotOptions pivotOptions]
-	:	options=pivotOptions { $pivotOptions = $options.options; }
-	;
-
-pivotOptions returns [PivotOptions options]
-@init {
-	$options = new PivotOptions();
-}
-	:   'PIVOTOPTIONS' (t=stringLiteral { $options.setType($t.val); })?
-	    (a=propertyGroupType { $options.setAggregation($a.type); })?
-	    ('SETTINGS' | 'NOSETTINGS'  { $options.setShowSettings(false); })?
-	;
 
 propertyGroupType returns [PropertyGroupType type]
 	: 	('SUM' {$type = PropertyGroupType.SUM;} | 'MAX' {$type = PropertyGroupType.MAX;} | 'MIN' {$type = PropertyGroupType.MIN;})
@@ -1246,45 +1230,30 @@ formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = 
 	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('DESC' { $order = false; })?
 	;
 
-pivotColumnsList
+formPivotOptionsDeclaration
 @init {
+	PivotOptions options = new PivotOptions();
 	List<List<PropertyDrawEntity>> pivotColumns = new ArrayList<>();
-}
-@after {
-	if (inMainParseState()) {
-		$formStatement::form.addPivotColumns(pivotColumns, self.getVersion());
-	}
-}
-	:	'COLUMN' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*
-	;
-
-pivotRowsList
-@init {
 	List<List<PropertyDrawEntity>> pivotRows = new ArrayList<>();
+	List<PropertyDrawEntity> pivotMeasures = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addPivotRows(pivotRows, self.getVersion());
+		$formStatement::form.addPivotOptions($groupObject.text, options, pivotColumns, pivotRows, pivotMeasures, self.getVersion());
 	}
 }
-	:	'ROW' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*
+	:	'PIVOT' '(' groupObject=ID ')'
+		    (t=stringLiteral { options.setType($t.val); })?
+            (a=propertyGroupType { options.setAggregation($a.type); })?
+            ('SETTINGS' | 'NOSETTINGS'  { options.setShowSettings(false); })?
+            ('COLUMNS' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*)?
+            ('ROWS' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*)?
+            ('MEASURES' measure=formPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=formPropertyDraw { pivotMeasures.add($measure.property); } )*)?
 	;
 
 pivotPropertyDrawList returns [List<PropertyDrawEntity> props = new ArrayList<>()]
 	:	prop=formPropertyDraw { props.add($prop.property); }
 	|   '(' prop=formPropertyDraw { props.add($prop.property); } (',' prop=formPropertyDraw { props.add($prop.property); } )* ')'
-	;
-
-pivotMeasuresList
-@init {
-	List<PropertyDrawEntity> pivotMeasures = new ArrayList<>();
-}
-@after {
-	if (inMainParseState()) {
-		$formStatement::form.addPivotMeasures(pivotMeasures, self.getVersion());
-	}
-}
-	:	'MEASURE' measure=formPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=formPropertyDraw { pivotMeasures.add($measure.property); } )*
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

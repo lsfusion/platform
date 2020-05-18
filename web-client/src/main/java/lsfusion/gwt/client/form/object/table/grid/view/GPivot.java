@@ -205,24 +205,24 @@ public class GPivot extends GStateTableView {
         String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
         settings = pivotOptions == null || pivotOptions.isShowSettings();
 
-        Map<GPropertyDraw, List<String>> columnCaptionsMap = new HashMap<>();
-        columnMap.foreachEntry((key, value) -> columnCaptionsMap.computeIfAbsent(value.property, c -> new ArrayList<>()).add(key));
+        Map<GPropertyDraw, String> columnCaptionMap = new HashMap<>();
+        columnMap.foreachEntry((key, value) -> columnCaptionMap.putIfAbsent(value.property, key));
 
         List<List<GPropertyDraw>> pivotColumns = gridController.getPivotColumns();
-        Object[] columns = getPivotCaptions(columnCaptionsMap, pivotColumns, COLUMN);
+        Object[] columns = getPivotCaptions(columnCaptionMap, pivotColumns, COLUMN);
         Integer[] splitCols = getPivotSplits(pivotColumns, COLUMN);
 
         List<List<GPropertyDraw>> pivotRows = gridController.getPivotRows();
-        Object[] rows = getPivotCaptions(columnCaptionsMap, pivotRows, null);
+        Object[] rows = getPivotCaptions(columnCaptionMap, pivotRows, null);
         Integer[] splitRows = getPivotSplits(pivotRows, null);
 
         JsArrayString measures = JavaScriptObject.createArray().cast();
         List<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
         for(GPropertyDraw property : pivotMeasures) {
-            List<String> columnCaptions = columnCaptionsMap.get(property);
-            if(columnCaptions != null)
-                for (String caption : columnCaptions)
-                    measures.push(caption);
+            String columnCaption = columnCaptionMap.get(property);
+            if(columnCaption != null) {
+                measures.push(columnCaption);
+            }
         }
         WrapperObject inclusions = JavaScriptObject.createObject().cast();
         inclusions.putValue(COLUMN, measures);
@@ -230,16 +230,16 @@ public class GPivot extends GStateTableView {
         config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings);
     }
 
-    private Object[] getPivotCaptions( Map<GPropertyDraw, List<String>> columnCaptionsMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
+    private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
         List<String> captions = new ArrayList<>();
         if(defaultElement != null) {
             captions.add(defaultElement);
         }
         for (List<GPropertyDraw> propertyList : propertiesList) {
             for (GPropertyDraw property : propertyList) {
-                List<String> columnCaptions = columnCaptionsMap.get(property);
-                if(columnCaptions != null)
-                    captions.addAll(columnCaptions);
+                String columnCaption = columnCaptionMap.get(property);
+                if(columnCaption != null)
+                    captions.add(columnCaption);
             }
         }
         return captions.toArray();

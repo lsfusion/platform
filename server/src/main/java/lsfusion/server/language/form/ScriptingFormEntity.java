@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.FormEventType;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -688,16 +689,15 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addPivotColumns(List<List<PropertyDrawEntity>> columnsList, Version version) {
-        form.addPivotColumns(columnsList, version);
-    }
-
-    public void addPivotRows(List<List<PropertyDrawEntity>> rowsList, Version version) {
-        form.addPivotRows(rowsList, version);
-    }
-
-    public void addPivotMeasures(List<PropertyDrawEntity> measuresList, Version version) {
-        form.addPivotMeasures(measuresList, version);
+    public void addPivotOptions(String groupSID, PivotOptions pivotOptions, List<List<PropertyDrawEntity>> pivotColumns,
+                                List<List<PropertyDrawEntity>> pivotRows, List<PropertyDrawEntity> pivotMeasures, Version version) {
+        GroupObjectEntity groupObject = form.getNFGroupObject(groupSID, version);
+        if (groupObject != null) {
+            groupObject.setPivotOptions(pivotOptions);
+            form.addPivotColumns(pivotColumns, version);
+            form.addPivotRows(pivotRows, version);
+            form.addPivotMeasures(pivotMeasures, version);
+        }
     }
 
     public void setAsDialogForm(String className, String objectID, Version version) throws ScriptingErrorLog.SemanticErrorException {
