@@ -118,7 +118,7 @@ public class JSONNode implements Node<JSONNode> {
     //check if it's json inside
     private Object parseObject(Object obj) {
         try {
-            if (obj instanceof String) {
+            if (obj instanceof String && ((String) obj).matches("\\s*?((\\[.*\\])|(\\{.*\\}))\\s*")) {
                 return JSONReader.readObject((String) obj);
             }
         } catch (Exception ignored) {

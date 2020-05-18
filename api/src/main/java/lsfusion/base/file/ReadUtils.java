@@ -169,6 +169,9 @@ public abstract class ReadUtils {
                 ftpClient.enterLocalPassiveMode();
             }
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            if(properties.binaryTransferMode) {
+                ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+            }
 
             OutputStream outputStream = new FileOutputStream(file);
             boolean done = ftpClient.retrieveFile(properties.remoteFile, outputStream);

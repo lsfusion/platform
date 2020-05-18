@@ -105,6 +105,8 @@ callWithJQuery ($) ->
         rowArrowsPadding = 5
         rowArrowsLevelPadding = 10
         
+        emptyTopAttrTH = null
+        
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
         hasClass = (element, className) ->
             regExp = new RegExp "(?:^|\\s)" + className + "(?!\\S)", "g"
@@ -747,6 +749,7 @@ callWithJQuery ($) ->
                 while p
                     p.th.colSpan -= colSpan
                     p = p.parent
+                emptyTopAttrTH?.colSpan -= colSpan    
             h.clickStatus = clickStatusCollapsed
             h.onClick = expandCol
             axisHeaders.ah[h.col].expandedCount--
@@ -821,6 +824,8 @@ callWithJQuery ($) ->
             while p
                 p.th.colSpan += colSpan
                 p = p.parent
+            emptyTopAttrTH?.colSpan += colSpan
+
             h.clickStatus = clickStatusExpanded
             h.onClick = collapseCol
             axisHeaders.ah[h.col].expandedCount++
@@ -935,7 +940,7 @@ callWithJQuery ($) ->
             else
                 return if isArrow then 15 + 10 * (rowSplitPositions.length - 1) else 50
             
-        rowHeaderColsData = (trs) ->
+        rowHeaderColsData = (trs, rowAttrsCnt) ->
             if trs.length > 0
                 colCnt = findAxisHeadersColCount trs[0]
                 columns = ([] for i in [0...colCnt])
@@ -951,7 +956,8 @@ callWithJQuery ($) ->
                     colsData[colCnt-1].width = getColumnWidth false, null, [], false
                     lastShift = 1
                     
-                for tr in trs
+                for rowIndex in [(trs.length-rowAttrsCnt)...trs.length]
+                    tr = trs[rowIndex]
                     curColumn = first
                     for i in [first...(tr.cells.length - lastShift)]
                         th = tr.cells[i]
@@ -990,7 +996,7 @@ callWithJQuery ($) ->
             headerTable.appendChild thead
 
             [colAxisHeaders, rowAxisHeaders, trs] = buildAxisHeaders thead, rowAttrs, colAttrs, opts
-            colsData = rowHeaderColsData trs
+            colsData = rowHeaderColsData trs, rowAxisHeaders.ah.length
 
             if colAttrs.length isnt 0 
                 overallSpan = 0
@@ -1002,7 +1008,9 @@ callWithJQuery ($) ->
 
                 buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length, colsData
                 rowAttrHeadersCount = rowSplitPositions.length
-                rowAxisHeaders.ah[0].tr.appendChild createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length} if rowAttrHeadersCount > colAttrs.length
+                if rowAttrHeadersCount > colAttrs.length
+                    emptyTopAttrTH = createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length}
+                    rowAxisHeaders.ah[0].tr.appendChild emptyTopAttrTH
 
             bodyDiv = createElement "div", "bodydiv"
             scrollDiv = createElement "div", "scrolldiv"
