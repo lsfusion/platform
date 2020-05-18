@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.base.view.SwingDefaults.getRequiredForeground;
 
 public final class Log {
     public static Logger logger = ClientLoggers.clientLogger;
@@ -161,7 +162,7 @@ public final class Log {
         Font logFont = new Font("Tahoma", Font.PLAIN, MainFrame.getIntUISize(12));
         JTextArea javaStackTA = new JTextArea(javaStack, 7, 60);
         javaStackTA.setFont(logFont);
-        javaStackTA.setForeground(Color.RED);
+        javaStackTA.setForeground(getRequiredForeground());
         JScrollPane javaStackInScroll = new JScrollPane(javaStackTA);
 
         JPanel textWithLine = new JPanel();
@@ -173,7 +174,7 @@ public final class Log {
             
             JTextArea lsfStackTA = new JTextArea(lsfStack, 7, 60);
             lsfStackTA.setFont(logFont);
-            lsfStackTA.setForeground(Color.RED);
+            lsfStackTA.setForeground(getRequiredForeground());
             stackPanes.add("LSF", new JScrollPane(lsfStackTA));
             
             textWithLine.add(stackPanes);
