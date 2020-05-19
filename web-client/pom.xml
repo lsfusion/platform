@@ -291,6 +291,10 @@
         </dependency>
 
         <dependency>
+            <groupId>com.helger</groupId>
+            <artifactId>ph-css</artifactId>
+        </dependency>
+        <dependency>
             <groupId>jstl</groupId>
             <artifactId>jstl</artifactId>
         </dependency>

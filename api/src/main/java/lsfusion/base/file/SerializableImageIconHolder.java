@@ -38,8 +38,11 @@ public class SerializableImageIconHolder implements Serializable {
     }
     
     public ImageIcon getImage(ColorTheme colorTheme) {
-        ImageIcon themeImage = images.get(colorTheme);
-        return themeImage != null ? themeImage : images.get(DEFAULT);
+        return images.get(colorTheme);
+    }
+
+    public void putImage(ColorTheme colorTheme, ImageIcon image) {
+        images.put(colorTheme, image);
     }
 
     public void setImage(ImageIcon image, String imagePath) {

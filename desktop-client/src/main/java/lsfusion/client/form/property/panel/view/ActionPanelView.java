@@ -2,9 +2,10 @@ package lsfusion.client.form.property.panel.view;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.ClientColorUtils;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
-import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -27,7 +28,6 @@ import java.awt.event.*;
 
 import static javax.swing.SwingUtilities.isRightMouseButton;
 import static lsfusion.client.base.SwingUtils.overrideSize;
-import static lsfusion.client.controller.MainController.colorTheme;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
@@ -42,7 +42,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     private JPanel panel;
 
     public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
-        super((String)null, iproperty.design.getImage(MainController.colorTheme));
+        super((String)null, ClientImages.getImage(iproperty.design.getImageHolder()));
 
         this.property = iproperty;
         this.columnKey = icolumnKey;
@@ -57,7 +57,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             setEnabled(false);
         }
 
-        property.design.designComponent(this, MainController.colorTheme);
+        property.design.installFont(this);
+        ClientColorUtils.designComponent(this, property.design);
         if (property.focusable != null) {
             setFocusable(property.focusable);
         } else if (property.changeKey != null) {
@@ -130,7 +131,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     public void updateUI() {
         super.updateUI();
         if (property != null) { // first call from constructor
-            setIcon(property.design.getImage(MainController.colorTheme));
+            setIcon(ClientImages.getImage(property.design.getImageHolder()));
         }
     }
 
@@ -202,7 +203,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setBackgroundColor(Color background) {
-        setBackground(background == null ? SwingDefaults.getButtonBackground() : colorTheme.getDisplayBackground(background));
+        setBackground(background == null ? SwingDefaults.getButtonBackground() : ClientColorUtils.getDisplayColor(background));
     }
 
     public void setForegroundColor(Color background) {

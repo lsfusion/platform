@@ -2,10 +2,10 @@
     --focus-color: #0489BA;
     --selection-color: #D3E5E8; /* after changing, synchronize the appropriate value in StyleDefaults.getSelectedRowBackgroundColor() */
     --scrollbar-color: #DCDCDC;
-    --text-color: black;
+    --text-color: #000000; /* also hardcoded in StyleDefaults.java */
     --disabled-text-color: #888;
     --background-color: #F2F2F2;
-    --component-background-color: white;
+    --component-background-color: #FFFFFF; /* also hardcoded in StyleDefaults.java */
     --split-border-color: var(--component-border-color);
     --dialog-border-color: var(--scrollbar-color);
     --component-border-color: #c4c4c4;

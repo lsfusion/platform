@@ -144,6 +144,8 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        FileUtils.createThemedClientImages();
+        
         InstanceActionHandlerRegistry registry = new DefaultActionHandlerRegistry();
         addHandlers(registry);
         dispatch = new SimpleDispatch(registry);

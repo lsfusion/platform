@@ -3,27 +3,34 @@ package lsfusion.client.base.view;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.ui.FlatTableCellBorder;
+import lsfusion.interop.base.view.ColorTheme;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
+import static lsfusion.client.base.view.ClientColorUtils.getDisplayColor;
 import static lsfusion.client.controller.MainController.colorPreferences;
 import static lsfusion.client.controller.MainController.colorTheme;
 import static lsfusion.client.view.MainFrame.getIntUISize;
+import static lsfusion.interop.base.view.ColorTheme.DEFAULT;
 
 public class SwingDefaults {
     private static final UIDefaults lightDefaults = new FlatLightLaf().getDefaults();
     private static final UIDefaults darkDefaults = new FlatDarkLaf().getDefaults();
-    
+
     // no transparent colors as they are not drawn correctly sometimes.   
     private static final Color selectionColorLight = new Color(211, 229, 232);
     private static final Color selectionColorDark = new Color(44, 71, 81);
     private static final Color focusedTableCellBorderColorLight = new Color(4, 137, 186);
     private static final Color focusedTableCellBorderColorDark = new Color(7, 144, 195);
-    
+
+    private static Color defaultThemeTableCellBackground;
+    private static Color defaultThemePanelBackground;
+
     private static Color componentFocusBorderColor;
     private static Color buttonBackground;
+    private static Color buttonForeground;
     private static Border buttonBorder;
     private static Color buttonHoverBackground;
     private static Color buttonPressedBackground;
@@ -55,10 +62,12 @@ public class SwingDefaults {
     private static Dimension tablePreferredSize;
     private static Integer tableMaxPreferredHeight;
     private static Integer verticalToolbarNavigatorButtonHeight;
-    
+    private static Color panelBackground;
+
     public static void reset() {
         componentFocusBorderColor = null;
         buttonBackground = null;
+        buttonForeground = null;
         buttonBorder = null;
         buttonHoverBackground = null;
         buttonPressedBackground = null;
@@ -80,6 +89,7 @@ public class SwingDefaults {
         requiredForeground = null;
         buttonMargin = null;
         toggleButtonMargin = null;
+        panelBackground = null;
         
         resetClientSettingsProperties();
     }
@@ -100,13 +110,21 @@ public class SwingDefaults {
     }
     
     public static Object get(String key) {
-        return (colorTheme.isLight() ? lightDefaults : darkDefaults).get(key);
+        return get(key, colorTheme);
+    }
+
+    public static Object get(String key, ColorTheme theme) {
+        return (theme.isLight() ? lightDefaults : darkDefaults).get(key);
     }
     
     public static Color getColor(String key) {
         return (Color) get(key);
     }
     
+    public static Color getColor(String key, ColorTheme theme) {
+        return (Color) get(key, theme);
+    }
+
     public static Border getBorder(String key) {
         return (Border) get(key);
     }
@@ -127,6 +145,13 @@ public class SwingDefaults {
             buttonBackground = getColor("Button.background");
         }
         return buttonBackground; 
+    }
+
+    public static Color getButtonForeground() {
+        if (buttonForeground == null) {
+            buttonForeground = getColor("Button.foreground");
+        }
+        return buttonForeground;
     }
 
     public static Border getButtonBorder() {
@@ -194,7 +219,7 @@ public class SwingDefaults {
 
     public static Color getFocusedTableCellBackground() {
         if (focusedTableCellBackground == null) {
-            focusedTableCellBackground = colorTheme.getDisplayBackground(colorPreferences != null ? colorPreferences.getFocusedCellBackground() : null);
+            focusedTableCellBackground = getDisplayColor(colorPreferences != null ? colorPreferences.getFocusedCellBackground() : null);
             if (focusedTableCellBackground == null) {
                 focusedTableCellBackground = getSelectionColor();
             }
@@ -204,7 +229,7 @@ public class SwingDefaults {
 
     public static Border getFocusedTableCellBorder() {
         if (focusedTableCellBorder == null) {
-            Color borderColor = colorTheme.getDisplayBackground(colorPreferences != null ? colorPreferences.getFocusedCellBorderColor() : null);
+            Color borderColor = getDisplayColor(colorPreferences != null ? colorPreferences.getFocusedCellBorderColor() : null);
             if (borderColor == null) {
                 borderColor = getSelectionBorderColor();
             }
@@ -217,7 +242,7 @@ public class SwingDefaults {
 
     public static Color getFocusedTableRowBackground() {
         if (focusedTableRowBackground == null) {
-            focusedTableRowBackground = colorTheme.getDisplayBackground(colorPreferences != null ? colorPreferences.getSelectedRowBackground() : null);
+            focusedTableRowBackground = getDisplayColor(colorPreferences != null ? colorPreferences.getSelectedRowBackground() : null);
             if (focusedTableRowBackground == null) {
                 focusedTableRowBackground = getSelectionColor();
             }
@@ -227,7 +252,7 @@ public class SwingDefaults {
 
     public static Color getTableSelectionBackground() {
         if (tableSelectionBackground == null) {
-            Color preferredBackground = colorTheme.getDisplayBackground(colorPreferences != null ? colorPreferences.getSelectedCellBackground() : null);
+            Color preferredBackground = getDisplayColor(colorPreferences != null ? colorPreferences.getSelectedCellBackground() : null);
             tableSelectionBackground = preferredBackground != null ? preferredBackground : getColor("Table.selectionInactiveBackground");
         }
         return tableSelectionBackground; 
@@ -373,6 +398,28 @@ public class SwingDefaults {
         }
         return verticalToolbarNavigatorButtonHeight;
     } 
+
+    public static Color getPanelBackground() {
+        if (panelBackground == null) {
+            panelBackground = getColor("Panel.background");
+        }
+        return panelBackground;
+    }
+
+
+    public static Color getDefaultThemeTableCellBackground() {
+        if (defaultThemeTableCellBackground == null) {
+            defaultThemeTableCellBackground = getColor("Table.background", DEFAULT);
+        }
+        return defaultThemeTableCellBackground;
+    }
+
+    public static Color getDefaultThemePanelBackground() {
+        if (defaultThemePanelBackground == null) {
+            defaultThemePanelBackground = getColor("Panel.background", DEFAULT);
+        }
+        return defaultThemePanelBackground;
+    }
 
     
     // ----------- not cached properties ----------- //

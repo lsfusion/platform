@@ -1,8 +1,8 @@
 package lsfusion.client.navigator.view;
 
 import com.formdev.flatlaf.ui.FlatButtonBorder;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.controller.INavigatorController;
@@ -59,7 +59,7 @@ public class ToolBarNavigatorView extends NavigatorView {
             @Override
             public void updateUI() {
                 super.updateUI();
-                setIcon(new IndentedIcon(element.imageHolder.getImage(MainController.colorTheme), indent));
+                setIcon(new IndentedIcon(ClientImages.getImage(element.imageHolder), indent));
                 if (isSelected()) {
                     setBorder(getSelectionBorder());
                 } else {
@@ -67,7 +67,7 @@ public class ToolBarNavigatorView extends NavigatorView {
                 }
             }
         };
-        button.setIcon(new IndentedIcon(element.imageHolder.getImage(MainController.colorTheme), indent));
+        button.setIcon(new IndentedIcon(ClientImages.getImage(element.imageHolder), indent));
 
         button.setToolTipText(element.getTooltip());
         button.addMouseListener(new NavigatorMouseAdapter(element));

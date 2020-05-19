@@ -2,7 +2,7 @@ package lsfusion.gwt.client.view;
 
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayBackground;
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class StyleDefaults {
@@ -32,7 +32,7 @@ public class StyleDefaults {
         if (selectedRowBackgroundColor == null) {
             ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
             if (preferredColor != null) {
-                selectedRowBackgroundColor = getDisplayBackground(preferredColor.toString());
+                selectedRowBackgroundColor = getDisplayColor(preferredColor.toString());
             } else {
                 // should be the same as '--selection-color' in <theme>.css. 
                 // can't use 'var(--selection-color)' because this color may be mixed with background color (converted to int)
@@ -46,7 +46,7 @@ public class StyleDefaults {
         if (focusedCellBackgroundColor == null) {
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
             if (preferredColor != null) {
-                focusedCellBackgroundColor = getDisplayBackground(preferredColor.toString());
+                focusedCellBackgroundColor = getDisplayColor(preferredColor.toString());
             } else {
                 focusedCellBackgroundColor = "var(--selection-color)";
             }
@@ -58,11 +58,35 @@ public class StyleDefaults {
         if (focusedCellBorderColor == null) {
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBorderColor();
             if (preferredColor != null) {
-                focusedCellBorderColor = getDisplayBackground(preferredColor.toString());
+                focusedCellBorderColor = getDisplayColor(preferredColor.toString());
             } else {
                 focusedCellBorderColor = "var(--focus-color)";
             }
         }
         return focusedCellBorderColor;
+    }
+
+    
+    // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.    
+    public static String getDefaultComponentBackground() {
+        return "#FFFFFF";
+    }
+
+    public static String getComponentBackground(GColorTheme theme) {
+        switch (theme) {
+            case DARK:
+                return "#45494A";
+            default:
+                return getDefaultComponentBackground();
+        }
+    }
+
+    public static String getTextColor(GColorTheme theme) {
+        switch (theme) {
+            case DARK:
+                return "#bbbbbb";
+            default:
+                return "#000000";
+        }
     }
 }

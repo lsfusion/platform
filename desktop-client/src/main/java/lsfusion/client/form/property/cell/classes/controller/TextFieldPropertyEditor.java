@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
-import lsfusion.client.controller.MainController;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 
@@ -27,7 +27,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         if (property != null) {
             if (property.design != null) {
-                property.design.designComponent(this, MainController.colorTheme);
+                property.design.installFont(this);
+                ClientColorUtils.designComponent(this, property.design);
             }
 
             Integer valueAlignment = property.getSwingValueAlignment();
