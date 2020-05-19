@@ -52,7 +52,6 @@ import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.NullValueProperty;
@@ -169,11 +168,11 @@ public class PropertyFact {
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(ImSet<T> interfaces, PropertyInterfaceImplement<T> propertyA, PropertyInterfaceImplement<T> propertyB, Compare compare) {
         return createCompare(LocalizedString.NONAME, interfaces, propertyA, propertyB, compare);
     }
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(PropertyInterfaceImplement<T> propertyA, PropertyInterfaceImplement<T> propertyB, Compare compare) {
-        return createCompare(getUsedInterfaces(SetFact.toSet(propertyA, propertyB)), propertyA, propertyB, compare);
+    public static <T extends PropertyInterface> PropertyMapImplement<PropertyInterface,T> createCompare(PropertyInterfaceImplement<T> propertyA, PropertyInterfaceImplement<T> propertyB, Compare compare) {
+        return (PropertyMapImplement<PropertyInterface, T>) createCompare(getUsedInterfaces(SetFact.toSet(propertyA, propertyB)), propertyA, propertyB, compare);
     }
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(ImList<? extends PropertyInterfaceImplement<T>> propertiesA, ImList<? extends PropertyInterfaceImplement<T>> propertiesB, Compare compare) {
-        return PropertyFact.createAnd(ListFact.toList(propertiesA.size(), i -> createCompare(propertiesA.get(i), propertiesB.get(i), compare)).getCol());
+    public static <T extends PropertyInterface> PropertyMapImplement<PropertyInterface,T> createCompare(ImList<? extends PropertyInterfaceImplement<T>> propertiesA, ImList<? extends PropertyInterfaceImplement<T>> propertiesB, Compare compare) {
+        return (PropertyMapImplement<PropertyInterface, T>) PropertyFact.createAnd(ListFact.toList(propertiesA.size(), i -> createCompare(propertiesA.get(i), propertiesB.get(i), compare)).getCol());
     }
     // needed because java cannot infer types
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompareInterface(ImList<T> propertiesA, ImList<T> propertiesB, Compare compare) {
@@ -763,7 +762,7 @@ public class PropertyFact {
     }
 
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createEmptyAction() {
-        return createListAction(SetFact.EMPTY(), ListFact.EMPTY());
+        return (ActionMapImplement<?,L>)createListAction(SetFact.EMPTY(), ListFact.EMPTY());
     }
     
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionMapImplement<?, L>> actions) {

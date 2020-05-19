@@ -155,7 +155,8 @@ public abstract class QueryExpr<K extends Expr,I extends QueryExpr.Query<I>, J e
     }
 
     // вообще должно быть множественное наследование самого QueryExpr от InnerContext
-    protected abstract static class QueryInnerContext<K extends Expr,I extends Query<I>, J extends QueryJoin<?, ?, ?, ?>,
+    // change protected to public for work with java 8
+    public abstract static class QueryInnerContext<K extends Expr,I extends Query<I>, J extends QueryJoin<?, ?, ?, ?>,
         T extends QueryExpr<K, I, J, T, IC>, IC extends QueryExpr.QueryInnerContext<K, I, J, T, IC>> extends AbstractInnerContext<IC> {
 
         // вообще должно быть множественное наследование от QueryInnerHashContext, правда нюанс что вместе с верхним своего же Inner класса

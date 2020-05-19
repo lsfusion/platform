@@ -163,7 +163,7 @@
             </build>
         </profile>
     </profiles>
-    
+
     <dependencies>
         <dependency>
             <groupId>lsfusion.platform</groupId>
