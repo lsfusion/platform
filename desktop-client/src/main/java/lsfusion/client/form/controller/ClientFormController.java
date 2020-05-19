@@ -5,7 +5,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -13,6 +12,7 @@ import lsfusion.base.lambda.EProvider;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientActionClass;
@@ -85,8 +85,6 @@ import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ClientFormController implements AsyncListener {
-
-    private static final ImageIcon loadingIcon = ResourceUtils.readImage("loading.gif");
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
 
@@ -1451,7 +1449,7 @@ public class ClientFormController implements AsyncListener {
             asyncTimer = new Timer(MainController.asyncTimeOut, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     asyncPrevIcon = asyncView.getIcon();
-                    asyncView.setIcon(loadingIcon);
+                    asyncView.setIcon(ClientImages.get("loading.gif"));
                     asyncTimer = null;
                 }
             });
