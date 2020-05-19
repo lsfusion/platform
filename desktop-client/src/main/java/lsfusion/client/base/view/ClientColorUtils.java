@@ -42,7 +42,7 @@ public class ClientColorUtils {
 
     public static ImageIcon createFilteredImageIcon(ImageIcon i, Color baseBackgroundColor, Color newBackgroundColor, Color customLimitColor) {
         ImageProducer prod = new FilteredImageSource(i.getImage().getSource(), new ImageThemeFilter(baseBackgroundColor, newBackgroundColor, customLimitColor));
-        return new ImageIcon(new Label().createImage(prod));
+        return new ImageIcon(new FakeComponent().createImage(prod));
     }
 
     public static ImageIcon createFilteredImageIcon(ImageIcon i) {
@@ -75,5 +75,8 @@ public class ClientColorUtils {
         public int filterRGB(int x, int y, int rgb) {
             return ClientColorUtils.filterColor(rgb, baseBackgroundColor, newBackgroundColor, customLimitColor);
         }
+    }
+    
+    private static class FakeComponent extends Component {
     }
 }
