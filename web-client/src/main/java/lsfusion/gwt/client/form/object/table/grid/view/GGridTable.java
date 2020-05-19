@@ -54,12 +54,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final double QUICK_SEARCH_MAX_DELAY = 2000;
 
-    private ArrayList<GPropertyDraw> columnProperties = new ArrayList<>();
-    private ArrayList<GGroupObjectValue> columnKeysList = new ArrayList<>();
-
-    private NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap = new NativeHashMap<>();
-
     private ArrayList<GPropertyDraw> properties = new ArrayList<>();
+    // map for fast incremental update, essentially needed for working with group-to-columns (columnKeys)
+    private NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap = new NativeHashMap<>();
 
     private ArrayList<GGroupObjectValue> rowKeys = new ArrayList<>();
 
@@ -101,6 +98,21 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     protected boolean isAutoSize() {
         return autoSize;
+    }
+
+    @Override
+    public int getPageSize() {
+        return -1;
+    }
+
+    @Override
+    public GGridViewType getViewType() {
+        return GGridViewType.GRID;
+    }
+
+    @Override
+    public boolean isGroup() {
+        return false;
     }
 
     public GGridTable(GFormController iform, GGridController igroupController, GGridUserPreferences[] iuserPreferences, boolean autoSize) {
@@ -152,8 +164,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
             @Override
             protected Map<GPropertyDraw, GGroupObjectValue> getColumnKey(int column) {
+                GridColumn gridColumn = getGridColumn(column);
                 HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
-                key.put(columnProperties.get(column), columnKeysList.get(column));
+                key.put(gridColumn.property, gridColumn.columnKey);
                 return key;
             }
         };
@@ -316,8 +329,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                         // новая группа свойств
                         columnGroup = new ArrayList<>();
 
-                        columnGroupsColumnKeys.add(columnKeys.get(property));
                         putToDoubleNativeMap(columnGroupsIndices, property.columnsName, property.columnGroupObjects, columnGroups.size());
+                        columnGroupsColumnKeys.add(columnKeys.get(property));
                         columnGroups.add(columnGroup);
                     }
                     columnGroup.add(property);
@@ -327,71 +340,61 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 }
             }
 
-            columnProperties.clear();
-            columnKeysList.clear();
-
-            for (int i = 0; i < columnGroups.size(); i++) {
-                List<GPropertyDraw> columnGroup = columnGroups.get(i);
-                List<GGroupObjectValue> columnKeys = columnGroupsColumnKeys.get(i);
-
-                for (GGroupObjectValue columnKey : columnKeys) {
-                    for (GPropertyDraw property : columnGroup) {
-                        Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
-                        if ((propShowIfs == null || propShowIfs.get(columnKey) != null)) {
-                            columnProperties.add(property);
-                            columnKeysList.add(columnKey);
-                        }
-                    }
-                }
-            }
-
             int rowHeight = 0;
             int headerHeight = getHeaderHeight();
 
+            int currentIndex = 0;
             NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<>();
-            for (int i = 0; i < columnProperties.size(); ++i) {
-                GPropertyDraw property = columnProperties.get(i);
-                GGroupObjectValue columnKey = columnKeysList.get(i);
+            for (int i = 0; i < columnGroups.size(); i++) {
+                for (GGroupObjectValue columnKey : columnGroupsColumnKeys.get(i)) {
+                    for (GPropertyDraw property : columnGroups.get(i)) {
+                        Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
+                        if (propShowIfs != null && propShowIfs.get(columnKey) == null) // property is hidden
+                            continue;
 
-                GridColumn column = removeFromColumnsMap(columnsMap, property, columnKey);
-                if (column != null) {
-                    moveGridColumn(column, i);
-                } else {
-                    column = insertGridColumn(i);
-                    // если колонка появилась через showif без обновления данных
-                    if (!updatedProperties.containsKey(property)) {
-                        updatedProperties.put(property, TRUE);
-                        dataUpdated = true; // если кроме появления этой колонки в гриде ничего не поменялось, всё равно нужно обновить данные и подсветки
-                    }
-                }
-                
-                //дублирование логики изменения captions для оптимизации
-                String columnCaption;
-                Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
-                columnCaption = getUserCaption(property);
-                if(columnCaption == null) {
-                    Object propCaption = null;
-                    if (propCaptions == null || (propCaption = propCaptions.get(columnKey)) != null) {
-                        if (propCaptions != null) {
-                            columnCaption = property.getDynamicCaption(propCaption);
+                        GridColumn column = removeFromColumnsMap(columnsMap, property, columnKey);
+                        if (column != null) {
+                            moveGridColumn(column, currentIndex);
                         } else {
-                            columnCaption = property.getCaptionOrEmpty();
+                            column = insertGridColumn(currentIndex, property, columnKey);
+                            // если колонка появилась через showif без обновления данных
+                            if (!updatedProperties.containsKey(property)) {
+                                updatedProperties.put(property, TRUE);
+                                dataUpdated = true; // если кроме появления этой колонки в гриде ничего не поменялось, всё равно нужно обновить данные и подсветки
+                            }
                         }
+
+                        //дублирование логики изменения captions для оптимизации
+                        String columnCaption;
+                        Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
+                        columnCaption = getUserCaption(property);
+                        if (columnCaption == null) {
+                            Object propCaption = null;
+                            if (propCaptions == null || (propCaption = propCaptions.get(columnKey)) != null) {
+                                if (propCaptions != null) {
+                                    columnCaption = property.getDynamicCaption(propCaption);
+                                } else {
+                                    columnCaption = property.getCaptionOrEmpty();
+                                }
+                            }
+                        }
+
+                        GGridPropertyTableHeader header = getGridHeader(currentIndex);
+                        header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
+                        header.setToolTip(property.getTooltipText(columnCaption));
+
+                        header.setHeaderHeight(headerHeight);
+
+                        property.setUserPattern(getUserPattern(property));
+
+                        putToColumnsMap(newColumnsMap, property, columnKey, column);
+
+                        int columnMinimumHeight = property.getValueHeight(font);
+                        rowHeight = Math.max(rowHeight, columnMinimumHeight);
+
+                        currentIndex++;
                     }
                 }
-
-                GGridPropertyTableHeader header = headers.get(i);
-                header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
-                header.setToolTip(property.getTooltipText(columnCaption));
-
-                header.setHeaderHeight(headerHeight);
-
-                property.setUserPattern(getUserPattern(property));
-
-                putToColumnsMap(newColumnsMap, property, columnKey, column);
-
-                int columnMinimumHeight = property.getValueHeight(font);
-                rowHeight = Math.max(rowHeight, columnMinimumHeight);
             }
 
             setFixedHeaderHeight(headerHeight);
@@ -415,21 +418,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public boolean isNoColumns() {
-        return columnProperties.isEmpty();
+        return getColumnCount() == 0;
     }
 
-    protected int getColumnsCount() {
-        return columnProperties.size();
-    }
     protected GPropertyDraw getColumnPropertyDraw(int i) {
-        return columnProperties.get(i);
-    }
-    protected Column getColumnDraw(int i) {
-        return getFromColumnsMap(columnsMap, columnProperties.get(i), columnKeysList.get(i));
+        return getGridColumn(i).property;
     }
 
     public boolean containsProperty(GPropertyDraw property) {
-        return properties.contains(property);
+        return getPropertyIndex(property, null) >= 0;
     }
 
     public List<GPropertyDraw> getOrderedVisibleProperties(List<GPropertyDraw> propertiesList) {
@@ -459,18 +456,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public void updateCaptionsImpl() {
         if (captionsUpdated) {
-            for (int i = 0; i < columnProperties.size(); ++i) {
-                GPropertyDraw property = columnProperties.get(i);
+            for (int i = 0, size = getColumnCount(); i < size; ++i) {
+                GridColumn gridColumn = getGridColumn(i);
+                GPropertyDraw property = gridColumn.property;
 
                 String columnCaption;
                 Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
                 if (propCaptions != null) {
-                    columnCaption = property.getDynamicCaption(propCaptions.get(columnKeysList.get(i)));
+                    columnCaption = property.getDynamicCaption(propCaptions.get(gridColumn.columnKey));
                 } else {
                     columnCaption = property.getCaptionOrEmpty();
                 }
 
-                headers.get(i).setCaption(columnCaption, property.notNull, property.hasChangeAction);
+                getGridHeader(i).setCaption(columnCaption, property.notNull, property.hasChangeAction);
             }
             refreshHeaders();
             captionsUpdated = false;
@@ -564,7 +562,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                                 Object background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
                                 Object foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
 
-                                record.setValue(column.columnID, value);
+                                column.setValue(record, value);
                                 record.setReadOnly(column.columnID, readOnly);
                                 record.setBackground(column.columnID, background == null ? property.background : background);
                                 record.setForeground(column.columnID, foreground == null ? property.foreground : foreground);
@@ -581,11 +579,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
 
-    private GridColumn insertGridColumn(int index) {
-        GridColumn column = new GridColumn();
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, getHeaderHeight());
+    public GridColumn getGridColumn(int column) {
+        return (GridColumn) getColumn(column);
+    }
 
-        headers.add(index, header);
+    private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
+        GridColumn column = new GridColumn(property, columnKey);
+        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, getHeaderHeight());
 
         insertColumn(index, column, header);
 
@@ -594,17 +594,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private void moveGridColumn(GridColumn column, int newIndex) {
         int oldIndex = getColumnIndex(column);
-        if (oldIndex != newIndex) {
-            GGridPropertyTableHeader header = headers.remove(oldIndex);
-            headers.add(newIndex, header);
-
+        if (oldIndex != newIndex)
             moveColumn(oldIndex, newIndex);
-        }
     }
 
     private void removeGridColumn(GridColumn column) {
-        GGridPropertyTableHeader header = (GGridPropertyTableHeader) getHeader(getColumnIndex(column));
-        headers.remove(header);
         removeColumn(column);
     }
 
@@ -672,10 +666,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             element.getStyle().setProperty("opacity", "0.5");
         else
             element.getStyle().setProperty("opacity", "");
-    }
-
-    public ArrayList<GPropertyDraw> getProperties() {
-        return properties;
     }
 
     public void removeProperty(GPropertyDraw property) {
@@ -788,7 +778,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public GPropertyDraw getProperty(int column) {
-        return columnProperties.get(column);
+        return getGridColumn(column).property;
     }
 
     public GPropertyDraw getProperty(Cell.Context context) {
@@ -806,17 +796,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public int getPropertyIndex(GPropertyDraw property, GGroupObjectValue columnKey) {
-        for (int i = 0; i < columnProperties.size(); ++i) {
-            if (property == columnProperties.get(i) && (columnKey == null || columnKey.equals(columnKeysList.get(i)))) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private int getMinPropertyIndex(GPropertyDraw property) {
-        for (int i = 0; i < columnProperties.size(); ++i) {
-            if (property == columnProperties.get(i)) {
+        for(int i=0,size=getColumnCount();i<size;i++) {
+            GridColumn gridColumn = getGridColumn(i);
+            if (property == gridColumn.property && (columnKey == null || columnKey.equals(gridColumn.columnKey))) {
                 return i;
             }
         }
@@ -857,9 +839,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     private HashMap<GPropertyDraw, GGroupObjectValue> getMinColumnKey(GPropertyDraw property) {
-        int ind = getMinPropertyIndex(property);
+        int ind = getPropertyIndex(property, null);
         HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
-        key.put(property, ind == -1 ? GGroupObjectValue.EMPTY : columnKeysList.get(ind));
+        key.put(property, ind == -1 ? GGroupObjectValue.EMPTY : getColumnKey(ind));
         return key;
     }
 
@@ -869,11 +851,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public GGroupObjectValue getColumnKey(Cell.Context context) {
-        return columnKeysList.get(context.getColumn());
+        return getColumnKey(context.getColumn());
     }
 
     public GGroupObjectValue getColumnKey(int column) {
-        return columnKeysList.get(column);
+        return getGridColumn(column).columnKey;
     }
 
     @Override
@@ -921,7 +903,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public void pasteData(final List<List<String>> table) {
         final int selectedColumn = getKeyboardSelectedColumn();
 
-        if (selectedColumn == -1 || isEmpty() || table.isEmpty()) {
+        if (selectedColumn == -1 || table.isEmpty()) {
             return;
         }
 
@@ -1026,7 +1008,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             return;
         }
 
-        int ind = getMinPropertyIndex(propertyDraw);
+        int ind = getPropertyIndex(propertyDraw, null);
         if (ind != -1) {
             setKeyboardSelectedColumn(ind, false);
         }
@@ -1037,7 +1019,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         GridColumn column = (GridColumn) getColumn(context.getColumn());
 
         if (column != null && rowRecord != null) {
-            rowRecord.setValue(column.columnID, value);
+            column.setValue(rowRecord, value);
 
             setRowValue(context.getIndex(), rowRecord);
             redrawColumns(singleton(column), false);
@@ -1123,7 +1105,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public void saveCurrentPreferences(final boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
         currentGridPreferences.setHasUserPreferences(true);
 
-        if (!getProperties().isEmpty()) {
+        if (!properties.isEmpty()) {
             GGridUserPreferences prefs;
             if (forAllUsers) {
                 prefs = userGridPreferences.hasUserPreferences() ? userGridPreferences : currentGridPreferences;
@@ -1255,14 +1237,22 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     private class GridColumn extends Column<GridDataRecord, Object> {
-        private int columnID;
+        private final int columnID;
 
-        public GridColumn() {
+        public final GPropertyDraw property;
+        public final GGroupObjectValue columnKey;
+
+        public GridColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
             super(new GridEditableCell(GGridTable.this));
             this.columnID = nextColumnID++;
+
+            this.property = property;
+            this.columnKey = columnKey;
         }
 
-        @Override
+        public void setValue(GridDataRecord record, Object value) {
+            record.setValue(columnID, value);
+        }
         public Object getValue(GridDataRecord record) {
             return record.getValue(columnID);
         }

@@ -3,9 +3,13 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayNumber;
-import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.DivWidget;
+import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
@@ -30,7 +34,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         columnMap = new NativeHashMap<>();
         JsArray<JavaScriptObject> list = convertToObjectsMixed(getData(columnMap));
 
-        render(getElement(), getRecordElement(), list);
+        render(getDrawElement(), getRecordElement(), list);
     }
 
     protected abstract void render(Element element, com.google.gwt.dom.client.Element recordElement, JsArray<JavaScriptObject> list);
@@ -132,5 +136,9 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             map.put(toObject(getValue(object, keysFieldName)), object);
         }
         return map;        
-    }    
+    }
+
+    public boolean isGroup() {
+        return false;
+    }
 }

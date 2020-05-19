@@ -114,6 +114,9 @@ public interface ClientMessages extends Messages {
     String rmiConnectionLostExit();
     String rmiConnectionLostReconnect();
 
+    String formGridPageSizeHit(int pagesize);
+    String formGridPageSizeShowAll();
+
     String propertyTooltipCanonicalName();
     String propertyTooltipTable();
     String propertyTooltipObjects();

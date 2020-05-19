@@ -1035,6 +1035,9 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     public Header<?> getHeader(int index) {
         return headers.get(index);
     }
+    public int getHeaderIndex(Header<?> header) {
+        return headers.indexOf(header);
+    }
 
     private boolean hasHeaders() {
         return nonNullHeadersCount != 0;

@@ -74,6 +74,10 @@ public interface GTableView {
     // events
     void beforeHiding();
     void afterShowing();
+
+    int getPageSize();
+    boolean isGroup();
+    GGridViewType getViewType();
     
     void afterAppliedChanges(); // after apply changed
 }

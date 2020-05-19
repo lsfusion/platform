@@ -48,8 +48,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private GTreeTableTree tree;
 
-    private List<String> createdFields = new ArrayList<>();
-
     private GTreeGridRecord selectedRecord;
 
     private Set<GTreeTableNode> expandedNodes;
@@ -61,7 +59,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private boolean autoSize;
 
     private int hierarchicalWidth;
-    private Column hierarchicalColumn;
 
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, boolean autoSize) {
         super(iformController, lastGroupObject(treeGroup), treeGroupController.getFont());
@@ -71,19 +68,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         tree = new GTreeTableTree(iform);
 
-        Column<GTreeGridRecord, Object> column = new Column<GTreeGridRecord, Object>(new GTreeGridControlCell(this)) {
-            @Override
-            public Object getValue(GTreeGridRecord object) {
-                return object.getAttribute("treeColumn");
-            }
-        };
+        Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
         GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, messages.formTree());
         header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
-        createdFields.add("treeColumn");
-        headers.add(header);
         addColumn(column, header);
 
-        hierarchicalColumn = column;
         hierarchicalWidth = treeGroup.calculateSize();
 
         keyboardSelectionHandler = new TreeTableKeyboardSelectionHandler(this);
@@ -113,7 +102,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
             @Override
             protected GPropertyDraw getColumnKey(int column) {
-                return tree.getColumnProperty(column);
+                return getTreeGridColumn(column).getProperty();
             }
         };
 
@@ -135,15 +124,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         dataUpdated = true;
 
         int index = tree.removeProperty(group, property);
-        createdFields.remove(index);
-        headers.remove(index);
-        removeColumn(index);
+        if(index > -1) // we need only last group, just like everywhere
+            removeColumn(index);
 
-        columnsMap.remove(property);
         columnsUpdated = true;
     }
-
-    private NativeHashMap<GPropertyDraw, Column> columnsMap = new NativeHashMap<>();
 
     public void updateProperty(GGroupObject group, GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values) {
         dataUpdated = true;
@@ -152,32 +137,63 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             int index = tree.updateProperty(group, property);
 
             if (index > -1) {
-                if (!createdFields.contains(property.sID)) {
-                    Column<GTreeGridRecord, Object> gridColumn = createGridColumn(property);
-                    String propertyCaption = property.getCaptionOrEmpty();
-                    GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption));
-                    header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
+                GridColumn gridColumn = new GridColumn(property);
+                String propertyCaption = property.getCaptionOrEmpty();
+                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption));
+                header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
 
-                    headers.add(index, header);
-                    insertColumn(index, gridColumn, header);
-                    createdFields.add(index, property.sID);
+                insertColumn(index, gridColumn, header);
 
-                    columnsMap.put(property, gridColumn);
-                    columnsUpdated = true;
-                }
+                columnsUpdated = true;
             }
         }
         updatePropertyValues(property, values, updateKeys);
     }
 
-    private Column<GTreeGridRecord, Object> createGridColumn(final GPropertyDraw property) {
-        return new Column<GTreeGridRecord, Object>(new GridEditableCell(this, true)) {
-            @Override
-            public Object getValue(GTreeGridRecord record) {
-                int column = tree.columnProperties.indexOf(property);
-                return tree.getValue(record.getGroup(), column, record.getKey());
-            }
-        };
+    private abstract class TreeGridColumn extends Column<GTreeGridRecord, Object> {
+        public TreeGridColumn(Cell<Object> cell) {
+            super(cell);
+        }
+
+        public abstract GPropertyDraw getProperty();
+    }
+
+    // actually singleton
+    private class ExpandTreeColumn extends TreeGridColumn {
+        public ExpandTreeColumn() {
+            super(new GTreeGridControlCell(GTreeTable.this));
+        }
+
+        @Override
+        public Object getValue(GTreeGridRecord object) {
+            return object.getTreeValue();
+        }
+
+        @Override
+        public GPropertyDraw getProperty() {
+            return null;
+        }
+    }
+
+    private class GridColumn extends TreeGridColumn {
+
+        public final GPropertyDraw property;
+
+        public GridColumn(GPropertyDraw property) {
+            super(new GridEditableCell(GTreeTable.this, true));
+
+            this.property = property;
+        }
+
+        @Override
+        public Object getValue(GTreeGridRecord record) {
+            return record.getValue(property);
+        }
+
+        @Override
+        public GPropertyDraw getProperty() {
+            return property;
+        }
     }
 
     public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, HashMap<GGroupObjectValue, Boolean> expandable) {
@@ -241,46 +257,41 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             hierarchicalUserWidth = width;
             return;
         }
-        super.setUserWidth(i - 1, width);
+        super.setUserWidth(i, width);
     }
 
     @Override
     protected Integer getUserWidth(int i) {
         if(i==0)
             return hierarchicalUserWidth;
-        return super.getUserWidth(i - 1);
+        return super.getUserWidth(i);
     }
 
-    @Override
-    protected int getColumnsCount() {
-        return 1 + tree.columnProperties.size();
+    protected TreeGridColumn getTreeGridColumn(int i) {
+        return (TreeGridColumn) getColumn(i);
+    }
+    protected GridColumn getGridColumn(int i) {
+        assert i > 0;
+        return (GridColumn)getTreeGridColumn(i);
     }
 
     @Override
     protected GPropertyDraw getColumnPropertyDraw(int i) {
-        assert i < getColumnsCount() - 1; // уже вычли фиксированную колонку
-        return tree.columnProperties.get(i);
-    }
-
-    @Override
-    protected Column getColumnDraw(int i) {
-        if(i==0)
-            return hierarchicalColumn;
-        return columnsMap.get(getColumnPropertyDraw(i-1));
+        return getGridColumn(i).property;
     }
 
     @Override
     protected boolean isColumnFlex(int i) {
         if(i == 0)
             return true;
-        return super.isColumnFlex(i - 1);
+        return super.isColumnFlex(i);
     }
 
     @Override
     protected int getColumnBaseWidth(int i) {
         if(i==0)
             return hierarchicalWidth;
-        return super.getColumnBaseWidth(i - 1);
+        return super.getColumnBaseWidth(i);
     }
 
     public void update() {
@@ -294,7 +305,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if (dataUpdated) {
             restoreVisualState();
 
-            currentRecords = tree.getUpdatedRecords();
+            currentRecords = tree.getUpdatedRecords(getColumnCount(), i -> getColumnPropertyDraw(i));
             updatePropertyReaders();
             setRowData(currentRecords);
 
@@ -336,22 +347,19 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     protected void updatePropertyReaders() {
-        if (currentRecords != null &&
-                //раскраска в дереве - редкое явление, поэтому сразу проверяем есть ли она
-                (rowBackgroundValues.size() != 0 || rowForegroundValues.size() != 0 || cellBackgroundValues.size() != 0 || cellForegroundValues.size() != 0)) {
-            for (GridDataRecord record : currentRecords) {
+        if (rowBackgroundValues.size() != 0 || rowForegroundValues.size() != 0 || cellBackgroundValues.size() != 0 || cellForegroundValues.size() != 0) { // optimization
+            for (GTreeGridRecord record : currentRecords) {
                 GGroupObjectValue key = record.getKey();
 
                 Object rBackground = rowBackgroundValues.get(key);
                 Object rForeground = rowForegroundValues.get(key);
 
-                List<GPropertyDraw> columnProperties = getColumnProperties();
-                for (int j = 0; j < columnProperties.size(); j++) {
-                    GPropertyDraw property = columnProperties.get(j);
+                for (int i = 1, size = getColumnCount(); i < size; i++) {
+                    GPropertyDraw readerProperty = tree.getProperty(record.getGroup(), i);
 
                     Object background = rBackground;
                     if (background == null) {
-                        Map<GGroupObjectValue, Object> propBackgrounds = cellBackgroundValues.get(property);
+                        Map<GGroupObjectValue, Object> propBackgrounds = cellBackgroundValues.get(readerProperty);
                         if (propBackgrounds != null) {
                             background = propBackgrounds.get(key);
                         }
@@ -359,14 +367,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
                     Object foreground = rForeground;
                     if (foreground == null) {
-                        Map<GGroupObjectValue, Object> propForegrounds = cellForegroundValues.get(property);
+                        Map<GGroupObjectValue, Object> propForegrounds = cellForegroundValues.get(readerProperty);
                         if (propForegrounds != null) {
                             foreground = propForegrounds.get(key);
                         }
                     }
 
-                    record.setBackground(j + 1, background == null ? property.background : background);
-                    record.setForeground(j + 1, foreground == null ? property.foreground : foreground);
+                    record.setBackground(i, background == null ? readerProperty.background : background);
+                    record.setForeground(i, foreground == null ? readerProperty.foreground : foreground);
                 }
             }
         }
@@ -375,11 +383,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     protected void updateHeader() {
         boolean needsHeaderRefresh = false;
         int rowHeight = 0;
-        for (GPropertyDraw property : getColumnProperties()) {
+        for (int i = 1, size = getColumnCount(); i < size; i++) {
+            GPropertyDraw property = getColumnPropertyDraw(i);
             Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
             if (captions != null) {
                 String value = GwtSharedUtils.nullTrim(captions.values().iterator().next());
-                GGridPropertyTableHeader header = headers.get(getColumnIndex(property));
+                GGridPropertyTableHeader header = getGridHeader(i);
                 header.setCaption(value, false, false);
                 header.setToolTip(property.getTooltipText(value));
                 needsHeaderRefresh = true;
@@ -521,22 +530,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public GPropertyDraw getCurrentProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 1) {
-            property = tree.getColumnProperty(1);
+            property = getColumnPropertyDraw(1);
         }
         return property;
     }
 
     public Object getSelectedValue(GPropertyDraw property) {
         GTreeGridRecord record = getSelectedRecord();
-        return record == null ? null : tree.getValue(record.getGroup(), getColumnIndex(property) - 1, record.getKey());
-    }
-
-    public List<GPropertyDraw> getColumnProperties() {
-        return tree.columnProperties;
-    }
-
-    public int getColumnIndex(GPropertyDraw property) {
-        return getColumnProperties().indexOf(property) + 1;
+        return record == null ? null : record.getValue(property);
     }
 
     @Override
@@ -552,7 +553,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public GPropertyDraw getProperty(Cell.Context context) {
         GTreeGridRecord rowValue = (GTreeGridRecord) context.getRowValue();
-        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), context.getColumn() - 1);
+        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), context.getColumn());
     }
 
     @Override
@@ -568,13 +569,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public boolean isEditable(Cell.Context context) {
         GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
-        return record != null && tree.isEditable(record.getGroup(), context.getColumn() - 1, record.getKey());
+        return record != null && tree.isEditable(record.getGroup(), context.getColumn(), record.getKey());
     }
 
     @Override
     public Object getValueAt(Cell.Context context) {
         GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
-        return record == null ? null : tree.getValue(record.getGroup(), context.getColumn() - 1, record.getKey());
+        return record == null ? null : tree.getValue(record.getGroup(), context.getColumn(), record.getKey());
     }
 
     @Override
@@ -622,7 +623,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if (rowRecord != null) {
             GPropertyDraw property = getProperty(context);
             if (property != null) {
-                rowRecord.setAttribute(property.sID, value);
+                rowRecord.setValue(property, value);
                 tree.putValue(property, rowRecord.getKey(), value);
             }
         }

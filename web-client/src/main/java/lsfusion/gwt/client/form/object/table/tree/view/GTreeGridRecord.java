@@ -16,8 +16,21 @@ public class GTreeGridRecord extends GridDataRecord {
         this.group = group;
 
         for (Map.Entry<GPropertyDraw, Object> e : values.entrySet()) {
-            setAttribute(e.getKey().sID, e.getValue());
+            setValue(e.getKey(), e.getValue());
         }
+    }
+
+    public void setTreeValue(Object value) {
+        setAttribute("treeColumn", value);
+    }
+    public Object getTreeValue() {
+        return getAttribute("treeColumn");
+    }
+    public void setValue(GPropertyDraw property, Object value) {
+        setAttribute(property.ID, value);
+    }
+    public Object getValue(GPropertyDraw property) {
+        return getAttribute(property.ID);
     }
 
     public GGroupObject getGroup() {

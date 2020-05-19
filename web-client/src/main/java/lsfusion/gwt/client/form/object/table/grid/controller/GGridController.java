@@ -27,6 +27,8 @@ import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
@@ -129,7 +131,11 @@ public class GGridController extends GAbstractTableController {
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
     }
-    
+    private void changeMode(Runnable updateView) {
+        updateView.run();
+        formController.changeMode(groupObject, table.isGroup(), table.getPageSize(), table.getViewType());
+    }
+
     private boolean manual;
     private void setUpdateMode(boolean manual) {
         this.manual = manual;
@@ -234,8 +240,7 @@ public class GGridController extends GAbstractTableController {
         gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
             public void addListener() {
                 addClickHandler(event -> {
-                    setGridTableView();
-                    formController.changeMode(groupObject, false, -1, GGridViewType.GRID);
+                    changeMode(() -> setGridTableView());
                 });
             }
         };
@@ -244,8 +249,7 @@ public class GGridController extends GAbstractTableController {
         pivotTableButton = new GToolbarButton("pivot.png", messages.formGridPivotView()) {
             public void addListener() {
                 addClickHandler(event -> {
-                    setPivotTableView();
-                    formController.changeMode(groupObject, true, 1000, GGridViewType.PIVOT);
+                    changeMode(() -> setPivotTableView());
                 });
             }
         };
@@ -255,8 +259,7 @@ public class GGridController extends GAbstractTableController {
             mapTableButton = new GToolbarButton("map.png", messages.formGridMapView()) {
                 public void addListener() {
                     addClickHandler(event -> {
-                        setMapTableView();
-                        formController.changeMode(groupObject, false, 1000, GGridViewType.MAP);
+                        changeMode(() -> setMapTableView());
                     });
                 }
             };
@@ -631,6 +634,9 @@ public class GGridController extends GAbstractTableController {
 
     public void changeGroupMode(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, GPropertyGroupType aggrType) {
         formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, null, GGridViewType.PIVOT);
+    }
+    public void changePageSize(int pageSize) {
+        formController.changeMode(groupObject, false, null, null, 0, null, pageSize, false, null, null);
     }
 
     @Override

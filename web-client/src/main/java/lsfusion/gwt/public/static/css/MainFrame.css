@@ -664,11 +664,8 @@ input[type=checkbox]:focus {
 }
 
 .pvtUiWrapperDiv {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    height: 100%;
+    width: 100%;
 }
 
 .pvtUiCellVDiv {
@@ -705,6 +702,25 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
 
 .pvtCols, .pvtRendererArea {
     width: 100%;
+}
+
+.pvtRendererArea {
+    display : flex;
+    flex-direction : column;
+    height : 100%;
+}
+
+.pvtRendererHeader {
+    flex : 0 1 auto;
+}
+
+.pvtRendererBody {
+    position : relative;
+    flex : 1;
+}
+
+.pvtRendererFooter {
+    flex : 0 1 auto;
 }
 
 .pvtRendererScrollDiv {

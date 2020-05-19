@@ -163,7 +163,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
     public int getGroupPageSize() {
         assert !isInTree();
-        return getPageSize() * 5;
+        return getPageSize();
     }
 
     public void setPageSize(Integer pageSize) {

@@ -5,9 +5,12 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -19,7 +22,8 @@ import java.io.Serializable;
 import java.util.*;
 
 // view with state, without incremental updates
-public abstract class GStateTableView extends SimplePanel implements GTableView {
+// flexpanel, since we need to add pagesize widget + attach it to handle events
+public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     protected final GFormController form;
     protected final GGridController grid;
@@ -57,12 +61,52 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
     }-*/;
 
     public GStateTableView(GFormController form, GGridController grid) {
+        super(true);
+
         this.form = form;
         this.grid = grid;
 
 //        setElement(DOM.createDiv());
 
         rerender = true;
+
+        drawWidget = new DivWidget();
+        addFill(drawWidget);
+
+        initPageSizeWidget();
+    }
+
+    public void initPageSizeWidget() {
+        FlexPanel messageAndButton = new FlexPanel();
+        messageAndButton.addCentered(new Label(ClientMessages.Instance.get().formGridPageSizeHit(pageSize)));
+
+        SimpleImageButton showAllButton = new SimpleImageButton(ClientMessages.Instance.get().formGridPageSizeShowAll());
+        showAllButton.addClickHandler(event -> {
+            pageSize = Integer.MAX_VALUE;
+            this.grid.changePageSize(pageSize);
+        });
+        messageAndButton.addCentered(showAllButton);
+
+        FlexPanel centeredMessageAndButton = new FlexPanel(true);
+        centeredMessageAndButton.addCentered(messageAndButton);
+
+        this.pageSizeWidget = centeredMessageAndButton;
+
+        ResizableSimplePanel child = new ResizableSimplePanel();
+        child.setWidget(this.pageSizeWidget);
+        addStretched(child); // we need to attach pageSize widget to make it work
+//
+//        add(new ResizableSimplePanel(this.pageSizeWidget)); // we need to attach pageSize widget to make it work
+    }
+
+    private Widget drawWidget;
+    protected Element getDrawElement() {
+        return drawWidget.getElement();
+    }
+
+    private Widget pageSizeWidget;
+    protected Widget getPageSizeWidget() {
+        return pageSizeWidget;
     }
 
     protected Element getRecordElement() {
@@ -79,6 +123,16 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
         this.currentKey = currentKey;
 
         dataUpdated = true;
+    }
+
+    private int pageSize = 1000;
+    @Override
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    protected boolean isPageSizeHit() {
+        return keys.size() == getPageSize();
     }
 
     @Override
@@ -152,6 +206,8 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
             this.updateState = updateState;
 
         if(dataUpdated || rerender) {
+            updatePageSizeState(isPageSizeHit());
+
             updateView();
             rerender = false;
         }
@@ -159,6 +215,9 @@ public abstract class GStateTableView extends SimplePanel implements GTableView 
         updateRendererState(this.updateState); // update state with server response
     }
     protected abstract void updateView();
+    protected void updatePageSizeState(boolean hit) {
+        getPageSizeWidget().setVisible(hit);
+    }
     protected abstract void updateRendererState(boolean set);
 
     @Override

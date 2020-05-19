@@ -22,7 +22,7 @@ public class GPivot extends GStateTableView {
     public GPivot(GFormController formController, GGridController gridController) {
         super(formController, gridController);
 
-        setStyleName(getElement(), "pivotTable");
+        setStyleName(getDrawElement(), "pivotTable");
 
         config = getDefaultConfig(COLUMN);
     }
@@ -37,6 +37,15 @@ public class GPivot extends GStateTableView {
                 propertiesList.add(property);
             }
         }
+    }
+
+    public boolean isGroup() {
+        return true;
+    }
+
+    @Override
+    public GGridViewType getViewType() {
+        return GGridViewType.PIVOT;
     }
 
     // we need key / value view since pivot
@@ -177,15 +186,16 @@ public class GPivot extends GStateTableView {
         JsArrayString jsArray = JsArrayString.createArray().cast();
         aggrCaptions.forEach(jsArray::push);
 
-        render(getElement(), data, config, jsArray); // we need to updateRendererState after it is painted
+        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, jsArray); // we need to updateRendererState after it is painted
     }
 
     @Override
     public void runGroupReport(boolean toExcel) {
+        Element drawElement = getDrawElement();
         if (toExcel) {
-            exportToExcel(getElement());
+            exportToExcel(drawElement);
         } else {
-            exportToPdf(getElement());
+            exportToPdf(drawElement);
         }
     }
 
@@ -398,9 +408,9 @@ public class GPivot extends GStateTableView {
         }
     }-*/;
 
-    protected native void render(com.google.gwt.dom.client.Element element, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns)/*-{
+    protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns)/*-{
 //        var d = element;
-        var d = $doc.createElement('div');
+        var d = $doc.createElement('div'); // we need some div to append it later to avoid blinking
         d.className = 'pvtUiWrapperDiv';
 
         // Configuration ordering column for group
@@ -408,6 +418,9 @@ public class GPivot extends GStateTableView {
 
         // because we create new element, aggregators every time
         $wnd.$(d).pivotUI(array, config, true);
+
+        // moving pagesize controller inside
+        $wnd.$(d).find(".pvtRendererFooter").append(pageSizeElement);
 
         this.@GPivot::setRendererElement(*)(d);
 
