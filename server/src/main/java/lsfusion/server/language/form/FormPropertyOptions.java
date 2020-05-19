@@ -43,6 +43,7 @@ public class FormPropertyOptions {
     private String integrationSID;
     private PropertyDrawEntity neighbourPropertyDraw;
     private Boolean order;
+    private boolean filter;
     private boolean pivotRow;
     private boolean pivotColumn;
     private boolean pivotMeasure;
@@ -356,6 +357,14 @@ public class FormPropertyOptions {
         this.order = order;
     }
 
+    public boolean isFilter() {
+        return filter;
+    }
+
+    public void setFilter(boolean filter) {
+        this.filter = filter;
+    }
+
     public boolean isPivotRow() {
         return pivotRow;
     }
@@ -419,6 +428,7 @@ public class FormPropertyOptions {
         merged.setGroupName(nvl(overrides.getGroupName(), groupName));
 
         merged.setOrder(nvl(overrides.getOrder(), order));
+        merged.setFilter(nvl(overrides.isFilter(), filter));
 
         merged.setPivotColumn(nvl(overrides.isPivotColumn(), pivotColumn));
         merged.setPivotRow(nvl(overrides.isPivotRow(), pivotRow));

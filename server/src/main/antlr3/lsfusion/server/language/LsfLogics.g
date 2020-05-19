@@ -772,6 +772,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
 		|   'EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); }
 		|   po=propertyDrawOrder { $options.setOrder($po.order); }
+		|   'FILTER' { $options.setFilter(true); }
 		|   'COLUMN' { $options.setPivotColumn(true); }
 		|   'ROW' { $options.setPivotRow(true); }
 		|   'MEASURE' { $options.setPivotMeasure(true); }

@@ -545,6 +545,9 @@ public class ScriptingFormEntity {
         if(order != null)
             form.addDefaultOrder(property, order, version);
 
+        if(options.isFilter())
+            form.addFixedFilter(new FilterEntity(property.getPropertyObjectEntity()), version);
+
         if(options.isPivotColumn())
             form.addPivotColumn(property, version);
         if(options.isPivotRow())
