@@ -2,6 +2,7 @@
         "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
 <module rename-to="main"> <!-- without rename name will be with packages i.e lsfusion.gwt.main -->
     <!-- this name is used in web.xml dispatch endpoint and in main.jsp nocache.js (gwt-maven-plugin in web-client/pom.xml uses default name, apparently because it needs full path)  -->
+    <!-- in case of rename edit also initialization of FileUtils.APP_CLIENT_IMAGES_FOLDER_URL in LogicsProviderImpl -->
     <inherits name='com.google.gwt.user.User'/>
 
     <source path='client'/>

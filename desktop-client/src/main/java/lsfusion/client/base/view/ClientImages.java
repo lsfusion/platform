@@ -1,12 +1,15 @@
 package lsfusion.client.base.view;
 
+import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.client.controller.MainController;
+import lsfusion.interop.base.view.ColorTheme;
 
 import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 
 import static lsfusion.base.ResourceUtils.readImage;
+import static lsfusion.interop.base.view.ColorTheme.DEFAULT;
 
 public class ClientImages {
     private static Map<String, ImageIcon> images = new HashMap<>();
@@ -18,7 +21,11 @@ public class ClientImages {
             if (image != null) {
                 images.put(path, image);
             } else {
-                images.put(path, image = readImage(path)); // default color theme
+                ImageIcon defaultThemeImage = readImage(DEFAULT.getImagePath(path));
+                if (defaultThemeImage != null) {
+                    image = ClientColorUtils.createFilteredImageIcon(defaultThemeImage);
+                    images.put(path, image);
+                }
             }
         }
         return image;
@@ -26,5 +33,25 @@ public class ClientImages {
     
     public static void reset() {
         images.clear();
-    } 
+    }
+
+    public static ImageIcon getImage(SerializableImageIconHolder imageHolder) {
+        return getImage(imageHolder, MainController.colorTheme);
+    }
+
+    public static ImageIcon getImage(SerializableImageIconHolder imageHolder, ColorTheme colorTheme) {
+        if (imageHolder == null) {
+            return null;
+        }
+        
+        ImageIcon themeImage = imageHolder.getImage(colorTheme);
+        if (themeImage == null) {
+            ImageIcon imageIcon = ClientColorUtils.createFilteredImageIcon(imageHolder.getImage(DEFAULT));
+            imageHolder.putImage(colorTheme, imageIcon);
+            return imageIcon;
+        }
+        return themeImage;
+    }
+
+    
 }

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -45,61 +46,114 @@ public class ColorUtils {
         return toColorString(rgb1 & rgb2);
     }
 
-    public static int getRed(String color) {
-        return getRed(Integer.decode(color));
-    }
-    
     public static int getRed(int color) {
         return (color >> 16) & 0xFF;
     }
 
-    public static int getGreen(String color) {
-        return getGreen(Integer.decode(color));
-    }
-    
     public static int getGreen(int color) {
         return (color >> 8) & 0xFF;
     }
 
-    public static int getBlue(String color) {
-        return getBlue(Integer.decode(color));
-    }
-    
     public static int getBlue(int color) {
         return color & 0xFF;
     }
 
-    // based on java.awt.Color's darker() 
-    public static String getDisplayBackground(String baseColor) {
-        Float invertFactor = colorTheme.getColorInvertFactor();
-        if (baseColor != null && invertFactor != null) {
-            return toColorString(max((int) (getRed(baseColor) * invertFactor), 0),
-                    max((int) (getGreen(baseColor) * invertFactor), 0),
-                    max((int) (getBlue(baseColor) * invertFactor), 0));
+    public static String getDisplayColor(String baseColor) {
+        if (!colorTheme.isDefault() && baseColor != null) {
+            int baseRGB = toRGB(baseColor);
+            int baseBackgroundColor = toRGB(StyleDefaults.getDefaultComponentBackground());
+            int newBackgroundColor = toRGB(StyleDefaults.getComponentBackground(colorTheme));
+            int customLimitColor = toRGB(StyleDefaults.getTextColor(colorTheme));
+            
+            float[] hsb = RGBtoHSB(
+                    max(min(getRed(baseBackgroundColor) - getRed(baseRGB) + getRed(newBackgroundColor), getRed(customLimitColor)), 0),
+                    max(min(getGreen(baseBackgroundColor) - getGreen(baseRGB) + getGreen(newBackgroundColor), getGreen(customLimitColor)), 0),
+                    max(min(getBlue(baseBackgroundColor) - getBlue(baseRGB) + getBlue(newBackgroundColor), getBlue(customLimitColor)), 0));
+            return toColorString(HSBtoRGB(Math.abs(0.5f + hsb[0]), hsb[1], hsb[2]));
         }
         return baseColor;
     }
 
-    // based on java.awt.Color's brighter() 
-    public static String getDisplayForeground(String baseColor) {
-        Float invertFactor = colorTheme.getColorInvertFactor();
-        if (baseColor != null && invertFactor != null) {
-            int r = getRed(baseColor);
-            int g = getGreen(baseColor);
-            int b = getBlue(baseColor);
-
-            int i = (int) (1.0 / (1.0 - invertFactor));
-            if (r == 0 && g == 0 && b == 0) {
-                return toColorString(i, i, i);
+    // c/p of java.awt.Color's HSBtoRGB() 
+    public static int HSBtoRGB(float hue, float saturation, float brightness) {
+        int r = 0, g = 0, b = 0;
+        if (saturation == 0) {
+            r = g = b = (int) (brightness * 255.0f + 0.5f);
+        } else {
+            float h = (hue - (float)Math.floor(hue)) * 6.0f;
+            float f = h - (float)java.lang.Math.floor(h);
+            float p = brightness * (1.0f - saturation);
+            float q = brightness * (1.0f - saturation * f);
+            float t = brightness * (1.0f - (saturation * (1.0f - f)));
+            switch ((int) h) {
+                case 0:
+                    r = (int) (brightness * 255.0f + 0.5f);
+                    g = (int) (t * 255.0f + 0.5f);
+                    b = (int) (p * 255.0f + 0.5f);
+                    break;
+                case 1:
+                    r = (int) (q * 255.0f + 0.5f);
+                    g = (int) (brightness * 255.0f + 0.5f);
+                    b = (int) (p * 255.0f + 0.5f);
+                    break;
+                case 2:
+                    r = (int) (p * 255.0f + 0.5f);
+                    g = (int) (brightness * 255.0f + 0.5f);
+                    b = (int) (t * 255.0f + 0.5f);
+                    break;
+                case 3:
+                    r = (int) (p * 255.0f + 0.5f);
+                    g = (int) (q * 255.0f + 0.5f);
+                    b = (int) (brightness * 255.0f + 0.5f);
+                    break;
+                case 4:
+                    r = (int) (t * 255.0f + 0.5f);
+                    g = (int) (p * 255.0f + 0.5f);
+                    b = (int) (brightness * 255.0f + 0.5f);
+                    break;
+                case 5:
+                    r = (int) (brightness * 255.0f + 0.5f);
+                    g = (int) (p * 255.0f + 0.5f);
+                    b = (int) (q * 255.0f + 0.5f);
+                    break;
             }
-            if (r > 0 && r < i) r = i;
-            if (g > 0 && g < i) g = i;
-            if (b > 0 && b < i) b = i;
-
-            return toColorString(min((int) (r / invertFactor), 255),
-                    min((int) (g / invertFactor), 255),
-                    min((int) (b / invertFactor), 255));
         }
-        return baseColor;
+        return 0xff000000 | (r << 16) | (g << 8) | (b << 0);
+    }
+
+    // c/p of java.awt.Color's RGBtoHSB() 
+    public static float[] RGBtoHSB(int r, int g, int b) {
+        float hue, saturation, brightness;
+        float[] hsbvals = new float[3];
+        int cmax = (r > g) ? r : g;
+        if (b > cmax) cmax = b;
+        int cmin = (r < g) ? r : g;
+        if (b < cmin) cmin = b;
+
+        brightness = ((float) cmax) / 255.0f;
+        if (cmax != 0)
+            saturation = ((float) (cmax - cmin)) / ((float) cmax);
+        else
+            saturation = 0;
+        if (saturation == 0)
+            hue = 0;
+        else {
+            float redc = ((float) (cmax - r)) / ((float) (cmax - cmin));
+            float greenc = ((float) (cmax - g)) / ((float) (cmax - cmin));
+            float bluec = ((float) (cmax - b)) / ((float) (cmax - cmin));
+            if (r == cmax)
+                hue = bluec - greenc;
+            else if (g == cmax)
+                hue = 2.0f + redc - bluec;
+            else
+                hue = 4.0f + greenc - redc;
+            hue = hue / 6.0f;
+            if (hue < 0)
+                hue = hue + 1.0f;
+        }
+        hsbvals[0] = hue;
+        hsbvals[1] = saturation;
+        hsbvals[2] = brightness;
+        return hsbvals;
     }
 }

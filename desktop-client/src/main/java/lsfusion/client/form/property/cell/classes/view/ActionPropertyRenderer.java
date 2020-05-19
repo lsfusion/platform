@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.cell.classes.view;
 
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 
@@ -23,7 +23,7 @@ public class ActionPropertyRenderer extends PropertyRenderer {
 
     public JButton getComponent() {
         if (button == null) {
-            button = property != null ? new JButton(property.design.getImage(MainController.colorTheme)) : new JButton();
+            button = property != null ? new JButton(ClientImages.getImage(property.design.getImageHolder())) : new JButton();
         }
         return button;
     }

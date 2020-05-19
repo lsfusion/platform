@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.view.GColorTheme;
@@ -21,24 +22,22 @@ import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.RenderedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Map;
+import java.io.*;
+import java.util.Iterator;
 
 public class FileUtils {
     // not that pretty with statics, in theory it's better to autowire LogicsHandlerProvider (or get it from servlet) and pass as a parameter here
     public static String APP_IMAGES_FOLDER_URL; // all files has to be prefixed with logicsName
+    public static String APP_CSS_FOLDER_URL; // all files has to be prefixed with logicsName
+    public static String APP_CLIENT_IMAGES_FOLDER_URL;
     public static String APP_TEMP_FOLDER_URL; // all files hasn't to be prefixed because their names are (or prefixed with) random strings
 
     public static ImageHolder createImage(String logicsName, SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
         if (imageHolder != null) {
             ImageHolder imageDescription = new ImageHolder();
-            for (Map.Entry<ColorTheme, ImageIcon> imagesEntry : imageHolder.getImages().entrySet()) {
-                ColorTheme colorTheme = imagesEntry.getKey();
-                ImageIcon image = imagesEntry.getValue();
-                GColorTheme gColorTheme = GColorTheme.valueOf(colorTheme.name());
+                
+            for (GColorTheme gColorTheme : GColorTheme.values()) {
+                ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
 
                 String fullPath = logicsName + "/" + imagesFolderName;
                 String imagePath = imageHolder.getImagePath(colorTheme);
@@ -47,7 +46,15 @@ public class FileUtils {
                 imagesFolder.mkdirs(); // not mkdir because we have complex path (logics/navigator)
                 String imageFileName = imagePath.substring(0, imagePath.lastIndexOf("."));
                 String imageFileType = imagePath.substring(imagePath.lastIndexOf(".") + 1);
-
+                
+                ImageIcon image = imageHolder.getImage(colorTheme); 
+                if (image == null) {
+                    image = ClientColorUtils.createFilteredImageIcon(imageHolder.getImage(ColorTheme.DEFAULT),
+                            ServerColorUtils.getDefaultThemePanelBackground(),
+                            ServerColorUtils.getPanelBackground(colorTheme),
+                            ServerColorUtils.getComponentForeground(colorTheme));
+                }
+                
                 createImageFile(image.getImage(), imagesFolder, imageFileName, imageFileType, false);
                 if (canBeDisabled) {
                     createImageFile(image.getImage(), imagesFolder, imageFileName + "_Disabled", imageFileType, true);
@@ -102,6 +109,57 @@ public class FileUtils {
             g.dispose();
         }
         return bufferedImage;
+    }
+    
+    public static void createThemedClientImages() {
+        File imagesFolder = new File(APP_CLIENT_IMAGES_FOLDER_URL);
+        Iterator it = org.apache.commons.io.FileUtils.iterateFiles(imagesFolder, null, false);
+        while (it.hasNext()) {
+            File imageFile = (File) it.next();
+                String imagePath = imageFile.getName();
+                
+                boolean alreadyThemed = false;
+                if (imagePath.contains("_")) {
+                    String fileName = imagePath.substring(0, imagePath.lastIndexOf("."));
+                    String possibleThemeSid = fileName.substring(fileName.lastIndexOf("_") + 1);
+                    for (GColorTheme theme : GColorTheme.values()) {
+                        if (!theme.isDefault() && theme.getSid().equals(possibleThemeSid)) {
+                            alreadyThemed = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!alreadyThemed) {
+                    byte[] bytesArray = new byte[(int) imageFile.length()];
+                    try {
+                        FileInputStream fileInputStream = new FileInputStream(imageFile);
+                        fileInputStream.read(bytesArray);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (bytesArray.length > 0) {
+                        ImageIcon baseImage = new ImageIcon(bytesArray);
+
+                        for (GColorTheme gColorTheme : GColorTheme.values()) {
+                            if (!gColorTheme.isDefault()) {
+                                ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
+    
+                                ImageIcon themeImage = ClientColorUtils.createFilteredImageIcon(baseImage,
+                                        ServerColorUtils.getDefaultThemePanelBackground(),
+                                        ServerColorUtils.getPanelBackground(colorTheme),
+                                        ServerColorUtils.getComponentForeground(colorTheme));
+    
+                                String newImagePath = gColorTheme.getImagePath(imagePath);
+                                String imageFileName = newImagePath.substring(0, newImagePath.lastIndexOf("."));
+                                String imageFileType = newImagePath.substring(newImagePath.lastIndexOf(".") + 1);
+    
+                                createImageFile(themeImage.getImage(), imagesFolder, imageFileName, imageFileType, false);
+                            }
+                        }
+                    }
+                }
+        }
     }
 
     public static Object readFilesAndDelete(GFilesDTO filesObj) {

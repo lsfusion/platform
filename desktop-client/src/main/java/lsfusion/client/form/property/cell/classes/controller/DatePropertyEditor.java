@@ -4,7 +4,7 @@ import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.controller.MainController;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
@@ -38,7 +38,8 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         }
 
         if (property != null && property.design != null) {
-            property.design.designComponent(this, MainController.colorTheme);
+            property.design.installFont(this);
+            ClientColorUtils.designComponent(this, property.design);
         }
     }
 

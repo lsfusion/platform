@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.table.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -13,6 +12,8 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
 
 import java.util.List;
+
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
@@ -167,14 +168,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
         if (backgroundColor != null) {
-            td.getStyle().setBackgroundColor(ColorUtils.getDisplayBackground(backgroundColor));
+            td.getStyle().setBackgroundColor(getDisplayColor(backgroundColor));
         } else {
             td.getStyle().clearBackgroundColor();
         }
 
         String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
         if (foregroundColor != null) {
-            td.getStyle().setColor(ColorUtils.getDisplayForeground(foregroundColor));
+            td.getStyle().setColor(getDisplayColor(foregroundColor));
         } else {
             td.getStyle().clearColor();
         }

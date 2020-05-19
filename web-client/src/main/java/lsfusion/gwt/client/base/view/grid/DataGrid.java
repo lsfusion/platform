@@ -44,7 +44,7 @@ import static com.google.gwt.dom.client.Style.OutlineStyle;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TD;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TH;
 import static java.lang.Math.min;
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayBackground;
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
 import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBorderColor;
 import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundColor;
@@ -1851,7 +1851,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                     tdStyle.setBackgroundColor(getSelectedRowBackgroundColor());
                 }
             } else if (background != null) {
-                tdStyle.setBackgroundColor(getDisplayBackground(background));
+                tdStyle.setBackgroundColor(getDisplayColor(background));
             } else {
                 tdStyle.clearBackgroundColor();
             }
@@ -1878,10 +1878,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                     if (background == null) {
                         tdStyle.setBackgroundColor(StyleDefaults.getFocusedCellBackgroundColor());
                     } else {
-                        tdStyle.setBackgroundColor(getDisplayBackground(background));
+                        tdStyle.setBackgroundColor(getDisplayColor(background));
                     }
                 } else if (!inSelectedRow && background != null) { // is painted as selected row
-                    tdStyle.setBackgroundColor(getDisplayBackground(background));
+                    tdStyle.setBackgroundColor(getDisplayColor(background));
                 }
 
                 if (drawFocusedCellBorder()) {
