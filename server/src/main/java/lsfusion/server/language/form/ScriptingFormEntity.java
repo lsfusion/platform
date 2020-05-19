@@ -540,6 +540,17 @@ public class ScriptingFormEntity {
         Boolean attr = options.getAttr();
         if(attr != null)
             property.attr = attr;
+
+        Boolean order = options.getOrder();
+        if(order != null)
+            form.addDefaultOrder(property, order, version);
+
+        if(options.isPivotColumn())
+            form.addPivotColumn(property, version);
+        if(options.isPivotRow())
+            form.addPivotRow(property, version);
+        if(options.isPivotMeasure())
+            form.addPivotMeasure(property, version);
     }
 
     private void movePropertyDraw(PropertyDrawEntity property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {

@@ -1268,16 +1268,28 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
+    public void addPivotColumn(PropertyDrawEntity column, Version version) {
+        pivotColumns.add(Collections.singletonList(column), version);
+    }
+
     public void addPivotColumns(List<List<PropertyDrawEntity>> columns, Version version) {
         for(List<PropertyDrawEntity> column : columns) {
             pivotColumns.add(column, version);
         }
     }
 
+    public void addPivotRow(PropertyDrawEntity row, Version version) {
+        pivotRows.add(Collections.singletonList(row), version);
+    }
+
     public void addPivotRows(List<List<PropertyDrawEntity>> rows, Version version) {
         for(List<PropertyDrawEntity> row : rows) {
             pivotRows.add(row, version);
         }
+    }
+
+    public void addPivotMeasure(PropertyDrawEntity measure, Version version) {
+        pivotMeasures.add(measure, version);
     }
 
     public void addPivotMeasures(List<PropertyDrawEntity> measures, Version version) {

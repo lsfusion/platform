@@ -42,6 +42,10 @@ public class FormPropertyOptions {
     private String eventId;
     private String integrationSID;
     private PropertyDrawEntity neighbourPropertyDraw;
+    private Boolean order;
+    private boolean pivotRow;
+    private boolean pivotColumn;
+    private boolean pivotMeasure;
 
     // for pivoting
     public String formula;
@@ -344,6 +348,38 @@ public class FormPropertyOptions {
         this.groupName = groupName;
     }
 
+    public Boolean getOrder() {
+        return order;
+    }
+
+    public void setOrder(Boolean order) {
+        this.order = order;
+    }
+
+    public boolean isPivotRow() {
+        return pivotRow;
+    }
+
+    public void setPivotRow(boolean pivotRow) {
+        this.pivotRow = pivotRow;
+    }
+
+    public boolean isPivotColumn() {
+        return pivotColumn;
+    }
+
+    public void setPivotColumn(boolean pivotColumn) {
+        this.pivotColumn = pivotColumn;
+    }
+
+    public boolean isPivotMeasure() {
+        return pivotMeasure;
+    }
+
+    public void setPivotMeasure(boolean pivotMeasure) {
+        this.pivotMeasure = pivotMeasure;
+    }
+
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
@@ -381,6 +417,13 @@ public class FormPropertyOptions {
 
         merged.setAttr(nvl(overrides.getAttr(), attr));
         merged.setGroupName(nvl(overrides.getGroupName(), groupName));
+
+        merged.setOrder(nvl(overrides.getOrder(), order));
+
+        merged.setPivotColumn(nvl(overrides.isPivotColumn(), pivotColumn));
+        merged.setPivotRow(nvl(overrides.isPivotRow(), pivotRow));
+        merged.setPivotMeasure(nvl(overrides.isPivotMeasure(), pivotMeasure));
+
         return merged;
     }
     

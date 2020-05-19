@@ -771,6 +771,10 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'ATTR' { $options.setAttr(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
 		|   'EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); }
+		|   po=propertyDrawOrder { $options.setOrder($po.order); }
+		|   'COLUMN' { $options.setPivotColumn(true); }
+		|   'ROW' { $options.setPivotRow(true); }
+		|   'MEASURE' { $options.setPivotMeasure(true); }
 		)*
 	;
 
@@ -1228,6 +1232,10 @@ formOrderByList
 	
 formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = true]
 	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('DESC' { $order = false; })?
+	;
+
+propertyDrawOrder returns [boolean order = true]
+	:	'ORDERX' ('DESC' { $order = false; })?
 	;
 
 formPivotOptionsDeclaration
