@@ -612,7 +612,7 @@ propertyClassViewType returns [ClassViewType type]
 	;
 
 listViewType returns [ListViewType type, PivotOptions options]
-	:   'PIVOT' {$type = ListViewType.PIVOT;} opt = pivotOptions {$options = $opt.options; }
+	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = ListViewType.DEFAULT;})? opt = pivotOptions {$options = $opt.options; }
 	|   'MAP' {$type = ListViewType.MAP;}
     ;
 
@@ -1264,9 +1264,12 @@ groupObjectPivotOptions returns [String groupObject, PivotOptions options = new 
     ;
 
 pivotOptions returns [PivotOptions options = new PivotOptions()]
-    :   (t=stringLiteral { $options.setType($t.val); })?
-        (a=propertyGroupType { $options.setAggregation($a.type); })?
-        ('SETTINGS'  { $options.setShowSettings(true); } | 'NOSETTINGS'  { $options.setShowSettings(false); })?
+    :
+    (   t=stringLiteral { $options.setType($t.val); }
+    |   a=propertyGroupType { $options.setAggregation($a.type); }
+    |   ('SETTINGS'  { $options.setShowSettings(true); } | 'NOSETTINGS'  { $options.setShowSettings(false); })
+    |    ('DEFAULT' | 'NODEFAULT')
+    )*
     ;
 
 pivotPropertyDrawList returns [List<PropertyDrawEntity> props = new ArrayList<>()]
