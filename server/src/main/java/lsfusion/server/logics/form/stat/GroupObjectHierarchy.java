@@ -60,14 +60,13 @@ public class GroupObjectHierarchy {
             return firstGroup == null ? "__ROOT__" : firstGroup.getSID();
         }
 
-        public String getName(FormView formView) {
+        public String getName(String formSID) {
             GroupObjectEntity firstGroup = getFirstGroup();
-            return firstGroup == null ? ThreadLocalContext.localize(formView.caption) : firstGroup.getSID();
+            return formSID + (firstGroup == null ? "" : "_" + firstGroup.getSID());
         }
 
         public String getFileName(String formSID) {
-            GroupObjectEntity firstGroup = getFirstGroup();
-            return formSID + (firstGroup == null ? "" : "_" + firstGroup.getSID()) + ".jrxml";
+            return getName(formSID) + ".jrxml";
         }
 
         private boolean isNonSqueezable() {

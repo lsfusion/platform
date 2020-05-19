@@ -28,8 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.FormatStyle;
 
-import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
-import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
+import static lsfusion.base.DateConverter.*;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
 
 public class DateTimeClass extends DataClass<LocalDateTime> {
@@ -47,7 +46,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     }
 
     public Class getReportJavaClass() {
-        return LocalDateTime.class;
+        return Timestamp.class;
     }
 
     public void fillReportDrawField(ReportDrawField reportField) {
@@ -94,8 +93,9 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     public LocalDateTime read(Object value) {
         if(value instanceof LocalDateTime)
             return (LocalDateTime) value;
-        else
-            return sqlTimestampToLocalDateTime((Timestamp) value);
+        else if (value instanceof java.util.Date) {
+            return sqlTimestampToLocalDateTime(dateToStamp((java.util.Date) value));
+        } else return null;
     }
 
     @Override

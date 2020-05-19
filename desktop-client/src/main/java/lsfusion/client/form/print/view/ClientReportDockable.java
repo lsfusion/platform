@@ -10,19 +10,17 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 import net.sf.jasperreports.swing.JRViewer;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 
 public class ClientReportDockable extends ClientDockable {
     public Integer pageCount;
-    public ClientReportDockable(ReportGenerationData generationData, FormsController formsController, String printerName, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
+    public ClientReportDockable(ReportGenerationData generationData, FormsController formsController, String formCaption, String printerName, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
         super(null, formsController);
 
         try {
@@ -30,7 +28,8 @@ public class ClientReportDockable extends ClientDockable {
             print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
             this.pageCount = print.getPages().size();
             final ReportViewer reportViewer = new ReportViewer(print, printerName, editInvoker);
-            setContent(print.getName(), prepareViewer(reportViewer));
+            setContent(prepareViewer(reportViewer));
+            setTitleText(formCaption);
             addKeyboardListener(new CKeyboardListener() {
                 @Override
                 public boolean keyPressed(CDockable cDockable, KeyEvent keyEvent) {
@@ -55,12 +54,6 @@ public class ClientReportDockable extends ClientDockable {
         } catch (JRException e) {
             Throwables.propagate(e);
         }
-    }
-
-    // из файла
-    public ClientReportDockable(File file, FormsController formsController) throws JRException {
-        super(null, formsController);
-        setContent(file.getName(), prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(file))));
     }
 
     private JRViewer prepareViewer(final JRViewer viewer) {

@@ -6,7 +6,7 @@ import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.BUTTON_HORIZONTAL_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 
 public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
     public ActionGridCellRenderer(GPropertyDraw property) {

@@ -21,21 +21,19 @@ public class ChangeModeHandler extends FormServerResponseActionHandler<ChangeMod
 
     @Override
     public ServerResponseResult executeEx(final ChangeMode action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, new RemoteCall() {
-            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                byte[][] columnKeys = null;
-                PropertyGroupType aggrType = null;
-                
-                if(action.propertyIDs != null) {
-                    int size = action.propertyIDs.length;
-                    columnKeys = new byte[size][];
-                    for (int i = 0; i < size; i++)
-                        columnKeys[i] = gwtConverter.convertOrCast(action.columnKeys[i]);
-                    aggrType = gwtConverter.convertOrCast(action.aggrType);
-                }
+        return getServerResponseResult(action, remoteForm -> {
+            byte[][] columnKeys = null;
+            PropertyGroupType aggrType = null;
 
-                return remoteForm.changeMode(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, action.setGroup, action.propertyIDs, columnKeys, action.aggrProps, aggrType, action.pageSize, action.forceRefresh, gwtConverter.convertOrCast(action.updateMode));
+            if(action.propertyIDs != null) {
+                int size = action.propertyIDs.length;
+                columnKeys = new byte[size][];
+                for (int i = 0; i < size; i++)
+                    columnKeys[i] = gwtConverter.convertOrCast(action.columnKeys[i]);
+                aggrType = gwtConverter.convertOrCast(action.aggrType);
             }
+
+            return remoteForm.changeMode(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, action.setGroup, action.propertyIDs, columnKeys, action.aggrProps, aggrType, action.pageSize, action.forceRefresh, gwtConverter.convertOrCast(action.updateMode), gwtConverter.convertOrCast(action.viewType));
         });
     }
 }

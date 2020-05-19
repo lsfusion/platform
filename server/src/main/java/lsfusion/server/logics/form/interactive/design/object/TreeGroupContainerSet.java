@@ -2,9 +2,9 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.Alignment;
-import lsfusion.interop.form.design.ContainerAdder;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -59,37 +59,30 @@ public class TreeGroupContainerSet {
         return toolbarContainer;
     }
 
-    public static TreeGroupContainerSet create(TreeGroupView treeGroup, ContainerFactory<ContainerView> factory,
-                                               ContainerAdder<ContainerView, ComponentView, LocalizedString> adder) {
+    public static TreeGroupContainerSet create(TreeGroupView treeGroup, ContainerFactory<ContainerView> factory, Version version) {
         TreeGroupContainerSet set = new TreeGroupContainerSet();
         String sid = treeGroup.getPropertyGroupContainerSID();
 
         set.boxContainer = factory.createContainer();
         set.boxContainer.setCaption(LocalizedString.create("{form.layout.tree}"));
-        set.boxContainer.setDescription(LocalizedString.create("{form.layout.tree}"));
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
 
         set.gridContainer = factory.createContainer(); // контейнер грида внутрь
-        set.gridContainer.setDescription(LocalizedString.create("{form.layout.grid.part}"));
         set.gridContainer.setSID(DefaultFormView.getGridBoxContainerSID(sid));
 
         set.panelContainer = factory.createContainer(); // контейнер панели
-        set.panelContainer.setDescription(LocalizedString.create("{form.layout.panel}"));
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID(sid));
 
         set.groupContainer = factory.createContainer();
         set.groupContainer.setSID(DefaultFormView.getGOGroupContainerSID("," + sid));
 
         set.toolbarBoxContainer = factory.createContainer(); // контейнер всех управляющих объектов
-        set.toolbarBoxContainer.setDescription(LocalizedString.create("{form.layout.conrol.objects}"));
         set.toolbarBoxContainer.setSID(DefaultFormView.getToolbarBoxContainerSID(sid));
 
         set.toolbarContainer = factory.createContainer(); // контейнер тулбара
-        set.toolbarContainer.setDescription(LocalizedString.create("{form.layout.toolbar.props.container}"));
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID(sid));
 
         set.filtersContainer = factory.createContainer(); // контейнер фильтров
-        set.filtersContainer.setDescription(LocalizedString.create("{form.layout.filters.container}"));
         set.filtersContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
 
         set.toolbarRightContainer = factory.createContainer();
@@ -102,33 +95,33 @@ public class TreeGroupContainerSet {
         set.boxContainer.setChildrenAlignment(Alignment.START);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
-        adder.add(set.boxContainer, set.gridContainer);
-        adder.add(set.boxContainer, set.toolbarBoxContainer);
-        adder.add(set.boxContainer, treeGroup.getUserFilter());
-        adder.add(set.boxContainer, set.panelContainer);
+        set.boxContainer.add(set.gridContainer, version);
+        set.boxContainer.add(set.toolbarBoxContainer, version);
+        set.boxContainer.add(treeGroup.getUserFilter(), version);
+        set.boxContainer.add(set.panelContainer, version);
 
         set.gridContainer.setType(ContainerType.HORIZONTAL_SPLIT_PANE);
         set.gridContainer.setAlignment(FlexAlignment.STRETCH);
         set.gridContainer.setFlex(1);
-        adder.add(set.gridContainer, treeGroup);
+        set.gridContainer.add(treeGroup, version);
 
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarBoxContainer.setChildrenAlignment(Alignment.START);
-        adder.add(set.toolbarBoxContainer, set.toolbarLeftContainer);
-        adder.add(set.toolbarBoxContainer, set.toolbarRightContainer);
+        set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
+        set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
 
         set.toolbarLeftContainer.setType(ContainerType.CONTAINERH);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.CENTER);
         set.toolbarLeftContainer.setChildrenAlignment(Alignment.END);
-        adder.add(set.toolbarLeftContainer, treeGroup.getToolbarSystem());
+        set.toolbarLeftContainer.add(treeGroup.getToolbarSystem(), version);
 
         set.toolbarRightContainer.setType(ContainerType.CONTAINERH);
         set.toolbarRightContainer.setAlignment(FlexAlignment.CENTER);
         set.toolbarRightContainer.setChildrenAlignment(Alignment.END);
         set.toolbarRightContainer.setFlex(1);
-        adder.add(set.toolbarRightContainer, set.filtersContainer);
-        adder.add(set.toolbarRightContainer, set.toolbarContainer);
+        set.toolbarRightContainer.add(set.filtersContainer, version);
+        set.toolbarRightContainer.add(set.toolbarContainer, version);
 
 
         set.filtersContainer.setType(ContainerType.CONTAINERH);
@@ -141,7 +134,7 @@ public class TreeGroupContainerSet {
         set.panelContainer.setType(ContainerType.CONTAINERV);
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
         set.panelContainer.setChildrenAlignment(Alignment.START);
-        adder.add(set.panelContainer, set.groupContainer);
+        set.panelContainer.add(set.groupContainer, version);
 
         set.groupContainer.setType(ContainerType.COLUMNS);
         set.groupContainer.setColumns(4);

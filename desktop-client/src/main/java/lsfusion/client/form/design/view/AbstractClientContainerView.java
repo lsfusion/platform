@@ -88,9 +88,16 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     @Override
-    public abstract JComponentPanel getView();
+    public JComponentPanel getView() {
+        return getPanel();
+    }
+    public abstract ContainerViewPanel getPanel();
     protected abstract void addImpl(int index, ClientComponent child, JComponentPanel view);
     protected abstract void removeImpl(int index, ClientComponent child, JComponentPanel view);
+
+    public void updateCaption() {
+        getPanel().updateCaption();
+    }
 
     public class ContainerViewPanel extends JComponentPanel {
         public ContainerViewPanel(boolean vertical, Alignment alignment) {
@@ -98,18 +105,17 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             initBorder();
         }
 
+        private TitledBorder titledBorder;
+
         public ContainerViewPanel() {
             initBorder();
         }
 
         private void initBorder() {
-            boolean isTabbed = container.isTabbed();
-            boolean isInTabbed = container.container != null && container.container.isTabbed();
-            if (!isTabbed && !isInTabbed) {
-                String caption = container.getRawCaption();
-                if (caption != null) {
-                    setBorder(new TitledBorder(caption));
-                }
+            if (hasCaption()) {
+                titledBorder = new TitledBorder(container.caption);
+//                updateCaption();
+                setBorder(titledBorder);
             }
 
             container.installMargins(this);
@@ -139,6 +145,15 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         @Override
         public Dimension getMaxPreferredSize() {
             throw new UnsupportedOperationException(); // по идее должен обрабатываться по ветке ContainerView.getMaxPreferredSize
+        }
+
+        public void updateCaption() {
+            String caption = container.caption;
+            assert caption != null;
+//            titledBorder.setTitle(caption);
+//            repaint()
+            // we have to reset titled border, setTitle / repaint doesnt'work sonewhy
+            setBorder(new TitledBorder(caption));
         }
     }
 
@@ -214,8 +229,8 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         return addCaptionDimensions(new Dimension(width, height));
     }
 
-    private boolean needCaption() { // не top, не tabbed и есть caption
-        return (container.container != null && !container.container.isTabbed()) && container.getRawCaption() != null;
+    private boolean hasCaption() { // не top, не tabbed и есть caption
+        return !container.isTab() && !container.main && container.caption != null;
     }
 
     public static Dimension enlargeDimension(Dimension dim, int extraWidth, int extraHeight) {
@@ -225,7 +240,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     protected Dimension addCaptionDimensions(Dimension dimension) {
-        if (needCaption()) {
+        if (hasCaption()) {
             dimension.width += 10;
             dimension.height += 20;
         }

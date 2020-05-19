@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -14,12 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class ColumnsContainerView<P extends Panel> extends GAbstractContainerView {
+public class ColumnsContainerView extends GAbstractContainerView {
     protected final static String COLUMN_PROXY_KEY = "columnsProxy";
 
     protected final int columnsCount;
 
-    protected final P panel;
+    protected final FlexPanel panel;
 
     protected final FlexPanel[] columns;
 
@@ -50,7 +49,7 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
         }
         panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
 
-        view = wrapWithCaption(panel);
+        view = initBorder(panel);
     }
     
     private double getColumnFlex(GContainer container) {
@@ -61,8 +60,9 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
         return container.getFlex();
     }
 
-    protected abstract P createHorizontalPanel();
-    protected abstract Widget wrapWithCaption(P panel);
+    protected FlexPanel createHorizontalPanel() {
+        return new FlexPanel();
+    }
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {

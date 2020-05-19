@@ -1,10 +1,12 @@
 package lsfusion.server.logics.action.session.action;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -26,7 +28,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 
 public class NewSessionAction extends AroundAspectAction {
-    private final FunctionSet<SessionDataProperty> migrateSessionProperties; // актуальны и для nested, так как иначе будет отличаться поведение от NEW SESSION
+    private final FunctionSet<SessionDataProperty> explicitMigrateProps; // актуальны и для nested, так как иначе будет отличаться поведение от NEW SESSION
     private final boolean isNested;
     private final boolean singleApply;
     private final boolean newSQL; 
@@ -34,7 +36,7 @@ public class NewSessionAction extends AroundAspectAction {
     public <I extends PropertyInterface> NewSessionAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                           ActionMapImplement<?, I> action, boolean singleApply,
                                                           boolean newSQL,
-                                                          FunctionSet<SessionDataProperty> migrateSessionProperties,
+                                                          FunctionSet<SessionDataProperty> explicitMigrateProps,
                                                           boolean isNested) {
         super(caption, innerInterfaces, action);
 
@@ -42,11 +44,16 @@ public class NewSessionAction extends AroundAspectAction {
         this.newSQL = newSQL;
 
         this.isNested = isNested;
-        this.migrateSessionProperties = DataSession.adjustKeep(false, migrateSessionProperties);
+        this.explicitMigrateProps = explicitMigrateProps;
 
+        // (nested || explicitly nested) and used in action
+        migrateProps = BaseUtils.remove(BaseUtils.merge(DataSession.keepNested(false), explicitMigrateProps),
+                                    (SFunctionSet<SessionDataProperty>) element -> !(action.action.uses(element) || action.action.changes(element)));
 
         finalizeInit();
     }
+
+    private final FunctionSet<SessionDataProperty> migrateProps;
 
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps() {
@@ -67,7 +74,7 @@ public class NewSessionAction extends AroundAspectAction {
     protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         if(session.isInTransaction()) { // если в транзацкции
-            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance()), migrateSessionProperties, singleApply);
+            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance()), migrateProps, singleApply);
             return null;
         }
 
@@ -117,7 +124,7 @@ public class NewSessionAction extends AroundAspectAction {
 
     private void migrateSessionProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
         assert !newSQL;
-        migrateFrom.copyDataTo(migrateTo, migrateSessionProperties);
+        migrateFrom.copySessionDataTo(migrateTo, migrateProps);
     }
 
     protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {
@@ -136,6 +143,6 @@ public class NewSessionAction extends AroundAspectAction {
 
     @Override
     protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
-        return PropertyFact.createNewSessionAction(interfaces, action, singleApply, newSQL, migrateSessionProperties, isNested);
+        return PropertyFact.createNewSessionAction(interfaces, action, singleApply, newSQL, explicitMigrateProps, isNested);
     }
 }

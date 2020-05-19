@@ -54,7 +54,7 @@ public class ClientGrid extends ClientComponent {
 
     @Override
     public String toString() {
-        return getCaption() + " (" + groupObject.toString() + ")" + "[sid:" + getSID() + "]";
+        return ClientResourceBundle.getString("logics.grid") + " (" + groupObject.toString() + ")" + "[sid:" + getSID() + "]";
     }
 
     public void setTabVertical(boolean tabVertical) {

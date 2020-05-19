@@ -21,7 +21,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     }
 
     @Override
-    protected int getLength() {
+    protected int getPrecision() {
         return 10;
     }
 

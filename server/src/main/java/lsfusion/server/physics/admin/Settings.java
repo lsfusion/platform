@@ -1495,16 +1495,25 @@ public class Settings implements Cloneable {
         this.defaultTypeExecuteEnvironment = defaultTypeExecuteEnvironment;
     }
 
-    private int timeoutNanosPerRow = 20;
+    private long timeoutNanosPerRow = 20;
+    private long timeoutMinMillis = 100;
 
-    public int getTimeoutNanosPerRow() {
+    public long getTimeoutNanosPerRow() {
         return timeoutNanosPerRow;
     }
 
-    public void setTimeoutNanosPerRow(int timeoutNanosPerRow) {
+    public void setTimeoutNanosPerRow(long timeoutNanosPerRow) {
         this.timeoutNanosPerRow = timeoutNanosPerRow;
     }
     
+    public long getTimeoutMinMillis() {
+        return timeoutMinMillis;
+    }
+
+    public void setTimeoutMinMillis(long timeoutMinMillis) {
+        this.timeoutMinMillis = timeoutMinMillis;
+    }
+
     private boolean noDisablingNestedLoop = true;
 
     public boolean isNoDisablingNestedLoop() {
@@ -1593,44 +1602,14 @@ public class Settings implements Cloneable {
         this.explainThreshold = explainThreshold;
     }
 
-    private boolean useCastDivisionOperands = true;
+    private boolean useMaxDivisionLength = true;
 
-    public boolean isUseCastDivisionOperands() {
-        return useCastDivisionOperands;
+    public boolean isUseMaxDivisionLength() {
+        return useMaxDivisionLength;
     }
 
-    public void setUseCastDivisionOperands(boolean useCastDivisionOperands) {
-        this.useCastDivisionOperands = useCastDivisionOperands;
-    }
-
-    private boolean useSafeDivision = true;
-
-    public boolean isUseSafeDivision() {
-        return useSafeDivision;
-    }
-
-    public void setUseSafeDivision(boolean useSafeDivision) {
-        this.useSafeDivision = useSafeDivision;
-    }
-
-    private boolean useSafeScaleCast = false; // использовать safeCast, вместо cast (актуально только для useScaleOpType - 1
-
-    public boolean isUseSafeScaleCast() {
-        return useSafeScaleCast;
-    }
-
-    public void setUseSafeScaleCast(boolean useSafeScaleCast) {
-        this.useSafeScaleCast = useSafeScaleCast;
-    }
-
-    private int useScaleOpType = 1; // целая и дробная часть : MAX (0+1), SUM (2), соотвественно при 1 - идет CAST к типу (SAFE или не SAFE) определяется useSafeScaleCast, 2 - пока не реализовано поэтому работает как 0
-
-    public int getUseScaleOpType() {
-        return useScaleOpType;
-    }
-
-    public void setUseScaleOpType(int useScaleOpType) {
-        this.useScaleOpType = useScaleOpType;
+    public void setUseMaxDivisionLength(boolean useMaxDivisionLength) {
+        this.useMaxDivisionLength = useMaxDivisionLength;
     }
 
     public boolean disableCompiledSubQueries = false;
@@ -1857,17 +1836,7 @@ public class Settings implements Cloneable {
         this.savePointCountForExceptions = savePointCountForExceptions;
     }
 
-    private int maxNumericLength = 127;
-
-    public int getMaxNumericLength() {
-        return maxNumericLength;
-    }
-
-    public void setMaxNumericLength(int maxNumericLength) {
-        this.maxNumericLength = maxNumericLength;
-    }
-
-    private int maxNumericPrecision = 32;
+    private int maxNumericPrecision = 127;
 
     public int getMaxNumericPrecision() {
         return maxNumericPrecision;
@@ -1875,6 +1844,16 @@ public class Settings implements Cloneable {
 
     public void setMaxNumericPrecision(int maxNumericPrecision) {
         this.maxNumericPrecision = maxNumericPrecision;
+    }
+
+    private int maxNumericScale = 32;
+
+    public int getMaxNumericScale() {
+        return maxNumericScale;
+    }
+
+    public void setMaxNumericScale(int maxNumericScale) {
+        this.maxNumericScale = maxNumericScale;
     }
 
     private int maxEdgeIterations = 100;
@@ -2463,6 +2442,16 @@ public class Settings implements Cloneable {
 
     public void setUseRequestTimeout(boolean useRequestTimeout) {
         this.useRequestTimeout = useRequestTimeout;
+    }
+
+    private boolean disableExperimentalFeatures = false;
+
+    public boolean isDisableExperimentalFeatures() {
+        return disableExperimentalFeatures;
+    }
+
+    public void setDisableExperimentalFeatures(boolean disableExperimentalFeatures) {
+        this.disableExperimentalFeatures = disableExperimentalFeatures;
     }
 
     //для блокирующего чтения в операторе READ.

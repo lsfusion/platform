@@ -27,7 +27,7 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
-    protected int getLength() {
+    protected int getPrecision() {
         return 10;
     }
 

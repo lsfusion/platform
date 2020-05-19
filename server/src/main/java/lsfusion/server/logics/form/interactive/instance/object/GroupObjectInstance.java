@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.object.table.grid.GridViewType;
 import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
@@ -1214,6 +1215,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             } else // так как сейчас клиент требует прислать ему groupObject даже если он не изменился, если приходят ключи
                 return currentObject;
         }
+    }
+
+    public void changeGridViewType(ExecutionEnvironment execEnv, ConcreteCustomClass gridViewType, GridViewType value) throws SQLException, SQLHandledException {
+        execEnv.change(entity.getGridViewType(gridViewType).property, new PropertyChange<>(gridViewType.getDataObject(value.getObjectName())));
     }
 
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {

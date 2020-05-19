@@ -16,15 +16,15 @@ import java.text.ParseException;
 import static lsfusion.gwt.client.base.GwtSharedUtils.countMatches;
 
 public class GNumericType extends GDoubleType {
-    private GExtInt length;
     private GExtInt precision;
+    private GExtInt scale;
 
     @SuppressWarnings("unused")
     public GNumericType() {}
 
-    public GNumericType(GExtInt length, GExtInt precision) {
-        this.length = length;
+    public GNumericType(GExtInt precision, GExtInt scale) {
         this.precision = precision;
+        this.scale = scale;
         defaultPattern = getPattern();
     }
 
@@ -34,22 +34,22 @@ public class GNumericType extends GDoubleType {
     }
 
     @Override
-    protected int getLength() {
-        //as in server Settings
-        return length.isUnlimited() ? 127 : length.value;
-    }
-
     protected int getPrecision() {
         //as in server Settings
-        return precision.isUnlimited() ? 32 : precision.value;
+        return precision.isUnlimited() ? 127 : precision.value;
+    }
+
+    protected int getScale() {
+        //as in server Settings
+        return scale.isUnlimited() ? 32 : scale.value;
     }
 
     private String getPattern() {
         String pattern = "#,###";
-        if (getPrecision() > 0) {
+        if (getScale() > 0) {
             pattern += ".";
             
-            for (int i = 0; i < getPrecision(); i++) {
+            for (int i = 0; i < getScale(); i++) {
                 pattern += "#";
             }
         }
@@ -67,8 +67,8 @@ public class GNumericType extends GDoubleType {
 
         String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator(); // а затем посчитаем цифры
 
-        if (!length.isUnlimited() && ((precision.value == 0 && s.contains(decimalSeparator)) ||
-                (s.contains(decimalSeparator) && s.length() - s.indexOf(decimalSeparator) > precision.value + 1))) {
+        if (!precision.isUnlimited() && ((scale.value == 0 && s.contains(decimalSeparator)) ||
+                (s.contains(decimalSeparator) && s.length() - s.indexOf(decimalSeparator) > scale.value + 1))) {
             throwParseException(s);
         }
         
@@ -76,7 +76,7 @@ public class GNumericType extends GDoubleType {
         if (UNBREAKABLE_SPACE.equals(groupingSeparator)) {
             groupingSeparator = " ";
         }
-        int allowedSeparatorPosition = getLength() - getPrecision() + countMatches(s, "-") + countMatches(s, groupingSeparator);
+        int allowedSeparatorPosition = getPrecision() - getScale() + countMatches(s, "-") + countMatches(s, groupingSeparator);
         int separatorPosition = s.contains(decimalSeparator) ? s.indexOf(decimalSeparator) : s.length();
         if (separatorPosition > allowedSeparatorPosition) {
             throwParseException(s);
@@ -86,11 +86,11 @@ public class GNumericType extends GDoubleType {
     }
     
     private void throwParseException(String s) throws ParseException {
-        throw new ParseException("String " + s + "can not be converted to numeric" + (length.isUnlimited() ? "" : ("[" + length + "," + precision + "]")), 0);
+        throw new ParseException("String " + s + "can not be converted to numeric" + (precision.isUnlimited() ? "" : ("[" + precision + "," + scale + "]")), 0);
     } 
 
     @Override
     public String toString() {
-        return ClientMessages.Instance.get().typeNumericCaption() + (length.isUnlimited() ? "" : ("[" + length + "," + precision + "]"));
+        return ClientMessages.Instance.get().typeNumericCaption() + (precision.isUnlimited() ? "" : ("[" + precision + "," + scale + "]"));
     }
 }

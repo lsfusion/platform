@@ -1,11 +1,10 @@
 package lsfusion.client.form.property.cell.classes.view;
 
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.view.LabelPropertyRenderer;
 
 import java.text.Format;
 
-public abstract class FormatPropertyRenderer extends LabelPropertyRenderer {
+public abstract class FormatPropertyRenderer extends TextBasedPropertyRenderer {
 
     protected Format format;
 

@@ -12,8 +12,7 @@ public interface ClientPropertyReader {
 
     ClientGroupObject getGroupObject();
 
-    boolean shouldBeDrawn(ClientFormController form);
-
+    // for converting to gwt
     int getID();
     byte getType();
 }

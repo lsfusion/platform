@@ -5,6 +5,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.WindowFormType;
@@ -32,6 +33,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.constraint.PropertyFormEntity;
 import lsfusion.server.logics.event.PrevScope;
@@ -74,6 +76,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import static com.google.common.collect.Iterables.size;
 import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.objValuePrefix;
@@ -188,6 +191,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP networkPath;
 
     public LP fillingIDs;
+
+    public ConcreteCustomClass gridViewType;
+    public LP count;
+    public LP isPivot;
 
     public Group privateGroup;
 
@@ -491,6 +498,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         defaultForegroundColor = findProperty("defaultForegroundColor[]");
         defaultOverrideForegroundColor = findProperty("defaultOverrideForegroundColor[]");
 
+        gridViewType = (ConcreteCustomClass) findClass("GridViewType");
+        count = findProperty("count[]");
+        isPivot = findProperty("isPivot[GridViewType]");
+
         initNavigators();
     }
 
@@ -640,7 +651,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    protected <P extends PropertyInterface> LP addCProp(StaticClass valueClass, Object value) {
+    public <P extends PropertyInterface> LP addCProp(StaticClass valueClass, Object value) {
         PropertyRevImplement<P, Integer> implement = (PropertyRevImplement<P, Integer>) PropertyFact.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
         return addProperty(null, new LP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
@@ -927,7 +938,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         writeRequested(RequestResult.get(result, type, null), env);
         return result;
     }
-    
+
+    // should correspond getRequestChangeProps
     public void writeRequested(ImList<RequestResult> requestResults, ExecutionEnvironment env) throws SQLException, SQLHandledException {
         LP<?> requestCanceledProperty = getRequestCanceledProperty();
         if (requestResults == null) {
@@ -941,5 +953,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                     requestResult.targetProp.change(requestResult.chosenValue, env);
             }
         }
+    }
+
+    // should correspond writeRequested
+    public ImSet<Property> getRequestChangeProps(int count, Function<Integer, Type> type, Function<Integer, LP> targetProp) {
+        return SetFact.toOrderExclSet(count, i -> {
+            LP prop = targetProp.apply(i);
+            if(prop == null)
+                return getRequestedValueProperty().getLCP(type.apply(i)).property;
+            else
+                return prop.property;
+        }).getSet().addExcl(getRequestCanceledProperty().property);
     }
 }

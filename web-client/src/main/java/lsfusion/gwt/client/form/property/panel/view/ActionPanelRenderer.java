@@ -5,11 +5,13 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.AppImageButton;
+import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
@@ -26,9 +28,11 @@ import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.getPropertyKeyPressActionSID;
+import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
 
@@ -106,7 +110,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, false), null), new GFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getEventTarget().cast() == button.getElement()) {
             @Override
             public void pressed(EventTarget eventTarget) {
-                click(eventTarget);
+                click(eventTarget, true);
             }
 
             @Override
@@ -124,7 +128,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             @Override
             public void onClick(ClickEvent event) {
                 assert !form.isEditing();
-                click(null);
+                click(null, false);
             }
         });
         button.addDomHandler(new ContextMenuHandler() {
@@ -155,7 +159,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         iform.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
             @Override
             public void pressed(EventTarget eventTarget) {
-                click(eventTarget);
+                click(eventTarget, true);
             }
             @Override
             public boolean showing() {
@@ -174,7 +178,19 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         }
     }
 
-    private void click(EventTarget ifocusTargetAfterEdit) {
+    private void click(EventTarget ifocusTargetAfterEdit, boolean fakeClick) {
+        if (fakeClick) {
+            button.addStyleName("activeButton");
+            Timer t = new Timer() {
+                @Override
+                public void run() {
+                    button.removeStyleName("activeButton");
+                    cancel();
+                }
+            };
+            t.schedule(400);
+        }
+        
         focusTargetAfterEdit = ifocusTargetAfterEdit;
         editDispatcher.executePropertyEventAction(property, columnKey, GEditBindingMap.CHANGE);
     }
@@ -245,7 +261,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     public void updateCellBackgroundValue(Object value) {
         if (!nullEquals(background, value)) {
             background = value;
-            button.getElement().getStyle().setBackgroundColor(value == null ? null : value.toString());
+            button.getElement().getStyle().setBackgroundColor(value == null ? null : ColorUtils.getDisplayBackground(value.toString()));
         }
     }
 
@@ -253,7 +269,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     public void updateCellForegroundValue(Object value) {
         if (!nullEquals(foreground, value)) {
             foreground = value;
-            button.getElement().getStyle().setColor(value == null ? null : value.toString());
+            button.getElement().getStyle().setColor(value == null ? null : ColorUtils.getDisplayForeground(value.toString()));
         }
     }
 

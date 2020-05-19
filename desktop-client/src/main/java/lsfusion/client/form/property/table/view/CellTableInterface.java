@@ -17,7 +17,8 @@ public interface CellTableInterface extends EditPropertyHandler {
     ClientPropertyDraw getProperty(int row, int col);
     ClientGroupObjectValue getColumnKey(int row, int col);
 
-    boolean isSelected(int row, int column);
+    boolean paintSelected(int row, int column);
+    boolean hasSingleSelection();
     Color getBackgroundColor(int row, int column);
     Color getForegroundColor(int row, int column);
 

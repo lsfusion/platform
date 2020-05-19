@@ -1,9 +1,8 @@
 package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.interop.form.design.AbstractContainer;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.form.design.Alignment;
-import lsfusion.interop.form.design.ContainerAdder;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
@@ -19,12 +18,11 @@ import java.io.IOException;
 
 import static lsfusion.interop.form.design.ContainerType.*;
 
-public class ContainerView extends ComponentView implements AbstractContainer<ComponentView, LocalizedString> {
+public class ContainerView extends ComponentView {
 
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
     public LocalizedString caption;
-    public LocalizedString description;
 
     private ContainerType type = ContainerType.CONTAINERV;
 
@@ -33,6 +31,16 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public int columns = 4;
     
     public PropertyObjectEntity<?> showIf;
+
+    // extras
+    public PropertyObjectEntity<?> propertyCaption;
+    public PropertyObjectEntity<?> getExtra(ContainerViewExtraType type) {
+        switch (type) {
+            case CAPTION:
+                return propertyCaption;
+        }
+        throw new UnsupportedOperationException();
+    }
 
     public ContainerView() {
     }
@@ -47,12 +55,13 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         this.main = main;
     }
 
-    public void setCaption(LocalizedString caption) {
-        this.caption = caption;
-    }
-
-    public void setDescription(LocalizedString description) {
-        this.description = description;
+    public void setCaption(Object caption) {
+        if(caption instanceof LocalizedString)
+            this.caption = (LocalizedString) caption;
+        else {
+            this.caption = LocalizedString.NONAME;
+            this.propertyCaption = (PropertyObjectEntity<?>) caption;
+        }
     }
 
     public boolean isTabbedPane() {
@@ -137,18 +146,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         comp.setContainer(this, version);
     }
 
-    public static class VersionContainerAdder extends ContainerAdder<ContainerView, ComponentView, LocalizedString> {
-        private final Version version;
-
-        public VersionContainerAdder(Version version) {
-            this.version = version;
-        }
-
-        public void add(ContainerView container, ComponentView component) {
-            container.add(component, version); 
-        }
-    } 
-
     public void add(ComponentView comp) {
         add(comp, Version.descriptor());
     }
@@ -171,6 +168,15 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public void addAfter(ComponentView comp, ComponentView compAfter, Version version) {
         changeContainer(comp, version);
         children.addIfNotExistsToThenLast(comp, compAfter, true, version);
+    }
+
+    public void fillPropertyContainers(MExclSet<ContainerView> mContainers) {
+        if(showIf != null || propertyCaption != null)
+            mContainers.exclAdd(this);
+
+        for(ComponentView child : getChildrenIt())
+            if(child instanceof ContainerView)
+                ((ContainerView)child).fillPropertyContainers(mContainers);
     }
 
     public boolean isAncestorOf(ComponentView container) {
@@ -198,7 +204,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.serializeCollection(outStream, getChildrenList());
 
         pool.writeString(outStream, ThreadLocalContext.localize(caption));
-        pool.writeString(outStream, ThreadLocalContext.localize(description));
 
 //        pool.writeObject(outStream, main);
 
@@ -216,7 +221,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         children = NFFact.finalOrderSet(pool.deserializeList(inStream));
 
         caption = LocalizedString.create(pool.readString(inStream));
-        description = LocalizedString.create(pool.readString(inStream));
 
 //        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
 

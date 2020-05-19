@@ -1,23 +1,29 @@
 package lsfusion.client.form.design;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
-import lsfusion.interop.form.design.AbstractContainer;
+import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.table.controller.TableController;
+import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerType;
+import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.interop.form.design.ContainerType.*;
 
-public class ClientContainer extends ClientComponent implements AbstractContainer<ClientComponent, String> {
+public class ClientContainer extends ClientComponent {
 
-    private String caption;
-    private String description;
+    public String caption;
 
     private ContainerType type = ContainerType.CONTAINERH;
 
@@ -37,7 +43,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         pool.serializeCollection(outStream, children);
 
         pool.writeString(outStream, caption);
-        pool.writeString(outStream, description);
 
         pool.writeObject(outStream, type);
 
@@ -53,7 +58,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         children = pool.deserializeList(inStream);
 
         caption = pool.readString(inStream);
-        description = pool.readString(inStream);
 
         type = pool.readObject(inStream);
 
@@ -64,14 +68,7 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     @Override
     public String toString() {
-        String result = caption == null ? "" : caption;
-        if (description == null)
-            result += " (";
-        else
-            result += (result.isEmpty() ? "" : " ") + "(" + description + ",";
-        result += getID();
-        result += ")";
-        return result + "[sid:" + getSID() + "]";
+        return caption + " (" + getID() + ")" + "[sid:" + getSID() + "]";
     }
 
     public void removeFromChildren(ClientComponent component) {
@@ -79,15 +76,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         children.remove(component);
 
         updateDependency(this, "children");
-    }
-
-    public void addToChildren(int index, ClientComponent component) {
-        add(index, component);
-        updateDependency(this, "children");
-    }
-
-    public void addToChildren(ClientComponent component) {
-        addToChildren(children.size(), component);
     }
 
     public void add(ClientComponent component) {
@@ -102,39 +90,9 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         component.container = this;
     }
 
-    public void moveChild(ClientComponent compFrom, ClientComponent compTo) {
-        BaseUtils.moveElement(children, compFrom, compTo);
-    }
-
-    public void setCaption(String caption) {
-        setRawCaption(caption);
-    }
-
     @Override
     public String getCaption() {
-        if (caption == null || caption.equals("")) {
-            return (description == null) ? "" : description;
-        } else
-            return caption;
-    }
-
-    //приходится выделять отдельное свойство, чтобы можно было редактировать и при этом возвращать более хитрый caption
-    public String getRawCaption() {
         return caption;
-    }
-
-    public void setRawCaption(String caption) {
-        this.caption = caption;
-        updateDependency(this, "rawCaption");
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-        updateDependency(this, "description");
     }
 
     public ContainerType getType() {
@@ -144,15 +102,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
     public void setType(ContainerType type) {
         this.type = type;
         updateDependency(this, "type");
-    }
-
-    public Alignment getChildrenAlignment() {
-        return childrenAlignment;
-    }
-
-    public void setChildrenAlignment(Alignment childrenAlignment) {
-        this.childrenAlignment = childrenAlignment;
-        updateDependency(this, "childrenAlignment");
     }
 
     public int getColumns() {
@@ -167,6 +116,8 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
     public boolean isTabbed() {
         return type == TABBED_PANE;
     }
+
+    public boolean main;
 
     public boolean isSplit() {
         return isSplitHorizontal() || isSplitVertical();
@@ -245,11 +196,26 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         return null;
     }
 
-    public boolean isAncestorOf(ClientContainer container) {
-        return container != null && (equals(container) || isAncestorOf(container.container));
-    }
-
     public List<ClientComponent> getChildren() {
         return children;
     }
+
+    public final ClientPropertyReader captionReader = new ClientPropertyReader() {
+        public ClientGroupObject getGroupObject() {
+            return null;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+            assert BaseUtils.singleKey(readKeys).isEmpty();
+            controller.getFormController().setContainerCaption(ClientContainer.this, BaseUtils.nullToString(BaseUtils.singleValue(readKeys)));
+        }
+
+        public int getID() {
+            return ClientContainer.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CONTAINER_CAPTION;
+        }
+    };
 }

@@ -2,6 +2,7 @@ package lsfusion.server.logics.action.interactive;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
@@ -10,6 +11,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -54,5 +56,10 @@ public class ConfirmAction extends MessageAction {
                 requestResults = null; // NO_OPTION
         }
         context.writeRequested(requestResults);
+    }
+
+    @Override
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+        return getRequestChangeExtProps(yesNo ? 1 : 0, index -> LogicalClass.instance, index -> targetProp);
     }
 }

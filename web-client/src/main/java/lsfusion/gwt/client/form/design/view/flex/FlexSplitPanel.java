@@ -8,11 +8,12 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.view.BeforeSelectionTabHandler;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.SplitPanelBase;
+import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
+public class FlexSplitPanel extends SplitPanelBase {
 
     private GComponent firstChild;
     private GComponent secondChild;
@@ -43,12 +44,12 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
         style.setOverflowY(vertical ? Style.Overflow.AUTO : Style.Overflow.HIDDEN);
         style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);
 
-        if(widget instanceof FlexTabbedContainerView.Panel) // assert что все flex (дублирование с flexlinearcontainerview, но предполагается что flexSplit уйдет)
-            ((FlexTabbedContainerView.Panel)widget).addBeforeSelectionTabHandler(new BeforeSelectionTabHandler() {
+        if(widget instanceof TabbedContainerView.Panel) // assert что все flex (дублирование с flexlinearcontainerview, но предполагается что flexSplit уйдет)
+            ((TabbedContainerView.Panel)widget).addBeforeSelectionTabHandler(new BeforeSelectionTabHandler() {
                 @Override
                 public void onBeforeSelection(int tabIndex) {
                     if(tabIndex > 0)
-                        panel.fixFlexBasis((FlexTabbedContainerView.Panel)widget);
+                        panel.fixFlexBasis((TabbedContainerView.Panel)widget);
                 }
             });
     }

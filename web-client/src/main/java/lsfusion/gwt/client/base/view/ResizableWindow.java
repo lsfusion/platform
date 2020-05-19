@@ -34,7 +34,7 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
 
     private Widget contentWidget;
 
-    private Widget headerWidget;
+    private HeaderWidget headerWidget;
 
     private FocusPanel headerPanel;
 
@@ -56,26 +56,20 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
 
     protected boolean initialOnLoad = true;
 
-    public ResizableWindow(String htmlCaption, String htmlTooltip) {
-        this(htmlCaption, htmlTooltip, null);
-    }
-
-    public ResizableWindow(String htmlCaption, String htmlTooltip, Widget icontentWidget) {
-        this(WindowDragDropController.rootController, icontentWidget, new HeaderWidget(htmlCaption), htmlTooltip);
-    }
-
-    public ResizableWindow(WindowDragDropController iwindowController, Widget icontentWidget, Widget iheaderWidget, String iHTMLTooltip) {
-        windowController = iwindowController;
-        headerWidget = iheaderWidget;
-        tooltip = iHTMLTooltip;
+    public ResizableWindow() {
+        windowController = WindowDragDropController.rootController;
+        headerWidget = new HeaderWidget();
 
         initWidget(mainPanel = new FocusPanel());
 
         addStyleName(RESIZABLE_DIALOG_STYLE);
+    }
 
-        if (icontentWidget != null) {
-            setContentWidget(icontentWidget);
-        }
+    public void setCaption(String caption) {
+        headerWidget.setCaption(caption);
+    }
+    public void setTooltip(String tooltip) {
+        this.tooltip = tooltip;
     }
 
     public void setContentWidget(Widget icontentWidget) {
@@ -269,8 +263,12 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
     }
 
     public static final class HeaderWidget extends HTML {
-        public HeaderWidget(String html) {
-            super(html);
+        public HeaderWidget() {
+            super();
+        }
+
+        public void setCaption(String caption) {
+            setHTML(caption);
         }
     }
 

@@ -8,16 +8,16 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.Text;
+import org.apache.commons.io.IOUtils;
+import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class XMLNode implements Node<XMLNode> {
@@ -186,16 +186,29 @@ public class XMLNode implements Node<XMLNode> {
         }
     }
 
-    private static void addXMLChild(Element element, String key, String stringValue) {
+    private static void addXMLChild(Element element, String key, List<Content> content) {
         if(key.equals("value")) {
-            element.addContent(stringValue);
+            element.addContent(content);
         } else {
             Result<String> shortKey = new Result<>();
             Namespace namespace = addXMLNamespace(element, key, shortKey, true);
             Element addElement = new Element(shortKey.result, namespace);
-            addElement.setText(stringValue);
+            addElement.addContent(content);
             element.addContent(addElement);
         }
+    }
+
+    //check if it's XML inside
+    private static List<Content> parseObject(String str) {
+        if (str.matches(".*<.*/.*>.*")) {
+            try {
+                List<Content> children = new ArrayList<>(new SAXBuilder().build(IOUtils.toInputStream("<wrap>" + str + "</wrap>")).getRootElement().getContent());
+                children.forEach(Content::detach);
+                return children;
+            } catch (JDOMException | IOException ignored) {
+            }
+        }
+        return Collections.singletonList(new Text(str));
     }
 
     // because of the difference between edge and node-based approaches we have to set name while adding edges 
@@ -221,7 +234,7 @@ public class XMLNode implements Node<XMLNode> {
         if(attr) {
             addXMLAttributeValue(node.element, key, stringValue);
         } else {
-            addXMLChild(node.element, key, stringValue);
+            addXMLChild(node.element, key, parseObject(stringValue));
         }
     }
 

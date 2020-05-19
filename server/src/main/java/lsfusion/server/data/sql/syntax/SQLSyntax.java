@@ -64,7 +64,7 @@ public interface SQLSyntax {
     String getVarStringType(int length);
     int getVarStringSQL();
 
-    String getNumericType(ExtInt length, ExtInt precision);
+    String getNumericType(ExtInt precision, ExtInt scale);
     int getNumericSQL();
 
     String getIntegerType();
@@ -264,4 +264,6 @@ public interface SQLSyntax {
     // b) в местах где округление может играть роль : деление вставлять явные cast'ы параметров (cast'ы значений и так есть)
     // возвращает минимальное округление которое может делать СУБД (для оптимизации) : -1 если нет проблемы
     int getFloatingDivisionProblem();
+
+    void setQueryTimeout(Statement statement, long setTimeout) throws SQLException;
 }

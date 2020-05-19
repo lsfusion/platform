@@ -1,17 +1,17 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.flex.FlexSplitPanel;
 
 import java.util.Map;
 
-public abstract class SplitContainerView<P extends Panel> extends GAbstractContainerView {
+public class SplitContainerView<P extends Panel> extends GAbstractContainerView {
 
-    private final SplitPanelBase<P> splitPane;
+    private final SplitPanelBase splitPane;
 
     private final Widget view;
 
@@ -20,15 +20,12 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
 
         assert container.isSplit();
 
-        splitPane = createSplitPanel(container.isSplitVertical());
+        splitPane = new FlexSplitPanel(container.isSplitVertical());
 
-        view = wrapWithCaption(splitPane.asWidget());
-
-        view.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
+        view = initBorder(splitPane.asWidget());
+//
+//        view.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
     }
-
-    protected abstract SplitPanelBase<P> createSplitPanel(boolean vertical);
-    protected abstract Widget wrapWithCaption(P panel);
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {

@@ -7,12 +7,13 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.design.GComponent;
 
-public abstract class SplitPanelBase<P extends Panel> {
+public abstract class SplitPanelBase {
     public final static int DEFAULT_SPLITTER_SIZE = 6; // with borders
 
-    protected final P panel;
+    protected final FlexPanel panel;
 
     protected final boolean vertical;
     protected final Splitter splitter;
@@ -25,7 +26,7 @@ public abstract class SplitPanelBase<P extends Panel> {
     protected Widget firstWidget;
     protected Widget secondWidget;
 
-    public SplitPanelBase(boolean vertical, P panel) {
+    public SplitPanelBase(boolean vertical, FlexPanel panel) {
         this.vertical = vertical;
 
         this.panel = panel;
@@ -89,7 +90,7 @@ public abstract class SplitPanelBase<P extends Panel> {
         return DEFAULT_SPLITTER_SIZE;
     }
 
-    public P asWidget() {
+    public FlexPanel asWidget() {
         return panel;
     }
 

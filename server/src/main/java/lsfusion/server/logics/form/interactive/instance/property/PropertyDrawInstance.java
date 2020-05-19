@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.instance.property;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.ClassViewType;
@@ -104,7 +105,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
                                 ActionOrPropertyObjectInstance<?, ?> propertyObject,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
-                                Map<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras,
+                                ImMap<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras,
                                 ImList<PropertyObjectInstance<?>> propertiesAggrLast) {
         super(entity);
         this.propertyObject = propertyObject;

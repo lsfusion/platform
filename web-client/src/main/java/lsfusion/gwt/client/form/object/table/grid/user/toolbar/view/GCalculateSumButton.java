@@ -9,6 +9,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.math.BigDecimal;
 
@@ -33,7 +34,7 @@ public abstract class GCalculateSumButton extends GToolbarButton {
         if (result != null) {
             TextBox valueBox = new TextBox();
             valueBox.addStyleName("popup-sumBox");
-            valueBox.setHeight(GwtClientUtils.VALUE_HEIGHT_STRING);
+            valueBox.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
             panel.add(valueBox);
             NumberFormat format = NumberFormat.getDecimalFormat();
             if(result instanceof BigDecimal)

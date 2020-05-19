@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -28,7 +27,6 @@ public class DataPanelRenderer implements PanelRenderer {
 
     private final FlexPanel panel;
     private final ResizableComplexPanel gridPanel;
-    private final SimplePanel focusPanel;
 
     private final HTML label;
     
@@ -72,14 +70,8 @@ public class DataPanelRenderer implements PanelRenderer {
         gridPanel = new ResizableComplexPanel();
         gridPanel.addStyleName("dataPanelRendererGridPanel");
 
-        if (property.focusable) {
-            focusPanel = new SimplePanel();
-            focusPanel.addStyleName("dataPanelRendererFocusPanel");
-            focusPanel.setVisible(false);
-            gridPanel.add(focusPanel);
-        } else {
+        if (!property.focusable) {
             valueTable.setTableFocusable(false);
-            focusPanel = null;
         }
 
         gridPanel.add(valueTable);
@@ -88,11 +80,6 @@ public class DataPanelRenderer implements PanelRenderer {
 
         panel = new Panel(vertical);
         panel.addStyleName("dataPanelRendererPanel");
-
-        // Рамка фокуса сделана как абсолютно позиционированный div с border-width: 2px,
-        // который выходит за пределы панели, поэтому убираем overflow: hidden
-        panel.getElement().getStyle().clearOverflow();
-        gridPanel.getElement().getStyle().clearOverflow();
 
         panel.add(label, GFlexAlignment.CENTER);
         panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1);
@@ -237,7 +224,7 @@ public class DataPanelRenderer implements PanelRenderer {
         protected void onFocus() {
             super.onFocus();
             if (property.focusable) {
-                focusPanel.setVisible(true);
+                gridPanel.addStyleName("dataPanelRendererGridPanelFocused");
             }
         }
 
@@ -245,7 +232,7 @@ public class DataPanelRenderer implements PanelRenderer {
         protected void onBlur() {
             super.onBlur();
             if (property.focusable) {
-                focusPanel.setVisible(false);
+                gridPanel.removeStyleName("dataPanelRendererGridPanelFocused");
             }
         }
 

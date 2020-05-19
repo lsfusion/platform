@@ -171,6 +171,10 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
         tabBar.selectTab(index);
     }
 
+    public void setTabCaption(int index, String caption) {
+        tabBar.setTabText(index, caption);
+    }
+
     @SuppressWarnings("UnusedDeclaration")
     public int getTabBarHeight() {
         return tabBar.asWidget().getOffsetHeight() + 5; //little extra for borders, etc.

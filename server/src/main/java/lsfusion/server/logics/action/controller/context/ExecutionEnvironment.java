@@ -54,11 +54,6 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
             getSession().changeProperty(change, mapChanges.get(change));
     }
 
-    // в обход dataChanges (иначе проблема с классами, так как в новой сессии изменений по классам нет, и в итоге изменению внутрь не скопируются и при копировании назад затрут те что были) - чем то напоминает noClasses - но noClasses более общая штука
-    public void copyDataTo(SessionDataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
-        getSession().changeProperty(property, change);
-    }
-
     public <P extends PropertyInterface> FlowResult execute(Action<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, DataObject pushAddObject, ExecutionStack stack) throws SQLException, SQLHandledException {
         // hasMoreSessionUsages is true since we don't know what gonna happen next
         return property.execute(new ExecutionContext<>(change, pushAddObject, this, null, formEnv, stack, true)); 

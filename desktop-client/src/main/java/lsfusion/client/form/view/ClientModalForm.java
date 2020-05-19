@@ -47,13 +47,20 @@ public class ClientModalForm extends JDialog {
                 hideDialog();
                 super.onFormHidden();
             }
-        };
 
-        setTitle(form.getCaption());
+            @Override
+            public void setFormCaption(String caption, String tooltip) {
+                setCaption(caption, tooltip);
+            }
+        };
 
         add(form.getLayout(), BorderLayout.CENTER);
 
         createUIHandlers();
+    }
+
+    public void setCaption(String caption, String tooltip) {
+        setTitle(caption);
     }
 
     private void createUIHandlers() {

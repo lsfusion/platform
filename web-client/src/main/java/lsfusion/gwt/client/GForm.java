@@ -23,7 +23,6 @@ public class GForm implements Serializable, GWidthStringProcessor {
     
     public String canonicalName;
 
-    public String caption;
     public String creationPath;
 
     public int autoRefresh;
@@ -137,7 +136,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
         }
     }
 
-    public String getTooltip() {
+    public String getTooltip(String caption) {
         return MainFrame.showDetailedInfo ?
                 GwtSharedUtils.stringFormat("<html><body>" +
                         "<b>%s</b><br/><hr>" +

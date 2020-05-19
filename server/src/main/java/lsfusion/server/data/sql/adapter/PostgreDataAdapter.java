@@ -73,7 +73,7 @@ public class PostgreDataAdapter extends DataAdapter {
             try {
                 connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
             } catch (PSQLException e) {
-                ServerLoggers.startLogger.error(e.getMessage());
+                ServerLoggers.startLogger.error(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));
                 logger.error("EnsureDB error: ", e);
                 //08001 = connection refused (database is not started), 57P03 = the database system is starting up
                 if (e.getSQLState() != null && (e.getSQLState().equals("08001") || e.getSQLState().equals("57P03"))) {
@@ -247,10 +247,14 @@ public class PostgreDataAdapter extends DataAdapter {
                 commandLine.addArgument("--dbname");
                 commandLine.addArgument(tempDB);
                 commandLine.addArgument(fileBackup);
+
+                Map<String, String> env = new HashMap<>(System.getenv());
+                env.put("PGPASSWORD", password);
+
                 Executor executor = new DefaultExecutor();
                 executor.setExitValue(0);
 
-                executor.execute(commandLine);
+                executor.execute(commandLine, env);
                 return tempDB;
             } catch (IOException e) {
                 logger.error("Error while restoring the database : " + commandLine);
@@ -271,7 +275,10 @@ public class PostgreDataAdapter extends DataAdapter {
         Executor executor = new DefaultExecutor();
         //executor.setExitValue(0);
         try {
-            executor.execute(commandLine);
+            Map<String, String> env = new HashMap<>(System.getenv());
+            env.put("PGPASSWORD", password);
+
+            executor.execute(commandLine, env);
             return true;
         } catch (IOException e) {
             logger.error("Error while creating temp database : " + commandLine);

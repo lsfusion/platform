@@ -44,6 +44,7 @@ public class WriteUtils {
         } else if (append && file.exists()) {
             switch (extension) {
                 case "csv":
+                case "txt":
                     fileData.append(file.getAbsolutePath());
                     break;
                 case "xls": {
@@ -64,7 +65,7 @@ public class WriteUtils {
                     }
                     break;
                 default:
-                    throw new RuntimeException("APPEND is supported only for csv, xls, xlsx files");
+                    throw new RuntimeException("APPEND is supported only for csv, txt, xls, xlsx files");
             }
         } else {
             fileData.write(file);

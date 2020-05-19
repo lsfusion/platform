@@ -151,6 +151,17 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return SetFact.imFilter(mResult, this);
     }
 
+    @Override
+    public <E1 extends Exception, E2 extends Exception> ImSet<K> filterFnEx(ThrowingPredicate<K, E1, E2> filter) throws E1, E2 {
+        MFilterSet<K> mResult = SetFact.mFilter(this);
+        for(int i=0,size=size();i<size;i++) {
+            K element = get(i);
+            if(filter.test(element))
+                mResult.keep(element);
+        }
+        return SetFact.imFilter(mResult, this);
+    }
+
     public ImSet<K> split(FunctionSet<K> filter, Result<ImSet<K>> rest) {
         MFilterSet<K> mResult = SetFact.mFilter(this);
         MFilterSet<K> mRest = SetFact.mFilter(this);

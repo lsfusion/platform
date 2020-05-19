@@ -78,7 +78,7 @@ input, textarea {
 
 .gwt-Button, button {
     margin: 0;
-    padding: 5px 7px;
+    padding: 2px 14px;
     text-decoration: none;
     cursor: pointer;
     font-size: small;
@@ -87,15 +87,17 @@ input, textarea {
     color: var(--text-color);
     border-radius: var(--button-border-radius);;
 }
-.gwt-Button:active, .button:active {
-    border: 1px inset var(--button-active-border-color);
-}
 .gwt-Button:hover, button:hover {
-    background: var(--selection-color);
+    background-color: var(--button-hover-background-color);
+    border: 1px solid var(--component-hover-border-color);
 }
-.gwt-Button:focus, button:focus {
+.gwt-Button:focus, button:focus { /* should come after ':hover' */
+    background-color: var(--selection-color);
     border: 1px solid var(--focus-color);
     outline: none;
+}
+.gwt-Button:active, button:active { /* should come after ':hover' and ':focus' */ 
+    background-color: var(--button-active-background-color);
 }
 .gwt-Button[disabled], button[disabled] {
     cursor: default;
@@ -104,6 +106,9 @@ input, textarea {
 .gwt-Button[disabled]:hover, button[disabled]:hover {
     border: 1px outset var(--button-disabled-hover-border-color);
     background: var(--background-color);
+}
+.activeButton {
+    background-color: var(--button-active-background-color);
 }
 
 .gwt-CheckBox {
@@ -936,7 +941,10 @@ input, textarea {
 }
 
 .gwt-TabBar .gwt-TabBarItem:hover {
-    background: var(--selection-color);
+    border-top: 1px solid var(--component-hover-border-color);
+    border-left: 1px solid var(--component-hover-border-color);
+    border-right: 1px solid var(--component-hover-border-color);
+    background: var(--component-hover-background-color);
 }
 
 .gwt-TabBar .gwt-TabBarItem:focus {
@@ -1306,7 +1314,7 @@ td.datePickerMonth {
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
     margin: 0 2px;
-    padding: 1px 3px 2px 5px;
+    padding: 0 3px 1px 5px;
     cursor: pointer;
     cursor: hand;
     font-weight: normal;
@@ -1327,7 +1335,10 @@ td.datePickerMonth {
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab:hover {
-    background: var(--selection-color);
+    border-top: 1px solid var(--component-hover-border-color);
+    border-left: 1px solid var(--component-hover-border-color);
+    border-right: 1px solid var(--component-hover-border-color);
+    background: var(--component-hover-background-color);
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected:hover {

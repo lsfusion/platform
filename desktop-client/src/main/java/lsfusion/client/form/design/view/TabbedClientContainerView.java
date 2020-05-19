@@ -135,13 +135,29 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         }
     }
 
-    public JComponentPanel getView() {
+    public ContainerViewPanel getPanel() {
         return panel;
     }
 
-    public void activateTab(int index) {
-        currentChild = container.children.get(index); // изменение сервер уже в курсе об изменениях, поэтому пометим так
-        tabbedPane.activateTab(index);
+    private int getTabIndex(ClientComponent component) {
+        for(int i=0,size=visibleChildren.size();i<size;i++)
+            if(BaseUtils.hashEquals(visibleChildren.get(i), component))
+                return i;
+        return -1;
+    }
+
+    public void activateTab(ClientComponent component) {
+        int index = getTabIndex(component);
+        if(index >= 0) {
+            currentChild = component;
+            tabbedPane.activateTab(index);
+        }
+    }
+
+    public void updateTabCaption(ClientComponent component) {
+        int index = getTabIndex(component);
+        if(index >= 0)
+            tabbedPane.setTitleAt(index, component.getCaption());
     }
 
     public class TabbedPane extends JTabbedPane {
@@ -203,6 +219,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             proxyPanel.add(childView, new FlexConstraints(child.getAlignment(), child.getFlex()));
 
             insertTab(child.getCaption(), null, proxyPanel, null, index);
+//            updateTabCaption(child);
         }
 
         private void activateTab(int index) {

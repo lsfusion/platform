@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
@@ -15,8 +14,6 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
 public class GFormLayout extends ResizableSimplePanel {
 
@@ -44,13 +41,13 @@ public class GFormLayout extends ResizableSimplePanel {
 
     private static GAbstractContainerView createContainerView(GFormController form, GContainer container) {
         if (container.isLinear()) {
-            return new FlexLinearContainerView(container);
+            return new LinearContainerView(container);
         } else if (container.isSplit()) {
-            return new FlexSplitContainerView(container);
+            return new SplitContainerView(container);
         } else if (container.isTabbed()) {
-            return new FlexTabbedContainerView(form, container);
+            return new TabbedContainerView(form, container);
         } else if (container.isColumns()) {
-            return new FlexColumnsContainerView(container);
+            return new ColumnsContainerView(container);
         } else if(container.isScroll()) {
             return new ScrollContainerView(container);
         } else {

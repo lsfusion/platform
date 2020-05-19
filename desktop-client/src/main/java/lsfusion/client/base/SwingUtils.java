@@ -565,6 +565,15 @@ public class SwingUtils {
         graphics.fillPolygon(polygon);
     }
 
+    public static void drawHorizontalLine(Graphics2D graphics, Color color, int x1, int x2, int y) {
+        drawLine(graphics, color, x1, y, x2, y);
+    }
+
+    public static void drawLine(Graphics2D graphics, Color color, int x1, int y1, int x2, int y2) {
+        graphics.setColor(color);
+        graphics.drawLine(x1, y1, x2, y2);
+    }
+
     private static Class<?> tooltipListenerClass;
     private static KeyStroke closeTooltipKeyStroke;
     

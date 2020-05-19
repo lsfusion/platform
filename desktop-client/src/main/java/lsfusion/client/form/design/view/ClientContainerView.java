@@ -16,7 +16,9 @@ public interface ClientContainerView {
     Component getChildView(int index);
 
     JComponentPanel getView();
-    
+
+    void updateCaption();
+
     void updateLayout();
 
     Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews);

@@ -144,6 +144,9 @@ import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
 
     public static final SessionDataProperty isDataChanged = new SessionDataProperty(LocalizedString.create("Is data changed"), LogicalClass.instance);
+    {
+        isDataChanged.noNestingInNestedSession = true;
+    }
 
     private boolean isStoredDataChanged;
 
@@ -541,20 +544,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return new DataSession(sql, user, form, timeout, changes, locale, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
     }
 
-    // по хорошему надо было в класс оформить чтоб избежать ошибок, но абстракция получится слишком дырявой
-    public static SFunctionSet<SessionDataProperty> adjustKeep(final boolean manageSession, final FunctionSet<SessionDataProperty> operationKeep) {
-        return element -> {
-            if (element.nestedType != null) {
-                if (element.nestedType == LocalNestedType.ALL) 
-                    return true;
-                // MANAGESESSION, NOMANAGESESSION
-                if ((element.nestedType == LocalNestedType.MANAGESESSION) == manageSession) 
-                    return true;
-                if(operationKeep == DataSession.keepAllSessionProperties) // нужно чтобы sessionOwners не nest'ся, хак, потом надо будет как-то хитрее сделать 
-                    return false;
-            }
-            return operationKeep.contains(element);
-        };
+    public static FunctionSet<SessionDataProperty> keepNested(boolean manageSession) {
+        return (SFunctionSet<SessionDataProperty>) element -> element.nestedType != null && (element.nestedType == LocalNestedType.ALL || (element.nestedType == LocalNestedType.MANAGESESSION) == manageSession);
     }
 
     private final static SFunctionSet<SessionDataProperty> NONESTING = element -> element.noNestingInNestedSession;
@@ -765,16 +756,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void dropAllDataChanges(FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
-        if (!data.isEmpty()) {
-            Map<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> dropProps = filterNotSessionData(keepProps);
-            ImSet<DataProperty> dataChanges = fromJavaSet(dropProps.keySet());
-            
-            updateSessionEvents(dataChanges);
+        if (data.isEmpty()) // optimization
+            return;
 
-            aspectDropAllChanges(keepProps, dropProps);
+        Map<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> dropProps = filterNotSessionData(keepProps);
+        ImSet<DataProperty> dataChanges = fromJavaSet(dropProps.keySet());
 
-            updateProperties(dataChanges, dataChanges); // уже соптимизировано выше
-        }
+        updateSessionEvents(dataChanges);
+
+        aspectDropAllChanges(keepProps, dropProps);
+
+        updateProperties(dataChanges, dataChanges); // уже соптимизировано выше
     }
 
     private void aspectDropAllChanges(FunctionSet<SessionDataProperty> keepProps, Map<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> dropProps) throws SQLException {
@@ -786,15 +778,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void dropClassChanges() throws SQLException, SQLHandledException {
-        if (classChanges.hasChanges()) { // оптимизация
-            ImSet<Property> classProps = classChanges.getChangedProps(baseClass);
+        if (!classChanges.hasChanges()) // optimization
+            return;
 
-            updateSessionEvents(classProps);
+        ImSet<Property> classProps = classChanges.getChangedProps(baseClass);
 
-            aspectDropClassChanges();
+        updateSessionEvents(classProps);
 
-            updateProperties(classProps, classProps);
-        }
+        aspectDropClassChanges();
+
+        updateProperties(classProps, classProps);
     }
 
     public void aspectDropClassChanges() throws SQLException {
@@ -1769,7 +1762,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return true;
         }
 
-        keepProps = adjustKeep(true, keepProps);
+        keepProps = BaseUtils.merge(keepNested(true), keepProps);
 
         if (parentSession != null) {
             assert !isInTransaction() && !isInSessionEvent();
@@ -1777,8 +1770,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             executeSessionEvents(sessionEventFormEnv, stack);
 
             NotFunctionSet<SessionDataProperty> notKeepProps = new NotFunctionSet<>(keepProps);
-            copyDataTo(parentSession, false, notKeepProps); // те которые не keep не копируем наверх, noNesting не копируем наверх
-            parentSession.copyDataTo(this, BaseUtils.remove(notKeepProps, NONESTING)); // копируем их обратно как при не вложенной newSession, noNesting не копируем обратно
+            copyDataTo(parentSession, notKeepProps);
+            parentSession.copySessionDataTo(this, notKeepProps);
 
             cleanIsDataChangedProperty();
 
@@ -2471,24 +2464,23 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         dataModifier.eventDataChanges(getChangedProps());
     }
 
-    // тут вообще вопрос нужны или нет keepSessionProps так как речь идет о вложенных сессиях
-    private void copyDataTo(DataSession other, boolean cleanIsDataChangedProp, FunctionSet<SessionDataProperty> ignoreSessionProps) throws SQLException, SQLHandledException {
-        FunctionSet<SessionDataProperty> noNestingProps = NONESTING;
-        
-        other.cleanChanges(noNestingProps);
-        
-        ignoreSessionProps = BaseUtils.merge(noNestingProps, ignoreSessionProps);
+    // working with parentSession
+    private void copyDataTo(DataSession other, FunctionSet<SessionDataProperty> ignore) throws SQLException, SQLHandledException {
+        other.dropAllChanges(NONESTING);
 
         classChanges.copyDataTo(other);
-        for (Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : filterNotSessionData(ignoreSessionProps).entrySet()) {
+        for (Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : filterNotSessionData(BaseUtils.merge(NONESTING, ignore)).entrySet())
             other.change(e.getKey(), PropertyChangeTableUsage.getChange(e.getValue()));
-        }
-        
-        if (cleanIsDataChangedProp) {
-            other.cleanIsDataChangedProperty();
-        }
 
         other.dropSessionEventChangedOld(); // так как сессия копируется, два раза события нельзя выполнять
+    }
+
+    public void copySessionDataTo(DataSession other, FunctionSet<SessionDataProperty> filter) throws SQLException, SQLHandledException {
+        other.dropChanges(other.filterSessionData(filter).keySet());
+
+        // not using dataChanges (since there will be a problem with classes, because there are no class changes in new session, and therefore changes will not be copied, and when copying back will delete existing changes) - somwhere similar to noClasses - but noClasses is more general thing
+        for (Map.Entry<SessionDataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : filterSessionData(BaseUtils.remove(filter, NONESTING)).entrySet())
+            other.getSession().changeProperty(e.getKey(), PropertyChangeTableUsage.getChange(e.getValue()));
     }
 
     // assertion что для sessionData уже adjustKeep выполнился
@@ -2500,12 +2492,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
     private Map<SessionDataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> filterSessionData(FunctionSet<SessionDataProperty> sessionData) {
         return BaseUtils.filterKeys(data, sessionData, SessionDataProperty.class);
-    }
-    public void copyDataTo(DataSession other, FunctionSet<SessionDataProperty> toCopy) throws SQLException, SQLHandledException {
-        other.dropChanges(other.filterSessionData(toCopy).keySet());
-        for (Map.Entry<SessionDataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : filterSessionData(toCopy).entrySet()) {
-            other.copyDataTo(e.getKey(), PropertyChangeTableUsage.getChange(e.getValue()));
-        }
     }
     public void dropSessionChanges(ImSet<SessionDataProperty> props) throws SQLException, SQLHandledException {
         dropChanges(props.filterFn(new NotFunctionSet<>(recursiveUsed)));
@@ -2519,7 +2505,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private void cleanChanges(FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+    private void dropAllChanges(FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         dropClassChanges();
         dropAllDataChanges(keepProps);
         isStoredDataChanged = false;
@@ -2528,7 +2514,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public void setParentSession(DataSession parentSession) throws SQLException, SQLHandledException {
         assert parentSession != null;
         
-        parentSession.copyDataTo(this, true, SetFact.EMPTY()); // копируем все local'ы
+        parentSession.copyDataTo(this, SetFact.EMPTY()); // копируем все local'ы
 
         this.parentSession = parentSession;
     }
@@ -2565,14 +2551,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return true;
         }
 
-        keep = adjustKeep(true, keep);
+        keep = BaseUtils.merge(keepNested(true), keep);
 
         restart(true, keep);
 
         updateSessionNotChangedEvents(keep); // need this to mark that nested props are not changed
 
         if (parentSession != null) {
-            parentSession.copyDataTo(this, true, keep);
+            parentSession.copyDataTo(this, keep);
+
+            cleanIsDataChangedProperty();
         }
 
         return true;
@@ -2706,7 +2694,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             sql.popVolatileStats(getOwner());
     }
 
-    public final static SFunctionSet<SessionDataProperty> keepAllSessionProperties = element -> element != isDataChanged;
+    public final static SFunctionSet<SessionDataProperty> keepAllSessionProperties = element -> !element.noNestingInNestedSession;
 
     @Override
     public String toString() {

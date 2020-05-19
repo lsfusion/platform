@@ -20,7 +20,7 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
     }
 
     @Override
-    protected int getLength() {
+    protected int getPrecision() {
         return 8;
     }
 

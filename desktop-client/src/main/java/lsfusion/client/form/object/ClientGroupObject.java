@@ -188,10 +188,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
             return ClientGroupObject.this;
         }
 
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return true;
-        }
-
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             controller.updateRowBackgroundValues(readKeys);
         }
@@ -208,10 +204,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public class RowForegroundReader implements ClientPropertyReader {
         public ClientGroupObject getGroupObject() {
             return ClientGroupObject.this;
-        }
-
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return true;
         }
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {

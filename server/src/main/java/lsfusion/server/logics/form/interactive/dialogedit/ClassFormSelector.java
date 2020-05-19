@@ -5,6 +5,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.type.ObjectType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -34,6 +36,11 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
     public class VirtualObject implements ObjectSelector {
         public boolean noClasses() {
             return false;
+        }
+
+        @Override
+        public Type getType() {
+            return ObjectType.instance;
         }
     }
     public final VirtualObject virtualObject = new VirtualObject(); 

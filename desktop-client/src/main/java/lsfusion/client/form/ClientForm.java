@@ -16,7 +16,6 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.AbstractForm;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -27,12 +26,8 @@ import java.util.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ClientForm extends ContextIdentityObject implements ClientCustomSerializable,
-                                                                 AbstractForm<ClientContainer, ClientComponent, String>,
                                                                  ApplicationContextHolder {
 
-    public KeyStroke keyStroke = null;
-
-    public String caption = "";
     public String canonicalName = "";
     public String creationPath = "";
 
@@ -53,10 +48,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<>();
 
     public ClientForm() {
-    }
-
-    public ClientContainer getMainContainer() {
-        return mainContainer;
     }
 
     public List<ClientObject> getObjects() {
@@ -149,19 +140,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         return null;
     }
 
-    public String getFullCaption() {
-        if (keyStroke != null) {
-            StringBuilder fullCaption = new StringBuilder(caption);
-            fullCaption.append(" (");
-            fullCaption.append(SwingUtils.getKeyStrokeCaption(keyStroke));
-            fullCaption.append(")");
-
-            return fullCaption.toString();
-        }
-        return caption;
-    }
-
-    public String getTooltip() {
+    public String getTooltip(String caption) {
         return MainController.showDetailedInfo ?
                 String.format("<html><body>" +
                         "<b>%s</b><br/><hr>" +
@@ -194,8 +173,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
             outStream.writeBoolean(entry.getValue());
         }
 
-        pool.writeObject(outStream, keyStroke);
-        pool.writeString(outStream, caption);
         pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
@@ -203,7 +180,9 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        mainContainer = pool.deserializeObject(inStream);
+        ClientContainer mainContainer = pool.deserializeObject(inStream);
+        mainContainer.main = true;
+        this.mainContainer = mainContainer;
         treeGroups = pool.deserializeSet(inStream);
         groupObjects = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
@@ -216,8 +195,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
             defaultOrders.put(order, inStream.readBoolean());
         }
 
-        keyStroke = pool.readObject(inStream);
-        caption = pool.readString(inStream);
         canonicalName = pool.readString(inStream);
         creationPath = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);

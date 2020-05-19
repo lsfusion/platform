@@ -1,12 +1,14 @@
 package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
+import lsfusion.gwt.client.action.GExternalHttpResponse;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridViewType;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.classes.*;
@@ -14,12 +16,14 @@ import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.object.table.grid.GridViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.cell.UserInputResult;
+import lsfusion.interop.session.ExternalHttpResponse;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -97,6 +101,11 @@ public class GwtToClientConverter extends ObjectConverter {
         return ClassViewType.valueOf(gViewType.name());
     }
 
+    @Converter(from = GGridViewType.class)
+    public GridViewType convertViewType(GGridViewType gViewType) {
+        return GridViewType.valueOf(gViewType.name());
+    }
+
     @Converter(from = GPropertyGroupType.class)
     public PropertyGroupType convertGroupType(GPropertyGroupType gViewType) {
         return PropertyGroupType.valueOf(gViewType.name());
@@ -115,6 +124,11 @@ public class GwtToClientConverter extends ObjectConverter {
         serializeGroupObjectValue(dataStream, groupObjectValue);
 
         return outStream.toByteArray();
+    }
+
+    @Converter(from = GExternalHttpResponse.class)
+    public ExternalHttpResponse convertExternalHttpResponse(GExternalHttpResponse gResponse) {
+        return new ExternalHttpResponse(gResponse.contentType, gResponse.responseBytes, gResponse.responseHeaders, gResponse.statusCode, gResponse.statusText);
     }
 
     public void serializeGroupObjectValue(DataOutputStream dataStream, GGroupObjectValue groupObjectValue) {

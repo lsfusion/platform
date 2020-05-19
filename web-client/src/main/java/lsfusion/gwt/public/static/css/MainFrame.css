@@ -105,9 +105,7 @@ input[type=checkbox]:focus {
 }
 
 .closeTabButton {
-    height: 17px;
-    width: 17px;
-    padding: 0 0 1px 0;
+    padding: 0;
     margin-left: 2px;
     border: 0;
     border-radius: 3px;
@@ -119,7 +117,12 @@ input[type=checkbox]:focus {
 }
 
 .closeTabButton:hover {
-    background: var(--close-tab-button-hover-color);
+    border: 1px solid var(--component-hover-border-color);
+    background: var(--component-hover-background-color);
+}
+
+.closeTabButton:active { /* should come after ':hover' */
+    background: var(--component-active-background-color);
 }
 
 .closeTabButton[disabled] {
@@ -250,16 +253,11 @@ input[type=checkbox]:focus {
     border: 1px solid var(--component-border-color);
     position: relative;
     border-radius: var(--textfield-border-radius);
+    overflow: hidden; /* to hide inner corners */
 }
 
-.dataPanelRendererFocusPanel {
-    position: absolute;
-    top: -1px;
-    bottom: -1px;
-    left: -1px;
-    right: -1px;
+.dataPanelRendererGridPanelFocused {
     border: 1px solid var(--focus-color);
-    border-radius: var(--textfield-border-radius);
 }
 
 .actionPanelRenderer {
@@ -360,12 +358,20 @@ input[type=checkbox]:focus {
 
 .toolbarSelectedNavigatorButton {
     border: solid 1px var(--component-border-color);
-    background: var(--selection-color);
+    background-color: var(--selection-color);
 }
 
 .toolbarNavigatorButton:hover {
-    border: solid 1px var(--component-border-color);
-    background: var(--selection-color);
+    border: 1px solid var(--component-hover-border-color);
+    background-color: var(--component-hover-background-color);
+}
+
+.toolbarSelectedNavigatorButton:hover {
+    background-color: var(--selection-color);
+}
+
+.toolbarNavigatorButton:active { /* should come after ':hover' */
+    background-color: var(--component-active-background-color);
 }
 
 .panelNavigatorView {
@@ -613,8 +619,6 @@ input[type=checkbox]:focus {
 /* ------------ Pivot Table  ------------ */
 
 .pivotTable {
-    overflow-x: auto;
-    overflow-y: auto;
     border: 1px solid var(--panel-border-color);
 }
 
@@ -650,7 +654,25 @@ input[type=checkbox]:focus {
 
 .pvtUi {
     color: var(--text-color);
+    /* width: 100%; */
+}
+
+.pvtUiWrapperDiv {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.pvtUiCellVDiv {
+    height: 100%;
+    overflow: hidden auto;
+}
+
+.pvtUiCellHDiv {
     width: 100%;
+    overflow: auto hidden;
 }
 
 .pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
@@ -658,23 +680,35 @@ input[type=checkbox]:focus {
 }
 
 table.pvtTable {
-    border: 1px solid var(--component-border-color);
+    /* border: 1px solid var(--component-border-color); */
     color: var(--text-color);
 }
 
 table.pvtTable tbody tr td, table.pvtTable thead tr td {
     border: 1px solid var(--grid-separator-border-color);
     color: var(--text-color);
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 table.pvtTable thead tr th, table.pvtTable tbody tr th {
     border: 1px solid var(--grid-separator-border-color);
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .pvtCols, .pvtRendererArea {
     width: 100%;
 }
 
+.pvtRendererScrollDiv {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+}
 
 .pvtAggregator {
     margin-bottom: 1px;
@@ -721,6 +755,7 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
 .pvtUi {
     /*to stretch last empty paxis*/
     height:100%;
+    width: 100%;
 }
 
 .pvtRows, .pvtCols {
@@ -812,7 +847,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .leaflet-bar a:hover {
-    background-color: var(--close-tab-button-hover-color) !important;
+    background-color: var(--component-hover-background-color) !important;
 }
 
 .leaflet-control-zoom-in, .leaflet-control-zoom-out {
@@ -869,7 +904,12 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .toolbarButton:hover {
-    border: 1px solid var(--component-border-color);
+    background-color: var(--component-hover-background-color);
+    border: 1px solid var(--component-hover-border-color);
+}
+
+.toolbarButton:active { /* should come after ':hover' */
+    background-color: var(--component-active-background-color);
 }
 
 .toolbarItem {
@@ -911,6 +951,16 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .requiredValueString {
     color: var(--required-value-string-color);
+}
+
+.notNullLine {
+    background: var(--not-null-line-color);
+    height: 1px;
+    bottom: 2px;
+    right:0;
+    left:0;
+    margin: 0 5px;
+    position:absolute;
 }
 
 .floatRight {

@@ -9,8 +9,8 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox.Caption {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -24,7 +24,7 @@ public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox
 
         setStyleName("Caption");
         addStyleName("filterDialogHeader");
-        setHeight(GwtClientUtils.COMPONENT_HEIGHT_STRING);
+        setHeight(StyleDefaults.COMPONENT_HEIGHT_STRING);
 
         captionWidget = new Label();
         captionWidget.addStyleName("flowPanelChildLeftAlign");

@@ -5,9 +5,10 @@ import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
-import static lsfusion.gwt.client.base.GwtClientUtils.CELL_HORIZONTAL_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
 public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
     protected GPropertyDraw property;
@@ -73,4 +74,8 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
     protected abstract void setInnerText(Element element, String innerText);
 
     public abstract String format(T value);
+
+    protected String getRequiredStringValue() {
+        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : "<div class=\"notNullLine\"></div>";
+    }
 }

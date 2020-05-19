@@ -103,9 +103,7 @@
                 <entry key="timeoutDegree" value="${settings.timeoutDegree:}"/>
                 <entry key="timeoutStart" value="${settings.timeoutStart:}"/>
                 <entry key="applyAutoAttemptCountLimit" value="${settings.applyAutoAttemptCountLimit:}"/>
-                <entry key="useSafeDivision" value="${settings.useSafeDivision:}"/>
-                <entry key="useSafeScaleCast" value="${settings.useSafeScaleCast:}"/>
-                <entry key="useScaleOpType" value="${settings.useScaleOpType:}"/>
+                <entry key="useMaxDivisionLength" value="${settings.useMaxDivisionLength:}"/>
                 <entry key="noTransSyncDB" value="${settings.noTransSyncDB:}"/>
                 <entry key="useUserChangesSync" value="${settings.useUserChangesSync:}"/>
                 <entry key="averageIntervalStat" value="${settings.averageIntervalStat:}"/>

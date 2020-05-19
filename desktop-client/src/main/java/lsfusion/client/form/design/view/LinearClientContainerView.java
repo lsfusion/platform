@@ -1,5 +1,6 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.interop.base.view.FlexConstraints;
@@ -14,7 +15,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         assert container.isLinear();
         panel = new ContainerViewPanel(container.isLinearVertical(), container.childrenAlignment);
 
-        container.design.designComponent(panel);
+        container.design.designComponent(panel, MainController.colorTheme);
     }
 
     @Override
@@ -31,7 +32,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public JComponentPanel getView() {
+    public ContainerViewPanel getPanel() {
         return panel;
     }
 }

@@ -8,7 +8,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 public class TextGridCellEditor extends TextBasedGridCellEditor {
     public TextGridCellEditor(EditManager editManager, GPropertyDraw property) {

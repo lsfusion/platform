@@ -1,9 +1,9 @@
 package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.ContainerAdder;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -48,21 +48,15 @@ public class FormContainerSet {
         return toolbarContainer;
     }
 
-    public static FormContainerSet fillContainers(FormView form, ContainerFactory<ContainerView> contFactory) {
-        return fillContainers(form, contFactory, ContainerAdder.DEFAULT());
-    }
-
-    public static FormContainerSet fillContainers(FormView form, ContainerFactory<ContainerView> contFactory, ContainerAdder<ContainerView, ComponentView, LocalizedString> adder) {
+    public static FormContainerSet fillContainers(FormView form, ContainerFactory<ContainerView> contFactory, Version version) {
         FormContainerSet set = new FormContainerSet();
 
         set.mainContainer = form.getMainContainer();
-        set.mainContainer.setDescription(LocalizedString.create("{form.layout.main.container}"));
         set.mainContainer.setFlex(1);
         set.mainContainer.setAlignment(FlexAlignment.STRETCH);
         
         set.objectsContainer = contFactory.createContainer();
         set.objectsContainer.setSID(DefaultFormView.getObjectsContainerSID());
-        set.objectsContainer.setDescription(LocalizedString.create("{form.layout.objects.container}"));
         set.objectsContainer.setFlex(1);
         set.objectsContainer.setAlignment(FlexAlignment.STRETCH);
 
@@ -73,7 +67,6 @@ public class FormContainerSet {
 
         set.toolbarBoxContainer = contFactory.createContainer();
         set.toolbarBoxContainer.setSID(DefaultFormView.getToolbarBoxContainerSID());
-        set.toolbarBoxContainer.setDescription(LocalizedString.create("{form.layout.service.buttons}"));
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
 
@@ -84,14 +77,13 @@ public class FormContainerSet {
 
         set.toolbarContainer = contFactory.createContainer(); // контейнер тулбара
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID());
-        set.toolbarContainer.setDescription(LocalizedString.create("{form.layout.toolbar.props.container}"));
         set.toolbarContainer.setType(ContainerType.CONTAINERH);
         set.toolbarContainer.setAlignment(FlexAlignment.CENTER);
 
-        adder.add(set.mainContainer, set.panelContainer);
-        adder.add(set.mainContainer, set.objectsContainer);
-        adder.add(set.mainContainer, set.toolbarBoxContainer);
-        adder.add(set.panelContainer, set.groupContainer);
+        set.mainContainer.add(set.panelContainer, version);
+        set.mainContainer.add(set.objectsContainer, version);
+        set.mainContainer.add(set.toolbarBoxContainer, version);
+        set.panelContainer.add(set.groupContainer, version);
 
         return set;
     }

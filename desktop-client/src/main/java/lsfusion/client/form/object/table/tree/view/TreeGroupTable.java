@@ -657,7 +657,12 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     @Override
-    public boolean isSelected(int row, int coulumn) {
+    public boolean paintSelected(int row, int column) {
+        return false;
+    }
+
+    @Override
+    public boolean hasSingleSelection() {
         return false;
     }
 

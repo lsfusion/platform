@@ -19,6 +19,7 @@ import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
@@ -90,8 +91,8 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
+import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -134,7 +135,6 @@ import lsfusion.server.physics.dev.id.resolve.ResolvingErrors.ResolvingError;
 import lsfusion.server.physics.dev.integration.external.to.ExternalDBAction;
 import lsfusion.server.physics.dev.integration.external.to.ExternalDBFAction;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
-import lsfusion.server.physics.dev.integration.external.to.ExternalHttpMethod;
 import lsfusion.server.physics.dev.integration.external.to.file.ReadAction;
 import lsfusion.server.physics.dev.integration.external.to.file.WriteAction;
 import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailAction;
@@ -154,8 +154,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -1866,14 +1864,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                 BaseUtils.addList(connectionString, params));
     }
 
-    public LAWithParams addScriptedExternalHTTPAction(ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl,
+    public LAWithParams addScriptedExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl,
                                                       NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo,
                                                       List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         LP headersProperty = headers != null ? findLPStringParamByPropertyUsage(headers) : null;
         LP cookiesProperty = cookies != null ? findLPStringParamByPropertyUsage(cookies) : null;
         LP headersToProperty = headersTo != null ? findLPStringParamByPropertyUsage(headersTo) : null;
         LP cookiesToProperty = cookiesTo != null ? findLPStringParamByPropertyUsage(cookiesTo) : null;
-        return addScriptedJoinAProp(addAProp(new ExternalHTTPAction(method != null ? method : ExternalHttpMethod.POST,
+        return addScriptedJoinAProp(addAProp(new ExternalHTTPAction(clientAction, method != null ? method : ExternalHttpMethod.POST,
                         getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList),
                         headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, bodyUrl != null)),
                 bodyUrl != null ? BaseUtils.mergeList(Arrays.asList(connectionString, bodyUrl), params) : BaseUtils.addList(connectionString, params));
@@ -1881,7 +1879,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedExternalLSFAction(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         String request = eval ? (action ? "eval/action" : "eval") : "/exec?action=$" + (params.size()+1);
-        return addScriptedExternalHTTPAction(ExternalHttpMethod.POST,
+        return addScriptedExternalHTTPAction(false, ExternalHttpMethod.POST,
                 addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
                 null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
     }

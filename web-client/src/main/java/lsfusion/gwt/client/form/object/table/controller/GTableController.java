@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
+import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
@@ -28,6 +29,8 @@ public interface GTableController {
     GPropertyDraw getSelectedProperty();
     GGroupObjectValue getSelectedColumn();
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
+
+    void setContainerCaption(GContainer container, String caption);
 
     boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet);
 }

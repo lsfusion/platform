@@ -27,7 +27,6 @@ import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.design.view.ClientContainerView;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.design.view.TabbedClientContainerView;
@@ -163,10 +162,6 @@ public class ClientFormController implements AsyncListener {
 
     private ScheduledExecutorService autoRefreshScheduler;
 
-    public ClientFormController(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, ClientNavigator clientNavigator) {
-        this(canonicalName, formSID, remoteForm, firstChanges, clientNavigator, false, false);
-    }
-
     public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         canonicalName = icanonicalName;
@@ -199,6 +194,8 @@ public class ClientFormController implements AsyncListener {
 
             formLayout = new ClientFormLayout(this, form.mainContainer);
 
+            updateFormCaption();
+
             initializeForm(firstChanges);
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -221,22 +218,6 @@ public class ClientFormController implements AsyncListener {
         return ID;
     }
 
-    public KeyStroke getKeyStroke() {
-        return form.keyStroke;
-    }
-
-    public String getCaption() {
-        return form.caption;
-    }
-
-    public String getFullCaption() {
-        return form.getFullCaption();
-    }
-
-    public String getTooltip() {
-        return form.getTooltip();
-    }
-
     public ClientFormLayout getLayout() {
         return formLayout;
     }
@@ -250,16 +231,8 @@ public class ClientFormController implements AsyncListener {
     }
     
     public void activateTab(ClientComponent component) {
-        ClientContainer parentContainer = component.container;
-        if(parentContainer != null && parentContainer.isTabbed()) {
-            ClientContainerView containerView = getLayout().getContainerView(parentContainer);
-            if(containerView instanceof TabbedClientContainerView) {
-                Map<Integer, Integer> tabMap = getTabMap((TabbedClientContainerView) containerView, parentContainer);
-                Integer index = tabMap.get(component.getID());
-                if(index != null)
-                    ((TabbedClientContainerView) containerView).activateTab(index);
-            }
-        }
+       if(component.isTab())
+            ((TabbedClientContainerView)getLayout().getContainerView(component.container)).activateTab(component);
     }
 
     private Map<Integer, Integer> getTabMap(TabbedClientContainerView containerView, ClientContainer component) {
@@ -1277,8 +1250,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeMode") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeMode(requestIndex, lastReceivedRequestIndex, groupObject.ID, false, null, null, 0, null, null, false, updateMode);
-
+                return remoteForm.changeMode(requestIndex, lastReceivedRequestIndex, groupObject.ID, false, null, null, 0, null, null, false, updateMode, null);
             }
         });
     }
@@ -1396,6 +1368,15 @@ public class ClientFormController implements AsyncListener {
         remoteForm = null;
     }
 
+    public void updateFormCaption() {
+        String caption = form.mainContainer.caption;
+        setFormCaption(caption, form.getTooltip(caption));
+    }
+
+    public void setFormCaption(String caption, String tooltip) {
+        throw new UnsupportedOperationException();
+    }
+
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
     private boolean formHidden;
     public void hideForm() {
@@ -1425,7 +1406,7 @@ public class ClientFormController implements AsyncListener {
                 @Override
                 public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
                     if (generationData != null) {
-                        MainFrame.instance.runReport(false, generationData, null);
+                        MainFrame.instance.runReport(false, "Print", generationData, null, null);
                     }
                 }
             });
@@ -1518,6 +1499,19 @@ public class ClientFormController implements AsyncListener {
 
     public void setSelected(boolean newSelected) {
         selected = newSelected;
+    }
+
+    public void setContainerCaption(ClientContainer clientContainer, String caption) {
+        clientContainer.caption = caption;
+
+        // update captions (actually we could've set them directly to the containers, but tabbed pane physically adds / removes that views, so the check if there is a tab is required there)
+        ClientFormLayout layout = getLayout();
+        if(clientContainer.isTab())
+            ((TabbedClientContainerView)layout.getContainerView(clientContainer.container)).updateTabCaption(clientContainer);
+        else if(clientContainer.main)
+            updateFormCaption();
+        else
+            layout.getContainerView(clientContainer).updateCaption();
     }
 
     private abstract class RmiCheckNullFormRequest<T> extends RmiRequest<T> {

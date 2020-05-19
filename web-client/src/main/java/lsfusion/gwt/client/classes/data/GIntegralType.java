@@ -21,11 +21,11 @@ public abstract class GIntegralType extends GFormatType<NumberFormat> {
         return new NumberGridCellRenderer(property);
     }
 
-    protected abstract int getLength();
+    protected abstract int getPrecision();
 
     @Override
     public int getDefaultCharWidth() {
-        int lengthValue = getLength();
+        int lengthValue = getPrecision();
         return Math.min(lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7)), 10);
     }
 

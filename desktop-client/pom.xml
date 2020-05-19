@@ -109,10 +109,6 @@
                     <artifactId>mail</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpmime</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.olap4j</groupId>
                     <artifactId>olap4j</artifactId>
                 </exclusion>

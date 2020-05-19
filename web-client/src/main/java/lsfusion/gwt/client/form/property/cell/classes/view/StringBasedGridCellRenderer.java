@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -12,11 +13,11 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
     protected void setInnerText(Element element, String innerText) {
         if (innerText == null) {
             if (property.isEditableNotNull()) {
-                setInnerContent(element, REQUIRED_VALUE);
+                setInnerHTML(element, getRequiredStringValue());
                 element.addClassName("requiredValueString");
                 element.removeClassName("nullValueString");
             } else {
-                setInnerContent(element, MainFrame.showNotDefinedStrings ? NOT_DEFINED_VALUE : "");
+                setInnerContent(element, MainFrame.showNotDefinedStrings ? NOT_DEFINED_VALUE : EscapeUtils.UNICODE_NBSP);
                 element.addClassName("nullValueString");
                 element.removeClassName("requiredValueString");
             }
@@ -33,5 +34,9 @@ public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRe
 
     protected void setInnerContent(Element element, String innerText) {
         element.setInnerText(innerText);
+    }
+
+    protected void setInnerHTML(Element element, String innerHTML) {
+        element.setInnerHTML(innerHTML);
     }
 }

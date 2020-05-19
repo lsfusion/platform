@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.view.StyleDefaults;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.BUTTON_HORIZONTAL_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 
 public class SimpleImageButton extends ImageButton {
     public SimpleImageButton(String caption) {
@@ -13,7 +13,7 @@ public class SimpleImageButton extends ImageButton {
     public SimpleImageButton(String caption, String imagePath) {
         super(caption, imagePath);
 
-        setHeight(GwtClientUtils.COMPONENT_HEIGHT_STRING);
+        setHeight(StyleDefaults.COMPONENT_HEIGHT_STRING);
         
         Style buttonStyle = getElement().getStyle();
         buttonStyle.setPaddingTop(0, Style.Unit.PX);

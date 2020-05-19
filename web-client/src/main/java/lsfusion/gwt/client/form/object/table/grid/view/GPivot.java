@@ -401,6 +401,7 @@ public class GPivot extends GStateTableView {
     protected native void render(com.google.gwt.dom.client.Element element, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns)/*-{
 //        var d = element;
         var d = $doc.createElement('div');
+        d.className = 'pvtUiWrapperDiv';
 
         // Configuration ordering column for group
         config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);
@@ -647,9 +648,9 @@ public class GPivot extends GStateTableView {
         } else {
             if (colKeyValues.length() > 0) {
                 JsArrayString cols = config.getArrayString("cols");
-                String lastValue = cols.get(colKeyValues.length() - 1);
-                if (!isSubtotal && lastValue != null && !lastValue.equals(COLUMN)) {
-                    GridCellRenderer<?> renderer = columnMap.get(lastValue).property.getGridCellRenderer();
+                String lastCol = cols.get(colKeyValues.length() - 1);
+                if (!isSubtotal && lastCol != null && !lastCol.equals(COLUMN)) {
+                    GridCellRenderer<?> renderer = columnMap.get(lastCol).property.getGridCellRenderer();
                     renderer.render(jsElement, font, value, false);
                 } else {
                     jsElement.setPropertyObject("textContent", value);
@@ -684,6 +685,42 @@ public class GPivot extends GStateTableView {
         return arrow;
     }
 
+    public int getColumnWidth(boolean isAttributeColumn, JsArrayString colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {
+        final int arrowBaseWidth = 15;
+        final int defaultTextColumnWidth = 120;
+        final int defaultNumberColumnWidth = 80;
+        int width = 0;
+        if (isArrow) {
+            width = arrowBaseWidth + 10 * arrowLevels;
+        } else if (isAttributeColumn) {
+            JsArrayString cols = config.getArrayString("cols");
+            for (int i = 0; i < colKeyValues.length(); ++i) {
+                if (cols.get(i).equals(COLUMN)) {
+                    String column = colKeyValues.get(i);
+                    width = columnMap.get(column).property.getValueWidth(null);
+                    break;
+                }
+            }
+            int colsCount = cols.length();
+            if (colKeyValues.length() == colsCount && colsCount > 0 && !cols.get(colsCount - 1).equals(COLUMN)) {
+                width = Math.max(width, columnMap.get(cols.get(colsCount - 1)).property.getValueWidth(null));
+            }
+            if (width == 0) {
+                width = defaultNumberColumnWidth;
+            }
+        } else if (axisValues.length() > 0) {
+            width = defaultNumberColumnWidth;
+            for (int i = 0; i < axisValues.length(); ++i) {
+                if (!axisValues.get(i).equals(COLUMN)) {
+                    width = Math.max(width, columnMap.get(axisValues.get(i)).property.getValueWidth(null));
+                }
+            }
+        } else {
+            width = defaultTextColumnWidth;
+        }
+        return width;
+    } 
+    
     private static class ColumnAggregator extends JavaScriptObject {
 
         protected ColumnAggregator() {
@@ -944,6 +981,10 @@ public class GPivot extends GStateTableView {
 
             renderAxisHeaderCell: function (element, value, attrName, isExpanded, isArrow) {
                 instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderAxisCell(*)(element, value, attrName, isExpanded, isArrow);
+            },
+            
+            getColumnWidth: function (isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels) {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::getColumnWidth(*)(isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels);
             }
         }
     }-*/;

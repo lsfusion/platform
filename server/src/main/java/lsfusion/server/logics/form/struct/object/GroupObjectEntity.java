@@ -22,8 +22,10 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
@@ -154,13 +156,17 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     }
 
-
-    public GroupObjectEntity() {
-    }
-
     public GroupObjectEntity(int ID, TreeGroupEntity treeGroup) {
         this(ID, (String)null);
         this.treeGroup = treeGroup; // нужно чтобы IsInTree правильно определялось в addScriptingTreeGroupObject, когда идет addGroupObjectView
+    }
+
+    private PropertyRevImplement<ClassPropertyInterface, ObjectEntity> gridViewTypeProp;
+    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getGridViewType(ConcreteCustomClass gridViewType) {
+        if (gridViewTypeProp == null) {
+            gridViewTypeProp = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.EMPTY(), gridViewType, LocalNestedType.ALL);
+        }
+        return gridViewTypeProp;
     }
 
     public GroupObjectEntity(int ID, String sID) {
@@ -323,5 +329,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     // hack where ImMap used (it does not support null keys)
+    private GroupObjectEntity() {
+    }
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
 }

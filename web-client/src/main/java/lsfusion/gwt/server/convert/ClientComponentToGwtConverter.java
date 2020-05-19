@@ -157,7 +157,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GContainer convertContainer(ClientContainer clientContainer) {
         GContainer container = initGwtComponent(clientContainer,  new GContainer());
 
-        container.caption = clientContainer.getRawCaption();
+        container.caption = clientContainer.caption;
         container.type = convertContainerType(clientContainer.getType());
         container.childrenAlignment = convertAlignment(clientContainer.childrenAlignment);
         container.columns = clientContainer.columns;
@@ -560,10 +560,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GForm form = new GForm();
         this.form = form;
 
-        form.caption = clientForm.caption;
         form.creationPath = clientForm.creationPath;
         form.autoRefresh = clientForm.autoRefresh;
-        form.mainContainer = convertOrCast(clientForm.mainContainer);
+        GContainer mainContainer = convertOrCast(clientForm.mainContainer);
+        mainContainer.main = true;
+        form.mainContainer = mainContainer;
 
         for (ClientTreeGroup clientTreeGroup : clientForm.treeGroups) {
             GTreeGroup treeGroup = convertOrCast(clientTreeGroup);

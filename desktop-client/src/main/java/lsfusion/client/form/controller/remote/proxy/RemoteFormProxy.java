@@ -2,10 +2,10 @@ package lsfusion.client.form.controller.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
-import lsfusion.client.controller.remote.proxy.PendingRemoteObjectProxy;
 import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.object.table.grid.GridViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
@@ -131,9 +131,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
     }
 
     @Override
-    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode) throws RemoteException {
+    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode, GridViewType viewType) throws RemoteException {
         logRemoteMethodStartVoidCall("changeMode");
-        ServerResponse result = target.changeMode(requestIndex, lastReceivedRequestIndex, groupObjectID, setGroup, propertyIDs, columnKeys, aggrProps, aggrType, pageSize, forceRefresh, updateMode);
+        ServerResponse result = target.changeMode(requestIndex, lastReceivedRequestIndex, groupObjectID, setGroup, propertyIDs, columnKeys, aggrProps, aggrType, pageSize, forceRefresh, updateMode, viewType);
         logRemoteMethodEndVoidCall("changeMode");
         return result;
     }

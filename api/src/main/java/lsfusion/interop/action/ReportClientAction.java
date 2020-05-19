@@ -10,6 +10,7 @@ public class ReportClientAction implements ClientAction {
 
     public List<ReportPath> reportPathList;
     public String formSID;
+    public String formCaption;
     public boolean isModal;
     public ReportGenerationData generationData;
     public boolean inDevMode;
@@ -18,9 +19,10 @@ public class ReportClientAction implements ClientAction {
     public String password;
     public String sheetName;
 
-    public ReportClientAction(List<ReportPath> reportPathList, String formSID, boolean isModal, ReportGenerationData generationData,
+    public ReportClientAction(List<ReportPath> reportPathList, String formCaption, String formSID, boolean isModal, ReportGenerationData generationData,
                               FormPrintType printType, String printerName, boolean inDevMode, String password, String sheetName) {
         this.reportPathList = reportPathList;
+        this.formCaption = formCaption;
         this.formSID = formSID;
         this.isModal = isModal;
         this.generationData = generationData;

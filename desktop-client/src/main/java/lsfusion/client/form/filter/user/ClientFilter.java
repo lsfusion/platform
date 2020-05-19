@@ -44,6 +44,6 @@ public class ClientFilter extends ClientComponent {
 
     @Override
     public String toString() {
-        return getCaption() + "[sid:" + getSID() + "]";
+        return ClientResourceBundle.getString("logics.filter") + "[sid:" + getSID() + "]";
     }
 }

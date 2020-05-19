@@ -176,6 +176,12 @@ countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == Propert
 CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE '{reflection.constraint.has.user.preferences}';
 hasUserPreferencesOverride '{reflection.has.user.preferences.group.object}' (GroupObject groupObject, CustomUser customUser) = OVERRIDE hasUserPreferences(groupObject, customUser), hasUserPreferences(groupObject) IF customUser IS CustomUser;
 
+WHEN SET(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(groupObject(p)) DO
+    show(p) <- PropertyDrawShowStatus.Hide;
+    
+WHEN SET(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(groupObject(p), CustomUser u) DO
+    show(p, u) <- PropertyDrawShowStatus.Hide;    
+
 fontSize '{reflection.font.size.group.object.custom.user}'= DATA INTEGER (GroupObject, CustomUser);
 fontSize '{reflection.font.size.group.object}' = DATA INTEGER (GroupObject);
 

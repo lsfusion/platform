@@ -21,7 +21,9 @@ import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import java.text.ParseException;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
-import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.DEFAULT_FONT_PT_SIZE;
 
 public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);

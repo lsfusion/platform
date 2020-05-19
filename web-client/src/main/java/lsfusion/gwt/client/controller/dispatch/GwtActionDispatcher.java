@@ -1,8 +1,12 @@
 package lsfusion.gwt.client.controller.dispatch;
 
 import com.google.gwt.media.client.Audio;
+import com.google.gwt.typedarrays.client.Uint8ArrayNative;
+import com.google.gwt.typedarrays.shared.ArrayBuffer;
+import com.google.gwt.typedarrays.shared.Uint8Array;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
@@ -10,6 +14,11 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
@@ -221,5 +230,59 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GChangeColorThemeAction action) {
+    }
+
+    @Override
+    public Object execute(GHttpClientAction action) {
+        pauseDispatching();
+        XMLHttpRequest request = XMLHttpRequest.create();
+        request.open(action.method.name(), action.connectionString);
+        request.setResponseType("arraybuffer");
+        for(Map.Entry<String, String> header : action.headers.entrySet()) {
+            request.setRequestHeader(header.getKey(), header.getValue());
+        }
+        sendRequest(request, action.body != null ? bytesToArrayBuffer(action.body) : null);
+
+        request.setOnReadyStateChange(xhr -> {
+            if(xhr.getReadyState() == XMLHttpRequest.DONE) {
+                ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();
+                byte[] bytes = arrayBufferToBytes(arrayBuffer);
+                Map<String, List<String>> responseHeaders = getResponseHeaders(xhr.getAllResponseHeaders());
+                continueDispatching(new GExternalHttpResponse(xhr.getResponseHeader("Content-Type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()));
+            }
+        });
+        return null;
+    }
+
+    private native void sendRequest(XMLHttpRequest request, ArrayBuffer body) /*-{
+        request.send(body);
+    }-*/;
+
+    private ArrayBuffer bytesToArrayBuffer(byte[] bytes) {
+        Uint8Array uint8Array = Uint8ArrayNative.create(bytes.length);
+        for (int i = 0; i < uint8Array.length(); i++) {
+            uint8Array.set(i, bytes[i]);
+        }
+        return uint8Array.buffer();
+    }
+
+    private byte[] arrayBufferToBytes(ArrayBuffer arrayBuffer) {
+        Uint8Array uint8Array = Uint8ArrayNative.create(arrayBuffer);
+        byte[] bytes = new byte[uint8Array.length()];
+        for (int i = 0; i < uint8Array.length(); i++) {
+            bytes[i] = (byte) uint8Array.get(i);
+        }
+        return bytes;
+    }
+
+    private Map<String, List<String>> getResponseHeaders(String allResponseHeaders) {
+        Map<String, List<String>> responseHeaders = new HashMap<>();
+        for(String responseHeader : allResponseHeaders.split("\n")) {
+            int index = responseHeader.indexOf(":");
+            if(index >= 0) {
+                responseHeaders.put(responseHeader.substring(0, index), Collections.singletonList(responseHeader.substring(index + 1)));
+            }
+        }
+        return responseHeaders;
     }
 }

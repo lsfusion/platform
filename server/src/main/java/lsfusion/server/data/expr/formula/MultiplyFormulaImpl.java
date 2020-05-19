@@ -29,12 +29,20 @@ public class MultiplyFormulaImpl extends ScaleFormulaImpl {
         }
 
         public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
+            if(isToString)
+                return "(" + src1 + "*" + src2 + ")";
+
             Type type = conversion.getType(type1, type2);
-            if (type != null || isToString) {
-                return getScaleSource("(" + src1 + "*" + src2 + ")", type, syntax, env, isToString);
+            if (type != null) {
+                return type.getSafeCast("(" + src1 + "*" + src2 + ")", syntax, env, null); // since type can be limited by max values + double / int / long
             }
             return null;
         }
+    }
+
+    @Override
+    public boolean hasNotNull() {
+        return true;
     }
 
     public final static MultiplyFormulaImpl instance = new MultiplyFormulaImpl();

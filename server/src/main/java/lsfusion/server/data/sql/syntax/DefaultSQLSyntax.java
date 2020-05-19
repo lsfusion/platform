@@ -93,8 +93,8 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return Types.VARCHAR;
     }
 
-    public String getNumericType(ExtInt length, ExtInt precision) {
-        return length.isUnlimited() ? "numeric" : ("numeric(" + length + "," + precision + ")");
+    public String getNumericType(ExtInt precision, ExtInt scale) {
+        return precision.isUnlimited() ? "numeric" : ("numeric(" + precision + "," + scale + ")");
     }
 
     public int getNumericSQL() {
@@ -387,6 +387,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     }
 
     public void setACID(Statement statement, boolean acid) throws SQLException {
+    }
+
+    public void setQueryTimeout(Statement statement, long setTimeout) throws SQLException {
+        throw new UnsupportedOperationException();
     }
 
     public String getMetaName(String name) {

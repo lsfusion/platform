@@ -38,7 +38,9 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
                 isSelected,
                 hasFocus,
                 drawFocusBorder(),
-                cellTable.isSelected(row, column),
+                cellTable.paintSelected(row, column),
+                cellTable.hasSingleSelection(),
+                table.hasFocus(),
                 cellTable.getBackgroundColor(row, column),
                 cellTable.getForegroundColor(row, column));
 

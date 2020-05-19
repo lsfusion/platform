@@ -714,10 +714,11 @@ callWithJQuery ($) ->
 
             #renderer control
             rendererControl = $("<td>").addClass("pvtUiCell")
-
+            rendererControlDiv = $("<div>").appendTo(rendererControl)
+            
             renderer = $("<select>")
                 .addClass('pvtRenderer')
-                .appendTo(rendererControl)
+                .appendTo(rendererControlDiv)
                 .bind "change", -> refresh() #capture reference
             for own x of opts.renderers
                 $("<option>").val(x).html(x).appendTo(renderer)
@@ -725,6 +726,7 @@ callWithJQuery ($) ->
 
             #axis list, including the double-click menu
             unused = $("<td>").addClass('pvtAxisContainer pvtUnused pvtUiCell')
+            unusedDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(unused)
             shownAttributes = (a for a of attrValues when a not in opts.hiddenAttributes)
             shownInAggregators = (c for c in shownAttributes when c not in opts.hiddenFromAggregators)
             shownInDragDrop = (c for c in shownAttributes when c not in opts.hiddenFromDragDrop)
@@ -857,7 +859,7 @@ callWithJQuery ($) ->
                         .append $("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink)
 
                     attrElem.addClass('pvtFilteredAttribute') if hasExcludedItem
-                    unused.append(attrElem).append(valueList)
+                    unusedDiv.append(attrElem).append(valueList)
 
             tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable)
 
@@ -887,8 +889,8 @@ callWithJQuery ($) ->
                     $(this).html(ordering[$(this).data("order")].colSymbol)
                     refresh()
 
-            $("<td>").addClass('pvtVals pvtUiCell')
-              .appendTo(tr1)
+            aggrSelector = $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1)
+            $("<div>").appendTo(aggrSelector)
               .append(aggregator)
               .append(rowOrderArrow)
               .append(colOrderArrow)
@@ -896,22 +898,24 @@ callWithJQuery ($) ->
 
             #column axes
             pvtColumns = $("<td>").addClass('pvtHorizList pvtCols pvtUiCell')
+            pvtColumnsDiv = $("<div>").addClass('pvtUiCellHDiv').appendTo(pvtColumns)
             tr1.append pvtColumns
 
             pvtColumnsTable = $("<table>").addClass('pvtColumnsTable')
-            pvtColumns.append pvtColumnsTable
+            pvtColumnsDiv.append pvtColumnsTable
 
             pvtColumnsRow = $("<tr>")
             pvtColumnsTable.append pvtColumnsRow
 
-            tr2 = $("<tr>").appendTo(uiTable)
+            tr2 = $("<tr>").appendTo(uiTable).attr("style", "height:100%")
 
             #row axes
             pvtRows = $("<td>").addClass('pvtRows pvtUiCell').attr("valign", "top")
+            pvtRowsDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(pvtRows)
             tr2.append pvtRows
 
             pvtRowsTable = $("<table>").addClass('pvtRowsTable')
-            pvtRows.append pvtRowsTable
+            pvtRowsDiv.append pvtRowsTable
 
             #the actual pivot table container
             pivotTable = $("<td>")
@@ -919,6 +923,10 @@ callWithJQuery ($) ->
                 .addClass('pvtRendererArea')
                 .appendTo(tr2)
 
+            pivotScrollDiv = $("<div>")
+                .addClass('pvtRendererScrollDiv')
+                .appendTo(pivotTable)
+            
             #finally the renderer dropdown and unused attribs are inserted at the requested location
             if opts.unusedAttrsVertical == true or unusedAttrsVerticalAutoOverride
                 uiTable.find('.uiTableRow:nth-child(1)').prepend rendererControl
@@ -1107,7 +1115,7 @@ callWithJQuery ($) ->
                     
                 opts.onRefresh(pivotUIOptions) if opts.onRefresh?
                 
-                pivotTable.pivot(materializedInput,subopts)
+                pivotScrollDiv.pivot(materializedInput,subopts)
 
                 @data "pivotUIOptions", pivotUIOptions
 

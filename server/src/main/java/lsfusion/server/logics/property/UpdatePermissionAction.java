@@ -31,7 +31,7 @@ public class UpdatePermissionAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
-        Long userRole = (Long) context.getDataKeyValue(userRoleInterface).getValue();
+        Long userRole = (Long) context.getKeyValue(userRoleInterface).getValue();
         String actionOrProperty = (String) context.getKeyValue(canonicalNameActionOrPropertyInterface).getValue();
         String permission = (String) context.getKeyValue(staticNamePermissionInterface).getValue();
         String type = (String) context.getKeyValue(typeInterface).getValue();

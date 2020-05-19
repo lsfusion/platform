@@ -142,4 +142,9 @@ public abstract class GAbstractTableController implements GTableController {
             scrollToTop(container.container);
         }
     }
+
+    @Override
+    public void setContainerCaption(GContainer container, String caption) {
+        formController.setContainerCaption(container, caption);
+    }
 }

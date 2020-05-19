@@ -1,18 +1,25 @@
 package lsfusion.gwt.client.form.design;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.GPropertyReader;
+import lsfusion.interop.form.property.PropertyReadType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.gwt.client.form.design.GContainerType.*;
 
 public class GContainer extends GComponent {
     public String caption;
-    public String description;
+
+    public boolean main;
 
     public GContainerType type;
     public GAlignment childrenAlignment;
@@ -138,4 +145,19 @@ public class GContainer extends GComponent {
     public boolean isColumns() {
         return type == COLUMNS;
     }
+
+    public final GPropertyReader captionReader = new GPropertyReader() {
+        @Override
+        public void update(GTableController controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
+            assert values.keySet().iterator().next().isEmpty();
+            Object value = values.values().iterator().next();
+            controller.setContainerCaption(GContainer.this, value != null ? value.toString() : null);
+        }
+
+        @Override
+        public int getGroupObjectID() {
+            return -1;
+        }
+    };
+
 }

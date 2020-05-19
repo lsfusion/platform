@@ -71,9 +71,7 @@
     border-right: 1px solid var(--grid-separator-border-color);
 }
 
-.dataGridKeyboardSelectedRow {
-    background: var(--selection-color);
-}
+.dataGridKeyboardSelectedRow {}
 
 .dataGridKeyboardSelectedRowCell {}
 
@@ -83,8 +81,6 @@
 }
 
 .dataGridFocusedCellLastInRow {
-    border-bottom: 1px solid var(--focus-color);
-    border-left: 1px solid var(--focus-color);
     border-right: 1px solid var(--focus-color);
 }
 
@@ -99,7 +95,6 @@
 /* ----- GSinglePropertyTable ----- */
 .dataGridWidget-single {
     background: var(--component-background-color);
-    border-radius: var(--textfield-border-radius);
 }
 
 .dataGridHeader-single {}
@@ -138,9 +133,7 @@
 .dataGridFirstCell-single {}
 .dataGridLastCell-single {}
 
-.dataGridKeyboardSelectedRow-single {
-    background: var(--selection-color);
-}
+.dataGridKeyboardSelectedRow-single {}
 
 .dataGridKeyboardSelectedRowCell-single {}
 

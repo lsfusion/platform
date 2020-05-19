@@ -35,10 +35,11 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     <M> ImFilterRevValueMap<T, M> mapFilterRevValues();
 
     ImSet<T> filterFn(FunctionSet<T> filter);
+    <E1 extends Exception, E2 extends Exception> ImSet<T> filterFnEx(ThrowingPredicate<T, E1, E2> filter) throws E1, E2;
     default ImSet<T> filterFn(SFunctionSet<T> filter) {
         return filterFn((FunctionSet<T>) filter);    
     }
-    
+
     ImSet<T> split(FunctionSet<T> filter, Result<ImSet<T>> rest);
     default ImSet<T> split(SFunctionSet<T> filter, Result<ImSet<T>> rest) {
         return split((FunctionSet<T>) filter, rest);

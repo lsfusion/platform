@@ -64,10 +64,6 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return new IntegerPropertyEditor(value, ClientLongClass.instance.getDefaultFormat(), null, Long.class);
     }
 
-    public boolean shouldBeDrawn(ClientFormController form) {
-        return true;
-    }
-
     public Object parseString(String s) throws ParseException {
         throw new ParseException(ClientResourceBundle.getString("logics.classes.objectclass.doesnt.support.convertation.from.string"), 0);
     }

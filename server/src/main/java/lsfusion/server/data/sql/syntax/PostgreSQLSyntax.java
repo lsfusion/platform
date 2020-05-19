@@ -14,6 +14,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.Log4jWriter;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.StringUtils;
+import org.postgresql.jdbc.PgStatement;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 import org.postgresql.util.ServerErrorMessage;
@@ -460,5 +461,10 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     public void setACID(Statement statement, boolean acid) throws SQLException {
         statement.execute("SET SESSION synchronous_commit TO " + (acid ? "DEFAULT" : "OFF"));
         statement.execute("SET SESSION commit_delay TO " + (acid ? "DEFAULT" : "100000"));
+    }
+
+    @Override
+    public void setQueryTimeout(Statement statement, long setTimeout) throws SQLException {
+        ((PgStatement)statement).setQueryTimeoutMs(setTimeout);
     }
 }

@@ -42,7 +42,11 @@ public class GComponent implements Serializable {
                ", defaultComponent=" + defaultComponent +
                '}';
     }
-    
+
+    public boolean isTab() {
+        return container != null && container.isTabbed();
+    }
+
     public double getFlex() {
         return flex;
     }

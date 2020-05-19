@@ -71,6 +71,14 @@ sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepActio
 sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
 manageSession = NOT sessionOwners() > 1;
 
+CLASS GridViewType {
+    grid 'Grid',
+    pivot 'Pivot',
+    map 'Map'
+}
+count '{form.grid.count}' = 1;
+isPivot(GridViewType t) = t == GridViewType.pivot;
+
 applyOnlyWithoutRecalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyWithoutRecalcAction' ();
 applyOnlyCalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCalcAction' ();
 applyOnlyCheck  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCheckAction' ();
