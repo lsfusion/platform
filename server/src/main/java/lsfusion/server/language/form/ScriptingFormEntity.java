@@ -689,11 +689,13 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addPivotOptions(String groupSID, PivotOptions pivotOptions, List<List<PropertyDrawEntity>> pivotColumns,
+    public void addPivotOptions(List<Pair<String, PivotOptions>> pivotOptionsList, List<List<PropertyDrawEntity>> pivotColumns,
                                 List<List<PropertyDrawEntity>> pivotRows, List<PropertyDrawEntity> pivotMeasures, Version version) {
-        GroupObjectEntity groupObject = form.getNFGroupObject(groupSID, version);
-        if (groupObject != null) {
-            groupObject.setPivotOptions(pivotOptions);
+        for(Pair<String, PivotOptions> entry : pivotOptionsList) {
+            GroupObjectEntity groupObject = form.getNFGroupObject(entry.first, version);
+            if (groupObject != null) {
+                groupObject.mergePivotOptions(entry.second);
+            }
         }
         form.addPivotColumns(pivotColumns, version);
         form.addPivotRows(pivotRows, version);

@@ -1232,26 +1232,30 @@ formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = 
 
 formPivotOptionsDeclaration
 @init {
-	PivotOptions options = new PivotOptions();
+	List<Pair<String, PivotOptions>> pivotOptions = new ArrayList<>();
 	List<List<PropertyDrawEntity>> pivotColumns = new ArrayList<>();
 	List<List<PropertyDrawEntity>> pivotRows = new ArrayList<>();
 	List<PropertyDrawEntity> pivotMeasures = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addPivotOptions($groupObject.text, options, pivotColumns, pivotRows, pivotMeasures, self.getVersion());
+		$formStatement::form.addPivotOptions(pivotOptions, pivotColumns, pivotRows, pivotMeasures, self.getVersion());
 	}
 }
 	:	'PIVOT'
-	    (   (groupObject=ID
-		    (t=stringLiteral { options.setType($t.val); })?
-            (a=propertyGroupType { options.setAggregation($a.type); })?
-            ('SETTINGS' | 'NOSETTINGS'  { options.setShowSettings(false); })?)
+	    (   (options=groupObjectPivotOptions { pivotOptions.add(Pair.create($options.groupObject, $options.options)); })
         |   ('COLUMNS' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*)
         |   ('ROWS' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*)
         |   ('MEASURES' measure=formPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=formPropertyDraw { pivotMeasures.add($measure.property); } )*)
         )+
 	;
+
+groupObjectPivotOptions returns [String groupObject, PivotOptions options = new PivotOptions()]
+    :   group=ID { $groupObject = $group.text; }
+		(t=stringLiteral { $options.setType($t.val); })?
+        (a=propertyGroupType { $options.setAggregation($a.type); })?
+        ('SETTINGS'  { $options.setShowSettings(true); } | 'NOSETTINGS'  { $options.setShowSettings(false); })?
+    ;
 
 pivotPropertyDrawList returns [List<PropertyDrawEntity> props = new ArrayList<>()]
 	:	prop=formPropertyDraw { props.add($prop.property); }

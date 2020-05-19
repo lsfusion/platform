@@ -235,6 +235,14 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.pivotOptions = pivotOptions;
     }
 
+    public void mergePivotOptions(PivotOptions pivotOptions) {
+        if(this.pivotOptions != null) {
+            this.pivotOptions.merge(pivotOptions);
+        } else {
+            this.pivotOptions = pivotOptions;
+        }
+    }
+
     public void setViewTypePanel() {
         setViewType(ClassViewType.PANEL);
     }

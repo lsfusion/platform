@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class PivotOptions implements Serializable {
     String type;
     PropertyGroupType aggregation;
-    boolean showSettings = true;
+    Boolean showSettings;
 
     public PivotOptions() {
     }
@@ -26,11 +26,20 @@ public class PivotOptions implements Serializable {
         this.aggregation = aggregation;
     }
 
-    public boolean showSettings() {
+    public Boolean getShowSettings() {
         return showSettings;
     }
 
-    public void setShowSettings(boolean showSettings) {
+    public void setShowSettings(Boolean showSettings) {
         this.showSettings = showSettings;
+    }
+
+    public void merge(PivotOptions pivotOptions) {
+        if(pivotOptions.type != null)
+            this.type = pivotOptions.type;
+        if(pivotOptions.aggregation != null)
+            this.aggregation = pivotOptions.aggregation;
+        if(pivotOptions.showSettings != null)
+            this.showSettings = pivotOptions.showSettings;
     }
 }
