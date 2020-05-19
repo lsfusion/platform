@@ -543,7 +543,7 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
-	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); }
+	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
@@ -594,15 +594,15 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 	;
 
-formGroupObjectViewType returns [ClassViewType type, ListViewType listType]
-	:	viewType=groupObjectClassViewType { $type = $viewType.type; $listType = $viewType.listType; }
+formGroupObjectViewType returns [ClassViewType type, ListViewType listType, PivotOptions options]
+	:	viewType=groupObjectClassViewType { $type = $viewType.type; $listType = $viewType.listType; $options = $viewType.options; }
 	;
 
-groupObjectClassViewType returns [ClassViewType type, ListViewType listType]
+groupObjectClassViewType returns [ClassViewType type, ListViewType listType, PivotOptions options]
 	:   'PANEL' {$type = ClassViewType.PANEL;}
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	|   'GRID' {$type = ClassViewType.LIST;}
-    |	lType=listViewType { $listType = $lType.type; }
+    |	lType=listViewType { $listType = $lType.type; $options = $lType.options; }
 	;
 
 propertyClassViewType returns [ClassViewType type]
@@ -611,8 +611,8 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-listViewType returns [ListViewType type]
-	:   'PIVOT' {$type = ListViewType.PIVOT;}
+listViewType returns [ListViewType type, PivotOptions options]
+	:   'PIVOT' {$type = ListViewType.PIVOT;} opt = pivotOptions {$options = $opt.options; }
 	|   'MAP' {$type = ListViewType.MAP;}
     ;
 
@@ -1260,7 +1260,11 @@ formPivotOptionsDeclaration
 
 groupObjectPivotOptions returns [String groupObject, PivotOptions options = new PivotOptions()]
     :   group=ID { $groupObject = $group.text; }
-		(t=stringLiteral { $options.setType($t.val); })?
+		opt = pivotOptions {$options = $opt.options; }
+    ;
+
+pivotOptions returns [PivotOptions options = new PivotOptions()]
+    :   (t=stringLiteral { $options.setType($t.val); })?
         (a=propertyGroupType { $options.setAggregation($a.type); })?
         ('SETTINGS'  { $options.setShowSettings(true); } | 'NOSETTINGS'  { $options.setShowSettings(false); })?
     ;

@@ -51,7 +51,11 @@ public class ScriptingGroupObject {
     }
 
     public void setPivotOptions(PivotOptions pivotOptions) {
-        this.pivotOptions = pivotOptions;
+        if(this.pivotOptions != null) {
+            this.pivotOptions.merge(pivotOptions);
+        } else {
+            this.pivotOptions = pivotOptions;
+        }
     }
 
     public void setPageSize(Integer pageSize) {

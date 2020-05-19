@@ -705,7 +705,7 @@ public class ScriptingFormEntity {
         for(Pair<String, PivotOptions> entry : pivotOptionsList) {
             GroupObjectEntity groupObject = form.getNFGroupObject(entry.first, version);
             if (groupObject != null) {
-                groupObject.mergePivotOptions(entry.second);
+                groupObject.setPivotOptions(entry.second);
             }
         }
         form.addPivotColumns(pivotColumns, version);
