@@ -79,6 +79,30 @@ public class ReflectionUtils {
         }
     }
 
+    public static <T> void invokeStaticMethod(Class clazz, String methodName, Class[] paramsClasses, Object[] params) {
+        try {
+            Method method = clazz.getMethod(methodName, paramsClasses);
+            method.setAccessible(true);
+            method.invoke(null, params);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static <T> T getStaticMethodValue(Class clazz, String methodName, Class[] paramsClasses, Object[] params) {
+        return getMethodValue(clazz, null, methodName, paramsClasses, params);
+    }
+
+    public static <T> T getMethodValue(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) {
+        try {
+            Method method = clazz.getMethod(methodName, paramsClasses);
+            method.setAccessible(true);
+            return (T) method.invoke(target, params);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public static Method getDeclaredMethodOrNull(Class<?> clazz, String methodName, Class<?>... args) {
         if (clazz == null || methodName == null) {
             return null;
@@ -180,6 +204,14 @@ public class ReflectionUtils {
             return ctor.newInstance(parameters);
         } catch (Exception e) {
             throw Throwables.propagate(e);
+        }
+    }
+
+    public static Class classForName(String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            return null;
         }
     }
 

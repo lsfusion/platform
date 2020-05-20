@@ -1,7 +1,7 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.base.ReflectionUtils;
 import lsfusion.client.view.MainFrame;
-import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
@@ -190,13 +190,18 @@ public class TitledBorder extends AbstractBorder
         g.setFont(getFont(c));
 
         JComponent jc = (c instanceof JComponent) ? (JComponent)c : null;
-        FontMetrics fm = SwingUtilities2.getFontMetrics(jc, g);
+        //FontMetrics fm = SwingUtilities2.getFontMetrics(jc, g);
+        Class swingUtilities2Class = ReflectionUtils.classForName("sun.swing.SwingUtilities2");
+        FontMetrics fm = ReflectionUtils.getPrivateMethodValue(swingUtilities2Class, null, "getFontMetrics", new Class[] {JComponent.class, Font.class}, new Object[] {jc, font});
         int         fontHeight = fm.getHeight();
         int         descent = fm.getDescent();
         int         ascent = fm.getAscent();
         int         diff;
-        int         stringWidth = SwingUtilities2.stringWidth(jc, fm,
-                                                              getTitle());
+        //int         stringWidth = SwingUtilities2.stringWidth(jc, fm,
+        //                                                      getTitle());
+        int         stringWidth = ReflectionUtils.getPrivateMethodValue(swingUtilities2Class, null, "stringWidth",
+                                    new Class[] {JComponent.class, FontMetrics.class, String.class}, new Object[] {jc, fm, getTitle()});
+
         Insets      insets;
 
         if (border != null) {
@@ -339,7 +344,9 @@ public class TitledBorder extends AbstractBorder
         }
 
         g.setColor(getTitleColor());
-        SwingUtilities2.drawString(jc, g, getTitle(), textLoc.x, textLoc.y);
+        //SwingUtilities2.drawString(jc, g, getTitle(), textLoc.x, textLoc.y);
+        ReflectionUtils.getPrivateMethodValue(swingUtilities2Class, null, "drawString",
+                new Class[] {JComponent.class, Graphics.class, String.class, int.class, int.class}, new Object[] {jc, g, getTitle(), textLoc.x, textLoc.y});
 
         g.setFont(font);
         g.setColor(color);
@@ -588,11 +595,14 @@ public class TitledBorder extends AbstractBorder
         Font font = getFont(c);
         FontMetrics fm = c.getFontMetrics(font);
         JComponent jc = (c instanceof JComponent) ? (JComponent)c : null;
+        Class swingUtilities2Class = ReflectionUtils.classForName("sun.swing.SwingUtilities2");
         switch (getTitlePosition()) {
             case ABOVE_TOP:
             case BELOW_BOTTOM:
-                minSize.width = Math.max(SwingUtilities2.stringWidth(jc, fm,
-                                                                     getTitle()), minSize.width);
+                //minSize.width = Math.max(SwingUtilities2.stringWidth(jc, fm,
+                //                                                     getTitle()), minSize.width);
+                minSize.width = Math.max(ReflectionUtils.getPrivateMethodValue(swingUtilities2Class, null, "stringWidth",
+                        new Class[] {JComponent.class, FontMetrics.class, String.class}, new Object[] {jc, fm, getTitle()}), minSize.width);
                 break;
             case BELOW_TOP:
             case ABOVE_BOTTOM:
@@ -600,7 +610,9 @@ public class TitledBorder extends AbstractBorder
             case BOTTOM:
             case DEFAULT_POSITION:
             default:
-                minSize.width += SwingUtilities2.stringWidth(jc, fm, getTitle());
+                //minSize.width += SwingUtilities2.stringWidth(jc, fm, getTitle());
+                minSize.width += (int) ReflectionUtils.getPrivateMethodValue(swingUtilities2Class, null, "stringWidth",
+                        new Class[] {JComponent.class, FontMetrics.class, String.class}, new Object[] {jc, fm, getTitle()});
         }
         return minSize;
     }

@@ -56,9 +56,9 @@ public class ClientTree extends JTree {
         final TreePath selectionPath = getSelectionPath();
 
         setModel(newModel);
-        Enumeration<DefaultMutableTreeNode> nodes = ((DefaultMutableTreeNode) treeModel.getRoot()).depthFirstEnumeration();
+        Enumeration<TreeNode> nodes = ((DefaultMutableTreeNode) treeModel.getRoot()).depthFirstEnumeration();
         while (nodes.hasMoreElements()) {
-            DefaultMutableTreeNode node = nodes.nextElement();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) nodes.nextElement();
             TreePath path = new TreePath(node.getPath());
 
             for (TreePath expandedPath : expanded) {
@@ -79,12 +79,12 @@ public class ClientTree extends JTree {
         }
 
         DefaultMutableTreeNode lastNode = null;
-        List<DefaultMutableTreeNode> children = BaseUtils.toList((DefaultMutableTreeNode) treeModel.getRoot());
+        ArrayList<? extends TreeNode> children = (ArrayList<? extends TreeNode>) BaseUtils.toList((DefaultMutableTreeNode) treeModel.getRoot());
         for (Object current : path) {
             lastNode = null;
-            for (DefaultMutableTreeNode child : children) {
-                if (BaseUtils.nullEquals(child.getUserObject(), current)) {
-                    lastNode = child;
+            for (TreeNode child : children) {
+                if (BaseUtils.nullEquals(((DefaultMutableTreeNode) child).getUserObject(), current)) {
+                    lastNode = (DefaultMutableTreeNode) child;
                     children = Collections.list(child.children());
                     break;
                 }

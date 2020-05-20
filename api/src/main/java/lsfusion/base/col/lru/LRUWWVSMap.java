@@ -58,7 +58,7 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWWVSMap.AEntry
         }
 
         public final V get(K sKey, W wKey, int hash) {
-            final AEntry<K, W, V>[] t = table;
+            final AEntry<K, W, V>[] t = (AEntry<K, W, V>[]) table;
             for (AEntry<K, W, V> e = t[indexFor(hash, t.length)]; e != null; e = e.next) {
                 Pair<K, W> pair = e.get();
                 if (pair != null && pair.first == sKey && pair.second == wKey) {
@@ -75,7 +75,7 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWWVSMap.AEntry
             changeLock.lock();
             try {
                 int i = indexFor(hash, table.length);
-                for (AEntry<K, W, V> e = table[i]; e != null; e = e.next) {
+                for (AEntry<K, W, V> e = (AEntry<K, W, V> ) table[i]; e != null; e = e.next) {
                     Pair<K, W> pair = e.get();
                     if (pair != null && pair.first == sKey && pair.second == wKey) {
                         V oldValue = e.value;
@@ -84,7 +84,7 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWWVSMap.AEntry
                         return oldValue;
                     }
                 }
-                AEntry<K, W, V> e = new AEntry<>(sKey, wKey, refQueue, table[i], hash, value, currentTime);
+                AEntry<K, W, V> e = new AEntry<>(sKey, wKey, refQueue, (AEntry<K, W, V>) table[i], hash, value, currentTime);
 
                 regEntry(e, i);
             } finally {

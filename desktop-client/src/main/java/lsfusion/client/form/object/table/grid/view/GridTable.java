@@ -35,7 +35,6 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.order.user.Order;
-import sun.swing.UIAction;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -139,7 +138,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     // одновременном изменении ключей. Между вычислением значения leadRow и изменением selection'а на это значение
     // вызывается stopCellEditing(), который приводит к обновлению таблицы и текущего ряда. Таким образом на момент
     // вызова changeSelection() значение leadRow оказывается устаревшим. Подменяем его для избежания прыжков.
-    private ThreadLocal<UIAction> threadLocalUIAction = new ThreadLocal<>();
+    private ThreadLocal<Object> threadLocalUIAction = new ThreadLocal<>();
     private ThreadLocal<Boolean> threadLocalIsStopCellEditing = new ThreadLocal<>();
 
     public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
@@ -645,18 +644,22 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         scrollToOldObject = true;
 
         if (threadLocalIsStopCellEditing.get() != null && threadLocalUIAction.get() != null) {
-            UIAction uiAction = threadLocalUIAction.get();
+            Object uiAction = threadLocalUIAction.get();
             int index = getSelectionModel().getLeadSelectionIndex();
             int newLeadRow = index < getRowCount() ? index : -1;
 
             Field leadRowField;
             try {
-                leadRowField = uiAction.getClass().getDeclaredField("leadRow");
-                if (leadRowField != null) {
-                    leadRowField.setAccessible(true);
-                    int oldLeadRow = leadRowField.getInt(uiAction);
-                    if (newLeadRow != oldLeadRow) {
-                        leadRowField.set(uiAction, newLeadRow);
+                Class uiActionClass = ReflectionUtils.classForName("sun.swing.UIAction");
+                if(uiActionClass != null) {
+                    leadRowField = uiActionClass.getDeclaredField("leadRow");
+                    if (leadRowField != null) {
+                        leadRowField.setAccessible(true);
+                        //int oldLeadRow = leadRowField.getInt(uiAction);
+                        int oldLeadRow = ReflectionUtils.getPrivateMethodValue(Field.class, leadRowField, "getInt", new Class[]{uiActionClass}, new Object[]{uiAction});
+                        if (newLeadRow != oldLeadRow) {
+                            leadRowField.set(uiAction, newLeadRow);
+                        }
                     }
                 }
             } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -1019,8 +1022,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             if(inputMap != null && actionMap != null && isEnabled()) {
                 Object binding = ((InputMap) inputMap).get(ks);
                 Action action = (binding == null) ? null : ((ActionMap) actionMap).get(binding);
-                if (action instanceof UIAction) {
-                    threadLocalUIAction.set((UIAction) action);
+
+                Class uiActionClass = ReflectionUtils.classForName("sun.swing.UIAction");
+                if (uiActionClass != null && uiActionClass.isInstance(action)) {
+                    threadLocalUIAction.set(action);
                 }
             }
 
