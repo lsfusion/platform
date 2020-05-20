@@ -307,7 +307,7 @@ FORM fullChat '{chat.chat}'
     EVENTS ON INIT markSeenOnChange(c)
     EVENTS ON CHANGE c markSeenOnChange(c), ON CHANGE c stopEditing(c)
     EVENTS ON CLOSE markSeenOnChange(c)
-    ORDER lastMessageDateTime(c) DESC
+    ORDERS lastMessageDateTime(c) DESC
     
     OBJECTS u = CustomUser
     PROPERTIES(u) READONLY BACKGROUND backgroundUser(u) login, name, lastMessageDateTime , unreadMessages BACKGROUND backgroundUnread(u) 
@@ -317,7 +317,7 @@ FORM fullChat '{chat.chat}'
     
     FILTERGROUP in FILTER '{chat.form.full.chat.filter.in}' away(u)  
     FILTERS u != currentUser(), login(u), lastActivity(u)
-    ORDER lastMessageDateTime(u) DESC
+    ORDERS lastMessageDateTime(u) DESC
     
     PROPERTIES(c, u)  sendMessage SHOWIF noEditingMessage(c)
     PROPERTIES(c)  saveMessage SHOWIF editingMessage(c)

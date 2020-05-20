@@ -201,7 +201,7 @@ FORM processMonitor '{process.monitor.form.process.monitor}'
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlocking(blocked) > 0, sumBlocked(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
     FILTERGROUP nonBlocking FILTER '{process.monitor.form.process.monitor.filter.non.blocking}' sumBlocked(blocked) == 0 OR isDeadlock(blocked) DEFAULT 
-    ORDER sumBlocking(blocked) DESC, sumBlocking(blocking) DESC
+    ORDERS sumBlocking(blocked) DESC, sumBlocking(blocking) DESC
     
     PROPERTIES() captionProcessType, updateProcessMonitorAction
 ;

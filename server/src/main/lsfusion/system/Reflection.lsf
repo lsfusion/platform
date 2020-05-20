@@ -383,7 +383,7 @@ DESIGN physicalModel {
 FORM navigatorElements '{reflection.form.navigator.elements}'
     TREE neTree ne=NavigatorElement PARENT parent(ne)
     PROPERTIES(ne) READONLY caption, canonicalName, number
-    ORDER number(ne)   
+    ORDERS number(ne)   
 ;
 
 FORM forms '{reflection.form.forms}'
@@ -455,8 +455,8 @@ FORM properties '{reflection.form.properties}'
     PROPERTIES(tps) READONLY caption, SID, d1=dumb, d2=dumb, d3=dumb, d4=dumb, d5=dumb, parent, number, d6=dumb, d7=dumb, d8=dumb, d9=dumb
     PROPERTIES(ps) READONLY caption, canonicalName, dbName, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable CHANGEABLE, loggable, stored CHANGEABLE, isSetNotNull CHANGEABLE
 
-    ORDER number(p)
-    ORDER number(tps)
+    ORDERS number(p)
+    ORDERS number(tps)
 
     FILTERS
         parent(ps)==tps
@@ -491,8 +491,8 @@ FORM actions '{reflection.form.actions}'
     PROPERTIES(tps) READONLY caption, SID, d1=dumb, d2=dumb, number
     PROPERTIES(ps) GRID READONLY caption, canonicalName, class, parent, number
 
-    ORDER number(p)
-    ORDER number(tps)
+    ORDERS number(p)
+    ORDERS number(tps)
 
     FILTERS
         parent(ps)==tps
