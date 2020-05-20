@@ -276,7 +276,7 @@ FORM profiler '{profiler.profiler}'
 
     OBJECTS ohs = ProfileObject
     PROPERTIES READONLY text(ohs), order(ohs), value(ohs, ihs) COLUMNS (ihs) HEADER staticCaption(ihs)
-    ORDER order(ohs) DESC
+    ORDERS order(ohs) DESC
     FILTERS order(ohs)
 
 //raw data
@@ -290,7 +290,7 @@ FORM profiler '{profiler.profiler}'
     PROPERTIES(form) READONLY canonicalName
     PROPERTIES(po1, po2, user, form) READONLY order
     PROPERTIES(po1, po2, user, form, i) READONLY value COLUMNS (i) HEADER staticCaption(i)
-    ORDER order(po1, po2, user, form) DESC 
+    ORDERS order(po1, po2, user, form) DESC 
     FILTERS order(po1, po2, user, form)
 
 //дерево
@@ -299,7 +299,7 @@ FORM profiler '{profiler.profiler}'
     TREE pT down=ProfileObject PARENT parent(down)
     PROPERTIES (down) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
                         totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
-    ORDER order(down) DESC
+    ORDERS order(down) DESC
     
     OBJECTS iupToDown = ProfilerIndex GRID
     FILTERS active(iupToDown)
@@ -308,7 +308,7 @@ FORM profiler '{profiler.profiler}'
     PROPERTIES (upToDown) READONLY text
     PROPERTIES (down, upToDown) READONLY order
     PROPERTIES (down, upToDown, iupToDown) READONLY value COLUMNS (iupToDown) HEADER staticCaption(iupToDown)
-    ORDER order(down, upToDown) DESC
+    ORDERS order(down, upToDown) DESC
     FILTERS order(down, upToDown)
     FILTERGROUP  upToDown
         FILTER '{profiler.form.profiler.filter.additional}' parent(upToDown) != down 'F6'
@@ -327,7 +327,7 @@ FORM profiler '{profiler.profiler}'
     TREE pB up=ProfileObject PARENT child(up)
     PROPERTIES (up) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
                              totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
-    ORDER order(up) DESC
+    ORDERS order(up) DESC
     
     OBJECTS idownToUp = ProfilerIndex GRID
     FILTERS active(iupToDown)
@@ -336,7 +336,7 @@ FORM profiler '{profiler.profiler}'
     PROPERTIES (downToUp) READONLY text
     PROPERTIES (downToUp, up) READONLY order
     PROPERTIES (downToUp, up, iupToDown) READONLY value COLUMNS (idownToUp) HEADER staticCaption(idownToUp)
-    ORDER order(downToUp, up) DESC
+    ORDERS order(downToUp, up) DESC
     FILTERS order(downToUp, up)
     FILTERGROUP  downToUp
         FILTER '{profiler.form.profiler.filter.additional}' child(downToUp) != up 'F6'

@@ -412,7 +412,7 @@ FORM securityPolicy '{security.form.policy}'
     TREE navigatorElementsDefault tdf = NavigatorElement PARENT parent(tdf)
     PROPERTIES(tdf) READONLY caption, canonicalName, number
     PROPERTIES(tdf)          permit, forbid
-    ORDER number(tdf)
+    ORDERS number(tdf)
 
     OBJECTS df = NavigatorElement
     PROPERTIES(df) READONLY caption, canonicalName
@@ -426,7 +426,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES (tdprs) BACKGROUND RGB(232,232,255) permitChange, forbidChange
     PROPERTIES (dprs)                              permitView, forbidView
     PROPERTIES (dprs)  BACKGROUND RGB(232,232,255) permitChange, forbidChange
-    ORDER number(tdprs), number(dprs)
+    ORDERS number(tdprs), number(dprs)
     FILTERS parent(dprs) = tdprs
 
     OBJECTS dpr = ActionOrProperty
@@ -456,7 +456,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(te) READONLY caption, canonicalName, number
     PROPERTIES(ur, te)      permit BACKGROUND backgroundPermit(ur, te), forbid BACKGROUND backgroundForbid(ur, te)
     PROPERTIES(ur, te)      defaultNumber
-    ORDER number(te)
+    ORDERS number(te)
 
     OBJECTS f = NavigatorElement
     PROPERTIES(f) READONLY caption, canonicalName
@@ -470,7 +470,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur, tprs) BACKGROUND RGB(232,232,255) permitChange, forbidChange
     PROPERTIES(ur, prs)                              permitView, forbidView
     PROPERTIES(ur, prs)  BACKGROUND RGB(232,232,255) permitChange, forbidChange
-    ORDER number(tprs), number(prs)
+    ORDERS number(tprs), number(prs)
     FILTERS parent(prs) = tprs
     
     OBJECTS pr = ActionOrProperty

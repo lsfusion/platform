@@ -145,7 +145,7 @@ FORM customRestore '{backup.form.custom.restore}'
     
     OBJECTS b = Backup PANEL
     PROPERTIES(b) name SELECTOR, customRestore
-    ORDER name(b) DESC
+    ORDERS name(b) DESC
 ;
 
 NAVIGATOR {
