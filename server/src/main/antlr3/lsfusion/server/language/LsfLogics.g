@@ -1205,7 +1205,7 @@ formOrderByList
 		$formStatement::form.addScriptedDefaultOrder(properties, orders, self.getVersion());
 	}
 }
-	:	('ORDER' | 'ORDERS') orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); }
+	:	'ORDERS' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); }
 		(',' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); } )*
 	;
 	
