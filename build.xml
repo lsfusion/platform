@@ -1,13 +1,28 @@
 <?xml version="1.0"?>
 <project name="lsFusion Build Utils">
-    <target name="recursiveCompile">
-        <exec dir="${basedir}" executable="cmd" failonerror="true">
-            <arg value="/c"/>
-            <arg value="mvn"/>
-            <arg value="--also-make" />
-            <arg value="--projects" />
-            <arg value=":${artifactId}" />
-            <arg value="compile" />
+
+    <condition property="isWindows">
+        <os family="windows"/>
+    </condition>
+
+    <condition property="isUnix">
+        <os family="unix"/>
+    </condition>
+
+    <target name="recursiveCompile_win" if="isWindows">
+        <property name="mvn.executable" value="cmd"/>
+        <property name="mvn.args" value="/c"/>
+    </target>
+
+    <target name="recursiveCompile_unix" if="isUnix">
+        <property name="mvn.executable" value="/bin/sh"/>
+        <property name="mvn.args" value="-c"/>
+    </target>
+
+
+    <target name="recursiveCompile" depends="recursiveCompile_win, recursiveCompile_unix">
+        <exec dir="${basedir}" executable="${mvn.executable}">
+            <arg line="${mvn.args} 'mvn --also-make --projects :${artifactId} compile'"/>
         </exec>
     </target>
 

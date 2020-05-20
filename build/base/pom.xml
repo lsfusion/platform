@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>lsfusion.platform.build</groupId>
     <artifactId>base</artifactId>
@@ -13,8 +14,8 @@
         <lsfusion.snapshots.repo>https://repo.lsfusion.org/nexus/repository/snapshots</lsfusion.snapshots.repo>
 
         <!-- MAVEN PLUGIN VERSIONS -->
-        <aspectj.version>1.8.5</aspectj.version>
-        
+        <aspectj.version>1.9.2</aspectj.version>
+
         <!-- general properties -->
         <maven.test.skip>true</maven.test.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -40,7 +41,7 @@
 
         <google.guava.version>19.0</google.guava.version>
     </properties>
-    
+
     <repositories>
         <repository>
             <id>lsfusion</id>
@@ -132,16 +133,16 @@
                     <!--<version>3.1</version>-->
                 </plugin>
                 <plugin>
-                        <groupId>com.nickwongdev</groupId>
-                        <artifactId>aspectj-maven-plugin</artifactId>
-                        <version>1.12.1</version>
+                    <groupId>com.nickwongdev</groupId>
+                    <artifactId>aspectj-maven-plugin</artifactId>
+                    <version>1.12.1</version>
                     <configuration>
                         <!--для вывода в консоль при дебаге-->
                         <!--<showWeaveInfo>true</showWeaveInfo>-->
-                        
+
                         <complianceLevel>${maven.compiler.source}</complianceLevel>
                         <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.source}</target>                        
+                        <target>${maven.compiler.source}</target>
                     </configuration>
                     <executions>
                         <execution>

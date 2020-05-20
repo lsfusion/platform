@@ -117,7 +117,7 @@ public class CaseAction extends ListCaseAction {
     }
 
     public <I extends PropertyInterface> CaseAction(LocalizedString caption, boolean isExclusive, ImList<ActionMapImplement> impls, ImOrderSet<I> innerInterfaces) {
-        this(caption, isExclusive, innerInterfaces, impls.mapListValues((ActionMapImplement value) -> new ActionCase<>(value.mapWhereProperty().mapClassProperty(), value)));
+        this(caption, isExclusive, innerInterfaces, impls.mapListValues((ActionMapImplement value) -> new ActionCase<I>(value.mapWhereProperty().mapClassProperty(), value)));
     }
 
     // explicit конструктор
