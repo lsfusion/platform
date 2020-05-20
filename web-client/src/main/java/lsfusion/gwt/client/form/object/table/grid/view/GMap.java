@@ -4,7 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.StyleElement;
-import com.google.gwt.user.client.Element;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RequiresResize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -77,6 +77,11 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
             return key.hashCode();
         }
+    }
+
+    @Override
+    public GGridViewType getViewType() {
+        return GGridViewType.MAP;
     }
 
     protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {

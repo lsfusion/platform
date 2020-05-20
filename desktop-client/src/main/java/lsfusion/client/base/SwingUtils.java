@@ -3,6 +3,7 @@ package lsfusion.client.base;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.design.view.ClientFormLayout;
@@ -11,7 +12,6 @@ import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyStrokes;
 import org.jdesktop.swingx.SwingXUtilities;
-import sun.swing.SwingUtilities2;
 
 import javax.swing.Timer;
 import javax.swing.*;
@@ -272,29 +272,33 @@ public class SwingUtils {
     public static String toMultilineHtml(String text, Font font) {
         String result = "<html>";
         String line = "";
-        FontMetrics fm = SwingUtilities2.getFontMetrics(null, font);
-        int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width - 10;
-        String delims = " \n";
-        StringTokenizer st = new StringTokenizer(text, delims, true);
-        String wordDelim = "";
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            if (delims.contains(token)) {
-                if (token.equals("\n")) {
-                    result += line;
-                    line = "<br>" + wordDelim;
-                    wordDelim = "";
+        Class swingUtilities2Class = ReflectionUtils.classForName("sun.swing.SwingUtilities2");
+        if(swingUtilities2Class != null) {
+            //SwingUtilities2.getFontMetrics(null, font);
+            FontMetrics fm = ReflectionUtils.getPrivateMethodValue(swingUtilities2Class, null, "getFontMetrics", new Class[] {JComponent.class, Font.class}, new Object[] {null, font});
+            int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width - 10;
+            String delims = " \n";
+            StringTokenizer st = new StringTokenizer(text, delims, true);
+            String wordDelim = "";
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken();
+                if (delims.contains(token)) {
+                    if (token.equals("\n")) {
+                        result += line;
+                        line = "<br>" + wordDelim;
+                        wordDelim = "";
+                    } else {
+                        wordDelim += token;
+                    }
                 } else {
-                    wordDelim += token;
+                    if (fm.stringWidth(line + wordDelim + token) >= screenWidth) {
+                        result += line;
+                        result += !line.equals("") ? "<br>" : "";
+                        line = "";
+                    }
+                    line += wordDelim + token;
+                    wordDelim = "";
                 }
-            } else {
-                if (fm.stringWidth(line + wordDelim + token) >= screenWidth) {
-                    result += line;
-                    result += !line.equals("") ? "<br>" : "";
-                    line = "";
-                }
-                line += wordDelim + token;
-                wordDelim = "";
             }
         }
         return result += line + "</html>";

@@ -52,6 +52,8 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
 
         String appPath = servletContext.getRealPath("");
         FileUtils.APP_IMAGES_FOLDER_URL = appPath + "/static/images/";
+        FileUtils.APP_CSS_FOLDER_URL = appPath + "/static/css/";
+        FileUtils.APP_CLIENT_IMAGES_FOLDER_URL = appPath + "/main/static/images/";
         FileUtils.APP_TEMP_FOLDER_URL = appPath + "/WEB-INF/temp";
 
         setHost(host);

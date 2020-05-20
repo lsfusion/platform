@@ -9,7 +9,9 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-import static lsfusion.client.controller.MainController.colorTheme;
+import static lsfusion.client.base.view.ClientColorUtils.getDisplayColor;
+import static lsfusion.client.base.view.SwingDefaults.getFocusedTableCellBackground;
+import static lsfusion.client.base.view.SwingDefaults.getFocusedTableRowBackground;
 
 public abstract class PropertyRenderer {
     public static final String EMPTY_STRING = ClientResourceBundle.getString("form.renderer.empty");
@@ -80,12 +82,12 @@ public abstract class PropertyRenderer {
         }
         
         if (hasFocus) {
-            getComponent().setBackground(logicsBackground != null ? colorTheme.getDisplayBackground(logicsBackground) : SwingDefaults.getFocusedTableCellBackground());
+            getComponent().setBackground(logicsBackground != null ? getDisplayColor(logicsBackground) : getFocusedTableCellBackground());
         } else if (isInFocusedRow) {
-            final Color focusedRowBackground = SwingDefaults.getFocusedTableRowBackground();
+            final Color focusedRowBackground = getFocusedTableRowBackground();
             getComponent().setBackground(logicsBackground != null ? new Color(focusedRowBackground.getRGB() & logicsBackground.getRGB()) : focusedRowBackground);
         } else if (logicsBackground != null) {
-            getComponent().setBackground(colorTheme.getDisplayBackground(logicsBackground));
+            getComponent().setBackground(getDisplayColor(logicsBackground));
         } else {
             getComponent().setBackground(getDefaultBackground());
         }
@@ -102,9 +104,9 @@ public abstract class PropertyRenderer {
             }
         } else {
             if (conditionalForeground != null) {
-                getComponent().setForeground(colorTheme.getDisplayForeground(conditionalForeground));
+                getComponent().setForeground(getDisplayColor(conditionalForeground));
             } else if (property != null && property.design.foreground != null) {
-                getComponent().setForeground(colorTheme.getDisplayForeground(property.design.foreground));
+                getComponent().setForeground(getDisplayColor(property.design.foreground));
             } else {
                 getComponent().setForeground(SwingDefaults.getTableCellForeground());
             }

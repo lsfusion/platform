@@ -373,7 +373,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur, te) captionPermission FOREGROUND foregroundPermission(ur, te) BACKGROUND backgroundPermission(ur, te)
     PROPERTIES(ur, te) defaultNumber
     PROPERTIES(te) READONLY number
-    ORDER number(te)
+    ORDERS number(te)
 
     OBJECTS f = NavigatorElement
     PROPERTIES(f) READONLY caption, canonicalName
@@ -385,7 +385,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(prs)  READONLY caption, canonicalName
     PROPERTIES(tprs) READONLY number
     PROPERTIES(prs) READONLY number
-    ORDER number(tprs), number(prs)
+    ORDERS number(tprs), number(prs)
     FILTERS parent(prs) = tprs
     
     OBJECTS pr = ActionOrProperty

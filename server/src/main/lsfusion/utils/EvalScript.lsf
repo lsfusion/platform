@@ -130,7 +130,7 @@ FORM scriptsLog '{eval.script.form.scripts.log}'
     OBJECTS s=Script FIRST
     PROPERTIES(s) READONLY name, text, dateTimeChange, dateTime 
     PROPERTIES(s) NEWSESSION DELETE 
-    ORDER dateTimeChange(s) DESC
+    ORDERS dateTimeChange(s) DESC
 
     FILTERGROUP user FILTER '{eval.script.form.scripts.log.filter.name}' name(s) 'F9'
 

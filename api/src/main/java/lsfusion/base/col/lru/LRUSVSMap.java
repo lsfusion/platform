@@ -54,7 +54,7 @@ public class LRUSVSMap<K, V> extends ALRUSMap<LRUSVSMap.AEntry<K, V>, LRUSVSMap.
         }
 
         public final V get(K key, int hash) {
-            final AEntry<K, V>[] t = table;
+            final AEntry<K, V>[] t = (AEntry<K, V>[]) table;
             for (AEntry<K, V> e = t[indexFor(hash, t.length)]; e != null; e = e.next) {
                 if (hashKey(e.key) ==hash && optEquals(e.key, key)) {
                     recordAccess(e);
@@ -70,7 +70,7 @@ public class LRUSVSMap<K, V> extends ALRUSMap<LRUSVSMap.AEntry<K, V>, LRUSVSMap.
             changeLock.lock();
             try {
                 int i = indexFor(hash, table.length);
-                for (AEntry<K, V> e = table[i]; e != null; e = e.next) {
+                for (AEntry<K, V> e = (AEntry<K, V>) table[i]; e != null; e = e.next) {
                     if (hashKey(e.key) ==hash && optEquals(e.key, key)) {
                         V oldValue = e.value;
                         e.value = value;
@@ -78,7 +78,7 @@ public class LRUSVSMap<K, V> extends ALRUSMap<LRUSVSMap.AEntry<K, V>, LRUSVSMap.
                         return oldValue;
                     }
                 }
-                AEntry<K, V> e = new AEntry<>(key, table[i], value, currentTime);
+                AEntry<K, V> e = new AEntry<>(key, (AEntry<K, V>) table[i], value, currentTime);
 
                 regEntry(e, i);
             } finally {

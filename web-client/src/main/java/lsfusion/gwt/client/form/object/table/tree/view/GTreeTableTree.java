@@ -9,17 +9,16 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class GTreeTableTree {
     private GForm form;
 
-    private final Map<GGroupObject, Set<GTreeTableNode>> groupNodes = new HashMap<>();
-    public ArrayList<GPropertyDraw> properties = new ArrayList<>();
-    public final List<GPropertyDraw> columnProperties = new ArrayList<>();
+    public HashMap<GGroupObject, List<GPropertyDraw>> groupProperties = new HashMap<>();
+    private Map<GGroupObject, Set<GTreeTableNode>> groupNodes = new HashMap<>();
 
     public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<>();
     public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> readOnly = new HashMap<>();
-    public HashMap<GGroupObject, List<GPropertyDraw>> groupPropsMap = new HashMap<>();
 
     public GTreeTableNode root;
 
@@ -29,24 +28,12 @@ public class GTreeTableTree {
     }
 
     public int updateProperty(GGroupObject group, GPropertyDraw property) {
-
-        if (properties.indexOf(property) == -1 && !property.hide) {
-            int ins = GwtSharedUtils.relativePosition(property, form.propertyDraws, properties);
-            properties.add(ins, property);
-
-            List<GPropertyDraw> groupProperties = groupPropsMap.get(group);
-            if (groupProperties == null) {
-                groupProperties = new ArrayList<>();
-                groupPropsMap.put(group, groupProperties);
-            }
-            int gins = GwtSharedUtils.relativePosition(property, properties, groupProperties);
-            groupProperties.add(gins, property);
-
-            if (group.isLastGroupInTree()) {
-                int tins = GwtSharedUtils.relativePosition(property, properties, columnProperties);
-                columnProperties.add(tins, property);
-                return tins + 1;
-            }
+        List<GPropertyDraw> properties = groupProperties.computeIfAbsent(group, k -> new ArrayList<>());
+        if (!properties.contains(property) && !property.hide) {
+            int gins = GwtSharedUtils.relativePosition(property, form.propertyDraws, properties);
+            properties.add(gins, property);
+            if (group.isLastGroupInTree())
+                return gins + 1;
         }
         return -1;
     }
@@ -54,15 +41,12 @@ public class GTreeTableTree {
     public int removeProperty(GGroupObject group, GPropertyDraw property) {
         values.remove(property);
 
+        List<GPropertyDraw> properties = groupProperties.get(group);
+        int ind = properties.indexOf(property);
         properties.remove(property);
-        if (groupPropsMap.containsKey(group))
-            groupPropsMap.get(group).remove(property);
-
-        int ind = columnProperties.indexOf(property);
-        if (ind != -1) {
-            columnProperties.remove(property);
-        }
-        return ind + 1;
+        if(group.isLastGroupInTree())
+            return ind + 1;
+        return -1;
     }
 
     public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, Map<GGroupObjectValue, Boolean> expandable) {
@@ -184,12 +168,7 @@ public class GTreeTableTree {
             return Collections.singleton(root);
         }
 
-        Set<GTreeTableNode> nodes = groupNodes.get(group);
-        if (nodes == null) {
-            nodes = new HashSet<>();
-            groupNodes.put(group, nodes);
-        }
-        return nodes;
+        return groupNodes.computeIfAbsent(group, k -> new HashSet<>());
     }
 
 
@@ -203,24 +182,24 @@ public class GTreeTableTree {
 
     private int nodeCounter;
 
-    public ArrayList<GTreeGridRecord> getUpdatedRecords() {
+    public ArrayList<GTreeGridRecord> getUpdatedRecords(int columnCount, Function<Integer, GPropertyDraw> columnProperty) {
         nodeCounter = 0;
         ArrayList<GTreeGridRecord> result = new ArrayList<>();
         if (!hasOnlyExpandingNodeAsChild(root)) {
-            result.addAll(getNodeChildrenRecords(root, 0, null));
+            result.addAll(getNodeChildrenRecords(columnCount, columnProperty, root, 0, null));
         }
         return result;
     }
 
-    private List<GTreeGridRecord> getNodeChildrenRecords(GTreeTableNode node, int level, GTreeColumnValue parentValue) {
+    private List<GTreeGridRecord> getNodeChildrenRecords(int columnCount, Function<Integer, GPropertyDraw> columnProperty, GTreeTableNode node, int level, GTreeColumnValue parentValue) {
         List<GTreeGridRecord> result = new ArrayList<>();
         for (GTreeTableNode child : node.getChildren()) {
             HashMap<GPropertyDraw, Object> valueMap = new HashMap<>();
-            for (int i = 0; i < columnProperties.size(); i++) {
+            for (int i = 1; i < columnCount; i++) {
                 GPropertyDraw property = getProperty(child.getGroup(), i);
                 if (property != null) {
                     Object value = values.get(property).get(child.getKey());
-                    valueMap.put(columnProperties.get(i), value);
+                    valueMap.put(columnProperty.apply(i), value);
                 }
             }
             GTreeGridRecord record = new GTreeGridRecord(child.getGroup(), child.getKey(), valueMap);
@@ -231,10 +210,10 @@ public class GTreeTableTree {
 
             GTreeColumnValue treeValue = generateTreeCellValue(child, parentValue, level);
             treeValue.addLastInLevel(level - 1, node.getChildren().indexOf(child) == node.getChildren().size() - 1);
-            record.setAttribute("treeColumn", treeValue);
+            record.setTreeValue(treeValue);
             result.add(record);
             if (child.isOpen()) {
-                result.addAll(getNodeChildrenRecords(child, level + 1, treeValue));
+                result.addAll(getNodeChildrenRecords(columnCount, columnProperty, child, level + 1, treeValue));
             }
         }
         return result;
@@ -263,16 +242,14 @@ public class GTreeTableTree {
     }
 
     public GPropertyDraw getProperty(GGroupObject group, int column) {
-        List<GPropertyDraw> groupProperties = groupPropsMap.get(group);
+        column = column - 1;
+
+        List<GPropertyDraw> groupProperties = this.groupProperties.get(group);
         if (groupProperties == null || column < 0 || column >= groupProperties.size()) {
             return null;
         }
 
         return groupProperties.get(column);
-    }
-
-    public GPropertyDraw getColumnProperty(int column) {
-        return column != 0 ? columnProperties.get(column - 1) : null;
     }
 
     public Object getValue(GGroupObject group, int column, GGroupObjectValue key) {
@@ -284,7 +261,7 @@ public class GTreeTableTree {
     }
 
     public boolean isEditable(GGroupObject group, int column, GGroupObjectValue key) {
-        if (column >= 0) {
+        if (column >= 1) {
             GPropertyDraw property = getProperty(group, column);
             if (property != null && !property.isReadOnly()) {
                 Map<GGroupObjectValue, Object> propReadOnly = readOnly.get(property);
@@ -299,22 +276,12 @@ public class GTreeTableTree {
     }
 
     public GTreeTableNode getNodeByRecord(GTreeGridRecord record) {
-        if (record != null) {
-            for (Map.Entry<GGroupObject, Set<GTreeTableNode>> entry : groupNodes.entrySet()) {
-                if (entry.getKey().equals(record.getGroup())) {
-                    for (GTreeTableNode node : entry.getValue()) {
-                        if (record.getKey().equals(node.getKey())) {
-                            return node;
-                        }
-                    }
+        if (record != null)
+            for (GTreeTableNode node : getGroupNodes(record.getGroup()))
+                if (record.getKey().equals(node.getKey())) {
+                    return node;
                 }
-            }
-        }
         return null;
-    }
-
-    public int getPropertyColumnIndex(GPropertyDraw property) {
-        return columnProperties.indexOf(property) + 1;
     }
 
     private class ExpandingTreeTableNode extends GTreeTableNode {

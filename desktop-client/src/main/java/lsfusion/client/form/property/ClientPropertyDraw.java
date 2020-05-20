@@ -3,6 +3,7 @@ package lsfusion.client.form.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.*;
 import lsfusion.client.classes.data.ClientFormatClass;
@@ -238,7 +239,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             height = SwingDefaults.getValueHeight();
         }
         
-        ImageIcon image = design.getImage(MainController.colorTheme);
+        ImageIcon image = ClientImages.getImage(design.getImageHolder());
         if (image != null) // предпочитаемую высоту берем исходя из размера иконки
             height = Math.max(image.getIconHeight() + insetsHeight, height);
         return height;

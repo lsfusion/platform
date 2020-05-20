@@ -210,7 +210,7 @@ FORM scheduledTask '{scheduler.form.scheduled.task}'
     
     PROPERTIES () TOOLBAR stopSchedulerApply SHOWIF isStartedScheduler() , runSetupSchedulerApply SHOWIF isStoppedScheduler() 
     
-    ORDER number(dow)
+    ORDERS number(dow)
     
     FILTERS scheduledTask(td)==t,
             scheduledTask(tl) == t,

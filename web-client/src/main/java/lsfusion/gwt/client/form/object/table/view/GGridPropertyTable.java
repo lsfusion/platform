@@ -48,7 +48,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected Map<GGroupObjectValue, Object> rowBackgroundValues = new HashMap<>();
     protected Map<GGroupObjectValue, Object> rowForegroundValues = new HashMap<>();
 
-    protected ArrayList<GGridPropertyTableHeader> headers = new ArrayList<>();
+    protected GGridPropertyTableHeader getGridHeader(int i) {
+        return (GGridPropertyTableHeader) getHeader(i);
+    }
 
     protected boolean needToRestoreScrollPosition = true;
     protected GGroupObjectValue oldKey = null;
@@ -184,10 +186,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         refreshHeaders();
     }
 
-    public int getHeaderIndex(GGridPropertyTableHeader header) {
-        return headers.indexOf(header);
-    }
-
     public Boolean getSortDirection(GGridPropertyTableHeader header) {
         return sortableHeaderManager.getSortDirection(getHeaderIndex(header));
     }
@@ -313,8 +311,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         double totalPref = 0.0;
         double totalFlexValues = 0;
 
-        for (int i = 0; i < columns.length; ++i) {
-            Column column = columns[i];
+        for (int i = 0, columnCount = getColumnCount(); i < columnCount; ++i) {
+            Column column = getColumn(i);
 
             double pref = prefs[i];
             if(flexes[i]) {
@@ -367,24 +365,17 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected abstract void setUserWidth(GPropertyDraw property, Integer value);
     protected abstract Integer getUserWidth(GPropertyDraw property);
 
-    protected abstract int getColumnsCount();
     protected abstract GPropertyDraw getColumnPropertyDraw(int i);
-    protected abstract Column getColumnDraw(int i);
 
-    private Column[] columns;
     private double[] prefs;  // mutable
     private int[] basePrefs;
     private boolean[] flexes;
     public void updateLayoutWidth() {
-        int columnsCount = getColumnsCount();
-        columns = new Column[columnsCount];
+        int columnsCount = getColumnCount();
         prefs = new double[columnsCount];
         basePrefs = new int[columnsCount];
         flexes = new boolean[columnsCount];
         for (int i = 0; i < columnsCount; ++i) {
-            Column columnDraw = getColumnDraw(i);
-            columns[i] = columnDraw;
-
             boolean flex = isColumnFlex(i);
             flexes[i] = flex;
 

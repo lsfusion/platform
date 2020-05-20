@@ -125,7 +125,7 @@ extractMonthName '{time.extract.month.name}' (DATE date) = staticCaption(extract
 FORM months '{time.form.months}'
     OBJECTS m = Month
     PROPERTIES(m) READONLY staticCaption, number
-    ORDER number(m)
+    ORDERS number(m)
     LIST Month OBJECT m
 ;
 
@@ -165,7 +165,7 @@ numberM '{time.number.dow}' (DOW d) = CASE EXCLUSIVE
 FORM DOWs '{time.form.dows}'
     OBJECTS d = DOW
     PROPERTIES(d) READONLY staticCaption, numberM
-    ORDER numberM(d)
+    ORDERS numberM(d)
     LIST DOW OBJECT d
 ;
 

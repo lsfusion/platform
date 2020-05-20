@@ -923,9 +923,21 @@ callWithJQuery ($) ->
                 .addClass('pvtRendererArea')
                 .appendTo(tr2)
 
+            pivotRendererHeader = $("<div>")
+                .addClass('pvtRendererHeader')
+                .appendTo(pivotTable)
+
+            pivotRendererBody  = $("<div>")
+                .addClass('pvtRendererBody')
+                .appendTo(pivotTable)
+
+            pivotRendererFooter = $("<div>")
+            .addClass('pvtRendererFooter')
+            .appendTo(pivotTable)
+
             pivotScrollDiv = $("<div>")
                 .addClass('pvtRendererScrollDiv')
-                .appendTo(pivotTable)
+                .appendTo(pivotRendererBody)
             
             #finally the renderer dropdown and unused attribs are inserted at the requested location
             if opts.unusedAttrsVertical == true or unusedAttrsVerticalAutoOverride

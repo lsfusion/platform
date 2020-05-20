@@ -1,5 +1,6 @@
 package lsfusion.client.controller.remote;
 
+import lsfusion.base.ReflectionUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.controller.MainController;
 
@@ -40,7 +41,10 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
     @Override
     public Class<?> loadClass(String codebase, String name, ClassLoader defaultLoader) throws MalformedURLException, ClassNotFoundException {
         try {
-            return sun.rmi.server.LoaderHandler.loadClass(codebase, name, defaultLoader);
+            Class loadHandlerClass = Class.forName("sun.rmi.server.LoaderHandler");
+            return ReflectionUtils.getStaticMethodValue(loadHandlerClass, "loadClass",
+                    new Class[] {String.class, String.class, ClassLoader.class}, new Object[]{codebase, name, defaultLoader});
+            //return sun.rmi.server.LoaderHandler.loadClass(codebase, name, defaultLoader);
         } catch (ClassNotFoundException ce) {
             if (MainController.remoteLogics != null) {
                 return remoteLoader.loadClass(name);
@@ -52,13 +56,17 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
     @Override
     public Class<?> loadProxyClass(String codebase, String[] interfaces, ClassLoader defaultLoader) throws MalformedURLException, ClassNotFoundException {
         try {
-            return sun.rmi.server.LoaderHandler.loadProxyClass(codebase, interfaces, defaultLoader);
+            Class loadHandlerClass = Class.forName("sun.rmi.server.LoaderHandler");
+            return ReflectionUtils.getStaticMethodValue(loadHandlerClass, "loadProxyClass", new Class[] {String.class, String[].class, ClassLoader.class}, new Object[] {codebase, interfaces, defaultLoader});
+            //return sun.rmi.server.LoaderHandler.loadProxyClass(codebase, interfaces, defaultLoader);
         } catch (ClassNotFoundException ce) {
             if (MainController.remoteLogics != null) {
                 for (String iFace : interfaces) {
                     loadClass(codebase, iFace, defaultLoader);
                 }
-                return sun.rmi.server.LoaderHandler.loadProxyClass(codebase, interfaces, remoteLoader);
+                Class loadHandlerClass = Class.forName("sun.rmi.server.LoaderHandler");
+                return ReflectionUtils.getStaticMethodValue(loadHandlerClass, "loadProxyClass", new Class[] {String.class, String[].class, ClassLoader.class}, new Object[] {codebase, interfaces, remoteLoader});
+                //return sun.rmi.server.LoaderHandler.loadProxyClass(codebase, interfaces, remoteLoader);
             } else
                 throw ce;
         }
@@ -66,11 +74,24 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
 
     @Override
     public ClassLoader getClassLoader(String codebase) throws MalformedURLException {
-        return sun.rmi.server.LoaderHandler.getClassLoader(codebase);
+        Class loadHandlerClass = ReflectionUtils.classForName("sun.rmi.server.LoaderHandler");
+        if(loadHandlerClass != null) {
+            return ReflectionUtils.getStaticMethodValue(loadHandlerClass, "getClassLoader", new Class[] {String.class}, new Object[] {codebase});
+            //sun.rmi.server.LoaderHandler.getClassLoader(codebase)
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String getClassAnnotation(Class<?> cl) {
-        return sun.rmi.server.LoaderHandler.getClassAnnotation(cl);
+        Class loadHandlerClass = ReflectionUtils.classForName("sun.rmi.server.LoaderHandler");
+        if(loadHandlerClass != null) {
+            return ReflectionUtils.getStaticMethodValue(loadHandlerClass, "getClassAnnotation", new Class[] {Class.class}, new Object[] {cl});
+            //return sun.rmi.server.LoaderHandler.getClassAnnotation(cl);
+        } else {
+            return null;
+        }
+
     }
 }
