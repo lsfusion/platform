@@ -426,6 +426,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             }});
     }
 
+    @IdentityLazy
+    public ImSet<GroupObjectEntity> getAllGroupColumns() {
+        return getPropertyDrawsList().getCol().mapMergeSetSetValues(propertyDraw -> propertyDraw.getColumnGroupObjects().getSet());
+    }
+
     public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
     }
@@ -904,7 +909,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     // means that group object is apparently used as a group-to-columns (or filter parameter)
     @IdentityLazy
     public boolean hasNoProperties(GroupObjectEntity group) {
-        return getGroupProperties(SetFact.EMPTY(), true).get(group) == null;
+        return getAllGroupProperties(SetFact.EMPTY(), true).get(group) == null;
+    }
+
+    @IdentityLazy
+    public boolean usedAsGroupColumn(GroupObjectEntity group) {
+        return getAllGroupColumns().contains(group);
     }
 
     @IdentityInstanceLazy

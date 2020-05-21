@@ -126,6 +126,13 @@ public abstract class ACol<K> extends AColObject implements ImCol<K> {
         return mResult.immutable();
     }
 
+    public <M> ImSet<M> mapMergeSetSetValues(Function<K, ImSet<M>> getter) {
+        MSet<M> mResult = SetFact.mSet();
+        for(int i=0,size=size();i<size;i++)
+            mResult.addAll(getter.apply(get(i)));
+        return mResult.immutable();
+    }
+
     public ImList<K> toList() {
         MList<K> mResult = ListFact.mList(size());
         for(int i=0,size=size();i<size;i++)

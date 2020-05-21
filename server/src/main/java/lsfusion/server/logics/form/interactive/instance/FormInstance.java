@@ -242,7 +242,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             groupObject.order = i;
             groupObject.setClassListener(classListener);
             if(groupObject.pageSize == null)
-                groupObject.pageSize = entity.hasNoProperties(groupObject.entity) ? 0 : Settings.get().getPageSizeDefaultValue();
+                groupObject.pageSize = entity.hasNoProperties(groupObject.entity) ? (entity.usedAsGroupColumn(groupObject.entity) ? 0 : 1) : Settings.get().getPageSizeDefaultValue();
         }
 
         for (TreeGroupEntity treeGroup : entity.getTreeGroupsIt()) {
