@@ -245,7 +245,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         annotationProperty = findProperty("annotation[Property]");
         statsProperty = findProperty("stats[Property]");
         overStatsProperty = findProperty("overStats[Property]");
-        maxStatsProperty = findProperty("maxStatsProperty[]");
+        maxStatsProperty = findProperty("overMaxStatsProperty[]");
         numberProperty = findProperty("number[ActionOrProperty]");
         dbNameProperty = findProperty("dbName[Property]");
         canonicalNameActionOrProperty = findProperty("canonicalName[ActionOrProperty]");

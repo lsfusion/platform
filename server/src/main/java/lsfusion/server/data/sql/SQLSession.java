@@ -2385,7 +2385,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             String tableName = syntax.getSessionTableName(table);
             if(useDeleteFrom) {
                 executeDML("DELETE FROM " + tableName, owner, tableOwner, registerChange);
-                executeDML(syntax.getVacuum(tableName), owner, tableOwner, registerChange);
+                if(!isInTransaction())
+                    executeDML(syntax.getVacuum(tableName), owner, tableOwner, registerChange);
             } else
                 executeDDL("TRUNCATE TABLE " + tableName, StaticExecuteEnvironmentImpl.NOREADONLY, owner, registerChange); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
         }
