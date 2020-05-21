@@ -4,20 +4,31 @@ REQUIRE System;
 
 GROUP loadDefault '{default.data.load.default}' : public;
 
-loadDefaultData '{default.data.load.default.data}'  ABSTRACT LIST( );
+loadDefaultData ABSTRACT LIST();
+failedLoadDefaultData = DATA LOCAL BOOLEAN ();
+
+fillDefaultData '{default.data.load.default.data}' {
+    NEWSESSION {
+        loadDefaultData();
+        IF NOT failedLoadDefaultData() THEN
+            APPLY;
+    }
+}
 
 FORM defaultData '{default.data.form.default.data}'
-    PROPERTIES() loadDefaultData
+    PROPERTIES() fillDefaultData
 ;
 DESIGN defaultData {
-    NEW pane BEFORE TOOLBARBOX {
-        fill = 1;
-        type = TABBED;
-        NEW commons {
-            type = COLUMNS;
-            columns = 3;
-            caption = '{default.data.form.default.data.caption.general}';
-            MOVE PROPERTY(loadDefaultData());
+    OBJECTS {
+        MOVE PROPERTY(fillDefaultData());
+        NEW pane {
+            fill = 1;
+            type = TABBED;
+            NEW commons {
+                type = COLUMNS;
+                columns = 3;
+                caption = '{default.data.form.default.data.caption.general}';
+            }
         }
     }
 }
@@ -29,7 +40,7 @@ NAVIGATOR {
 }
 
 META implementLoadDefaultData (property)
-    loadDefaultData () + {  property(); }
+    loadDefaultData () + { property(); }
     EXTEND FORM defaultData
         PROPERTIES() property
     ;

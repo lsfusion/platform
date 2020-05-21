@@ -328,11 +328,10 @@ META applicationForm(sid, name)
     FORM sid name;
     
     DESIGN sid {
-        BOX {
-            NEW pane BEFORE TOOLBARBOX {
+        OBJECTS {
+            NEW pane {
+                fill = 1;
                 type = TABBED;
-                flex = 1;
-                align = STRETCH;
                 NEW commons {
                     caption = '{system.form.sid.name.caption.commons}';
                 }
