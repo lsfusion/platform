@@ -44,8 +44,8 @@ public class GPivot extends GStateTableView {
     }
 
     @Override
-    public GGridViewType getViewType() {
-        return GGridViewType.PIVOT;
+    public GListViewType getViewType() {
+        return GListViewType.PIVOT;
     }
 
     // we need key / value view since pivot

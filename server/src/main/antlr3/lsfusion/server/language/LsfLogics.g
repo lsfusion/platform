@@ -612,7 +612,7 @@ propertyClassViewType returns [ClassViewType type]
 	;
 
 listViewType returns [ListViewType type, PivotOptions options]
-	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = ListViewType.DEFAULT;})? opt = pivotOptions {$options = $opt.options; }
+	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }
 	|   'MAP' {$type = ListViewType.MAP;}
     ;
 
@@ -1236,7 +1236,7 @@ formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = 
 	;
 
 propertyDrawOrder returns [boolean order = true]
-	:	'ORDERX' ('DESC' { $order = false; })?
+	:	'ORDER' ('DESC' { $order = false; })?
 	;
 
 formPivotOptionsDeclaration
@@ -1269,7 +1269,6 @@ pivotOptions returns [PivotOptions options = new PivotOptions()]
     (   t=stringLiteral { $options.setType($t.val); }
     |   a=propertyGroupType { $options.setAggregation($a.type); }
     |   ('SETTINGS'  { $options.setShowSettings(true); } | 'NOSETTINGS'  { $options.setShowSettings(false); })
-    |    ('DEFAULT' | 'NODEFAULT')
     )*
     ;
 

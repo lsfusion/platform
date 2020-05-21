@@ -43,10 +43,10 @@ public class FormPropertyOptions {
     private String integrationSID;
     private PropertyDrawEntity neighbourPropertyDraw;
     private Boolean order;
-    private boolean filter;
-    private boolean pivotRow;
-    private boolean pivotColumn;
-    private boolean pivotMeasure;
+    private Boolean filter;
+    private Boolean pivotColumn;
+    private Boolean pivotRow;
+    private Boolean pivotMeasure;
 
     // for pivoting
     public String formula;
@@ -357,35 +357,35 @@ public class FormPropertyOptions {
         this.order = order;
     }
 
-    public boolean isFilter() {
+    public Boolean getFilter() {
         return filter;
     }
 
-    public void setFilter(boolean filter) {
+    public void setFilter(Boolean filter) {
         this.filter = filter;
     }
 
-    public boolean isPivotRow() {
-        return pivotRow;
-    }
-
-    public void setPivotRow(boolean pivotRow) {
-        this.pivotRow = pivotRow;
-    }
-
-    public boolean isPivotColumn() {
+    public Boolean getPivotColumn() {
         return pivotColumn;
     }
 
-    public void setPivotColumn(boolean pivotColumn) {
+    public void setPivotColumn(Boolean pivotColumn) {
         this.pivotColumn = pivotColumn;
     }
 
-    public boolean isPivotMeasure() {
+    public Boolean getPivotRow() {
+        return pivotRow;
+    }
+
+    public void setPivotRow(Boolean pivotRow) {
+        this.pivotRow = pivotRow;
+    }
+
+    public Boolean getPivotMeasure() {
         return pivotMeasure;
     }
 
-    public void setPivotMeasure(boolean pivotMeasure) {
+    public void setPivotMeasure(Boolean pivotMeasure) {
         this.pivotMeasure = pivotMeasure;
     }
 
@@ -428,11 +428,11 @@ public class FormPropertyOptions {
         merged.setGroupName(nvl(overrides.getGroupName(), groupName));
 
         merged.setOrder(nvl(overrides.getOrder(), order));
-        merged.setFilter(nvl(overrides.isFilter(), filter));
+        merged.setFilter(nvl(overrides.getFilter(), filter));
 
-        merged.setPivotColumn(nvl(overrides.isPivotColumn(), pivotColumn));
-        merged.setPivotRow(nvl(overrides.isPivotRow(), pivotRow));
-        merged.setPivotMeasure(nvl(overrides.isPivotMeasure(), pivotMeasure));
+        merged.setPivotColumn(nvl(overrides.getPivotColumn(), pivotColumn));
+        merged.setPivotRow(nvl(overrides.getPivotRow(), pivotRow));
+        merged.setPivotMeasure(nvl(overrides.getPivotMeasure(), pivotMeasure));
 
         return merged;
     }

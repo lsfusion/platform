@@ -545,14 +545,18 @@ public class ScriptingFormEntity {
         if(order != null)
             form.addDefaultOrder(property, order, version);
 
-        if(options.isFilter())
+        Boolean filter = options.getFilter();
+        if(filter != null && filter)
             form.addFixedFilter(new FilterEntity(property.getPropertyObjectEntity()), version);
 
-        if(options.isPivotColumn())
+        Boolean pivotColumn = options.getPivotColumn();
+        if(pivotColumn != null && pivotColumn)
             form.addPivotColumn(property, version);
-        if(options.isPivotRow())
+        Boolean pivotRow = options.getPivotRow();
+        if(pivotRow != null && pivotRow)
             form.addPivotRow(property, version);
-        if(options.isPivotMeasure())
+        Boolean pivotMeasure = options.getPivotMeasure();
+        if(pivotMeasure != null && pivotMeasure)
             form.addPivotMeasure(property, version);
     }
 

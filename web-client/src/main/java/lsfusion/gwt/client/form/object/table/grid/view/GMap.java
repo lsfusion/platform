@@ -80,8 +80,8 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
     }
 
     @Override
-    public GGridViewType getViewType() {
-        return GGridViewType.MAP;
+    public GListViewType getViewType() {
+        return GListViewType.MAP;
     }
 
     protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {
