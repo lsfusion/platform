@@ -234,7 +234,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
-        if(group.classView.isGrid()) {
+        if(group.classView.isGrid() && !group.isInTree()) {
             BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
             PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
