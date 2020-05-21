@@ -100,7 +100,6 @@
         <javax.ejb.api.version>3.2.2</javax.ejb.api.version>
 
         <javax.xml.bind.version>2.3.0</javax.xml.bind.version>
-        <javax.activation.version>1.1.1</javax.activation.version>
 
         <asm.version>5.0.4</asm.version>
 
@@ -613,9 +612,9 @@
                 <version>${javax.xml.bind.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.activation</groupId>
-                <artifactId>activation</artifactId>
-                <version>${javax.activation.version}</version>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>1.2.1</version>
             </dependency>
 
             <!--optional dependencies-->

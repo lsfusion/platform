@@ -86,8 +86,9 @@ tableSID '{reflection.table.sid.property}' = DATA STRING[100] (Property);
 
 stats '{reflection.stats.property}' = DATA INTEGER (Property);
 maxStatsProperty '{reflection.max.stats.property}' = DATA INTEGER ();
-CONSTRAINT SET (userLoggable(Property p)) AND maxStatsProperty() AND stats(p) > maxStatsProperty() 
-           MESSAGE '{reflection.constraint.max.stats.property} ' + maxStatsProperty();
+overMaxStatsProperty = OVERRIDE maxStatsProperty(), 2000000000;
+CONSTRAINT SET (userLoggable(Property p)) AND overMaxStatsProperty() AND stats(p) > overMaxStatsProperty() 
+           MESSAGE '{reflection.constraint.max.stats.property} ' + overMaxStatsProperty();
            
 webServerUrl '{reflection.web.server.url}' = DATA BPSTRING[100]();
 

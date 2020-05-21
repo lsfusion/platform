@@ -22,7 +22,7 @@
                         by: "by"
                     },
                     plotly: {},
-                    plotlyConfig: {}
+                    plotlyConfig: { responsive: true }
                 };
                 opts = $.extend(true, {}, defaults, opts);
                 rowKeys = pivotData.getRowKeys();
@@ -83,8 +83,7 @@
                 layout = {
                     title: titleText,
                     hovermode: 'closest',
-                    width: window.innerWidth / 1.4,
-                    height: window.innerHeight / 1.4 - 50
+                    autosize: true
                 };
                 if (traceOptions.type === 'pie') {
                     columns = Math.ceil(Math.sqrt(data.length));
@@ -171,8 +170,7 @@
                         title: pivotData.rowAttrs.join('-'),
                         automargin: true
                     },
-                    width: window.innerWidth / 1.5,
-                    height: window.innerHeight / 1.4 - 50
+                    autosize: true
                 };
                 renderArea = $("<div>", {
                     style: "display:none;"
