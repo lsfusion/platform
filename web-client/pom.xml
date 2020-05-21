@@ -157,6 +157,7 @@
                             <draftCompile>false</draftCompile>
                             <optimizationLevel>1</optimizationLevel>
                             <style>DETAILED</style>
+                            <extraJvmArgs>-Xmx2512m</extraJvmArgs>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -345,11 +346,6 @@
             <groupId>com.thetransactioncompany</groupId>
             <artifactId>cors-filter</artifactId>
             <version>2.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.activation</groupId>
-            <artifactId>jakarta.activation-api</artifactId>
         </dependency>
     </dependencies>
 </project>
