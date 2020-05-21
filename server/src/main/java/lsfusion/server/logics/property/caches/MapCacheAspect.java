@@ -432,7 +432,7 @@ public class MapCacheAspect {
             for(CacheResult<QueryInterfaceImplement<K>, ValuesContext> cache : hashCaches.it()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
                     if(cache.implement.translateValues(mapValues).equals(implement)) {
-                        if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
+                        if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges, calcType)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
                             cachedImplement = cache.implement;
                             break;
                         }
@@ -455,7 +455,7 @@ public class MapCacheAspect {
                     if(!(checkCaches && cacheQuery!=null)) {
                         cacheNoBig(implement, hashCaches, query);
                     }
-                    implement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges);
+                    implement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges, calcType);
                 } else
                     cachedImplement.cachedPrereadHintEnabled = true;
 
@@ -556,13 +556,15 @@ public class MapCacheAspect {
 
     public static boolean disableCaches = false;
     
-    // должно быть consistent с SessionModifier.allowPrereadValues
-    // нужен чтобы не подцелялись кэши, когда хинты были отключены (так как тогда preread тогда срабатывать не будут)
-    private static boolean prereadHintEnabled(Property property, PropertyChanges propertyChanges) {
-        if(!property.hasPreread(propertyChanges)) // если не complex, то preread'ов не может быть
-            return true;
+    // has to be consistent с SessionModifier.allowPrereadValues
+    // we need this check to avoid using caches, that where calculated when hints were disabled
+    private static boolean prereadHintEnabled(Property property, PropertyChanges propertyChanges, CalcType calcType) {
+        return !calcType.isExpr() || modifierHasPrereadAndIsNotPreread() || !property.hasPreread(propertyChanges);
+    }
+
+    private static boolean modifierHasPrereadAndIsNotPreread() {
         SessionModifier modifier = AutoHintsAspect.catchAutoHint.get();
-        return modifier != null && modifier.prereadProps.isEmpty(); // если есть SessionModifier и это не preread разрешаем использовать кэш (предполагается что остальные параметры allowPrereadValues уже включены в ключи кэша) 
+        return modifier != null && modifier.prereadProps.isEmpty(); // if there is SessionModifier and it's not preread execution allow using cache (it is assumed that all other parameters used in allowPrereadValues are alread included in the cache key)
     }
 
     public <K extends PropertyInterface> Expr getJoinExpr(Property<K> property, ImMap<K, Expr> joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
@@ -582,7 +584,7 @@ public class MapCacheAspect {
             for(CacheResult<JoinExprInterfaceImplement<K>, ExprResult> cache : hashCaches.it()) {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
-                    if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
+                    if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges, calcType)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
                         cachedImplement = cache.implement;
                         break;
                     }
@@ -605,7 +607,7 @@ public class MapCacheAspect {
             logger.debug("getExpr - not cached "+property);
             if(cachedImplement == null) { // если кэша не было
                 cacheNoBig(implement, hashCaches, new ExprResult(expr, changedWheres != null ? cacheWheres.toWhere() : null));
-                implement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges);
+                implement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges, calcType);
             } else
                 cachedImplement.cachedPrereadHintEnabled = true;
             if(checkCaches && cacheResult != null)

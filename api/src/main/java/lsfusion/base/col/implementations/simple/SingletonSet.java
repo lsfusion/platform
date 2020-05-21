@@ -150,6 +150,10 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return SetFact.singleton(getter.apply(key));
     }
 
+    public <M> ImSet<M> mapMergeSetSetValues(Function<K, ImSet<M>> getter) {
+        return getter.apply(key);
+    }
+
     public <M> ImMap<M, K> mapColKeys(IntFunction<M> getter) {
         return MapFact.<M, K>singleton(getter.apply(0), key);
     }

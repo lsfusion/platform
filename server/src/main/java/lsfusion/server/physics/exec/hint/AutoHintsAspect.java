@@ -255,20 +255,20 @@ public class AutoHintsAspect {
     }
     private static Object getQuery(ProceedingJoinPoint thisJoinPoint, Property property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
         assert property.isNotNull(calcType.getAlgInfo());
-        
-        if(!property.isFull(calcType.getAlgInfo()) || !calcType.isExpr())
+
+        if(!calcType.isExpr() || !property.isFull(calcType.getAlgInfo()))
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
-        if(calcType.isExpr() && catchHint!=null && catchHint.allowPrereadValues(property,interfaceValues)) // если есть не "прочитанные" параметры - значения, вычисляем
+        if(catchHint != null && catchHint.allowPrereadValues(property, interfaceValues)) // если есть не "прочитанные" параметры - значения, вычисляем
             throw new HintException(new PrereadHint(property, interfaceValues));
 
         IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
         if(queryType == PropertyQueryType.RECURSIVE)
             return result;
 
-        if(calcType.isExpr() && catchHint != null && !propChanges.isEmpty() // проверка на пустоту для оптимизации при старте 
-                && catchHint.allowHintIncrement(property) && !property.isNoHint()) { // неправильно так как может быть не changed
+        // проверка на пустоту для оптимизации при старте
+        if(catchHint != null && !propChanges.isEmpty() && catchHint.allowHintIncrement(property) && !property.isNoHint()) { // неправильно так как может быть не changed
             Where changed = null;
             if(queryType.needChange())
                 changed = result.getExpr("changed").getWhere();

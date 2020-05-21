@@ -35,6 +35,7 @@ public interface ImCol<T> extends Iterable<T> {
     <M> ImSet<M> mapColSetValues(IntObjectFunction<T, M> getter);
     <M> ImSet<M> mapColSetValues(Function<T, M> getter);
     <M> ImSet<M> mapMergeSetValues(Function<T, M> getter);
+    <M> ImSet<M> mapMergeSetSetValues(Function<T, ImSet<M>> getter);
 
     <M> ImMap<M, T> mapColKeys(IntFunction<M> getter);
 
