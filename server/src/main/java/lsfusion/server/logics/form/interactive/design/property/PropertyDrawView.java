@@ -130,7 +130,7 @@ public class PropertyDrawView extends ComponentView {
     @Override
     public double getBaseDefaultFlex(FormEntity formEntity) {
         ContainerView container = getLayoutParamContainer();
-        if(((container != null && container.isHorizontal()) || entity.isGrid(formEntity)) && isHorizontalValueFlex()) // если верхний контейнер горизонтальный или grid и свойство - flex, возвращаем -2 
+        if(((container != null && container.isHorizontal()) || entity.isList(formEntity)) && isHorizontalValueFlex()) // если верхний контейнер горизонтальный или grid и свойство - flex, возвращаем -2
             return -2; // выставляем flex - равный ширине
         return super.getBaseDefaultFlex(formEntity);
     }
@@ -256,7 +256,7 @@ public class PropertyDrawView extends ComponentView {
 
         pool.writeObject(outStream, format);
 
-        outStream.writeBoolean(entity.isGrid(pool.context.view.entity));
+        outStream.writeBoolean(entity.isList(pool.context.view.entity));
 
         pool.writeObject(outStream, focusable);
         outStream.writeByte(entity.getEditType().serialize());

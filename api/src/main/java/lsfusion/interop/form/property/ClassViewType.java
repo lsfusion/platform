@@ -1,9 +1,9 @@
 package lsfusion.interop.form.property;
 
 public enum ClassViewType {
-    PANEL, TOOLBAR, GRID;
+    PANEL, TOOLBAR, LIST;
 
-    public static ClassViewType DEFAULT = GRID;
+    public static ClassViewType DEFAULT = LIST;
     
     public boolean isPanel() {
         return this == PANEL || this == TOOLBAR;
@@ -13,7 +13,7 @@ public enum ClassViewType {
         return this == TOOLBAR;
     }
 
-    public boolean isGrid() {
-        return this == GRID;
+    public boolean isList() {
+        return this == LIST;
     }
 }

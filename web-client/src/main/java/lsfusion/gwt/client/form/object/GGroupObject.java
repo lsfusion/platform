@@ -3,8 +3,10 @@ package lsfusion.gwt.client.form.object;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GClassViewType;
+import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GRowBackgroundReader;
 import lsfusion.gwt.client.form.property.GRowForegroundReader;
 
@@ -24,7 +26,9 @@ public class GGroupObject implements Serializable {
     public int ID;
     public String sID;
 
-    public GClassViewType classView;
+    public GClassViewType viewType;
+    public GListViewType listViewType;
+    public GPivotOptions pivotOptions;
 
     public boolean isRecursive;
     public GTreeGroup parent;

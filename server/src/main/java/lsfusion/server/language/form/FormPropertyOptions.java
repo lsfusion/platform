@@ -34,7 +34,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity foreground;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
-    private ClassViewType forceViewType;
+    private ClassViewType viewType;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
@@ -42,6 +42,11 @@ public class FormPropertyOptions {
     private String eventId;
     private String integrationSID;
     private PropertyDrawEntity neighbourPropertyDraw;
+    private Boolean order;
+    private Boolean filter;
+    private Boolean pivotColumn;
+    private Boolean pivotRow;
+    private Boolean pivotMeasure;
 
     // for pivoting
     public String formula;
@@ -169,12 +174,12 @@ public class FormPropertyOptions {
         this.footer = footer;
     }
 
-    public void setForceViewType(ClassViewType forceViewType) {
-        this.forceViewType = forceViewType;
+    public ClassViewType getViewType() {
+        return viewType;
     }
 
-    public ClassViewType getForceViewType() {
-        return forceViewType;
+    public void setViewType(ClassViewType viewType) {
+        this.viewType = viewType;
     }
 
     public void setToDraw(GroupObjectEntity toDraw) {
@@ -344,6 +349,46 @@ public class FormPropertyOptions {
         this.groupName = groupName;
     }
 
+    public Boolean getOrder() {
+        return order;
+    }
+
+    public void setOrder(Boolean order) {
+        this.order = order;
+    }
+
+    public Boolean getFilter() {
+        return filter;
+    }
+
+    public void setFilter(Boolean filter) {
+        this.filter = filter;
+    }
+
+    public Boolean getPivotColumn() {
+        return pivotColumn;
+    }
+
+    public void setPivotColumn(Boolean pivotColumn) {
+        this.pivotColumn = pivotColumn;
+    }
+
+    public Boolean getPivotRow() {
+        return pivotRow;
+    }
+
+    public void setPivotRow(Boolean pivotRow) {
+        this.pivotRow = pivotRow;
+    }
+
+    public Boolean getPivotMeasure() {
+        return pivotMeasure;
+    }
+
+    public void setPivotMeasure(Boolean pivotMeasure) {
+        this.pivotMeasure = pivotMeasure;
+    }
+
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
@@ -361,7 +406,7 @@ public class FormPropertyOptions {
         merged.setForeground(nvl(overrides.getForeground(), foreground));
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
-        merged.setForceViewType(nvl(overrides.getForceViewType(), forceViewType));
+        merged.setViewType(nvl(overrides.getViewType(), viewType));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));
@@ -381,6 +426,14 @@ public class FormPropertyOptions {
 
         merged.setAttr(nvl(overrides.getAttr(), attr));
         merged.setGroupName(nvl(overrides.getGroupName(), groupName));
+
+        merged.setOrder(nvl(overrides.getOrder(), order));
+        merged.setFilter(nvl(overrides.getFilter(), filter));
+
+        merged.setPivotColumn(nvl(overrides.getPivotColumn(), pivotColumn));
+        merged.setPivotRow(nvl(overrides.getPivotRow(), pivotRow));
+        merged.setPivotMeasure(nvl(overrides.getPivotMeasure(), pivotMeasure));
+
         return merged;
     }
     

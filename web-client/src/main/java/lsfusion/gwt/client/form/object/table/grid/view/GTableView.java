@@ -77,7 +77,7 @@ public interface GTableView {
 
     int getPageSize();
     boolean isGroup();
-    GGridViewType getViewType();
+    GListViewType getViewType();
     
     void afterAppliedChanges(); // after apply changed
 }

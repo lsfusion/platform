@@ -192,7 +192,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP fillingIDs;
 
-    public ConcreteCustomClass gridViewType;
+    public ConcreteCustomClass listViewType;
     public LP count;
     public LP isPivot;
 
@@ -498,9 +498,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         defaultForegroundColor = findProperty("defaultForegroundColor[]");
         defaultOverrideForegroundColor = findProperty("defaultOverrideForegroundColor[]");
 
-        gridViewType = (ConcreteCustomClass) findClass("GridViewType");
+        listViewType = (ConcreteCustomClass) findClass("ListViewType");
         count = findProperty("count[]");
-        isPivot = findProperty("isPivot[GridViewType]");
+        isPivot = findProperty("isPivot[ListViewType]");
 
         initNavigators();
     }

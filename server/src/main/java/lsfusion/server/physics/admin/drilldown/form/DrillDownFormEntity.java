@@ -45,7 +45,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
             ObjectEntity paramObject = addSingleGroupObject(interfaceClasses.get(pi), version);
             addPropertyDraw(paramObject, version, LM.getRecognizeGroup());
             addPropertyDraw(LM.getObjValueProp(this, paramObject), version, paramObject);
-            paramObject.groupTo.setPanelClassView();
+            paramObject.groupTo.setViewTypePanel();
 
             mInterfaceObjects.revAdd(pi, paramObject);
             mParamObjects.exclAdd(paramObject);

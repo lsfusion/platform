@@ -6,7 +6,6 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
@@ -18,7 +17,9 @@ import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.object.AbstractGroupObject;
+import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.DataInputStream;
@@ -37,7 +38,9 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public boolean isMap;
 
-    public ClassViewType classView;
+    public ClassViewType viewType;
+    public ListViewType listViewType;
+    public PivotOptions pivotOptions;
 
     public ClientGrid grid;
     public ClientToolbar toolbar;
@@ -116,7 +119,9 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        classView = pool.readObject(inStream);
+        viewType = pool.readObject(inStream);
+        listViewType = pool.readObject(inStream);
+        pivotOptions = pool.readObject(inStream);
 
         pool.deserializeCollection(objects, inStream);
 

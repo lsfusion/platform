@@ -20,6 +20,7 @@ import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
@@ -625,14 +626,15 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Boolean shouldBeLast;
 
         // для всех
-        private ClassViewType forceViewType;
-        
+        private ClassViewType viewType;
+        private PivotOptions pivotOptions;
+
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form) {
             entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
-            entity.forceViewType = forceViewType;
+            entity.viewType = viewType;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
             entity.eventID = eventID;
@@ -722,8 +724,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(shouldBeLast == null)
                 setShouldBeLast(options.shouldBeLast);
             
-            if(forceViewType == null)
-                setForceViewType(options.forceViewType);
+            if(viewType == null)
+                setViewType(options.viewType);
+            if(pivotOptions == null)
+                setPivotOptions(options.pivotOptions);
             
             processors = options.processors.addList(processors);
         }
@@ -825,8 +829,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             this.shouldBeLast = shouldBeLast;
         }
 
-        public void setForceViewType(ClassViewType forceViewType) {
-            this.forceViewType = forceViewType;
+        public void setViewType(ClassViewType viewType) {
+            this.viewType = viewType;
+        }
+
+        public void setPivotOptions(PivotOptions pivotOptions) {
+            this.pivotOptions = pivotOptions;
         }
     }
 

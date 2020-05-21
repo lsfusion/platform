@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.FormEventType;
-import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -122,9 +122,12 @@ public class ScriptingFormEntity {
             }
         }
 
-        ClassViewType viewType = groupObject.viewType;
-        if (viewType != null)
-            groupObj.setClassView(viewType);
+        if (groupObject.viewType != null)
+            groupObj.setViewType(groupObject.viewType);
+        if (groupObject.listViewType != null)
+            groupObj.setListViewType(groupObject.listViewType);
+        if(groupObject.pivotOptions != null)
+            groupObj.setPivotOptions(groupObject.pivotOptions);
 
         if (groupObject.pageSize != null) {
             groupObj.pageSize = groupObject.pageSize;
@@ -469,8 +472,8 @@ public class ScriptingFormEntity {
         }
 
         property.setPropertyExtra(options.getReadOnlyIf(), PropertyDrawExtraType.READONLYIF);
-        if (options.getForceViewType() != null) {
-            property.forceViewType = options.getForceViewType();
+        if (options.getViewType() != null) {
+            property.viewType = options.getViewType();
         }
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();
@@ -537,6 +540,24 @@ public class ScriptingFormEntity {
         Boolean attr = options.getAttr();
         if(attr != null)
             property.attr = attr;
+
+        Boolean order = options.getOrder();
+        if(order != null)
+            form.addDefaultOrder(property, order, version);
+
+        Boolean filter = options.getFilter();
+        if(filter != null && filter)
+            form.addFixedFilter(new FilterEntity(property.getPropertyObjectEntity()), version);
+
+        Boolean pivotColumn = options.getPivotColumn();
+        if(pivotColumn != null && pivotColumn)
+            form.addPivotColumn(property, version);
+        Boolean pivotRow = options.getPivotRow();
+        if(pivotRow != null && pivotRow)
+            form.addPivotRow(property, version);
+        Boolean pivotMeasure = options.getPivotMeasure();
+        if(pivotMeasure != null && pivotMeasure)
+            form.addPivotMeasure(property, version);
     }
 
     private void movePropertyDraw(PropertyDrawEntity property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -684,6 +705,19 @@ public class ScriptingFormEntity {
             form.addDefaultOrder(properties.get(i), orders.get(i), version);
             form.addDefaultOrderView(properties.get(i), orders.get(i), version);
         }
+    }
+
+    public void addPivotOptions(List<Pair<String, PivotOptions>> pivotOptionsList, List<List<PropertyDrawEntity>> pivotColumns,
+                                List<List<PropertyDrawEntity>> pivotRows, List<PropertyDrawEntity> pivotMeasures, Version version) {
+        for(Pair<String, PivotOptions> entry : pivotOptionsList) {
+            GroupObjectEntity groupObject = form.getNFGroupObject(entry.first, version);
+            if (groupObject != null) {
+                groupObject.setPivotOptions(entry.second);
+            }
+        }
+        form.addPivotColumns(pivotColumns, version);
+        form.addPivotRows(pivotRows, version);
+        form.addPivotMeasures(pivotMeasures, version);
     }
 
     public void setAsDialogForm(String className, String objectID, Version version) throws ScriptingErrorLog.SemanticErrorException {

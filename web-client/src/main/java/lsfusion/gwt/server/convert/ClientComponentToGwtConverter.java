@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculations;
+import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -45,15 +46,14 @@ import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.interop.form.property.PropertyGroupType;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.gwt.server.convert.StaticConverters.convertColor;
 
@@ -312,7 +312,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.changeMouse = convertOrCast(clientPropertyDraw.changeMouse);
         propertyDraw.changeMousePriority = clientPropertyDraw.changeMousePriority;
 
-        propertyDraw.grid = clientPropertyDraw.grid;
+        propertyDraw.grid = clientPropertyDraw.isList;
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
 
@@ -526,7 +526,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
         groupObject.filter = convertOrCast(clientGroupObject.filter);
-        groupObject.classView = GClassViewType.valueOf(clientGroupObject.classView.name());
+        groupObject.viewType = GClassViewType.valueOf(clientGroupObject.viewType.name());
+        groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());
+
+        groupObject.pivotOptions = convertOrCast(clientGroupObject.pivotOptions);
 
         groupObject.isRecursive = clientGroupObject.isRecursive;
         groupObject.isMap = clientGroupObject.isMap;
@@ -541,6 +544,18 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
 
         return groupObject;
+    }
+
+    @Cached
+    @Converter(from = PivotOptions.class)
+    public GPivotOptions convertPivotOptions(PivotOptions pivotOptions) {
+        return new GPivotOptions(pivotOptions.getType(), convertGroupType(pivotOptions.getAggregation()), pivotOptions.getShowSettings());
+    }
+
+    @Cached
+    @Converter(from = PropertyGroupType.class)
+    public GPropertyGroupType convertGroupType(PropertyGroupType groupType) {
+        return groupType != null ? GPropertyGroupType.valueOf(groupType.name()) : null;
     }
 
     @Cached
@@ -590,6 +605,24 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             form.defaultOrders.put((GPropertyDraw) convertOrCast(property), clientForm.defaultOrders.get(property));
         }
 
+        form.pivotColumns.addAll(convertPivotPropertiesList(clientForm.pivotColumns));
+        form.pivotRows.addAll(convertPivotPropertiesList(clientForm.pivotRows));
+        for(ClientPropertyDraw property : clientForm.pivotMeasures) {
+            form.pivotMeasures.add(convertOrCast(property));
+        }
+
         return form;
+    }
+
+    private List<List<GPropertyDraw>> convertPivotPropertiesList(List<List<ClientPropertyDraw>> pivotPropertiesList) {
+        List<List<GPropertyDraw>> gPivotPropertiesList = new ArrayList<>();
+        for (List<ClientPropertyDraw> pivotPropertiesEntry : pivotPropertiesList) {
+            List<GPropertyDraw> gPivotPropertiesEntry = new ArrayList<>();
+            for(ClientPropertyDraw property : pivotPropertiesEntry) {
+                gPivotPropertiesEntry.add(convertOrCast(property));
+            }
+            gPivotPropertiesList.add(gPivotPropertiesEntry);
+        }
+        return gPivotPropertiesList;
     }
 }

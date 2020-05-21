@@ -65,7 +65,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public ClientPropertyDraw quickFilterProperty;
 
-    public boolean grid;
+    public boolean isList;
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
@@ -454,7 +454,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         format = pool.readObject(inStream);
         defaultFormat = format;
 
-        grid = inStream.readBoolean();
+        isList = inStream.readBoolean();
 
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());

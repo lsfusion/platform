@@ -1,5 +1,5 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
-public enum  GGridViewType {
+public enum GListViewType {
     GRID, PIVOT, MAP
 }

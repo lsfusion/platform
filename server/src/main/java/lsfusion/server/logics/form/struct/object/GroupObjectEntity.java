@@ -12,7 +12,9 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
+import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.expr.Expr;
@@ -33,7 +35,6 @@ import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
-import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -48,8 +49,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-
-import static lsfusion.interop.form.property.ClassViewType.DEFAULT;
 
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
 
@@ -161,19 +160,21 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.treeGroup = treeGroup; // нужно чтобы IsInTree правильно определялось в addScriptingTreeGroupObject, когда идет addGroupObjectView
     }
 
-    private PropertyRevImplement<ClassPropertyInterface, ObjectEntity> gridViewTypeProp;
-    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getGridViewType(ConcreteCustomClass gridViewType) {
-        if (gridViewTypeProp == null) {
-            gridViewTypeProp = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.EMPTY(), gridViewType, LocalNestedType.ALL);
+    private PropertyRevImplement<ClassPropertyInterface, ObjectEntity> listViewTypeProp;
+    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getListViewType(ConcreteCustomClass listViewType) {
+        if (listViewTypeProp == null) {
+            listViewTypeProp = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.EMPTY(), listViewType, LocalNestedType.ALL);
         }
-        return gridViewTypeProp;
+        return listViewTypeProp;
     }
 
     public GroupObjectEntity(int ID, String sID) {
         super(ID, sID != null ? sID : "groupObj" + ID);
     }
 
-    public ClassViewType classView = DEFAULT;
+    public ClassViewType viewType = ClassViewType.DEFAULT;
+    public ListViewType listViewType = ListViewType.DEFAULT;
+    public PivotOptions pivotOptions;
     public Integer pageSize;
 
     public int getDefaultPageSize() {
@@ -222,20 +223,32 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         isParent = getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity<?>>) i -> properties[i]);
     }
 
-    public void setClassView(ClassViewType type) {
-        classView = type;
+    public void setViewType(ClassViewType viewType) {
+        this.viewType = viewType;
     }
 
-    public void setPanelClassView() {
-        setClassView(ClassViewType.PANEL);
+    public void setListViewType(ListViewType listViewType) {
+        this.listViewType = listViewType;
+    }
+
+    public void setPivotOptions(PivotOptions pivotOptions) {
+        if(this.pivotOptions != null) {
+            this.pivotOptions.merge(pivotOptions);
+        } else {
+            this.pivotOptions = pivotOptions;
+        }
+    }
+
+    public void setViewTypePanel() {
+        setViewType(ClassViewType.PANEL);
     }
     
-    public void setGridClassView() {
-        setClassView(ClassViewType.GRID);
+    public void setViewTypeList() {
+        setViewType(ClassViewType.LIST);
     }
 
     public boolean isPanel() {
-        return classView.isPanel();
+        return viewType.isPanel();
     }
 
     public Pair<Integer, Integer> getScriptIndex() {

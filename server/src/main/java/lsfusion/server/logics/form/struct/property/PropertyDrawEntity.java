@@ -74,7 +74,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String askConfirmMessage;
 
     public Boolean shouldBeLast;
-    public ClassViewType forceViewType; // assert not null, after initialization
+    public ClassViewType viewType; // assert not null, after initialization
     public String eventID;
 
     private String formPath;
@@ -502,16 +502,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public boolean isToolbar(FormEntity formEntity) {
-        if (forceViewType != null)
-            return forceViewType.isToolbar();
+        if (viewType != null)
+            return viewType.isToolbar();
 
         GroupObjectEntity toDraw = getToDraw(formEntity);
-        return toDraw != null && toDraw.classView.isToolbar();
+        return toDraw != null && toDraw.viewType.isToolbar();
     }
 
-    public boolean isGrid(FormEntity formEntity) {
+    public boolean isList(FormEntity formEntity) {
         GroupObjectEntity toDraw = getToDraw(formEntity);
-        return toDraw != null && toDraw.classView.isGrid() && (forceViewType == null || forceViewType.isGrid());
+        return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
     }
 
     static public String createSID(String name, List<String> mapping) {

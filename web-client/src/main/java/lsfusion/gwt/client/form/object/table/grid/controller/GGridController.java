@@ -43,11 +43,15 @@ public class GGridController extends GAbstractTableController {
 
     private GTableView table;
 
-    private static boolean isGrid(GGroupObject groupObject) {
-        return groupObject != null && groupObject.classView.isGrid();
+    private static boolean isList(GGroupObject groupObject) {
+        return groupObject != null && groupObject.viewType.isList();
     }
-    public boolean isGrid() {
-        return groupObject != null && groupObject.classView.isGrid();
+    public boolean isList() {
+        return groupObject != null && groupObject.viewType.isList();
+    }
+
+    public GPivotOptions getPivotOptions() {
+        return groupObject != null ? groupObject.pivotOptions : null;
     }
 
     public GGridController(GFormController iformController) {
@@ -55,12 +59,12 @@ public class GGridController extends GAbstractTableController {
     }
 
     public GGridController(GFormController iformController, GGroupObject igroupObject, GGridUserPreferences[] userPreferences) {
-        super(iformController, igroupObject == null ? null : igroupObject.toolbar, isGrid(igroupObject));
+        super(iformController, igroupObject == null ? null : igroupObject.toolbar, isList(igroupObject));
         groupObject = igroupObject;
 
-        if (isGrid()) {
+        if (isList()) {
             boolean autoSize = groupObject.grid.autoSize;
-            
+
             ResizableSimplePanel gridContainerView = new ResizableSimplePanel();
             gridContainerView.setStyleName("gridResizePanel");
             if(autoSize) { // убираем default'ый minHeight
@@ -90,11 +94,11 @@ public class GGridController extends GAbstractTableController {
 
                 gridView = virtualGridView;
             }
-            
-            this.gridView = new GridPanel(gridView, gridContainerView); 
+
+            this.gridView = new GridPanel(gridView, gridContainerView);
 
             this.userPreferences = userPreferences;
-            
+
             getFormLayout().addBaseComponent(groupObject.grid, this.gridView, () -> {
                 Scheduler.get().scheduleDeferred(() -> {
                     table.focus();
@@ -106,7 +110,17 @@ public class GGridController extends GAbstractTableController {
             configureToolbar();
 
             setUpdateMode(false);
-            setGridTableView();
+            switch (groupObject.listViewType) {
+                case PIVOT:
+                    setPivotTableView();
+                    break;
+                case MAP:
+                    setMapTableView();
+                    break;
+                case GRID:
+                default:
+                    setGridTableView();
+            }
         }
     }
     
@@ -148,7 +162,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void changeTableView(GTableView table) {
-        assert isGrid();
+        assert isList();
 
         gridContainerView.setFillWidget(table.getThisWidget());
         
@@ -167,7 +181,7 @@ public class GGridController extends GAbstractTableController {
     private GToolbarButton mapTableButton;
 
     private void configureToolbar() {
-        assert isGrid();
+        assert isList();
         
         addFilterButton();
 
@@ -302,12 +316,12 @@ public class GGridController extends GAbstractTableController {
     }
 
     public void showRecordQuantity(int quantity) {
-        assert isGrid();
+        assert isList();
         quantityButton.showPopup(quantity);
     }
 
     public void showSum(Number sum, GPropertyDraw property) {
-        assert isGrid();
+        assert isList();
         sumButton.showPopup(sum, property);
     }
 
@@ -318,7 +332,7 @@ public class GGridController extends GAbstractTableController {
             }
         }
 
-        if (isGrid()) {
+        if (isList()) {
             ArrayList<GGroupObjectValue> keys = fc.gridObjects.get(groupObject);
             GTableView table = this.table;
             
@@ -351,7 +365,7 @@ public class GGridController extends GAbstractTableController {
         }
 
         Boolean updateState = null;
-        if(isGrid())
+        if(isList())
             updateState = fc.updateStateObjects.get(groupObject);
 
         update(updateState);
@@ -433,7 +447,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
-        if (isGrid()) {
+        if (isList()) {
             table.updateRowBackgroundValues(values);
         } else {
             if (values != null && !values.isEmpty()) {
@@ -444,7 +458,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
-        if (isGrid()) {
+        if (isList()) {
             table.updateRowForegroundValues(values);
         } else {
             if (values != null && !values.isEmpty()) {
@@ -455,7 +469,7 @@ public class GGridController extends GAbstractTableController {
 
     public GGroupObjectValue getCurrentKey() {
         GGroupObjectValue result = null;
-        if (isGrid()) {
+        if (isList()) {
             result = table.getCurrentKey();
         }
         return result == null ? GGroupObjectValue.EMPTY : result;
@@ -508,7 +522,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void update(Boolean updateState) {
-        if (isGrid()) {
+        if (isList()) {
             if(updateState != null)
                 forceUpdateTableButton.setEnabled(updateState);
             table.update(updateState);
@@ -532,19 +546,19 @@ public class GGridController extends GAbstractTableController {
     }
 
     public void beforeHidingGrid() {
-        if (isGrid()) {
+        if (isList()) {
             table.beforeHiding();
         }
     }
 
     public void afterShowingGrid() {
-        if (isGrid()) {
+        if (isList()) {
             table.afterShowing();
         }
     }
 
     public void afterAppliedChanges() {
-        if (isGrid()) {
+        if (isList()) {
             table.afterAppliedChanges();
         }
     }
@@ -552,24 +566,36 @@ public class GGridController extends GAbstractTableController {
     @Override
     public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
         assert this.groupObject.equals(groupObject);
-        if(isGrid()) {
+        if(isList()) {
             return changeOrders(orders, alreadySet);
         }
         return false; // doesn't matter
     }
     public boolean changeOrders(LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
-        assert isGrid();
+        assert isList();
         return table.changePropertyOrders(orders, alreadySet);
     }
 
     public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders() {
-        boolean hasUserPreferences = isGrid() && table.hasUserPreferences();
+        boolean hasUserPreferences = isList() && table.hasUserPreferences();
         if (hasUserPreferences) return table.getUserOrders(getGroupObjectProperties());
         return null;
     }
 
     public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders() {
         return formController.getDefaultOrders(groupObject);
+    }
+
+    public List<List<GPropertyDraw>> getPivotColumns() {
+        return formController.getPivotColumns(groupObject);
+    }
+
+    public List<List<GPropertyDraw>> getPivotRows() {
+        return formController.getPivotRows(groupObject);
+    }
+
+    public List<GPropertyDraw> getPivotMeasures() {
+        return formController.getPivotMeasures(groupObject);
     }
 
     public GGroupObjectUserPreferences getUserGridPreferences() {
@@ -581,7 +607,7 @@ public class GGridController extends GAbstractTableController {
     }
     
     public boolean isPropertyInGrid(GPropertyDraw property) {
-        return isGrid() && table.containsProperty(property);
+        return isList() && table.containsProperty(property);
     }
 
     public int getKeyboardSelectedRow() {
@@ -600,13 +626,13 @@ public class GGridController extends GAbstractTableController {
     }
 
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
-        assert isGrid();
+        assert isList();
 
         table.modifyGroupObject(key, add, position);
     }
 
     public boolean focusFirstWidget() {
-        if (isGrid()) {
+        if (isList()) {
             GTableView table = this.table;
             if (GwtClientUtils.isShowing(table.getThisWidget())) {
                 table.focus();
@@ -619,12 +645,12 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     public GComponent getGridComponent() {
-        return isGrid() ? groupObject.grid : null;
+        return isList() ? groupObject.grid : null;
     }
 
     @Override
     protected boolean showFilter() {
-        return isGrid() && groupObject.filter.visible;
+        return isList() && groupObject.filter.visible;
     }
 
     @Override
@@ -633,7 +659,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     public void changeGroupMode(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, GPropertyGroupType aggrType) {
-        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, null, GGridViewType.PIVOT);
+        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, null, GListViewType.PIVOT);
     }
     public void changePageSize(int pageSize) {
         formController.changeMode(groupObject, false, null, null, 0, null, pageSize, false, null, null);
@@ -641,7 +667,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     public void setFilterVisible(boolean visible) {
-        if (isGrid()) {
+        if (isList()) {
             super.setFilterVisible(visible);
         }
     }

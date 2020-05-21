@@ -106,8 +106,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public GGridViewType getViewType() {
-        return GGridViewType.GRID;
+    public GListViewType getViewType() {
+        return GListViewType.GRID;
     }
 
     @Override

@@ -62,7 +62,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPrefere
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
-import lsfusion.gwt.client.form.object.table.grid.view.GGridViewType;
+import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.order.user.GOrder;
@@ -401,6 +401,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject groupObject) {
         return form.getDefaultOrders(groupObject);
+    }
+
+    public List<List<GPropertyDraw>> getPivotColumns(GGroupObject groupObject) {
+        return form.getPivotColumns(groupObject);
+    }
+
+    public List<List<GPropertyDraw>> getPivotRows(GGroupObject groupObject) {
+        return form.getPivotRows(groupObject);
+    }
+
+    public List<GPropertyDraw> getPivotMeasures(GGroupObject groupObject) {
+        return form.getPivotMeasures(groupObject);
     }
 
     public void executeNotificationAction(final Integer idNotification) throws IOException {
@@ -786,7 +798,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public boolean isAsyncModifyObject(GPropertyDraw property) {
         if (property.addRemove != null) {
             GGridController controller = controllers.get(property.addRemove.object.groupObject);
-            if (controller != null && controller.isGrid()) {
+            if (controller != null && controller.isList()) {
                 return true;
             }
         }
@@ -970,10 +982,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     // change group mode with force refresh
-    public void changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize, GGridViewType viewType) {
+    public void changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize, GListViewType viewType) {
         changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null, viewType);
     }
-    public void changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GGridViewType viewType) {
+    public void changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GListViewType viewType) {
         int[] propertyIDs = null;
         GGroupObjectValue[] columnKeys = null;
         if(properties != null) {
@@ -991,7 +1003,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<>();
         List<GGroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<>();
         for (GGridController controller : controllers.values()) {
-            if (controller.isGrid()) {
+            if (controller.isList()) {
                 groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
                 groupObjectGeneralPreferencesList.add(controller.getGeneralGridPreferences());
             }

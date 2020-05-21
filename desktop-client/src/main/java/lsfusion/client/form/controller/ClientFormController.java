@@ -847,7 +847,7 @@ public class ClientFormController implements AsyncListener {
                 GridController controller = controllers.get(property.groupObject);
 
                 ClientGroupObjectValue propertyKey;
-                if (controller != null && property.grid) {
+                if (controller != null && property.isList) {
                     ClientGroupObjectValue currentObject = controller.getCurrentObject();
                     if(currentObject.isEmpty())
                         return;
@@ -876,7 +876,7 @@ public class ClientFormController implements AsyncListener {
     public boolean isAsyncModifyObject(ClientPropertyDraw property) {
         if (property.addRemove != null) {
             GridController controller = controllers.get(property.addRemove.first.groupObject);
-            if (controller != null && controller.isGrid()) {
+            if (controller != null && controller.isList()) {
                 return true;
             }
         }

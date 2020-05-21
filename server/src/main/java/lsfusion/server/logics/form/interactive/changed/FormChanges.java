@@ -215,7 +215,7 @@ public class FormChanges {
     } 
 
     private ImSet<PropertyDrawInstance> filterPropertiesExternal(ImSet<PropertyDrawInstance> serializeProps, final boolean panel) {
-        return serializeProps.filterFn(property -> !property.isGrid() == panel && property.isProperty() && property.getIntegrationSID() != null);
+        return serializeProps.filterFn(property -> !property.isList() == panel && property.isProperty() && property.getIntegrationSID() != null);
     } 
 
     public JSONObject serializeExternal() {

@@ -195,6 +195,22 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return fixedOrders.getListMap();
     }
 
+    private NFOrderSet<List<PropertyDrawEntity>> pivotColumns = NFFact.orderSet();
+    private NFOrderSet<List<PropertyDrawEntity>> pivotRows = NFFact.orderSet();
+    private NFOrderSet<PropertyDrawEntity> pivotMeasures = NFFact.orderSet();
+
+    public ImList<List<PropertyDrawEntity>> getPivotColumnsList() {
+        return pivotColumns.getList();
+    }
+
+    public ImList<List<PropertyDrawEntity>> getPivotRowsList() {
+        return pivotRows.getList();
+    }
+
+    public ImList<PropertyDrawEntity> getPivotMeasuresList() {
+        return pivotMeasures.getList();
+    }
+
     public ModalityType modalityType = ModalityType.DOCKED;
     public int autoRefresh = 0;
 
@@ -234,13 +250,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
-        if(group.classView.isGrid() && !group.isInTree()) {
+        if(group.viewType.isList() && !group.isInTree()) {
             BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
             PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
             propertyDraw.setToDraw(group);
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
-            propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getGridViewType(baseLM.gridViewType).property))), PropertyDrawExtraType.SHOWIF);
+            propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getListViewType(baseLM.listViewType).property))), PropertyDrawExtraType.SHOWIF);
 
             addPropertyDrawView(propertyDraw, version); // because it's called after form constructor
         }
@@ -999,7 +1015,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         FormView formView = getRichDesign();
         ComponentView drawComponent;
         GroupObjectEntity toDraw;
-        if(property.isGrid(this) && (toDraw = property.getToDraw(this)) != null) {
+        if(property.isList(this) && (toDraw = property.getToDraw(this)) != null) {
             if (toDraw.isInTree())
                 drawComponent = formView.get(toDraw.treeGroup);
             else
@@ -1013,7 +1029,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public boolean isMap(GroupObjectEntity entity) {
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
         for(PropertyDrawEntity property : propertyDrawsIt)
-            if(property.isGrid(this) && entity.equals(property.getToDraw(this))) {
+            if(property.isList(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getSID();
                 if(name.equals("longitude") || name.equals("latitude") || name.equals("polygon"))
                     return true;
@@ -1249,6 +1265,36 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public void setPageSize(int pageSize) {
         for (GroupObjectEntity group : getGroupsIt()) {
             group.pageSize = pageSize;
+        }
+    }
+
+    public void addPivotColumn(PropertyDrawEntity column, Version version) {
+        pivotColumns.add(Collections.singletonList(column), version);
+    }
+
+    public void addPivotColumns(List<List<PropertyDrawEntity>> columns, Version version) {
+        for(List<PropertyDrawEntity> column : columns) {
+            pivotColumns.add(column, version);
+        }
+    }
+
+    public void addPivotRow(PropertyDrawEntity row, Version version) {
+        pivotRows.add(Collections.singletonList(row), version);
+    }
+
+    public void addPivotRows(List<List<PropertyDrawEntity>> rows, Version version) {
+        for(List<PropertyDrawEntity> row : rows) {
+            pivotRows.add(row, version);
+        }
+    }
+
+    public void addPivotMeasure(PropertyDrawEntity measure, Version version) {
+        pivotMeasures.add(measure, version);
+    }
+
+    public void addPivotMeasures(List<PropertyDrawEntity> measures, Version version) {
+        for(PropertyDrawEntity measure : measures) {
+            pivotMeasures.add(measure, version);
         }
     }
 

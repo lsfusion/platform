@@ -19,7 +19,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventType;
-import lsfusion.interop.form.object.table.grid.GridViewType;
+import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -298,8 +298,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
 
-            if(groupObject.classView.isGrid())
-                changeGridViewType(groupObject, GridViewType.GRID);
+            if(groupObject.viewType.isList())
+                changeListViewType(groupObject, ListViewType.GRID);
         }
 
         for (int i = 0, size = mapObjects.size(); i < size; i++) {
@@ -377,8 +377,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ServerLoggers.remoteLifeLog("FORM OPEN : " + this);
     }
 
-    public void changeGridViewType(GroupObjectInstance groupObject, GridViewType gridViewType) throws SQLException, SQLHandledException {
-        groupObject.changeGridViewType(this, BL.LM.gridViewType, gridViewType);
+    public void changeListViewType(GroupObjectInstance groupObject, ListViewType listViewType) throws SQLException, SQLHandledException {
+        groupObject.changeListViewType(this, BL.LM.listViewType, listViewType);
     }
 
     public static class DiffForm {
@@ -1965,7 +1965,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             return false;
         }
 
-        if (userPrefsHiddenProperties.contains(drawProperty) && drawProperty.isGrid()) { // панель показывается всегда
+        if (userPrefsHiddenProperties.contains(drawProperty) && drawProperty.isList()) { // панель показывается всегда
             return false;
         }
 
@@ -2013,7 +2013,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             boolean oldPropIsShown = addShownHidden(isShown, drawProperty, newPropIsShown);
 
             if (newPropIsShown) {
-                boolean update = drawProperty.toDraw == null || !drawProperty.isGrid() || drawProperty.toDraw.toUpdate();
+                boolean update = drawProperty.toDraw == null || !drawProperty.isList() || drawProperty.toDraw.toUpdate();
                 boolean hidden = isTabHidden(drawProperty);
 
                 ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
@@ -2036,7 +2036,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             boolean hidden = isHidden(group);
             boolean update = group.toUpdate();
 
-            ImSet<GroupObjectInstance> gridGroups = (group.classView.isGrid() ? SetFact.singleton(group) : SetFact.EMPTY());
+            ImSet<GroupObjectInstance> gridGroups = (group.viewType.isList() ? SetFact.singleton(group) : SetFact.EMPTY());
 
             fillChangedReader(group.rowBackgroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
             fillChangedReader(group.rowForegroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
@@ -2135,7 +2135,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     mQueryOrders.add(object, false);
                 }
 
-                if (group.classView.isPanel()) {
+                if (group.viewType.isPanel()) {
                     for (ObjectInstance object : group.objects) {
                         query.and(object.getExpr(query.getMapExprs(), getModifier()).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                     }
