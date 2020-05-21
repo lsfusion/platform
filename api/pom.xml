@@ -130,7 +130,6 @@
         <dependency>
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
-            <version>1.2.2</version>
         </dependency>
     </dependencies>
 </project>
