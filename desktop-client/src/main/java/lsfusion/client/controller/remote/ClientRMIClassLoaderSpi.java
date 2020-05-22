@@ -76,8 +76,12 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
     public ClassLoader getClassLoader(String codebase) throws MalformedURLException {
         Class loadHandlerClass = ReflectionUtils.classForName("sun.rmi.server.LoaderHandler");
         if(loadHandlerClass != null) {
-            return ReflectionUtils.getStaticMethodValue(loadHandlerClass, "getClassLoader", new Class[] {String.class}, new Object[] {codebase});
-            //sun.rmi.server.LoaderHandler.getClassLoader(codebase)
+            try {
+                return ReflectionUtils.getStaticMethodValue(loadHandlerClass, "getClassLoader", new Class[]{String.class}, new Object[]{codebase});
+                //sun.rmi.server.LoaderHandler.getClassLoader(codebase)
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
         } else {
             return null;
         }
@@ -87,8 +91,12 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
     public String getClassAnnotation(Class<?> cl) {
         Class loadHandlerClass = ReflectionUtils.classForName("sun.rmi.server.LoaderHandler");
         if(loadHandlerClass != null) {
-            return ReflectionUtils.getStaticMethodValue(loadHandlerClass, "getClassAnnotation", new Class[] {Class.class}, new Object[] {cl});
-            //return sun.rmi.server.LoaderHandler.getClassAnnotation(cl);
+            try {
+                return ReflectionUtils.getStaticMethodValue(loadHandlerClass, "getClassAnnotation", new Class[]{Class.class}, new Object[]{cl});
+                //return sun.rmi.server.LoaderHandler.getClassAnnotation(cl);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
         } else {
             return null;
         }
