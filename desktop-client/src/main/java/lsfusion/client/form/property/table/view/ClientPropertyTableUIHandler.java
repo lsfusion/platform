@@ -60,7 +60,10 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
         //SwingUtilities2.adjustFocus(table);
         Class swingUtilities2Class = ReflectionUtils.classForName("sun.swing.SwingUtilities2");
         if(swingUtilities2Class != null) {
-            ReflectionUtils.getStaticMethodValue(swingUtilities2Class, "adjustFocus", new Class[] {JComponent.class}, new Object[] {table});
+            try {
+                ReflectionUtils.getStaticMethodValue(swingUtilities2Class, "adjustFocus", new Class[] {JComponent.class}, new Object[] {table});
+            } catch (ClassNotFoundException ignored) {
+            }
         }
 
         Point p = e.getPoint();
