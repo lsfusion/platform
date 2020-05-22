@@ -90,10 +90,18 @@ public class ReflectionUtils {
     }
 
     public static <T> T getStaticMethodValue(Class clazz, String methodName, Class[] paramsClasses, Object[] params) throws ClassNotFoundException {
-        return getMethodValue(clazz, null, methodName, paramsClasses, params);
+        return getMethodValueWithException(clazz, null, methodName, paramsClasses, params);
     }
 
-    public static <T> T getMethodValue(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) throws ClassNotFoundException {
+    public static <T> T getMethodValue(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) {
+        try {
+            return getMethodValueWithException(clazz, target, methodName, paramsClasses, params);
+        } catch (ClassNotFoundException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static <T> T getMethodValueWithException(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) throws ClassNotFoundException {
         try {
             Method method = clazz.getMethod(methodName, paramsClasses);
             method.setAccessible(true);
