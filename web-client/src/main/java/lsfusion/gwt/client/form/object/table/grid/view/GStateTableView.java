@@ -6,7 +6,6 @@ import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -31,6 +30,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected GFont font;
 
     protected GGroupObjectValue currentKey;
+
+    private long setRequestIndex;
 
     protected List<GGroupObjectValue> keys;
 
@@ -91,6 +92,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         centeredMessageAndButton.addCentered(messageAndButton);
 
         this.pageSizeWidget = centeredMessageAndButton;
+        this.pageSizeWidget.setVisible(false);
 
         ResizableSimplePanel child = new ResizableSimplePanel();
         child.setWidget(this.pageSizeWidget);
@@ -132,7 +134,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     protected boolean isPageSizeHit() {
-        return keys.size() == getPageSize();
+        return keys != null && keys.size() == getPageSize();
     }
 
     @Override
@@ -230,6 +232,16 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public boolean isNoColumns() {
         return properties.isEmpty();
+    }
+
+    @Override
+    public long getSetRequestIndex() {
+        return setRequestIndex;
+    }
+
+    @Override
+    public void setSetRequestIndex(long index) {
+        setRequestIndex = index;
     }
 
     // ignore for now

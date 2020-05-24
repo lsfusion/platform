@@ -55,10 +55,12 @@ public class GPivot extends GStateTableView {
         array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
 
         // getting values
-        for (GGroupObjectValue key : keys != null && !keys.isEmpty() ? keys : Collections.singleton((GGroupObjectValue) null)) { // can be null if manual update
+        for (GGroupObjectValue key : keys != null && !keys.isEmpty()  ? keys : Collections.singleton((GGroupObjectValue) null)) { // can be null if manual update
             JsArrayMixed rowValues = getValues(key, convertDataToStrings);
 
-            for (String aggrCaption : aggrCaptions) { // putting columns to rows
+            // if there are no columns (there is no response yet, or they are all filtered, we steel need at least one row, because otherwise it breaks a lot of assertions
+            // for example in pivotUI, attrValues -> showInDragDrop will not be filled -> to no COLUMN group column added to the dom -> when onRefresh will be called cols will be empty -> config will be overriden with no predefined cols
+            for (String aggrCaption : !aggrCaptions.isEmpty() ? aggrCaptions : Collections.singleton((String)null)) { // putting columns to rows
                 JsArrayMixed aggrRowValues = clone(rowValues);
                 aggrRowValues.push(aggrCaption);
                 array.push(aggrRowValues);
@@ -585,16 +587,6 @@ public class GPivot extends GStateTableView {
         protected State() {
         }
 
-        public native final boolean hasColumnState(String column)/*-{
-            var columnState = this[column];
-            if (columnState !== undefined && columnState !== null) {
-                if (columnState[column].value !== undefined && columnState[column].value !== null) {
-                    return true;
-                }
-            }
-            return false;
-        }-*/;
-
 
         public native final ColumnState getColumnState(String column)/*-{
             var columnState = this[column];
@@ -627,14 +619,11 @@ public class GPivot extends GStateTableView {
         }
 
         public native static Aggregator create() /*-{
-            return {};
+            return { columns : [] };
         }-*/;
 
         public native final void setAggregator(String column, ColumnAggregator aggregator)/*-{
             this[column] = aggregator;
-
-            if (this.columns === undefined)
-                this.columns = [];
             this.columns.push(column);
         }-*/;
 
@@ -652,7 +641,8 @@ public class GPivot extends GStateTableView {
 
         private void push(State state, Record record, Object defaultAggrFunc) {
             String pushColumn = (String) record.get(COLUMN);
-            getAggregator(pushColumn).push(state.getColumnState(pushColumn), record, defaultAggrFunc);
+            if(pushColumn != null) // it can be null when there are no columns (see getData method)
+                getAggregator(pushColumn).push(state.getColumnState(pushColumn), record, defaultAggrFunc);
         }
 
         private Object value(State state, Object totalAggr) {
@@ -665,16 +655,6 @@ public class GPivot extends GStateTableView {
                 result = aggr(totalAggr, result, getAggregator(column).value(state.getColumnState(column)));
             }
             return result;
-        }
-
-        private String property(State state) {
-            JsArrayString columns = getColumns();
-            for (int i = 0, size = columns.length(); i < size; i++) {
-                if (state.hasColumnState(columns.get(i))) {
-                    return columns.get(i);
-                }
-            }
-            return null;
         }
     }
 
@@ -709,23 +689,36 @@ public class GPivot extends GStateTableView {
         }
     }-*/;
 
-    public void renderValueCell(Element jsElement, JavaScriptObject value, JsArrayString rowKey, JsArrayString columnKeys) {
-        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
-        JsArrayString cols = config.getArrayString("cols");
+    private String getColumnName(String attr, JsArrayString columnKeys) {
+        JsArrayString cols = config.getArrayString(attr);
         for (int i = 0; i < columnKeys.length(); ++i) {
-            if (cols.get(i).equals(COLUMN)) {  
-                String column = columnKeys.get(i);
-                GridCellRenderer<?> renderer = columnMap.get(column).property.getGridCellRenderer();
-                renderer.render(jsElement, font, value, false);
-                return;
-            }
+            if (cols.get(i).equals(COLUMN))
+                return columnKeys.get(i);
         }
-            
-        try {
-            String numStr = NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())); 
-            jsElement.setPropertyString("textContent", numStr);
-        } catch (Exception ignored) {
-            jsElement.setPropertyObject("textContent", value);
+        return null;
+    }
+
+    private String getColumnName(JsArrayString rowKeys, JsArrayString columnKeys) {
+        String column = getColumnName("cols", columnKeys);
+        if(column != null)
+            return column;
+
+        return getColumnName("rows", rowKeys);
+    }
+
+    public void renderValueCell(Element jsElement, JavaScriptObject value, JsArrayString rowKeys, JsArrayString columnKeys) {
+        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
+
+        String column = getColumnName(rowKeys, columnKeys);
+        if(column != null)
+            renderColumn(jsElement, value, column);
+        else {
+            try {
+                value = fromString(NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())));
+            } catch (Exception ignored) {
+            }
+            // value is aggregator result
+            renderValue(jsElement, value);
         }
     }
 
@@ -734,38 +727,35 @@ public class GPivot extends GStateTableView {
         if (isArrow) {
             renderArrow(th, isExpanded);    
         } else {
-            if (attrName != null) {
-                if (!attrName.equals(COLUMN)) {
-                    GridCellRenderer<?> renderer = columnMap.get(attrName).property.getGridCellRenderer();
-                    renderer.render(th, font, value, false);
-                } else {
-                    th.setPropertyObject("textContent", value);
-                }
-            }
-            if (attrName == null) {
-                th.setPropertyString("textContent", "Totals");
-            }
+            renderAttrCell(th, value, attrName);
         }
     }
-    
+
+    public void renderAttrCell(Element th, JavaScriptObject value, String columnName) {
+        if (columnName != null && !columnName.equals(COLUMN)) {
+            renderColumn(th, value, columnName);
+        } else {
+            // value is either empty (i.e total is rendered) or name of the column
+            renderValue(th, value);
+        }
+    }
+
+    public void renderColumn(Element th, JavaScriptObject value, String columnName) {
+        GridCellRenderer<?> renderer = columnMap.get(columnName).property.getGridCellRenderer();
+        renderer.render(th, font, value, false);
+    }
+
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
         GPropertyTableBuilder.renderTD(rowHeight, jsElement);
         if (isArrow) {
             renderArrow(jsElement, isExpanded);
         } else {
-            if (colKeyValues.length() > 0) {
-                JsArrayString cols = config.getArrayString("cols");
-                String lastCol = cols.get(colKeyValues.length() - 1);
-                if (!isSubtotal && lastCol != null && !lastCol.equals(COLUMN)) {
-                    GridCellRenderer<?> renderer = columnMap.get(lastCol).property.getGridCellRenderer();
-                    renderer.render(jsElement, font, value, false);
-                } else {
-                    jsElement.setPropertyObject("textContent", value);
-                }
+            String lastCol = null;
+            int colSize = colKeyValues.length();
+            if (!isSubtotal && colSize > 0) {
+                lastCol = config.getArrayString("cols").get(colSize - 1);
             }
-            if (colKeyValues.length() == 0) {
-                jsElement.setPropertyString("textContent", "Totals");
-            }
+            renderAttrCell(jsElement, value, lastCol);
         }
     } 
     
@@ -774,8 +764,13 @@ public class GPivot extends GStateTableView {
         if (isArrow) {
             renderArrow(jsElement, isExpanded);
         } else {
-            jsElement.setPropertyObject("textContent", value);
+            // value is a column name
+            renderValue(jsElement, value);
         }
+    }
+
+    public void renderValue(Element jsElement, JavaScriptObject value) {
+        jsElement.setPropertyObject("textContent", value);
     }
 
     private void renderArrow(Element jsElement, Boolean isExpanded) {
@@ -792,41 +787,56 @@ public class GPivot extends GStateTableView {
         return arrow;
     }
 
-    public int getColumnWidth(boolean isAttributeColumn, JsArrayString colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {
+    private int getArrowColumnWidth(int arrowLevels) {
         final int arrowBaseWidth = 15;
-        final int defaultTextColumnWidth = 120;
-        final int defaultNumberColumnWidth = 80;
+        return arrowBaseWidth + 10 * arrowLevels;
+    }
+
+    private final static int defaultValueWidth = 80;
+
+    private int getValueColumnWidth(JsArrayString colValues) {
         int width = 0;
-        if (isArrow) {
-            width = arrowBaseWidth + 10 * arrowLevels;
-        } else if (isAttributeColumn) {
-            JsArrayString cols = config.getArrayString("cols");
-            for (int i = 0; i < colKeyValues.length(); ++i) {
-                if (cols.get(i).equals(COLUMN)) {
-                    String column = colKeyValues.get(i);
-                    width = columnMap.get(column).property.getValueWidth(null);
-                    break;
-                }
+        JsArrayString cols = config.getArrayString("cols");
+        for (int i = 0; i < cols.length(); ++i) {
+            String column = cols.get(i);
+            if (column.equals(COLUMN)) {
+                if(i < colValues.length()) {
+                    column = colValues.get(i);
+                    if(column == null) // it can be null when there are no columns (see getData method)
+                        continue;
+                } else
+                    continue;
             }
-            int colsCount = cols.length();
-            if (colKeyValues.length() == colsCount && colsCount > 0 && !cols.get(colsCount - 1).equals(COLUMN)) {
-                width = Math.max(width, columnMap.get(cols.get(colsCount - 1)).property.getValueWidth(null));
-            }
-            if (width == 0) {
-                width = defaultNumberColumnWidth;
-            }
-        } else if (axisValues.length() > 0) {
-            width = defaultNumberColumnWidth;
-            for (int i = 0; i < axisValues.length(); ++i) {
-                if (!axisValues.get(i).equals(COLUMN)) {
-                    width = Math.max(width, columnMap.get(axisValues.get(i)).property.getValueWidth(null));
-                }
-            }
-        } else {
-            width = defaultTextColumnWidth;
+            width = Math.max(width, getColumnMapWidth(column));
         }
-        return width;
-    } 
+        return width == 0 ? defaultValueWidth : width;
+    }
+
+    private int getAttrColumnWidth(JsArrayString cols) {
+        int width = 0;
+        for (int i = 0; i < cols.length(); ++i) {
+            String column = cols.get(i);
+            if (!column.equals(COLUMN)) {
+                width = Math.max(width, getColumnMapWidth(column));
+            }
+        }
+        return width == 0 ? defaultValueWidth : width;
+    }
+
+    private int getColumnMapWidth(String column) {
+        return columnMap.get(column).property.getValueWidth(null);
+    }
+
+    public int getColumnWidth(boolean isValueColumn, JsArrayString colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {
+        if (isArrow) {
+            return getArrowColumnWidth(arrowLevels);
+        } else if (isValueColumn) {
+            return getValueColumnWidth(colKeyValues);
+        } else if (axisValues.length() > 0) {
+            return getAttrColumnWidth(axisValues);
+        }
+        return defaultValueWidth;
+    }
     
     private static class ColumnAggregator extends JavaScriptObject {
 

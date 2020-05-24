@@ -19,7 +19,6 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.KeyboardRowChangedEvent;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
-import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -94,6 +93,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private double lastQuickSearchTime = 0;
 
     private boolean autoSize;
+
+    private long setRequestIndex;
 
     @Override
     protected boolean isAutoSize() {
@@ -419,6 +420,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public boolean isNoColumns() {
         return getColumnCount() == 0;
+    }
+
+    @Override
+    public long getSetRequestIndex() {
+        return setRequestIndex;
+    }
+
+    @Override
+    public void setSetRequestIndex(long index) {
+        setRequestIndex = index;
     }
 
     protected GPropertyDraw getColumnPropertyDraw(int i) {

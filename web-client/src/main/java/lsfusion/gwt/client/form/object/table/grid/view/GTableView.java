@@ -47,7 +47,9 @@ public interface GTableView {
     GPropertyDraw getCurrentProperty(); // calculate sum / filtering default value
     GGroupObjectValue getCurrentColumn(); // calculate sum / filtering default value
 
-    boolean isNoColumns(); // hide if there're no columns after update    
+    boolean isNoColumns(); // hide if there're no columns after update
+    long getSetRequestIndex(); // we need to understand that view was already updated, to avoid unnecessary effects (for example making grid invisible)
+    void setSetRequestIndex(long index); // we need to understand that view was already updated, to avoid unnecessary effects (for example making grid invisible)
 
     // focus
     void focusProperty(GPropertyDraw propertyDraw);

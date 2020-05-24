@@ -479,7 +479,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         // затем одним скопом обновляем данные во всех таблицах
         for (GGridController controller : controllers.values()) {
-            controller.processFormChanges(fc, currentGridObjects);
+            controller.processFormChanges(changesDTO.requestIndex, fc, currentGridObjects);
         }
 
         for (GTreeGroupController treeController : treeControllers.values()) {
@@ -982,10 +982,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     // change group mode with force refresh
-    public void changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize, GListViewType viewType) {
-        changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null, viewType);
+    public long changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize, GListViewType viewType) {
+        return changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null, viewType);
     }
-    public void changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GListViewType viewType) {
+    public long changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GListViewType viewType) {
         int[] propertyIDs = null;
         GGroupObjectValue[] columnKeys = null;
         if(properties != null) {
@@ -996,7 +996,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 columnKeys[i] = columnKeysList.get(i);
             }
         }
-        dispatcher.execute(new ChangeMode(groupObject.ID, setGroup, propertyIDs, columnKeys, aggrProps, aggrType, pageSize, forceRefresh, updateMode, viewType), new ServerResponseCallback());
+        return dispatcher.execute(new ChangeMode(groupObject.ID, setGroup, propertyIDs, columnKeys, aggrProps, aggrType, pageSize, forceRefresh, updateMode, viewType), new ServerResponseCallback());
     }
 
     public GFormUserPreferences getUserPreferences() {

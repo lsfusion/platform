@@ -28,7 +28,6 @@ import lsfusion.gwt.client.form.property.*;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
@@ -121,6 +120,7 @@ public class GGridController extends GAbstractTableController {
                 default:
                     setGridTableView();
             }
+            table.setSetRequestIndex(-1);
         }
     }
     
@@ -147,7 +147,7 @@ public class GGridController extends GAbstractTableController {
     }
     private void changeMode(Runnable updateView) {
         updateView.run();
-        formController.changeMode(groupObject, table.isGroup(), table.getPageSize(), table.getViewType());
+        table.setSetRequestIndex(formController.changeMode(groupObject, table.isGroup(), table.getPageSize(), table.getViewType()));
     }
 
     private boolean manual;
@@ -325,7 +325,7 @@ public class GGridController extends GAbstractTableController {
         sumButton.showPopup(sum, property);
     }
 
-    public void processFormChanges(GFormChanges fc, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects) {
+    public void processFormChanges(long requestIndex, GFormChanges fc, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects) {
         for (GPropertyDraw property : fc.dropProperties) {
             if (property.groupObject == groupObject) {
                 removeProperty(property);
@@ -368,7 +368,7 @@ public class GGridController extends GAbstractTableController {
         if(isList())
             updateState = fc.updateStateObjects.get(groupObject);
 
-        update(updateState);
+        update(requestIndex, updateState);
     }
 
     public List<GGroupObjectValue> getColumnKeys(GPropertyDraw property, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects) {
@@ -521,13 +521,13 @@ public class GGridController extends GAbstractTableController {
         }
     }
 
-    private void update(Boolean updateState) {
+    private void update(long requestIndex, Boolean updateState) {
         if (isList()) {
             if(updateState != null)
                 forceUpdateTableButton.setEnabled(updateState);
             table.update(updateState);
 
-            boolean isVisible = !table.isNoColumns();
+            boolean isVisible = !(table.isNoColumns() && requestIndex >= table.getSetRequestIndex());
             gridView.setVisible(isVisible);
 
             if (toolbarView != null) {
