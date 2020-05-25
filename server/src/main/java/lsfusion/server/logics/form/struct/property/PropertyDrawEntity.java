@@ -238,19 +238,19 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     
     private boolean checkPermission(Action eventAction, String eventActionSID, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
         ActionOrProperty securityProperty;
-        if (isEdit(eventActionSID) && !eventAction.ignoreReadOnlyPolicy()) { // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit) 
+        if (isEdit(eventActionSID)) {
             if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
                 return false;
 
-            securityProperty = getSecurityProperty(); // will check property itself 
+            securityProperty = getSecurityProperty(); // will check property itself
         } else { // menu or key binding
             securityProperty = eventAction;
         }
 
-        if(EDIT_OBJECT.equals(eventActionSID) && !securityPolicy.checkPropertyEditObjectsPermission(getEventProperty()))
-            return false;
-        else
-            return securityPolicy.checkPropertyChangePermission(securityProperty);
+        if(EDIT_OBJECT.equals(eventActionSID))
+            return securityPolicy.checkPropertyEditObjectsPermission(securityProperty);
+
+        return securityPolicy.checkPropertyChangePermission(securityProperty, eventAction);
     }
 
     public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SecurityPolicy securityPolicy) {

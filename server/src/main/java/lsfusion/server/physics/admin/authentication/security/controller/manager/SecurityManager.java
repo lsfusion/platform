@@ -124,6 +124,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     private DataObject adminUserRole = null;
+    private DataObject readOnlyUserRole = null;
     private DataObject adminUser = null;
     private DataObject anonymousUser = null;
     public void initUsers() throws SQLException, SQLHandledException {
@@ -136,6 +137,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             //created in createSystemUserRoles
             this.adminUserRole = (DataObject) securityLM.userRoleSID.readClasses(session, new DataObject("admin"));
+            this.readOnlyUserRole = (DataObject) securityLM.userRoleSID.readClasses(session, new DataObject("readonly"));
 
             DataObject adminUser = readUser("admin", session);
             if (adminUser == null) {
@@ -299,9 +301,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     private RoleSecurityPolicy readSecurityPolicy(DataObject userRoleObject, DataSession session) throws SQLException, SQLHandledException {
+        session.sql.pushNoQueryLimit();
         try {
-            session.sql.pushNoQueryLimit();
-            RoleSecurityPolicy policy = new RoleSecurityPolicy();
+            RoleSecurityPolicy policy = new RoleSecurityPolicy(userRoleObject.equals(readOnlyUserRole));
 
             KeyExpr navigatorElementExpr = new KeyExpr("navigatorElement");
             QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.singletonRev("navigatorElement", navigatorElementExpr));

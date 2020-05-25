@@ -1,5 +1,6 @@
 package lsfusion.server.physics.admin.authentication.security.policy;
 
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
@@ -27,8 +28,8 @@ public class SecurityPolicy {
         return checkPermission(policy -> policy.checkPropertyViewPermission(property));
     }
 
-    public boolean checkPropertyChangePermission(ActionOrProperty property) {
-        return checkPermission(policy -> policy.checkPropertyChangePermission(property));
+    public boolean checkPropertyChangePermission(ActionOrProperty property, Action eventAction) {
+        return checkPermission(policy -> policy.checkPropertyChangePermission(property, eventAction));
     }
 
     public boolean checkPropertyEditObjectsPermission(ActionOrProperty property) {
