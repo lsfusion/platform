@@ -188,7 +188,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
     }
     // нужен очень быстрый так как в checkTrue используется
     public ClassExprWhere andEquals(EqualMap equals, boolean onlyData) {
-        if(equals.size()==0 || isFalse() || isTrue()) return this;
+        if(equals.size()==0 || isFalse()) return this; // || isTrue() is incorrect check since we may loose equal operands classes
 
         And<VariableSingleClassExpr>[] rawAndWheres = newArray(wheres.length); int num=0;
         for(And<VariableSingleClassExpr> where : wheres) {
