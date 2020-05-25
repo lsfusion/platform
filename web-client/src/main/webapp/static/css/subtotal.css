@@ -29,7 +29,6 @@
         flex: 1;
         overflow: hidden;
         position: relative;
-        top: -1px;
     }
 
     .subtotalouterdiv .scrolldiv {
