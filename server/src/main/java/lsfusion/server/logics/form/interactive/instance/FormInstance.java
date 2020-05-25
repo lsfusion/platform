@@ -2307,7 +2307,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (actionsOnEvent != null) {
             for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
-                if (securityPolicy.checkPropertyChangePermission(null, autoAction.property)) { // для проверки null'ов и политики безопасности
+                if (securityPolicy.checkPropertyChangePermission(autoAction.property, autoAction.property)) { // для проверки null'ов и политики безопасности
                     mResult.exclAdd(autoInstance.getValueImplement(this));
                 }
             }

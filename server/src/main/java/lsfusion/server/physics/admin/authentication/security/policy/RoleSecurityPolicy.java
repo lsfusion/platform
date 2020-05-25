@@ -21,13 +21,16 @@ public class RoleSecurityPolicy {
     }
 
     public Boolean checkPropertyViewPermission(ActionOrProperty property) {
-        if(isReadOnlyPolicy && property instanceof Action && !checkPropertyChangePermission(property, (Action) property)) // if action is cannot be changed don't show it in read only policy (maybe later do it for all policies)
-            return false;
+        if(isReadOnlyPolicy && property instanceof Action) { // if action is cannot be changed don't show it in read only policy (maybe later do it for all policies)
+            Boolean changePermission = checkPropertyChangePermission(property, (Action) property);
+            if(changePermission != null && !changePermission) // change is forbidden - forbid view
+                return false;
+        }
         return this.propertyView.checkPermission(property);
     }
 
-    public Boolean checkPropertyChangePermission(ActionOrProperty property, Action eventAction) {
-        if(isReadOnlyPolicy && eventAction.ignoreReadOnlyPolicy()) // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit)
+    public Boolean checkPropertyChangePermission(ActionOrProperty property, Action changeAction) {
+        if(isReadOnlyPolicy && changeAction.ignoreReadOnlyPolicy()) // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit)
             return true;
         return this.propertyChange.checkPermission(property);
     }
