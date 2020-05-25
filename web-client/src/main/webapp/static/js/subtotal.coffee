@@ -135,7 +135,7 @@ callWithJQuery ($) ->
 
         createValueTD = (value, rowKey, colKey, aggregator, className, attributes, eventHandlers) ->
             td = createElement "td", className, attributes, eventHandlers
-            td.ondblclick = (event) -> callbacks.valueCellDblClickHandler td, rowKey, colKey if callbacks?
+            td.ondblclick = (event) -> callbacks.valueCellDblClickHandler td, rowKey, colKey, event.clientX, event.clientY if callbacks?
             renderValueCell td, value, rowKey, colKey, aggregator
             return td
 

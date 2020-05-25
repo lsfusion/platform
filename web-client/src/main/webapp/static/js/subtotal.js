@@ -235,7 +235,7 @@
         td = createElement("td", className, attributes, eventHandlers);
         td.ondblclick = function(event) {
           if (callbacks != null) {
-            return callbacks.valueCellDblClickHandler(td, rowKey, colKey);
+            return callbacks.valueCellDblClickHandler(td, rowKey, colKey, event.clientX, event.clientY);
           }
         };
         renderValueCell(td, value, rowKey, colKey, aggregator);

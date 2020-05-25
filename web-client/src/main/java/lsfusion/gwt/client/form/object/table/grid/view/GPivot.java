@@ -1,14 +1,16 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayMixed;
-import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.PopupPanel;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPivotOptions;
@@ -1068,8 +1070,9 @@ public class GPivot extends GStateTableView {
         var instance = this;
         
         return {
-            valueCellDblClickHandler: function (td, rowKeyValues, colKeyValues) {
-                alert("col: " + colKeyValues + ", row: " + rowKeyValues + ", val: " + td.textContent);
+            valueCellDblClickHandler: function (td, rowKeyValues, colKeyValues, x, y) {
+                //alert("col: " + colKeyValues + ", row: " + rowKeyValues + ", val: " + td.textContent);
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::dblClickAction(*)(rowKeyValues, colKeyValues, x, y);
             },
             
             rowAttrHeaderDblClickHandler: function (th, rowKeyValues, attrName) {
@@ -1105,4 +1108,63 @@ public class GPivot extends GStateTableView {
             }
         }
     }-*/;
+
+    private void dblClickAction(JsArrayString rowKeyValues, JsArrayString colKeyValues, int x, int y) {
+        final PopupPanel popup = new PopupPanel(true);
+
+        List<String> menuItems = new ArrayList<>();
+        JsArrayString cols = config.getArrayString("cols");
+        JsArrayString rows = config.getArrayString("rows");
+        columnMap.foreachKey(key -> {if(!contains(cols, key) && !contains(rows, key)) menuItems.add(key);});
+
+        List<GPropertyFilter> filters = new ArrayList<>();
+        filters.addAll(getFilters(rows, rowKeyValues));
+        filters.addAll(getFilters(cols, colKeyValues));
+
+        final MenuBar menuBar = new MenuBar(true);
+        for(String caption : menuItems) {
+            MenuItem menuItem = new MenuItem(caption, () -> {
+                popup.hide();
+                config.getArrayString("rows").push(caption);
+
+                grid.filter.addNewConditions(filters);
+                grid.filter.expandPressed(); //need to init dialog
+                grid.filter.collapsePressed();
+                grid.filter.applyPressed();
+
+                rerender();
+                updateView(false, null);
+            });
+            menuBar.addItem(menuItem);
+        }
+
+        popup.setWidget(menuBar);
+        GwtClientUtils.showPopupInWindow(popup, x, y);
+        Scheduler.get().scheduleDeferred(menuBar::focus);
+    }
+
+
+    private List<GPropertyFilter> getFilters(JsArrayString elements, JsArrayString values) {
+        List<GPropertyFilter> filters = new ArrayList<>();
+        for (int i = 0; i < elements.length(); i++) {
+            Column column = columnMap.get(elements.get(i));
+            if (column != null) {
+                GPropertyFilter filter = new GPropertyFilter();
+                filter.property = column.property;
+                filter.initValue = values.get(i);
+                filters.add(filter);
+            }
+        }
+        return filters;
+    }
+
+    private boolean contains(JsArrayString array, String element) {
+        for (int i = 0; i < array.length(); i++) {
+            if (array.get(i).equals(element)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

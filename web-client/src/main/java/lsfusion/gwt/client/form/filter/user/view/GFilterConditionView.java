@@ -154,6 +154,11 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         add(deleteButton);
 
         filterChanged();
+
+        if(condition.initValue != null) {
+            dataView.valueChanged(condition.initValue);
+            compareView.setSelectedItem(GCompare.EQUALS);
+        }
     }
 
     private void filterChanged() {

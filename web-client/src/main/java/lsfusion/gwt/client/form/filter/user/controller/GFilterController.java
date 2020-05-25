@@ -154,6 +154,10 @@ public abstract class GFilterController {
         state = newState;
     }
 
+    public void expandPressed() {
+        changeState(State.EXPANDED);
+    }
+
     public void collapsePressed() {
         changeState(State.COLLAPSED);
     }
@@ -195,6 +199,13 @@ public abstract class GFilterController {
         conditions.add(filter);
         filterView.addCondition(filter, logicsSupplier);
         return true;
+    }
+
+    public void addNewConditions(List<GPropertyFilter> filters) {
+        for(GPropertyFilter filter : filters) {
+            conditions.add(filter);
+            filterView.addCondition(filter, logicsSupplier);
+        }
     }
 
     public void removePressed(GPropertyFilter filter) {
