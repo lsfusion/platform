@@ -23,6 +23,7 @@ public class ActionGridCellRenderer extends TextBasedGridCellRenderer {
         style.setPaddingBottom(0, Style.Unit.PX);
         style.setPaddingLeft(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
         style.setPaddingRight(BUTTON_HORIZONTAL_PADDING, Style.Unit.PX);
+        style.setTextAlign(Style.TextAlign.CENTER);
 
         DivElement innerTop = element.appendChild(Document.get().createDivElement());
         innerTop.getStyle().setHeight(50, Style.Unit.PCT);
