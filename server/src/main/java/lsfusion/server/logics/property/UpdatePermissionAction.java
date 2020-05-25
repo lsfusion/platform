@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -40,7 +41,10 @@ public class UpdatePermissionAction extends InternalAction {
         if (sp != null) {
             ElementSecurityPolicy esp = type.equals("view") ? sp.propertyView : type.equals("change") ? sp.propertyChange : type.equals("editObjects") ? sp.propertyEditObjects : null;
             if(esp != null) {
-                esp.setPermission(context.getBL().findPropertyElseAction(actionOrProperty), securityManager.getPermissionValue(permission));
+                LAP property = context.getBL().findPropertyElseAction(actionOrProperty);
+                if(property != null) {
+                    esp.setPermission(property.getActionOrProperty(), securityManager.getPermissionValue(permission));
+                }
             }
         }
     }
