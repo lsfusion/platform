@@ -1058,7 +1058,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             }
         }
 
-        if(calcType.isStatAlot() && explicitClasses != null && this instanceof AggregateProperty && !((AggregateProperty)this).hasAlotKeys()) {
+        if(calcType.isStatAlot() && explicitClasses != null && this instanceof AggregateProperty && !((AggregateProperty)this).hasAlotKeys() && getType() != null) {
             assert SystemProperties.lightStart;
             assert !hasChanges(propChanges) && modify == null;
             return getVirtualTableExpr(joinImplement, AlgType.statAlotType); // тут собственно смысл в том чтобы класс брать из сигнатуры и не высчитывать
