@@ -203,9 +203,23 @@ public abstract class GFilterController {
 
     public void addNewConditions(List<GPropertyFilter> filters) {
         for(GPropertyFilter filter : filters) {
+            GPropertyFilter condition = findConditionByProperty(filter.property);
+            if(condition != null) {
+                conditions.remove(condition);
+                filterView.removeCondition(condition);
+            }
             conditions.add(filter);
             filterView.addCondition(filter, logicsSupplier);
         }
+    }
+
+    public GPropertyFilter findConditionByProperty(GPropertyDraw property) {
+        for(GPropertyFilter condition : conditions) {
+            if(condition.property.equals(property)) {
+                return condition;
+            }
+        }
+        return null;
     }
 
     public void removePressed(GPropertyFilter filter) {
