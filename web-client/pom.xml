@@ -175,26 +175,6 @@
                     <artifactId>jdtcore</artifactId>
                     <groupId>eclipse</groupId>
                 </exclusion>
-
-                <!-- JasperReports library 6.10.0+ started to use newer versions of these 4 libraries, which are Multi-Release JARs (JEP-238)
-                 GWT needs at least Jetty 9.4.9+ to run in DevMode with such libraries. For now attempt to patch GWT (to use newer Jetty) was not successful, 
-                 and as we actually don't use JR functionality in web-client, just exclude these dependencies. -->
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15on</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 
