@@ -78,6 +78,7 @@ public class TypeSerializer {
         if (type == DataType.DATE) return DateClass.instance;
         if (type == DataType.YEAR) return YearClass.instance;
         if (type == DataType.DATETIME) return DateTimeClass.instance;
+        if (type == DataType.ZDATETIME) return DateTimeClass.instance;
         if (type == DataType.TIME) return TimeClass.instance;
         if (type == DataType.COLOR) return ColorClass.instance;
 
