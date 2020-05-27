@@ -12,8 +12,11 @@ getAvailablePrinters '{printer.get.available.printers}'  INTERNAL  'lsfusion.ser
 writeToSocket (text, charset, ip, port, isClient)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToSocketAction' (TEXT, STRING[10], STRING[30], INTEGER, BOOLEAN);
 writeToServerSocket (text, charset, ip, port) { writeToSocket(text, charset, ip, port, NULL); }
 
-printPath '{printer.print.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintFileAction' (STRING, STRING);
-printPath '{printer.print.file}' (STRING path) { printPath(path, NULL); }
+printPath '{printer.print.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintFileAction' (STRING, STRING, STRING, BOOLEAN);
+printPath '{printer.print.file}' (STRING path, STRING printer) { printPath(path, printer, NULL, NULL); }
+printPath '{printer.print.file}' (STRING path) { printPath(path, NULL, NULL, NULL); }
 
-printFile '{printer.print.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintFileAction' (PDFFILE, STRING);
-printFile '{printer.print.file}' (PDFFILE file) { printFile(file, NULL); }
+
+printFile '{printer.print.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintFileAction' (PDFFILE, STRING, STRING, BOOLEAN);
+printFile '{printer.print.file}' (PDFFILE file, STRING printer) { printFile(file, printer, NULL, NULL); }
+printFile '{printer.print.file}' (PDFFILE file) { printFile(file, NULL, NULL, NULL); }
