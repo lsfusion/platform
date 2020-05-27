@@ -1078,7 +1078,7 @@ public class GPivot extends GStateTableView {
             },
             
             rowAttrHeaderDblClickHandler: function (th, rowKeyValues, attrName) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::rowHeaderDblClickAction(*)(attrName, th.className);
+                alert("row: " + rowKeyValues + ", rowKey: " + attrName + ", val: " + th.textContent);
             },
             
             colAttrHeaderDblClickHandler: function (element, colKeyValues, isSubtotal) {
@@ -1167,26 +1167,5 @@ public class GPivot extends GStateTableView {
             }
         }
         return false;
-    }
-
-    private void rowHeaderDblClickAction(String rowKey, String className) {
-        Column column = columnMap.get(rowKey);
-        if(column != null) {
-
-            //todo: в pivot значения отсортированы по алфавиту, а в keys - другой порядок, в итоге ключи выбираются неправильные
-            Integer index = null;
-            RegExp regExp = RegExp.compile("row(\\d+)");
-            for(String c : className.split(" ")) {
-                MatchResult matcher = regExp.exec(c);
-                boolean matchFound = matcher != null; // equivalent to regExp.test(inputStr);
-                if (matchFound) {
-                    index = Integer.parseInt(matcher.getGroup(1));
-                }
-            }
-
-            if(index != null) {
-                form.executeEventAction(column.property, keys.get(index), GEditBindingMap.EDIT_OBJECT);
-            }
-        }
     }
 }
