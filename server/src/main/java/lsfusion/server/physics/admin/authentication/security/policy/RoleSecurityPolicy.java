@@ -31,7 +31,7 @@ public class RoleSecurityPolicy {
 
     public Boolean checkPropertyChangePermission(ActionOrProperty property, Action changeAction) {
         if(isReadOnlyPolicy && changeAction.ignoreReadOnlyPolicy()) // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit)
-            return true;
+            return null;
         return this.propertyChange.checkPermission(property);
     }
 

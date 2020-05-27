@@ -964,7 +964,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(updateOrders) // изменились порядки, надо обновить свойства созданные при помощи соответствующих операторов форм, сейчас будет определенная избыточность для dataUpdated (так как через eventChange уже должны изменится), но пока не критично
             updateEnvironmentIncrementProp(environmentIncrement, modifier, changedProps, reallyChanged, GroupObjectProp.ORDER, true, true);
 
-        boolean updateKeys = updateFilters || updateOrders || userSeeks != null;
+        boolean updateKeys = updateFilters || updateOrders || (setGroupMode == null && userSeeks != null);
 
         boolean updatePageSize = (updated & UPDATED_PAGESIZE) != 0;
 

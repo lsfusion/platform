@@ -13,6 +13,9 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.Media;
+import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.Sides;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
@@ -22,11 +25,15 @@ public class PrintFileClientAction extends ExecuteClientAction {
     private RawFileData fileData;
     private String filePath;
     private String printerName;
+    private String trayName;
+    private boolean duplex;
 
-    public PrintFileClientAction(RawFileData fileData, String filePath, String printerName) {
+    public PrintFileClientAction(RawFileData fileData, String filePath, String printerName, String trayName, boolean duplex) {
         this.fileData = fileData;
         this.filePath = filePath;
         this.printerName = printerName;
+        this.trayName = trayName;
+        this.duplex = duplex;
     }
 
     @Override
@@ -62,7 +69,17 @@ public class PrintFileClientAction extends ExecuteClientAction {
                         PrinterJob job = PrinterJob.getPrinterJob();
                         job.setPageable(new PDFPageable(document));
                         job.setPrintService(printer);
-                        job.print();
+
+                        HashPrintRequestAttributeSet attrSet = new HashPrintRequestAttributeSet();
+                        Media media = getTray(printer, flavor, attributeSet, trayName);
+                        if (media != null) {
+                            attrSet.add(media);
+                        }
+                        if (duplex && printer.isAttributeValueSupported(Sides.DUPLEX, flavor, attributeSet)) {
+                            attrSet.add(Sides.DUPLEX);
+                        }
+
+                        job.print(attrSet);
                     }
 
                 } finally {
@@ -74,5 +91,21 @@ public class PrintFileClientAction extends ExecuteClientAction {
         } catch (PrinterException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private static Media getTray(PrintService printer, DocFlavor flavor, PrintRequestAttributeSet attributeSet, String trayName) {
+        if(trayName != null) {
+            Media[] supportedMedia = (Media[]) printer.getSupportedAttributeValues(Media.class, flavor, attributeSet);
+            if (supportedMedia != null) {
+                for (Media media : supportedMedia) {
+                    if (media instanceof MediaTray) {
+                        if (media.toString().equals(trayName)) {
+                            return media;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
