@@ -238,8 +238,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     
     private boolean checkPermission(Action eventAction, String eventActionSID, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
         ActionOrProperty securityProperty;
-        if (isEdit(eventActionSID)) {
-            if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
+        if (isEdit(eventActionSID) && !eventAction.ignoreReadOnlyPolicy()) {
+            if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call()))
                 return false;
 
             securityProperty = getSecurityProperty(); // will check property itself
