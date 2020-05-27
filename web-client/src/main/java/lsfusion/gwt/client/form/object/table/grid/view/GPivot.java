@@ -3,6 +3,8 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -16,6 +18,7 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
@@ -1071,12 +1074,11 @@ public class GPivot extends GStateTableView {
         
         return {
             valueCellDblClickHandler: function (td, rowKeyValues, colKeyValues, x, y) {
-                //alert("col: " + colKeyValues + ", row: " + rowKeyValues + ", val: " + td.textContent);
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::dblClickAction(*)(rowKeyValues, colKeyValues, x, y);
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::cellDblClickAction(*)(rowKeyValues, colKeyValues, x, y);
             },
             
             rowAttrHeaderDblClickHandler: function (th, rowKeyValues, attrName) {
-                alert("row: " + rowKeyValues + ", rowKey: " + attrName + ", val: " + th.textContent);
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::rowHeaderDblClickAction(*)(attrName, th.className);
             },
             
             colAttrHeaderDblClickHandler: function (element, colKeyValues, isSubtotal) {
@@ -1109,7 +1111,7 @@ public class GPivot extends GStateTableView {
         }
     }-*/;
 
-    private void dblClickAction(JsArrayString rowKeyValues, JsArrayString colKeyValues, int x, int y) {
+    private void cellDblClickAction(JsArrayString rowKeyValues, JsArrayString colKeyValues, int x, int y) {
         final PopupPanel popup = new PopupPanel(true);
 
         List<String> menuItems = new ArrayList<>();
@@ -1167,4 +1169,24 @@ public class GPivot extends GStateTableView {
         return false;
     }
 
+    private void rowHeaderDblClickAction(String rowKey, String className) {
+        Column column = columnMap.get(rowKey);
+        if(column != null) {
+
+            //todo: в pivot значения отсортированы по алфавиту, а в keys - другой порядок, в итоге ключи выбираются неправильные
+            Integer index = null;
+            RegExp regExp = RegExp.compile("row(\\d+)");
+            for(String c : className.split(" ")) {
+                MatchResult matcher = regExp.exec(c);
+                boolean matchFound = matcher != null; // equivalent to regExp.test(inputStr);
+                if (matchFound) {
+                    index = Integer.parseInt(matcher.getGroup(1));
+                }
+            }
+
+            if(index != null) {
+                form.executeEventAction(column.property, keys.get(index), GEditBindingMap.EDIT_OBJECT);
+            }
+        }
+    }
 }

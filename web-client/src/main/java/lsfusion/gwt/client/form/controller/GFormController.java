@@ -721,6 +721,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), callback);
     }
 
+    public void executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
+        dispatcher.execute(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
+    }
+
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
         syncDispatch(new ContinueInvocation(requestIndex, actionResults, continueIndex), callback, true);
     }
