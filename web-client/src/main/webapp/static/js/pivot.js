@@ -1162,7 +1162,8 @@
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
       localeDefaults = {
         rendererOptions: {
-          localeStrings: localeStrings
+          localeStrings: localeStrings,
+          locale: locale
         },
         localeStrings: localeStrings
       };
@@ -1197,7 +1198,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
+      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1235,7 +1236,8 @@
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
       localeDefaults = {
         rendererOptions: {
-          localeStrings: localeStrings
+          localeStrings: localeStrings,
+          locale: locale
         },
         localeStrings: localeStrings
       };
@@ -1533,7 +1535,7 @@
         pivotTable = $("<td>").attr("valign", "top").addClass('pvtRendererArea').appendTo(tr2);
         pivotRendererHeader = $("<div>").addClass('pvtRendererHeader').appendTo(pivotTable);
         pivotRendererBody = $("<div>").addClass('pvtRendererBody').appendTo(pivotTable);
-        pivotRendererHeader = $("<div>").addClass('pvtRendererFooter').appendTo(pivotTable);
+        pivotRendererFooter = $("<div>").addClass('pvtRendererFooter').appendTo(pivotTable);
         pivotScrollDiv = $("<div>").addClass('pvtRendererScrollDiv').appendTo(pivotRendererBody);
         if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
           uiTable.find('.uiTableRow:nth-child(1)').prepend(rendererControl);
@@ -1759,7 +1761,7 @@
             if (opts.onRefresh != null) {
               opts.onRefresh(pivotUIOptions);
             }
-            pivotScrollDiv.pivot(materializedInput, subopts);
+            pivotScrollDiv.pivot(materializedInput, subopts, locale);
             _this.data("pivotUIOptions", pivotUIOptions);
             if (opts.autoSortUnusedAttrs) {
               unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");

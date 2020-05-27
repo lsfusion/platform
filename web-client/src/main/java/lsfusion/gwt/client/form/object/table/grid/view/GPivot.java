@@ -6,6 +6,8 @@ import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
+import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -179,7 +181,7 @@ public class GPivot extends GStateTableView {
         return caption;
     }
 
-    public static final String COLUMN = "(Колонка)";
+    public static final String COLUMN = ClientMessages.Instance.get().pivotColumnAttribute();
 
     public boolean firstUpdateView = true;
     @Override
@@ -207,7 +209,7 @@ public class GPivot extends GStateTableView {
         JsArrayString jsArray = JsArrayString.createArray().cast();
         aggrCaptions.forEach(jsArray::push);
 
-        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, jsArray); // we need to updateRendererState after it is painted
+        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, jsArray, GwtClientUtils.getCurrentLanguage()); // we need to updateRendererState after it is painted
     }
 
     private void initDefaultConfig(GGridController gridController) {
@@ -240,7 +242,7 @@ public class GPivot extends GStateTableView {
             inclusions.putValue(COLUMN, measures);
         }
 
-        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings);
+        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings, GwtClientUtils.getCurrentLanguage());
     }
 
     private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
@@ -458,7 +460,7 @@ public class GPivot extends GStateTableView {
         }
 
         updateRendererState(true); // will wait until server will answer us if we need to change something
-        grid.changeGroupMode(properties, columnKeys, aggrProps, GPropertyGroupType.valueOf(aggregatorName.toUpperCase()));
+        grid.changeGroupMode(properties, columnKeys, aggrProps, getGroupType(aggregatorName.toUpperCase()));
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
@@ -475,15 +477,15 @@ public class GPivot extends GStateTableView {
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
 
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI)/*-{
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI, String language)/*-{
         var tpl = $wnd.$.pivotUtilities.aggregatorTemplates;
         var instance = this;
         var renderers = $wnd.$.extend(
-            $wnd.$.pivotUtilities.subtotal_renderers,
-            $wnd.$.pivotUtilities.plotly_renderers,
+            $wnd.$.pivotUtilities.subtotal_renderers[language],
+            $wnd.$.pivotUtilities.plotly_renderers[language],
 //            $wnd.$.pivotUtilities.c3_renderers,
 //            $wnd.$.pivotUtilities.renderers,
-            $wnd.$.pivotUtilities.d3_renderers
+            $wnd.$.pivotUtilities.d3_renderers[language]
         );
 
         return {
@@ -504,7 +506,7 @@ public class GPivot extends GStateTableView {
         }
     }-*/;
 
-    protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns)/*-{
+    protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns, String language)/*-{
 //        var d = element;
         var d = $doc.createElement('div'); // we need some div to append it later to avoid blinking
         d.className = 'pvtUiWrapperDiv';
@@ -513,7 +515,7 @@ public class GPivot extends GStateTableView {
         config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);
 
         // because we create new element, aggregators every time
-        $wnd.$(d).pivotUI(array, config, true);
+        $wnd.$(d).pivotUI(array, config, true, language);
 
         // moving pagesize controller inside
         $wnd.$(d).find(".pvtRendererFooter").append(pageSizeElement);
@@ -658,15 +660,37 @@ public class GPivot extends GStateTableView {
         }
     }
 
-    private final static String[] aggregatorNames = new String[]{"Sum", "Max", "Min"};
+    private final static String[] aggregatorNames = new String[]{"SUM", "MAX", "MIN"};
 
     public JavaScriptObject getAggregators(Aggregator aggregator) {
         WrapperObject aggregators = JavaScriptObject.createObject().cast();
         for (String aggregatorName : aggregatorNames)
-            aggregators.putValue(aggregatorName, getAggregator(aggregatorName.toUpperCase(), aggregator));
+            aggregators.putValue(getAggregatorName(aggregatorName), getAggregator(aggregatorName, aggregator));
         return aggregators;
     }
 
+    private String getAggregatorName(String aggregatorName) {
+        ClientMessages messages = ClientMessages.Instance.get();
+        switch (aggregatorName) {
+            case "SUM": return messages.pivotAggregatorSum();
+            case "MAX": return messages.pivotAggregatorMax();
+            case "MIN": return messages.pivotAggregatorMin();
+        }
+        return "";
+    }
+    
+    private GPropertyGroupType getGroupType(String aggregatorName) {
+        ClientMessages messages = ClientMessages.Instance.get();
+        if (aggregatorName.equals(messages.pivotAggregatorSum())) {
+            return GPropertyGroupType.SUM;
+        } else if (aggregatorName.equals(messages.pivotAggregatorMax())) {
+            return GPropertyGroupType.MAX;
+        } else if (aggregatorName.equals(messages.pivotAggregatorMin())) {
+            return GPropertyGroupType.MIN;
+        }
+        return GPropertyGroupType.SUM;
+    }
+    
     public JavaScriptObject getAggregator(String aggrFuncName, Aggregator aggregator) {
         return getAggregator(aggregator, getValueAggregator(aggrFuncName));
     }

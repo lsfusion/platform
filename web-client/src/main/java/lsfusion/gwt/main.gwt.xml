@@ -1,5 +1,6 @@
-<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.0//EN"
-        "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.8.2//EN"
+        "http://www.gwtproject.org/doctype/2.8.2/gwt-module.dtd">
+        
 <module rename-to="main"> <!-- without rename name will be with packages i.e lsfusion.gwt.main -->
     <!-- this name is used in web.xml dispatch endpoint and in main.jsp nocache.js (gwt-maven-plugin in web-client/pom.xml uses default name, apparently because it needs full path)  -->
     <!-- in case of rename edit also initialization of FileUtils.APP_CLIENT_IMAGES_FOLDER_URL in LogicsProviderImpl -->
@@ -13,9 +14,14 @@
 
     <!-- to be able to get browser locale on the server side (LSFRemoteAuthenticationProvider) -->
     <set-configuration-property name="locale.useragent" value="Y"/>
-
-    <extend-property name="locale" values="ru"/>
-
+    
+    <!-- Declaration of supported locales and removal of the "default" locale  
+         http://www.gwtproject.org/doc/latest/DevGuideI18nLocale.html#LocaleDefault 
+     -->
+    <extend-property name="locale" values="ru,en"/>
+    <set-property name="locale" value="ru,en"/>
+    <set-property-fallback name="locale" value="en"/>
+    
     <set-configuration-property name="locale.cookie" value="LSFUSION_LOCALE"/>
 
     <!-- note:

@@ -630,7 +630,10 @@ callWithJQuery ($) ->
 
         localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings)
         localeDefaults =
-            rendererOptions: {localeStrings}
+            rendererOptions: {
+                localeStrings
+                locale
+            }
             localeStrings: localeStrings
 
         opts = $.extend(true, {}, localeDefaults, $.extend({}, defaults, inputOpts))
@@ -680,7 +683,10 @@ callWithJQuery ($) ->
 
         localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings)
         localeDefaults =
-            rendererOptions: {localeStrings}
+            rendererOptions: {
+                localeStrings
+                locale
+            }
             localeStrings: localeStrings
 
         existingOpts = @data "pivotUIOptions"
@@ -1127,7 +1133,7 @@ callWithJQuery ($) ->
                     
                 opts.onRefresh(pivotUIOptions) if opts.onRefresh?
                 
-                pivotScrollDiv.pivot(materializedInput,subopts)
+                pivotScrollDiv.pivot(materializedInput,subopts,locale)
 
                 @data "pivotUIOptions", pivotUIOptions
 

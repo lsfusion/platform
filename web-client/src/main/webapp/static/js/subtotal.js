@@ -16,7 +16,7 @@
   };
 
   callWithJQuery(function($) {
-    var SubtotalPivotData, SubtotalRenderer, aggregatorTemplates, subtotalAggregatorTemplates, usFmtPct;
+    var SubtotalPivotData, SubtotalRenderer, aggregatorTemplates, subtotalAggregatorTemplates, table_barchart_renderer, table_colheatmap_renderer, table_heatmap_renderer, table_renderer, table_rowheatmap_renderer, usFmtPct;
     SubtotalPivotData = (function(superClass) {
       var processKey;
 
@@ -1568,21 +1568,35 @@
       };
       return main(rowAttrs, rowKeys, colAttrs, colKeys);
     };
+    table_renderer = function(pvtData, opts) {
+      return SubtotalRenderer(pvtData, opts);
+    };
+    table_barchart_renderer = function(pvtData, opts) {
+      return $(SubtotalRenderer(pvtData, opts)).barchart();
+    };
+    table_heatmap_renderer = function(pvtData, opts) {
+      return $(SubtotalRenderer(pvtData, opts)).heatmap("heatmap", opts);
+    };
+    table_rowheatmap_renderer = function(pvtData, opts) {
+      return $(SubtotalRenderer(pvtData, opts)).heatmap("rowheatmap", opts);
+    };
+    table_colheatmap_renderer = function(pvtData, opts) {
+      return $(SubtotalRenderer(pvtData, opts)).heatmap("colheatmap", opts);
+    };
     $.pivotUtilities.subtotal_renderers = {
-      "Table": function(pvtData, opts) {
-        return SubtotalRenderer(pvtData, opts);
+      en: {
+        "Table": table_renderer,
+        "Table Barchart": table_barchart_renderer,
+        "Table Heatmap": table_heatmap_renderer,
+        "Table Row Heatmap": table_rowheatmap_renderer,
+        "Table Col Heatmap": table_colheatmap_renderer
       },
-      "Table Barchart": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).barchart();
-      },
-      "Table Heatmap": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).heatmap("heatmap", opts);
-      },
-      "Table Row Heatmap": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).heatmap("rowheatmap", opts);
-      },
-      "Table Col Heatmap": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).heatmap("colheatmap", opts);
+      ru: {
+        "Таблица": table_renderer,
+        "Табличная столбчатая диаграмма": table_barchart_renderer,
+        "Табличная тепловая карта": table_heatmap_renderer,
+        "Табличная тепловая карта по рядам": table_rowheatmap_renderer,
+        "Табличная тепловая карта по колонкам": table_colheatmap_renderer
       }
     };
     usFmtPct = $.pivotUtilities.numberFormat({
