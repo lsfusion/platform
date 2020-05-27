@@ -229,26 +229,26 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    private boolean isEdit(String eventActionSID) {
+    private boolean isChange(String eventActionSID) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
-        boolean isEdit = CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
+        boolean isEdit = CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
         assert isEdit || hasContextMenuBinding(eventActionSID) || hasKeyBinding(eventActionSID);
         return isEdit;
     }
     
     private boolean checkPermission(Action eventAction, String eventActionSID, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
+        if(EDIT_OBJECT.equals(eventActionSID))
+            return securityPolicy.checkPropertyEditObjectsPermission(getSecurityProperty());
+
         ActionOrProperty securityProperty;
-        if (isEdit(eventActionSID) && !eventAction.ignoreReadOnlyPolicy()) {
-            if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call()))
+        if (isChange(eventActionSID)) {
+            if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
                 return false;
 
             securityProperty = getSecurityProperty(); // will check property itself
         } else { // menu or key binding
             securityProperty = eventAction;
         }
-
-        if(EDIT_OBJECT.equals(eventActionSID))
-            return securityPolicy.checkPropertyEditObjectsPermission(securityProperty);
 
         return securityPolicy.checkPropertyChangePermission(securityProperty, eventAction);
     }
