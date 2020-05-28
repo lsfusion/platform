@@ -3,8 +3,6 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.regexp.shared.MatchResult;
-import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -186,6 +184,7 @@ public class GPivot extends GStateTableView {
 
     public static final String COLUMN = "(Колонка)";
 
+    JsArray<JsArrayMixed> data = null;
     public boolean firstUpdateView = true;
     @Override
     protected void updateView() {
@@ -194,7 +193,7 @@ public class GPivot extends GStateTableView {
         Aggregator aggregator = Aggregator.create();
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
         boolean convertDataToStrings = false; // so far we'll not use renderer formatters and we'll rely on native toString (if we decide to do it we'll have to track renderer type and rerender everything if this type changes that can may lead to some blinking)
-        JavaScriptObject data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings); // convertToObjects()
+        data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings); // convertToObjects()
         if(firstUpdateView) {
             initDefaultConfig(grid);
             firstUpdateView = false;
@@ -1078,11 +1077,11 @@ public class GPivot extends GStateTableView {
             },
             
             rowAttrHeaderDblClickHandler: function (th, rowKeyValues, attrName) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::rowHeaderDblClickAction(*)(attrName, th.className);
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::attrHeaderDblClickAction(*)(rowKeyValues, true, th.textContent);
             },
             
             colAttrHeaderDblClickHandler: function (element, colKeyValues, isSubtotal) {
-                alert("col: " + colKeyValues + ", isSubtotal: " + isSubtotal + ", val: " + element.textContent);
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::attrHeaderDblClickAction(*)(colKeyValues, false, element.textContent);
             },
             
             axisHeaderDblClickHandler: function (element, attrName) {
@@ -1169,24 +1168,57 @@ public class GPivot extends GStateTableView {
         return false;
     }
 
-    private void rowHeaderDblClickAction(String rowKey, String className) {
-        Column column = columnMap.get(rowKey);
-        if(column != null) {
-
-            //todo: в pivot значения отсортированы по алфавиту, а в keys - другой порядок, в итоге ключи выбираются неправильные
-            Integer index = null;
-            RegExp regExp = RegExp.compile("row(\\d+)");
-            for(String c : className.split(" ")) {
-                MatchResult matcher = regExp.exec(c);
-                boolean matchFound = matcher != null; // equivalent to regExp.test(inputStr);
-                if (matchFound) {
-                    index = Integer.parseInt(matcher.getGroup(1));
-                }
-            }
-
-            if(index != null) {
-                form.executeEventAction(column.property, keys.get(index), GEditBindingMap.EDIT_OBJECT);
+    private void attrHeaderDblClickAction(JsArrayString keysJsArray, boolean isRows, String value) {
+        List<String> keysArray = toArrayList(keysJsArray);
+        List<String> rowsOrCols = toArrayList(config.getArrayString(isRows ? "rows" : "cols"));
+        String selectedColumn = rowsOrCols.get(keysArray.indexOf(value));
+        if (selectedColumn != null) {
+            Column column = columnMap.get(selectedColumn);
+            Integer rowIndex = getRowIndex(keysArray, rowsOrCols);
+            if (column != null && rowIndex != null) {
+                form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
             }
         }
+    }
+
+    private Integer getRowIndex(List<String> keysArray, List<String> rowsOrCols) {
+        ArrayList<String> headers = toArrayList(data.get(0));
+        List<Integer> headerIndexes = new ArrayList<>();
+        for (String rowOrCol : rowsOrCols) {
+            headerIndexes.add(headers.indexOf(rowOrCol));
+        }
+
+        Integer rowIndex = 0;
+        for (int i = 1; i < data.length(); i += aggrCaptions.size()) {
+            JsArrayMixed row = data.get(i);
+            boolean found = true;
+            for (int j = 0; j < keysArray.size(); j++) {
+                if (!row.getString(headerIndexes.get(j)).equals(keysArray.get(j))) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return rowIndex;
+            }
+            rowIndex++;
+        }
+        return null;
+    }
+
+    private ArrayList<String> toArrayList(JsArrayMixed jsArray) {
+        ArrayList<String> arrayList = new ArrayList<>();
+        for(int i = 0; i < jsArray.length(); i++) {
+            arrayList.add(jsArray.getString(i));
+        }
+        return arrayList;
+    }
+
+    private ArrayList<String> toArrayList(JsArrayString jsArray) {
+        ArrayList<String> arrayList = new ArrayList<>();
+        for(int i = 0; i < jsArray.length(); i++) {
+            arrayList.add(jsArray.get(i));
+        }
+        return arrayList;
     }
 }
