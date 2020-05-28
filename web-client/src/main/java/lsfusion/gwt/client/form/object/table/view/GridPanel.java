@@ -31,7 +31,7 @@ public class GridPanel extends FlexPanel {
                 if (autoSize <= 0) // еще не было layout'а, ставим эвристичный размер
                     autoSize = gridTable.getMaxPreferredSize().height;
                 else {
-                    autoSize += view.getOffsetHeight() - gridTable.getTableDataScroller().getClientHeight(); // margin'ы и border'ы учитываем
+                    autoSize += view.getOffsetHeight() - gridTable.getViewportHeight(); // margin'ы и border'ы учитываем
                 }
             }
         } else

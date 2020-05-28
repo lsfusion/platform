@@ -63,11 +63,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected int preferredWidth;
 
     public GGridPropertyTable(GFormController iform, GGroupObject iGroupObject, GFont font) {
-        this(iform, iGroupObject, font, -1);
-    }
-    
-    public GGridPropertyTable(GFormController iform, GGroupObject iGroupObject, GFont font, int initHeaderHeight) {
-        super(iform, iGroupObject, getDefaultStyle(), initHeaderHeight);
+        super(iform, iGroupObject, getDefaultStyle(), false, true, false);
         
         this.font = font;
 
@@ -229,7 +225,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             oldKey = selectedRecord.getKey();
             TableRowElement childElement = getChildElement(selectedRow);
             if (childElement != null) {
-                oldRowScrollTop = childElement.getOffsetTop() - getTableDataScroller().getVerticalScrollPosition();
+                oldRowScrollTop = childElement.getOffsetTop() - tableDataScroller.getVerticalScrollPosition();
             }
         }
     }
@@ -350,7 +346,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void resizeColumn(int column, int delta) {
 //        int body = ;
-        int viewWidth = getViewportWidth(); // непонятно откуда этот один пиксель берется (судя по всему padding)
+        int viewWidth = getViewportWidth() - 1; // непонятно откуда этот один пиксель берется (судя по всему padding)
         GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
         for (int i = 0; i < prefs.length; i++)
             setUserWidth(i, (int) Math.round(prefs[i]));
@@ -359,7 +355,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     private int getViewportWidth() {
-        return getTableDataScroller().getClientWidth() - 1;
+        return tableDataScroller.getClientWidth();
+    }
+    public int getViewportHeight() {
+        return tableDataScroller.getClientHeight();
     }
 
     protected abstract void setUserWidth(GPropertyDraw property, Integer value);

@@ -38,7 +38,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     private DataFilterValueEditableCell cell;
 
     public GDataFilterValueViewTable(GDataFilterValueView valueView, GPropertyDraw property) {
-        super(GSinglePropertyTable.SINGLE_PROPERTY_TABLE_STYLE);
+        super(GSinglePropertyTable.SINGLE_PROPERTY_TABLE_STYLE, true, true, true);
 
         this.valueView = valueView;
         this.property = property;
@@ -49,7 +49,6 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
         setSize("100%", property.getValueHeight(null) + "px");
         setTableWidth(property.getValueWidth(null) + 2, Unit.PX);  // 2 for borders
-        getTableDataScroller().removeScrollbars();
 
         cell = new DataFilterValueEditableCell();
 

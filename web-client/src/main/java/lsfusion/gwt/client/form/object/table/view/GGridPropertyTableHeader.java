@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.Header;
-import lsfusion.gwt.client.base.view.grid.HeaderPanel;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
@@ -37,25 +36,12 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     private int headerHeight;
 
-    public GGridPropertyTableHeader(GGridPropertyTable table, int headerHeight) {
-        this(table, null, null, headerHeight);
-    }
-
-    public GGridPropertyTableHeader(GGridPropertyTable table, String caption) {
-        this(table, caption, null);
-    }
-
     public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip) {
-        this(table, caption, toolTip, 0);
-    }
-
-    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip, int headerHeight) {
         super(DBLCLICK, MOUSEDOWN, MOUSEMOVE, MOUSEOVER, MOUSEOUT);
 
         this.caption = caption;
         this.table = table;
         this.toolTip = toolTip;
-        this.headerHeight = headerHeight;
     }
 
     public void setCaption(String caption, boolean notNull, boolean hasChangeAction) {
@@ -130,14 +116,14 @@ public class GGridPropertyTableHeader extends Header<String> {
     @Override
     public void renderDom(TableCellElement th) {
         th.addClassName("positionRelative");
-        th.getStyle().setHeight(headerHeight >= 0 ? headerHeight : HeaderPanel.DEFAULT_HEADER_HEIGHT, Style.Unit.PX);
+        int height = getHeaderHeight();
+        th.getStyle().setHeight(height, Style.Unit.PX);
 
         Boolean sortDir = table.getSortDirection(this);
         String escapedCaption = getEscapedCaption();
 
-        int maxHeight = headerHeight >= 0 ? headerHeight : HeaderPanel.DEFAULT_HEADER_HEIGHT;
         DivElement div = Document.get().createDivElement();
-        div.getStyle().setProperty("maxHeight", maxHeight, Style.Unit.PX);
+        div.getStyle().setProperty("maxHeight", height, Style.Unit.PX);
         div.getStyle().setOverflow(Style.Overflow.HIDDEN);
         div.getStyle().setTextAlign(Style.TextAlign.CENTER);
         div.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);
@@ -182,6 +168,11 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
 
         setRendered(caption, sortDir);
+    }
+
+    public final static int DEFAULT_HEADER_HEIGHT = 34;
+    public int getHeaderHeight() {
+        return headerHeight > 0 ? headerHeight : DEFAULT_HEADER_HEIGHT;
     }
 
     private String getEscapedCaption() {
