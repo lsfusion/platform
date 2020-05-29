@@ -6,6 +6,10 @@
     border: 1px solid var(--focus-color);
 }
 
+.pivotTable-noSettings {
+    border: none;
+}
+
 .pvtUiWrapperDiv {
     height: 100%;
     width: 100%;
@@ -26,6 +30,10 @@
     /*to stretch last empty paxis*/
     height:100%;
     width: 100%;
+}
+
+.pvtUi-noSettings {
+    border-spacing: 0;
 }
 
 .pvtTable {

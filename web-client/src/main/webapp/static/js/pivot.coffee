@@ -997,7 +997,9 @@ callWithJQuery ($) ->
             if opts.rendererName?
                 @find(".pvtRenderer").val opts.rendererName
 
-            @find(".pvtUiCell").hide() unless opts.showUI
+            if not opts.showUI 
+                @find(".pvtUiCell").hide()
+                @find(".pvtUi").addClass("pvtUi-noSettings")
 
             initialRender = true
 

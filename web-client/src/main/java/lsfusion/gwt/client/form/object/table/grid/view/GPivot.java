@@ -348,6 +348,9 @@ public class GPivot extends GStateTableView {
     public void switchSettings() {
         settings = !settings;
         config = overrideShowUI(config, settings);
+
+        setStyleName(getDrawElement(), "pivotTable-noSettings", !settings);
+        
         rerender();
 
         updateView(false, null);

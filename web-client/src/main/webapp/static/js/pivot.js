@@ -1591,6 +1591,7 @@
         }
         if (!opts.showUI) {
           this.find(".pvtUiCell").hide();
+          this.find(".pvtUi").addClass("pvtUi-noSettings");
         }
         initialRender = true;
         refreshPaxis = (function(_this) {
