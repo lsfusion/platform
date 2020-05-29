@@ -1211,7 +1211,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
          * min-width of the element that contains the table instead. For
          * consistency, we set the width of the container as well.
          */
-        assert !noHeaders && !noScrollers && noFooters;
+        assert noHeaders && noScrollers && noFooters;
         tableData.getElement().getStyle().setWidth(value, unit);
     }
 
