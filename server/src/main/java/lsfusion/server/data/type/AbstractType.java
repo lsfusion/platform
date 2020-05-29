@@ -8,12 +8,14 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.AbstractReader;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
 import net.iryndin.jdbf.core.DbfFieldTypeEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,6 +25,9 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import static lsfusion.base.DateConverter.safeDateToSql;
+import static lsfusion.base.DateConverter.sqlDateToLocalDate;
 
 public abstract class AbstractType<T> extends AbstractReader<T> implements Type<T> {
 
@@ -155,7 +160,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
                 cellValue = formulaValue.getStringValue();
                 break;
             case NUMERIC:
-                cellValue = new BigDecimal(formulaValue.getNumberValue()).toPlainString();
+                if(DateUtil.isCellDateFormatted(cell)) {
+                    cellValue = DateClass.instance.formatString(sqlDateToLocalDate(safeDateToSql(cell.getDateCellValue()))); //in apache.poi 4.1: cell.getLocalDateTimeCellValue().toLocalDate()
+                } else {
+                    cellValue = new BigDecimal(formulaValue.getNumberValue()).toPlainString();
+                }
                 break;        
             default:
                 cellValue = formulaValue.formatAsString();
