@@ -1,18 +1,15 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
-import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.navigator.window.view.TabLayoutPanel;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
@@ -21,38 +18,51 @@ import java.util.List;
 
 public abstract class DefaultFormsController implements FormsController {
     private final TabLayoutPanel tabsPanel;
-    private List<String> formsList = new ArrayList<>();
-    private List<GFormController> gFormControllersList = new ArrayList<>(); // have no idea why it is a list and not a field
-    private final String tabSID;
+    private final List<String> formsList = new ArrayList<>();
+    private final List<GFormController> gFormControllersList = new ArrayList<>(); // have no idea why it is a list and not a field
+    private final WindowsController windowsController;
+    private static final ImageButton imageButton = new ImageButton("");
+    private static final ResizableSimplePanel resizableSimplePanel = new ResizableSimplePanel();
 
-    public DefaultFormsController(String tabSID) {
-        this.tabSID = tabSID;
-        tabsPanel = new TabLayoutPanel(StyleDefaults.VALUE_HEIGHT + 1, Style.Unit.PX); // 1px for one side border
-        tabsPanel.setVisible(false);
-        tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
-            @Override
-            public void onSelection(SelectionEvent<Integer> event) {
-                int selected = tabsPanel.getSelectedIndex();
-                ((FormDockable.ContentWidget) tabsPanel.getWidget(selected)).setSelected(true);
-                if(gFormControllersList.size() > selected) {
-                    GFormController form = gFormControllersList.get(selected);
-                    form.gainedFocus();
-                    setCurrentForm(form);
-                }
+    public DefaultFormsController(WindowsController windowsController) {
+        this.windowsController = windowsController;
+        tabsPanel = new TabLayoutPanel(StyleDefaults.VALUE_HEIGHT + 1, Style.Unit.PX, resizeButton()); // 1px for one side border
+        windowsController.setTabsPanel(tabsPanel);
+        tabsPanel.addSelectionHandler(event -> {
+            int selected = tabsPanel.getSelectedIndex();
+            ((FormDockable.ContentWidget) tabsPanel.getWidget(selected)).setSelected(true);
+            if(gFormControllersList.size() > selected) {
+                GFormController form = gFormControllersList.get(selected);
+                form.gainedFocus();
+                setCurrentForm(form);
             }
         });
-        tabsPanel.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
-            @Override
-            public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
-                if (tabsPanel.getSelectedIndex() > -1) {
-                    ((FormDockable.ContentWidget) tabsPanel.getWidget(tabsPanel.getSelectedIndex())).setSelected(false);
-                }
+        tabsPanel.addBeforeSelectionHandler(event -> {
+            if (tabsPanel.getSelectedIndex() > -1) {
+                ((FormDockable.ContentWidget) tabsPanel.getWidget(tabsPanel.getSelectedIndex())).setSelected(false);
             }
         });
     }
 
-    public Widget getView() {
-        return tabsPanel;
+    public static void setButtonImage(String path){
+        imageButton.setModuleImagePath(path);
+    }
+
+    public Widget resizeButton() {
+        imageButton.setSize("20px", "20px");
+        imageButton.addClickHandler(event -> {
+            windowsController.resize();
+        });
+        return imageButton;
+    }
+
+    public static void addWidgetToSimplePanel(Widget widget){
+        resizableSimplePanel.setFillWidget(widget);
+    }
+
+    public  Widget getView() {
+        resizableSimplePanel.setFillWidget(tabsPanel);
+        return resizableSimplePanel;
     }
 
     public Widget openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
@@ -95,9 +105,6 @@ public abstract class DefaultFormsController implements FormsController {
 
     private FormDockable addDockable(FormDockable dockable, String formSID) {
         formsList.add(formSID);
-        if (tabsPanel.getWidgetCount() == 0) {
-            tabsPanel.setVisible(true);
-        }
         tabsPanel.add(dockable.getContentWidget(), dockable.getTabWidget());
         tabsPanel.selectTab(dockable.getContentWidget());
         return dockable;
@@ -107,9 +114,6 @@ public abstract class DefaultFormsController implements FormsController {
         unregisterForm(dockable.getForm());
         formsList.remove(formSID);
         tabsPanel.remove(dockable.getContentWidget());
-        if (tabsPanel.getWidgetCount() == 0) {
-            tabsPanel.setVisible(false);
-        }
     }
 
     public void registerForm(GFormController form) {

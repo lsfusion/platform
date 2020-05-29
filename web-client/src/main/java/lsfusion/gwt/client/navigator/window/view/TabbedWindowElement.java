@@ -2,7 +2,6 @@ package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ import java.util.List;
 public class TabbedWindowElement extends WindowElement {
     private List<WindowElement> children = new ArrayList<>();
 
-    private TabLayoutPanel tabPanel = new TabLayoutPanel(21, Style.Unit.PX);
+    private TabLayoutPanel tabPanel = new TabLayoutPanel(21, Style.Unit.PX, null);
 
     public TabbedWindowElement(WindowsController main, int x, int y, int width, int height) {
         super(main, x, y, width, height);

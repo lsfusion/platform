@@ -158,8 +158,27 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         });
 
+        final Linker<GAbstractWindow> formsWindowLink = new Linker<>();
+        final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink = new Linker<>();
+        final Linker<GNavigatorController> navigatorControllerLink = new Linker<>();
+        final Linker<DefaultFormsController> formsControllerLinker = new Linker<>();
+        final WindowsController windowsController = new WindowsController() {
+            @Override
+            public Widget getWindowView(GAbstractWindow window) {
+                Widget view;
+                if (window.equals(formsWindowLink.link)) {
+                    view = formsControllerLinker.link.getView();
+                } else if (window instanceof GNavigatorWindow) {
+                    view = navigatorControllerLink.link.getNavigatorView((GNavigatorWindow) window).getView();
+                } else {
+                    view = commonWindowsLink.link.get(window);
+                }
+                return view;
+            }
+        };
+
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
-        final DefaultFormsController formsController = new DefaultFormsController(tabSID) {
+        final DefaultFormsController formsController = new DefaultFormsController(windowsController) {
             @Override
             public void executeNavigatorAction(GNavigatorAction action, final NativeEvent event) {
                 syncDispatch(new ExecuteNavigatorAction(action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
@@ -196,24 +215,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         };
 
-        final Linker<GAbstractWindow> formsWindowLink = new Linker<>();
-        final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink = new Linker<>();        
-        final Linker<GNavigatorController> navigatorControllerLink = new Linker<>();
-        final WindowsController windowsController = new WindowsController() {
-            @Override
-            public Widget getWindowView(GAbstractWindow window) {
-                Widget view;
-                if (window.equals(formsWindowLink.link)) {
-                    view = formsController.getView();
-                } else if (window instanceof GNavigatorWindow) {
-                    view = navigatorControllerLink.link.getNavigatorView((GNavigatorWindow) window).getView();
-                } else {
-                    view = commonWindowsLink.link.get(window);
-                }
-                return view;
-            }
-        };
-
+        formsControllerLinker.link = formsController;
         actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController);
 
         //we use CloseHandler instead of Window.ClosingHandler because mobile browsers send closing event without closing window
@@ -381,6 +383,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 navigatorController.update();
 
                 formsController.executeNotificationAction("SystemEvents.onWebClientStarted[]", 0);
+
+                windowsController.checkFullscreenOnStartup();
             }
         });
     }
