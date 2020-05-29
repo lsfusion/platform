@@ -1352,7 +1352,7 @@
             return results;
           })();
           hasExcludedItem = false;
-          valueList = $("<div>").addClass('pvtFilterBox').hide();
+          valueList = $("<div>").draggable().addClass('pvtFilterBox').hide();
           valueList.append($("<h4>").append($("<span>").text(attr), $("<span>").addClass("count").text("(" + values.length + ")")));
           if (values.length > opts.menuLimit) {
             valueList.append($("<p>").html(opts.localeStrings.tooMany));
@@ -1459,11 +1459,15 @@
             return closeFilterBox();
           });
           triangleLink = $("<span>").addClass('pvtTriangle').html(" &#x25BE;").bind("click", function(e) {
-            var left, ref2, top;
+            var left, listHeight, ref2, top;
             ref2 = $(e.currentTarget).position(), left = ref2.left, top = ref2.top;
+            listHeight = Math.min(valueList.outerHeight(), uiTable.height());
+            top = Math.min(uiTable.height() - listHeight, top + 10);
+            left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10);
             return valueList.css({
-              left: left + 10,
-              top: top + 10
+              left: left,
+              top: top,
+              maxHeight: (listHeight - 1) + "px"
             }).show();
           });
           attrElem = $("<li>").addClass("axis_" + i).append($("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink));
@@ -1769,7 +1773,7 @@
                 return naturalSort($(a).text(), $(b).text());
               }).appendTo(unusedAttrsContainer);
             }
-            return pivotTable.css("opacity", 1);
+            return pivotTable.css("opacity", "");
           };
         })(this);
         refresh = (function(_this) {

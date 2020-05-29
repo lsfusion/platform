@@ -758,7 +758,7 @@ callWithJQuery ($) ->
                 do (attr) ->
                     values = (v for v of attrValues[attr])
                     hasExcludedItem = false
-                    valueList = $("<div>").addClass('pvtFilterBox').hide()
+                    valueList = $("<div>").draggable().addClass('pvtFilterBox').hide()
 
                     valueList.append $("<h4>").append(
                         $("<span>").text(attr),
@@ -859,7 +859,10 @@ callWithJQuery ($) ->
                     triangleLink = $("<span>").addClass('pvtTriangle')
                         .html(" &#x25BE;").bind "click", (e) ->
                             {left, top} = $(e.currentTarget).position()
-                            valueList.css(left: left+10, top: top+10).show()
+                            listHeight = Math.min(valueList.outerHeight(), uiTable.height())
+                            top = Math.min(uiTable.height() - listHeight, top + 10)
+                            left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10)
+                            valueList.css(left: left, top: top, maxHeight: "#{listHeight - 1}px").show()
 
                     attrElem = $("<li>").addClass("axis_#{i}")
                         .append $("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink)
@@ -1144,7 +1147,7 @@ callWithJQuery ($) ->
                         .sort((a, b) => naturalSort($(a).text(), $(b).text()))
                         .appendTo unusedAttrsContainer
 
-                pivotTable.css("opacity", 1)
+                pivotTable.css("opacity", "") # may affect z-index
 
             refresh = =>
                 pivotTable.css("opacity", 0.5)

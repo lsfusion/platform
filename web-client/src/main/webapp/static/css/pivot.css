@@ -141,7 +141,6 @@ table.pvtTable tbody tr td {
 .pvtAxisContainer,
 .pvtVals {
     border: 1px solid var(--panel-border-color);
-    background-color: transparent;
     padding: 0;
     min-width: 20px;
     min-height: 20px;
@@ -154,14 +153,13 @@ table.pvtTable tbody tr td {
 
 .pvtVals {
     border: 1px solid var(--panel-border-color);
-    background-color: transparent;
 }
 
 .pvtUiCell {
     padding: 0;
 }
 
-.pvtUiCell div:first-of-type {
+.pvtUiCell > div {
     padding: 5px;
 }
 
@@ -204,6 +202,10 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     padding: 4px;
 }
 
+.paxis li span.pvtAttr {
+    background-color: var(--selection-color);
+}
+
 .pvtRowsTable {
     /*to stretch last empty paxis*/
     width:100%;
@@ -238,12 +240,14 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .pvtFilterBox {
-    z-index: 100;
+    z-index: auto;
     width: 300px;
     border: 1px solid var(--component-border-color);
     background-color: var(--background-color);
-    position: absolute;
-    text-align: center
+    position: absolute !important; /* draggable() sets relative */
+    text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 
 .pvtFilterBox h4 {
