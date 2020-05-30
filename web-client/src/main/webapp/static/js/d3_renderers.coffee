@@ -69,7 +69,4 @@ callWithJQuery ($, d3) ->
         return result
 
     $.pivotUtilities.d3_renderers = 
-        en:
-            "Treemap": treeMap
-        ru:
-            "Дерево": treeMap 
+        "TREEMAP": treeMap

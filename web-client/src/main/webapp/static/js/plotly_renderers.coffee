@@ -137,38 +137,18 @@ callWithJQuery ($, Plotly) ->
         renderArea.remove()
         return result
 
-    barchart = makePlotlyChart(true, { type: 'bar' }, { barmode: 'group' }, false)
-    stackedbarchart = makePlotlyChart(true, { type: 'bar' }, { barmode: 'relative' }, false)
-    linechart = makePlotlyChart(true, {}, {}, false)
-    areachart = makePlotlyChart(true, { stackgroup: 1 }, {}, false)
-    scatterchart = makePlotlyScatterChart()
-    multiplepiechart = makePlotlyChart(false, {
-        type: 'pie',
-        scalegroup: 1,
-        hoverinfo: 'label+value',
-        textinfo: 'none'
-    }, {}, false)
-    horizontalbarchart = makePlotlyChart(true, {type: 'bar', orientation: 'h'}, { barmode: 'group' }, true)
-    horizontalstackedbarchart = makePlotlyChart(true, { type: 'bar', orientation: 'h'}, { barmode: 'relative' }, true)
-        
-        
     $.pivotUtilities.plotly_renderers =
-        en:
-            "Bar Chart": barchart,
-            "Stacked Bar Chart": stackedbarchart,
-            "Line Chart": linechart,
-            "Area Chart": areachart,
-            "Scatter Chart": scatterchart,
-            'Multiple Pie Chart': multiplepiechart,
-            "Horizontal Bar Chart": horizontalbarchart,
-            "Horizontal Stacked Bar Chart": horizontalstackedbarchart
-        ru:
-            "Столбчатая диаграмма": barchart,
-            "Стековая столбчатая диаграмма": stackedbarchart,
-            "Линейный график": linechart,
-            "Плосткостная диаграмма": areachart,
-            "Точечная диаграмма": scatterchart,
-            'Круговая диаграмма': multiplepiechart,
-            "Столбчатая диаграмма (гор.)": horizontalbarchart,
-            "Стековая столбчатая диаграмма (гор.)": horizontalstackedbarchart
+        "BARCHART": makePlotlyChart(true, { type: 'bar' }, { barmode: 'group' }, false),
+        "STACKED_BARCHART": makePlotlyChart(true, { type: 'bar' }, { barmode: 'relative' }, false),
+        "LINECHART": makePlotlyChart(true, {}, {}, false),
+        "AREACHART": makePlotlyChart(true, { stackgroup: 1 }, {}, false),
+        "SCATTERCHART": makePlotlyScatterChart(),
+        "MULTIPLE_PIECHART": makePlotlyChart(false, {
+            type: 'pie',
+            scalegroup: 1,
+            hoverinfo: 'label+value',
+            textinfo: 'none'
+        }, {}, false),
+        "HORIZONTAL_BARCHART": makePlotlyChart(true, {type: 'bar', orientation: 'h'}, { barmode: 'group' }, true),
+        "HORIZONTAL_STACKED_BARCHART": makePlotlyChart(true, { type: 'bar', orientation: 'h'}, { barmode: 'relative' }, true)
         

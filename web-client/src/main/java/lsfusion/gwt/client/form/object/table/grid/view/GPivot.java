@@ -214,7 +214,7 @@ public class GPivot extends GStateTableView {
 
     private void initDefaultConfig(GGridController gridController) {
         GPivotOptions pivotOptions = gridController.getPivotOptions();
-        String rendererName = pivotOptions != null ? pivotOptions.getType() : null;
+        String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
         String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
         settings = pivotOptions == null || pivotOptions.isShowSettings();
 
@@ -242,7 +242,7 @@ public class GPivot extends GStateTableView {
             inclusions.putValue(COLUMN, measures);
         }
 
-        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings, GwtClientUtils.getCurrentLanguage());
+        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings);
     }
 
     private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
@@ -476,16 +476,29 @@ public class GPivot extends GStateTableView {
     private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
-
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI, String language)/*-{
-        var tpl = $wnd.$.pivotUtilities.aggregatorTemplates;
+    
+    private String localizeRendererName(JavaScriptObject jsName) {
+        String name = jsName.toString();
+        return PivotRendererType.valueOf(name).localize();    
+    }
+    
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI)/*-{
         var instance = this;
+        var localizeRendererNames = function(renderers) {
+            var localizedRenderers = {};
+            for (var key in renderers) {
+                if (renderers.hasOwnProperty(key)) {
+                    localizedRenderers[instance.@GPivot::localizeRendererName(*)(key)] = renderers[key];
+                }
+            }
+            return localizedRenderers;
+        }
         var renderers = $wnd.$.extend(
-            $wnd.$.pivotUtilities.subtotal_renderers[language],
-            $wnd.$.pivotUtilities.plotly_renderers[language],
+            localizeRendererNames($wnd.$.pivotUtilities.subtotal_renderers),
+            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers),
 //            $wnd.$.pivotUtilities.c3_renderers,
 //            $wnd.$.pivotUtilities.renderers,
-            $wnd.$.pivotUtilities.d3_renderers[language]
+            localizeRendererNames($wnd.$.pivotUtilities.d3_renderers)
         );
 
         return {

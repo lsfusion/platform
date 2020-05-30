@@ -99,12 +99,7 @@
       return result;
     };
     return $.pivotUtilities.d3_renderers = {
-      en: {
-        "Treemap": treeMap
-      },
-      ru: {
-        "Дерево": treeMap
-      }
+      "TREEMAP": treeMap
     };
   });
 

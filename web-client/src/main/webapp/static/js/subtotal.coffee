@@ -1054,25 +1054,12 @@ callWithJQuery ($) ->
 
         return main rowAttrs, rowKeys, colAttrs, colKeys
 
-    table_renderer = (pvtData, opts) -> SubtotalRenderer pvtData, opts
-    table_barchart_renderer = (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
-    table_heatmap_renderer = (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
-    table_rowheatmap_renderer = (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts
-    table_colheatmap_renderer = (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "colheatmap", opts    
-        
     $.pivotUtilities.subtotal_renderers =
-        en:
-            "Table"             : table_renderer
-            "Table Barchart"    : table_barchart_renderer
-            "Table Heatmap"     : table_heatmap_renderer
-            "Table Row Heatmap" : table_rowheatmap_renderer
-            "Table Col Heatmap" : table_colheatmap_renderer
-        ru:
-            "Таблица"                               : table_renderer
-            "Табличная столбчатая диаграмма"        : table_barchart_renderer
-            "Табличная тепловая карта"              : table_heatmap_renderer
-            "Табличная тепловая карта по рядам"     : table_rowheatmap_renderer
-            "Табличная тепловая карта по колонкам"  : table_colheatmap_renderer
+        "TABLE"             : (pvtData, opts) -> SubtotalRenderer pvtData, opts
+        "TABLE_BARCHART"    : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
+        "TABLE_HEATMAP"     : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
+        "TABLE_ROW_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts
+        "TABLE_COL_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "colheatmap", opts
             
     # 
     # Aggregators
