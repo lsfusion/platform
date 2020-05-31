@@ -158,7 +158,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
         if (updateCellHeight) {
-            renderTD(cellHeight, td);
+            renderTD(td, cellHeight);
 
             Element divElement = td.getFirstChildElement();
             if (divElement != null) {
@@ -181,9 +181,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
     }
 
-    public static void renderTD(int height, Element td) {
-        td.getStyle().setHeight(height, Style.Unit.PX);
+    public static void renderTD(Element td, int height) {
+        setRowHeight(td, height);
+        // setting line height to height it's the easiest way to align text to the center vertically, however it works only for single lines (which is ok for row data)
         td.getStyle().setLineHeight(height, Style.Unit.PX);
+    }
+
+    public static void setRowHeight(Element td, int height) {
+        td.getStyle().setHeight(height, Style.Unit.PX);
     }
 
     public abstract String getBackground(T rowValue, int row, int column);

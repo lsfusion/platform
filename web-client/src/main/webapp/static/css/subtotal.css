@@ -68,8 +68,8 @@
 
     /* RowLabel */
     table.pvtTable tbody tr th.pvtRowLabel {
-	    vertical-align: top !important;
-	    white-space: nowrap !important;
+	    vertical-align: top;
+	    white-space: nowrap;
     }
     table.pvtTable tbody tr th.pvtRowLabel.rowexpanded {
     }
@@ -113,30 +113,35 @@
     table.pvtTable tr td.pvtColSubtotal {
     }
 
+    /* wrapArrow (see GPropertyTableHeader wrappers) */
+
     table.pvtTable thead tr .wrapperDiv {
         display: flex;
     }
 
     table.pvtTable thead tr .axisHeaderArrowDiv {
-        flex: 0 0 auto; 
-        justify-content: left; 
-        padding-right: 5px;    
+        /*align-content: center;*/
+        padding-right: 5px;
+
+        flex: 0 0 auto;
+        align-self: center;
     }
     
     table.pvtTable thead tr .axisHeaderTextDiv {
         flex: 1 1 auto; 
-        justify-content: center
+        align-self: center;
     }
     
     table.pvtTable thead tr .colAttrHeaderArrowDiv {
-        flex: 0 0 auto; 
-        justify-content: left; 
-        padding-right: 5px;    
+        padding-right: 5px;
+
+        flex: 0 0 auto;
+        align-self: center;
     }
     
     table.pvtTable thead tr .colAttrHeaderTextDiv {
-        flex: 1 1 auto; 
-        justify-content: center
+        flex: 1 1 auto;
+        align-self: center;
     }
 
     /*

@@ -13,6 +13,7 @@ import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
@@ -744,7 +745,7 @@ public class GPivot extends GStateTableView {
     }
 
     public void renderValueCell(Element jsElement, JavaScriptObject value, JsArrayString rowKeys, JsArrayString columnKeys) {
-        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
+        GPropertyTableBuilder.renderTD(jsElement, rowHeight);
 
         String column = getColumnName(rowKeys, columnKeys);
         if(column != null)
@@ -760,7 +761,7 @@ public class GPivot extends GStateTableView {
     }
 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow) {
-        GPropertyTableBuilder.renderTD(rowHeight, th);
+        GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
             renderArrow(th, isExpanded);    
         } else {
@@ -777,32 +778,53 @@ public class GPivot extends GStateTableView {
         }
     }
 
-    public void renderColumn(Element th, JavaScriptObject value, String columnName) {
+    private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GridCellRenderer<?> renderer = columnMap.get(columnName).property.getGridCellRenderer();
         renderer.render(th, font, value, false);
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
-        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
         if (isArrow) {
+            GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             renderArrow(jsElement, isExpanded);
         } else {
-            String lastCol = null;
-            int colSize = colKeyValues.length();
-            if (!isSubtotal && colSize > 0) {
-                lastCol = config.getArrayString("cols").get(colSize - 1);
+            isSubtotal = isSubtotal || colKeyValues.length() == 0; // just in case, because in theory when there are no col keys it should be a total
+
+            boolean isLastCol;
+            String lastRenderCol;
+            if (isSubtotal) {
+                lastRenderCol = null;
+                isLastCol = true;
+            } else {
+                JsArrayString cols = config.getArrayString("cols");
+                int colSize = colKeyValues.length();
+                lastRenderCol = cols.get(colSize - 1);
+                isLastCol = colSize == cols.length();
             }
-            renderAttrCell(jsElement, value, lastCol);
+
+            Boolean sortDir = null;
+            if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
+                GGridPropertyTableHeader.renderTD(jsElement, 0, sortDir, fromObject(value).toString());
+            } else {
+                if (isLastCol && sortDir != null) { // last column may have a sortDir
+                    jsElement = GGridPropertyTableHeader.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
+
+                    jsElement = GGridPropertyTableHeader.wrapSort(jsElement, sortDir);
+                }
+
+                GPropertyTableBuilder.renderTD(jsElement, rowHeight);
+                renderAttrCell(jsElement, value, lastRenderCol);
+            }
         }
     } 
     
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
-        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
         if (isArrow) {
+            GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             renderArrow(jsElement, isExpanded);
         } else {
-            // value is a column name
-            renderValue(jsElement, value);
+            // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
+            GGridPropertyTableHeader.renderTD(jsElement, rowHeight, null, fromObject(value).toString());
         }
     }
 

@@ -33,6 +33,46 @@
     border-bottom: 1px solid var(--grid-separator-border-color);
 }
 
+/* it's hard to tell why, but setting overflow:hidden, prevents getting divs bigger than their parents */
+
+.dataGridHeaderCell-div {
+    /* width : 100% by default*/
+    height : 100%;
+
+    overflow: hidden;
+}
+.dataGridHeaderCell-wrapcenter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+}
+
+.dataGridHeaderCell-caption {
+    white-space: normal;
+
+    overflow: hidden;
+}
+
+.dataGridHeaderCell-wrapsortdiv {
+    display: flex;
+
+    overflow: hidden;
+}
+.dataGridHeaderCell-sortdiv {
+    flex: 1 1 auto;
+    align-self: stretch;
+}
+
+.dataGridHeaderCell-sortimg {
+    /*overflow: hidden;*/
+    margin: 1px 2px;
+
+    flex: 0 0 auto;
+    align-self: center;
+}
+
 .dataGridFirstHeaderCell {}
 
 .dataGridLastHeaderCell {
