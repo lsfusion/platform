@@ -20,7 +20,6 @@ import java.util.List;
 public abstract class GFilterController {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String FILTER = "filt.png";
-    private static final String COLLAPSE = "collapse.png";
     private static final String FILTER_BUTTON_TOOLTIP_TEXT = messages.formQueriesFilter() + " (F2)";
 
     private GToolbarButton toolbarButton;
@@ -30,14 +29,9 @@ public abstract class GFilterController {
 
     private List<GPropertyFilter> conditions = new ArrayList<>();
 
-    private State state = State.REMOVED;
-    private State hiddenState;
+    private boolean expanded = false;
 
     private GTableController logicsSupplier;
-
-    private enum State {
-        HIDDEN, REMOVED, COLLAPSED, EXPANDED
-    }
 
     public GFilterController(GTableController logicsSupplier) {
         this.logicsSupplier = logicsSupplier;
@@ -53,16 +47,11 @@ public abstract class GFilterController {
                 });
             }
         };
-        toolbarButton.setTitle(FILTER_BUTTON_TOOLTIP_TEXT);
+        updateToolbarButton();
 
         filterView = new GFilterView(this);
 
-        filterDialogHeader = new GFilterDialogHeader(messages.formFilterDialogHeader()) {
-            @Override
-            public void collapseButtonPressed() {
-                collapsePressed();
-            }
-        };
+        filterDialogHeader = new GFilterDialogHeader(messages.formFilterDialogHeader());
 //        filterDialog = new DialogBox(false, false, filterDialogHeader);
 //        filterDialog.setWidget(filterView);
     }
@@ -91,8 +80,10 @@ public abstract class GFilterController {
 
     private void setDialogVisible(boolean visible) {
         // игнорируем setVisible(false), пока диалог не создан
-        if (visible || filterDialog != null) {
-            getFilterDialog().setVisible(visible);
+        if (visible) {
+            getFilterDialog().show();
+        } else if (filterDialog != null) {
+            getFilterDialog().hide();
         }
     }
 
@@ -109,69 +100,53 @@ public abstract class GFilterController {
     }
 
     private void showFilterPressed() {
-        if (state == State.REMOVED) {
-            addPressed();
+        if (hasConditions() || addNewCondition(false)) {
+            changeState(true);
         }
-        changeState(State.EXPANDED);
     }
 
-    private void changeState(State newState) {
-        setDialogVisible(newState == State.EXPANDED);
-        if (newState == State.EXPANDED && state == State.REMOVED) {
+    private void changeState(boolean expand) {
+        if (expand) {
+            for (GPropertyFilter condition : conditions) {
+                filterView.addCondition(condition, logicsSupplier, true);
+            }
             filterDialogHeader.setText(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]");
             getFilterDialog().center();
-        }
-
-        String toolbarButtonIconPath = null;
-        switch (newState) {
-            case REMOVED:
-                toolbarButtonIconPath = FILTER;
-                toolbarButton.setTitle(FILTER_BUTTON_TOOLTIP_TEXT);
-                if (state != State.HIDDEN) {
-                    toolbarButton.showBackground(false);
-                }
-                break;
-            case COLLAPSED:
-                toolbarButtonIconPath = COLLAPSE;
-                toolbarButton.setTitle(messages.expandFilterWindow());
-                if (state != State.HIDDEN) {
-                    toolbarButton.showBackground(true);
-                }
-        }
-        if (toolbarButtonIconPath != null) {
-            toolbarButton.setModuleImagePath(toolbarButtonIconPath);
-        }
-        toolbarButton.setEnabled(newState != State.EXPANDED);
-
-        if (newState != State.EXPANDED) {
-            if (state == State.EXPANDED) {
-                filterHidden();
-            }
-        } else {
             focusOnValue();
+        } else {
+            updateToolbarButton();
+            filterHidden();
         }
-
-        state = newState;
+        toolbarButton.setEnabled(!expand);
+        setDialogVisible(expand);
+        this.expanded = expand;
     }
 
-    public void expandPressed() {
-        changeState(State.EXPANDED);
+    public void updateToolbarButton() {
+        boolean hasConditions = hasConditions();
+        toolbarButton.setTitle(hasConditions ? messages.expandFilterWindow() : FILTER_BUTTON_TOOLTIP_TEXT);
+        toolbarButton.showBackground(hasConditions);
     }
 
     public void collapsePressed() {
-        changeState(State.COLLAPSED);
+        filterView.removeAllConditions();
+        changeState(false);
     }
 
     public void addPressed() {
-        if (addNewCondition(false, null, null)) {
-            changeState(State.EXPANDED);
+        if (addNewCondition(false)) {
+            changeState(true);
         }
     }
 
     public void replaceConditionPressed() {
-        if (addNewCondition(true, null, null)) {
-            changeState(State.EXPANDED);
+        if (addNewCondition(true)) {
+            changeState(true);
         }
+    }
+
+    public boolean addNewCondition(boolean replace) {
+        return addNewCondition(replace, null, null);
     }
 
     private boolean addNewCondition(boolean replace, GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -196,8 +171,7 @@ public abstract class GFilterController {
         filter.property = filterProperty;
         filter.columnKey = filterColumnKey;
         filter.groupObject = logicsSupplier.getSelectedGroupObject();
-        conditions.add(filter);
-        filterView.addCondition(filter, logicsSupplier);
+        filterView.addCondition(filter, logicsSupplier, false);
         return true;
     }
 
@@ -206,10 +180,8 @@ public abstract class GFilterController {
             GPropertyFilter condition = findConditionByProperty(filter.property);
             if(condition != null) {
                 conditions.remove(condition);
-                filterView.removeCondition(condition);
             }
             conditions.add(filter);
-            filterView.addCondition(filter, logicsSupplier);
         }
     }
 
@@ -223,12 +195,10 @@ public abstract class GFilterController {
     }
 
     public void removePressed(GPropertyFilter filter) {
-        conditions.remove(filter);
         filterView.removeCondition(filter);
 
-        if (conditions.isEmpty()) {
-            applyQuery();
-            changeState(State.REMOVED);
+        if (filterView.isEmpty()) {
+            allRemovedPressed();
         }
     }
 
@@ -240,7 +210,13 @@ public abstract class GFilterController {
     public void allRemovedPressed() {
         removeAllConditions();
         applyQuery();
-        changeState(State.REMOVED);
+        changeState(false);
+    }
+
+    public void applyFilter(List<GPropertyFilter> conditions) {
+        this.conditions = conditions;
+        collapsePressed();
+        applyPressed();
     }
 
     public void applyPressed() {
@@ -249,7 +225,6 @@ public abstract class GFilterController {
 
     public void applyQuery() {
         remoteApplyQuery();
-        filterView.queryApplied();
     }
 
     public void focusOnValue() {
@@ -257,22 +232,12 @@ public abstract class GFilterController {
     }
 
     public void setVisible(boolean visible) {
-        setDialogVisible(visible && state != State.COLLAPSED && state != State.REMOVED);
-        if (!visible) {
-            if (state != State.HIDDEN) {
-                hiddenState = state;
-                changeState(State.HIDDEN);
-            }
-        } else {
-            if (state == State.HIDDEN) {
-                changeState(hiddenState);
-            }
-        }
+        setDialogVisible(visible && expanded);
     }
 
     public void quickEditFilter(EditEvent keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         if (addNewCondition(true, propertyDraw, columnKey)) {
-            changeState(State.EXPANDED);
+            changeState(true);
             filterView.startEditing(keyEvent, propertyDraw);
         }
     }

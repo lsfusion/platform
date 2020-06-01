@@ -7,15 +7,10 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
-import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.view.StyleDefaults;
 
-public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox.Caption {
-    private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String COLLAPSE = "collapse.png";
-
+public class GFilterDialogHeader extends FlowPanel implements DialogBox.Caption {
     private Label captionWidget;
     private HandlerManager handlerManager;
 
@@ -31,27 +26,10 @@ public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox
         captionWidget.addStyleName("filterDialogCaption");
         setText(caption);
 
-        GToolbarButton collapseButton = new GToolbarButton(COLLAPSE, messages.hideFilterWindow()) {
-            @Override
-            public void addListener() {
-                addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        collapseButtonPressed();
-                    }
-                });
-            }
-        };
-        collapseButton.addStyleName("filterDialogButton");
-        collapseButton.addStyleName("flowPanelChildRightAlign");
-
         add(captionWidget);
-        add(collapseButton);
 
         handlerManager = new HandlerManager(this);
     }
-
-    public abstract void collapseButtonPressed();
 
     @Override
     public String getHTML() {

@@ -10,6 +10,8 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -1129,12 +1131,10 @@ public class GPivot extends GStateTableView {
                 config.getArrayString("rows").push(caption);
 
                 grid.filter.addNewConditions(filters);
-                grid.filter.expandPressed(); //need to init dialog
-                grid.filter.collapsePressed();
                 grid.filter.applyPressed();
+                grid.filter.updateToolbarButton();
 
-                rerender();
-                updateView(false, null);
+                updateView(true, null);
             });
             menuBar.addItem(menuItem);
         }
@@ -1152,7 +1152,11 @@ public class GPivot extends GStateTableView {
             if (column != null) {
                 GPropertyFilter filter = new GPropertyFilter();
                 filter.property = column.property;
+                GDataFilterValue filterValue = new GDataFilterValue();
+                filterValue.value = values.get(i);
+                filter.value = filterValue;
                 filter.initValue = values.get(i);
+                filter.compare = GCompare.EQUALS;
                 filters.add(filter);
             }
         }

@@ -1,9 +1,8 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -16,18 +15,16 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GFilterView extends ResizableFocusPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String APPLY = "filtapply.png";
     private static final String ADD = "filtadd.png";
 
     private ResizableVerticalPanel filterContainer;
-
-    private GToolbarButton applyButton;
 
     private GFilterController controller;
 
@@ -36,42 +33,37 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     public GFilterView(GFilterController iController) {
         controller = iController;
 
-        filterContainer = new ResizableVerticalPanel();
-        setWidget(filterContainer);
+        ResizableVerticalPanel mainContainer = new ResizableVerticalPanel();
+        setWidget(mainContainer);
         addStyleName("noOutline");
 
-        applyButton = new GToolbarButton(APPLY, messages.formQueriesFilterApply()) {
-            @Override
-            public void addListener() {
-                addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        applyFilter();
-                    }
-                });    
-            }
-        };
-        applyButton.addStyleName("flowPanelChildLeftAlign");
-        applyButton.addStyleName("filterDialogButton");
+        filterContainer = new ResizableVerticalPanel();
+
+        mainContainer.add(filterContainer);
+
+        Button applyButton = new Button(messages.apply());
+        applyButton.addClickHandler(event -> applyFilter());
+
+        Button cancelButton = new Button(messages.cancel());
+        cancelButton.addClickHandler(event -> cancelFilter());
+
+        FlowPanel buttonsPanel = new FlowPanel();
+        buttonsPanel.add(applyButton);
+        buttonsPanel.add(cancelButton);
+        buttonsPanel.addStyleName("floatRight");
+        mainContainer.add(buttonsPanel);
 
         GToolbarButton addConditionButton = new GToolbarButton(ADD, messages.formQueriesFilterAddCondition() + " (alt + F2)") {
             @Override
             public void addListener() {
-                addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        controller.addPressed();
-                    }
-                });    
+                addClickHandler(event -> controller.addNewCondition(false));
             }
         };
         addConditionButton.addStyleName("flowPanelChildRightAlign");
         addConditionButton.addStyleName("filterDialogButton");
 
         FlowPanel controlPanel = new FlowPanel();
-        controlPanel.add(applyButton);
         controlPanel.add(addConditionButton);
-
         filterContainer.add(controlPanel);
 
         sinkEvents(Event.ONKEYDOWN);
@@ -87,8 +79,8 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         }
     }
 
-    public void addCondition(GPropertyFilter condition, GTableController logicsSupplier) {
-        GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this);
+    public void addCondition(GPropertyFilter condition, GTableController logicsSupplier, boolean restored) {
+        GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, restored);
         conditionViews.put(condition, conditionView);
         filterContainer.add(conditionView);
         conditionChanged();
@@ -109,9 +101,12 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         conditionViews.clear();
     }
 
+    public boolean isEmpty() {
+        return conditionViews.isEmpty();
+    }
+
     @Override
     public void conditionChanged() {
-        applyButton.setVisible(true);
         for (GFilterConditionView conditionView : conditionViews.values()) {
             conditionView.setJunctionVisible(Arrays.asList(conditionViews.values().toArray()).indexOf(conditionView) < conditionViews.size() - 1);
         }
@@ -120,10 +115,6 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     @Override
     public void conditionRemoved(GPropertyFilter condition) {
         controller.removePressed(condition);
-    }
-
-    public void queryApplied() {
-        applyButton.setVisible(false);
     }
 
     public void focusOnValue() {
@@ -136,8 +127,11 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     }
 
     public void applyFilter() {
+        controller.applyFilter(new ArrayList<>(conditionViews.keySet()));
+    }
+
+    public void cancelFilter() {
         controller.collapsePressed();
-        controller.applyPressed();
     }
 
     public void startEditing(EditEvent keyEvent, GPropertyDraw propertyDraw) {

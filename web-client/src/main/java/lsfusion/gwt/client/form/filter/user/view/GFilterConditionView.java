@@ -40,7 +40,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
     private Map<GFilterValue, GFilterValueView> valueViews;
 
-    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler) {
+    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean restored) {
         this.condition = iCondition;
         this.handler = handler;
         setVerticalAlignment(ALIGN_MIDDLE);
@@ -55,7 +55,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             public void onChange(ChangeEvent event) {
                 condition.property = (GPropertyDraw) propertyView.getSelectedItem();
                 condition.columnKey = null;
-                filterChanged();
+                filterChanged(false);
             }
         });
         add(propertyView);
@@ -98,7 +98,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
         valueViews = new HashMap<>();
 
-        GDataFilterValue dataValue = new GDataFilterValue();
+        GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
         GDataFilterValueView dataView = new GDataFilterValueView(this, dataValue, condition.property, logicsSupplier) {
             @Override
             public void applyFilter() {
@@ -107,11 +107,11 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         };
         valueViews.put(dataValue, dataView);
 
-        GObjectFilterValue objectValue = new GObjectFilterValue();
+        GObjectFilterValue objectValue = condition.value instanceof GObjectFilterValue ? (GObjectFilterValue) condition.value : new GObjectFilterValue();
         GObjectFilterValueView objectView = new GObjectFilterValueView(this, objectValue, logicsSupplier);
         valueViews.put(objectValue, objectView);
 
-        GPropertyFilterValue propertyValue = new GPropertyFilterValue();
+        GPropertyFilterValue propertyValue = condition.value instanceof GPropertyFilterValue ? (GPropertyFilterValue) condition.value : new GPropertyFilterValue();
         GPropertyFilterValueView propertyView = new GPropertyFilterValueView(this, propertyValue, logicsSupplier);
         valueViews.put(propertyValue, propertyView);
 
@@ -120,12 +120,14 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             @Override
             public void onChange(ChangeEvent event) {
                 condition.value = (GFilterValue) filterValues.getSelectedItem();
-                filterChanged();
+                filterChanged(false);
             }
         });
         add(filterValues);
 
-        condition.value = (GFilterValue) filterValues.getSelectedItem();
+        if(!restored) {
+            condition.value = (GFilterValue) filterValues.getSelectedItem();
+        }
 
         junctionView = new GFilterConditionListBox();
         junctionView.addStyleName("customFontPresenter");
@@ -153,15 +155,10 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         deleteButton.addStyleName("filterDialogButton");
         add(deleteButton);
 
-        filterChanged();
-
-        if(condition.initValue != null) {
-            dataView.valueChanged(condition.initValue);
-            compareView.setSelectedItem(GCompare.EQUALS);
-        }
+        filterChanged(restored);
     }
 
-    private void filterChanged() {
+    private void filterChanged(boolean restored) {
         if (valueView != null) {
             remove(valueView);
         }
@@ -169,11 +166,18 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         valueView = valueViews.get(condition.value);
         if (valueView != null) {
             insert(valueView, getWidgetIndex(junctionView));
-            valueView.propertyChanged(condition.property, condition.columnKey);
+            valueView.propertyChanged(condition, restored);
         }
-        compareView.setItems(condition.property.baseType.getFilterCompares());
-        compareView.setSelectedItem(condition.getDefaultCompare());
-        condition.compare = (GCompare) compareView.getSelectedItem();
+        if(restored) {
+            negationView.setValue(condition.negation);
+            compareView.setSelectedItem(condition.compare);
+            junctionView.setSelectedIndex(condition.junction ? 0 : 1);
+            filterValues.setSelectedItem(condition.value);
+        } else {
+            compareView.setItems(condition.property.baseType.getFilterCompares());
+            compareView.setSelectedItem(condition.getDefaultCompare());
+            condition.compare = (GCompare) compareView.getSelectedItem();
+        }
 
         handler.conditionChanged();
     }

@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import lsfusion.gwt.client.base.view.ResizableLayoutPanel;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
@@ -44,10 +44,12 @@ public class GDataFilterValueView extends GFilterValueView {
     }
 
     @Override
-    public void propertyChanged(GPropertyDraw property, GGroupObjectValue columnKey) {
-        tablePanel.setPixelSize(property.getValueWidth(null), property.getValueHeight(null));
-        valueTable.setProperty(property);
-        setValue(logicsSupplier.getSelectedValue(property, columnKey));
+    public void propertyChanged(GPropertyFilter condition, boolean restored) {
+        tablePanel.setPixelSize(condition.property.getValueWidth(null), condition.property.getValueHeight(null));
+        valueTable.setProperty(condition.property);
+
+        Object initValue = restored ? (condition.initValue != null ? condition.initValue : filterValue.value) : null;
+        setValue(initValue != null ? initValue : logicsSupplier.getSelectedValue(condition.property, condition.columnKey));
     }
 
     public void valueChanged(Object value) {
