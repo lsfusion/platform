@@ -68,12 +68,6 @@ public class ModalForm extends ResizableModalWindow {
     }
 
     @Override
-    protected void onAttach() {
-        super.onAttach();
-        form.modalFormAttached();
-    }
-
-    @Override
     protected void onLoad() {
         if (initialOnLoad) {
             Dimension size = form.getMaxPreferredSize();

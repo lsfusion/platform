@@ -1130,9 +1130,7 @@ public class GPivot extends GStateTableView {
                 popup.hide();
                 config.getArrayString("rows").push(caption);
 
-                grid.filter.addNewConditions(filters);
-                grid.filter.applyPressed();
-                grid.filter.updateToolbarButton();
+                grid.filter.applyFilters(filters);
 
                 updateView(true, null);
             });

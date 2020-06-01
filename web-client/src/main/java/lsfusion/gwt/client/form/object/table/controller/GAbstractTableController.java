@@ -74,12 +74,6 @@ public abstract class GAbstractTableController implements GTableController {
         }
     }
 
-    public void setFilterVisible(boolean visible) {
-        if (filter != null) {
-            filter.setVisible(visible);
-        }
-    }
-
     @Override
     public List<GObject> getObjects() {
         return formController.getObjects();
@@ -99,12 +93,13 @@ public abstract class GAbstractTableController implements GTableController {
     }
 
     public void replaceFilter() {
-        if(filter != null)
-            filter.replaceConditionPressed();
+        if (filter != null) {
+            filter.addConditionPressed(true);
+        }
     }
 
     public void addFilter() {
-        filter.addPressed();
+        filter.addConditionPressed(false);
     }
 
     public void removeFilters() {
