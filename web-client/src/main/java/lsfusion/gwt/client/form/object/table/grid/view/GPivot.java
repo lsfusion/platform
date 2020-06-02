@@ -1129,9 +1129,7 @@ public class GPivot extends GStateTableView {
             MenuItem menuItem = new MenuItem(caption, () -> {
                 popup.hide();
                 config.getArrayString("rows").push(caption);
-
-                grid.filter.applyFilters(filters);
-
+                grid.filter.applyFilters(filters, false);
                 updateView(true, null);
             });
             menuBar.addItem(menuItem);

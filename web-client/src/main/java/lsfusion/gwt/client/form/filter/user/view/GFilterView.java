@@ -56,7 +56,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         GToolbarButton addConditionButton = new GToolbarButton(ADD, messages.formQueriesFilterAddCondition() + " (alt + F2)") {
             @Override
             public void addListener() {
-                addClickHandler(event -> controller.addNewCondition(false));
+                addClickHandler(event -> addNewCondition());
             }
         };
         addConditionButton.addStyleName("flowPanelChildRightAlign");
@@ -73,36 +73,51 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     public void onBrowserEvent(Event event) {
         if (event.getKeyCode() == KeyCodes.KEY_ESCAPE) {
             GwtClientUtils.stopPropagation(event);
-            controller.allRemovedPressed();
+            allRemovedPressed();
         } else {
             super.onBrowserEvent(event);
         }
     }
 
-    public void showDialog(List<GPropertyFilter> conditions, GTableController logicsSupplier) {
-        addConditions(conditions, logicsSupplier);
-        filterDialog = new DialogBox(false, true, new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
-        filterDialog.setWidget(this);
-        filterDialog.center();
-        focusOnValue();
-    }
-
-    public void hideDialog() {
-        filterDialog.hide();
-    }
-
-    public void addConditions(List<GPropertyFilter> conditions, GTableController logicsSupplier) {
-        for (GPropertyFilter condition : conditions) {
-            addCondition(condition, logicsSupplier, true);
+    public void showDialog(List<GPropertyFilter> restoredConditions, GPropertyFilter newCondition, GTableController logicsSupplier, EditEvent keyEvent, GPropertyDraw propertyDraw) {
+        if(newCondition != null || !restoredConditions.isEmpty()) {
+            for (GPropertyFilter condition : restoredConditions) {
+                addCondition(condition, logicsSupplier, true);
+            }
+            addCondition(newCondition, logicsSupplier, false);
+            filterDialog = new DialogBox(false, true, new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
+            filterDialog.setWidget(this);
+            filterDialog.center();
+            focusOnValue();
+            if(keyEvent != null) {
+                startEditing(keyEvent, propertyDraw);
+            }
         }
     }
 
+    public void hideDialog() {
+        controller.filterHidden();
+        filterDialog.hide();
+    }
+
+    public void allRemovedPressed() {
+        controller.allRemovedPressed();
+        hideDialog();
+    }
+
+    public void addNewCondition() {
+        addCondition(controller.getNewCondition(null, null), controller.getLogicsSupplier(), false);
+
+    }
+
     public void addCondition(GPropertyFilter condition, GTableController logicsSupplier, boolean restored) {
-        GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, restored);
-        conditionViews.put(condition, conditionView);
-        filterContainer.add(conditionView);
-        conditionChanged();
-        focusOnValue();
+        if(condition != null) {
+            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, restored);
+            conditionViews.put(condition, conditionView);
+            filterContainer.add(conditionView);
+            conditionChanged();
+            focusOnValue();
+        }
     }
 
     public void removeCondition(GPropertyFilter condition) {
@@ -110,17 +125,6 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         conditionViews.remove(condition);
         conditionChanged();
         focusOnValue();
-    }
-
-    public void removeAllConditions() {
-        for (GPropertyFilter condition : conditionViews.keySet()) {
-            filterContainer.remove(conditionViews.get(condition));
-        }
-        conditionViews.clear();
-    }
-
-    public boolean isEmpty() {
-        return conditionViews.isEmpty();
     }
 
     @Override
@@ -133,8 +137,8 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     @Override
     public void conditionRemoved(GPropertyFilter condition) {
         removeCondition(condition);
-        if (isEmpty()) {
-            controller.allRemovedPressed();
+        if (conditionViews.isEmpty()) {
+            allRemovedPressed();
         }
     }
 
@@ -148,11 +152,12 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     }
 
     public void applyFilter() {
-        controller.applyFilter(new ArrayList<>(conditionViews.keySet()));
+        controller.applyFilters(new ArrayList<>(conditionViews.keySet()), true);
+        hideDialog();
     }
 
     public void cancelFilter() {
-        controller.cancelFilter();
+        hideDialog();
     }
 
     public void startEditing(EditEvent keyEvent, GPropertyDraw propertyDraw) {

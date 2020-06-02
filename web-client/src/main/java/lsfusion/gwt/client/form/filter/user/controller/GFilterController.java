@@ -18,7 +18,6 @@ public abstract class GFilterController {
     private static final String FILTER = "filt.png";
 
     private GToolbarButton toolbarButton;
-    private GFilterView filterView;
 
     private List<GPropertyFilter> conditions = new ArrayList<>();
 
@@ -30,12 +29,10 @@ public abstract class GFilterController {
         toolbarButton = new GToolbarButton(FILTER) {
             @Override
             public void addListener() {
-                addClickHandler(event -> showFilterPressed());
+                addClickHandler(event -> showDialog(null, null, null, false, false));
             }
         };
         updateToolbarButton();
-
-        filterView = new GFilterView(this);
     }
 
     public Button getToolbarButton() {
@@ -50,20 +47,14 @@ public abstract class GFilterController {
         return !conditions.isEmpty();
     }
 
-    private void showFilterPressed() {
-        if (hasConditions() || addNewCondition(false)) {
-            showDialog();
-        }
+    public GTableController getLogicsSupplier() {
+        return logicsSupplier;
     }
 
-    private void showDialog() {
-        filterView.showDialog(conditions, logicsSupplier);
-    }
-
-    private void hideDialog() {
-        updateToolbarButton();
-        filterHidden();
-        filterView.hideDialog();
+    private void showDialog(EditEvent keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey, boolean replace, boolean alwaysAddNew) {
+        List<GPropertyFilter> restoredConditions = replace ? new ArrayList<>() : new ArrayList<>(conditions);
+        GPropertyFilter newCondition = alwaysAddNew || restoredConditions.isEmpty() ? getNewCondition(propertyDraw, columnKey) : null;
+        new GFilterView(this).showDialog(restoredConditions, newCondition, logicsSupplier, keyEvent, propertyDraw);
     }
 
     private void updateToolbarButton() {
@@ -73,16 +64,10 @@ public abstract class GFilterController {
     }
 
     public void addConditionPressed(boolean replace) {
-        if (addNewCondition(replace)) {
-            showDialog();
-        }
+        showDialog(null, null, null, replace, true);
     }
 
-    public boolean addNewCondition(boolean replace) {
-        return addNewCondition(replace, null, null);
-    }
-
-    private boolean addNewCondition(boolean replace, GPropertyDraw property, GGroupObjectValue columnKey) {
+    public GPropertyFilter getNewCondition(GPropertyDraw property, GGroupObjectValue columnKey) {
         GPropertyDraw filterProperty = property;
         GGroupObjectValue filterColumnKey = columnKey;
 
@@ -93,31 +78,29 @@ public abstract class GFilterController {
         }
         if (filterProperty == null) {
             //не добавляем, если нет ни одного свойства
-            return false;
-        }
-
-        if (replace) {
-            removeAllConditions();
+            return null;
         }
 
         GPropertyFilter filter = new GPropertyFilter();
         filter.property = filterProperty;
         filter.columnKey = filterColumnKey;
         filter.groupObject = logicsSupplier.getSelectedGroupObject();
-        filterView.addCondition(filter, logicsSupplier, false);
-        return true;
+        return filter;
     }
 
-    public void applyFilters(List<GPropertyFilter> filters) {
-        for(GPropertyFilter filter : filters) {
-            GPropertyFilter condition = findConditionByProperty(filter.property);
-            if(condition != null) {
-                conditions.remove(condition);
+    public void applyFilters(List<GPropertyFilter> filters, boolean replace) {
+        if(replace) {
+            conditions = filters;
+        } else {
+            for (GPropertyFilter filter : filters) {
+                GPropertyFilter condition = findConditionByProperty(filter.property);
+                if (condition != null) {
+                    conditions.remove(condition);
+                }
+                conditions.add(filter);
             }
-            conditions.add(filter);
         }
         applyQuery();
-        updateToolbarButton();
     }
 
     private GPropertyFilter findConditionByProperty(GPropertyDraw property) {
@@ -129,38 +112,18 @@ public abstract class GFilterController {
         return null;
     }
 
-    private void removeAllConditions() {
-        conditions.clear();
-        filterView.removeAllConditions();
-    }
-
     public void allRemovedPressed() {
-        removeAllConditions();
+        conditions.clear();
         applyQuery();
-        hideDialog();
     }
 
-    public void cancelFilter() {
-        filterView.removeAllConditions();
-        hideDialog();
-    }
-
-    public void applyFilter(List<GPropertyFilter> conditions) {
-        this.conditions = conditions;
-        filterView.removeAllConditions();
-        applyQuery();
-        hideDialog();
-    }
-
-    private void applyQuery() {
+    public void applyQuery() {
         remoteApplyQuery();
+        updateToolbarButton();
     }
 
     public void quickEditFilter(EditEvent keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        if (addNewCondition(true, propertyDraw, columnKey)) {
-            showDialog();
-            filterView.startEditing(keyEvent, propertyDraw);
-        }
+        showDialog(keyEvent, propertyDraw, columnKey, true, true);
     }
 
     public abstract void remoteApplyQuery();
