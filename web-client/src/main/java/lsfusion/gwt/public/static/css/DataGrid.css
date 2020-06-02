@@ -14,6 +14,18 @@
  * the License.
  */
 
+.dataGridTableWrapperWidget {
+    /* here it's tricky, there are two ways to make border single :
+    1) border-spacing: 0, border-collapse: separate (default)
+    2) border-collapse: collapse
+    however in second case, somewhy padding is not working, so margin should be used which is not convenient, since margin is used for other purposes
+    */
+    border-spacing: 0;
+
+    table-layout: fixed;
+    width: 100%;
+}
+
 /* ----- GGridPropertyTable ----- */
 .dataGridWidget {
     border: 1px solid var(--component-border-color);
@@ -27,10 +39,17 @@
 }
 
 .dataGridHeaderCell {
+    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+    /* there are two ways to draw a grid:
+    1) use border-collapse : collapse + first / last cells border : none, but there gonna be problems with focus cell + padding won't work (it can be fixed but it's harder to implement)
+    2) draw left and bottom + right for last cells
+    for now will use 2nd option
+    */
+    border-bottom: 1px solid var(--grid-separator-border-color);
     border-left: 1px solid var(--grid-separator-border-color);
+
     padding: 0 2px;
     font-weight: normal;
-    border-bottom: 1px solid var(--grid-separator-border-color);
 }
 
 /* it's hard to tell why, but setting overflow:hidden, prevents getting divs bigger than their parents */
@@ -73,21 +92,30 @@
     align-self: center;
 }
 
-.dataGridFirstHeaderCell {}
+.dataGridFirstHeaderCell {
+    /*border-left : none;*/
+}
 
 .dataGridLastHeaderCell {
+    /*border-right: none;*/
+    /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
     border-right: 1px solid var(--grid-separator-border-color);
 }
 
 .dataGridFooter {}
 .dataGridFooterCell {}
-.dataGridFirstFooterCell {}
-.dataGridLastFooterCell {}
+.dataGridFirstFooterCell {
+    /*border-left : none;*/
+}
+.dataGridLastFooterCell {
+    /*border-right : none;*/
+}
 
 .dataGridRow {
 }
 
 .dataGridCell {
+    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
     border-bottom: 1px solid var(--grid-separator-border-color);
     border-left: 1px solid var(--grid-separator-border-color);
 
@@ -105,9 +133,13 @@
 }
 .dataGridCellInnerDiv {}
 
-.dataGridFirstCell {}
+.dataGridFirstCell {
+    /*border-left : none;*/
+}
 
 .dataGridLastCell {
+    /*border-right : none;*/
+    /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
     border-right: 1px solid var(--grid-separator-border-color);
 }
 

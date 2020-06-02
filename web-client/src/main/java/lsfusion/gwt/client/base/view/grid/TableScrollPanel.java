@@ -5,10 +5,8 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 
 public class TableScrollPanel extends SimplePanel {
 
@@ -25,6 +23,8 @@ public class TableScrollPanel extends SimplePanel {
 //        scrollableElement = child.getElement();
 
         getElement().getStyle().setOverflow(overflow);
+
+        DataGrid.removeOuterGridBorders(this);
     }
 
 //    private final com.google.gwt.dom.client.Element scrollableElement;

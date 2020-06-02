@@ -9,6 +9,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -465,22 +466,37 @@ public class GPivot extends GStateTableView {
 
         updateRendererState(true); // will wait until server will answer us if we need to change something
         grid.changeGroupMode(properties, columnKeys, aggrProps, getGroupType(aggregatorName.toUpperCase()));
+
+        checkPadding(true); // will be rerendered (so there gonna be new tableDataScroller and header), so we need force Update
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
 
-    private void setRendererElement(Element element) {
+    private void setRendererElements(Element element) {
         rendererElement = element;
     }
 
     protected void updateRendererState(boolean set) {
         updateRendererElementState(rendererElement, set);
     }
+    private Element getTableDataScroller() {
+        return getElement(rendererElement, ".scrolldiv");
+    }
+    private Element getHeaderTableElement() {
+        return getElement(rendererElement, ".headertable.pvtTable");
+    }
+    private Element getHeaderTableScroller() {
+        return getElement(rendererElement, ".headerdiv");
+    }
 
     private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
-    
+
+    private native Element getElement(com.google.gwt.dom.client.Element element, String selector) /*-{
+        return $wnd.$(element).find(selector).get(0);
+    }-*/;
+
     private String localizeRendererName(JavaScriptObject jsName) {
         String name = jsName.toString();
         return PivotRendererType.valueOf(name).localize();    
@@ -537,7 +553,7 @@ public class GPivot extends GStateTableView {
         // moving pagesize controller inside
         $wnd.$(d).find(".pvtRendererFooter").append(pageSizeElement);
 
-        this.@GPivot::setRendererElement(*)(d);
+        this.@GPivot::setRendererElements(*)(d);
 
         // it's tricky in pivotUI, first refresh is with timeout 10ms, and that's why there is a blink, when pivotUI is painted with empty Renderer
         // to fix this will add it to the visible DOM, in 15 ms (after everything is painted)
@@ -1112,6 +1128,30 @@ public class GPivot extends GStateTableView {
         aggr.setOperands(aggrOperands);
 
         return aggr;
+    }
+
+    private boolean hasPadding;
+
+    @Override
+    public void onResize() {
+        checkPadding(false);
+
+        super.onResize();
+    }
+
+    public void checkPadding(boolean forceUpdate) {
+        Element tableDataScroller = getTableDataScroller();
+        if(tableDataScroller != null) {
+            int scrollWidth = tableDataScroller.getClientWidth();
+            boolean newPadding = scrollWidth != tableDataScroller.getOffsetWidth();
+
+            if (forceUpdate || hasPadding != newPadding) {
+                hasPadding = newPadding;
+
+//                DataGrid.updateTableMargin(hasPadding, getHeaderTableScroller());
+                DataGrid.updateTablePadding(hasPadding, getHeaderTableElement());
+            }
+        }
     }
 
     private GroupColumnAggregator getGroupAggregator(GPropertyDraw property, JsArrayString lastColumns) {

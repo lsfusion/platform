@@ -46,36 +46,34 @@
 table.pvtTable {
     color: var(--text-color);
     text-align: left;
-    border-collapse: collapse
+
+    /* see DataGrid.css, dataGridTableWrapperWidget*/
+    border-spacing: 0
 }
 
+table.pvtTable tbody tr td,
 table.pvtTable tbody tr th,
 table.pvtTable thead tr th {
-    border: 1px solid var(--grid-separator-border-color);
-    background-color: var(--background-color);
+    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+    border-left: 1px solid var(--grid-separator-border-color);
+    border-bottom: 1px solid var(--grid-separator-border-color);
+
     overflow: hidden;
     white-space: nowrap;
     padding: 0 3px;
     font-weight: normal;
 }
 
-table.pvtTable tbody tr th:first-of-type,
-table.pvtTable thead tr th:first-of-type {
-    border-left: none;
-}
-
-table.pvtTable thead tr:first-of-type th {
-    border-top: none;
-}
-
-table.pvtTable tbody tr:first-of-type th,
-table.pvtTable tbody tr:first-of-type td{
-    border-top: none;
+table.pvtTable tbody tr th,
+table.pvtTable thead tr th {
+    color: var(--text-color);
+    background-color: var(--background-color);
 }
 
 table.pvtTable thead tr th:last-of-type,
 table.pvtTable tbody tr td:last-of-type{
-    border-right: none;
+    /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
+    border-right: 1px solid var(--grid-separator-border-color);
 }
 
 table.pvtTable .pvtColLabel {
@@ -87,13 +85,8 @@ table.pvtTable .pvtTotalLabel {
 }
 
 table.pvtTable tbody tr td {
-    border: 1px solid var(--grid-separator-border-color);
-    color: var(--text-color);
     background-color: var(--component-background-color);
-    overflow: hidden;
-    white-space: nowrap;
 
-    padding: 0 3px;
     vertical-align: top;
     text-align: right
 }

@@ -143,8 +143,9 @@ public final class FormDockable {
 
         private void addFullSizeChild(Widget child) {
             add(child);
-            setWidgetLeftRight(child, 0.1, Style.Unit.EM, 0.1, Style.Unit.EM);
-            setWidgetTopBottom(child, 0.1, Style.Unit.EM, 0.1, Style.Unit.EM);
+            // since table (and other elements) has zoom 1 by default, having not integer px leads to some undesirable extra lines (for example right part of any grid gets doubled line)
+            setWidgetLeftRight(child, 1, Style.Unit.PX, 1, Style.Unit.PX);
+            setWidgetTopBottom(child, 1, Style.Unit.PX, 1, Style.Unit.PX);
         }
 
         public void setBlocked(boolean blocked) {

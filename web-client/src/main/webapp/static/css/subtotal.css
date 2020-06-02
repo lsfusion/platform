@@ -22,7 +22,9 @@
     .subtotalouterdiv .headertable {
         table-layout: fixed;
         width: 100%;
-        border-collapse: collapse;
+
+        /* see DataGrid.css, dataGridTableWrapperWidget*/
+        border-spacing: 0;
     }
 
     .subtotalouterdiv .bodydiv {
@@ -39,8 +41,10 @@
 
     .subtotalouterdiv .bodytable {
         table-layout: fixed;
-        border-collapse: collapse;
         width: 100%;
+
+        /* see DataGrid.css, dataGridTableWrapperWidget*/
+        border-spacing: 0;
     }
     
     /* AxisLabel */

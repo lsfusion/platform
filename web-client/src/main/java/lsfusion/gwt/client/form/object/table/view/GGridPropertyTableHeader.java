@@ -134,7 +134,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     private final static int DEFAULT_HEADER_HEIGHT = 34;
 
     public static Element renderTD(Element th, int height, Boolean sortDir, String caption) {
-        th = wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting
+        th = wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
 
         int setHeight = height > 0 ? height : DEFAULT_HEADER_HEIGHT;
         GPropertyTableBuilder.setRowHeight(th, setHeight);

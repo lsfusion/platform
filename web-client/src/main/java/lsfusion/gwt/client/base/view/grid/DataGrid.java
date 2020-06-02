@@ -182,8 +182,10 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     protected TableScrollPanel tableDataScroller; // vertical scroller
 
     private FooterWidget tableFooter;
+    private TableScrollPanel tableFooterScroller;
 
     private HeaderWidget tableHeader;
+    private TableScrollPanel tableHeaderScroller;
 
     private final FlexTable emptyTableWidgetContainer;
 
@@ -201,6 +203,17 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     private final boolean noFooters;
     private final boolean noScrollers;
 
+    // there are two ways to remove outer grid borders :
+    // 1) set styles for outer cells and set border-left/top : none there
+    // 2) set margins (not paddings since they do not support negative values) to -1
+    // first solution is cleaner (since border can be wider than 1px + margin can be used for other purposes, for example scroller padding), however the problem is that in that case the same should be implemented for focus which is pretty tricky
+    // the second solution is easier to implement
+    // the same problem is in gpivot, and there it is solved the same way (however since there is no focus cell there in history there should be a solution with styles, conditional css)
+    public static void removeOuterGridBorders(Widget parent) {
+        parent.getElement().getStyle().setMarginLeft(-1, Unit.PX);
+        parent.getElement().getStyle().setMarginRight(-1, Unit.PX);
+    }
+
     public DataGrid(GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
         this.noHeaders = noHeaders;
         this.noFooters = noFooters;
@@ -213,8 +226,6 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         tableData = new TableWidget();
 
         Widget tableDataContainer;
-
-        FlexPanel headerPanel = null;
         if(!noScrollers) {
             tableDataScroller = new TableScrollPanel(tableData, Style.Overflow.AUTO);
             tableDataContainer = tableDataScroller;
@@ -225,14 +236,18 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         if(noHeaders && noFooters) {
             setFillWidget(tableDataContainer);
         } else {
-            headerPanel = new FlexPanel(true); // will use flex for headers / footers
+            FlexPanel headerPanel = new FlexPanel(true); // will use flex for headers / footers
 
-            TableScrollPanel tableHeaderScroller;
             if(!noHeaders) {
+                Widget tableHeaderContainer;
                 tableHeader = new HeaderWidget();
-                tableHeaderScroller = new TableScrollPanel(tableHeader, Style.Overflow.HIDDEN);
+                if(!noScrollers) {
+                    tableHeaderScroller = new TableScrollPanel(tableHeader, Style.Overflow.HIDDEN);
+                    tableHeaderContainer = tableHeaderScroller;
+                } else
+                    tableHeaderContainer = tableHeader;
 
-                headerPanel.add(tableHeaderScroller, GFlexAlignment.STRETCH);
+                headerPanel.add(tableHeaderContainer, GFlexAlignment.STRETCH);
 
                 headerBuilder = new DefaultHeaderBuilder<>(this, false);
             } else
@@ -240,12 +255,16 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 
             headerPanel.addFillFlex(tableDataContainer, 1);
 
-            TableScrollPanel tableFooterScroller;
             if (!noFooters) { // the same as for headers
+                Widget tableFooterContainer;
                 tableFooter = new FooterWidget();
-                tableFooterScroller = new TableScrollPanel(tableFooter, Style.Overflow.HIDDEN);
+                if(!noScrollers) {
+                    tableFooterScroller = new TableScrollPanel(tableFooter, Style.Overflow.HIDDEN);
+                    tableFooterContainer = tableFooterScroller;
+                } else
+                    tableFooterContainer = tableFooter;
 
-                headerPanel.add(tableFooterScroller, GFlexAlignment.STRETCH);
+                headerPanel.add(tableFooterContainer, GFlexAlignment.STRETCH);
 
                 footerBuilder = new DefaultHeaderBuilder<>(this, true);
             } else
@@ -263,6 +282,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
                         tableFooterScroller.setHorizontalScrollPosition(scrollLeft);
                     }
                 });
+            } else {
+                removeOuterGridBorders(headerPanel);
             }
 
             setFillWidget(headerPanel);
@@ -1166,14 +1187,43 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         tableData.getElement().getStyle().setProperty("minWidth", value, minWidthUnit);
     }
 
+    private void updateHeaderTablePadding(TableWrapperWidget headerWidget, TableScrollPanel tableHeaderScroller) {
+        updateTablePadding(hasPadding, headerWidget.tableElement);
+//        updateTableMargin(hasPadding, tableHeaderScroller.getElement());
+
+        updateHeaderTableMinimumWidth(headerWidget); // padding changed, we need to reupdate minimumWidth
+    }
+
+    /* see DataGrid.css, dataGridTableWrapperWidget description */
+    public static void updateTablePadding(boolean hasPadding, Element tableElement) {
+        if(hasPadding)
+            tableElement.getStyle().setPaddingRight(nativeScrollbarWidth, Unit.PX);
+        else
+            tableElement.getStyle().clearPaddingRight();
+    }
+    public static void updateTableMargin(boolean hasPadding, Element tableElement) {
+        if(hasPadding)
+            tableElement.getStyle().setMarginRight(nativeScrollbarWidth, Unit.PX);
+        else
+            tableElement.getStyle().clearMarginRight();
+    }
+
+    private void updateHeaderTableMinimumWidth(TableWrapperWidget headerWidget) {
+        if(minWidthUnit != null)
+            setBlockMinWidth(minWidthValue + (hasPadding ? nativeScrollbarWidth : 0), headerWidget);
+    }
+
+    private void updateHeaderFooterTablePadding() {
+        if(!noHeaders)
+            updateHeaderTablePadding(tableHeader, tableHeaderScroller);
+        if(!noFooters)
+            updateHeaderTablePadding(tableHeader, tableFooterScroller);
+    }
     private void updateHeaderFooterTableMinimumWidth() {
-        if(minWidthUnit != null) {
-            double exValue = minWidthValue + (hasPadding ? nativeScrollbarWidth : 0);
-            if(!noHeaders)
-                setBlockMinWidth(exValue, tableHeader);
-            if(!noFooters)
-                setBlockMinWidth(exValue, tableFooter);
-        }
+        if(!noHeaders)
+            updateHeaderTableMinimumWidth(tableHeader);
+        if(!noFooters)
+            updateHeaderTableMinimumWidth(tableFooter);
     }
 
     /**
@@ -1669,21 +1719,12 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     }
 
     private void afterUpdateScrollHorizontal(State<T> pendingState) {
-        if(!noHeaders) {
-            boolean prevPadding = hasPadding;
-            if (pendingState.pendingHasVerticalScroll) {
-                if (!hasPadding) {
-                    tableHeader.tableElement.getStyle().setPaddingRight(nativeScrollbarWidth, Unit.PX);
-                    hasPadding = true;
-                }
-            } else {
-                if (hasPadding) {
-                    tableHeader.tableElement.getStyle().clearPaddingRight();
-                    hasPadding = false;
-                }
+        if(!noScrollers) {
+            boolean newPadding = pendingState.pendingHasVerticalScroll;
+            if(hasPadding != newPadding) {
+                hasPadding = newPadding;
+                updateHeaderFooterTablePadding();
             }
-            if (prevPadding != hasPadding) // padding changed, we need to reupdate minimumWidth
-                updateHeaderFooterTableMinimumWidth();
         }
 
         if (pendingState.pendingScrollLeft != pendingState.pendingCurrentScrollLeft) {
@@ -2127,9 +2168,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 
         public TableWrapperWidget() {
             tableElement = Document.get().createTableElement();
-            tableElement.setCellSpacing(0);
-            tableElement.getStyle().setTableLayout(TableLayout.FIXED);
-            tableElement.getStyle().setWidth(100.0, Unit.PCT);
+
+            tableElement.addClassName("dataGridTableWrapperWidget");
 
             colgroupElement = tableElement.appendChild(Document.get().createColGroupElement());
 
@@ -2177,7 +2217,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         }
 
         protected HeaderWidget(String headerStyle) {
-            tableElement.setClassName(headerStyle);
+            tableElement.addClassName(headerStyle);
             setElement(tableElement);
         }
 
@@ -2229,6 +2269,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     public void onResize() {
         if(!isResolvingState) // hack, because in preAfterUpdateTableData there is browser event flush, which causes scheduleDeferred flush => HeaderPanel.forceLayout => onResize and IllegalStateException, everything is really twisted here, so will just suppress ensurePendingState
             ensurePendingState();
+        super.onResize();
     }
 
     /**
