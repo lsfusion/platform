@@ -677,6 +677,7 @@ callWithJQuery ($) ->
             unusedAttrsVertical: 85
             autoSortUnusedAttrs: false
             onRefresh: null
+            afterRefresh: null
             showUI: true
             filter: -> true
             sorters: {}
@@ -1139,6 +1140,8 @@ callWithJQuery ($) ->
                 opts.onRefresh(pivotUIOptions) if opts.onRefresh?
                 
                 pivotScrollDiv.pivot(materializedInput,subopts,locale)
+
+                opts.afterRefresh() if opts.afterRefresh?
 
                 @data "pivotUIOptions", pivotUIOptions
 

@@ -1227,6 +1227,7 @@
         unusedAttrsVertical: 85,
         autoSortUnusedAttrs: false,
         onRefresh: null,
+        afterRefresh: null,
         showUI: true,
         filter: function() {
           return true;
@@ -1767,6 +1768,9 @@
               opts.onRefresh(pivotUIOptions);
             }
             pivotScrollDiv.pivot(materializedInput, subopts, locale);
+            if (opts.afterRefresh != null) {
+              opts.afterRefresh();
+            }
             _this.data("pivotUIOptions", pivotUIOptions);
             if (opts.autoSortUnusedAttrs) {
               unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");
@@ -1950,5 +1954,3 @@
   });
 
 }).call(this);
-
-//# sourceMappingURL=pivot.js.map

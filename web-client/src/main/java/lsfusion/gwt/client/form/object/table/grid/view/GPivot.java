@@ -466,8 +466,10 @@ public class GPivot extends GStateTableView {
 
         updateRendererState(true); // will wait until server will answer us if we need to change something
         grid.changeGroupMode(properties, columnKeys, aggrProps, getGroupType(aggregatorName.toUpperCase()));
+    }
 
-        checkPadding(true); // will be rerendered (so there gonna be new tableDataScroller and header), so we need force Update
+    private void afterRefresh() {
+        checkPadding(true); // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
@@ -535,6 +537,9 @@ public class GPivot extends GStateTableView {
             showUI:showUI,
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
+            },
+            afterRefresh: function () {
+                instance.@GPivot::afterRefresh(*)();
             }
         }
     }-*/;
