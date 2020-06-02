@@ -13,7 +13,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GFilterController {
+public abstract class GUserFilters {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String FILTER = "filt.png";
 
@@ -23,7 +23,7 @@ public abstract class GFilterController {
 
     private GTableController logicsSupplier;
 
-    public GFilterController(GTableController logicsSupplier) {
+    public GUserFilters(GTableController logicsSupplier) {
         this.logicsSupplier = logicsSupplier;
 
         toolbarButton = new GToolbarButton(FILTER) {

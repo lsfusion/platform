@@ -10,7 +10,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableFocusPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
-import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
+import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -26,11 +26,11 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
 
     private ResizableVerticalPanel filterContainer;
 
-    private GFilterController controller;
+    private GUserFilters controller;
 
     private Map<GPropertyFilter, GFilterConditionView> conditionViews = new LinkedHashMap<>();
 
-    public GFilterView(GFilterController iController) {
+    public GFilterView(GUserFilters iController) {
         controller = iController;
 
         ResizableVerticalPanel mainContainer = new ResizableVerticalPanel();
