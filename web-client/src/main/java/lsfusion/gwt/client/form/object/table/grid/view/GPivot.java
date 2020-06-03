@@ -1208,7 +1208,11 @@ public class GPivot extends GStateTableView {
             },
             
             getColumnWidth: function (isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels) {
-                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::getColumnWidth(*)(isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels);
+                return instance.@GPivot::getColumnWidth(*)(isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels);
+            },
+            
+            checkPadding: function() {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
             }
         }
     }-*/;

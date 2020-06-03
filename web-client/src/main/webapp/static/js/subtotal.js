@@ -1221,7 +1221,8 @@
         h.clickStatus = clickStatusCollapsed;
         h.onClick = expandRow;
         axisHeaders.ah[h.col].expandedCount--;
-        return adjustRowAxisHeader(axisHeaders, h.col, opts);
+        adjustRowAxisHeader(axisHeaders, h.col, opts);
+        return callbacks.checkPadding();
       };
       showChildRow = function(ch, opts) {
         var cell, k, l, len1, len2, ref, ref1, results;
@@ -1332,7 +1333,8 @@
         h.clickStatus = clickStatusExpanded;
         h.onClick = collapseRow;
         axisHeaders.ah[h.col].expandedCount++;
-        return adjustRowAxisHeader(axisHeaders, h.col, opts);
+        adjustRowAxisHeader(axisHeaders, h.col, opts);
+        return callbacks.checkPadding();
       };
       collapseColAxis = function(axisHeaders, col, attrs, opts) {
         var h, k, ref, ref1, results;

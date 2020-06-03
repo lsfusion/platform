@@ -856,6 +856,7 @@ callWithJQuery ($) ->
             h.onClick = expandRow
             axisHeaders.ah[h.col].expandedCount--
             adjustRowAxisHeader axisHeaders, h.col, opts
+            callbacks.checkPadding()
 
         showChildRow = (ch, opts) ->
             replaceClass cell, classRowHide, classRowShow for cell in ch.tr.querySelectorAll "th, td"
@@ -910,6 +911,7 @@ callWithJQuery ($) ->
             h.onClick = collapseRow
             axisHeaders.ah[h.col].expandedCount++
             adjustRowAxisHeader axisHeaders, h.col, opts
+            callbacks.checkPadding()
     
         collapseColAxis = (axisHeaders, col, attrs, opts) ->
             for i in [attrs.length-2..col] by -1
