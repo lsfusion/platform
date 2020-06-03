@@ -420,6 +420,13 @@ public class GPivot extends GStateTableView {
             callbacks: callbacks
         });
     }-*/;
+
+    private native WrapperObject reduceRows(WrapperObject config, JsArrayString rows, int length)/*-{
+        rows = rows.slice(0, length);
+        return Object.assign({}, config, {
+                rows: rows
+            });
+    }-*/;
     
     private List<String> createAggrColumns(WrapperObject inclusions) {
         JsArrayString columnValues = inclusions.getArrayString(COLUMN);
@@ -1120,14 +1127,16 @@ public class GPivot extends GStateTableView {
         JsArrayString rows = config.getArrayString("rows");
         columnMap.foreachKey(key -> {if(!contains(cols, key) && !contains(rows, key)) menuItems.add(key);});
 
-        List<GPropertyFilter> filters = new ArrayList<>();
-        filters.addAll(getFilters(rows, rowKeyValues));
-        filters.addAll(getFilters(cols, colKeyValues));
-
         final MenuBar menuBar = new MenuBar(true);
         for(String caption : menuItems) {
             MenuItem menuItem = new MenuItem(caption, () -> {
                 popup.hide();
+                config = reduceRows(config, config.getArrayString("rows"), rowKeyValues.length());
+
+                List<GPropertyFilter> filters = new ArrayList<>();
+                filters.addAll(getFilters(config.getArrayString("rows"), rowKeyValues));
+                filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
+
                 config.getArrayString("rows").push(caption);
                 grid.filter.applyFilters(filters, false);
                 updateView(true, null);
