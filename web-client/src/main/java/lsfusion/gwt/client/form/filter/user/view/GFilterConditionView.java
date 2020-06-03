@@ -155,27 +155,27 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         deleteButton.addStyleName("filterDialogButton");
         add(deleteButton);
 
-        setValueView(true);
+        valueView = valueViews.get(condition.value);
+        if (valueView != null) {
+            insert(valueView, getWidgetIndex(junctionView));
+            valueView.propertySet(condition);
+        }
     }
 
     private void filterChanged() {
         if (valueView != null) {
             remove(valueView);
         }
-        setValueView(false);
+        valueView = valueViews.get(condition.value);
+        if (valueView != null) {
+            insert(valueView, getWidgetIndex(junctionView));
+            valueView.propertyChanged(condition);
+        }
         compareView.setItems(condition.property.baseType.getFilterCompares());
         compareView.setSelectedItem(condition.getDefaultCompare());
         condition.compare = (GCompare) compareView.getSelectedItem();
 
         handler.conditionChanged();
-    }
-
-    private void setValueView(boolean init) {
-        valueView = valueViews.get(condition.value);
-        if (valueView != null) {
-            insert(valueView, getWidgetIndex(junctionView));
-            valueView.propertyChanged(condition, init);
-        }
     }
 
     public void setJunctionVisible(boolean visible) {

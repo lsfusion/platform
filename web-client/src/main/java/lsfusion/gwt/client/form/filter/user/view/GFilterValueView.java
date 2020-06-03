@@ -18,7 +18,8 @@ public class GFilterValueView extends SimplePanel {
     public void focusOnValue() {
     }
 
-    public void propertyChanged(GPropertyFilter condition, boolean init) {}
+    public void propertySet(GPropertyFilter condition) {}
+    public void propertyChanged(GPropertyFilter condition) {}
 
     public void startEditing(EditEvent keyEvent) {
         focusOnValue();

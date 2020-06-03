@@ -54,7 +54,7 @@ public class GPivot extends GStateTableView {
     }
 
     // we need key / value view since pivot
-    private JsArray<JsArrayMixed> getData(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings) {
+    private JsArray<JsArrayMixed> getData(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings, boolean full) {
         JsArray<JsArrayMixed> array = JavaScriptObject.createArray().cast();
 
         array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
@@ -63,12 +63,16 @@ public class GPivot extends GStateTableView {
         for (GGroupObjectValue key : keys != null && !keys.isEmpty()  ? keys : Collections.singleton((GGroupObjectValue) null)) { // can be null if manual update
             JsArrayMixed rowValues = getValues(key, convertDataToStrings);
 
-            // if there are no columns (there is no response yet, or they are all filtered, we steel need at least one row, because otherwise it breaks a lot of assertions
-            // for example in pivotUI, attrValues -> showInDragDrop will not be filled -> to no COLUMN group column added to the dom -> when onRefresh will be called cols will be empty -> config will be overriden with no predefined cols
-            for (String aggrCaption : !aggrCaptions.isEmpty() ? aggrCaptions : Collections.singleton((String)null)) { // putting columns to rows
-                JsArrayMixed aggrRowValues = clone(rowValues);
-                aggrRowValues.push(aggrCaption);
-                array.push(aggrRowValues);
+            if (full) {
+                // if there are no columns (there is no response yet, or they are all filtered, we steel need at least one row, because otherwise it breaks a lot of assertions
+                // for example in pivotUI, attrValues -> showInDragDrop will not be filled -> to no COLUMN group column added to the dom -> when onRefresh will be called cols will be empty -> config will be overriden with no predefined cols
+                for (String aggrCaption : !aggrCaptions.isEmpty() ? aggrCaptions : Collections.singleton((String) null)) { // putting columns to rows
+                    JsArrayMixed aggrRowValues = clone(rowValues);
+                    aggrRowValues.push(aggrCaption);
+                    array.push(aggrRowValues);
+                }
+            } else {
+                array.push(rowValues);
             }
         }
         return array;
@@ -186,7 +190,6 @@ public class GPivot extends GStateTableView {
 
     public static final String COLUMN = "(Колонка)";
 
-    JsArray<JsArrayMixed> data = null;
     public boolean firstUpdateView = true;
     @Override
     protected void updateView() {
@@ -195,7 +198,7 @@ public class GPivot extends GStateTableView {
         Aggregator aggregator = Aggregator.create();
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
         boolean convertDataToStrings = false; // so far we'll not use renderer formatters and we'll rely on native toString (if we decide to do it we'll have to track renderer type and rerender everything if this type changes that can may lead to some blinking)
-        data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings); // convertToObjects()
+        JsArray<JsArrayMixed> data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings, true); // convertToObjects()
         if(firstUpdateView) {
             initDefaultConfig(grid);
             firstUpdateView = false;
@@ -1190,6 +1193,7 @@ public class GPivot extends GStateTableView {
     }
 
     private Integer getRowIndex(List<String> keysArray, List<String> rowsOrCols) {
+        JsArray<JsArrayMixed> data = getData(columnMap, Aggregator.create(), aggrCaptions, JavaScriptObject.createArray().cast(), false, false);
         ArrayList<String> headers = toArrayList(data.get(0));
         List<Integer> headerIndexes = new ArrayList<>();
         for (String rowOrCol : rowsOrCols) {
@@ -1197,11 +1201,12 @@ public class GPivot extends GStateTableView {
         }
 
         Integer rowIndex = 0;
-        for (int i = 1; i < data.length(); i += aggrCaptions.size()) {
+        for (int i = 1; i < data.length(); i++) {
             JsArrayMixed row = data.get(i);
             boolean found = true;
             for (int j = 0; j < keysArray.size(); j++) {
-                if (!row.getString(headerIndexes.get(j)).equals(keysArray.get(j))) {
+                Integer headerIndex = headerIndexes.get(j);
+                if (!isSystemColumn(row, headerIndex) && !row.getString(headerIndex).equals(keysArray.get(j))) {
                     found = false;
                     break;
                 }
@@ -1212,6 +1217,10 @@ public class GPivot extends GStateTableView {
             rowIndex++;
         }
         return null;
+    }
+
+    private boolean isSystemColumn(JsArrayMixed row, Integer headerIndex) {
+        return row.length() <= headerIndex;
     }
 
     private ArrayList<String> toArrayList(JsArrayMixed jsArray) {
