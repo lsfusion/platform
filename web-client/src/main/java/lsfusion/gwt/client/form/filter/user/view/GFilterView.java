@@ -85,6 +85,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
                 addCondition(condition, logicsSupplier);
             }
             filterDialog = new DialogBox(false, true, new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
+            filterDialog.setGlassEnabled(true);
             filterDialog.setWidget(this);
             filterDialog.center();
             focusOnValue();
