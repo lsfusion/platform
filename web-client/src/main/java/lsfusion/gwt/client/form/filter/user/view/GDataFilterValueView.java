@@ -44,12 +44,14 @@ public class GDataFilterValueView extends GFilterValueView {
     }
 
     @Override
-    public void propertyChanged(GPropertyFilter condition, boolean restored) {
+    public void propertyChanged(GPropertyFilter condition, boolean init) {
         tablePanel.setPixelSize(condition.property.getValueWidth(null), condition.property.getValueHeight(null));
         valueTable.setProperty(condition.property);
-
-        Object initValue = restored ? (condition.initValue != null ? condition.initValue : filterValue.value) : null;
-        setValue(initValue != null ? initValue : logicsSupplier.getSelectedValue(condition.property, condition.columnKey));
+        if(init) {
+            valueTable.setValue(filterValue.value);
+        } else {
+            setValue(logicsSupplier.getSelectedValue(condition.property, condition.columnKey));
+        }
     }
 
     public void valueChanged(Object value) {

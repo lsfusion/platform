@@ -1151,7 +1151,6 @@ public class GPivot extends GStateTableView {
                 GDataFilterValue filterValue = new GDataFilterValue();
                 filterValue.value = values.get(i);
                 filter.value = filterValue;
-                filter.initValue = values.get(i);
                 filter.compare = GCompare.EQUALS;
                 filters.add(filter);
             }

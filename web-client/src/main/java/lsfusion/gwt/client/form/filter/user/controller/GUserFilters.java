@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.filter.user.controller;
 
 import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.view.GFilterView;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -10,6 +11,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,9 +54,11 @@ public abstract class GUserFilters {
     }
 
     private void showDialog(EditEvent keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey, boolean replace, boolean alwaysAddNew) {
-        List<GPropertyFilter> restoredConditions = replace ? new ArrayList<>() : new ArrayList<>(conditions);
-        GPropertyFilter newCondition = alwaysAddNew || restoredConditions.isEmpty() ? getNewCondition(propertyDraw, columnKey) : null;
-        new GFilterView(this).showDialog(restoredConditions, newCondition, logicsSupplier, keyEvent, propertyDraw);
+        List<GPropertyFilter> conditions = replace ? new ArrayList<>() : new ArrayList<>(this.conditions);
+        if(alwaysAddNew || conditions.isEmpty()) {
+            conditions.add(getNewCondition(propertyDraw, columnKey));
+        }
+        new GFilterView(this).showDialog(conditions, logicsSupplier, keyEvent, propertyDraw);
     }
 
     private void updateToolbarButton() {
@@ -84,7 +88,11 @@ public abstract class GUserFilters {
         GPropertyFilter filter = new GPropertyFilter();
         filter.property = filterProperty;
         filter.columnKey = filterColumnKey;
+        GDataFilterValue filterValue = new GDataFilterValue();
+        filterValue.value = (Serializable) logicsSupplier.getSelectedValue(filterProperty, filterColumnKey);
+        filter.value = filterValue;
         filter.groupObject = logicsSupplier.getSelectedGroupObject();
+        filter.compare = filter.getDefaultCompare();
         return filter;
     }
 

@@ -40,7 +40,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
     private Map<GFilterValue, GFilterValueView> valueViews;
 
-    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler, boolean restored) {
+    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler) {
         this.condition = iCondition;
         this.handler = handler;
         setVerticalAlignment(ALIGN_MIDDLE);
@@ -55,7 +55,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             public void onChange(ChangeEvent event) {
                 condition.property = (GPropertyDraw) propertyView.getSelectedItem();
                 condition.columnKey = null;
-                filterChanged(false);
+                filterChanged();
             }
         });
         add(propertyView);
@@ -80,6 +80,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             }
         });
         add(negationView);
+        negationView.setValue(condition.negation);
 
         compareView = new GFilterConditionListBox();
         compareView.addStyleName("customFontPresenter");
@@ -92,6 +93,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             }
         });
         add(compareView);
+        compareView.setSelectedItem(condition.compare);
 
         filterValues = new GFilterConditionListBox();
         filterValues.addStyleName("customFontPresenter");
@@ -120,14 +122,11 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             @Override
             public void onChange(ChangeEvent event) {
                 condition.value = (GFilterValue) filterValues.getSelectedItem();
-                filterChanged(false);
+                filterChanged();
             }
         });
         add(filterValues);
-
-        if(!restored) {
-            condition.value = (GFilterValue) filterValues.getSelectedItem();
-        }
+        filterValues.setSelectedItem(condition.value);
 
         junctionView = new GFilterConditionListBox();
         junctionView.addStyleName("customFontPresenter");
@@ -140,6 +139,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             }
         });
         add(junctionView);
+        junctionView.setSelectedIndex(condition.junction ? 0 : 1);
 
         GToolbarButton deleteButton = new GToolbarButton(DELETE, messages.formQueriesFilterRemoveCondition()) {
             @Override
@@ -155,31 +155,27 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         deleteButton.addStyleName("filterDialogButton");
         add(deleteButton);
 
-        filterChanged(restored);
+        setValueView(true);
     }
 
-    private void filterChanged(boolean restored) {
+    private void filterChanged() {
         if (valueView != null) {
             remove(valueView);
         }
+        setValueView(false);
+        compareView.setItems(condition.property.baseType.getFilterCompares());
+        compareView.setSelectedItem(condition.getDefaultCompare());
+        condition.compare = (GCompare) compareView.getSelectedItem();
 
+        handler.conditionChanged();
+    }
+
+    private void setValueView(boolean init) {
         valueView = valueViews.get(condition.value);
         if (valueView != null) {
             insert(valueView, getWidgetIndex(junctionView));
-            valueView.propertyChanged(condition, restored);
+            valueView.propertyChanged(condition, init);
         }
-        if(restored) {
-            negationView.setValue(condition.negation);
-            compareView.setSelectedItem(condition.compare);
-            junctionView.setSelectedIndex(condition.junction ? 0 : 1);
-            filterValues.setSelectedItem(condition.value);
-        } else {
-            compareView.setItems(condition.property.baseType.getFilterCompares());
-            compareView.setSelectedItem(condition.getDefaultCompare());
-            condition.compare = (GCompare) compareView.getSelectedItem();
-        }
-
-        handler.conditionChanged();
     }
 
     public void setJunctionVisible(boolean visible) {

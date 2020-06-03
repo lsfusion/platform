@@ -79,12 +79,11 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         }
     }
 
-    public void showDialog(List<GPropertyFilter> restoredConditions, GPropertyFilter newCondition, GTableController logicsSupplier, EditEvent keyEvent, GPropertyDraw propertyDraw) {
-        if(newCondition != null || !restoredConditions.isEmpty()) {
-            for (GPropertyFilter condition : restoredConditions) {
-                addCondition(condition, logicsSupplier, true);
+    public void showDialog(List<GPropertyFilter> conditions, GTableController logicsSupplier, EditEvent keyEvent, GPropertyDraw propertyDraw) {
+        if(!conditions.isEmpty()) {
+            for (GPropertyFilter condition : conditions) {
+                addCondition(condition, logicsSupplier);
             }
-            addCondition(newCondition, logicsSupplier, false);
             filterDialog = new DialogBox(false, true, new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
             filterDialog.setWidget(this);
             filterDialog.center();
@@ -106,13 +105,13 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     }
 
     public void addNewCondition() {
-        addCondition(controller.getNewCondition(null, null), controller.getLogicsSupplier(), false);
+        addCondition(controller.getNewCondition(null, null), controller.getLogicsSupplier());
 
     }
 
-    public void addCondition(GPropertyFilter condition, GTableController logicsSupplier, boolean restored) {
+    public void addCondition(GPropertyFilter condition, GTableController logicsSupplier) {
         if(condition != null) {
-            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, restored);
+            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this);
             conditionViews.put(condition, conditionView);
             filterContainer.add(conditionView);
             conditionChanged();
