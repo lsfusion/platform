@@ -1232,7 +1232,9 @@
         filter: function() {
           return true;
         },
-        sorters: {}
+        sorters: {},
+        valueHeight: null,
+        componentHeight: null
       };
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
       localeDefaults = {
@@ -1281,7 +1283,9 @@
         }).attr("cellpadding", 5);
         rendererControl = $("<td>").addClass("pvtUiCell");
         rendererControlDiv = $("<div>").appendTo(rendererControl);
-        renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControlDiv).bind("change", function() {
+        renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControlDiv).css({
+          height: opts.componentHeight
+        }).bind("change", function() {
           return refresh();
         });
         ref = opts.renderers;
@@ -1343,7 +1347,7 @@
           unused.addClass('pvtHorizList');
         }
         fn1 = function(attr) {
-          var attrElem, checkContainer, closeFilterBox, controls, filterItem, filterItemExcluded, finalButtons, hasExcludedItem, len2, n, placeholder, ref1, sorter, triangleLink, v, value, valueCount, valueList, values;
+          var attrElem, checkContainer, closeFilterBox, controls, filterItem, filterItemExcluded, finalButtons, hasExcludedItem, len2, listItem, n, placeholder, ref1, sorter, triangleLink, v, value, valueCount, valueList, values;
           values = (function() {
             var results;
             results = [];
@@ -1471,7 +1475,11 @@
               maxHeight: (listHeight - 1) + "px"
             }).show();
           });
-          attrElem = $("<li>").addClass("axis_" + i).append($("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink));
+          listItem = $("<li>").addClass("axis_" + i);
+          listItem.css({
+            lineHeight: opts.valueHeight
+          });
+          attrElem = listItem.append($("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink));
           if (hasExcludedItem) {
             attrElem.addClass('pvtFilteredAttribute');
           }
@@ -1483,7 +1491,9 @@
           fn1(attr);
         }
         tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable);
-        aggregator = $("<select>").addClass('pvtAggregator').bind("change", function() {
+        aggregator = $("<select>").addClass('pvtAggregator').css({
+          height: opts.componentHeight
+        }).bind("change", function() {
           return refresh();
         });
         ref1 = opts.aggregators;
@@ -1653,7 +1663,9 @@
               },
               connectWith: _this.find(".pvtAxisContainer"),
               items: 'li',
-              placeholder: 'pvtPlaceholder'
+              placeholder: 'pvtPlaceholder',
+              tolerance: "pointer",
+              forcePlaceholderSize: true
             });
             subopts = {
               derivedAttributes: opts.derivedAttributes,
@@ -1796,7 +1808,9 @@
           },
           connectWith: this.find(".pvtAxisContainer"),
           items: 'li',
-          placeholder: 'pvtPlaceholder'
+          placeholder: 'pvtPlaceholder',
+          tolerance: "pointer",
+          forcePlaceholderSize: true
         });
       } catch (error) {
         e = error;
@@ -1954,3 +1968,5 @@
   });
 
 }).call(this);
+
+//# sourceMappingURL=pivot.js.map

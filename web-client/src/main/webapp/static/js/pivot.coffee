@@ -681,6 +681,8 @@ callWithJQuery ($) ->
             showUI: true
             filter: -> true
             sorters: {}
+            valueHeight: null
+            componentHeight: null
 
         localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings)
         localeDefaults =
@@ -726,6 +728,7 @@ callWithJQuery ($) ->
             renderer = $("<select>")
                 .addClass('pvtRenderer')
                 .appendTo(rendererControlDiv)
+                .css(height: opts.componentHeight)
                 .bind "change", -> refresh() #capture reference
             for own x of opts.renderers
                 $("<option>").val(x).html(x).appendTo(renderer)
@@ -865,8 +868,9 @@ callWithJQuery ($) ->
                             left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10)
                             valueList.css(left: left, top: top, maxHeight: "#{listHeight - 1}px").show()
 
-                    attrElem = $("<li>").addClass("axis_#{i}")
-                        .append $("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink)
+                    listItem = $("<li>").addClass("axis_#{i}")
+                    listItem.css(lineHeight: opts.valueHeight)
+                    attrElem = listItem.append $("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink)
 
                     attrElem.addClass('pvtFilteredAttribute') if hasExcludedItem
                     unusedDiv.append(attrElem).append(valueList)
@@ -876,6 +880,7 @@ callWithJQuery ($) ->
             #aggregator menu and value area
 
             aggregator = $("<select>").addClass('pvtAggregator')
+                .css(height: opts.componentHeight)
                 .bind "change", -> refresh() #capture reference
             for own x of opts.aggregators
                 aggregator.append $("<option>").val(x).html(x)
@@ -1050,6 +1055,8 @@ callWithJQuery ($) ->
                     connectWith: @find(".pvtAxisContainer")
                     items: 'li'
                     placeholder: 'pvtPlaceholder'
+                    tolerance: "pointer"
+                    forcePlaceholderSize: true
 
                 subopts =
                     derivedAttributes: opts.derivedAttributes
@@ -1166,6 +1173,8 @@ callWithJQuery ($) ->
                     connectWith: @find(".pvtAxisContainer")
                     items: 'li'
                     placeholder: 'pvtPlaceholder'
+                    tolerance: "pointer"
+                    forcePlaceholderSize: true
         catch e
             console.error(e.stack) if console?
             @html opts.localeStrings.uiRenderError
