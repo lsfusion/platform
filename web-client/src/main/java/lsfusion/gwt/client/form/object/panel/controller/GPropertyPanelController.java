@@ -70,7 +70,9 @@ public class GPropertyPanelController {
                         renderer.setReadOnly(property.isReadOnly());
                         renderersPanel.addFill(renderer.getComponent());
                     }
-                    newRenderers.put(columnKey, renderer);
+                    if(renderer != null) {
+                        newRenderers.put(columnKey, renderer);
+                    }
                 }
             }
 
