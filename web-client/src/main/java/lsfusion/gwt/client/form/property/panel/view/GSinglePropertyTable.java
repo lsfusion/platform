@@ -35,7 +35,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
     private String foreground;
 
     public GSinglePropertyTable(GFormController iform, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
-        super(iform, SINGLE_PROPERTY_TABLE_STYLE, true);
+        super(iform, null, SINGLE_PROPERTY_TABLE_STYLE, true, true, true);
 
         this.property = iproperty;
         this.columnKey = columnKey;
@@ -44,8 +44,6 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
 
         setCellHeight(property.getValueHeight(null));
         setRemoveKeyboardStylesOnBlur(true);
-
-        getTableDataScroller().removeScrollbars();
 
         addColumn(new Column<Object, Object>(new GridEditableCell(this)) {
             @Override
@@ -57,9 +55,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
     }
 
     public void setupFillParent() {
-        GwtClientUtils.setupFillParent(getElement());
-        GwtClientUtils.setupFillParent(getTableDataScroller().getContainerElement());
-        getTableElement().getStyle().setHeight(100, Unit.PCT);
+        getTableElement().getStyle().setHeight(100, Unit.PCT); // not sure what for
         ((GSinglePropertyTableBuilder)getTableBuilder()).setStripCellHeight(true);
     }
 

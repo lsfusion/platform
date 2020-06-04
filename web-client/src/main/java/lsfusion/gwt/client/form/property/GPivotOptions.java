@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.property;
 
+import lsfusion.gwt.client.form.object.table.grid.view.PivotRendererType;
+
 import java.io.Serializable;
 
 public class GPivotOptions implements Serializable {
@@ -20,6 +22,10 @@ public class GPivotOptions implements Serializable {
         return type;
     }
 
+    public String getLocalizedType() {
+        return PivotRendererType.getType(getType()).localize();
+    }
+    
     public GPropertyGroupType getAggregation() {
         return aggregation;
     }

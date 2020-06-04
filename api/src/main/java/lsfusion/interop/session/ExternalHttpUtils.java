@@ -51,7 +51,7 @@ public class ExternalHttpUtils {
         HttpResponse response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties().build().execute(httpRequest);
         HttpEntity responseEntity = response.getEntity();
         ContentType responseContentType = ContentType.get(responseEntity);
-        byte[] responseBytes = IOUtils.readBytesFromStream(responseEntity.getContent());
+        byte[] responseBytes = responseEntity != null ? IOUtils.readBytesFromStream(responseEntity.getContent()) : null;
         StatusLine statusLine = response.getStatusLine();
         return new ExternalHttpResponse(responseContentType != null ? responseContentType.toString() : null, responseBytes, getResponseHeaders(response), statusLine.getStatusCode(), statusLine.getReasonPhrase());
     }

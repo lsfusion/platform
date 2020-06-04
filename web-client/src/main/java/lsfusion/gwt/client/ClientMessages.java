@@ -186,6 +186,29 @@ public interface ClientMessages extends Messages {
 
     String multipleFilterComponentAll();
 
+    String pivotTotalsLabel();
+    
+    String pivotAggregatorSum();
+    String pivotAggregatorMin();
+    String pivotAggregatorMax();
+    
+    String pivotColumnAttribute();
+
+    String pivotTableRenderer();
+    String pivotTableBarchartRenderer();
+    String pivotTableHeatmapRenderer();
+    String pivotTableRowHeatmapRenderer();
+    String pivotTableColHeatmapRenderer();
+    String pivotBarchartRenderer();
+    String pivotStackedBarchartRenderer();
+    String pivotLinechartRenderer();
+    String pivotAreachartRenderer();
+    String pivotScatterchartRenderer();
+    String pivotMultiplePiechartRenderer();
+    String pivotHorizontalBarchartRenderer();
+    String pivotHorizontalStackedBarchartRenderer();
+    String pivotTreemapRenderer();   
+    
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);
 

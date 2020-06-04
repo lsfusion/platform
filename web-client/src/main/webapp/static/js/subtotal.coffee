@@ -856,6 +856,7 @@ callWithJQuery ($) ->
             h.onClick = expandRow
             axisHeaders.ah[h.col].expandedCount--
             adjustRowAxisHeader axisHeaders, h.col, opts
+            callbacks.checkPadding()
 
         showChildRow = (ch, opts) ->
             replaceClass cell, classRowHide, classRowShow for cell in ch.tr.querySelectorAll "th, td"
@@ -910,6 +911,7 @@ callWithJQuery ($) ->
             h.onClick = collapseRow
             axisHeaders.ah[h.col].expandedCount++
             adjustRowAxisHeader axisHeaders, h.col, opts
+            callbacks.checkPadding()
     
         collapseColAxis = (axisHeaders, col, attrs, opts) ->
             for i in [attrs.length-2..col] by -1
@@ -1055,12 +1057,12 @@ callWithJQuery ($) ->
         return main rowAttrs, rowKeys, colAttrs, colKeys
 
     $.pivotUtilities.subtotal_renderers =
-        "Table":  (pvtData, opts) -> SubtotalRenderer pvtData, opts
-        "Table Barchart":   (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
-        "Table Heatmap":   (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
-        "Table Row Heatmap":   (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts
-        "Table Col Heatmap":  (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "colheatmap", opts
-
+        "TABLE"             : (pvtData, opts) -> SubtotalRenderer pvtData, opts
+        "TABLE_BARCHART"    : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
+        "TABLE_HEATMAP"     : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
+        "TABLE_ROW_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts
+        "TABLE_COL_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "colheatmap", opts
+            
     # 
     # Aggregators
     #

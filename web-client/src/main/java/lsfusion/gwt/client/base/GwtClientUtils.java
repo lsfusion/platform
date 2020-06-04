@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.http.client.*;
 import com.google.gwt.i18n.client.Dictionary;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
@@ -691,5 +692,13 @@ public class GwtClientUtils {
         char[] chars = new char[length];
         Arrays.fill(chars, character);
         return new String(chars);
+    }
+    
+    public static String getCurrentLocaleName() {
+        return LocaleInfo.getCurrentLocale().getLocaleName();
+    } 
+    
+    public static String getCurrentLanguage() {
+        return getCurrentLocaleName().substring(0, 2);
     }
 }

@@ -4,8 +4,6 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.ScrollEvent;
-import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -17,6 +15,7 @@ import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.KeyboardRowChangedEvent;
+import lsfusion.gwt.client.base.view.grid.TableScrollPanel;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -117,7 +116,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public GGridTable(GFormController iform, GGridController igroupController, GGridUserPreferences[] iuserPreferences, boolean autoSize) {
-        super(iform, igroupController.groupObject, null, igroupController.groupObject.grid.headerHeight);
+        super(iform, igroupController.groupObject, null);
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
@@ -172,29 +171,26 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
         };
 
-        getTableDataScroller().addScrollHandler(new ScrollHandler() {
-            @Override
-            public void onScroll(ScrollEvent event) {
-                int selectedRow = getKeyboardSelectedRow();
-                GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
-                if (selectedRecord != null) {
-                    int scrollHeight = getTableDataScroller().getClientHeight();
-                    int scrollTop = getTableDataScroller().getVerticalScrollPosition();
-                    
-                    TableRowElement rowElement = getChildElement(selectedRow);
-                    int rowTop = rowElement.getOffsetTop();
-                    int rowBottom = rowTop + rowElement.getClientHeight();
+        tableDataScroller.addScrollHandler(event -> {
+            int selectedRow = getKeyboardSelectedRow();
+            GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
+            if (selectedRecord != null) {
+                int scrollHeight = tableDataScroller.getClientHeight();
+                int scrollTop = tableDataScroller.getVerticalScrollPosition();
 
-                    int newRow = -1;
-                    if (rowBottom > scrollTop + scrollHeight + 1) { // поправка на 1 пиксель при скроллировании вверх - компенсация погрешности, возникающей при setScrollTop() / getScrollTop()
-                        newRow = getLastSeenRow(scrollTop + scrollHeight, selectedRow);
-                    }
-                    if (rowTop < scrollTop) {
-                        newRow = getFirstSeenRow(scrollTop, selectedRow);
-                    }
-                    if (newRow != -1) {
-                        setKeyboardSelectedRow(newRow, false);
-                    }
+                TableRowElement rowElement = getChildElement(selectedRow);
+                int rowTop = rowElement.getOffsetTop();
+                int rowBottom = rowTop + rowElement.getClientHeight();
+
+                int newRow = -1;
+                if (rowBottom > scrollTop + scrollHeight + 1) { // поправка на 1 пиксель при скроллировании вверх - компенсация погрешности, возникающей при setScrollTop() / getScrollTop()
+                    newRow = getLastSeenRow(scrollTop + scrollHeight, selectedRow);
+                }
+                if (rowTop < scrollTop) {
+                    newRow = getFirstSeenRow(scrollTop, selectedRow);
+                }
+                if (newRow != -1) {
+                    setKeyboardSelectedRow(newRow, false);
                 }
             }
         });
@@ -206,7 +202,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public Widget getWidget() {
         return super.getWidget();
     }
-    public DivElement getFocusHolderElement() {
+    public Element getFocusHolderElement() {
         return super.getFocusHolderElement();
     }
 
@@ -383,7 +379,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                         GGridPropertyTableHeader header = getGridHeader(currentIndex);
                         header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
                         header.setToolTip(property.getTooltipText(columnCaption));
-
                         header.setHeaderHeight(headerHeight);
 
                         property.setUserPattern(getUserPattern(property));
@@ -398,8 +393,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 }
             }
 
-            setFixedHeaderHeight(headerHeight);
-            
             setCellHeight(rowHeight);
 
             // removing old columns
@@ -512,7 +505,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     
     public int getHeaderHeight() {
         Integer headerHeight = currentGridPreferences.headerHeight;
-        if (headerHeight == null || headerHeight < 0) {
+        if (headerHeight == null || headerHeight <= 0) {
             headerHeight = groupObject.grid.headerHeight;
         }
         return headerHeight;
@@ -596,7 +589,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, getHeaderHeight());
+        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, null, null);
 
         insertColumn(index, column, header);
 
@@ -952,7 +945,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         super.onResize();
 
         if (isVisible()) {
-            int tableHeight = getTableDataScroller().getClientHeight();
+            int tableHeight = getViewportHeight();
             if (tableHeight == 0) {
                 return;
             }

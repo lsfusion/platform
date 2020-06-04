@@ -1,9 +1,16 @@
 .pivotTable {
     border: 1px solid var(--panel-border-color);
+    border-radius: var(--panel-border-radius);
+    -webkit-border-radius: var(--panel-border-radius);
+    -moz-border-radius: var(--panel-border-radius);
 }
 
 .pivotTable:focus {
     border: 1px solid var(--focus-color);
+}
+
+.pivotTable-noSettings {
+    border: none;
 }
 
 .pvtUiWrapperDiv {
@@ -28,6 +35,10 @@
     width: 100%;
 }
 
+.pvtUi-noSettings {
+    border-spacing: 0;
+}
+
 .pvtTable {
     width: 100%;
 }
@@ -35,36 +46,34 @@
 table.pvtTable {
     color: var(--text-color);
     text-align: left;
-    border-collapse: collapse
+
+    /* see DataGrid.css, dataGridTableWrapperWidget*/
+    border-spacing: 0
 }
 
+table.pvtTable tbody tr td,
 table.pvtTable tbody tr th,
 table.pvtTable thead tr th {
-    border: 1px solid var(--grid-separator-border-color);
-    background-color: var(--background-color);
+    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+    border-left: 1px solid var(--grid-separator-border-color);
+    border-bottom: 1px solid var(--grid-separator-border-color);
+
     overflow: hidden;
     white-space: nowrap;
     padding: 0 3px;
     font-weight: normal;
 }
 
-table.pvtTable tbody tr th:first-of-type,
-table.pvtTable thead tr th:first-of-type {
-    border-left: none;
-}
-
-table.pvtTable thead tr:first-of-type th {
-    border-top: none;
-}
-
-table.pvtTable tbody tr:first-of-type th,
-table.pvtTable tbody tr:first-of-type td{
-    border-top: none;
+table.pvtTable tbody tr th,
+table.pvtTable thead tr th {
+    color: var(--text-color);
+    background-color: var(--background-color);
 }
 
 table.pvtTable thead tr th:last-of-type,
 table.pvtTable tbody tr td:last-of-type{
-    border-right: none;
+    /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
+    border-right: 1px solid var(--grid-separator-border-color);
 }
 
 table.pvtTable .pvtColLabel {
@@ -76,13 +85,8 @@ table.pvtTable .pvtTotalLabel {
 }
 
 table.pvtTable tbody tr td {
-    border: 1px solid var(--grid-separator-border-color);
-    color: var(--text-color);
     background-color: var(--component-background-color);
-    overflow: hidden;
-    white-space: nowrap;
 
-    padding: 0 3px;
     vertical-align: top;
     text-align: right
 }
@@ -98,7 +102,10 @@ table.pvtTable tbody tr td {
 }
 
 .pvtRows, .pvtCols {
-    border: 1px solid var(--panel-border-color);;
+    border: 1px solid var(--panel-border-color);
+    border-radius: var(--panel-border-radius);
+    -webkit-border-radius: var(--panel-border-radius);
+    -moz-border-radius: var(--panel-border-radius);
 }
 
 .pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
@@ -141,7 +148,7 @@ table.pvtTable tbody tr td {
 .pvtAxisContainer,
 .pvtVals {
     border: 1px solid var(--panel-border-color);
-    background-color: transparent;
+    border-radius: var(--panel-border-radius);
     padding: 0;
     min-width: 20px;
     min-height: 20px;
@@ -149,19 +156,20 @@ table.pvtTable tbody tr td {
     -webkit-user-select: none;
     -moz-user-select: none;
     -khtml-user-select: none;
-    -ms-user-select: none
+    -ms-user-select: none;
+    -webkit-border-radius: var(--panel-border-radius);
+    -moz-border-radius: var(--panel-border-radius);
 }
 
 .pvtVals {
     border: 1px solid var(--panel-border-color);
-    background-color: transparent;
 }
 
 .pvtUiCell {
     padding: 0;
 }
 
-.pvtUiCell div:first-of-type {
+.pvtUiCell > div {
     padding: 5px;
 }
 
@@ -175,10 +183,10 @@ table.pvtTable tbody tr td {
     min-height: 20px;
     padding: 0 30px 0 0;
     margin:0 5px;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px;
-    border: 1px dashed #aaa
+    border: 1px dashed #aaa;
+    border-radius: var(--combobox-border-radius);
+    -webkit-border-radius: var(--combobox-border-radius);
+    -moz-border-radius: var(--combobox-border-radius);
 }
 
 .pvtAxisContainer li span.pvtAttr {
@@ -189,8 +197,8 @@ table.pvtTable tbody tr td {
     background-color: var(--component-background-color);
     padding: 2px 5px;
     white-space: nowrap;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
+    -webkit-border-radius: var(--combobox-border-radius);
+    -moz-border-radius: var(--combobox-border-radius);
 }
 
 /*.paxis.pvtHorizList: there is a bug with incorrect width when drag'n'drop middle of 3 elements.
@@ -202,6 +210,10 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .paxis:empty {
     padding: 4px;
+}
+
+.paxis li span.pvtAttr {
+    background-color: var(--selection-color);
 }
 
 .pvtRowsTable {
@@ -238,12 +250,14 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .pvtFilterBox {
-    z-index: 100;
+    z-index: auto;
     width: 300px;
     border: 1px solid var(--component-border-color);
     background-color: var(--background-color);
-    position: absolute;
-    text-align: center
+    position: absolute !important; /* draggable() sets relative */
+    text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 
 .pvtFilterBox h4 {
@@ -308,10 +322,12 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .pvtRendererBody {
     border: 1px solid var(--component-border-color);
+    border-radius: var(--table-border-radius);
     position : relative;
     flex : 1;
+    -webkit-border-radius: var(--table-border-radius);
+    -moz-border-radius: var(--table-border-radius);
 }
-
 .pvtRendererFooter {
     flex : 0 1 auto;
 }

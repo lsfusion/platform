@@ -47,20 +47,8 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     protected Context editContext;
     protected Element editCellParent;
 
-    public GPropertyTable(GFormController iform, GridStyle style) {
-        this(iform, style, false);
-    }
-
-    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, GridStyle style, int initHeaderHeight) {
-        this(iform, iGroupObject, style, initHeaderHeight, false);
-    }
-
-    public GPropertyTable(GFormController iform, GridStyle style, boolean nullHeader) {
-        this(iform, null, style, -1, nullHeader);
-    }
-
-    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, GridStyle style, int initHeaderHeight, boolean nullHeader) {
-        super(style, initHeaderHeight, nullHeader);
+    public GPropertyTable(GFormController iform, GGroupObject iGroupObject, GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
+        super(style, noHeaders, noFooters, noScrollers);
 
         this.form = iform;
         this.groupObject = iGroupObject;

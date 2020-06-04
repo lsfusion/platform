@@ -3,11 +3,14 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
+import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -15,6 +18,7 @@ import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
@@ -188,7 +192,7 @@ public class GPivot extends GStateTableView {
         return caption;
     }
 
-    public static final String COLUMN = "(Колонка)";
+    public static final String COLUMN = ClientMessages.Instance.get().pivotColumnAttribute();
 
     public boolean firstUpdateView = true;
     @Override
@@ -216,12 +220,12 @@ public class GPivot extends GStateTableView {
         JsArrayString jsArray = JsArrayString.createArray().cast();
         aggrCaptions.forEach(jsArray::push);
 
-        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, jsArray); // we need to updateRendererState after it is painted
+        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, jsArray, GwtClientUtils.getCurrentLanguage()); // we need to updateRendererState after it is painted
     }
 
     private void initDefaultConfig(GGridController gridController) {
         GPivotOptions pivotOptions = gridController.getPivotOptions();
-        String rendererName = pivotOptions != null ? pivotOptions.getType() : null;
+        String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
         String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
         settings = pivotOptions == null || pivotOptions.isShowSettings();
 
@@ -354,6 +358,9 @@ public class GPivot extends GStateTableView {
     public void switchSettings() {
         settings = !settings;
         config = overrideShowUI(config, settings);
+
+        setStyleName(getDrawElement(), "pivotTable-noSettings", !settings);
+
         rerender();
 
         updateView(false, null);
@@ -430,7 +437,7 @@ public class GPivot extends GStateTableView {
                 rows: rows
             });
     }-*/;
-    
+
     private List<String> createAggrColumns(WrapperObject inclusions) {
         JsArrayString columnValues = inclusions.getArrayString(COLUMN);
         if (columnValues == null)
@@ -474,32 +481,62 @@ public class GPivot extends GStateTableView {
         }
 
         updateRendererState(true); // will wait until server will answer us if we need to change something
-        grid.changeGroupMode(properties, columnKeys, aggrProps, GPropertyGroupType.valueOf(aggregatorName.toUpperCase()));
+        grid.changeGroupMode(properties, columnKeys, aggrProps, getGroupType(aggregatorName.toUpperCase()));
+    }
+
+    private void afterRefresh() {
+        checkPadding(true); // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
 
-    private void setRendererElement(Element element) {
+    private void setRendererElements(Element element) {
         rendererElement = element;
     }
 
     protected void updateRendererState(boolean set) {
         updateRendererElementState(rendererElement, set);
     }
+    private Element getTableDataScroller() {
+        return getElement(rendererElement, ".scrolldiv");
+    }
+    private Element getHeaderTableElement() {
+        return getElement(rendererElement, ".headertable.pvtTable");
+    }
+    private Element getHeaderTableScroller() {
+        return getElement(rendererElement, ".headerdiv");
+    }
 
     private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
 
+    private native Element getElement(com.google.gwt.dom.client.Element element, String selector) /*-{
+        return $wnd.$(element).find(selector).get(0);
+    }-*/;
+
+    private String localizeRendererName(JavaScriptObject jsName) {
+        String name = jsName.toString();
+        return PivotRendererType.valueOf(name).localize();
+    }
+
     private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI)/*-{
-        var tpl = $wnd.$.pivotUtilities.aggregatorTemplates;
         var instance = this;
+        var localizeRendererNames = function(renderers) {
+            var localizedRenderers = {};
+            for (var key in renderers) {
+                if (renderers.hasOwnProperty(key)) {
+                    localizedRenderers[instance.@GPivot::localizeRendererName(*)(key)] = renderers[key];
+                }
+            }
+            return localizedRenderers;
+        }
         var renderers = $wnd.$.extend(
-            $wnd.$.pivotUtilities.subtotal_renderers,
-            $wnd.$.pivotUtilities.plotly_renderers,
+            localizeRendererNames($wnd.$.pivotUtilities.subtotal_renderers),
+            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers),
 //            $wnd.$.pivotUtilities.c3_renderers,
 //            $wnd.$.pivotUtilities.renderers,
-            $wnd.$.pivotUtilities.d3_renderers
+            localizeRendererNames($wnd.$.pivotUtilities.d3_renderers)
         );
 
         return {
@@ -516,11 +553,14 @@ public class GPivot extends GStateTableView {
             showUI:showUI,
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
+            },
+            afterRefresh: function () {
+                instance.@GPivot::afterRefresh(*)();
             }
         }
     }-*/;
 
-    protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns)/*-{
+    protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns, String language)/*-{
 //        var d = element;
         var d = $doc.createElement('div'); // we need some div to append it later to avoid blinking
         d.className = 'pvtUiWrapperDiv';
@@ -529,12 +569,12 @@ public class GPivot extends GStateTableView {
         config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);
 
         // because we create new element, aggregators every time
-        $wnd.$(d).pivotUI(array, config, true);
+        $wnd.$(d).pivotUI(array, config, true, language);
 
         // moving pagesize controller inside
         $wnd.$(d).find(".pvtRendererFooter").append(pageSizeElement);
 
-        this.@GPivot::setRendererElement(*)(d);
+        this.@GPivot::setRendererElements(*)(d);
 
         // it's tricky in pivotUI, first refresh is with timeout 10ms, and that's why there is a blink, when pivotUI is painted with empty Renderer
         // to fix this will add it to the visible DOM, in 15 ms (after everything is painted)
@@ -674,13 +714,35 @@ public class GPivot extends GStateTableView {
         }
     }
 
-    private final static String[] aggregatorNames = new String[]{"Sum", "Max", "Min"};
+    private final static String[] aggregatorNames = new String[]{"SUM", "MAX", "MIN"};
 
     public JavaScriptObject getAggregators(Aggregator aggregator) {
         WrapperObject aggregators = JavaScriptObject.createObject().cast();
         for (String aggregatorName : aggregatorNames)
-            aggregators.putValue(aggregatorName, getAggregator(aggregatorName.toUpperCase(), aggregator));
+            aggregators.putValue(getAggregatorName(aggregatorName), getAggregator(aggregatorName, aggregator));
         return aggregators;
+    }
+
+    private String getAggregatorName(String aggregatorName) {
+        ClientMessages messages = ClientMessages.Instance.get();
+        switch (aggregatorName) {
+            case "SUM": return messages.pivotAggregatorSum();
+            case "MAX": return messages.pivotAggregatorMax();
+            case "MIN": return messages.pivotAggregatorMin();
+        }
+        return "";
+    }
+
+    private GPropertyGroupType getGroupType(String aggregatorName) {
+        ClientMessages messages = ClientMessages.Instance.get();
+        if (aggregatorName.equals(messages.pivotAggregatorSum())) {
+            return GPropertyGroupType.SUM;
+        } else if (aggregatorName.equals(messages.pivotAggregatorMax())) {
+            return GPropertyGroupType.MAX;
+        } else if (aggregatorName.equals(messages.pivotAggregatorMin())) {
+            return GPropertyGroupType.MIN;
+        }
+        return GPropertyGroupType.SUM;
     }
 
     public JavaScriptObject getAggregator(String aggrFuncName, Aggregator aggregator) {
@@ -723,7 +785,7 @@ public class GPivot extends GStateTableView {
     }
 
     public void renderValueCell(Element jsElement, JavaScriptObject value, JsArrayString rowKeys, JsArrayString columnKeys) {
-        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
+        GPropertyTableBuilder.renderTD(jsElement, rowHeight);
 
         String column = getColumnName(rowKeys, columnKeys);
         if(column != null)
@@ -739,7 +801,7 @@ public class GPivot extends GStateTableView {
     }
 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow) {
-        GPropertyTableBuilder.renderTD(rowHeight, th);
+        GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
             renderArrow(th, isExpanded);    
         } else {
@@ -756,32 +818,53 @@ public class GPivot extends GStateTableView {
         }
     }
 
-    public void renderColumn(Element th, JavaScriptObject value, String columnName) {
+    private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GridCellRenderer<?> renderer = columnMap.get(columnName).property.getGridCellRenderer();
         renderer.render(th, font, value, false);
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
-        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
         if (isArrow) {
+            GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             renderArrow(jsElement, isExpanded);
         } else {
-            String lastCol = null;
-            int colSize = colKeyValues.length();
-            if (!isSubtotal && colSize > 0) {
-                lastCol = config.getArrayString("cols").get(colSize - 1);
+            isSubtotal = isSubtotal || colKeyValues.length() == 0; // just in case, because in theory when there are no col keys it should be a total
+
+            boolean isLastCol;
+            String lastRenderCol;
+            if (isSubtotal) {
+                lastRenderCol = null;
+                isLastCol = true;
+            } else {
+                JsArrayString cols = config.getArrayString("cols");
+                int colSize = colKeyValues.length();
+                lastRenderCol = cols.get(colSize - 1);
+                isLastCol = colSize == cols.length();
             }
-            renderAttrCell(jsElement, value, lastCol);
+
+            Boolean sortDir = null;
+            if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
+                GGridPropertyTableHeader.renderTD(jsElement, 0, sortDir, fromObject(value).toString());
+            } else {
+                if (isLastCol && sortDir != null) { // last column may have a sortDir
+                    jsElement = GGridPropertyTableHeader.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
+
+                    jsElement = GGridPropertyTableHeader.wrapSort(jsElement, sortDir);
+                }
+
+                GPropertyTableBuilder.renderTD(jsElement, rowHeight);
+                renderAttrCell(jsElement, value, lastRenderCol);
+            }
         }
     } 
     
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
-        GPropertyTableBuilder.renderTD(rowHeight, jsElement);
         if (isArrow) {
+            GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             renderArrow(jsElement, isExpanded);
         } else {
-            // value is a column name
-            renderValue(jsElement, value);
+            // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
+            GGridPropertyTableHeader.renderTD(jsElement, rowHeight, null, fromObject(value).toString());
         }
     }
 
@@ -1068,6 +1151,30 @@ public class GPivot extends GStateTableView {
         return aggr;
     }
 
+    private boolean hasPadding;
+
+    @Override
+    public void onResize() {
+        checkPadding(false);
+
+        super.onResize();
+    }
+
+    public void checkPadding(boolean forceUpdate) {
+        Element tableDataScroller = getTableDataScroller();
+        if(tableDataScroller != null) {
+            int scrollWidth = tableDataScroller.getClientWidth();
+            boolean newPadding = scrollWidth != tableDataScroller.getOffsetWidth();
+
+            if (forceUpdate || hasPadding != newPadding) {
+                hasPadding = newPadding;
+
+//                DataGrid.updateTableMargin(hasPadding, getHeaderTableScroller());
+                DataGrid.updateTablePadding(hasPadding, getHeaderTableElement());
+            }
+        }
+    }
+
     private GroupColumnAggregator getGroupAggregator(GPropertyDraw property, JsArrayString lastColumns) {
         GroupColumnAggregator aggr = GroupColumnAggregator.create();
 
@@ -1117,7 +1224,11 @@ public class GPivot extends GStateTableView {
             },
             
             getColumnWidth: function (isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels) {
-                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::getColumnWidth(*)(isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels);
+                return instance.@GPivot::getColumnWidth(*)(isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels);
+            },
+
+            checkPadding: function() {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
             }
         }
     }-*/;

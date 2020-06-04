@@ -27,11 +27,6 @@ import java.util.List;
 /**
  * Builder used to construct a CellTable.
  *
- * <p>
- * The default implementation used by cell widths is
- * {@link DefaultDataGridBuilder}.
- * </p>
- *
  * @param <T> the row data type
  */
 public interface CellTableBuilder<T> {

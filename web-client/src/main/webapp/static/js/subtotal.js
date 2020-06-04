@@ -1221,7 +1221,8 @@
         h.clickStatus = clickStatusCollapsed;
         h.onClick = expandRow;
         axisHeaders.ah[h.col].expandedCount--;
-        return adjustRowAxisHeader(axisHeaders, h.col, opts);
+        adjustRowAxisHeader(axisHeaders, h.col, opts);
+        return callbacks.checkPadding();
       };
       showChildRow = function(ch, opts) {
         var cell, k, l, len1, len2, ref, ref1, results;
@@ -1332,7 +1333,8 @@
         h.clickStatus = clickStatusExpanded;
         h.onClick = collapseRow;
         axisHeaders.ah[h.col].expandedCount++;
-        return adjustRowAxisHeader(axisHeaders, h.col, opts);
+        adjustRowAxisHeader(axisHeaders, h.col, opts);
+        return callbacks.checkPadding();
       };
       collapseColAxis = function(axisHeaders, col, attrs, opts) {
         var h, k, ref, ref1, results;
@@ -1569,19 +1571,19 @@
       return main(rowAttrs, rowKeys, colAttrs, colKeys);
     };
     $.pivotUtilities.subtotal_renderers = {
-      "Table": function(pvtData, opts) {
+      "TABLE": function(pvtData, opts) {
         return SubtotalRenderer(pvtData, opts);
       },
-      "Table Barchart": function(pvtData, opts) {
+      "TABLE_BARCHART": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).barchart();
       },
-      "Table Heatmap": function(pvtData, opts) {
+      "TABLE_HEATMAP": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).heatmap("heatmap", opts);
       },
-      "Table Row Heatmap": function(pvtData, opts) {
+      "TABLE_ROW_HEATMAP": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).heatmap("rowheatmap", opts);
       },
-      "Table Col Heatmap": function(pvtData, opts) {
+      "TABLE_COL_HEATMAP": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).heatmap("colheatmap", opts);
       }
     };

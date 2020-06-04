@@ -1162,7 +1162,8 @@
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
       localeDefaults = {
         rendererOptions: {
-          localeStrings: localeStrings
+          localeStrings: localeStrings,
+          locale: locale
         },
         localeStrings: localeStrings
       };
@@ -1197,7 +1198,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
+      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1226,6 +1227,7 @@
         unusedAttrsVertical: 85,
         autoSortUnusedAttrs: false,
         onRefresh: null,
+        afterRefresh: null,
         showUI: true,
         filter: function() {
           return true;
@@ -1235,7 +1237,8 @@
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
       localeDefaults = {
         rendererOptions: {
-          localeStrings: localeStrings
+          localeStrings: localeStrings,
+          locale: locale
         },
         localeStrings: localeStrings
       };
@@ -1350,7 +1353,7 @@
             return results;
           })();
           hasExcludedItem = false;
-          valueList = $("<div>").addClass('pvtFilterBox').hide();
+          valueList = $("<div>").draggable().addClass('pvtFilterBox').hide();
           valueList.append($("<h4>").append($("<span>").text(attr), $("<span>").addClass("count").text("(" + values.length + ")")));
           if (values.length > opts.menuLimit) {
             valueList.append($("<p>").html(opts.localeStrings.tooMany));
@@ -1457,11 +1460,15 @@
             return closeFilterBox();
           });
           triangleLink = $("<span>").addClass('pvtTriangle').html(" &#x25BE;").bind("click", function(e) {
-            var left, ref2, top;
+            var left, listHeight, ref2, top;
             ref2 = $(e.currentTarget).position(), left = ref2.left, top = ref2.top;
+            listHeight = Math.min(valueList.outerHeight(), uiTable.height());
+            top = Math.min(uiTable.height() - listHeight, top + 10);
+            left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10);
             return valueList.css({
-              left: left + 10,
-              top: top + 10
+              left: left,
+              top: top,
+              maxHeight: (listHeight - 1) + "px"
             }).show();
           });
           attrElem = $("<li>").addClass("axis_" + i).append($("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink));
@@ -1533,7 +1540,7 @@
         pivotTable = $("<td>").attr("valign", "top").addClass('pvtRendererArea').appendTo(tr2);
         pivotRendererHeader = $("<div>").addClass('pvtRendererHeader').appendTo(pivotTable);
         pivotRendererBody = $("<div>").addClass('pvtRendererBody').appendTo(pivotTable);
-        pivotRendererHeader = $("<div>").addClass('pvtRendererFooter').appendTo(pivotTable);
+        pivotRendererFooter = $("<div>").addClass('pvtRendererFooter').appendTo(pivotTable);
         pivotScrollDiv = $("<div>").addClass('pvtRendererScrollDiv').appendTo(pivotRendererBody);
         if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
           uiTable.find('.uiTableRow:nth-child(1)').prepend(rendererControl);
@@ -1585,6 +1592,7 @@
         }
         if (!opts.showUI) {
           this.find(".pvtUiCell").hide();
+          this.find(".pvtUi").addClass("pvtUi-noSettings");
         }
         initialRender = true;
         refreshPaxis = (function(_this) {
@@ -1759,7 +1767,10 @@
             if (opts.onRefresh != null) {
               opts.onRefresh(pivotUIOptions);
             }
-            pivotScrollDiv.pivot(materializedInput, subopts);
+            pivotScrollDiv.pivot(materializedInput, subopts, locale);
+            if (opts.afterRefresh != null) {
+              opts.afterRefresh();
+            }
             _this.data("pivotUIOptions", pivotUIOptions);
             if (opts.autoSortUnusedAttrs) {
               unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");
@@ -1767,7 +1778,7 @@
                 return naturalSort($(a).text(), $(b).text());
               }).appendTo(unusedAttrsContainer);
             }
-            return pivotTable.css("opacity", 1);
+            return pivotTable.css("opacity", "");
           };
         })(this);
         refresh = (function(_this) {
@@ -1943,5 +1954,3 @@
   });
 
 }).call(this);
-
-//# sourceMappingURL=pivot.js.map

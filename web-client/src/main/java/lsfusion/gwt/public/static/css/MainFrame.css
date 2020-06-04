@@ -775,10 +775,6 @@ input[type=checkbox]:focus {
     float: right;
 }
 
-.positionRelative {
-    position: relative;
-}
-
 .filterDialogButton {
     margin: 0;
     height: 21px;

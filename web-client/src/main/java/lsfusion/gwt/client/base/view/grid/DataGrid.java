@@ -18,17 +18,17 @@ package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.TableLayout;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.ScrollEvent;
-import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.Cell.Context;
 import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
@@ -40,7 +40,6 @@ import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.*;
 
-import static com.google.gwt.dom.client.Style.OutlineStyle;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TD;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TH;
 import static java.lang.Math.min;
@@ -70,7 +69,8 @@ import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundCol
  *
  * @param <T> the data type of each row
  */
-public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>, Focusable, KeyboardRowChangedEvent.HasKeyboardRowChangedHandlers, ColorThemeChangeListener {
+// we need resizesimplepanel for "scroller" padding in headers (we don't know if there gonna be vertival scroller)
+public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Focusable, KeyboardRowChangedEvent.HasKeyboardRowChangedHandlers, ColorThemeChangeListener {
 
     private static GridStyle DEFAULT_STYLE;
 
@@ -178,19 +178,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     private CellTableBuilder<T> tableBuilder;
 
-    private final HeaderPanel headerPanel;
-
     private final TableWidget tableData;
-    private final Element tableDataContainer;
-    private final DataGridScrollPanel tableDataScroller;
+    protected TableScrollPanel tableDataScroller; // vertical scroller
 
-    private final FooterWidget tableFooter;
-    private final SimplePanel tableFooterContainer;
-    private final Element tableFooterScroller;
+    private FooterWidget tableFooter;
+    private TableScrollPanel tableFooterScroller;
 
-    private final HeaderWidget tableHeader;
-    private final SimplePanel tableHeaderContainer;
-    private final Element tableHeaderScroller;
+    private HeaderWidget tableHeader;
+    private TableScrollPanel tableHeaderScroller;
 
     private final FlexTable emptyTableWidgetContainer;
 
@@ -204,88 +199,114 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     private int pageIncrement = 30;
 
-    private boolean nullHeaders;
+    private final boolean noHeaders;
+    private final boolean noFooters;
+    private final boolean noScrollers;
 
-    /**
-     * Constructs a table with the given page size.
-     */
-    public DataGrid() {
-        this(getDefaultStyle());
+    // there are two ways to remove outer grid borders :
+    // 1) set styles for outer cells and set border-left/top : none there
+    // 2) set margins (not paddings since they do not support negative values) to -1
+    // first solution is cleaner (since border can be wider than 1px + margin can be used for other purposes, for example scroller padding), however the problem is that in that case the same should be implemented for focus which is pretty tricky
+    // the second solution is easier to implement
+    // the same problem is in gpivot, and there it is solved the same way (however since there is no focus cell there in history there should be a solution with styles, conditional css)
+    public static void removeOuterGridBorders(Widget parent) {
+        parent.getElement().getStyle().setMarginLeft(-1, Unit.PX);
+        parent.getElement().getStyle().setMarginRight(-1, Unit.PX);
     }
 
-    public DataGrid(GridStyle style) {
-        this(style, -1, false);
-    }
-
-    public DataGrid(GridStyle style, int initHeaderHeight, boolean nullHeaders) {
-        this.nullHeaders = nullHeaders;
-
-        int initialHeaderHeight = nullHeaders ? 0 : initHeaderHeight; 
-        headerPanel = new HeaderPanel(initialHeaderHeight, 0);
-
-        initWidget(headerPanel);
+    public DataGrid(GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
+        this.noHeaders = noHeaders;
+        this.noFooters = noFooters;
+        this.noScrollers = noScrollers;
 
         this.state = new State<>();
 
         this.style = style;
 
-        // Create the header and footer widgets..
-        tableHeader = new HeaderWidget();
-        tableFooter = new FooterWidget();
-
-        // Wrap the header and footer widgets in a div because we cannot set the min-width of a table element.
-        // We set the width/min-width of the div container instead.
-        tableHeaderContainer = new SimplePanel(tableHeader);
-        tableFooterContainer = new SimplePanel(tableFooter);
-
-        // Create the body.
         tableData = new TableWidget();
 
-        tableDataScroller = new DataGridScrollPanel(tableData);
-        tableDataScroller.setHeight("100%");
-        tableDataScroller.getElement().getStyle().setOutlineStyle(OutlineStyle.NONE);
+        Widget tableDataContainer;
+        if(!noScrollers) {
+            tableDataScroller = new TableScrollPanel(tableData, Style.Overflow.AUTO);
+            tableDataContainer = tableDataScroller;
+        } else {
+            tableDataContainer = tableData;
+        }
 
-        emptyTableWidgetContainer = new FlexTable();
+        if(noHeaders && noFooters) {
+            setFillWidget(tableDataContainer);
+        } else {
+            FlexPanel headerPanel = new FlexPanel(true); // will use flex for headers / footers
+
+            if(!noHeaders) {
+                Widget tableHeaderContainer;
+                tableHeader = new HeaderWidget();
+                if(!noScrollers) {
+                    tableHeaderScroller = new TableScrollPanel(tableHeader, Style.Overflow.HIDDEN);
+                    tableHeaderContainer = tableHeaderScroller;
+                } else
+                    tableHeaderContainer = tableHeader;
+
+                headerPanel.add(tableHeaderContainer, GFlexAlignment.STRETCH);
+
+                headerBuilder = new DefaultHeaderBuilder<>(this, false);
+            } else
+                tableHeaderScroller = null;
+
+            headerPanel.addFillFlex(tableDataContainer, 1);
+
+            if (!noFooters) { // the same as for headers
+                Widget tableFooterContainer;
+                tableFooter = new FooterWidget();
+                if(!noScrollers) {
+                    tableFooterScroller = new TableScrollPanel(tableFooter, Style.Overflow.HIDDEN);
+                    tableFooterContainer = tableFooterScroller;
+                } else
+                    tableFooterContainer = tableFooter;
+
+                headerPanel.add(tableFooterContainer, GFlexAlignment.STRETCH);
+
+                footerBuilder = new DefaultHeaderBuilder<>(this, true);
+            } else
+                tableFooterScroller = null;
+
+            if(!noScrollers) {
+                // Synchronize the scroll positions of the three tables.
+                // it's not possible to avoid this by splitting to separate horizontal and vertical scroller, since we don't want vertical scroller to be scrolled by horizontal scroller
+                tableDataScroller.addScrollHandler(event -> {
+                    int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
+                    if (tableHeaderScroller != null) {
+                        tableHeaderScroller.setHorizontalScrollPosition(scrollLeft);
+                    }
+                    if (tableFooterScroller != null) {
+                        tableFooterScroller.setHorizontalScrollPosition(scrollLeft);
+                    }
+                });
+            } else {
+                removeOuterGridBorders(headerPanel);
+            }
+
+            setFillWidget(headerPanel);
+        }
+
         // вообще в оригинальном DataGrid в этот контейнер предполагается класть виджеты, информирующие о том, что таблица пуста.
-        // но мы пока ограничимся просто наличием самого этого контейнера. 
-        // нам нужно, чтобы в пустой таблице у него была какая-нибудь минимальная высота (а значит и ненулевая ширина) 
+        // но мы пока ограничимся просто наличием самого этого контейнера.
+        // нам нужно, чтобы в пустой таблице у него была какая-нибудь минимальная высота (а значит и ненулевая ширина)
         // и чтобы при необходимости он вылезал за viewport скролл-панели, тем самым вызывая горизонтальный скроллбар
+        emptyTableWidgetContainer = new FlexTable();
         emptyTableWidgetContainer.setHeight("1px");
 
         setTableFocusable(true);
 
-        headerPanel.setContentWidget(tableDataScroller);
+        initSinkEvents();
+        initStyles(style);
 
-        if (!nullHeaders) {
-            headerPanel.setHeaderWidget(tableHeaderContainer);
-            headerPanel.setFooterWidget(tableFooterContainer);
+        setKeyboardSelectionHandler(new DataGridKeyboardSelectionHandler<>(this));
 
+        MainFrame.addColorThemeChangeListener(this);
+    }
 
-            // Get the element that wraps the container so we can adjust its scroll position.
-            tableHeaderScroller = tableHeaderContainer.getElement().getParentElement();
-            tableFooterScroller = tableFooterContainer.getElement().getParentElement();
-
-            // Set overflow to hidden on the scrollable elements so we can change the scrollLeft position.
-            tableHeaderScroller.getStyle().setOverflow(Overflow.HIDDEN);
-            tableFooterScroller.getStyle().setOverflow(Overflow.HIDDEN);
-
-            setNonNullHeadersCount(0);
-            setNonNullFootersCount(0);
-        } else {
-            tableHeaderScroller = null;
-            tableFooterScroller = null;
-        }
-
-        // Sink events.
-        Set<String> eventTypes = new HashSet<>();
-        eventTypes.add(BrowserEvents.FOCUS);
-        eventTypes.add(BrowserEvents.BLUR);
-        eventTypes.add(BrowserEvents.KEYDOWN); // Used for keyboard navigation.
-        eventTypes.add(BrowserEvents.KEYUP); // Used by subclasses for selection.
-        eventTypes.add(BrowserEvents.CLICK); // Used by subclasses for selection.
-        eventTypes.add(BrowserEvents.MOUSEDOWN); // No longer used, but here for legacy support.
-        CellBasedWidgetImpl.get().sinkEvents(this, eventTypes);
-
+    public void initStyles(GridStyle style) {
         selectedRowStyle = style.dataGridKeyboardSelectedRow();
         selectedRowCellStyle = style.dataGridKeyboardSelectedRowCell();
         focusedCellStyle = style.dataGridFocusedCell();
@@ -294,34 +315,19 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         rightOfFocusedCellStyle = style.dataGridRightOfFocusedCell();
 
         addStyleName(style.dataGridWidget());
-
-        tableDataContainer = tableData.getElement().getParentElement();
-
-        // Set the table builder.
-        tableBuilder = new DefaultDataGridBuilder<>(this);
-        headerBuilder = new DefaultHeaderBuilder<>(this, false);
-        footerBuilder = new DefaultHeaderBuilder<>(this, true);
-
-        // Synchronize the scroll positions of the three tables.
-        tableDataScroller.addScrollHandler(new ScrollHandler() {
-            @Override
-            public void onScroll(ScrollEvent event) {
-                int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
-                if (tableHeaderScroller != null) {
-                    tableHeaderScroller.setScrollLeft(scrollLeft);
-                }
-                if (tableFooterScroller != null) {
-                    tableFooterScroller.setScrollLeft(scrollLeft);
-                }
-            }
-        });
-
-        // Set the keyboard handler.
-        setKeyboardSelectionHandler(new DataGridKeyboardSelectionHandler<>(this));
-
-        MainFrame.addColorThemeChangeListener(this);
     }
-    
+
+    public void initSinkEvents() {
+        Set<String> eventTypes = new HashSet<>();
+        eventTypes.add(BrowserEvents.FOCUS);
+        eventTypes.add(BrowserEvents.BLUR);
+        eventTypes.add(BrowserEvents.KEYDOWN); // Used for keyboard navigation.
+        eventTypes.add(BrowserEvents.KEYUP); // Used by subclasses for selection.
+        eventTypes.add(BrowserEvents.CLICK); // Used by subclasses for selection.
+        eventTypes.add(BrowserEvents.MOUSEDOWN); // No longer used, but here for legacy support.
+        CellBasedWidgetImpl.get().sinkEvents(this, eventTypes);
+    }
+
     public GridStyle getStyle() {
         return style;
     }
@@ -333,14 +339,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     public int getRowHeight() {
         return rowHeight;
-    }
-
-    public void setFixedHeaderHeight(int fixedHeaderHeight) {
-        headerPanel.setFixedHeaderHeight(fixedHeaderHeight);
-    }
-
-    public void setFixedFooterHeight(int fixedFooterHeight) {
-        headerPanel.setFixedFooterHeight(fixedFooterHeight);
     }
 
     public int getPageIncrement() {
@@ -583,10 +581,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                  * the target table section element, we'll know for sure if its a header
                  * of footer.
                  */
-                if (headerParent == null && headerBuilder.isHeader(cur)) {
+                if (headerParent == null && !noHeaders && headerBuilder.isHeader(cur)) {
                     headerParent = cur;
                 }
-                if (footerParent == null && footerBuilder.isHeader(cur)) {
+                if (footerParent == null && !noFooters && footerBuilder.isHeader(cur)) {
                     footerParent = cur;
                 }
 
@@ -752,28 +750,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     /**
-     * Adds a column to the end of the table with an associated String header.
-     *
-     * @param col          the column to be added
-     * @param headerString the associated header text, as a String
-     */
-    public void addColumn(Column<T, ?> col, String headerString) {
-        insertColumn(getColumnCount(), col, headerString);
-    }
-
-    /**
-     * Adds a column to the end of the table with an associated String header and
-     * footer.
-     *
-     * @param col          the column to be added
-     * @param headerString the associated header text, as a String
-     * @param footerString the associated footer text, as a String
-     */
-    public void addColumn(Column<T, ?> col, String headerString, String footerString) {
-        insertColumn(getColumnCount(), col, headerString, footerString);
-    }
-
-    /**
      * Inserts a column into the table at the specified index.
      *
      * @param beforeIndex the index to insert the column
@@ -797,31 +773,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     /**
      * Inserts a column into the table at the specified index with an associated
-     * String header.
-     *
-     * @param beforeIndex  the index to insert the column
-     * @param col          the column to be added
-     * @param headerString the associated header text, as a String
-     */
-    public void insertColumn(int beforeIndex, Column<T, ?> col, String headerString) {
-        insertColumn(beforeIndex, col, new TextHeader(headerString), null);
-    }
-
-    /**
-     * Inserts a column into the table at the specified index with an associated
-     * String header and footer.
-     *
-     * @param beforeIndex  the index to insert the column
-     * @param col          the column to be added
-     * @param headerString the associated header text, as a String
-     * @param footerString the associated footer text, as a String
-     */
-    public void insertColumn(int beforeIndex, Column<T, ?> col, String headerString, String footerString) {
-        insertColumn(beforeIndex, col, new TextHeader(headerString), new TextHeader(footerString));
-    }
-
-    /**
-     * Inserts a column into the table at the specified index with an associated
      * header and footer.
      *
      * @param beforeIndex the index to insert the column
@@ -831,8 +782,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     public void insertColumn(int beforeIndex, Column<T, ?> col, Header<?> header, Header<?> footer) {
-        if (nullHeaders && header != null) {
+        if (noHeaders && header != null) {
             throw new UnsupportedOperationException("the table isn't allowed to have header");
+        }
+        if (noFooters && footer != null) {
+            throw new UnsupportedOperationException("the table isn't allowed to have footer");
         }
 
         // Allow insert at the end.
@@ -843,13 +797,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         headers.add(beforeIndex, header);
         footers.add(beforeIndex, footer);
         columns.add(beforeIndex, col);
-
-        if (footer != null) {
-            setNonNullFootersCount(nonNullFootersCount + 1);
-        }
-        if (header != null) {
-            setNonNullHeadersCount(nonNullHeadersCount + 1);
-        }
 
         // Increment the keyboard selected column.
         int selectedColumn = getKeyboardSelectedColumn();
@@ -931,15 +878,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             throw new IndexOutOfBoundsException("The specified column index is out of bounds.");
         }
         columns.remove(index);
-        Header<?> header = headers.remove(index);
-        Header<?> footer = footers.remove(index);
-
-        if (footer != null) {
-            setNonNullFootersCount(nonNullFootersCount - 1);
-        }
-        if (header != null) {
-            setNonNullHeadersCount(nonNullHeadersCount - 1);
-        }
+        headers.remove(index);
+        footers.remove(index);
 
         int selectedColumn = getKeyboardSelectedColumn();
         // Decrement the keyboard selected column.
@@ -1037,34 +977,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
     public int getHeaderIndex(Header<?> header) {
         return headers.indexOf(header);
-    }
-
-    private boolean hasHeaders() {
-        return nonNullHeadersCount != 0;
-    }
-
-    private boolean hasFooters() {
-        return nonNullFootersCount != 0;
-    }
-
-    private void setNonNullHeadersCount(int count) {
-        nonNullHeadersCount = count;
-        if (!nullHeaders) {
-            SimplePanel headerWidgetToSet = count != 0 ? tableHeaderContainer : null;
-            if (headerPanel.getHeaderWidget() != headerWidgetToSet) {
-                headerPanel.setHeaderWidget(headerWidgetToSet);
-            }
-        }
-    }
-
-    private void setNonNullFootersCount(int count) {
-        nonNullFootersCount = count;
-        if (!nullHeaders) {
-            SimplePanel footerWidgetToSet = count != 0 ? tableFooterContainer : null;
-            if (headerPanel.getFooterWidget() != footerWidgetToSet) {
-                headerPanel.setFooterWidget(footerWidgetToSet);
-            }
-        }
     }
 
     /**
@@ -1264,27 +1176,54 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private double minWidthValue = 0.0;
     private Unit minWidthUnit = null;
     public void setMinimumTableWidth(double value, Unit unit) {
-        /*
-         * The min-width style attribute doesn't apply to tables, so we set the
-         * min-width of the element that contains the table instead. The table width
-         * is fixed at 100%.
-         */
-        tableDataContainer.getStyle().setProperty("minWidth", value, unit);
         minWidthValue = value;
         minWidthUnit = unit;
+
+        setBlockMinWidth(value, tableData);
         updateHeaderFooterTableMinimumWidth();
     }
 
-    private void updateHeaderFooterTableMinimumWidth() {
-        if(minWidthUnit != null) {
-            double exValue = minWidthValue + (hasPadding ? nativeScrollbarWidth : 0);
-            tableHeaderContainer.getElement().getStyle().setProperty("minWidth", exValue, minWidthUnit);
-            tableFooterContainer.getElement().getStyle().setProperty("minWidth", exValue, minWidthUnit);
-        }
+    public void setBlockMinWidth(double value, Widget tableData) {
+        tableData.getElement().getStyle().setProperty("minWidth", value, minWidthUnit);
     }
 
-    protected int getViewWidth() {
-        return getOffsetWidth() - (hasPadding ? nativeScrollbarWidth: 0);
+    private void updateHeaderTablePadding(TableWrapperWidget headerWidget, TableScrollPanel tableHeaderScroller) {
+        updateTablePadding(hasPadding, headerWidget.tableElement);
+//        updateTableMargin(hasPadding, tableHeaderScroller.getElement());
+
+        updateHeaderTableMinimumWidth(headerWidget); // padding changed, we need to reupdate minimumWidth
+    }
+
+    /* see DataGrid.css, dataGridTableWrapperWidget description */
+    public static void updateTablePadding(boolean hasPadding, Element tableElement) {
+        if(hasPadding)
+            tableElement.getStyle().setPaddingRight(nativeScrollbarWidth, Unit.PX);
+        else
+            tableElement.getStyle().clearPaddingRight();
+    }
+    public static void updateTableMargin(boolean hasPadding, Element tableElement) {
+        if(hasPadding)
+            tableElement.getStyle().setMarginRight(nativeScrollbarWidth, Unit.PX);
+        else
+            tableElement.getStyle().clearMarginRight();
+    }
+
+    private void updateHeaderTableMinimumWidth(TableWrapperWidget headerWidget) {
+        if(minWidthUnit != null)
+            setBlockMinWidth(minWidthValue + (hasPadding ? nativeScrollbarWidth : 0), headerWidget);
+    }
+
+    private void updateHeaderFooterTablePadding() {
+        if(!noHeaders)
+            updateHeaderTablePadding(tableHeader, tableHeaderScroller);
+        if(!noFooters)
+            updateHeaderTablePadding(tableHeader, tableFooterScroller);
+    }
+    private void updateHeaderFooterTableMinimumWidth() {
+        if(!noHeaders)
+            updateHeaderTableMinimumWidth(tableHeader);
+        if(!noFooters)
+            updateHeaderTableMinimumWidth(tableFooter);
     }
 
     /**
@@ -1322,9 +1261,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
          * min-width of the element that contains the table instead. For
          * consistency, we set the width of the container as well.
          */
-        tableHeaderContainer.getElement().getStyle().setWidth(value, unit);
-        tableFooterContainer.getElement().getStyle().setWidth(value, unit);
-        tableDataContainer.getStyle().setWidth(value, unit);
+        assert noHeaders && noScrollers && noFooters;
+        tableData.getElement().getStyle().setWidth(value, unit);
     }
 
     /**
@@ -1354,15 +1292,15 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     protected final TableSectionElement getTableFootElement() {
-        return tableFooter.getSection();
+        if(!noFooters)
+            return tableFooter.getSection();
+        return null;
     }
 
     protected final TableSectionElement getTableHeadElement() {
-        return tableHeader.getSection();
-    }
-
-    public DataGridScrollPanel getTableDataScroller() {
-        return tableDataScroller;
+        if(!noHeaders)
+            return tableHeader.getSection();
+        return null;
     }
 
     protected void onFocus() {
@@ -1373,17 +1311,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         updateSelectedRowStyles();
     }
 
-    @Override
-    public void onResize() {
-        if (!nullHeaders) {
-            headerPanel.onResize();
-        } else {
-            tableDataScroller.onResize();
-        }
-    }
-
-    protected DivElement getFocusHolderElement() {
-        return tableDataScroller.getElement().cast();
+    protected Element getFocusHolderElement() {
+        if(!noScrollers)
+            return tableDataScroller.getElement();
+        else
+            return tableData.getElement();
     }
 
     /**
@@ -1520,12 +1452,16 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private void setColumnWidthImpl(int column, String width) {
         if (width == null) {
             tableData.ensureTableColElement(column).getStyle().clearWidth();
-            tableHeader.ensureTableColElement(column).getStyle().clearWidth();
-            tableFooter.ensureTableColElement(column).getStyle().clearWidth();
+            if(!noHeaders)
+                tableHeader.ensureTableColElement(column).getStyle().clearWidth();
+            if(!noFooters)
+                tableFooter.ensureTableColElement(column).getStyle().clearWidth();
         } else {
             tableData.ensureTableColElement(column).getStyle().setProperty("width", width);
-            tableHeader.ensureTableColElement(column).getStyle().setProperty("width", width);
-            tableFooter.ensureTableColElement(column).getStyle().setProperty("width", width);
+            if(!noHeaders)
+                tableHeader.ensureTableColElement(column).getStyle().setProperty("width", width);
+            if(!noFooters)
+                tableFooter.ensureTableColElement(column).getStyle().setProperty("width", width);
         }
     }
 
@@ -1691,25 +1627,52 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     private void preAfterUpdateTableData(State<T> pendingState, int rowToShow, int colToShow) {
-        int rowCount = pendingState.rowData.size();
+        if(!noScrollers) {
+            preAfterUpdateScrollHorizontal(pendingState, colToShow);
+            preAfterUpdateScrollVertical(pendingState, rowToShow);
+        }
+    }
+
+    private void preAfterUpdateScrollHorizontal(State<T> pendingState, int colToShow) {
         int colCount = getColumnCount();
+
+        int scrollWidth = tableDataScroller.getClientWidth();
+        boolean hasVerticalScroll = scrollWidth != tableDataScroller.getOffsetWidth();
+        int currentScrollLeft = tableDataScroller.getHorizontalScrollPosition();
+
+        //scroll column to visible if needed
+        int scrollLeft = currentScrollLeft;
+        if (colToShow >=0 && colToShow < colCount && renderedRowCount > 0) {
+            TableRowElement tr = tableData.tableElement.getRows().getItem(0);
+            TableCellElement td = tr.getCells().getItem(colToShow);
+
+            int columnLeft = td.getOffsetLeft();
+            int columnRight = columnLeft + td.getOffsetWidth();
+            if (columnRight >= scrollLeft + scrollWidth) {
+                scrollLeft = columnRight - scrollWidth;
+            }
+
+            if (columnLeft < scrollLeft) {
+                scrollLeft = columnLeft;
+            }
+        }
+
+        pendingState.pendingScrollLeft = scrollLeft;
+        pendingState.pendingCurrentScrollLeft = currentScrollLeft;
+        pendingState.pendingHasVerticalScroll = hasVerticalScroll;
+    }
+
+    private void preAfterUpdateScrollVertical(State<T> pendingState, int rowToShow) {
+        int rowCount = pendingState.rowData.size();
 
         int tableHeight = 0;
         if (rowCount > 0) {
             TableRowElement lastRowElement = getChildElement(rowCount - 1);
-            tableHeight = lastRowElement.getOffsetTop() + lastRowElement.getClientHeight(); 
+            tableHeight = lastRowElement.getOffsetTop() + lastRowElement.getClientHeight();
         }
 
-        int offsetWidth = tableDataScroller.getOffsetWidth();
-
-        int scrollWidth = tableDataScroller.getClientWidth();
         int scrollHeight = tableDataScroller.getClientHeight();
-
-        boolean hasVerticalScroll = scrollWidth != offsetWidth;
-
-        int currentScrollLeft = tableDataScroller.getHorizontalScrollPosition();
         int currentScrollTop = tableDataScroller.getVerticalScrollPosition();
-
         int scrollTop = pendingState.desiredVerticalScrollPosition;
 
         if (tableHeight <= scrollHeight) {
@@ -1737,49 +1700,31 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             }
         }
 
-        //scroll column to visible if needed
-        int scrollLeft = currentScrollLeft;
-        if (colToShow >=0 && colToShow < colCount && renderedRowCount > 0) {
-            TableRowElement tr = tableData.tableElement.getRows().getItem(0);
-            TableCellElement td = tr.getCells().getItem(colToShow);
-
-            int columnLeft = td.getOffsetLeft();
-            int columnRight = columnLeft + td.getOffsetWidth();
-            if (columnRight >= scrollLeft + scrollWidth) {
-                scrollLeft = columnRight - scrollWidth;
-            }
-
-            if (columnLeft < scrollLeft) {
-                scrollLeft = columnLeft;
-            }
-        }
-
         pendingState.pendingScrollTop = scrollTop;
-        pendingState.pendingScrollLeft = scrollLeft;
         pendingState.pendingCurrentScrollTop = currentScrollTop;
-        pendingState.pendingCurrentScrollLeft = currentScrollLeft;
-        pendingState.pendingHasVerticalScroll = hasVerticalScroll;
     }
 
     boolean hasPadding = false;
     private void afterUpdateTableData(State<T> pendingState) {
-        boolean prevPadding = hasPadding;
-        if (pendingState.pendingHasVerticalScroll) {
-            if (!hasPadding) {
-                tableHeader.tableElement.getStyle().setPaddingRight(nativeScrollbarWidth, Unit.PX);
-                hasPadding =  true;
-            }
-        } else {
-            if (hasPadding) {
-                tableHeader.tableElement.getStyle().clearPaddingRight();
-                hasPadding = false;
-            }
+        if(!noScrollers) {
+            afterUpdateScrollHorizontal(pendingState);
+            afterUpdateScrollVertical(pendingState);
         }
-        if(prevPadding != hasPadding) // padding changed, we need to reupdate minimumWidth
-            updateHeaderFooterTableMinimumWidth();
+    }
 
+    private void afterUpdateScrollVertical(State<T> pendingState) {
         if (pendingState.pendingScrollTop != pendingState.pendingCurrentScrollTop) {
             tableDataScroller.setVerticalScrollPosition(pendingState.pendingScrollTop);
+        }
+    }
+
+    private void afterUpdateScrollHorizontal(State<T> pendingState) {
+        if(!noScrollers) {
+            boolean newPadding = pendingState.pendingHasVerticalScroll;
+            if(hasPadding != newPadding) {
+                hasPadding = newPadding;
+                updateHeaderFooterTablePadding();
+            }
         }
 
         if (pendingState.pendingScrollLeft != pendingState.pendingCurrentScrollLeft) {
@@ -1791,12 +1736,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         int pendingNewRowCnt = pendingState.getRowCount();
         if (pendingState.needRedraw() || columnsChanged || renderedRowCount != pendingNewRowCnt) {
             tableBuilder.update(tableData.getSection(), pendingState.rowData, 0, pendingNewRowCnt, columnsChanged);
+
             renderedRowCount = pendingNewRowCnt;
-            
-            if (renderedRowCount == 0) {
-                tableDataScroller.setWidget(emptyTableWidgetContainer);
-            } else {
-                tableDataScroller.setWidget(tableData);
+            if(!noScrollers) {
+                if (renderedRowCount == 0) {
+                    tableDataScroller.setWidget(emptyTableWidgetContainer);
+                } else {
+                    tableDataScroller.setWidget(tableData);
+                }
             }
         }
     }
@@ -1806,7 +1753,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         int newLocalSelectedCol = getKeyboardSelectedColumn();
 
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
-        NodeList<TableRowElement> headerRows = tableHeader.tableElement.getTHead().getRows();
+        NodeList<TableRowElement> headerRows = noHeaders ? null : tableHeader.tableElement.getTHead().getRows();
         int tableRowCount = rows.getLength();
 
         if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow <= tableRowCount) {
@@ -1955,12 +1902,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     private void updateHeadersImpl(boolean columnsChanged) {
-        if (hasHeaders()) {
+        if (!noHeaders)
             headerBuilder.update(columnsChanged);
-        }
-        if (hasFooters()) {
+        if (!noFooters)
             footerBuilder.update(columnsChanged);
-        }
     }
 
     private void refreshColumnWidths() {
@@ -1970,9 +1915,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
 
         // Hide unused col elements in the colgroup.
-        tableHeader.hideUnusedColumns(columnCount);
+        if(!noHeaders)
+            tableHeader.hideUnusedColumns(columnCount);
         tableData.hideUnusedColumns(columnCount);
-        tableFooter.hideUnusedColumns(columnCount);
+        if(!noFooters)
+            tableFooter.hideUnusedColumns(columnCount);
     }
 
     public void setTableFocusable(boolean focusable) {
@@ -2221,9 +2168,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         public TableWrapperWidget() {
             tableElement = Document.get().createTableElement();
-            tableElement.setCellSpacing(0);
-            tableElement.getStyle().setTableLayout(TableLayout.FIXED);
-            tableElement.getStyle().setWidth(100.0, Unit.PCT);
+
+            tableElement.addClassName("dataGridTableWrapperWidget");
 
             colgroupElement = tableElement.appendChild(Document.get().createColGroupElement());
 
@@ -2271,7 +2217,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
 
         protected HeaderWidget(String headerStyle) {
-            tableElement.setClassName(headerStyle);
+            tableElement.addClassName(headerStyle);
             setElement(tableElement);
         }
 
@@ -2292,7 +2238,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
     }
 
-    private class TableWidget extends TableWrapperWidget implements RequiresResize {
+    private class TableWidget extends TableWrapperWidget {
 //        private final DivElement containerElement;
 
         public TableWidget() {
@@ -2310,12 +2256,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
 
         @Override
-        public void onResize() {
-            if(!isResolvingState) // hack, because in preAfterUpdateTableData there is browser event flush, which causes scheduleDeferred flush => HeaderPanel.forceLayout => onResize and IllegalStateException, everything is really twisted here, so will just suppress ensurePendingState
-                ensurePendingState();
-        }
-
-        @Override
         protected TableSectionElement createSectionElement() {
             if (tableElement.getTBodies().getLength() > 0) {
                 return tableElement.getTBodies().getItem(0);
@@ -2323,6 +2263,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                 return tableElement.appendChild(Document.get().createTBodyElement());
             }
         }
+    }
+
+    @Override
+    public void onResize() {
+        if(!isResolvingState) // hack, because in preAfterUpdateTableData there is browser event flush, which causes scheduleDeferred flush => HeaderPanel.forceLayout => onResize and IllegalStateException, everything is really twisted here, so will just suppress ensurePendingState
+            ensurePendingState();
+        super.onResize();
     }
 
     /**

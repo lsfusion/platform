@@ -68,6 +68,7 @@
         <link rel="stylesheet" type="text/css" href="static/css/pivot.css">
 <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">--%>
         <script type="text/javascript" src="static/js/pivot.js"></script>
+        <script type="text/javascript" src="static/js/pivot.ru.js"></script>
 
         <!-- math for formulas in pivoting -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js"></script>
@@ -80,7 +81,9 @@
 
         <!--  plotly libs : plotly_renderers  -->
         <script type="text/javascript" src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
-        <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
+        <script type="text/javascript" src="https://cdn.plot.ly/plotly-locale-ru-latest.js"></script>
+
+    <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
         <%-- + horizontal moved to the end --%>
         <script type="text/javascript" src="static/js/plotly_renderers.js"></script>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"></script>--%>
@@ -91,7 +94,8 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>--%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>--%>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>
+<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>--%>
+        <script type="text/javascript" src="static/js/d3_renderers.js"></script>
 
 <%--        <!--  google charts: gchart_renderers  -->--%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/gchart_renderers.min.js"></script>--%>
