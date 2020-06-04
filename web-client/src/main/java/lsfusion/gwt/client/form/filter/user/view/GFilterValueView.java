@@ -1,8 +1,7 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.ui.SimplePanel;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 public class GFilterValueView extends SimplePanel {
@@ -19,7 +18,8 @@ public class GFilterValueView extends SimplePanel {
     public void focusOnValue() {
     }
 
-    public void propertyChanged(GPropertyDraw property, GGroupObjectValue columnKey) {}
+    public void propertySet(GPropertyFilter condition) {}
+    public void propertyChanged(GPropertyFilter condition) {}
 
     public void startEditing(EditEvent keyEvent) {
         focusOnValue();

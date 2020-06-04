@@ -7,7 +7,7 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
-import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
+import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
@@ -25,7 +25,7 @@ public abstract class GAbstractTableController implements GTableController {
     protected final GFormController formController;
     protected final GPanelController panel;
     protected final GToolbarView toolbarView;
-    public GFilterController filter;
+    public GUserFilters filter;
 
     public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {
         this.formController = formController;
@@ -58,7 +58,7 @@ public abstract class GAbstractTableController implements GTableController {
 
     public void addFilterButton() {
         if (showFilter()) {
-            filter = new GFilterController(this) {
+            filter = new GUserFilters(this) {
                 @Override
                 public void remoteApplyQuery() {
                     changeFilter(new ArrayList<>(getConditions()));
@@ -71,12 +71,6 @@ public abstract class GAbstractTableController implements GTableController {
             };
 
             addToToolbar(filter.getToolbarButton());
-        }
-    }
-
-    public void setFilterVisible(boolean visible) {
-        if (filter != null) {
-            filter.setVisible(visible);
         }
     }
 
@@ -99,12 +93,13 @@ public abstract class GAbstractTableController implements GTableController {
     }
 
     public void replaceFilter() {
-        if(filter != null)
-            filter.replaceConditionPressed();
+        if (filter != null) {
+            filter.addConditionPressed(true);
+        }
     }
 
     public void addFilter() {
-        filter.addPressed();
+        filter.addConditionPressed(false);
     }
 
     public void removeFilters() {

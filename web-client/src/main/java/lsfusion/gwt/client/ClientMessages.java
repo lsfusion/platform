@@ -7,6 +7,7 @@ public interface ClientMessages extends Messages {
     String yes();
     String no();
     String ok();
+    String apply();
     String close();
     String cancel();
     String more();
@@ -48,7 +49,6 @@ public interface ClientMessages extends Messages {
     String formQueriesSumResult();
     String formQueriesUnableToCalculateSum();
     String formQueriesFilter();
-    String formQueriesFilterApply();
     String formQueriesFilterAddCondition();
     String formQueriesFilterRemoveCondition();
     String formQueriesNumberOfEntries();

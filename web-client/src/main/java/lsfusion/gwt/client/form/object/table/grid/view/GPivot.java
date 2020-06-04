@@ -1,23 +1,28 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayMixed;
-import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
@@ -53,7 +58,7 @@ public class GPivot extends GStateTableView {
     }
 
     // we need key / value view since pivot
-    private JsArray<JsArrayMixed> getData(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings) {
+    private JsArray<JsArrayMixed> getData(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings, boolean full) {
         JsArray<JsArrayMixed> array = JavaScriptObject.createArray().cast();
 
         array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
@@ -62,12 +67,16 @@ public class GPivot extends GStateTableView {
         for (GGroupObjectValue key : keys != null && !keys.isEmpty()  ? keys : Collections.singleton((GGroupObjectValue) null)) { // can be null if manual update
             JsArrayMixed rowValues = getValues(key, convertDataToStrings);
 
-            // if there are no columns (there is no response yet, or they are all filtered, we steel need at least one row, because otherwise it breaks a lot of assertions
-            // for example in pivotUI, attrValues -> showInDragDrop will not be filled -> to no COLUMN group column added to the dom -> when onRefresh will be called cols will be empty -> config will be overriden with no predefined cols
-            for (String aggrCaption : !aggrCaptions.isEmpty() ? aggrCaptions : Collections.singleton((String)null)) { // putting columns to rows
-                JsArrayMixed aggrRowValues = clone(rowValues);
-                aggrRowValues.push(aggrCaption);
-                array.push(aggrRowValues);
+            if (full) {
+                // if there are no columns (there is no response yet, or they are all filtered, we steel need at least one row, because otherwise it breaks a lot of assertions
+                // for example in pivotUI, attrValues -> showInDragDrop will not be filled -> to no COLUMN group column added to the dom -> when onRefresh will be called cols will be empty -> config will be overriden with no predefined cols
+                for (String aggrCaption : !aggrCaptions.isEmpty() ? aggrCaptions : Collections.singleton((String) null)) { // putting columns to rows
+                    JsArrayMixed aggrRowValues = clone(rowValues);
+                    aggrRowValues.push(aggrCaption);
+                    array.push(aggrRowValues);
+                }
+            } else {
+                array.push(rowValues);
             }
         }
         return array;
@@ -193,7 +202,7 @@ public class GPivot extends GStateTableView {
         Aggregator aggregator = Aggregator.create();
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
         boolean convertDataToStrings = false; // so far we'll not use renderer formatters and we'll rely on native toString (if we decide to do it we'll have to track renderer type and rerender everything if this type changes that can may lead to some blinking)
-        JavaScriptObject data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings); // convertToObjects()
+        JsArray<JsArrayMixed> data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings, true); // convertToObjects()
         if(firstUpdateView) {
             initDefaultConfig(grid);
             firstUpdateView = false;
@@ -351,7 +360,7 @@ public class GPivot extends GStateTableView {
         config = overrideShowUI(config, settings);
 
         setStyleName(getDrawElement(), "pivotTable-noSettings", !settings);
-        
+
         rerender();
 
         updateView(false, null);
@@ -421,7 +430,14 @@ public class GPivot extends GStateTableView {
             callbacks: callbacks
         });
     }-*/;
-    
+
+    private native WrapperObject reduceRows(WrapperObject config, JsArrayString rows, int length)/*-{
+        rows = rows.slice(0, length);
+        return Object.assign({}, config, {
+                rows: rows
+            });
+    }-*/;
+
     private List<String> createAggrColumns(WrapperObject inclusions) {
         JsArrayString columnValues = inclusions.getArrayString(COLUMN);
         if (columnValues == null)
@@ -501,9 +517,9 @@ public class GPivot extends GStateTableView {
 
     private String localizeRendererName(JavaScriptObject jsName) {
         String name = jsName.toString();
-        return PivotRendererType.valueOf(name).localize();    
+        return PivotRendererType.valueOf(name).localize();
     }
-    
+
     private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI)/*-{
         var instance = this;
         var localizeRendererNames = function(renderers) {
@@ -716,7 +732,7 @@ public class GPivot extends GStateTableView {
         }
         return "";
     }
-    
+
     private GPropertyGroupType getGroupType(String aggregatorName) {
         ClientMessages messages = ClientMessages.Instance.get();
         if (aggregatorName.equals(messages.pivotAggregatorSum())) {
@@ -728,7 +744,7 @@ public class GPivot extends GStateTableView {
         }
         return GPropertyGroupType.SUM;
     }
-    
+
     public JavaScriptObject getAggregator(String aggrFuncName, Aggregator aggregator) {
         return getAggregator(aggregator, getValueAggregator(aggrFuncName));
     }
@@ -1175,16 +1191,16 @@ public class GPivot extends GStateTableView {
         var instance = this;
         
         return {
-            valueCellDblClickHandler: function (td, rowKeyValues, colKeyValues) {
-                alert("col: " + colKeyValues + ", row: " + rowKeyValues + ", val: " + td.textContent);
+            valueCellDblClickHandler: function (td, rowKeyValues, colKeyValues, x, y) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::cellDblClickAction(*)(rowKeyValues, colKeyValues, x, y);
             },
             
             rowAttrHeaderDblClickHandler: function (th, rowKeyValues, attrName) {
-                alert("row: " + rowKeyValues + ", rowKey: " + attrName + ", val: " + th.textContent);
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::attrHeaderDblClickAction(*)(rowKeyValues, true, th.textContent);
             },
             
             colAttrHeaderDblClickHandler: function (element, colKeyValues, isSubtotal) {
-                alert("col: " + colKeyValues + ", isSubtotal: " + isSubtotal + ", val: " + element.textContent);
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::attrHeaderDblClickAction(*)(colKeyValues, false, element.textContent);
             },
             
             axisHeaderDblClickHandler: function (element, attrName) {
@@ -1210,10 +1226,127 @@ public class GPivot extends GStateTableView {
             getColumnWidth: function (isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels) {
                 return instance.@GPivot::getColumnWidth(*)(isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels);
             },
-            
+
             checkPadding: function() {
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
             }
         }
     }-*/;
+
+    private void cellDblClickAction(JsArrayString rowKeyValues, JsArrayString colKeyValues, int x, int y) {
+        final PopupPanel popup = new PopupPanel(true);
+
+        List<String> menuItems = new ArrayList<>();
+        JsArrayString cols = config.getArrayString("cols");
+        JsArrayString rows = config.getArrayString("rows");
+        columnMap.foreachKey(key -> {if(!contains(cols, key) && !contains(rows, key)) menuItems.add(key);});
+
+        final MenuBar menuBar = new MenuBar(true);
+        for(String caption : menuItems) {
+            MenuItem menuItem = new MenuItem(caption, () -> {
+                popup.hide();
+                config = reduceRows(config, config.getArrayString("rows"), rowKeyValues.length());
+
+                List<GPropertyFilter> filters = new ArrayList<>();
+                filters.addAll(getFilters(config.getArrayString("rows"), rowKeyValues));
+                filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
+
+                config.getArrayString("rows").push(caption);
+                grid.filter.applyFilters(filters, false);
+                updateView(true, null);
+            });
+            menuBar.addItem(menuItem);
+        }
+
+        popup.setWidget(menuBar);
+        GwtClientUtils.showPopupInWindow(popup, x, y);
+        Scheduler.get().scheduleDeferred(menuBar::focus);
+    }
+
+
+    private List<GPropertyFilter> getFilters(JsArrayString elements, JsArrayString values) {
+        List<GPropertyFilter> filters = new ArrayList<>();
+        for (int i = 0; i < elements.length(); i++) {
+            Column column = columnMap.get(elements.get(i));
+            if (column != null) {
+                GPropertyFilter filter = new GPropertyFilter();
+                filter.property = column.property;
+                GDataFilterValue filterValue = new GDataFilterValue();
+                filterValue.value = values.get(i);
+                filter.value = filterValue;
+                filter.compare = GCompare.EQUALS;
+                filters.add(filter);
+            }
+        }
+        return filters;
+    }
+
+    private boolean contains(JsArrayString array, String element) {
+        for (int i = 0; i < array.length(); i++) {
+            if (array.get(i).equals(element)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void attrHeaderDblClickAction(JsArrayString keysJsArray, boolean isRows, String value) {
+        List<String> keysArray = toArrayList(keysJsArray);
+        List<String> rowsOrCols = toArrayList(config.getArrayString(isRows ? "rows" : "cols"));
+        String selectedColumn = rowsOrCols.get(keysArray.indexOf(value));
+        if (selectedColumn != null) {
+            Column column = columnMap.get(selectedColumn);
+            Integer rowIndex = getRowIndex(keysArray, rowsOrCols);
+            if (column != null && rowIndex != null) {
+                form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
+            }
+        }
+    }
+
+    private Integer getRowIndex(List<String> keysArray, List<String> rowsOrCols) {
+        JsArray<JsArrayMixed> data = getData(columnMap, Aggregator.create(), aggrCaptions, JavaScriptObject.createArray().cast(), false, false);
+        ArrayList<String> headers = toArrayList(data.get(0));
+        List<Integer> headerIndexes = new ArrayList<>();
+        for (String rowOrCol : rowsOrCols) {
+            headerIndexes.add(headers.indexOf(rowOrCol));
+        }
+
+        Integer rowIndex = 0;
+        for (int i = 1; i < data.length(); i++) {
+            JsArrayMixed row = data.get(i);
+            boolean found = true;
+            for (int j = 0; j < keysArray.size(); j++) {
+                Integer headerIndex = headerIndexes.get(j);
+                if (!isSystemColumn(row, headerIndex) && !row.getString(headerIndex).equals(keysArray.get(j))) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return rowIndex;
+            }
+            rowIndex++;
+        }
+        return null;
+    }
+
+    private boolean isSystemColumn(JsArrayMixed row, Integer headerIndex) {
+        return row.length() <= headerIndex;
+    }
+
+    private ArrayList<String> toArrayList(JsArrayMixed jsArray) {
+        ArrayList<String> arrayList = new ArrayList<>();
+        for(int i = 0; i < jsArray.length(); i++) {
+            arrayList.add(jsArray.getString(i));
+        }
+        return arrayList;
+    }
+
+    private ArrayList<String> toArrayList(JsArrayString jsArray) {
+        ArrayList<String> arrayList = new ArrayList<>();
+        for(int i = 0; i < jsArray.length(); i++) {
+            arrayList.add(jsArray.get(i));
+        }
+        return arrayList;
+    }
 }

@@ -80,6 +80,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             }
         });
         add(negationView);
+        negationView.setValue(condition.negation);
 
         compareView = new GFilterConditionListBox();
         compareView.addStyleName("customFontPresenter");
@@ -92,13 +93,14 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             }
         });
         add(compareView);
+        compareView.setSelectedItem(condition.compare);
 
         filterValues = new GFilterConditionListBox();
         filterValues.addStyleName("customFontPresenter");
 
         valueViews = new HashMap<>();
 
-        GDataFilterValue dataValue = new GDataFilterValue();
+        GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
         GDataFilterValueView dataView = new GDataFilterValueView(this, dataValue, condition.property, logicsSupplier) {
             @Override
             public void applyFilter() {
@@ -107,11 +109,11 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         };
         valueViews.put(dataValue, dataView);
 
-        GObjectFilterValue objectValue = new GObjectFilterValue();
+        GObjectFilterValue objectValue = condition.value instanceof GObjectFilterValue ? (GObjectFilterValue) condition.value : new GObjectFilterValue();
         GObjectFilterValueView objectView = new GObjectFilterValueView(this, objectValue, logicsSupplier);
         valueViews.put(objectValue, objectView);
 
-        GPropertyFilterValue propertyValue = new GPropertyFilterValue();
+        GPropertyFilterValue propertyValue = condition.value instanceof GPropertyFilterValue ? (GPropertyFilterValue) condition.value : new GPropertyFilterValue();
         GPropertyFilterValueView propertyView = new GPropertyFilterValueView(this, propertyValue, logicsSupplier);
         valueViews.put(propertyValue, propertyView);
 
@@ -124,8 +126,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             }
         });
         add(filterValues);
-
-        condition.value = (GFilterValue) filterValues.getSelectedItem();
+        filterValues.setSelectedItem(condition.value);
 
         junctionView = new GFilterConditionListBox();
         junctionView.addStyleName("customFontPresenter");
@@ -138,6 +139,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             }
         });
         add(junctionView);
+        junctionView.setSelectedIndex(condition.junction ? 0 : 1);
 
         GToolbarButton deleteButton = new GToolbarButton(DELETE, messages.formQueriesFilterRemoveCondition()) {
             @Override
@@ -153,18 +155,21 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         deleteButton.addStyleName("filterDialogButton");
         add(deleteButton);
 
-        filterChanged();
+        valueView = valueViews.get(condition.value);
+        if (valueView != null) {
+            insert(valueView, getWidgetIndex(junctionView));
+            valueView.propertySet(condition);
+        }
     }
 
     private void filterChanged() {
         if (valueView != null) {
             remove(valueView);
         }
-
         valueView = valueViews.get(condition.value);
         if (valueView != null) {
             insert(valueView, getWidgetIndex(junctionView));
-            valueView.propertyChanged(condition.property, condition.columnKey);
+            valueView.propertyChanged(condition);
         }
         compareView.setItems(condition.property.baseType.getFilterCompares());
         compareView.setSelectedItem(condition.getDefaultCompare());

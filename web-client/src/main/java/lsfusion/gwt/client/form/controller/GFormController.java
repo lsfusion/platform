@@ -112,8 +112,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final Map<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
     private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
 
-    private final Map<GGroupObject, List<Widget>> filterViews = new HashMap<>();
-
     private final LinkedHashMap<Long, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
     private final NativeHashMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeHashMap<>();
     private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<>();
@@ -284,26 +282,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
         formLayout.addBaseComponent(filterGroup, filterWidget, null);
-
-        if (filterGroup.groupObject == null) {
-            return;
-        }
-
-        List<Widget> groupFilters = filterViews.get(filterGroup.groupObject);
-        if (groupFilters == null) {
-            groupFilters = new ArrayList<>();
-            filterViews.put(filterGroup.groupObject, groupFilters);
-        }
-        groupFilters.add(filterWidget);
-    }
-
-    public void setFiltersVisible(GGroupObject groupObject, boolean visible) {
-        List<Widget> groupFilters = filterViews.get(groupObject);
-        if (groupFilters != null) {
-            for (Widget filterView : groupFilters) {
-                filterView.setVisible(visible);
-            }
-        }
     }
 
     private void setRegularFilter(GRegularFilterGroup filterGroup, int index) {
@@ -721,6 +699,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), callback);
     }
 
+    public void executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
+        dispatcher.execute(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
+    }
+
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
         syncDispatch(new ContinueInvocation(requestIndex, actionResults, continueIndex), callback, true);
     }
@@ -1080,15 +1062,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
-        if (blocked) {
-            setFiltersVisible(true);
-        } else {
-            setFiltersVisible(selected);
-        }
     }
 
     protected void onFormHidden(int closeDelay) {
-        setFiltersVisible(false);
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
             closeDispatcher.execute(new Close(closeDelay), new ErrorHandlingCallback<VoidResult>() {
@@ -1178,18 +1154,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return objects;
     }
 
-    public void setFiltersVisible(boolean visible) {
-        for (GGridController goc : controllers.values()) {
-            goc.setFilterVisible(visible);
-        }
-        for (GTreeGroupController tgc : treeControllers.values()) {
-            tgc.setFilterVisible(visible);
-        }
-    }
-
     public void setSelected(boolean selected) {
         this.selected = selected;
-        setFiltersVisible(selected && !blocked);
 
         if (selected && blocked) { // чтобы автоматом не проставлять фокус под блокировку
             return;
@@ -1311,12 +1277,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 controller.scrollToTop();
                 return;
             }
-        }
-    }
-
-    public void modalFormAttached() { // фильтры норовят спрятаться за диалог (например, при его перемещении). передобавляем их в конец.
-        for (GGridController controller : controllers.values()) {
-            controller.reattachFilter();
         }
     }
 

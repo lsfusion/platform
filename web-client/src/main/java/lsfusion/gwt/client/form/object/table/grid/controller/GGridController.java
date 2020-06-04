@@ -533,12 +533,6 @@ public class GGridController extends GAbstractTableController {
             if (toolbarView != null) {
                 toolbarView.setVisible(isVisible);
             }
-
-            if (filter != null) {
-                filter.setVisible(isVisible);
-            }
-
-            formController.setFiltersVisible(groupObject, isVisible);
         }
 
         panel.update();
@@ -663,19 +657,6 @@ public class GGridController extends GAbstractTableController {
     }
     public void changePageSize(int pageSize) {
         formController.changeMode(groupObject, false, null, null, 0, null, pageSize, false, null, null);
-    }
-
-    @Override
-    public void setFilterVisible(boolean visible) {
-        if (isList()) {
-            super.setFilterVisible(visible);
-        }
-    }
-    
-    public void reattachFilter() {
-        if (filter != null) {
-            filter.reattachDialog();
-        }    
     }
 
     public void focusProperty(GPropertyDraw property) {

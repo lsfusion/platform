@@ -148,13 +148,6 @@ public class GTreeGroupController extends GAbstractTableController {
             toolbarView.setVisible(isTreeVisible);
         }
 
-        if (filter != null) {
-            filter.setVisible(isTreeVisible);
-        }
-
-        for (GGroupObject groupObject : treeGroup.groups) {
-            formController.setFiltersVisible(groupObject, isTreeVisible);
-        }
         panel.update();
 
         if(expandTreeButton != null) {
