@@ -18,12 +18,8 @@ public class GPivotOptions implements Serializable {
         this.showSettings = showSettings;
     }
 
-    public String getType() {
-        return type;
-    }
-
     public String getLocalizedType() {
-        return PivotRendererType.getType(getType()).localize();
+        return type != null ? PivotRendererType.getType(type).localize() : type;
     }
     
     public GPropertyGroupType getAggregation() {
