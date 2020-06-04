@@ -1153,7 +1153,7 @@ public class GPivot extends GStateTableView {
         return aggr;
     }
 
-    private boolean hasPadding;
+    private boolean hasVerticalScroll;
 
     @Override
     public void onResize() {
@@ -1166,13 +1166,14 @@ public class GPivot extends GStateTableView {
         Element tableDataScroller = getTableDataScroller();
         if(tableDataScroller != null) {
             int scrollWidth = tableDataScroller.getClientWidth();
-            boolean newPadding = scrollWidth != tableDataScroller.getOffsetWidth();
+            boolean newHasVerticalScroll = scrollWidth != tableDataScroller.getOffsetWidth();
 
-            if (forceUpdate || hasPadding != newPadding) {
-                hasPadding = newPadding;
+            if (forceUpdate || hasVerticalScroll != newHasVerticalScroll) {
+                hasVerticalScroll = newHasVerticalScroll;
 
-//                DataGrid.updateTableMargin(hasPadding, getHeaderTableScroller());
-                DataGrid.updateTablePadding(hasPadding, getHeaderTableElement());
+//                DataGrid.updateTableMargin(hasVerticalScroll, getHeaderTableScroller());
+                DataGrid.updateTablePadding(hasVerticalScroll, getHeaderTableElement());
+                DataGrid.updateTableRightOuterBorder(hasVerticalScroll, tableDataScroller);
             }
         }
     }

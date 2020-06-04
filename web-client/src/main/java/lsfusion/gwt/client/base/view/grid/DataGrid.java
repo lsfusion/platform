@@ -18,7 +18,6 @@ package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.dom.client.Style.TableLayout;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -45,8 +44,7 @@ import static com.google.gwt.dom.client.TableCellElement.TAG_TH;
 import static java.lang.Math.min;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
-import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBorderColor;
-import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundColor;
+import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 /**
  * Abstract base class for tabular views that supports paging and columns.
@@ -176,7 +174,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     private boolean columnsChanged;
     private boolean headersChanged;
 
-    private CellTableBuilder<T> tableBuilder;
+    private GPropertyTableBuilder<T> tableBuilder;
 
     private final TableWidget tableData;
     protected TableScrollPanel tableDataScroller; // vertical scroller
@@ -208,10 +206,13 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     // 2) set margins (not paddings since they do not support negative values) to -1
     // first solution is cleaner (since border can be wider than 1px + margin can be used for other purposes, for example scroller padding), however the problem is that in that case the same should be implemented for focus which is pretty tricky
     // the second solution is easier to implement
-    // the same problem is in gpivot, and there it is solved the same way (however since there is no focus cell there in history there should be a solution with styles, conditional css)
+    // the same problem is in gpivot (.subtotalouterdiv .scrolldiv / .headerdiv), and there it is solved the same way (however since there is no focus cell there in history there should be a solution with styles, conditional css)
     public static void removeOuterGridBorders(Widget parent) {
         parent.getElement().getStyle().setMarginLeft(-1, Unit.PX);
-        parent.getElement().getStyle().setMarginRight(-1, Unit.PX);
+        setOuterRightGridBorder(parent.getElement(), true);
+    }
+    public static void setOuterRightGridBorder(Element element, boolean setMargin) {
+        element.getStyle().setMarginRight(setMargin ? -1 : 0, Unit.PX);
     }
 
     public DataGrid(GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
@@ -938,12 +939,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         return tableBuilder;
     }
 
-    /**
-     * Specify the {@link CellTableBuilder} that will be used to render the row
-     * values into the table.
-     */
-    public void setTableBuilder(CellTableBuilder<T> tableBuilder) {
-        assert tableBuilder != null : "tableBuilder cannot be null";
+    public void setTableBuilder(GPropertyTableBuilder<T> tableBuilder) {
         this.tableBuilder = tableBuilder;
         redraw();
     }
@@ -1005,12 +1001,9 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         return getRowElementNoFlush(row);
     }
 
+    // is single
     public boolean isRemoveKeyboardStylesOnBlur() {
-        return removeKeyboardStylesOnBlur;
-    }
-
-    public void setRemoveKeyboardStylesOnBlur(boolean removeKeyboardStylesOnBlur) {
-        this.removeKeyboardStylesOnBlur = removeKeyboardStylesOnBlur;
+        return false;
     }
 
     /**
@@ -1188,36 +1181,44 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     }
 
     private void updateHeaderTablePadding(TableWrapperWidget headerWidget, TableScrollPanel tableHeaderScroller) {
-        updateTablePadding(hasPadding, headerWidget.tableElement);
-//        updateTableMargin(hasPadding, tableHeaderScroller.getElement());
+        updateTablePadding(hasVerticalScroll, headerWidget.tableElement);
+//        updateTableMargin(hasVerticalScroll, tableHeaderScroller.getElement());
 
         updateHeaderTableMinimumWidth(headerWidget); // padding changed, we need to reupdate minimumWidth
     }
+    private void updateTableRightOuterBorder() {
+        updateTableRightOuterBorder(hasVerticalScroll, tableDataScroller.getElement());
+    }
 
     /* see DataGrid.css, dataGridTableWrapperWidget description */
-    public static void updateTablePadding(boolean hasPadding, Element tableElement) {
-        if(hasPadding)
-            tableElement.getStyle().setPaddingRight(nativeScrollbarWidth, Unit.PX);
+    public static void updateTablePadding(boolean hasVerticalScroll, Element tableElement) {
+        if(hasVerticalScroll)
+            tableElement.getStyle().setPaddingRight(nativeScrollbarWidth + 1, Unit.PX); // 1 for right outer border margin
         else
             tableElement.getStyle().clearPaddingRight();
     }
-    public static void updateTableMargin(boolean hasPadding, Element tableElement) {
-        if(hasPadding)
-            tableElement.getStyle().setMarginRight(nativeScrollbarWidth, Unit.PX);
+    public static void updateTableMargin(boolean hasVerticalScroller, Element tableElement) {
+        if(hasVerticalScroller)
+            tableElement.getStyle().setMarginRight(nativeScrollbarWidth + 1, Unit.PX); // 1 for right outer border margin
         else
             tableElement.getStyle().clearMarginRight();
+    }
+    public static void updateTableRightOuterBorder(boolean hasVerticalScroller, Element tableElement) {
+        setOuterRightGridBorder(tableElement, !hasVerticalScroller);
     }
 
     private void updateHeaderTableMinimumWidth(TableWrapperWidget headerWidget) {
         if(minWidthUnit != null)
-            setBlockMinWidth(minWidthValue + (hasPadding ? nativeScrollbarWidth : 0), headerWidget);
+            setBlockMinWidth(minWidthValue + (hasVerticalScroll ? nativeScrollbarWidth : 0), headerWidget);
     }
 
-    private void updateHeaderFooterTablePadding() {
+    private void updateTableMargins() {
         if(!noHeaders)
             updateHeaderTablePadding(tableHeader, tableHeaderScroller);
         if(!noFooters)
             updateHeaderTablePadding(tableHeader, tableFooterScroller);
+        if(!noScrollers)
+            updateTableRightOuterBorder();
     }
     private void updateHeaderFooterTableMinimumWidth() {
         if(!noHeaders)
@@ -1704,7 +1705,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         pendingState.pendingCurrentScrollTop = currentScrollTop;
     }
 
-    boolean hasPadding = false;
+    boolean hasVerticalScroll = false;
     private void afterUpdateTableData(State<T> pendingState) {
         if(!noScrollers) {
             afterUpdateScrollHorizontal(pendingState);
@@ -1720,10 +1721,10 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 
     private void afterUpdateScrollHorizontal(State<T> pendingState) {
         if(!noScrollers) {
-            boolean newPadding = pendingState.pendingHasVerticalScroll;
-            if(hasPadding != newPadding) {
-                hasPadding = newPadding;
-                updateHeaderFooterTablePadding();
+            boolean newHasVerticalScroll = pendingState.pendingHasVerticalScroll;
+            if(hasVerticalScroll != newHasVerticalScroll) {
+                hasVerticalScroll = newHasVerticalScroll;
+                updateTableMargins();
             }
         }
 
@@ -1752,128 +1753,126 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         int newLocalSelectedRow = getKeyboardSelectedRow();
         int newLocalSelectedCol = getKeyboardSelectedColumn();
 
+        updateSelectedRow(newLocalSelectedRow, newLocalSelectedCol);
+
+        if (drawFocusedCellBorder())
+            updateFocusedCell(newLocalSelectedRow, newLocalSelectedCol);
+
+        oldLocalSelectedRow = newLocalSelectedRow;
+        oldLocalSelectedCol = newLocalSelectedCol;
+    }
+
+    private void updateSelectedRow(int newLocalSelectedRow, int newLocalSelectedCol) {
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
-        NodeList<TableRowElement> headerRows = noHeaders ? null : tableHeader.tableElement.getTHead().getRows();
-        int tableRowCount = rows.getLength();
+        int rowCount = rows.getLength();
 
-        if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow <= tableRowCount) {
-            // if old row index is out of bounds only by 1, than we still need to clean top cell, which is in bounds
-            TableRowElement oldTR = rows.getItem(oldLocalSelectedRow);
-            boolean rowChanged = oldLocalSelectedRow != newLocalSelectedRow;
-            if (oldTR != null && rowChanged) {
-                updateSelectedRowCellsBackground(oldTR, oldLocalSelectedRow, false);
-            }
-            if (rowChanged || oldLocalSelectedCol != newLocalSelectedCol) {
-                if (oldLocalSelectedCol >= 0 && oldLocalSelectedCol < getColumnCount()) {
-                    setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, rows, headerRows, false, !rowChanged);
-                }
-            }
+        // CLEAR PREVIOUS STATE
+        if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow < rowCount &&
+                oldLocalSelectedRow != newLocalSelectedRow) {
+            updateSelectedRowCellsBackground(oldLocalSelectedRow, rows, false, -1);
         }
 
-        if (newLocalSelectedRow >= 0 && newLocalSelectedRow < tableRowCount) {
-            TableRowElement newTR = rows.getItem(newLocalSelectedRow);
-
-            boolean setSelected = focusable && (isFocused || !isRemoveKeyboardStylesOnBlur());
-            updateSelectedRowCellsBackground(newTR, newLocalSelectedRow , setSelected);
-
-            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRows, focusable && isFocused, setSelected);
-
-            oldLocalSelectedRow = newLocalSelectedRow;
-            oldLocalSelectedCol = newLocalSelectedCol;
+        // SET NEW STATE
+        if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rowCount) {
+            boolean isFocused = focusable && this.isFocused;
+            updateSelectedRowCellsBackground(newLocalSelectedRow, rows, isFocused || (focusable && !isRemoveKeyboardStylesOnBlur()), isFocused ? newLocalSelectedCol : -1);
         }
     }
-    
-    private void updateSelectedRowCellsBackground(TableRowElement tr, int localSelectedRow, boolean selected) {
+
+    private void updateSelectedRowCellsBackground(int row, NodeList<TableRowElement> rows, boolean selected, int focusedColumn) {
+        TableRowElement tr = rows.getItem(row);
         NodeList<TableCellElement> cells = tr.getCells();
-        for (int i = 0; i < cells.getLength(); i++) {
-            String background = null;
-            if (tableBuilder instanceof GPropertyTableBuilder<?> && isRowWithinBounds(localSelectedRow)) {
-                background = ((GPropertyTableBuilder<T>) tableBuilder).getBackground(getRowValue(localSelectedRow), localSelectedRow, i);
-            }
-            Style tdStyle = cells.getItem(i).getStyle();
+        for (int column = 0; column < cells.getLength(); column++) {
+            TableCellElement td = cells.getItem(column);
+
+            String background = td.getAttribute(GPropertyTableBuilder.BKCOLOR);
+            if(background.isEmpty())
+                background = null;
+
+            Style tdStyle = td.getStyle();
+            String setColor;
             if (selected) {
-                if (background != null) {
-                    tdStyle.setBackgroundColor(mixColors(background, getSelectedRowBackgroundColor()));
-                } else {
-                    tdStyle.setBackgroundColor(getSelectedRowBackgroundColor());
-                }
-            } else if (background != null) {
-                tdStyle.setBackgroundColor(getDisplayColor(background));
+                setColor = (column == focusedColumn) ? getFocusedCellBackgroundColor(true) : getSelectedRowBackgroundColor(true);
+                if (background != null)
+                    setColor = mixColors(background, setColor);
             } else {
-                tdStyle.clearBackgroundColor();
+                assert column != focusedColumn;
+                setColor = background != null ? getDisplayColor(background) : null;
             }
+
+            if(setColor != null)
+                tdStyle.setBackgroundColor(setColor);
+            else
+                tdStyle.clearBackgroundColor();
         }
     }
 
-    private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, NodeList<TableRowElement> headerRows, boolean focused, boolean inSelectedRow) {
+    private void updateFocusedCell(int newLocalSelectedRow, int newLocalSelectedCol) {
+        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
+        NodeList<TableRowElement> headerRows = noHeaders ? null : tableHeader.tableElement.getTHead().getRows(); // we need headerRows for upper border
+
+        int columnCount = getColumnCount();
+        // CLEAR PREVIOUS STATE
+        // if old row index is out of bounds only by 1, than we still need to clean top cell, which is in bounds (for vertical direction there is no such problem since we set outer border, and not inner, for horz it's not possible because of header)
+        if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow <= rows.getLength() && oldLocalSelectedCol >= 0 && oldLocalSelectedCol < columnCount &&
+                (oldLocalSelectedRow != newLocalSelectedRow || oldLocalSelectedCol != newLocalSelectedCol)) {
+            setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, rows, headerRows, false);
+        }
+
+        // SET NEW STATE
+        if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rows.getLength() && newLocalSelectedCol >= 0 && newLocalSelectedCol < columnCount) {
+            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRows, focusable && isFocused);
+        }
+    }
+
+    private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, NodeList<TableRowElement> headerRows, boolean focused) {
+        // setting left and bottom borders since they are used to draw lines in grid
         int rowCount = rows.getLength();
         int columnCount = getColumnCount();
+        assert row >= 0 && row <= rowCount && column >= 0 && column <= columnCount;
+        // LEFT, RIGHT AND BOTTOM BORDER
+        if(row < rowCount) {
+            TableRowElement thisRow = rows.getItem(row);
+            NodeList<TableCellElement> cells = thisRow.getCells();
 
-        TableRowElement tr = rows.getItem(row);
+            TableCellElement thisCell = cells.getItem(column);
+            if(column < columnCount) {
+                // LEFT BORDER
+//                if(column > 0) // we don't want focused border on leftmost border to prevent shifting leftmost cell
+                setFocusedCellLeftBorder(thisCell, focused);
 
-        if (tr != null) {
-            NodeList<TableCellElement> cells = tr.getCells();
-            TableCellElement td = cells.getItem(column);
-            if (td != null) {
-                String background = null;
-                if (tableBuilder instanceof GPropertyTableBuilder<?> && isRowWithinBounds(row)) {
-                    background = ((GPropertyTableBuilder<T>) tableBuilder).getBackground(getRowValue(row), row, column);
+                // in theory we might want to prevent extra border on the bottom and on the right (on the top there is no problem because of header)
+                // but there is a problem (with scroller, in that case we'll have to track hasVerticalScroller, hasHorizontalScroller) + table can be not full of rows (and we also have to track it)
+                // so we'll just draw that borders always
+
+                // BOTTOM BORDER
+                setFocusedCellBottomBorder(thisCell, focused);
+
+                // RIGHT BORDER
+                if (column < columnCount - 1) {
+                    TableCellElement rightCell = cells.getItem(column + 1);
+                    setFocusedCellLeftBorder(rightCell, focused);
                 }
-
-                Style tdStyle = td.getStyle();
-                if (focused) {
-                    if (background == null) {
-                        tdStyle.setBackgroundColor(StyleDefaults.getFocusedCellBackgroundColor());
-                    } else {
-                        tdStyle.setBackgroundColor(getDisplayColor(background));
-                    }
-                } else if (!inSelectedRow && background != null) { // is painted as selected row
-                    tdStyle.setBackgroundColor(getDisplayColor(background));
-                }
-
-                if (drawFocusedCellBorder()) {
-                    setFocusedCellBorder(td, focused);
-                    setFocusedCellLastInRowBorder(td, focused && column == columnCount - 1);
-                }
-            }
-
-            if (drawFocusedCellBorder() && column < columnCount - 1) {
-                TableCellElement rightTD = cells.getItem(column + 1);
-                if (rightTD != null) {
-                    setRightOfFocusedCellBorder(rightTD, focused);
-                }
+                setFocusedCellRightBorder(thisCell, focused && column == columnCount - 1);
             }
         }
 
-        if (drawFocusedCellBorder()) {
-            if (row == 0 && headerRows != null) {
-                TableRowElement headerTR = headerRows.getItem(0);
-                if (headerTR != null) {
-                    TableCellElement headerCell = headerTR.getCells().getItem(column);
-                    if (headerCell != null) {
-                        setTopOfFocusedCellBorder(headerCell, focused);
-                    }
-                }
-            } else if (row > 0 && row <= rowCount) {
-                TableCellElement topTD = rows.getItem(row - 1).getCells().getItem(column);
-                if (topTD != null) {
-                    setTopOfFocusedCellBorder(topTD, focused);
-                }
-            }
+        // TOP BORDER (BOTTOM of upper row)
+        if(column < columnCount) {
+            TableCellElement upperCell = (row > 0 ? rows.getItem(row - 1) : headerRows.getItem(0)).getCells().getItem(column);
+            setFocusedCellBottomBorder(upperCell, focused);
         }
     }
-    
-    private void setFocusedCellBorder(TableCellElement td, boolean focused) {
+
+    private void setFocusedCellBottomBorder(TableCellElement td, boolean focused) {
         if (focused) {
             td.getStyle().setProperty("borderBottom", "1px solid " + getFocusedCellBorderColor());
-            td.getStyle().setProperty("borderLeft", "1px solid " + getFocusedCellBorderColor());
         } else {
             td.getStyle().clearProperty("borderBottom");
-            td.getStyle().clearProperty("borderLeft");
         }
     }
-    
-    private void setFocusedCellLastInRowBorder(TableCellElement td, boolean focused) {
+
+    private void setFocusedCellRightBorder(TableCellElement td, boolean focused) {
         if (focused) {
             td.getStyle().setProperty("borderRight", "1px solid " + getFocusedCellBorderColor());
         } else {
@@ -1881,7 +1880,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         }
     }
     
-    private void setRightOfFocusedCellBorder(TableCellElement td, boolean focused) {
+    private void setFocusedCellLeftBorder(TableCellElement td, boolean focused) {
         if (focused) {
             td.getStyle().setProperty("borderLeft", "1px solid " + getFocusedCellBorderColor());
         } else {
@@ -1889,14 +1888,6 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         }
     }
 
-    private void setTopOfFocusedCellBorder(TableCellElement td, boolean focused) {
-        if (focused) {
-            td.getStyle().setProperty("borderBottom", "1px solid " + getFocusedCellBorderColor());
-        } else {
-            td.getStyle().clearProperty("borderBottom");
-        }
-    }
-    
     protected boolean drawFocusedCellBorder() {
         return true;
     }

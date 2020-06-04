@@ -45,8 +45,6 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
         sinkEvents(Event.ONPASTE);
 
-        setRemoveKeyboardStylesOnBlur(true);
-
         setSize("100%", property.getValueHeight(null) + "px");
         setTableWidth(property.getValueWidth(null) + 2, Unit.PX);  // 2 for borders
 
@@ -100,6 +98,11 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     @Override
     protected boolean drawFocusedCellBorder() {
         return false;
+    }
+
+    @Override
+    public boolean isRemoveKeyboardStylesOnBlur() {
+        return true;
     }
 
     public void focusOnValue() {

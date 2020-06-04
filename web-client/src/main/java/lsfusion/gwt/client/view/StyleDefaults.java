@@ -28,7 +28,16 @@ public class StyleDefaults {
         focusedCellBorderColor = null;
     }
 
-    public static String getSelectedRowBackgroundColor() {
+    private static String getSelectedColor(boolean canBeMixed) {
+        if(canBeMixed) {
+            // should be the same as '--selection-color' in <theme>.css.
+            // can't use 'var(--selection-color)' because this color may be mixed with background color (converted to int)
+            return colorTheme.isLight() ? "#D3E5E8" : "#2C4751";
+        } else
+            return "var(--selection-color)";
+    }
+
+    public static String getSelectedRowBackgroundColor(boolean canBeMixed) {
         if (selectedRowBackgroundColor == null) {
             ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
             if (preferredColor != null) {
@@ -36,19 +45,19 @@ public class StyleDefaults {
             } else {
                 // should be the same as '--selection-color' in <theme>.css. 
                 // can't use 'var(--selection-color)' because this color may be mixed with background color (converted to int)
-                selectedRowBackgroundColor = colorTheme.isLight() ? "#D3E5E8" : "#2C4751";
+                selectedRowBackgroundColor = getSelectedColor(canBeMixed);
             }
         }
         return selectedRowBackgroundColor;
     }
 
-    public static String getFocusedCellBackgroundColor() {
+    public static String getFocusedCellBackgroundColor(boolean canBeMixed) {
         if (focusedCellBackgroundColor == null) {
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
             if (preferredColor != null) {
                 focusedCellBackgroundColor = getDisplayColor(preferredColor.toString());
             } else {
-                focusedCellBackgroundColor = "var(--selection-color)";
+                focusedCellBackgroundColor = getSelectedColor(canBeMixed);
             }
         }
         return focusedCellBackgroundColor;

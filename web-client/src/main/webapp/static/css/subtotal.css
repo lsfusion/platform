@@ -17,6 +17,10 @@
         flex: 0 1 auto;
         position: relative;
         overflow: hidden;
+
+        /* see DataGrid.removeOuterGridBorders  */
+        margin-left : -1px;
+        margin-right : -1px;
     }
 
     .subtotalouterdiv .headertable {
@@ -37,6 +41,10 @@
         position: relative;
         overflow: auto;
         height: 100%;
+
+        /* see DataGrid.removeOuterGridBorders  */
+        margin-left : -1px;
+        margin-right : -1px;
     }
 
     .subtotalouterdiv .bodytable {

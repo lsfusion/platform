@@ -156,6 +156,9 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         updateCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
     }
 
+    // need this for mixing color
+    public static String BKCOLOR = "lsfusion-bkcolor";
+
     protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
         if (updateCellHeight) {
             renderTD(td, cellHeight);
@@ -168,8 +171,10 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
         if (backgroundColor != null) {
+            td.setAttribute(BKCOLOR, backgroundColor);
             td.getStyle().setBackgroundColor(getDisplayColor(backgroundColor));
         } else {
+            td.removeAttribute(BKCOLOR);
             td.getStyle().clearBackgroundColor();
         }
 

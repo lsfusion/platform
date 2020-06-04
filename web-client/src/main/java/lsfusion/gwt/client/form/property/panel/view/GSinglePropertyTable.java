@@ -22,7 +22,7 @@ import java.util.List;
 import static com.google.gwt.dom.client.Style.Unit;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
-public class GSinglePropertyTable extends GPropertyTable<Object> {
+public abstract class GSinglePropertyTable extends GPropertyTable<Object> {
     public static final SinglePropertyTableStyle SINGLE_PROPERTY_TABLE_STYLE = new SinglePropertyTableStyle();
 
     private final GPropertyDraw property;
@@ -43,7 +43,6 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
         setTableBuilder(new GSinglePropertyTableBuilder(this));
 
         setCellHeight(property.getValueHeight(null));
-        setRemoveKeyboardStylesOnBlur(true);
 
         addColumn(new Column<Object, Object>(new GridEditableCell(this)) {
             @Override
@@ -151,6 +150,11 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
     @Override
     protected boolean drawFocusedCellBorder() {
         return false;
+    }
+
+    @Override
+    public boolean isRemoveKeyboardStylesOnBlur() {
+        return true;
     }
 
     public GPropertyDraw getProperty(Cell.Context context) {

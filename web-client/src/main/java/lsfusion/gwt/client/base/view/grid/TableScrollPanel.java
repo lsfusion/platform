@@ -24,6 +24,10 @@ public class TableScrollPanel extends SimplePanel {
 
         getElement().getStyle().setOverflow(overflow);
 
+        // in theory margin should be set for inner (child element)
+        // but 1) margin-right doesn't work for table if it's width 100%
+        // 2) it's hard to tell what to do with scroller, since we want right border when there is scroll, and don't wan't it when there is no such scroll
+        // however we can remove margin when there is a vertical scroller (so there's no difference whether to set border for child or parent)
         DataGrid.removeOuterGridBorders(this);
     }
 
