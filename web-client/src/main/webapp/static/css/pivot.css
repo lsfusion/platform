@@ -251,6 +251,11 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     margin: 0 0 0 4px;
 }
 
+.pvtUnused.pvtHorizList li {
+    display: inline-flex;
+    margin-right: 0;
+}
+
 .pvtVertList > li.pvtPlaceholder {
     margin: 4px 0 0 0;
 }
@@ -356,7 +361,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .pvtRenderer {
-    margin-left: 5px;
+    margin: 5px 0 5px 5px;
 }
 
 .pvtAggregator {
