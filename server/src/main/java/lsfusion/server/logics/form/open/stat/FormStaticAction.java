@@ -57,24 +57,4 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
             exportFile.change(singleFile != null ? new FileData(singleFile, staticType.getExtension()) : null, context, params);
         }
     }
-
-    @Override
-    protected ImMap<Property, Boolean> aspectUsedExtProps() {
-        return getUsedExtProps(getForm(), this instanceof PrintAction);
-    }
-
-    private static ImMap<Property, Boolean> getUsedExtProps(FormEntity formEntity, boolean isReport) {
-        MSet<Property> mProps = SetFact.mSet();
-        for (PropertyDrawEntity<?> propertyDraw : formEntity.getStaticPropertyDrawsList()) {
-            if (isReport) {
-                MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
-                propertyDraw.fillQueryProps(mReaders);
-                for (PropertyReaderEntity reader : mReaders.immutable())
-                    mProps.add((Property) reader.getPropertyObjectEntity().property);
-            } else 
-                mProps.add(propertyDraw.getValueProperty().property);
-        }
-        return mProps.immutable().toMap(false);
-    }
-
 }

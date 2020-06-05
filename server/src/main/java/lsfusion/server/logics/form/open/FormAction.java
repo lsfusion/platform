@@ -5,6 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -12,10 +13,16 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.open.stat.ExportAction;
+import lsfusion.server.logics.form.open.stat.FormStaticAction;
+import lsfusion.server.logics.form.open.stat.PrintAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -116,5 +123,22 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
             result = PropertyFact.createAnd(result, contextFilterWhere);
         }
         return result;
+    }
+
+    @Override
+    protected ImMap<Property, Boolean> aspectUsedExtProps() {
+        FormEntity formEntity = getForm();
+
+        MSet<Property> mProps = SetFact.mSet();
+        for (PropertyDrawEntity<?> propertyDraw : this instanceof FormStaticAction ? formEntity.getStaticPropertyDrawsList() : formEntity.getPropertyDrawsList()) {
+            if (!(this instanceof ExportAction)) {
+                MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
+                propertyDraw.fillQueryProps(mReaders);
+                for (PropertyReaderEntity reader : mReaders.immutable())
+                    mProps.add((Property) reader.getPropertyObjectEntity().property);
+            } else
+                mProps.add(propertyDraw.getValueProperty().property);
+        }
+        return mProps.immutable().toMap(false);
     }
 }
