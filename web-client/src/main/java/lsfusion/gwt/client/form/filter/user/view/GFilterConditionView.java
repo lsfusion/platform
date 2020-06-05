@@ -9,6 +9,9 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GFontMetrics;
+import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -93,6 +96,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             }
         });
         add(compareView);
+        compareView.setItems(condition.property.baseType.getFilterCompares());
         compareView.setSelectedItem(condition.compare);
 
         filterValues = new GFilterConditionListBox();
@@ -182,6 +186,11 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         junctionView.setVisible(visible);
     }
 
+    public void setJunctionEnabled(boolean enabled) {
+        junctionView.setVisible(true);
+        junctionView.setEnabled(enabled);
+    }
+
     public void setSelectedPropertyDraw(GPropertyDraw propertyDraw) {
         if (propertyDraw != null) {
             propertyView.setSelectedItem(propertyDraw);
@@ -199,5 +208,13 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
     public void startEditing(EditEvent keyEvent) {
         valueView.startEditing(keyEvent);
+    }
+
+    public void setCompareViewWidth(int width) {
+        compareView.setWidth(width + "px");
+    }
+
+    public void setValueViewWidth(int width) {
+        valueView.setWidth(condition.property, width);
     }
 }

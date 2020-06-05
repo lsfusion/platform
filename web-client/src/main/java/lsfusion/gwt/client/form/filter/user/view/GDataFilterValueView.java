@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.view.ResizableLayoutPanel;
+import lsfusion.gwt.client.classes.data.GFormatType;
+import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
@@ -79,5 +82,14 @@ public class GDataFilterValueView extends GFilterValueView {
 
     public void startEditing(EditEvent keyEvent) {
         valueTable.startEditing(keyEvent);
+    }
+
+    @Override
+    public void setWidth(GPropertyDraw property, int width) {
+        super.setWidth(property, width + 4); //4 for borders
+        if(property.baseType instanceof GStringType || property.baseType instanceof GFormatType) {
+            tablePanel.setPixelSize(width, property.getValueHeight(null));
+            valueTable.setTableWidth(width, Style.Unit.PX);
+        }
     }
 }

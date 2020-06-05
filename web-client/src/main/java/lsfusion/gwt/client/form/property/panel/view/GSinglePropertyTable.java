@@ -199,10 +199,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
     protected void onBrowserEvent2(Event event) {
         GGridController groupController = form.getController(property.groupObject);
         if (groupController != null) {
-            if (GKeyStroke.isAddFilterEvent(event)) {
-                stopPropagation(event);
-                groupController.addFilter();
-            } else if (GKeyStroke.isRemoveAllFiltersEvent(event)) {
+            if (GKeyStroke.isRemoveAllFiltersEvent(event)) {
                 stopPropagation(event);
                 groupController.removeFilters();
             } else if (GKeyStroke.isReplaceFilterEvent(event)) {

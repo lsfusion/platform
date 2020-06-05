@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 public class GFilterValueView extends SimplePanel {
@@ -23,5 +24,9 @@ public class GFilterValueView extends SimplePanel {
 
     public void startEditing(EditEvent keyEvent) {
         focusOnValue();
+    }
+
+    public void setWidth(GPropertyDraw property, int width) {
+        setWidth(width + "px");
     }
 }

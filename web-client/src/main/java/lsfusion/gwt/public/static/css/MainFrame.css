@@ -405,7 +405,7 @@ input[type=checkbox]:focus {
 .dataFilterValueTablePanel {
     border: 1px solid var(--component-border-color);
     border-radius: var(--textfield-border-radius);
-    margin: 2px 2px 2px 1px;
+    margin: 2px 2px 2px 0;
     min-height: 16px !important;
 }
 
