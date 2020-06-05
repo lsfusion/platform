@@ -26,6 +26,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang3.ArrayUtils;
@@ -131,13 +132,17 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
         MSet<Property> mProps = SetFact.mSet();
         for (PropertyDrawEntity<?> propertyDraw : this instanceof FormStaticAction ? formEntity.getStaticPropertyDrawsList() : formEntity.getPropertyDrawsList()) {
-            if (!(this instanceof ExportAction)) {
+            if (this instanceof ExportAction)
+                mProps.add(propertyDraw.getValueProperty().property);
+            else {
                 MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
                 propertyDraw.fillQueryProps(mReaders);
-                for (PropertyReaderEntity reader : mReaders.immutable())
-                    mProps.add((Property) reader.getPropertyObjectEntity().property);
-            } else
-                mProps.add(propertyDraw.getValueProperty().property);
+                for (PropertyReaderEntity reader : mReaders.immutable()) {
+                    ActionOrProperty property = reader.getPropertyObjectEntity().property;
+                    if(property instanceof Property)
+                        mProps.add((Property) property);
+                }
+            }
         }
         return mProps.immutable().toMap(false);
     }
