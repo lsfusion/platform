@@ -60,11 +60,11 @@ public abstract class WindowElement {
     }
     
     protected double getPixelHeight() {
-        return (main.isFullScreenMode() && parent != null && parent.parent == null) ? 0 : pixelHeight;
+        return pixelHeight;
     }
 
     protected double getPixelWidth() {
-        return (main.isFullScreenMode() && parent != null && parent.parent == null) ? 0 : pixelWidth;
+        return pixelWidth;
     }
 
     public void changeInitialSize(int width, int height) {

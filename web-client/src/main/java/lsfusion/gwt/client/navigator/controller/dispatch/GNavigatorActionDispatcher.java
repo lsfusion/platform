@@ -4,7 +4,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.action.GActivateFormAction;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GMaximizeFormAction;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
@@ -52,6 +51,6 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GMaximizeFormAction action) {
-        windowsController.setFullScreenMode(true);
+        formsController.setFullScreenMode(true);
     }
 }

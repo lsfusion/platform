@@ -1300,7 +1300,7 @@ td.datePickerMonth {
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTabs {
     top: 0;
     display: flex;
-    width: 100% !important;
+    /*width: 100% !important;*/
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContentContainer {
     border-color: var(--panel-border-color);
