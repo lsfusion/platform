@@ -650,16 +650,13 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
             Field leadRowField;
             try {
-                Class uiActionClass = ReflectionUtils.classForName("sun.swing.UIAction");
-                if(uiActionClass != null) {
-                    leadRowField = uiActionClass.getDeclaredField("leadRow");
-                    if (leadRowField != null) {
-                        leadRowField.setAccessible(true);
-                        //int oldLeadRow = leadRowField.getInt(uiAction);
-                        int oldLeadRow = ReflectionUtils.getPrivateMethodValue(Field.class, leadRowField, "getInt", new Class[]{uiActionClass}, new Object[]{uiAction});
-                        if (newLeadRow != oldLeadRow) {
-                            leadRowField.set(uiAction, newLeadRow);
-                        }
+                leadRowField = uiAction.getClass().getDeclaredField("leadRow");
+                if (leadRowField != null) {
+                    leadRowField.setAccessible(true);
+                    //int oldLeadRow = leadRowField.getInt(uiAction);
+                    int oldLeadRow = ReflectionUtils.getPrivateMethodValue(Field.class, leadRowField, "getInt", new Class[]{uiAction.getClass()}, new Object[]{uiAction});
+                    if (newLeadRow != oldLeadRow) {
+                        leadRowField.set(uiAction, newLeadRow);
                     }
                 }
             } catch (NoSuchFieldException | IllegalAccessException e) {
