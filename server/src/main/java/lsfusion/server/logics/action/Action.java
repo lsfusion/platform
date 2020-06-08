@@ -277,12 +277,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     @IdentityLazy
     public boolean uses(Property property) {
-        return Property.depends(getUsedProps(), property);
+        return Property.depends(getUsedProps(), property) || hasFlow(ChangeFlowType.INTERACTIVEFORM);
     }
 
     @IdentityLazy
     public boolean changes(Property property) {
-        return Property.depends(getChangeProps(), property);
+        return Property.depends(getChangeProps(), property) || hasFlow(ChangeFlowType.INTERACTIVEFORM);
     }
 
     @IdentityLazy

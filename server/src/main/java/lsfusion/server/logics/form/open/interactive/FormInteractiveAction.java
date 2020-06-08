@@ -165,8 +165,17 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             if (!readOnly && !getForm().hasNoChange()) 
                 return true;
         }
+        if(type == ChangeFlowType.INTERACTIVEFORM)
+            return true;
         if(type == ChangeFlowType.NEEDMORESESSIONUSAGES && syncType == null)
             return true;
         return super.hasFlow(type);
     }
+
+//    @Override
+//    public ImSet<Action> getDependActions() {
+//        return getForm().getPropertyDrawsList().
+//                filterOrder((PropertyDrawEntity element) -> element.getValueActionOrProperty() instanceof ActionObjectEntity).getSet().
+//                mapSetValues(propertyDrawEntity -> (Action)propertyDrawEntity.getValueActionOrProperty().property);
+//    }
 }

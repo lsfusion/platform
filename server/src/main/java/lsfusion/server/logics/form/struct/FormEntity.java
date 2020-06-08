@@ -153,7 +153,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<PropertyDrawEntity> getNFPropertyDrawsIt(Version version) {
         return propertyDraws.getNFIt(version);
     }
-    public ImList<PropertyDrawEntity> getPropertyDrawsList() {
+    public ImOrderSet<PropertyDrawEntity> getPropertyDrawsList() {
         return propertyDraws.getOrderSet();        
     }
     public Iterable<PropertyDrawEntity> getPropertyDrawsListIt() {
