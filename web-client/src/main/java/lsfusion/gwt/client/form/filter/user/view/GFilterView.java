@@ -1,26 +1,33 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.ResizableFocusPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GFontMetrics;
+import lsfusion.gwt.client.form.design.GFontWidthString;
+import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 import java.util.*;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
+
 public class GFilterView extends ResizableFocusPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String ADD = "filtadd.png";
+    private static final String APPLY = "filtapply.png";
+    private static final String CANCEL = "filtcancel.png";
 
     private DialogBox filterDialog;
 
@@ -41,29 +48,38 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
 
         mainContainer.add(filterContainer);
 
-        Button applyButton = new Button(messages.apply());
+        Button addConditionButton = new ImageButton(messages.formQueriesFilterAddCondition(), ADD);
+        addConditionButton.addClickHandler(event -> addNewCondition());
+
+        Button resetConditionsButton = new ImageButton(messages.formQueriesFilterResetConditions());
+        resetConditionsButton.addClickHandler(event -> allRemovedPressed());
+
+        Button applyButton = new ImageButton(messages.ok(), APPLY);
         applyButton.addClickHandler(event -> applyFilter());
 
-        Button cancelButton = new Button(messages.cancel());
+        Button cancelButton = new ImageButton(messages.close(), CANCEL);
         cancelButton.addClickHandler(event -> cancelFilter());
 
+        HorizontalPanel leftButtonsPanel = new HorizontalPanel();
+        leftButtonsPanel.add(addConditionButton);
+        leftButtonsPanel.add(createHorizontalStrut(3));
+        leftButtonsPanel.add(resetConditionsButton);
+        leftButtonsPanel.addStyleName("flowPanelChildLeftAlign");
+
+        HorizontalPanel rightButtonsPanel = new HorizontalPanel();
+        rightButtonsPanel.add(applyButton);
+        rightButtonsPanel.add(createHorizontalStrut(3));
+        rightButtonsPanel.add(cancelButton);
+        rightButtonsPanel.addStyleName("flowPanelChildRightAlign");
+
         FlowPanel buttonsPanel = new FlowPanel();
-        buttonsPanel.add(applyButton);
-        buttonsPanel.add(cancelButton);
-        buttonsPanel.addStyleName("floatRight");
+        buttonsPanel.add(leftButtonsPanel);
+        buttonsPanel.add(rightButtonsPanel);
+
+        mainContainer.add(new HorizontalLineWidget());
         mainContainer.add(buttonsPanel);
 
-        GToolbarButton addConditionButton = new GToolbarButton(ADD, messages.formQueriesFilterAddCondition() + " (alt + F2)") {
-            @Override
-            public void addListener() {
-                addClickHandler(event -> addNewCondition());
-            }
-        };
-        addConditionButton.addStyleName("flowPanelChildRightAlign");
-        addConditionButton.addStyleName("filterDialogButton");
-
         FlowPanel controlPanel = new FlowPanel();
-        controlPanel.add(addConditionButton);
         filterContainer.add(controlPanel);
 
         sinkEvents(Event.ONKEYDOWN);
@@ -107,7 +123,6 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
 
     public void addNewCondition() {
         addCondition(controller.getNewCondition(null, null), controller.getLogicsSupplier());
-
     }
 
     public void addCondition(GPropertyFilter condition, GTableController logicsSupplier) {
@@ -129,17 +144,48 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
 
     @Override
     public void conditionChanged() {
-        for (GFilterConditionView conditionView : conditionViews.values()) {
-            conditionView.setJunctionVisible(Arrays.asList(conditionViews.values().toArray()).indexOf(conditionView) < conditionViews.size() - 1);
+        if(conditionViews.size() == 1) {
+            conditionViews.entrySet().iterator().next().getValue().setJunctionVisible(false);
+        } else {
+            for (GFilterConditionView conditionView : conditionViews.values()) {
+                conditionView.setJunctionEnabled(Arrays.asList(conditionViews.values().toArray()).indexOf(conditionView) < conditionViews.size() - 1);
+            }
         }
+        updateWidth();
     }
 
     @Override
     public void conditionRemoved(GPropertyFilter condition) {
         removeCondition(condition);
-        if (conditionViews.isEmpty()) {
-            allRemovedPressed();
+    }
+
+    private void updateWidth() {
+        int compareWidth = 0;
+        int valueWidth = 0;
+        for(GPropertyFilter condition : conditionViews.keySet()) {
+            compareWidth = Math.max(compareWidth, getCompareViewWidth(condition.property));
+            valueWidth = Math.max(valueWidth, condition.property.getValueWidth(null));
         }
+        if(compareWidth > 0) {
+            for (GFilterConditionView conditionView : conditionViews.values()) {
+                conditionView.setCompareViewWidth(compareWidth);
+            }
+        }
+        if(valueWidth > 0) {
+            for (GFilterConditionView conditionView : conditionViews.values()) {
+                conditionView.setValueViewWidth(valueWidth);
+            }
+        }
+    }
+
+    public int getCompareViewWidth(GPropertyDraw property) {
+        String longestCompare = "";
+        for(GCompare compare : property.baseType.getFilterCompares()) {
+            if(compare.toString().length() > longestCompare.length())
+                longestCompare = compare.toString();
+        }
+        int width = GFontMetrics.getStringWidth(new GFontWidthString(property.font != null ? property.font : GFont.DEFAULT_FONT, longestCompare));
+        return width + 25; //dropdown arrow width
     }
 
     public void focusOnValue() {
@@ -165,6 +211,13 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
             GFilterConditionView view = conditionViews.values().iterator().next();
             view.setSelectedPropertyDraw(propertyDraw);
             view.startEditing(keyEvent);
+        }
+    }
+
+    private class HorizontalLineWidget extends Widget {
+        public HorizontalLineWidget() {
+            super();
+            setElement(Document.get().createHRElement());
         }
     }
 }
