@@ -25,15 +25,12 @@ public abstract class DefaultFormsController implements FormsController {
     private final WindowsController windowsController;
     private final ImageButton imageButton = new ImageButton("");
     private final ResizableSimplePanel resizableSimplePanel;
-    // flag to update view
-    private boolean originalView;
     private boolean fullScreenMode;
 
     public DefaultFormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
         tabsPanel = new TabLayoutPanel(StyleDefaults.VALUE_HEIGHT + 1, Style.Unit.PX, updateViewButton()); // 1px for one side border
         resizableSimplePanel = new ResizableSimplePanel();
-        resizableSimplePanel.setFillWidget(tabsPanel);
         tabsPanel.addSelectionHandler(event -> {
             int selected = tabsPanel.getSelectedIndex();
             ((FormDockable.ContentWidget) tabsPanel.getWidget(selected)).setSelected(true);
@@ -60,7 +57,7 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     public void updateButtonImage(){
-        if (!originalView){
+        if (this.fullScreenMode){
             imageButton.setModuleImagePath("minimize.png");
         } else {
             imageButton.setModuleImagePath("maximize.png");
@@ -68,18 +65,13 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     public void setFullScreenMode(boolean fullScreenMode) {
-        updateView(fullScreenMode);
-    }
-
-    public void updateView(boolean fullScreen) {
-        if (fullScreen) {
+        if (fullScreenMode) {
             maximizeTabsPanel();
-            originalView = false;
+            this.fullScreenMode = true;
         } else {
             normalizeTabsPanel();
-            originalView = true;
+            this.fullScreenMode = false;
         }
-        this.fullScreenMode = fullScreen;
         updateButtonImage();
     }
 
@@ -102,7 +94,7 @@ public abstract class DefaultFormsController implements FormsController {
     public Widget updateViewButton() {
         imageButton.setSize("20px", "20px");
         imageButton.addClickHandler(event -> {
-            updateView(originalView);
+            setFullScreenMode(!this.fullScreenMode);
         });
         return imageButton;
     }
