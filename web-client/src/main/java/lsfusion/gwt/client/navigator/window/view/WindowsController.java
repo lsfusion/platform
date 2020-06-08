@@ -10,7 +10,6 @@ import java.util.*;
 public abstract class WindowsController extends SplitLayoutPanel {
     private Map<GAbstractWindow, WindowElement> windowElementsMapping = new HashMap<>();
     private SplitWindowElement rootElement;
-    private boolean fullScreenMode;
     private Widget rootView;
 
     public Widget initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
@@ -176,20 +175,12 @@ public abstract class WindowsController extends SplitLayoutPanel {
     public void setInitialSize(GAbstractWindow window, int width, int height) {
         WindowElement windowElement = windowElementsMapping.get(window);
         if (windowElement != null && windowElement.getView().isAttached()) {
-            if ((!fullScreenMode || (windowElement.parent != null && windowElement.parent.parent != null)) // не в главном сплите
+            if ((windowElement.parent != null && windowElement.parent.parent != null) // не в главном сплите
                     && width != 0 && height != 0) {
                 windowElement.changeInitialSize(width, height);
                 window.initialSizeSet = true;
             }
         }
-    }
-
-    public void setFullScreenMode(boolean fullScreenMode) {
-        this.fullScreenMode = fullScreenMode;
-    }
-
-    public boolean isFullScreenMode() {
-        return fullScreenMode;
     }
 
     public Widget getRootView() {
@@ -201,11 +192,6 @@ public abstract class WindowsController extends SplitLayoutPanel {
     public void storeWindowsSizes() {
         Storage storage = Storage.getLocalStorageIfSupported();
         if (storage != null) {
-            if (this.fullScreenMode) {
-                storage.setItem("full_screen", "");
-            } else {
-                storage.removeItem("full_screen");
-            }
             if (rootElement != null) {
                 rootElement.storeWindowsSizes(storage);
             }

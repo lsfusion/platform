@@ -224,6 +224,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             public void onClose(CloseEvent event) {
                 try {
                     windowsController.storeWindowsSizes();
+                    formsController.updateLocalStorage();
                 } finally {
                     clean();
                 }

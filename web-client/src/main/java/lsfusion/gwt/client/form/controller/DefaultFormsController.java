@@ -24,13 +24,15 @@ public abstract class DefaultFormsController implements FormsController {
     private final List<GFormController> gFormControllersList = new ArrayList<>(); // have no idea why it is a list and not a field
     private final WindowsController windowsController;
     private final ImageButton imageButton = new ImageButton("");
-    private final ResizableSimplePanel resizableSimplePanel = new ResizableSimplePanel();
+    private final ResizableSimplePanel resizableSimplePanel;
     // flag to update view
     private boolean originalView;
+    private boolean fullScreenMode;
 
     public DefaultFormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
         tabsPanel = new TabLayoutPanel(StyleDefaults.VALUE_HEIGHT + 1, Style.Unit.PX, updateViewButton()); // 1px for one side border
+        resizableSimplePanel = new ResizableSimplePanel();
         resizableSimplePanel.setFillWidget(tabsPanel);
         tabsPanel.addSelectionHandler(event -> {
             int selected = tabsPanel.getSelectedIndex();
@@ -48,6 +50,15 @@ public abstract class DefaultFormsController implements FormsController {
         });
     }
 
+    public void updateLocalStorage(){
+        Storage storage = Storage.getLocalStorageIfSupported();
+        if (this.fullScreenMode) {
+            storage.setItem("full_screen", "");
+        } else {
+            storage.removeItem("full_screen");
+        }
+    }
+
     public void updateButtonImage(){
         if (!originalView){
             imageButton.setModuleImagePath("minimize.png");
@@ -57,19 +68,18 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     public void setFullScreenMode(boolean fullScreenMode) {
-        updateView(windowsController.isFullScreenMode() != fullScreenMode && fullScreenMode);
+        updateView(fullScreenMode);
     }
 
     public void updateView(boolean fullScreen) {
         if (fullScreen) {
             maximizeTabsPanel();
-            windowsController.setFullScreenMode(true);
             originalView = false;
         } else {
             normalizeTabsPanel();
-            windowsController.setFullScreenMode(false);
             originalView = true;
         }
+        this.fullScreenMode = fullScreen;
         updateButtonImage();
     }
 
