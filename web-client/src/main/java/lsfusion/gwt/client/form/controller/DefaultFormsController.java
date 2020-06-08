@@ -25,7 +25,7 @@ public abstract class DefaultFormsController implements FormsController {
     private final WindowsController windowsController;
     private final ImageButton imageButton = new ImageButton("");
     private final ResizableSimplePanel resizableSimplePanel;
-    private boolean fullScreenMode;
+    private Boolean fullScreenMode = null;
 
     public DefaultFormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
@@ -65,14 +65,15 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     public void setFullScreenMode(boolean fullScreenMode) {
-        if (fullScreenMode) {
-            maximizeTabsPanel();
-            this.fullScreenMode = true;
-        } else {
-            normalizeTabsPanel();
-            this.fullScreenMode = false;
+        if (this.fullScreenMode == null || fullScreenMode != this.fullScreenMode) {
+            if (fullScreenMode) {
+                maximizeTabsPanel();
+            } else {
+                normalizeTabsPanel();
+            }
+            this.fullScreenMode = fullScreenMode;
+            updateButtonImage();
         }
-        updateButtonImage();
     }
 
     public void restoreFullScreen() {
