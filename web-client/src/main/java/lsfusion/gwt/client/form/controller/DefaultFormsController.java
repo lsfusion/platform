@@ -50,7 +50,7 @@ public abstract class DefaultFormsController implements FormsController {
         });
     }
 
-    public void updateLocalStorage(){
+    public void storeFullScreen(){
         Storage storage = Storage.getLocalStorageIfSupported();
         if (this.fullScreenMode) {
             storage.setItem("full_screen", "");
@@ -83,7 +83,7 @@ public abstract class DefaultFormsController implements FormsController {
         updateButtonImage();
     }
 
-    public void checkFullscreenOnStartup() {
+    public void restoreFullScreen() {
         Storage storage = Storage.getLocalStorageIfSupported();
         setFullScreenMode(storage != null && storage.getItem("full_screen") != null);
     }

@@ -12,7 +12,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
     private SplitWindowElement rootElement;
     private Widget rootView;
 
-    public Widget initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
+    public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
 
         WindowNode rootNode = new WindowNode(0, 0, 100, 100);
 
@@ -28,7 +28,6 @@ public abstract class WindowsController extends SplitLayoutPanel {
         restoreWindowsSizes();
 
         this.rootView = rootView;
-        return rootView;
     }
 
     private void initializeNodes(List<GAbstractWindow> windows, WindowNode rootNode) {

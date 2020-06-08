@@ -15,7 +15,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -224,7 +223,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             public void onClose(CloseEvent event) {
                 try {
                     windowsController.storeWindowsSizes();
-                    formsController.updateLocalStorage();
+                    formsController.storeFullScreen();
                 } finally {
                     clean();
                 }
@@ -379,12 +378,12 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 allWindows.addAll(result.navigatorWindows);
                 allWindows.addAll(commonWindows.keySet());
 
-                RootLayoutPanel.get().add(windowsController.initializeWindows(allWindows, formsWindow));
+                windowsController.initializeWindows(allWindows, formsWindow);
+                formsController.restoreFullScreen();
 
                 navigatorController.update();
 
                 formsController.executeNotificationAction("SystemEvents.onWebClientStarted[]", 0);
-                formsController.checkFullscreenOnStartup();
             }
         });
     }
