@@ -1,10 +1,8 @@
 package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 
 import java.util.*;
@@ -13,8 +11,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
     private Map<GAbstractWindow, WindowElement> windowElementsMapping = new HashMap<>();
     private SplitWindowElement rootElement;
     private boolean fullScreenMode;
-    private Widget initWindows;
-    private Widget tabsPanel;
+    private Widget rootView;
 
     public Widget initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
 
@@ -31,7 +28,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
 
         restoreWindowsSizes();
 
-        initWindows = rootView;
+        this.rootView = rootView;
         return rootView;
     }
 
@@ -189,72 +186,36 @@ public abstract class WindowsController extends SplitLayoutPanel {
 
     public void setFullScreenMode(boolean fullScreenMode) {
         this.fullScreenMode = fullScreenMode;
-        resize();
     }
 
-    public void resize(){
-        if (this.fullScreenMode){
-            maximizeTabsPanel();
-        } else {
-            normalizeTabsPanel();
-        }
-        changeButtonPicture();
-        this.fullScreenMode = !this.fullScreenMode;
+    public boolean isFullScreenMode() {
+        return fullScreenMode;
     }
 
-    public void changeButtonPicture(){
-        if (fullScreenMode){
-            DefaultFormsController.setButtonImage("minimize.png");
-        } else {
-            DefaultFormsController.setButtonImage("maximize.png");
-        }
-    }
-
-    public void checkFullscreenOnStartup() {
-        Storage storage = Storage.getLocalStorageIfSupported();
-        if (storage != null && storage.getItem("full_screen") != null) {
-            storage.removeItem("full_screen");
-            setFullScreenMode(true);
-        } else {
-            setFullScreenMode(false);
-        }
-    }
-
-    public void setTabsPanel(Widget tabsPanel) {
-        this.tabsPanel = tabsPanel;
-    }
-
-    public void maximizeTabsPanel(){
-        RootLayoutPanel.get().clear();
-        RootLayoutPanel.get().add(tabsPanel);
-    }
-
-    public void normalizeTabsPanel() {
-        RootLayoutPanel.get().clear();
-        DefaultFormsController.addWidgetToSimplePanel(tabsPanel);
-        RootLayoutPanel.get().add(initWindows);
+    public Widget getRootView() {
+        return rootView;
     }
 
     public abstract Widget getWindowView(GAbstractWindow window);
 
     public void storeWindowsSizes() {
         Storage storage = Storage.getLocalStorageIfSupported();
-        if (!this.fullScreenMode){
-            storage.setItem("full_screen", "");
-        }
-        if (rootElement != null) {
-            if (storage != null) {
+        if (storage != null) {
+            if (this.fullScreenMode) {
+                storage.setItem("full_screen", "");
+            } else {
+                storage.removeItem("full_screen");
+            }
+            if (rootElement != null) {
                 rootElement.storeWindowsSizes(storage);
             }
         }
     }
     
     public void restoreWindowsSizes() {
-        if (!fullScreenMode) {
-            Storage storage = Storage.getLocalStorageIfSupported();
-            if (storage != null) {
-                rootElement.restoreWindowsSizes(storage);
-            }
+        Storage storage = Storage.getLocalStorageIfSupported();
+        if (storage != null) {
+            rootElement.restoreWindowsSizes(storage);
         }
     }
 

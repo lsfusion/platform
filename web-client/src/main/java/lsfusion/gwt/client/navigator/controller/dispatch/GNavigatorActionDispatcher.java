@@ -51,6 +51,6 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GMaximizeFormAction action) {
-        windowsController.setFullScreenMode(true);
+        formsController.setFullScreenMode(true);
     }
 }

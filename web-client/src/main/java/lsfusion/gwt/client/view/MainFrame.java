@@ -383,8 +383,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 navigatorController.update();
 
                 formsController.executeNotificationAction("SystemEvents.onWebClientStarted[]", 0);
-
-                windowsController.checkFullscreenOnStartup();
+                formsController.checkFullscreenOnStartup();
             }
         });
     }

@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.*;
@@ -21,13 +23,15 @@ public abstract class DefaultFormsController implements FormsController {
     private final List<String> formsList = new ArrayList<>();
     private final List<GFormController> gFormControllersList = new ArrayList<>(); // have no idea why it is a list and not a field
     private final WindowsController windowsController;
-    private static final ImageButton imageButton = new ImageButton("");
-    private static final ResizableSimplePanel resizableSimplePanel = new ResizableSimplePanel();
+    private final ImageButton imageButton = new ImageButton("");
+    private final ResizableSimplePanel resizableSimplePanel = new ResizableSimplePanel();
+    // flag to update view
+    private boolean originalView;
 
     public DefaultFormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
-        tabsPanel = new TabLayoutPanel(StyleDefaults.VALUE_HEIGHT + 1, Style.Unit.PX, resizeButton()); // 1px for one side border
-        windowsController.setTabsPanel(tabsPanel);
+        tabsPanel = new TabLayoutPanel(StyleDefaults.VALUE_HEIGHT + 1, Style.Unit.PX, updateViewButton()); // 1px for one side border
+        resizableSimplePanel.setFillWidget(tabsPanel);
         tabsPanel.addSelectionHandler(event -> {
             int selected = tabsPanel.getSelectedIndex();
             ((FormDockable.ContentWidget) tabsPanel.getWidget(selected)).setSelected(true);
@@ -44,24 +48,56 @@ public abstract class DefaultFormsController implements FormsController {
         });
     }
 
-    public static void setButtonImage(String path){
-        imageButton.setModuleImagePath(path);
+    public void updateButtonImage(){
+        if (!originalView){
+            imageButton.setModuleImagePath("minimize.png");
+        } else {
+            imageButton.setModuleImagePath("maximize.png");
+        }
     }
 
-    public Widget resizeButton() {
+    public void setFullScreenMode(boolean fullScreenMode) {
+        updateView(windowsController.isFullScreenMode() != fullScreenMode && fullScreenMode);
+    }
+
+    public void updateView(boolean fullScreen) {
+        if (fullScreen) {
+            maximizeTabsPanel();
+            windowsController.setFullScreenMode(true);
+            originalView = false;
+        } else {
+            normalizeTabsPanel();
+            windowsController.setFullScreenMode(false);
+            originalView = true;
+        }
+        updateButtonImage();
+    }
+
+    public void checkFullscreenOnStartup() {
+        Storage storage = Storage.getLocalStorageIfSupported();
+        setFullScreenMode(storage != null && storage.getItem("full_screen") != null);
+    }
+
+    public void maximizeTabsPanel(){
+        RootLayoutPanel.get().clear();
+        RootLayoutPanel.get().add(tabsPanel);
+    }
+
+    public void normalizeTabsPanel() {
+        RootLayoutPanel.get().clear();
+        resizableSimplePanel.setFillWidget(tabsPanel);
+        RootLayoutPanel.get().add(windowsController.getRootView());
+    }
+
+    public Widget updateViewButton() {
         imageButton.setSize("20px", "20px");
         imageButton.addClickHandler(event -> {
-            windowsController.resize();
+            updateView(originalView);
         });
         return imageButton;
     }
 
-    public static void addWidgetToSimplePanel(Widget widget){
-        resizableSimplePanel.setFillWidget(widget);
-    }
-
     public  Widget getView() {
-        resizableSimplePanel.setFillWidget(tabsPanel);
         return resizableSimplePanel;
     }
 
