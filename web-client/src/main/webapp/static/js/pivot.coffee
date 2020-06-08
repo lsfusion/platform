@@ -321,7 +321,8 @@ callWithJQuery ($) ->
             @allTotal = @aggregator(this, [], [])
             @sorted = false
             @callbacks = opts.callbacks
-
+            @sortItems = opts.sortItems ? []
+            
             # iterate through input, accumulating data for cells
             PivotData.forEachRecord @input, @derivedAttributes, (record) =>
                 @processRecord(record) if @filter(record)
@@ -1079,6 +1080,7 @@ callWithJQuery ($) ->
                     cols: [], rows: []
                     dataClass: opts.dataClass
                     callbacks: opts.callbacks
+                    sortItems: opts.sortCols
                     
                 subopts.rendererOptions.rowSubtotalDisplay = 
                     splitPositions: opts.splitRows

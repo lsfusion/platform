@@ -630,7 +630,7 @@
      */
     PivotData = (function() {
       function PivotData(input, opts) {
-        var ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9;
+        var ref, ref1, ref10, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9;
         if (opts == null) {
           opts = {};
         }
@@ -660,6 +660,7 @@
         this.allTotal = this.aggregator(this, [], []);
         this.sorted = false;
         this.callbacks = opts.callbacks;
+        this.sortItems = (ref10 = opts.sortItems) != null ? ref10 : [];
         PivotData.forEachRecord(this.input, this.derivedAttributes, (function(_this) {
           return function(record) {
             if (_this.filter(record)) {
@@ -1691,7 +1692,8 @@
               cols: [],
               rows: [],
               dataClass: opts.dataClass,
-              callbacks: opts.callbacks
+              callbacks: opts.callbacks,
+              sortItems: opts.sortCols
             };
             subopts.rendererOptions.rowSubtotalDisplay = {
               splitPositions: opts.splitRows

@@ -1421,7 +1421,7 @@ public class GPivot extends GStateTableView {
     }
 
     private boolean isSortColumn(boolean isSubtotal, JsArrayString colKeyValues) {
-        return isSubtotal || colKeyValues.length() == 0 || colKeyValues.length() == config.getArrayString("cols").length();
+        return isSubtotal || colKeyValues.length() == config.getArrayString("cols").length();
     }
 
     private SortCol findSortCol(JsArrayMixed sortCols, Object value) {
