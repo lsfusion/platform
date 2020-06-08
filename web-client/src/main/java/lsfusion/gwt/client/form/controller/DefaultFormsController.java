@@ -23,7 +23,7 @@ public abstract class DefaultFormsController implements FormsController {
     private final List<String> formsList = new ArrayList<>();
     private final List<GFormController> gFormControllersList = new ArrayList<>(); // have no idea why it is a list and not a field
     private final WindowsController windowsController;
-    private final ImageButton imageButton = new ImageButton("");
+    private final ImageButton imageButton = new ImageButton();
     private final ResizableSimplePanel resizableSimplePanel;
     private Boolean fullScreenMode = null;
 
@@ -93,6 +93,7 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     public Widget updateViewButton() {
+        imageButton.addStyleName("toolbarButton");
         imageButton.setSize("20px", "20px");
         imageButton.addClickHandler(event -> {
             setFullScreenMode(!this.fullScreenMode);
