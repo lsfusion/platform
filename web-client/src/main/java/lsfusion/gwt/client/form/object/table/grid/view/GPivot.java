@@ -24,7 +24,6 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.*;
 
@@ -253,7 +252,7 @@ public class GPivot extends GStateTableView {
             inclusions.putValue(COLUMN, measures);
         }
 
-        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings, StyleDefaults.VALUE_HEIGHT);
+        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings);
     }
 
     private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
@@ -520,7 +519,7 @@ public class GPivot extends GStateTableView {
         return PivotRendererType.valueOf(name).localize();
     }
 
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI, Integer valueHeight)/*-{
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI)/*-{
         var instance = this;
         var localizeRendererNames = function(renderers) {
             var localizedRenderers = {};
@@ -551,8 +550,9 @@ public class GPivot extends GStateTableView {
             aggregatorName: aggregatorName,
             inclusions: inclusions,
             showUI:showUI,
-            valueHeight:valueHeight + "px",
-            componentHeight:(parseInt(valueHeight) + 2) + "px",
+            valueHeight:@lsfusion.gwt.client.view.StyleDefaults::VALUE_HEIGHT_STRING,
+            componentHeight:@lsfusion.gwt.client.view.StyleDefaults::COMPONENT_HEIGHT,
+            cellHorizontalPadding:@lsfusion.gwt.client.view.StyleDefaults::CELL_HORIZONTAL_PADDING,
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             },

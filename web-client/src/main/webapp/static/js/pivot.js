@@ -1234,7 +1234,8 @@
         },
         sorters: {},
         valueHeight: null,
-        componentHeight: null
+        componentHeight: null,
+        cellHorizontalPadding: null
       };
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
       localeDefaults = {
@@ -1371,6 +1372,9 @@
               }).appendTo(controls).attr({
                 placeholder: placeholder,
                 "class": "pvtSearch"
+              }).css({
+                height: opts.valueHeight,
+                padding: "0 " + opts.cellHorizontalPadding + "px"
               }).bind("keyup", function() {
                 var accept, accept_gen, filter;
                 filter = $(this).val().toLowerCase().trim();
@@ -1403,13 +1407,17 @@
               controls.append($("<br>"));
               $("<button>", {
                 type: "button"
-              }).appendTo(controls).html(opts.localeStrings.selectAll).bind("click", function() {
+              }).appendTo(controls).html(opts.localeStrings.selectAll).css({
+                height: opts.componentHeight
+              }).bind("click", function() {
                 valueList.find("input:visible:not(:checked)").prop("checked", true).toggleClass("changed");
                 return false;
               });
               $("<button>", {
                 type: "button"
-              }).appendTo(controls).html(opts.localeStrings.selectNone).bind("click", function() {
+              }).appendTo(controls).html(opts.localeStrings.selectNone).css({
+                height: opts.componentHeight
+              }).bind("click", function() {
                 valueList.find("input:visible:checked").prop("checked", false).toggleClass("changed");
                 return false;
               });
@@ -1449,7 +1457,9 @@
           if (values.length <= opts.menuLimit) {
             $("<button>", {
               type: "button"
-            }).text(opts.localeStrings.apply).appendTo(finalButtons).bind("click", function() {
+            }).text(opts.localeStrings.apply).appendTo(finalButtons).css({
+              height: opts.componentHeight
+            }).bind("click", function() {
               if (valueList.find(".changed").removeClass("changed").length) {
                 refresh();
               }
@@ -1458,7 +1468,9 @@
           }
           $("<button>", {
             type: "button"
-          }).text(opts.localeStrings.cancel).appendTo(finalButtons).bind("click", function() {
+          }).text(opts.localeStrings.cancel).appendTo(finalButtons).css({
+            height: opts.componentHeight
+          }).bind("click", function() {
             valueList.find(".changed:checked").removeClass("changed").prop("checked", false);
             valueList.find(".changed:not(:checked)").removeClass("changed").prop("checked", true);
             return closeFilterBox();

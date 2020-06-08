@@ -683,6 +683,7 @@ callWithJQuery ($) ->
             sorters: {}
             valueHeight: null
             componentHeight: null
+            cellHorizontalPadding: null
 
         localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings)
         localeDefaults =
@@ -777,6 +778,9 @@ callWithJQuery ($) ->
                             placeholder = opts.localeStrings.filterResults
                             $("<input>", {type: "text"}).appendTo(controls)
                                 .attr({placeholder: placeholder, class: "pvtSearch"})
+                                .css
+                                    height: opts.valueHeight
+                                    padding: "0 " + opts.cellHorizontalPadding + "px" 
                                 .bind "keyup", ->
                                     filter = $(this).val().toLowerCase().trim()
                                     accept_gen = (prefix, accepted) -> (v) ->
@@ -801,12 +805,14 @@ callWithJQuery ($) ->
                             controls.append $("<br>")
                             $("<button>", {type:"button"}).appendTo(controls)
                                 .html(opts.localeStrings.selectAll)
+                                .css(height: opts.componentHeight)
                                 .bind "click", ->
                                     valueList.find("input:visible:not(:checked)")
                                         .prop("checked", true).toggleClass("changed")
                                     return false
                             $("<button>", {type:"button"}).appendTo(controls)
                                 .html(opts.localeStrings.selectNone)
+                                .css(height: opts.componentHeight)
                                 .bind "click", ->
                                     valueList.find("input:visible:checked")
                                         .prop("checked", false).toggleClass("changed")
@@ -847,13 +853,17 @@ callWithJQuery ($) ->
 
                     if values.length <= opts.menuLimit
                         $("<button>", {type: "button"}).text(opts.localeStrings.apply)
-                            .appendTo(finalButtons).bind "click", ->
+                            .appendTo(finalButtons)
+                            .css(height: opts.componentHeight)
+                            .bind "click", ->
                                 if valueList.find(".changed").removeClass("changed").length
                                     refresh()
                                 closeFilterBox()
 
                     $("<button>", {type: "button"}).text(opts.localeStrings.cancel)
-                        .appendTo(finalButtons).bind "click", ->
+                        .appendTo(finalButtons)
+                        .css(height: opts.componentHeight)
+                        .bind "click", ->
                             valueList.find(".changed:checked")
                                 .removeClass("changed").prop("checked", false)
                             valueList.find(".changed:not(:checked)")
