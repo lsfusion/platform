@@ -108,7 +108,7 @@ table.pvtTable tbody tr td {
     -moz-border-radius: var(--panel-border-radius);
 }
 
-.pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
+.pvtRows li div.pvtAttr, .pvtCols li div.pvtAttr {
     background: var(--selection-color);
 }
 
@@ -175,7 +175,6 @@ table.pvtTable tbody tr td {
 }
 
 .pvtAxisContainer li.pvtPlaceholder {
-    max-width: 50px;
     vertical-align: bottom;
     outline: 1px dashed var(--component-border-color);
     outline-offset: -1px;
@@ -187,7 +186,7 @@ table.pvtTable tbody tr td {
     margin: 4px;
 }
 
-.pvtAxisContainer li span.pvtAttr {
+.pvtAxisContainer li div.pvtAttr {
     -webkit-text-size-adjust: 100%;
     border: 1px solid var(--component-border-color);
     border-radius: var(--combobox-border-radius);
@@ -195,7 +194,7 @@ table.pvtTable tbody tr td {
     background-color: var(--component-background-color);
     padding: 0 5px;
     white-space: nowrap;
-    flex: 1 0 0;
+    display: flex;
     align-self: start;
     -webkit-border-radius: var(--combobox-border-radius);
     -moz-border-radius: var(--combobox-border-radius);
@@ -212,7 +211,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     padding: 2px;
 }
 
-.paxis li span.pvtAttr {
+.paxis li div.pvtAttr {
     background-color: var(--selection-color);
 }
 
@@ -236,6 +235,8 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 .pvtTriangle {
     cursor: pointer;
     color: var(--text-color);
+    align-self: center;
+    padding-left: 3px;
 }
 
 .pvtHorizList {
@@ -254,6 +255,19 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 .pvtUnused.pvtHorizList li {
     display: inline-flex;
     margin-right: 0;
+}
+
+.pvtUnused.pvtVertList li {
+    max-width: 150px;
+}
+
+.pvtAxisContainer li.pvtPlaceholder { /*should be after .pvtUnused.pvtVertList li*/
+    max-width: 50px;
+}
+
+.pvtUnused.pvtVertList .pvtAttrText {
+    white-space: normal;
+    overflow: hidden;
 }
 
 .pvtVertList > li.pvtPlaceholder {
@@ -362,6 +376,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .pvtRenderer {
     margin: 5px 0 5px 5px;
+    max-width: 150px;
 }
 
 .pvtAggregator {

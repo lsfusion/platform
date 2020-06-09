@@ -550,8 +550,8 @@ public class GPivot extends GStateTableView {
             aggregatorName: aggregatorName,
             inclusions: inclusions,
             showUI:showUI,
-            valueHeight:@lsfusion.gwt.client.view.StyleDefaults::VALUE_HEIGHT_STRING,
-            componentHeight:@lsfusion.gwt.client.view.StyleDefaults::COMPONENT_HEIGHT,
+            valueHeight:@lsfusion.gwt.client.view.StyleDefaults::VALUE_HEIGHT,
+            componentHeightString:@lsfusion.gwt.client.view.StyleDefaults::COMPONENT_HEIGHT_STRING,
             cellHorizontalPadding:@lsfusion.gwt.client.view.StyleDefaults::CELL_HORIZONTAL_PADDING,
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
