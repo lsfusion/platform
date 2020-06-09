@@ -63,7 +63,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         String eventType = event.getType();
         if (DBLCLICK.equals(eventType)) {
             stopPropagation(event);
-            table.headerClicked(this, event.getCtrlKey());
+            table.headerClicked(this, event.getCtrlKey(), event.getShiftKey());
         } else if (MOUSEMOVE.equals(eventType) || MOUSEDOWN.equals(eventType)) {
             if (resizeHelper == null) {
                 int mouseX = event.getClientX();

@@ -177,8 +177,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         propertyCaptions.put(propertyDraw, values);
     }
 
-    public void headerClicked(GGridPropertyTableHeader header, boolean withCtrl) {
-        sortableHeaderManager.headerClicked(getHeaderIndex(header), withCtrl);
+    public void headerClicked(GGridPropertyTableHeader header, boolean ctrlDown, boolean shiftDown) {
+        sortableHeaderManager.headerClicked(getHeaderIndex(header), ctrlDown, shiftDown);
         refreshHeaders();
     }
 

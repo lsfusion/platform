@@ -33,8 +33,7 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
 
     public final void mouseClicked(MouseEvent me) {
 
-        if (me.getClickCount() != 2) return;
-        if (!(me.getButton() == MouseEvent.BUTTON1 || me.getButton() == MouseEvent.BUTTON3)) return;
+        if (me.getClickCount() != 2 || me.getButton() != MouseEvent.BUTTON1) return;
 
         TableColumnModel columnModel = table.getColumnModel();
         int viewColumn = columnModel.getColumnIndexAtX(me.getX());
@@ -77,17 +76,16 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
             if (column != -1 && !(ignoreFirstColumn && column == 0)) {
                 T columnKey = getColumnKey(column);
                 Boolean sortDir = orderDirections.get(columnKey);
-                if (sortDir == null || !sortDir) {
-                    if (me.getButton() == MouseEvent.BUTTON1)
-                        changeOrder(columnKey, Order.REPLACE);
-                    else
+                if (me.isShiftDown()) {
+                    changeOrder(columnKey, Order.REMOVE);
+                } else if (me.isControlDown()) {
+                    if (sortDir == null) {
                         changeOrder(columnKey, Order.ADD);
-                } else {
-                    if (me.getButton() == MouseEvent.BUTTON1) {
-                        changeOrder(columnKey, Order.DIR);
                     } else {
-                        changeOrder(columnKey, Order.REMOVE);
+                        changeOrder(columnKey, Order.DIR);
                     }
+                } else {
+                    changeOrder(columnKey, Order.REPLACE);
                 }
             }
         }
@@ -118,8 +116,9 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
 
         switch (modiType) {
             case REPLACE:
+                boolean direction = orderDirections.getOrDefault(columnKey, false);
                 orderDirections.clear();
-                orderDirections.put(columnKey, true);
+                orderDirections.put(columnKey, !direction);
                 break;
             case ADD:
                 orderDirections.put(columnKey, true);

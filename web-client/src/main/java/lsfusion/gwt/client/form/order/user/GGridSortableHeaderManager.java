@@ -19,22 +19,20 @@ public abstract class GGridSortableHeaderManager<T> {
         this.ignoreFirstColumn = ignoreFirstColumn;
     }
 
-    public void headerClicked(int columnIndex, boolean withCtrl) {
+    public void headerClicked(int columnIndex, boolean ctrlDown, boolean shiftDown) {
         if (columnIndex != -1 && !(ignoreFirstColumn && columnIndex==0)) {
             T columnKey = getColumnKey(columnIndex);
             Boolean sortDir = orderDirections.get(columnKey);
-            if (sortDir == null || !sortDir) {
-                if (!withCtrl) {
-                    changeOrder(columnKey, GOrder.REPLACE);
-                } else {
+            if (shiftDown) {
+                changeOrder(columnKey, GOrder.REMOVE);
+            } else if (ctrlDown) {
+                if (sortDir == null) {
                     changeOrder(columnKey, GOrder.ADD);
+                } else {
+                    changeOrder(columnKey, GOrder.DIR);
                 }
             } else {
-                if (!withCtrl) {
-                    changeOrder(columnKey, GOrder.DIR);
-                } else {
-                    changeOrder(columnKey, GOrder.REMOVE);
-                }
+                changeOrder(columnKey, GOrder.REPLACE);
             }
         }
     }
@@ -57,8 +55,9 @@ public abstract class GGridSortableHeaderManager<T> {
 
         switch (modiType) {
             case REPLACE:
+                boolean direction = orderDirections.getOrDefault(columnKey, false);
                 orderDirections.clear();
-                orderDirections.put(columnKey, true);
+                orderDirections.put(columnKey, !direction);
                 break;
             case ADD:
                 orderDirections.put(columnKey, true);

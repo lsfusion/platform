@@ -332,7 +332,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public void changeOrder(OrderInstance property, Order modiType) {
         ImOrderMap<OrderInstance, Boolean> newOrders;
         if (modiType == Order.REPLACE) {
-            newOrders = MapFact.singletonOrder(property, false);
+            newOrders = MapFact.singletonOrder(property, userOrders.containsKey(property) && !userOrders.get(property));
         } else if (modiType == Order.REMOVE) {
             newOrders = userOrders.removeOrderIncl(property);
         } else if (modiType == Order.DIR) {
