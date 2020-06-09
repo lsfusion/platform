@@ -132,12 +132,11 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
     @Override
     protected ImMap<Property, Boolean> aspectUsedExtProps() {
-        FormEntity formEntity = getForm();
 
         MMap<Property, Boolean> mProps = MapFact.mMap(addValue);
-//       formEntity.getPropertyDrawsList() // we can't use actions, since there might be recursions + some hasFlow rely on that + for clean solution we need to use getEventAction instead of action itself
+//       getForm().getPropertyDrawsList() // we can't use actions, since there might be recursions + some hasFlow rely on that + for clean solution we need to use getEventAction instead of action itself
         // so we'll just add extra checks ChangeFlowType.HASINTERACTIVEFORM
-        for (PropertyDrawEntity<?> propertyDraw : this instanceof FormStaticAction ? formEntity.getStaticPropertyDrawsList() : SetFact.<PropertyDrawEntity<?>>EMPTY()) {
+        for (PropertyDrawEntity<?> propertyDraw : this instanceof FormStaticAction ? getForm().getStaticPropertyDrawsList() : SetFact.<PropertyDrawEntity<?>>EMPTY()) {
             if (this instanceof ExportAction)
                 mProps.add(propertyDraw.getValueProperty().property, false);
             else {
