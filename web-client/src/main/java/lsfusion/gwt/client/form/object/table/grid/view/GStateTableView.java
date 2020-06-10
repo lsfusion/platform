@@ -434,6 +434,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         protected native final JsArrayString getArrayString(String string) /*-{
             return this[string];
         }-*/;
+        protected native final JsArrayMixed getArrayMixed(String string) /*-{
+            return this[string];
+        }-*/;
         protected native final void putValue(String key, JavaScriptObject object) /*-{
             this[key] = object;
         }-*/;

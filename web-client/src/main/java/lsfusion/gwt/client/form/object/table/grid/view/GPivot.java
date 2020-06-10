@@ -252,7 +252,13 @@ public class GPivot extends GStateTableView {
             inclusions.putValue(COLUMN, measures);
         }
 
-        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, rendererName, aggregationName, settings);
+        JsArrayMixed sortCols = JsArrayString.createArray().cast();
+        LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = gridController.getDefaultOrders();
+        for(Map.Entry<GPropertyDraw, Boolean> order : defaultOrders.entrySet()) {
+            sortCols.push(createSortCol(columnCaptionMap.get(order.getKey()), order.getValue()));
+        }
+
+        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregationName, settings);
     }
 
     private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
@@ -437,6 +443,27 @@ public class GPivot extends GStateTableView {
             });
     }-*/;
 
+    private native WrapperObject overrideSortCols(WrapperObject config, JsArrayMixed sortCols)/*-{
+        return Object.assign({}, config, {
+            sortCols: sortCols
+        });
+    }-*/;
+
+    private static native JsArrayMixed remove(JsArrayMixed arr, SortCol sortCol) /*-{
+        Array.prototype.remove = function() {
+            var what, a = arguments, L = a.length, ax;
+            while (L && this.length) {
+                what = a[--L];
+                while ((ax = this.indexOf(what)) !== -1) {
+                    this.splice(ax, 1);
+                }
+            }
+            return this;
+        };
+
+        return arr.remove(sortCol);
+    }-*/;
+
     private List<String> createAggrColumns(WrapperObject inclusions) {
         JsArrayString columnValues = inclusions.getArrayString(COLUMN);
         if (columnValues == null)
@@ -510,6 +537,12 @@ public class GPivot extends GStateTableView {
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
 
+    private native void unwrapSort(com.google.gwt.dom.client.Element element) /*-{
+        $wnd.$(element).find(".dataGridHeaderCell-wrapsortdiv").each(function () {
+            @lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader::unwrapSort(*)(this);
+        })
+    }-*/;
+
     private native Element getElement(com.google.gwt.dom.client.Element element, String selector) /*-{
         return $wnd.$(element).find(selector).get(0);
     }-*/;
@@ -519,7 +552,7 @@ public class GPivot extends GStateTableView {
         return PivotRendererType.valueOf(name).localize();
     }
 
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, String rendererName, String aggregatorName, boolean showUI)/*-{
+    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, JsArrayMixed sortCols, String rendererName, String aggregatorName, boolean showUI)/*-{
         var instance = this;
         var localizeRendererNames = function(renderers) {
             var localizedRenderers = {};
@@ -549,6 +582,7 @@ public class GPivot extends GStateTableView {
             rendererName: rendererName,
             aggregatorName: aggregatorName,
             inclusions: inclusions,
+            sortCols: sortCols,
             showUI:showUI,
             valueHeight:@lsfusion.gwt.client.view.StyleDefaults::VALUE_HEIGHT,
             componentHeightString:@lsfusion.gwt.client.view.StyleDefaults::COMPONENT_HEIGHT_STRING,
@@ -716,6 +750,35 @@ public class GPivot extends GStateTableView {
         }
     }
 
+    private static class SortCol extends JavaScriptObject {
+
+        protected SortCol() {
+        }
+
+        public final native void init(Object value, boolean direction) /*-{
+            this['value'] = value;
+            this['direction'] = direction;
+        }-*/;
+
+        public final native Object getValue() /*-{
+            return this['value'];
+        }-*/;
+
+        public final native Boolean getDirection() /*-{
+            return this['direction'];
+        }-*/;
+
+        public final native void changeDirection() /*-{
+                this['direction'] = !this['direction'];
+        }-*/;
+    }
+
+    private SortCol createSortCol(Object value, boolean direction) {
+        SortCol sortCol = JavaScriptObject.createArray().cast();
+        sortCol.init(value, direction);
+        return sortCol;
+    }
+
     private final static String[] aggregatorNames = new String[]{"SUM", "MAX", "MIN"};
 
     public JavaScriptObject getAggregators(Aggregator aggregator) {
@@ -844,7 +907,8 @@ public class GPivot extends GStateTableView {
                 isLastCol = colSize == cols.length();
             }
 
-            Boolean sortDir = null;
+            SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), colKeyValues);
+            Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
                 GGridPropertyTableHeader.renderTD(jsElement, 0, sortDir, fromObject(value).toString());
             } else {
@@ -865,8 +929,10 @@ public class GPivot extends GStateTableView {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             renderArrow(jsElement, isExpanded);
         } else {
+            SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), attrName);
+            Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
-            GGridPropertyTableHeader.renderTD(jsElement, rowHeight, null, fromObject(value).toString());
+            GGridPropertyTableHeader.renderTD(jsElement, rowHeight, sortDir, fromObject(value).toString());
         }
     }
 
@@ -1198,16 +1264,16 @@ public class GPivot extends GStateTableView {
                 instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::cellDblClickAction(*)(rowKeyValues, colKeyValues, x, y);
             },
             
-            rowAttrHeaderDblClickHandler: function (th, rowKeyValues, attrName) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::attrHeaderDblClickAction(*)(rowKeyValues, true, th.textContent);
+            rowAttrHeaderDblClickHandler: function (th, rowKeyValues) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::rowAttrHeaderDblClickAction(*)(rowKeyValues, th.textContent);
             },
             
-            colAttrHeaderDblClickHandler: function (element, colKeyValues, isSubtotal) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::attrHeaderDblClickAction(*)(colKeyValues, false, element.textContent);
+            colAttrHeaderDblClickHandler: function (th, colKeyValues, ctrlKey, shiftKey) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::colAttrHeaderDblClickAction(*)(th, th.textContent, colKeyValues, ctrlKey, shiftKey);
             },
             
-            axisHeaderDblClickHandler: function (element, attrName) {
-                alert("key: " + attrName + ", val: " + element.textContent);
+            axisHeaderDblClickHandler: function (th, ctrlKey, shiftKey) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::colAttrHeaderDblClickAction(*)(th, th.textContent, th.textContent, ctrlKey, shiftKey);
             },
             
             renderValueCell: function (td, value, rowKeyValues, colKeyValues) {
@@ -1293,9 +1359,9 @@ public class GPivot extends GStateTableView {
         return false;
     }
 
-    private void attrHeaderDblClickAction(JsArrayString keysJsArray, boolean isRows, String value) {
-        List<String> keysArray = toArrayList(keysJsArray);
-        List<String> rowsOrCols = toArrayList(config.getArrayString(isRows ? "rows" : "cols"));
+    private void rowAttrHeaderDblClickAction(JsArrayString rowKeyValues, String value) {
+        List<String> keysArray = toArrayList(rowKeyValues);
+        List<String> rowsOrCols = toArrayList(config.getArrayString("rows"));
         String selectedColumn = rowsOrCols.get(keysArray.indexOf(value));
         if (selectedColumn != null) {
             Column column = columnMap.get(selectedColumn);
@@ -1335,6 +1401,47 @@ public class GPivot extends GStateTableView {
 
     private boolean isSystemColumn(JsArrayMixed row, Integer headerIndex) {
         return row.length() <= headerIndex;
+    }
+
+    private void colAttrHeaderDblClickAction(Element th, String textContent, Object colKeyValues, boolean ctrlKey, boolean shiftKey) {
+
+        JsArrayMixed sortCols = config.getArrayMixed("sortCols");
+        if(sortCols == null || !ctrlKey) {
+            sortCols = JsArrayString.createArray().cast();
+        }
+
+        SortCol sortCol = findSortCol(sortCols, colKeyValues);
+
+        if (shiftKey) {
+            sortCols = remove(sortCols, sortCol);
+            sortCol = null;
+        } else {
+            if (sortCol == null) {
+                sortCol = createSortCol(colKeyValues, true);
+                sortCols.push(sortCol);
+            } else {
+                sortCol.changeDirection();
+            }
+            if(!ctrlKey) {
+                unwrapSort(rendererElement);
+            }
+        }
+        th.removeAllChildren();
+        GGridPropertyTableHeader.renderTD(th, 0, sortCol != null ? sortCol.getDirection() : null, textContent);
+
+        config = overrideSortCols(config, sortCols);
+    }
+
+    private SortCol findSortCol(JsArrayMixed sortCols, Object value) {
+        if(sortCols != null) {
+            for (int i = 0; i < sortCols.length(); i++) {
+                SortCol sortCol = sortCols.getObject(i);
+                if (sortCol.getValue().equals(value)) {
+                    return sortCol;
+                }
+            }
+        }
+        return null;
     }
 
     private ArrayList<String> toArrayList(JsArrayMixed jsArray) {

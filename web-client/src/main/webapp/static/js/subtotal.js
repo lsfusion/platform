@@ -269,7 +269,7 @@
         }
         textElement.ondblclick = function(event) {
           if (callbacks != null) {
-            return callbacks.axisHeaderDblClickHandler(textElement, attr);
+            return callbacks.axisHeaderDblClickHandler(textElement, event.ctrlKey, event.shiftKey);
           }
         };
         renderColAxisHeader(th, textContent, attr, isExpanded, false);
@@ -300,7 +300,7 @@
         if (!isArrow) {
           th.ondblclick = function(event) {
             if (callbacks != null) {
-              return callbacks.axisHeaderDblClickHandler(th, attr);
+              return callbacks.axisHeaderDblClickHandler(th, event.ctrlKey, event.shiftKey);
             }
           };
         }
@@ -320,7 +320,7 @@
         if (!isArrow) {
           th.ondblclick = function(event) {
             if (callbacks != null) {
-              return callbacks.rowAttrHeaderDblClickHandler(th, rowKey, cellAttr);
+              return callbacks.rowAttrHeaderDblClickHandler(th, rowKey);
             }
           };
         }
@@ -344,7 +344,7 @@
         }
         textElement.ondblclick = function(event) {
           if (callbacks != null) {
-            return callbacks.colAttrHeaderDblClickHandler(textElement, colKey, isSubtotal);
+            return callbacks.colAttrHeaderDblClickHandler(th, colKey, event.ctrlKey, event.shiftKey);
           }
         };
         if (colKey.length === colAttrs.length || isSubtotal || colKey.length === 0) {
