@@ -449,19 +449,8 @@ public class GPivot extends GStateTableView {
         });
     }-*/;
 
-    private static native JsArrayMixed remove(JsArrayMixed arr, SortCol sortCol) /*-{
-        Array.prototype.remove = function() {
-            var what, a = arguments, L = a.length, ax;
-            while (L && this.length) {
-                what = a[--L];
-                while ((ax = this.indexOf(what)) !== -1) {
-                    this.splice(ax, 1);
-                }
-            }
-            return this;
-        };
-
-        return arr.remove(sortCol);
+    private static native void remove(JsArrayMixed sortCols, SortCol sortCol) /*-{
+        sortCols.splice(sortCols.indexOf(sortCol), 1);
     }-*/;
 
     private List<String> createAggrColumns(WrapperObject inclusions) {
@@ -535,12 +524,6 @@ public class GPivot extends GStateTableView {
 
     private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
-    }-*/;
-
-    private native void unwrapSort(com.google.gwt.dom.client.Element element) /*-{
-        $wnd.$(element).find(".dataGridHeaderCell-wrapsortdiv").each(function () {
-            @lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader::unwrapSort(*)(this);
-        })
     }-*/;
 
     private native Element getElement(com.google.gwt.dom.client.Element element, String selector) /*-{
@@ -907,7 +890,7 @@ public class GPivot extends GStateTableView {
                 isLastCol = colSize == cols.length();
             }
 
-            SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), colKeyValues);
+            SortCol sortCol = isSortColumn(isSubtotal, colKeyValues) ? findSortCol(config.getArrayMixed("sortCols"), colKeyValues) : null;
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
                 GGridPropertyTableHeader.renderTD(jsElement, 0, sortDir, fromObject(value).toString());
@@ -922,7 +905,7 @@ public class GPivot extends GStateTableView {
                 renderAttrCell(jsElement, value, lastRenderCol);
             }
         }
-    } 
+    }
     
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
@@ -1260,20 +1243,22 @@ public class GPivot extends GStateTableView {
         var instance = this;
         
         return {
-            valueCellDblClickHandler: function (td, rowKeyValues, colKeyValues, x, y) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::cellDblClickAction(*)(rowKeyValues, colKeyValues, x, y);
+            valueCellDblClickHandler: function (event, td, rowKeyValues, colKeyValues) {
+                instance.@GPivot::cellDblClickAction(*)(rowKeyValues, colKeyValues, event.clientX, event.clientY);
             },
             
-            rowAttrHeaderDblClickHandler: function (th, rowKeyValues) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::rowAttrHeaderDblClickAction(*)(rowKeyValues, th.textContent);
+            rowAttrHeaderDblClickHandler: function (th, rowKeyValues, attrName) {
+                instance.@GPivot::rowAttrHeaderDblClickAction(*)(rowKeyValues, th.textContent);
             },
             
-            colAttrHeaderDblClickHandler: function (th, colKeyValues, ctrlKey, shiftKey) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::colAttrHeaderDblClickAction(*)(th, th.textContent, colKeyValues, ctrlKey, shiftKey);
+            colAttrHeaderDblClickHandler: function (event, element, colKeyValues, isSubtotal) {
+                if(instance.@GPivot::isSortColumn(*)(isSubtotal, colKeyValues)) {
+                    instance.@GPivot::colAttrHeaderDblClickAction(*)(colKeyValues, event.ctrlKey, event.shiftKey);
+                }
             },
             
-            axisHeaderDblClickHandler: function (th, ctrlKey, shiftKey) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::colAttrHeaderDblClickAction(*)(th, th.textContent, th.textContent, ctrlKey, shiftKey);
+            axisHeaderDblClickHandler: function (event, element, attrName) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::colAttrHeaderDblClickAction(*)(attrName, event.ctrlKey, event.shiftKey);
             },
             
             renderValueCell: function (td, value, rowKeyValues, colKeyValues) {
@@ -1403,46 +1388,65 @@ public class GPivot extends GStateTableView {
         return row.length() <= headerIndex;
     }
 
-    private void colAttrHeaderDblClickAction(Element th, String textContent, Object colKeyValues, boolean ctrlKey, boolean shiftKey) {
+    private void colAttrHeaderDblClickAction(Object element, boolean ctrlKey, boolean shiftKey) {
 
         JsArrayMixed sortCols = config.getArrayMixed("sortCols");
-        if(sortCols == null || !ctrlKey) {
-            sortCols = JsArrayString.createArray().cast();
+        if(sortCols == null) {
+            sortCols = JsArrayMixed.createArray().cast();
         }
 
-        SortCol sortCol = findSortCol(sortCols, colKeyValues);
-
+        SortCol sortCol = findSortCol(sortCols, element);
         if (shiftKey) {
-            sortCols = remove(sortCols, sortCol);
-            sortCol = null;
-        } else {
+            remove(sortCols, sortCol);
+        } else if(ctrlKey) {
             if (sortCol == null) {
-                sortCol = createSortCol(colKeyValues, true);
-                sortCols.push(sortCol);
+                sortCols.push(createSortCol(element, true));
             } else {
                 sortCol.changeDirection();
             }
-            if(!ctrlKey) {
-                unwrapSort(rendererElement);
-            }
+        } else {
+            boolean direction = sortCol != null ? sortCol.getDirection() : false;
+            sortCols = JsArrayMixed.createArray().cast();
+            sortCols.push(createSortCol(element, !direction));
         }
-        th.removeAllChildren();
-        GGridPropertyTableHeader.renderTD(th, 0, sortCol != null ? sortCol.getDirection() : null, textContent);
 
         config = overrideSortCols(config, sortCols);
+        updateView(true, null);
+    }
+
+    private boolean isSortColumn(boolean isSubtotal, JsArrayString colKeyValues) {
+        return isSubtotal || colKeyValues.length() == config.getArrayString("cols").length();
     }
 
     private SortCol findSortCol(JsArrayMixed sortCols, Object value) {
         if(sortCols != null) {
             for (int i = 0; i < sortCols.length(); i++) {
                 SortCol sortCol = sortCols.getObject(i);
-                if (sortCol.getValue().equals(value)) {
+                if (equals(sortCol.getValue(), value)) {
                     return sortCol;
                 }
             }
         }
         return null;
     }
+
+    private boolean equals(Object a, Object b) {
+        if(a instanceof JsArrayMixed && b instanceof JsArrayMixed) {
+            return arraysEquals((JsArrayMixed) a, (JsArrayMixed) b);
+        } else {
+            return a.equals(b);
+        }
+    };
+
+    private native boolean arraysEquals(JsArrayMixed a, JsArrayMixed b)/*-{
+        if (a === b) return true;
+        if (a.length !== b.length) return false;
+
+        for (var i = 0; i < a.length; ++i) {
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
+    }-*/;
 
     private ArrayList<String> toArrayList(JsArrayMixed jsArray) {
         ArrayList<String> arrayList = new ArrayList<>();

@@ -187,18 +187,6 @@ public class GGridPropertyTableHeader extends Header<String> {
         return wrappedTh;
     }
 
-    public static void unwrapSort(Element th) {
-        Element parent = th.getParentElement();
-        th.removeFromParent();
-        for (int i = th.getChildCount() - 1; i >= 0; i--) {
-            Element child = (Element) th.getChild(i);
-            if (child.hasClassName("dataGridHeaderCell-caption")) {
-                child.removeClassName("dataGridHeaderCell-sortdiv");
-                parent.appendChild(child);
-            }
-        }
-    }
-
     private static void renderCaption(Element captionElement, String caption) {
         captionElement.setInnerText(caption == null ? "" : EscapeUtils.unicodeEscape(caption));
     }
