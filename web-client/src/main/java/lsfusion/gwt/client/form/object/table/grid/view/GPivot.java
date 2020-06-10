@@ -302,7 +302,7 @@ public class GPivot extends GStateTableView {
 
     public static native void exportToExcel(Element element)
         /*-{
-            var pvtTable = element.getElementsByClassName("pvtTable")[0];
+            var pvtTable = element.getElementsByClassName("subtotalouterdiv")[0];
 
             //set bold
             Array.from(pvtTable.querySelectorAll("th.pvtAxisLabel, th.pvtColLabel, th.pvtTotalLabel, th.pvtTotalLabel, th.pvtRowLabel, td.pvtTotal, td.pvtRowSubtotal, td.pvtGrandTotal")).forEach(function (item) {
@@ -337,7 +337,7 @@ public class GPivot extends GStateTableView {
             var docDefinition = {
                 pageOrientation: 'landscape',
                 content: [
-                    $wnd.htmlToPdfmake(element.getElementsByClassName("pvtTable")[0].outerHTML)
+                    $wnd.htmlToPdfmake(element.getElementsByClassName("subtotalouterdiv")[0].outerHTML)
                 ]
             };
             $wnd.pdfMake.createPdf(docDefinition).download('lsfReport.pdf');
