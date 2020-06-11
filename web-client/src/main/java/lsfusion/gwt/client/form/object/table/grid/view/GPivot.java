@@ -1377,7 +1377,7 @@ public class GPivot extends GStateTableView {
             boolean found = true;
             for (int j = 0; j < keysArray.size(); j++) {
                 Integer headerIndex = headerIndexes.get(j);
-                if (!isSystemColumn(row, headerIndex) && !row.getString(headerIndex).equals(keysArray.get(j))) {
+                if (!isSystemColumn(row, headerIndex) && !equals(row.getString(headerIndex), keysArray.get(j))) {
                     found = false;
                     break;
                 }
@@ -1440,7 +1440,8 @@ public class GPivot extends GStateTableView {
         if(a instanceof JsArrayMixed && b instanceof JsArrayMixed) {
             return arraysEquals((JsArrayMixed) a, (JsArrayMixed) b);
         } else {
-            return a.equals(b);
+            if(a == null && b == null) return true;
+            return a != null && a.equals(b);
         }
     };
 
