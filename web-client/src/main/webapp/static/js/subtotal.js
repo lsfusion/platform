@@ -235,7 +235,7 @@
         td = createElement("td", className, attributes, eventHandlers);
         td.ondblclick = function(event) {
           if (callbacks != null) {
-            return callbacks.valueCellDblClickHandler(td, rowKey, colKey, event.clientX, event.clientY);
+            return callbacks.valueCellDblClickHandler(event, td, rowKey, colKey);
           }
         };
         renderValueCell(td, value, rowKey, colKey, aggregator);
@@ -269,7 +269,7 @@
         }
         textElement.ondblclick = function(event) {
           if (callbacks != null) {
-            return callbacks.axisHeaderDblClickHandler(textElement, attr);
+            return callbacks.axisHeaderDblClickHandler(event, textElement, attr);
           }
         };
         renderColAxisHeader(th, textContent, attr, isExpanded, false);
@@ -300,7 +300,7 @@
         if (!isArrow) {
           th.ondblclick = function(event) {
             if (callbacks != null) {
-              return callbacks.axisHeaderDblClickHandler(th, attr);
+              return callbacks.axisHeaderDblClickHandler(event, th, attr);
             }
           };
         }
@@ -344,7 +344,7 @@
         }
         textElement.ondblclick = function(event) {
           if (callbacks != null) {
-            return callbacks.colAttrHeaderDblClickHandler(textElement, colKey, isSubtotal);
+            return callbacks.colAttrHeaderDblClickHandler(event, textElement, colKey, isSubtotal);
           }
         };
         if (colKey.length === colAttrs.length || isSubtotal || colKey.length === 0) {
