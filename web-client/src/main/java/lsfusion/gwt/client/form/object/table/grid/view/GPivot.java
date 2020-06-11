@@ -934,7 +934,7 @@ public class GPivot extends GStateTableView {
         jsElement.removeAllChildren();
         if(isExpanded != null) {
             ImageElement img = Document.get().createImageElement();
-            img.setSrc(getModuleImagePath(isExpanded ? ICON_OPEN : ICON_CLOSED));
+            GwtClientUtils.setThemeImage(isExpanded ? ICON_OPEN : ICON_CLOSED, img::setSrc);
             jsElement.appendChild(img);
         }
     }
