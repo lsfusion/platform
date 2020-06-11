@@ -1,7 +1,9 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.*;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -27,7 +29,12 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
+
 public class GPivot extends GStateTableView {
+
+    private final String ICON_OPEN = "tree_open.png";
+    private final String ICON_CLOSED = "tree_closed.png";
 
     public GPivot(GFormController formController, GGridController gridController) {
         super(formController, gridController);
@@ -924,17 +931,12 @@ public class GPivot extends GStateTableView {
     }
 
     private void renderArrow(Element jsElement, Boolean isExpanded) {
-        jsElement.setPropertyString("textContent", getArrow(isExpanded));
-    }
-
-    private static String getArrow(Boolean isExpanded) {
-        final String arrowCollapsed = " \u25B6 ";
-        final String arrowExpanded = " \u25E2 ";
-
-        String arrow = "";
-        if (isExpanded != null)
-            arrow = isExpanded ? arrowExpanded : arrowCollapsed;
-        return arrow;
+        jsElement.removeAllChildren();
+        if(isExpanded != null) {
+            ImageElement img = Document.get().createImageElement();
+            img.setSrc(getModuleImagePath(isExpanded ? ICON_OPEN : ICON_CLOSED));
+            jsElement.appendChild(img);
+        }
     }
 
     private int getArrowColumnWidth(int arrowLevels) {
