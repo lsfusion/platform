@@ -164,7 +164,7 @@ callWithJQuery ($) ->
                 createArrowAndTextDivs th, "axisHeaderArrowDiv", "axisHeaderTextDiv"
                 textElement = th.textDiv
                     
-            textElement.ondblclick = (event) -> callbacks.axisHeaderDblClickHandler event, textElement, attr if callbacks?
+            textElement.ondblclick = (event) -> callbacks.colAxisHeaderDblClickHandler event, textElement, attr if callbacks?
             renderColAxisHeader th, textContent, attr, isExpanded, false
             return th
             
@@ -186,7 +186,7 @@ callWithJQuery ($) ->
         createRowAxisHeaderTH = (attr, className, textContent, isArrow, isExpanded, attributes) ->
             th = createElement "th", className, attributes
             if not isArrow
-                th.ondblclick = (event) -> callbacks.axisHeaderDblClickHandler event, th, attr if callbacks?
+                th.ondblclick = (event) -> callbacks.rowAxisHeaderDblClickHandler event, th, attr if callbacks?
             renderRowAxisHeader th, textContent, attr, isArrow, isExpanded
             return th
             
@@ -199,7 +199,7 @@ callWithJQuery ($) ->
         createRowAttrHeaderTH = (rowKey, cellAttr, className, value, isArrow, isExpanded, attributes) ->
             th = createElement "th", className, attributes
             if not isArrow
-                th.ondblclick = (event) -> callbacks.rowAttrHeaderDblClickHandler th, rowKey, cellAttr if callbacks?
+                th.ondblclick = (event) -> callbacks.rowAttrHeaderDblClickHandler event, th, rowKey, cellAttr if callbacks?
             renderRowAttrHeader th, value, rowKey, cellAttr, isArrow, isExpanded
             return th
 

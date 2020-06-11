@@ -1247,7 +1247,7 @@ public class GPivot extends GStateTableView {
                 instance.@GPivot::cellDblClickAction(*)(rowKeyValues, colKeyValues, event.clientX, event.clientY);
             },
             
-            rowAttrHeaderDblClickHandler: function (th, rowKeyValues, attrName) {
+            rowAttrHeaderDblClickHandler: function (event, th, rowKeyValues, attrName) {
                 instance.@GPivot::rowAttrHeaderDblClickAction(*)(rowKeyValues, th.textContent);
             },
             
@@ -1257,8 +1257,12 @@ public class GPivot extends GStateTableView {
                 }
             },
             
-            axisHeaderDblClickHandler: function (event, element, attrName) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::colAttrHeaderDblClickAction(*)(attrName, event.ctrlKey, event.shiftKey);
+            colAxisHeaderDblClickHandler: function (event, element, attrName) {
+                //nothing
+            },
+
+            rowAxisHeaderDblClickHandler: function (event, element, attrName) {rowattrs
+                instance.@GPivot::colAttrHeaderDblClickAction(*)(attrName, event.ctrlKey, event.shiftKey);
             },
             
             renderValueCell: function (td, value, rowKeyValues, colKeyValues) {
@@ -1415,7 +1419,7 @@ public class GPivot extends GStateTableView {
     }
 
     private boolean isSortColumn(boolean isSubtotal, JsArrayString colKeyValues) {
-        return isSubtotal || colKeyValues.length() == config.getArrayString("cols").length();
+        return isSubtotal || colKeyValues.length() == 0 || colKeyValues.length() == config.getArrayString("cols").length();
     }
 
     private SortCol findSortCol(JsArrayMixed sortCols, Object value) {

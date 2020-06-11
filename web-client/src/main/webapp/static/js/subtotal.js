@@ -269,7 +269,7 @@
         }
         textElement.ondblclick = function(event) {
           if (callbacks != null) {
-            return callbacks.axisHeaderDblClickHandler(event, textElement, attr);
+            return callbacks.colAxisHeaderDblClickHandler(event, textElement, attr);
           }
         };
         renderColAxisHeader(th, textContent, attr, isExpanded, false);
@@ -300,7 +300,7 @@
         if (!isArrow) {
           th.ondblclick = function(event) {
             if (callbacks != null) {
-              return callbacks.axisHeaderDblClickHandler(event, th, attr);
+              return callbacks.rowAxisHeaderDblClickHandler(event, th, attr);
             }
           };
         }
@@ -320,7 +320,7 @@
         if (!isArrow) {
           th.ondblclick = function(event) {
             if (callbacks != null) {
-              return callbacks.rowAttrHeaderDblClickHandler(th, rowKey, cellAttr);
+              return callbacks.rowAttrHeaderDblClickHandler(event, th, rowKey, cellAttr);
             }
           };
         }
