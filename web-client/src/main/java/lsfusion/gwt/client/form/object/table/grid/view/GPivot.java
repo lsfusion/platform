@@ -1261,7 +1261,7 @@ public class GPivot extends GStateTableView {
                 //nothing
             },
 
-            rowAxisHeaderDblClickHandler: function (event, element, attrName) {rowattrs
+            rowAxisHeaderDblClickHandler: function (event, element, attrName) {
                 instance.@GPivot::colAttrHeaderDblClickAction(*)(attrName, event.ctrlKey, event.shiftKey);
             },
             
