@@ -85,7 +85,7 @@
         <httpcomponents.httpclient-android.version>4.3.5.1</httpcomponents.httpclient-android.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
-        <gwt.version>2.8.2-patched-1</gwt.version>
+        <gwt.version>2.9.0-patched-1</gwt.version>
 
         <smartgwt.version>3.0p</smartgwt.version>
         <gwt.log.version>3.3.2</gwt.log.version>
@@ -101,8 +101,6 @@
 
         <javax.xml.bind.version>2.3.0</javax.xml.bind.version>
 
-        <asm.version>5.0.4</asm.version>
-
         <tess4j.version>4.3.1</tess4j.version>
         <pdfbox.version>2.0.12</pdfbox.version>
         <fax4j.version>0.44.2</fax4j.version>
@@ -112,11 +110,6 @@
     <dependencyManagement>
         <dependencies>
             <!--Common libraries-->
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
@@ -214,8 +207,8 @@
                 <version>${jasper.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>eclipse</groupId>
-                        <artifactId>jdtcore</artifactId>
+                        <groupId>org.eclipse.jdt</groupId>
+                        <artifactId>org.eclipse.jdt.core</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -665,7 +658,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>gwt-maven-plugin</artifactId>
-                    <version>2.8.2</version>
+                    <version>2.9.0</version>
                     <executions>
                         <execution>
                             <phase>compile</phase>
