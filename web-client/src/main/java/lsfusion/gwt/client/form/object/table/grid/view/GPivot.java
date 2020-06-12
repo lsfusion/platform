@@ -1250,7 +1250,7 @@ public class GPivot extends GStateTableView {
             },
             
             rowAttrHeaderDblClickHandler: function (event, th, rowKeyValues, attrName) {
-                instance.@GPivot::rowAttrHeaderDblClickAction(*)(rowKeyValues, th.textContent);
+                instance.@GPivot::rowAttrHeaderDblClickAction(*)(rowKeyValues, attrName);
             },
             
             colAttrHeaderDblClickHandler: function (event, element, colKeyValues, isSubtotal) {
@@ -1350,34 +1350,32 @@ public class GPivot extends GStateTableView {
         return false;
     }
 
-    private void rowAttrHeaderDblClickAction(JsArrayString rowKeyValues, String value) {
-        List<String> keysArray = toArrayList(rowKeyValues);
-        List<String> rowsOrCols = toArrayList(config.getArrayString("rows"));
-        String selectedColumn = rowsOrCols.get(keysArray.indexOf(value));
-        if (selectedColumn != null) {
-            Column column = columnMap.get(selectedColumn);
-            Integer rowIndex = getRowIndex(keysArray, rowsOrCols);
+    private void rowAttrHeaderDblClickAction(JsArrayString rowKeyValues, String attrName) {
+        if(rowKeyValues.length() > 0) {
+            Column column = columnMap.get(attrName);
+            Integer rowIndex = getRowIndex(rowKeyValues);
             if (column != null && rowIndex != null) {
                 form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
             }
         }
     }
 
-    private Integer getRowIndex(List<String> keysArray, List<String> rowsOrCols) {
+    private Integer getRowIndex(JsArrayString rowKeyValues) {
+        JsArrayString rows = config.getArrayString("rows");
         JsArray<JsArrayMixed> data = getData(columnMap, Aggregator.create(), aggrCaptions, JavaScriptObject.createArray().cast(), false, false);
         ArrayList<String> headers = toArrayList(data.get(0));
         List<Integer> headerIndexes = new ArrayList<>();
-        for (String rowOrCol : rowsOrCols) {
-            headerIndexes.add(headers.indexOf(rowOrCol));
+        for (int i = 0; i < rows.length(); i++) {
+            headerIndexes.add(headers.indexOf(rows.get(i)));
         }
 
         Integer rowIndex = 0;
         for (int i = 1; i < data.length(); i++) {
             JsArrayMixed row = data.get(i);
             boolean found = true;
-            for (int j = 0; j < keysArray.size(); j++) {
+            for (int j = 0; j < rowKeyValues.length(); j++) {
                 Integer headerIndex = headerIndexes.get(j);
-                if (!isSystemColumn(row, headerIndex) && !equals(row.getString(headerIndex), keysArray.get(j))) {
+                if (!isSystemColumn(row, headerIndex) && !equals(row.getString(headerIndex), rowKeyValues.get(j))) {
                     found = false;
                     break;
                 }
@@ -1459,14 +1457,6 @@ public class GPivot extends GStateTableView {
         ArrayList<String> arrayList = new ArrayList<>();
         for(int i = 0; i < jsArray.length(); i++) {
             arrayList.add(jsArray.getString(i));
-        }
-        return arrayList;
-    }
-
-    private ArrayList<String> toArrayList(JsArrayString jsArray) {
-        ArrayList<String> arrayList = new ArrayList<>();
-        for(int i = 0; i < jsArray.length(); i++) {
-            arrayList.add(jsArray.get(i));
         }
         return arrayList;
     }
