@@ -1,5 +1,6 @@
 package lsfusion.server.physics.admin.reflection;
 
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
@@ -8,7 +9,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.property.focus.CurrentFormProperty;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
@@ -185,10 +185,10 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final StringClass navigatorElementCanonicalNameClass = StringClass.getv(100);
     public final StringClass navigatorElementCaptionClass = StringClass.get(250);
     public final StringClass formCanonicalNameClass = StringClass.getv(100);
-    public final StringClass actionCanonicalNameClass = StringClass.get(512);
+    public final StringClass actionCanonicalNameClass = StringClass.get(ExtInt.UNLIMITED);
     public final StringClass formCaptionClass = StringClass.getv(250);
     public final StringClass propertySIDValueClass = StringClass.get(100);
-    public final StringClass propertyCanonicalNameValueClass = StringClass.get(512);
+    public final StringClass propertyCanonicalNameValueClass = StringClass.get(ExtInt.UNLIMITED);
     public final StringClass propertyCaptionValueClass = StringClass.get(250);
     public final StringClass propertyClassValueClass = StringClass.get(100);
     public final StringClass propertyTableValueClass = StringClass.get(100);
@@ -259,8 +259,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         classProperty = findProperty("class[Property]");
         complexityProperty = findProperty("complexity[Property]");
         captionProperty = findProperty("caption[Property]");
-        propertyCanonicalName = findProperty("propertyCanonicalName[STRING[512]]");
-        actionCanonicalName = findProperty("actionCanonicalName[STRING[512]]");
+        propertyCanonicalName = findProperty("propertyCanonicalName[STRING]");
+        actionCanonicalName = findProperty("actionCanonicalName[STRING]");
         propertyTableSID = findProperty("propertyTable[STRING[100],STRING[100]]");
         quantityProperty = findProperty("quantity[Property]");
         quantityTopProperty = findProperty("quantityTop[Property]");

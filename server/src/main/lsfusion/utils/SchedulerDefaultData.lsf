@@ -17,7 +17,7 @@ loadDefaultScheduledTask '{scheduler.default.data.load.default.scheduled.task}'(
     }
 }
 
-loadDefaultScheduledTaskDetail '{scheduler.default.data.load.default.scheduled.task.detail}'(STRING[100] iname, INTEGER order, STRING[512] prop)  { 
+loadDefaultScheduledTaskDetail '{scheduler.default.data.load.default.scheduled.task.detail}'(STRING[100] iname, INTEGER order, STRING prop)  { 
     NEW d = UserScheduledTaskDetail {
         order(d) <- order;
         active(d) <- TRUE;

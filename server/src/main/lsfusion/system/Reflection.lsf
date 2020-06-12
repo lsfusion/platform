@@ -67,8 +67,8 @@ TABLE action (Action);
 
 parent '{reflection.parent.action.or.property}' = DATA PropertyGroup (ActionOrProperty);
 number '{reflection.number.action.or.property}' = DATA INTEGER (ActionOrProperty) CHARWIDTH 8;
-canonicalName '{reflection.canonical.name.property}' = DATA BPSTRING[512] (Property) IN id;
-canonicalName '{reflection.canonical.name.action}' = DATA BPSTRING[512] (Action) IN id;
+canonicalName '{reflection.canonical.name.property}' = DATA BPSTRING (Property) IN id;
+canonicalName '{reflection.canonical.name.action}' = DATA BPSTRING (Action) IN id;
 canonicalName '{reflection.canonical.name.action.or.property}' (ActionOrProperty p) = MULTI canonicalName[Property](p), canonicalName[Action](p);
 caption '{reflection.caption.action.or.property}' = DATA ISTRING[250] (ActionOrProperty) IN base;
 annotation '{reflection.annotation.action.or.property}' = DATA STRING[100] (ActionOrProperty);
