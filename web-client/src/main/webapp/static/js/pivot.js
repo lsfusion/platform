@@ -1492,9 +1492,7 @@
           listItem.css({
             lineHeight: opts.valueHeight + "px"
           });
-          attrElem = $("<div>").addClass('pvtAttr').data("attrName", attr).css({
-            maxHeight: (opts.valueHeight * 2) + "px"
-          }).appendTo(listItem);
+          attrElem = $("<div>").addClass('pvtAttr').data("attrName", attr).appendTo(listItem);
           attrElemText = $("<span>").addClass('pvtAttrText').text(attr).prop("title", attr).appendTo(attrElem);
           attrElem.append(triangleLink);
           if (hasExcludedItem) {

@@ -257,17 +257,14 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     margin-right: 0;
 }
 
-.pvtUnused.pvtVertList li {
-    max-width: 150px;
-}
-
 .pvtAxisContainer li.pvtPlaceholder { /*should be after .pvtUnused.pvtVertList li*/
     max-width: 50px;
 }
 
-.pvtUnused.pvtVertList .pvtAttrText {
-    white-space: normal;
+.pvtAttrText {
     overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 125px;
 }
 
 .pvtVertList > li.pvtPlaceholder {
