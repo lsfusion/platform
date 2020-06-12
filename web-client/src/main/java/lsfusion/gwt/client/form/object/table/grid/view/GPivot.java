@@ -334,9 +334,11 @@ public class GPivot extends GStateTableView {
                 var dataMax = 0;
                 var column = worksheet.columns[i];
                 for (var j = 1; j < column.values.length; j += 1) {
-                    var columnLength = column.values[j].length;
-                    if (columnLength > dataMax) {
-                        dataMax = columnLength;
+                    var columnValue = column.values[j];
+                    if(columnValue != null) {
+                        if (columnValue.length > dataMax) {
+                            dataMax = columnValue.length;
+                        }
                     }
                 }
                 column.width = (dataMax < 10 ? 10 : dataMax) * 1.2; //1.2 is magic coefficient to better fit width
