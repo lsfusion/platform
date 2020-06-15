@@ -660,7 +660,7 @@
         this.allTotal = this.aggregator(this, [], []);
         this.sorted = false;
         this.callbacks = opts.callbacks;
-        this.sortItems = (ref10 = opts.sortItems) != null ? ref10 : [];
+        this.sortItems = (ref10 = opts.sortCols) != null ? ref10 : [];
         PivotData.forEachRecord(this.input, this.derivedAttributes, (function(_this) {
           return function(record) {
             if (_this.filter(record)) {
@@ -1690,8 +1690,7 @@
               cols: [],
               rows: [],
               dataClass: opts.dataClass,
-              callbacks: opts.callbacks,
-              sortItems: opts.sortCols
+              callbacks: opts.callbacks
             };
             subopts.rendererOptions.rowSubtotalDisplay = {
               splitPositions: opts.splitRows
@@ -1795,6 +1794,8 @@
             if (opts.onRefresh != null) {
               opts.onRefresh(pivotUIOptions);
             }
+            opts.sortCols = pivotUIOptions.sortCols;
+            subopts.sortCols = opts.sortCols;
             pivotScrollDiv.pivot(materializedInput, subopts, locale);
             if (opts.afterRefresh != null) {
               opts.afterRefresh();

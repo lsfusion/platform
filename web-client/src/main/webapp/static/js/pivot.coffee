@@ -321,7 +321,7 @@ callWithJQuery ($) ->
             @allTotal = @aggregator(this, [], [])
             @sorted = false
             @callbacks = opts.callbacks
-            @sortItems = opts.sortItems ? []
+            @sortItems = opts.sortCols ? []
             
             # iterate through input, accumulating data for cells
             PivotData.forEachRecord @input, @derivedAttributes, (record) =>
@@ -1058,12 +1058,12 @@ callWithJQuery ($) ->
                     opts.splitCols = newSplitPaxis
                 else
                     opts.splitRows = newSplitPaxis
-
+            
             #set up for refreshing
             refreshDelayed = =>
                 refreshPaxis(true)
                 refreshPaxis(false)
-
+                
                 @find(".pvtAxisContainer").sortable
                     update: (e, ui) -> refresh() if not ui.sender?
                     connectWith: @find(".pvtAxisContainer")
@@ -1080,7 +1080,6 @@ callWithJQuery ($) ->
                     cols: [], rows: []
                     dataClass: opts.dataClass
                     callbacks: opts.callbacks
-                    sortItems: opts.sortCols
                     
                 subopts.rendererOptions.rowSubtotalDisplay = 
                     splitPositions: opts.splitRows
@@ -1160,6 +1159,9 @@ callWithJQuery ($) ->
                     rendererName: renderer.val()
                     
                 opts.onRefresh(pivotUIOptions) if opts.onRefresh?
+                
+                opts.sortCols = pivotUIOptions.sortCols
+                subopts.sortCols = opts.sortCols
                 
                 pivotScrollDiv.pivot(materializedInput,subopts,locale)
 

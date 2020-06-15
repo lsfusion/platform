@@ -29,8 +29,6 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.getModuleImagePath;
-
 public class GPivot extends GStateTableView {
 
     private final String ICON_OPEN = "tree_open.png";
@@ -476,6 +474,7 @@ public class GPivot extends GStateTableView {
 //    private boolean isTable = true;
 
     private void onRefresh(WrapperObject config, JsArrayString rows, JsArrayString cols, WrapperObject inclusions, String aggregatorName, String rendererName) {
+        updateSortCols(this.config, config);
         this.config = config;
 
         // see convertDataToStrings comment
@@ -766,7 +765,7 @@ public class GPivot extends GStateTableView {
     }
 
     private SortCol createSortCol(Object value, boolean direction) {
-        SortCol sortCol = JavaScriptObject.createArray().cast();
+        SortCol sortCol = JavaScriptObject.createObject().cast();
         sortCol.init(value, direction);
         return sortCol;
     }
@@ -1453,6 +1452,22 @@ public class GPivot extends GStateTableView {
             if (a[i] !== b[i]) return false;
         }
         return true;
+    }-*/;
+    
+    private native void updateSortCols(WrapperObject oldConfig, WrapperObject newConfig) /*-{
+        var instance = this
+        var sortCols = newConfig.sortCols;
+        var newSortCols = [];
+        for (var i = 0; i < sortCols.length; ++i) {
+            if (typeof sortCols[i].value === 'string') {
+                if (newConfig.rows.includes(sortCols[i].value)) {
+                    newSortCols.push(sortCols[i]);
+                }
+            } else if (instance.@GPivot::arraysEquals(*)(oldConfig.cols, newConfig.cols)) {
+                newSortCols.push(sortCols[i]);
+            }
+        }
+        newConfig.sortCols = newSortCols;
     }-*/;
 
     private ArrayList<String> toArrayList(JsArrayMixed jsArray) {
