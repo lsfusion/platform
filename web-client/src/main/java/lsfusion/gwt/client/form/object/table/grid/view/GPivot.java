@@ -26,10 +26,12 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
+import lsfusion.gwt.client.view.ColorThemeChangeListener;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
-public class GPivot extends GStateTableView {
+public class GPivot extends GStateTableView implements ColorThemeChangeListener {
 
     private final String ICON_OPEN = "tree_open.png";
     private final String ICON_CLOSED = "tree_closed.png";
@@ -38,6 +40,8 @@ public class GPivot extends GStateTableView {
         super(formController, gridController);
 
         setStyleName(getDrawElement(), "pivotTable");
+
+        MainFrame.addColorThemeChangeListener(this);
     }
 
     // in theory we can order all properties once, but so far there is no full list of properties
@@ -613,6 +617,36 @@ public class GPivot extends GStateTableView {
         setTimeout(setChild, 15);
     }-*/;
 
+    @Override
+    public void colorThemeChanged() {
+        refreshArrowImages(getElement());
+        changePlotColorTheme(getElement());
+    }
+    
+    private native void refreshArrowImages(JavaScriptObject pivotElement) /*-{
+        var instance = this
+        var outerDiv = $wnd.$(pivotElement).find(".subtotalouterdiv").get(0);
+
+        changeImages = function (className, expanded) {
+            var imgs = outerDiv.getElementsByClassName(className)
+            Array.prototype.forEach.call(imgs, function(img) {
+                instance.@GPivot::renderArrow(*)(img.parentElement, expanded)
+            });
+        }
+    
+        if (outerDiv !== undefined) {
+            changeImages("expanded-image", true)
+            changeImages("collapsed-image", false)
+        }
+    }-*/;
+
+    private native void changePlotColorTheme(JavaScriptObject pivotElement) /*-{
+        var plot = $wnd.$(pivotElement).find(".js-plotly-plot").get(0);
+        if (plot !== undefined) {
+            $wnd.$.pivotUtilities.colorThemeChanged(plot);
+        }
+    }-*/;
+
     private static class Record extends JavaScriptObject {
 
         protected Record() {
@@ -935,6 +969,7 @@ public class GPivot extends GStateTableView {
         jsElement.removeAllChildren();
         if(isExpanded != null) {
             ImageElement img = Document.get().createImageElement();
+            img.addClassName(isExpanded ? "expanded-image" : "collapsed-image");
             GwtClientUtils.setThemeImage(isExpanded ? ICON_OPEN : ICON_CLOSED, img::setSrc);
             jsElement.appendChild(img);
         }
