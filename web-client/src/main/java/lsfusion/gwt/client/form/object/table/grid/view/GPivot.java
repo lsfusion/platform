@@ -856,7 +856,7 @@ public class GPivot extends GStateTableView {
         }
     }
 
-    public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow) {
+    public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, Boolean isLastChild) {
         GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
             renderArrow(th, isExpanded);    
@@ -1272,8 +1272,8 @@ public class GPivot extends GStateTableView {
                 instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderValueCell(*)(td, value, rowKeyValues, colKeyValues);
             },
 
-            renderRowAttrHeaderCell: function (th, value, rowKeyValues, attrName, isExpanded, isArrow) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderRowAttrCell(*)(th, value, rowKeyValues, attrName, isExpanded, isArrow);
+            renderRowAttrHeaderCell: function (th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChild) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderRowAttrCell(*)(th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChild);
             },
 
             renderColAttrHeaderCell: function (element, value, colKeyValues, isSubtotal, isExpanded, isArrow) {

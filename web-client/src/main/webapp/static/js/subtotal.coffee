@@ -278,16 +278,16 @@ callWithJQuery ($) ->
             else
                 th.textContent = if isArrow then arrowText isExpanded else textContent
                 
-        createRowAttrHeaderTH = (rowKey, cellAttr, className, value, isArrow, isExpanded, attributes) ->
+        createRowAttrHeaderTH = (rowKey, cellAttr, className, value, isArrow, isExpanded, isLastChild, attributes) ->
             th = createElement "th", className, attributes
             if not isArrow
                 th.ondblclick = (event) -> callbacks.rowAttrHeaderDblClickHandler event, th, rowKey, cellAttr if callbacks?
-            renderRowAttrHeader th, value, rowKey, cellAttr, isArrow, isExpanded
+            renderRowAttrHeader th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChild
             return th
 
-        renderRowAttrHeader = (th, value, rowKey, cellAttr, isArrow, isExpanded) ->
+        renderRowAttrHeader = (th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChild) ->
             if callbacks?
-                callbacks.renderRowAttrHeaderCell th, value, rowKey, cellAttr, isExpanded, isArrow
+                callbacks.renderRowAttrHeaderCell th, value, rowKey, cellAttr, isExpanded, isArrow, isLastChild
             else 
                 th.textContent = if isArrow then arrowText isExpanded else value
             
@@ -590,9 +590,11 @@ callWithJQuery ($) ->
                 rowspan: span
             tr.appendChild th
 
-        buildRowHeader = (tbody, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts) ->
-            buildRowHeader tbody, axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts for chKey in h.children
-
+        buildRowHeader = (tbody, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, isLastChild, opts) ->
+            for i in [0...h.children.length]
+                chKey = h.children[i]
+                buildRowHeader tbody, axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, i == h.children.length - 1, opts 
+            h.isLastChild = isLastChild
             ah = axisHeaders.ah[h.col]
             ah.attrHeaders.push h
 
@@ -618,14 +620,14 @@ callWithJQuery ($) ->
             
             zoomClassPart = if isExpanded? then classZoom else ""
             arrowClass = "pvtRowLabel #{classRowShow} row#{h.row} rowcol#{h.col} #{classRowExpanded} #{zoomClassPart}"
-            h.arrowTh = createRowAttrHeaderTH h.key, undefined, arrowClass, "", true, isExpanded, arrowOpts
+            h.arrowTh = createRowAttrHeaderTH h.key, undefined, arrowClass, "", true, isExpanded, isLastChild, arrowOpts
             if arrowColumnIsNeeded()
                 h.ths.push h.arrowTh
                 h.tr.appendChild h.arrowTh
             
             for i in [0...h.values.length]
                 thClass = "pvtRowLabel #{classRowShow} row#{h.row} rowcol#{h.col} #{classRowExpanded}"
-                th = createRowAttrHeaderTH h.key, rowGroups[h.col][i], thClass, h.values[i], false, undefined, 
+                th = createRowAttrHeaderTH h.key, rowGroups[h.col][i], thClass, h.values[i], false, undefined, isLastChild, 
                     "data-rownode": h.node
                 th.colSpan = colSpan if i+1 == h.values.length
                 
@@ -701,7 +703,7 @@ callWithJQuery ($) ->
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
             colspan = rowHeadersColumns + (if colAttrs.length == 0 then 0 else 1) + (if arrowColumnIsNeeded() then 1 else 0) 
-            th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, {colspan: colspan}
+            th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, false, {colspan: colspan}
             tr.appendChild th
             return tr
 
@@ -911,7 +913,7 @@ callWithJQuery ($) ->
             replaceClass cell, classRowShow, classRowHide for cell in ch.sTr.querySelectorAll "th, td" if ch.sTr
 
         collapseShowRowSubtotal = (h, opts) ->
-            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, false
+            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, false, h.isLastChild
             for cell in h.tr.querySelectorAll "th, td"
                 removeClass cell, "#{classRowExpanded}"
                 addClass cell, "#{classRowCollapsed}"
@@ -938,7 +940,7 @@ callWithJQuery ($) ->
             replaceClass cell, classRowHide, classRowShow for cell in ch.sTr.querySelectorAll "th, td" if ch.sTr
 
         expandShowRowSubtotal = (h, opts) ->
-            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true
+            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true, h.isLastChild
             for cell in h.tr.querySelectorAll "th, td"
                 removeClass cell, "#{classRowCollapsed} #{classRowHide}"
                 addClass cell, "#{classRowExpanded} #{classRowShow}"
@@ -948,7 +950,7 @@ callWithJQuery ($) ->
                     addClass cell, "#{classRowExpanded} #{classRowShow}"
 
         expandHideRowSubtotal = (h, opts) ->
-            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true
+            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true, h.isLastChild
             for cell in h.tr.querySelectorAll "th, td"
                 removeClass cell, "#{classRowCollapsed} #{classRowShow}"
                 addClass cell, "#{classRowExpanded} #{classRowHide}"
@@ -1106,7 +1108,10 @@ callWithJQuery ($) ->
                 buildRowTotalsHeader rowAxisHeaders.ah[0].tr, rowGroups.length, colsData if colAttrs.length is 0
                 if rowKeyHeaders?
                     node = counter: 0
-                    buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, opts for chKey in rowKeyHeaders.children
+                    childrenCnt = rowKeyHeaders.children.length
+                    for i in [0...childrenCnt]
+                        chKey = rowKeyHeaders.children[i]
+                        buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, i == childrenCnt - 1, opts 
 
             buildValues tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts
             tr = buildColTotalsHeader longestGroupLength(rowGroups), colAttrs
