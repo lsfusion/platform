@@ -9,13 +9,13 @@ import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 
 public class GTreeGridControlCell extends AbstractCell<Object> {
-    private final String ICON_LEAF = "tree_leaf.png";
-    private final String ICON_OPEN = "tree_open.png";
-    private final String ICON_CLOSED = "tree_closed.png";
-    private final String ICON_PASSBY = "tree_dots_passby.png";
-    private final String ICON_EMPTY = "tree_empty.png";
-    private final String ICON_BRANCH = "tree_dots_branch.png";
-    private final String TREE_NODE_ATTRIBUTE = "__tree_node";
+    private final static String ICON_LEAF = "tree_leaf.png";
+    private final static String ICON_OPEN = "tree_open.png";
+    private final static String ICON_CLOSED = "tree_closed.png";
+    private final static String ICON_PASSBY = "tree_dots_passby.png";
+    private final static String ICON_EMPTY = "tree_empty.png";
+    private final static String ICON_BRANCH = "tree_dots_branch.png";
+    private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
 
     private GTreeTable treeTable;
 
@@ -51,7 +51,10 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
 
     @Override
     public void renderDom(Context context, DivElement cellElement, Object value) {
-        GTreeColumnValue treeValue = (GTreeColumnValue) value;
+        renderDom(cellElement, (GTreeColumnValue) value);
+    }
+
+    public static void renderDom(Element cellElement, GTreeColumnValue treeValue) {
         for (int i = 0; i <= treeValue.getLevel(); i++) {
             DivElement img = createIndentElement(cellElement);
             updateIndentElement(img, treeValue, i);
@@ -79,7 +82,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         }
     }
 
-    private DivElement createIndentElement(DivElement cellElement) {
+    private static DivElement createIndentElement(Element cellElement) {
         DivElement div = cellElement.appendChild(Document.get().createDivElement());
         div.getStyle().setFloat(Style.Float.LEFT);
         div.getStyle().setHeight(100, Style.Unit.PCT);
@@ -103,7 +106,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         return div.appendChild(vert);
     }
 
-    private void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
+    private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
         String indentIcon;
         ImageElement img = element.getElementsByTagName("img").getItem(0).cast();
         int nodeLevel = treeValue.getLevel();
@@ -133,10 +136,20 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
             changeDots(element, false, true);
         }
 
+        if(ICON_CLOSED.equals(indentIcon)) {
+            img.removeClassName("expanded-image");
+            img.addClassName("collapsed-image");
+        } else if(ICON_OPEN.equals(indentIcon)) {
+            img.removeClassName("collapsed-image");
+            img.addClassName("expanded-image");
+        } else if(ICON_LEAF.equals(indentIcon)) {
+            img.addClassName("leaf-image");
+        }
+
         setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
     }
 
-    private void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
+    private static void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
         Element top = element.getFirstChild().cast();
         Element bottom = element.getLastChild().cast();
 
@@ -164,11 +177,11 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         }
     }
 
-    private void ensureDotsAndSetBackground(Element element) {
+    private static void ensureDotsAndSetBackground(Element element) {
         setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
     }
 
-    private String getNodeIcon(GTreeColumnValue treeValue) {
+    private static String getNodeIcon(GTreeColumnValue treeValue) {
         if (treeValue.getOpen() == null) {
             return ICON_LEAF;
         } else if (treeValue.getOpen()) {

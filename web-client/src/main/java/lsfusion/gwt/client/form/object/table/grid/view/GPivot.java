@@ -1,9 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.*;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -19,6 +17,8 @@ import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValue;
+import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridControlCell;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -33,6 +33,7 @@ import java.util.*;
 
 public class GPivot extends GStateTableView implements ColorThemeChangeListener {
 
+    private final String ICON_LEAF = "tree_leaf.png";
     private final String ICON_OPEN = "tree_open.png";
     private final String ICON_CLOSED = "tree_closed.png";
 
@@ -622,7 +623,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         refreshArrowImages(getElement());
         changePlotColorTheme(getElement());
     }
-    
+
     private native void refreshArrowImages(JavaScriptObject pivotElement) /*-{
         var instance = this
         var outerDiv = $wnd.$(pivotElement).find(".subtotalouterdiv").get(0);
@@ -630,11 +631,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         changeImages = function (className, expanded) {
             var imgs = outerDiv.getElementsByClassName(className)
             Array.prototype.forEach.call(imgs, function(img) {
-                instance.@GPivot::renderArrow(*)(img.parentElement, expanded)
+                instance.@GPivot::rerenderArrow(*)(img, expanded)
             });
         }
-    
+
         if (outerDiv !== undefined) {
+            changeImages("leaf-image", null)
             changeImages("expanded-image", true)
             changeImages("collapsed-image", false)
         }
@@ -893,10 +895,26 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
         GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
-            renderArrow(th, isExpanded);    
+            renderArrow(th, isExpanded, getTreeColumnValue(rowKeyValues.length() - 1, isExpanded, isLastChildList));
         } else {
             renderAttrCell(th, value, attrName);
         }
+    }
+
+    private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, JsArrayBoolean isLastChildList) {
+        GTreeColumnValue treeColumnValue = new GTreeColumnValue(level, "level" + level);
+        treeColumnValue.setOpen(isExpanded);
+
+        HashMap<Integer, Boolean> lastInLevelMap = new HashMap<>();
+        if(isLastChildList.length() == 1) {
+            lastInLevelMap.put(0, isLastChildList.get(0));
+        } else {
+            for (int i = 1; i < isLastChildList.length(); i++) {
+                lastInLevelMap.put(i - 1, isLastChildList.get(i));
+            }
+        }
+        treeColumnValue.setLastInLevelMap(lastInLevelMap);
+        return treeColumnValue;
     }
 
     public void renderAttrCell(Element th, JavaScriptObject value, String columnName) {
@@ -916,7 +934,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
-            renderArrow(jsElement, isExpanded);
+            renderArrow(jsElement, isExpanded, null);
         } else {
             isSubtotal = isSubtotal || colKeyValues.length() == 0; // just in case, because in theory when there are no col keys it should be a total
 
@@ -952,7 +970,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
-            renderArrow(jsElement, isExpanded);
+            int level = indexOf(config.getArrayString("rows"), attrName);
+            JsArrayBoolean isLastChildList = JsArrayBoolean.createArray().cast();
+            for(int i = 0; i <= level; i++) {
+                isLastChildList.push(true);
+            }
+            renderArrow(jsElement, isExpanded, getTreeColumnValue(level, isExpanded, isLastChildList));
         } else {
             SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), attrName);
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
@@ -965,9 +988,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         jsElement.setPropertyObject("textContent", value);
     }
 
-    private void renderArrow(Element jsElement, Boolean isExpanded) {
+    private void renderArrow(Element jsElement, Boolean isExpanded, GTreeColumnValue treeColumnValue) {
         jsElement.removeAllChildren();
-        if(isExpanded != null) {
+        if (treeColumnValue != null) {
+            jsElement.getStyle().setPaddingLeft(5, Style.Unit.PX);
+            GTreeGridControlCell.renderDom(jsElement, treeColumnValue);
+        } else if (isExpanded != null) {
             ImageElement img = Document.get().createImageElement();
             img.addClassName(isExpanded ? "expanded-image" : "collapsed-image");
             GwtClientUtils.setThemeImage(isExpanded ? ICON_OPEN : ICON_CLOSED, img::setSrc);
@@ -975,9 +1001,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
+    private void rerenderArrow(ImageElement img, Boolean isExpanded) {
+        GwtClientUtils.setThemeImage(isExpanded == null ? ICON_LEAF : isExpanded ? ICON_OPEN : ICON_CLOSED, img::setSrc);
+    }
+
     private int getArrowColumnWidth(int arrowLevels) {
-        final int arrowBaseWidth = 15;
-        return arrowBaseWidth + 10 * arrowLevels;
+        final int arrowBaseWidth = 35;
+        return arrowBaseWidth + 15 * arrowLevels;
     }
 
     private final static int defaultValueWidth = 80;
@@ -1384,6 +1414,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
         }
         return false;
+    }
+
+    private int indexOf(JsArrayString array, String element) {
+        for (int i = 0; i < array.length(); i++) {
+            if (array.get(i).equals(element)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void rowAttrHeaderDblClickAction(JsArrayString rowKeyValues, String attrName) {
