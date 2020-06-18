@@ -1071,6 +1071,7 @@ callWithJQuery ($) ->
                     placeholder: 'pvtPlaceholder'
                     tolerance: "pointer"
                     forcePlaceholderSize: true
+                    cancel: ".pvtTriangle" # in Firefox click event is triggered and pvtFilterBox is shown after drop
 
                 subopts =
                     derivedAttributes: opts.derivedAttributes
@@ -1192,6 +1193,7 @@ callWithJQuery ($) ->
                     placeholder: 'pvtPlaceholder'
                     tolerance: "pointer"
                     forcePlaceholderSize: true
+                    cancel: ".pvtTriangle" # in Firefox click event is triggered and pvtFilterBox is shown after drop
         catch e
             console.error(e.stack) if console?
             @html opts.localeStrings.uiRenderError

@@ -1680,7 +1680,8 @@
               items: 'li',
               placeholder: 'pvtPlaceholder',
               tolerance: "pointer",
-              forcePlaceholderSize: true
+              forcePlaceholderSize: true,
+              cancel: ".pvtTriangle"
             });
             subopts = {
               derivedAttributes: opts.derivedAttributes,
@@ -1827,7 +1828,8 @@
           items: 'li',
           placeholder: 'pvtPlaceholder',
           tolerance: "pointer",
-          forcePlaceholderSize: true
+          forcePlaceholderSize: true,
+          cancel: ".pvtTriangle"
         });
       } catch (error) {
         e = error;
