@@ -476,7 +476,7 @@
           return th.textContent = isArrow ? arrowText(isExpanded) : textContent;
         }
       };
-      createRowAttrHeaderTH = function(rowKey, cellAttr, className, value, isArrow, isExpanded, isLastChild, attributes) {
+      createRowAttrHeaderTH = function(rowKey, cellAttr, className, value, isArrow, isExpanded, isLastChildList, attributes) {
         var th;
         th = createElement("th", className, attributes);
         if (!isArrow) {
@@ -486,12 +486,12 @@
             }
           };
         }
-        renderRowAttrHeader(th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChild);
+        renderRowAttrHeader(th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChildList);
         return th;
       };
-      renderRowAttrHeader = function(th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChild) {
+      renderRowAttrHeader = function(th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChildList) {
         if (callbacks != null) {
-          return callbacks.renderRowAttrHeaderCell(th, value, rowKey, cellAttr, isExpanded, isArrow, isLastChild);
+          return callbacks.renderRowAttrHeaderCell(th, value, rowKey, cellAttr, isExpanded, isArrow, isLastChildList);
         } else {
           return th.textContent = isArrow ? arrowText(isExpanded) : value;
         }
@@ -885,13 +885,15 @@
         });
         return tr.appendChild(th);
       };
-      buildRowHeader = function(tbody, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, isLastChild, opts) {
+      buildRowHeader = function(tbody, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, isLastChildList, opts) {
         var ah, arrowClass, arrowOpts, chKey, colSpan, firstChild, isExpanded, k, l, ref, ref1, ref2, th, thClass, zoomClassPart;
         for (i = k = 0, ref = h.children.length; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
           chKey = h.children[i];
-          buildRowHeader(tbody, axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, i === h.children.length - 1, opts);
+          isLastChildList.push(i === h.children.length - 1);
+          buildRowHeader(tbody, axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, isLastChildList, opts);
+          isLastChildList.pop();
         }
-        h.isLastChild = isLastChild;
+        h.isLastChildList = isLastChildList.slice(0);
         ah = axisHeaders.ah[h.col];
         ah.attrHeaders.push(h);
         h.node = node.counter;
@@ -920,14 +922,14 @@
         }
         zoomClassPart = isExpanded != null ? classZoom : "";
         arrowClass = "pvtRowLabel " + classRowShow + " row" + h.row + " rowcol" + h.col + " " + classRowExpanded + " " + zoomClassPart;
-        h.arrowTh = createRowAttrHeaderTH(h.key, void 0, arrowClass, "", true, isExpanded, isLastChild, arrowOpts);
+        h.arrowTh = createRowAttrHeaderTH(h.key, void 0, arrowClass, "", true, isExpanded, h.isLastChildList, arrowOpts);
         if (arrowColumnIsNeeded()) {
           h.ths.push(h.arrowTh);
           h.tr.appendChild(h.arrowTh);
         }
         for (i = l = 0, ref1 = h.values.length; 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
           thClass = "pvtRowLabel " + classRowShow + " row" + h.row + " rowcol" + h.col + " " + classRowExpanded;
-          th = createRowAttrHeaderTH(h.key, rowGroups[h.col][i], thClass, h.values[i], false, void 0, isLastChild, {
+          th = createRowAttrHeaderTH(h.key, rowGroups[h.col][i], thClass, h.values[i], false, void 0, h.isLastChildList, {
             "data-rownode": h.node
           });
           if (i + 1 === h.values.length) {
@@ -1045,7 +1047,7 @@
         var colspan, th, tr;
         tr = createElement("tr");
         colspan = rowHeadersColumns + (colAttrs.length === 0 ? 0 : 1) + (arrowColumnIsNeeded() ? 1 : 0);
-        th = createRowAttrHeaderTH([], void 0, "pvtTotalLabel colTotal", "", false, void 0, false, {
+        th = createRowAttrHeaderTH([], void 0, "pvtTotalLabel colTotal", "", false, void 0, [], {
           colspan: colspan
         });
         tr.appendChild(th);
@@ -1336,7 +1338,7 @@
       };
       collapseShowRowSubtotal = function(h, opts) {
         var cell, k, l, len1, len2, ref, ref1, results;
-        renderRowAttrHeader(h.arrowTh, "", h.key, void 0, true, false, h.isLastChild);
+        renderRowAttrHeader(h.arrowTh, "", h.key, void 0, true, false, h.isLastChildList);
         ref = h.tr.querySelectorAll("th, td");
         for (k = 0, len1 = ref.length; k < len1; k++) {
           cell = ref[k];
@@ -1396,7 +1398,7 @@
       };
       expandShowRowSubtotal = function(h, opts) {
         var cell, k, l, len1, len2, ref, ref1, results;
-        renderRowAttrHeader(h.arrowTh, "", h.key, void 0, true, true, h.isLastChild);
+        renderRowAttrHeader(h.arrowTh, "", h.key, void 0, true, true, h.isLastChildList);
         ref = h.tr.querySelectorAll("th, td");
         for (k = 0, len1 = ref.length; k < len1; k++) {
           cell = ref[k];
@@ -1416,7 +1418,7 @@
       };
       expandHideRowSubtotal = function(h, opts) {
         var cell, k, l, len1, len2, len3, o, ref, ref1, ref2, results, th;
-        renderRowAttrHeader(h.arrowTh, "", h.key, void 0, true, true, h.isLastChild);
+        renderRowAttrHeader(h.arrowTh, "", h.key, void 0, true, true, h.isLastChildList);
         ref = h.tr.querySelectorAll("th, td");
         for (k = 0, len1 = ref.length; k < len1; k++) {
           cell = ref[k];
@@ -1699,7 +1701,7 @@
             childrenCnt = rowKeyHeaders.children.length;
             for (i = l = 0, ref2 = childrenCnt; 0 <= ref2 ? l < ref2 : l > ref2; i = 0 <= ref2 ? ++l : --l) {
               chKey = rowKeyHeaders.children[i];
-              buildRowHeader(tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, i === childrenCnt - 1, opts);
+              buildRowHeader(tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, [i === childrenCnt - 1], opts);
             }
           }
         }

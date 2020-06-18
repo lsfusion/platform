@@ -890,7 +890,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
-    public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, Boolean isLastChild) {
+    public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
         GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
             renderArrow(th, isExpanded);    
@@ -1307,8 +1307,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderValueCell(*)(td, value, rowKeyValues, colKeyValues);
             },
 
-            renderRowAttrHeaderCell: function (th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChild) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderRowAttrCell(*)(th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChild);
+            renderRowAttrHeaderCell: function (th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChildList) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderRowAttrCell(*)(th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChildList);
             },
 
             renderColAttrHeaderCell: function (element, value, colKeyValues, isSubtotal, isExpanded, isArrow) {
