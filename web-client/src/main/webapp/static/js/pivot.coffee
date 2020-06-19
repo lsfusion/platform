@@ -1082,6 +1082,8 @@ callWithJQuery ($) ->
                     dataClass: opts.dataClass
                     callbacks: opts.callbacks
                     
+                subopts.rendererOptions.hideColAxisHeadersColumn = opts.hideColAxisHeadersColumn
+                    
                 subopts.rendererOptions.rowSubtotalDisplay = 
                     splitPositions: opts.splitRows
                 subopts.rendererOptions.colSubtotalDisplay = 

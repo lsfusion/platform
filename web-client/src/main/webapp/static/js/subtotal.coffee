@@ -187,6 +187,7 @@ callWithJQuery ($) ->
         rowArrowsPadding = 5
         rowArrowsLevelPadding = 10
         
+        hideColAxisHeadersColumn = opts.hideColAxisHeadersColumn ? false
         emptyTopAttrTH = null
         
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
@@ -438,12 +439,13 @@ callWithJQuery ($) ->
                 hClass = classCollapsed
                 ah.clickStatus = clickStatusCollapsed
                 ah.onClick = expandAxis
-
-            ah.th = createColAxisHeaderTH ah.text, "pvtAxisLabel #{hClass}", ah.text, isExpanded 
-            if not disabledArrow
-                ah.th.arrowDiv.onclick = (event) ->
-                    event = event || window.event
-                    ah.onClick axisHeaders, index, attrs, opts
+            
+            if not hideColAxisHeadersColumn    
+                ah.th = createColAxisHeaderTH ah.text, "pvtAxisLabel #{hClass}", ah.text, isExpanded 
+                if not disabledArrow
+                    ah.th.arrowDiv.onclick = (event) ->
+                        event = event || window.event
+                        ah.onClick axisHeaders, index, attrs, opts
             axisHeaders.ah.push ah
             return ah 
 
@@ -527,9 +529,9 @@ callWithJQuery ($) ->
                     curCol = row - (rowsNumber - colAttrs.length)
                     disabled = not colSubtotalIsEnabled opts.colSubtotalDisplay, curCol
                     ah = buildColAxisHeader colAxisHeaders, curCol, colAttrs, opts.colSubtotalDisplay, disabled
-                    tr.appendChild ah.th
+                    tr.appendChild ah.th if not hideColAxisHeadersColumn
                     ah.tr = tr
-                else if row == 0 and colAttrs.length > 0
+                else if row == 0 and colAttrs.length > 0 and not hideColAxisHeadersColumn
                     tr.appendChild createElement "th", null, {rowspan: rowsNumber - colAttrs.length}      
 
             return [colAxisHeaders, rowAxisHeaders, trs]
@@ -605,7 +607,7 @@ callWithJQuery ($) ->
             firstChild = h[h.children[0]] if h.children.length isnt 0
 
             colSpan = 1 + longestGroupLength(rowGroups) - h.values.length
-            colSpan += 1 if colAttrs.length > 0
+            colSpan += 1 if colAttrs.length > 0 and not hideColAxisHeadersColumn
             h.tr = createElement "tr", "row#{h.row}"
             if h.children.length is 0
                 tbody.appendChild h.tr
@@ -704,9 +706,10 @@ callWithJQuery ($) ->
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
-            colspan = rowHeadersColumns + (if colAttrs.length == 0 then 0 else 1) + (if arrowColumnIsNeeded() then 1 else 0) 
-            th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, [], {colspan: colspan}
-            tr.appendChild th
+            colspan = rowHeadersColumns + (if colAttrs.length == 0 or hideColAxisHeadersColumn then 0 else 1) + (if arrowColumnIsNeeded() then 1 else 0)
+            if colspan > 0
+                th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, [], {colspan: colspan}
+                tr.appendChild th
             return tr
 
         buildColTotals = (tr, attrHeaders, rowAttrs, colAttrs, opts) ->
@@ -754,14 +757,15 @@ callWithJQuery ($) ->
                 ah.onClick = expandAxis
 
         adjustColAxisHeader = (axisHeaders, col, opts) ->
-            ah = axisHeaders.ah[col]
-            if ah.expandedCount is 0
-                collapseColAxisHeaders axisHeaders, col, opts
-            else if ah.expandedCount is ah.expandables
-                replaceClass ah.th, classCollapsed, classExpanded
-                renderColAxisHeader ah.th, ah.text, ah.text, true, true
-                ah.clickStatus = clickStatusExpanded
-                ah.onClick = collapseColAxis
+            if not hideColAxisHeadersColumn
+                ah = axisHeaders.ah[col]
+                if ah.expandedCount is 0
+                    collapseColAxisHeaders axisHeaders, col, opts
+                else if ah.expandedCount is ah.expandables
+                    replaceClass ah.th, classCollapsed, classExpanded
+                    renderColAxisHeader ah.th, ah.text, ah.text, true, true
+                    ah.clickStatus = clickStatusExpanded
+                    ah.onClick = collapseColAxis
 
         adjustRowAxisHeader = (axisHeaders, row, opts) ->
             ah = axisHeaders.ah[row]
@@ -1033,7 +1037,7 @@ callWithJQuery ($) ->
                     first = 1
 
                 lastShift = 0                    
-                if colAttrs.length > 0
+                if colAttrs.length > 0 and not hideColAxisHeadersColumn
                     colsData[colCnt-1].width = getColumnWidth false, null, [], false
                     lastShift = 1
                     
@@ -1049,7 +1053,7 @@ callWithJQuery ($) ->
                     colsData[i].width = getColumnWidth false, null, columns[i], false  
                 return colsData
             else    
-                return [getColumnWidth(false, null, [], false)]
+                return [getColumnWidth(true, [], null, false)]
             
         findAxisHeadersColCount = (tr) ->
             colCnt = 0
