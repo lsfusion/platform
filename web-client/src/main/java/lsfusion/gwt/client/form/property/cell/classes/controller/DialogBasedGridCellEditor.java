@@ -1,17 +1,16 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.WindowBox;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.AbstractGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
     protected final EditManager editManager;
@@ -48,12 +47,8 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    public void onBrowserEvent(Cell.Context context, Element parent, Object value, NativeEvent event) {
-    }
-
-    @Override
-    public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
-        Widget content = createComponent(editEvent, context, parent, oldValue);
+    public void startEditing(Event editEvent, Element parent, Object oldValue) {
+        Widget content = createComponent(parent, oldValue);
         if (width != -1 && height != -1) {
             content.setPixelSize(width, height);
         }
@@ -62,7 +57,7 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellParent, Object value) {
+    public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
     }
 
     @Override
@@ -80,5 +75,5 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
         editManager.cancelEditing();
     }
 
-    protected abstract Widget createComponent(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue);
+    protected abstract Widget createComponent(Element parent, Object oldValue);
 }

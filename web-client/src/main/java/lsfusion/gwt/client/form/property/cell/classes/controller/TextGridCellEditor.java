@@ -1,12 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
@@ -16,7 +14,7 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellParent, Object value) {
+    public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
         DivElement div = cellParent.appendChild(Document.get().createDivElement());
         div.getStyle().setPaddingRight(8, Style.Unit.PX);
         div.getStyle().setPaddingLeft(0, Style.Unit.PX);
@@ -40,18 +38,9 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
         textareaStyle.setProperty("wordWrap", "break-word");
         textareaStyle.setOutlineStyle(Style.OutlineStyle.NONE);
 
-        GFont font = property.font;
-        if (font == null && table instanceof GGridPropertyTable) {
-            font = ((GGridPropertyTable) table).font;
-        }
-        if (font != null) {
-            font.apply(textareaStyle);
-        }
-        textareaStyle.setFontSize(DEFAULT_FONT_PT_SIZE, Style.Unit.PT);
-
-        cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
         cellParent.getStyle().setPadding(0, Style.Unit.PX);
 
+        setBaseTextFonts(textareaStyle, updateContext);
         textArea.setValue(currentText);
     }
 

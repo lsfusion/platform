@@ -3,18 +3,18 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.FileBasedGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.FileBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
-public class FileGridCellRenderer extends FileBasedGridCellRenderer {
-    public FileGridCellRenderer(GPropertyDraw property) {
+public class FileCellRenderer extends FileBasedCellRenderer {
+    public FileCellRenderer(GPropertyDraw property) {
         super(property);
     }
 
     @Override
-    public void renderStatic(Element element, GFont font, boolean isSingle) {
-        super.renderStatic(element, font, isSingle);
+    public void renderStatic(Element element, RenderContext renderContext) {
+        super.renderStatic(element, renderContext);
         element.getStyle().setHeight(100, Style.Unit.PCT);
     }
 

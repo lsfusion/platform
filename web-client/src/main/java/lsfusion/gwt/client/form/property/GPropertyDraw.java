@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
@@ -25,10 +26,8 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.view.FormatGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -72,7 +71,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public AddRemove addRemove;
     public boolean askConfirm;
     public String askConfirmMessage;
-    
+
     public boolean hasEditObjectAction;
     public boolean hasChangeAction;
 
@@ -126,9 +125,21 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     
     public boolean hide;
 
-    private transient GridCellRenderer cellRenderer;
+    private transient CellRenderer cellRenderer;
     
     public boolean notNull;
+
+    // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
+    public String getEventSID(Event editEvent) {
+        String actionSID = null;
+        if (editBindingMap != null) { // property bindings
+            actionSID = editBindingMap.getEventSID(editEvent);
+        }
+        if (actionSID == null) {
+            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter());
+        }
+        return actionSID;
+    }
 
     public static class AddRemove implements Serializable {
         public GObject object;
@@ -152,28 +163,20 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return baseType.createPanelRenderer(form, this, columnKey);
     }
 
-    public GridCellRenderer getGridCellRenderer() {
+    public CellRenderer getGridCellRenderer() {
         if (cellRenderer == null) {
             cellRenderer = baseType.createGridCellRenderer(this);
         }
         return cellRenderer;
     }
 
-    public GridCellEditor createGridCellEditor(EditManager editManager) {
-        return baseType.createGridCellEditor(editManager, this);
-    }
-
-    public GridCellEditor createValueCellEdtor(EditManager editManager) {
-        return baseType.createValueCellEditor(editManager, this);
-    }
-
     public void setUserPattern(String pattern) {
         if(baseType instanceof GFormatType) {
             this.pattern = pattern != null ? pattern : defaultPattern;
 
-            GridCellRenderer renderer = getGridCellRenderer();
-            if (renderer instanceof FormatGridCellRenderer) {
-                ((FormatGridCellRenderer) renderer).updateFormat();
+            CellRenderer renderer = getGridCellRenderer();
+            if (renderer instanceof FormatCellRenderer) {
+                ((FormatCellRenderer) renderer).updateFormat();
             } else
                 assert false;
         }

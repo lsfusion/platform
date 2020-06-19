@@ -5,8 +5,8 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.view.MainFrame;
 
-public abstract class StringBasedGridCellRenderer<T> extends TextBasedGridCellRenderer<T> {
-    StringBasedGridCellRenderer(GPropertyDraw property) {
+public abstract class StringBasedCellRenderer<T> extends TextBasedCellRenderer<T> {
+    StringBasedCellRenderer(GPropertyDraw property) {
         super(property);
     }
 

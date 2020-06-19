@@ -2,17 +2,17 @@ package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
+import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -21,9 +21,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
 import java.util.ArrayList;
@@ -71,6 +68,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
+    protected GFont getFont() {
+        return font;
+    }
+
+    @Override
     protected void onBrowserEvent2(Event event) {
         if (GKeyStroke.isAddFilterEvent(event)) {
             stopPropagation(event);
@@ -88,7 +90,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 editEventFilter = currentProperty.changeType.getEditEventFilter();
             }
 
-            if ((editEventFilter != null && !editEventFilter.accept(event) && !form.isEditing()) || !isEditable(getCurrentCellContext())) {
+            if ((editEventFilter != null && !editEventFilter.accept(event) && !form.isEditing()) || isReadOnly(getCurrentCellContext())) {
                 stopPropagation(event);
                 if (useQuickSearchInsteadOfQuickFilter()) {
                     quickSearch(event);
@@ -99,11 +101,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                     if(currentProperty != null && currentProperty.quickFilterProperty != null) {
                         filterProperty = currentProperty.quickFilterProperty;
                         if(currentProperty.columnGroupObjects != null && filterProperty.columnGroupObjects != null && currentProperty.columnGroupObjects.equals(filterProperty.columnGroupObjects)) {
-                            filterColumnKey = getSelectedColumn();
+                            filterColumnKey = getSelectedColumnKey();
                         }
                     }
 
-                    quickFilter(new NativeEditEvent(event), filterProperty, filterColumnKey);
+                    quickFilter(event, filterProperty, filterColumnKey);
                 }
             }
         } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
@@ -117,8 +119,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         super.onBrowserEvent2(event);
     }
 
-    public Cell.Context getCurrentCellContext() {
-        return new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), getKeyboardSelectedRowValue());
+    public Context getCurrentCellContext() {
+        return new Context(getSelectedRow(), getSelectedColumn(), getSelectedRowValue());
     }
 
     protected boolean isAutoSize() {
@@ -196,8 +198,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public abstract GGroupObjectValue getCurrentKey();
     public abstract GGroupObject getGroupObject();
-    public abstract GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler();
-    public abstract void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
+
+    public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
     public abstract GAbstractTableController getGroupController();
     public abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
     public abstract String getCellForeground(GridDataRecord rowValue, int row, int column);
@@ -219,8 +221,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public void storeScrollPosition() {
-        int selectedRow = getKeyboardSelectedRow();
-        GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
+        int selectedRow = getSelectedRow();
+        GridDataRecord selectedRecord = getSelectedRowValue();
         if (selectedRecord != null) {
             oldKey = selectedRecord.getKey();
             TableRowElement childElement = getChildElement(selectedRow);
@@ -230,17 +232,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
-    public void groupChange() {
-        editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.GROUP_CHANGE);
-    }
-
     public void runGroupReport(boolean toExcel) {
         form.runGroupReport(groupObject.ID, toExcel);
     }
 
     public void afterAppliedChanges() {
         if (needToRestoreScrollPosition && oldKey != null && oldRowScrollTop != -1) {
-            int currentInd = getKeyboardSelectedRow();
+            int currentInd = getSelectedRow();
             GGroupObjectValue currentKey = getCurrentKey();
             if (currentKey != null && currentKey.equals(oldKey) && isRowWithinBounds(currentInd)) {
                 TableRowElement childElement = getChildElement(currentInd);
@@ -257,46 +255,33 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
-
-    @Override
     public void selectNextRow(boolean down) {
-        getKeyboardSelectionHandler().selectNextRow(down);
+        selectionHandler.nextRow(down);
     }
 
-    @Override
     public void selectNextCellInColumn(boolean forward) {
-        getKeyboardSelectionHandler().selectNextCellInColumn(forward);
+        selectionHandler.nextColumn(forward);
     }
 
-    public static class GridPropertyTableKeyboardSelectionHandler<T extends GridDataRecord> extends DataGridKeyboardSelectionHandler<T> {
-        public GridPropertyTableKeyboardSelectionHandler(DataGrid<T> table) {
+    public static class GridPropertyTableSelectionHandler<T extends GridDataRecord> extends DataGridSelectionHandler<T> {
+        public GridPropertyTableSelectionHandler(DataGrid<T> table) {
             super(table);
         }
 
         @Override
-        public boolean handleKeyEvent(CellPreviewEvent<T> event) {
-            NativeEvent nativeEvent = event.getNativeEvent();
+        public boolean handleKeyEvent(Event event) {
+            assert BrowserEvents.KEYDOWN.equals(event.getType());
 
-            assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
-
-            int keyCode = nativeEvent.getKeyCode();
-            boolean ctrlPressed = nativeEvent.getCtrlKey();
+            int keyCode = event.getKeyCode();
+            boolean ctrlPressed = event.getCtrlKey();
             if (keyCode == KeyCodes.KEY_HOME && !ctrlPressed) {
-                getDisplay().setKeyboardSelectedColumn(0);
+                display.setSelectedColumn(0);
                 return true;
             } else if (keyCode == KeyCodes.KEY_END && !ctrlPressed) {
-                getDisplay().setKeyboardSelectedColumn(getDisplay().getColumnCount() - 1);
+                display.setSelectedColumn(display.getColumnCount() - 1);
                 return true;
             }
             return super.handleKeyEvent(event);
-        }
-
-        public void selectNextRow(boolean down) {
-            nextRow(down);
-        }
-
-        public void selectNextCellInColumn(boolean forward) {
-            nextColumn(forward);
         }
     }
 
@@ -402,6 +387,34 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     
     protected int getColumnBaseWidth(int i) {
         return getColumnPropertyDraw(i).getValueWidth(font);
+    }
+
+    protected abstract class GridPropertyColumn extends Column<T, Object> {
+        public final GPropertyDraw property;
+
+        public GridPropertyColumn(GPropertyDraw property) {
+            this.property = property;
+        }
+
+        @Override
+        public void onBrowserEvent(Context context, Element parent, Object value, Event event, Runnable consumed) {
+            form.onPropertyBrowserEvent(event, parent,
+                    () -> onEditEvent(event, false, context, parent, consumed),
+                    () -> CopyPasteUtils.putIntoClipboard(parent),
+                    () -> executePaste(event), consumed);
+        }
+
+        @Override
+        public void renderDom(Context context, Element cellElement, Object value) {
+            form.render(property, cellElement, getRenderContext());
+
+            updateDom(context, cellElement, value);
+        }
+
+        @Override
+        public void updateDom(Context context, Element cellElement, Object value) {
+            form.update(property, cellElement, value, getUpdateContext());
+        }
     }
 
 }

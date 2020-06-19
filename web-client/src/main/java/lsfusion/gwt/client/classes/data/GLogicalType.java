@@ -6,10 +6,10 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LogicalGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.LogicalGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
 
@@ -17,8 +17,8 @@ public class GLogicalType extends GDataType {
     public static GLogicalType instance = new GLogicalType();
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new LogicalGridCellRenderer(property);
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new LogicalCellRenderer(property);
 }
 
     @Override

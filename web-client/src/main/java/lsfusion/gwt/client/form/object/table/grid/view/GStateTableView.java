@@ -307,7 +307,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public int getKeyboardSelectedRow() {
+    public int getSelectedRow() {
         return -1;
     }
 
@@ -316,7 +316,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     }
 
-    @Override
     public void groupChange() {
 
     }

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
@@ -11,12 +10,11 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.AbstractGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -62,7 +60,7 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    public void startEditing(EditEvent editEvent, Cell.Context context, final Element parent, Object oldValue) {
+    public void startEditing(Event editEvent, final Element parent, Object oldValue) {
         showPopup(parent);
     }
 
@@ -99,12 +97,7 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    public final void onBrowserEvent(Cell.Context context, Element parent, Object value, NativeEvent event) {
-        //NOP
-    }
-
-    @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellParent, Object value) {
+    public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
         //NOP
     }
 

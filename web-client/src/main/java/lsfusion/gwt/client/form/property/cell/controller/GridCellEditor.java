@@ -1,18 +1,18 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public interface GridCellEditor {
 
-    void renderDom(Cell.Context context, DataGrid table, DivElement cellParent, Object value);
+    void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext);
 
-    void onBrowserEvent(Cell.Context context, Element parent, Object value, NativeEvent event);
+    default void onBrowserEvent(Element parent, Event event, Runnable consumed) {
+    }
 
-    void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue);
+    void startEditing(Event editEvent, Element parent, Object oldValue);
 
     boolean replaceCellRenderer();
 }

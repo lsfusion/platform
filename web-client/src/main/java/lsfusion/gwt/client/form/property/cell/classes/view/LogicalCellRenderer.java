@@ -2,19 +2,20 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public class LogicalGridCellRenderer extends GridCellRenderer {
+public class LogicalCellRenderer extends CellRenderer {
     private GPropertyDraw property;
 
-    public LogicalGridCellRenderer(GPropertyDraw property) {
+    public LogicalCellRenderer(GPropertyDraw property) {
         this.property = property;
     }
 
     @Override
-    public void renderStatic(Element element, GFont font, boolean isSingle) {
+    public void renderStatic(Element element, RenderContext renderContext) {
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
             element.setAttribute("align", textAlignStyle.getCssName());
@@ -35,12 +36,10 @@ public class LogicalGridCellRenderer extends GridCellRenderer {
             InputElement input = checkWrapper.appendChild(Document.get().createCheckInputElement());
             input.addClassName("logicalRendererCheckBox");
         }
-
-        if (!isSingle) element.getStyle().setPosition(Style.Position.RELATIVE);
     }
 
     @Override
-    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
         if (GwtClientUtils.isIEUserAgent()) {
             ImageElement img = element.getFirstChild().cast();
             img.setSrc(getCBImagePath(value));

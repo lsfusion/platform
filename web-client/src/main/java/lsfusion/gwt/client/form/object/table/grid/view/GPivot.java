@@ -22,7 +22,8 @@ import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
@@ -88,7 +89,7 @@ public class GPivot extends GStateTableView {
             Map<GGroupObjectValue, Object> propValues = values.get(i);
             List<Map<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(i);
 
-            GridCellRenderer renderer = null;
+            CellRenderer renderer = null;
             if(convertDataToStrings)
                 renderer = properties.get(i).getGridCellRenderer();
 
@@ -177,7 +178,7 @@ public class GPivot extends GStateTableView {
         return null;
     }
 
-    private void pushValue(JsArrayMixed rowValues, Map<GGroupObjectValue, Object> propValues, GGroupObjectValue fullKey, GridCellRenderer cellRenderer) {
+    private void pushValue(JsArrayMixed rowValues, Map<GGroupObjectValue, Object> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer) {
         Object value = propValues.get(fullKey);
         rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value) : value) : null);
     }
@@ -821,8 +822,8 @@ public class GPivot extends GStateTableView {
     }
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
-        GridCellRenderer<?> renderer = columnMap.get(columnName).property.getGridCellRenderer();
-        renderer.render(th, font, value, false);
+        CellRenderer<?> renderer = columnMap.get(columnName).property.getGridCellRenderer();
+        renderer.render(th, value, RenderContext.DEFAULT, () -> font);
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {

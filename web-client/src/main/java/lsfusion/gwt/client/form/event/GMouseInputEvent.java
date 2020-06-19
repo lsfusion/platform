@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.event;
 
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 
@@ -19,12 +20,8 @@ public class GMouseInputEvent extends GInputEvent {
         this.mouseEvent = mouseEvent;
     }
 
-    public GMouseInputEvent(Event e) {
-        this(e.getTypeInt() == Event.ONCLICK, e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
-    }
-
     public GMouseInputEvent(NativeEvent e) {
-        this(e.getType().equals("click"), e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
+        this(e.getType().equals(BrowserEvents.CLICK), e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
     }
 
     private GMouseInputEvent(boolean singleClick, boolean alt, boolean ctrl, boolean shift) {

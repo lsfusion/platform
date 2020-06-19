@@ -3,16 +3,15 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import net.auroris.ColorPicker.client.ColorPicker;
 
@@ -58,7 +57,7 @@ public class ColorGridCellEditor extends PopupBasedGridCellEditor {
     }
 
     @Override
-    public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+    public void startEditing(Event editEvent, Element parent, Object oldValue) {
         if (oldValue != null) {
             try {
                 colorPicker.setHex(((ColorDTO)oldValue).value);
@@ -67,6 +66,6 @@ public class ColorGridCellEditor extends PopupBasedGridCellEditor {
             }
         }
 
-        super.startEditing(editEvent, context, parent, oldValue);
+        super.startEditing(editEvent, parent, oldValue);
     }
 }

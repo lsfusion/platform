@@ -1,95 +1,57 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.view.ResizableLayoutPanel;
-import lsfusion.gwt.client.classes.data.GFormatType;
-import lsfusion.gwt.client.classes.data.GStringType;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 import java.io.Serializable;
 
 public class GDataFilterValueView extends GFilterValueView {
-    private GDataFilterValue filterValue;
-    private GTableController logicsSupplier;
-    private GDataFilterValueViewTable valueTable;
+    private final GDataFilterValue filterValue;
+    private final GTableController logicsSupplier;
 
-    private ResizableLayoutPanel tablePanel;
+    public GDataFilterPropertyValue cell;
 
     public GDataFilterValueView(GFilterValueListener listener, GDataFilterValue filterValue, GPropertyDraw property, GTableController logicsSupplier) {
         super(listener);
         this.filterValue = filterValue;
         this.logicsSupplier = logicsSupplier;
 
-        valueTable = new GDataFilterValueViewTable(this, property) {
-            @Override
-            protected void onFocus() {
-                super.onFocus();
-                tablePanel.addStyleName("dataFilterValueTablePanelFocused");
-            }
+        cell = new GDataFilterPropertyValue(property, logicsSupplier.getForm(), value -> valueChanged(value));
+        cell.addSimple(this);
 
-            @Override
-            protected void onBlur() {
-                super.onBlur();
-                tablePanel.removeStyleName("dataFilterValueTablePanelFocused");
-            }
-        };
-
-        tablePanel = new ResizableLayoutPanel();
-        tablePanel.addStyleName("dataFilterValueTablePanel");
-        tablePanel.setWidget(valueTable);
-        tablePanel.setPixelSize(property.getValueWidth(null), property.getValueHeight(null));
-
-        add(tablePanel);
+        add(cell);
     }
 
     @Override
     public void propertySet(GPropertyFilter condition) {
-        setProperty(condition);
-        valueTable.setValue(filterValue.value);
+        changeProperty(condition.property);
     }
 
     @Override
     public void propertyChanged(GPropertyFilter condition) {
-        setProperty(condition);
-        setValue(logicsSupplier.getSelectedValue(condition.property, condition.columnKey));
+        filterValue.value = (Serializable) logicsSupplier.getSelectedValue(condition.property, condition.columnKey);
+
+        changeProperty(condition.property);
     }
 
-    private void setProperty(GPropertyFilter condition) {
-        tablePanel.setPixelSize(condition.property.getValueWidth(null), condition.property.getValueHeight(null));
-        valueTable.setProperty(condition.property);
+    private void changeProperty(GPropertyDraw property) {
+        cell.changeProperty(property);
+        cell.updateValue(filterValue.value);
     }
 
     public void valueChanged(Object value) {
-        setValue(value);
+        filterValue.value = (Serializable) value;
         listener.valueChanged();
     }
 
-    private void setValue(Object value) {
-        filterValue.value = (Serializable) value;
-        valueTable.setValue(value);
-    }
-
     public void focusOnValue() {
-        valueTable.focusOnValue();
+        cell.setFocus(true);
     }
 
-    public void applyFilter() {
-    }
-
-    public void startEditing(EditEvent keyEvent) {
-        valueTable.startEditing(keyEvent);
-    }
-
-    @Override
-    public void setWidth(GPropertyDraw property, int width) {
-        super.setWidth(property, width + 4); //4 for borders
-        if(property.baseType instanceof GStringType || property.baseType instanceof GFormatType) {
-            tablePanel.setPixelSize(width, property.getValueHeight(null));
-            valueTable.setTableWidth(width, Style.Unit.PX);
-        }
+    public void startEditing(Event keyEvent) {
+        cell.onEditEvent(keyEvent, () -> {});
     }
 }

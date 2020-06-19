@@ -2,13 +2,13 @@ package lsfusion.gwt.client.classes.data.link;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.view.link.ImageLinkGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.link.ImageLinkCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class GImageLinkType extends GLinkType {
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new ImageLinkGridCellRenderer(property);
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new ImageLinkCellRenderer(property);
     }
 
     @Override

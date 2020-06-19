@@ -3,11 +3,11 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.FileBasedGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.FileBasedCellRenderer;
 
-public class ImageGridCellRenderer extends FileBasedGridCellRenderer {
+public class ImageCellRenderer extends FileBasedCellRenderer {
 
-    public ImageGridCellRenderer(GPropertyDraw property) {
+    public ImageCellRenderer(GPropertyDraw property) {
         super(property);
     }
 

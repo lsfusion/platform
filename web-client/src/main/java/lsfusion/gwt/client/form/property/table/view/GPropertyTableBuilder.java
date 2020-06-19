@@ -1,19 +1,14 @@
 package lsfusion.gwt.client.form.property.table.view;
 
 import com.google.gwt.dom.client.*;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
+import lsfusion.gwt.client.base.view.grid.cell.Context;
+import lsfusion.gwt.client.form.controller.GFormController;
 
 import java.util.List;
-
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
@@ -69,51 +64,13 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 tdClasses.append(lastColumnStyle);
             }
 
-            // Build the cell.
-            HasHorizontalAlignment.HorizontalAlignmentConstant hAlign = column.getHorizontalAlignment();
-            HasVerticalAlignment.VerticalAlignmentConstant vAlign = column.getVerticalAlignment();
-
             TableCellElement td = tr.insertCell(columnIndex);
             td.setClassName(tdClasses.toString());
-            if (hAlign != null) {
-                td.setAlign(hAlign.getTextAlignString());
-            }
-            if (vAlign != null) {
-                td.setVAlign(vAlign.getVerticalAlignString());
-            }
 
             updateTD(rowIndex, rowValue, td, columnIndex, true);
 
-            // Add the inner div.
-
-            DivElement div = createCellInnerDiv();
-
-            // Render the cell into the div.
-            renderCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
-
-            td.appendChild(div);
-
-            if (cellTable instanceof GSinglePropertyTable) {
-                GPropertyDraw property = ((GSinglePropertyTable) cellTable).getProperty(column);
-                if (property.notNull) {
-                    DivElement changeEventSign = Document.get().createDivElement();
-                    changeEventSign.addClassName("rightBottomCornerTriangle");
-                    changeEventSign.addClassName("notNullCornerTriangle");
-                    td.appendChild(changeEventSign);
-                } else if (property.hasChangeAction) {
-                    DivElement changeEventSign = Document.get().createDivElement();
-                    changeEventSign.addClassName("rightBottomCornerTriangle");
-                    changeEventSign.addClassName("changeActionCornerTriangle");
-                    td.appendChild(changeEventSign);
-                }
-            }
+            renderCell(td, new Context(rowIndex, columnIndex, rowValue), column, rowValue);
         }
-    }
-
-    protected DivElement createCellInnerDiv() {
-        DivElement div = Document.get().createDivElement();
-        div.getStyle().setHeight(cellHeight, Style.Unit.PX);
-        return div;
     }
 
     @Override
@@ -150,10 +107,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         updateTD(rowIndex, rowValue, td, columnIndex, updateCellHeight);
 
-        DivElement div = td.getFirstChild().cast();
-
-        // Render the cell into the div.
-        updateCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
+        updateCell(td, new Context(rowIndex, columnIndex, rowValue), column, rowValue);
     }
 
     // need this for mixing color
@@ -170,20 +124,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
 
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
-        if (backgroundColor != null) {
-            td.setAttribute(BKCOLOR, backgroundColor);
-            td.getStyle().setBackgroundColor(getDisplayColor(backgroundColor));
-        } else {
-            td.removeAttribute(BKCOLOR);
-            td.getStyle().clearBackgroundColor();
-        }
+        td.setPropertyString(BKCOLOR, backgroundColor);
+        GFormController.setBackgroundColor(td, backgroundColor);
 
         String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
-        if (foregroundColor != null) {
-            td.getStyle().setColor(getDisplayColor(foregroundColor));
-        } else {
-            td.getStyle().clearColor();
-        }
+        GFormController.setForegroundColor(td, foregroundColor);
     }
 
     public static void renderTD(Element td, int height) {

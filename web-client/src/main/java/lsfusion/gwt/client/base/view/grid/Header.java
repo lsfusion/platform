@@ -15,10 +15,10 @@
  */
 package lsfusion.gwt.client.base.view.grid;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableCellElement;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,27 +28,10 @@ import static java.util.Collections.unmodifiableSet;
 
 /**
  * A table column header or footer.
- *
- * @param <H> the {@link Cell} type
  */
 public abstract class Header<H> {
 
-    private Set<String> consumedEvents;
-
-    public Header(String... consumedEvents) {
-        if (consumedEvents != null && consumedEvents.length > 0) {
-            this.consumedEvents = unmodifiableSet(new HashSet<>(asList(consumedEvents)));
-        }
-    }
-
-    public Header(Set<String> consumedEvents) {
-        if (consumedEvents != null) {
-            this.consumedEvents = unmodifiableSet(consumedEvents);
-        }
-    }
-
-    public Set<String> getConsumedEvents() {
-        return consumedEvents;
+    public Header() {
     }
 
     /**

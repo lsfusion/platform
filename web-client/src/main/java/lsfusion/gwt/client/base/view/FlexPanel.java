@@ -128,29 +128,20 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis);
         widget.setLayoutData(layoutData);
 
-        if (crossAxisSize != null && crossAxisSize >= 0) {
-            if (vertical) {
-                widget.setWidth(crossAxisSize + "px");
-            } else {
-                widget.setHeight(crossAxisSize + "px");
-            }
-        }
-
-        // верхние контейнеры при расчёте flexBasis не учитывают flexBasis потомков, а используют для этого другие значения,
-        // в частности minWidth. в результате, если у одного из верхних контейнеров выставлен flexBasis = auto, а у одного из потомков 
-        // большое значение flexBasis, то этот потомок обрезается верхним контейнером, который рассчитал себе меньший размер.
-        // пока у нас не предполагается, что компонент будет ужиматься меньше значения flexBasis
-        // - такое решение будет мешать поддерживать flex-shrink
-        // - на момент фикса данный случай прекрасно работал в IE (flexBasis потомка участвует в расчёте flexBasis родителя) 
-        if (flexBasis != null)
-            if (vertical) {
-                childElement.getStyle().setProperty("minHeight", flexBasis + "px");
-            } else {
-                childElement.getStyle().setProperty("minWidth", flexBasis + "px");
-            }
+        setBaseWidth(widget, vertical ? crossAxisSize : flexBasis, vertical ? flexBasis : crossAxisSize);
 
         // Adopt.
         adopt(widget);
+    }
+
+    // we're setting min-width/height and not width/height for two reasons:
+    // a) alignment STRETCH doesn't work when width is set
+    // b) flexBasis auto doesn't respect flexBasis of its descendants, but respects min-width (however with that approach in future there might be some problems with flex-shrink if we we'll want to support it)
+    public static void setBaseWidth(Widget widget, Integer width, Integer height) {
+        if(width != null)
+            widget.getElement().getStyle().setProperty("minWidth", width + "px");
+        if(height != null)
+            widget.getElement().getStyle().setProperty("minHeight", height + "px");
     }
 
     public void setChildFlex(Widget w, double flex) {

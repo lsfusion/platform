@@ -25,11 +25,4 @@ import com.google.gwt.event.shared.HasHandlers;
  * @param <T> the data type of the values in the widget
  */
 public interface HasCellPreviewHandlers<T> extends HasHandlers {
-    /**
-     * Adds a {@link CellPreviewEvent} handler.
-     *
-     * @param handler the handler
-     * @return the registration for the event
-     */
-    HandlerRegistration addCellPreviewHandler(CellPreviewEvent.Handler<T> handler);
 }

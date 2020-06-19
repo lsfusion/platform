@@ -15,7 +15,7 @@ public class GPropertyContextMenuPopup {
         void onMenuItemSelected(String actionSID);
     }
 
-    public void show(GPropertyDraw property, int x, int y, final ItemSelectionListener selectionListener) {
+    public static void show(GPropertyDraw property, int x, int y, final ItemSelectionListener selectionListener) {
         if (property == null) {
             return;
         }

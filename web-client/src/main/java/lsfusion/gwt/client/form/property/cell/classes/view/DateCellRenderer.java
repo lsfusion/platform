@@ -7,8 +7,8 @@ import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GZDateTimeDTO;
 
-public class DateGridCellRenderer extends FormatGridCellRenderer<Object, DateTimeFormat> {
-    public DateGridCellRenderer(GPropertyDraw property) {
+public class DateCellRenderer extends FormatCellRenderer<Object, DateTimeFormat> {
+    public DateCellRenderer(GPropertyDraw property) {
         super(property);
     }
 

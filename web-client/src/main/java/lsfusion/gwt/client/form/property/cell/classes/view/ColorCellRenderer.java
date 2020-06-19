@@ -3,18 +3,19 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public class ColorGridCellRenderer extends GridCellRenderer<Object> {
+public class ColorCellRenderer extends CellRenderer<Object> {
     @Override
-    public void renderStatic(Element element, GFont font, boolean isSingle) {
+    public void renderStatic(Element element, RenderContext renderContext) {
         element.setInnerText(EscapeUtils.UNICODE_NBSP);
         element.getStyle().setBorderWidth(0, Style.Unit.PX);
     }
 
     @Override
-    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
         String color = getColorValue(value);
         element.getStyle().setColor(color);
         element.getStyle().setBackgroundColor(color);

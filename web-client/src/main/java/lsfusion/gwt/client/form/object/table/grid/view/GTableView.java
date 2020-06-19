@@ -59,11 +59,9 @@ public interface GTableView {
     default Element getFocusHolderElement() { return getThisWidget().getElement(); }; // protected
 
     // add / delete
-    int getKeyboardSelectedRow();
+    int getSelectedRow();
     void modifyGroupObject(GGroupObjectValue key, boolean add, int position);
 
-    // toolbar features
-    void groupChange();
     void runGroupReport(boolean toExcel);
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey); // for filter to set default value
 

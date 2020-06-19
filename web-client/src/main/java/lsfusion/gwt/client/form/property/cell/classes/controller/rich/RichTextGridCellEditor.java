@@ -14,10 +14,8 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DialogBasedGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 public class RichTextGridCellEditor extends DialogBasedGridCellEditor {
@@ -33,7 +31,7 @@ public class RichTextGridCellEditor extends DialogBasedGridCellEditor {
     }
 
     @Override
-    protected Widget createComponent(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+    protected Widget createComponent(Element parent, Object oldValue) {
         textArea = new RichTextArea();
         textArea.setHTML(EscapeUtils.sanitizeHtml(oldValue == null ? "" : oldValue.toString()));
         

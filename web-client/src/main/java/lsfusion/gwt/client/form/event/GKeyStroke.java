@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.event;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.Event;
 
 import java.io.Serializable;
 
@@ -141,6 +142,10 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && isBackspaceKeyEvent(event);
     }
 
+    public static boolean isGroupChangeKeyEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
+    }
+
     public static boolean isCommonEditKeyEvent(NativeEvent event) {
         if (event.getCtrlKey() || event.getAltKey() || event.getMetaKey()) {
             return false;
@@ -217,10 +222,11 @@ public class GKeyStroke implements Serializable {
                 (event.getKeyCode() == KEY_INSERT && event.getCtrlKey()));
     }
 
-    public static boolean isPasteFromClipboardEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) &&
+    public static boolean isPasteFromClipboardEvent(Event event) {
+        return (KEYDOWN.equals(event.getType()) &&
                 ((event.getKeyCode() == KEY_V && event.getCtrlKey()) ||
-                (event.getKeyCode() == KEY_INSERT && event.getShiftKey()));
+                (event.getKeyCode() == KEY_INSERT && event.getShiftKey())))
+                || event.getTypeInt() == Event.ONPASTE;
     }
 
     public static boolean shouldPreventDefaultBrowserAction(NativeEvent event) {

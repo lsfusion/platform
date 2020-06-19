@@ -4,29 +4,26 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-public abstract class FileBasedGridCellRenderer extends GridCellRenderer {
+public abstract class FileBasedCellRenderer extends CellRenderer {
     protected static final String ICON_EMPTY = "empty.png";
     protected static final String ICON_FILE = "file.png";
 
     protected GPropertyDraw property;
 
     @Override
-    public void renderStatic(Element element, GFont font, boolean isSingle) {
+    public void renderStatic(Element element, RenderContext renderContext) {
         element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
 
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) element.setAttribute("align", textAlignStyle.getCssName());
-
-        if (!isSingle) element.getStyle().setPosition(Style.Position.RELATIVE);
     }
 
     @Override
-    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
-            element.setInnerText(null);
-            element.removeAllChildren();
+    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
+        element.setInnerText(null);
+        element.removeAllChildren();
 
         if (value == null && property.isEditableNotNull()) {
             setBasedEmptyElement(element);
@@ -56,7 +53,7 @@ public abstract class FileBasedGridCellRenderer extends GridCellRenderer {
 
     protected abstract String getFilePath(Object value);
 
-    protected FileBasedGridCellRenderer(GPropertyDraw property) {
+    protected FileBasedCellRenderer(GPropertyDraw property) {
         this.property = property;
     }
 

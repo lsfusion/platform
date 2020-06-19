@@ -20,18 +20,14 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.base.view.grid.cell.Cell.Context;
-import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
-import lsfusion.gwt.client.base.view.grid.cell.HasCell;
+import lsfusion.gwt.client.base.view.grid.cell.Context;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -39,36 +35,13 @@ import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.*;
 
-import static com.google.gwt.dom.client.TableCellElement.TAG_TD;
-import static com.google.gwt.dom.client.TableCellElement.TAG_TH;
 import static java.lang.Math.min;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
-/**
- * Abstract base class for tabular views that supports paging and columns.
- * <p/>
- * <p>
- * <h3>Columns</h3> The {@link Column} class defines the {@link Cell} used to
- * render a column. Implement {@link Column#getValue(Object)} to retrieve the
- * field value from the row object that will be rendered in the {@link Cell}.
- * </p>
- * <p/>
- * <p>
- * <h3>Headers and Footers</h3> A {@link Header} can be placed at the top
- * (header) or bottom (footer) of the {@link DataGrid}. You can specify
- * a header as text using {@link #addColumn(Column, String)}, or you can create
- * a custom {@link Header} that can change with the value of the cells, such as
- * a column total. The {@link Header} will be rendered every time the row data
- * changes or the table is redrawn. If you pass the same header instance (==)
- * into adjacent columns, the header will span the columns.
- * </p>
- *
- * @param <T> the data type of each row
- */
 // we need resizesimplepanel for "scroller" padding in headers (we don't know if there gonna be vertival scroller)
-public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Focusable, KeyboardRowChangedEvent.HasKeyboardRowChangedHandlers, ColorThemeChangeListener {
+public abstract class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Focusable, ColorThemeChangeListener {
 
     private static GridStyle DEFAULT_STYLE;
 
@@ -81,32 +54,6 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 
     public static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
     public static int nativeScrollbarHeight = AbstractNativeScrollbar.getNativeScrollbarHeight();
-
-    /**
-     * A ClientBundle that provides images for this widget.
-     */
-    public interface Resources extends ClientBundle {
-        /**
-         * The loading indicator used while the table is waiting for data.
-         */
-        @Source("cellTableLoading.gif")
-        @ImageResource.ImageOptions(flipRtl = true)
-        ImageResource dataGridLoading();
-
-        /**
-         * Icon used when a column is sorted in ascending order.
-         */
-        @Source("sortAscending.png")
-        @ImageResource.ImageOptions(flipRtl = true)
-        ImageResource sortAscending();
-
-        /**
-         * Icon used when a column is sorted in descending order.
-         */
-        @Source("sortDescending.png")
-        @ImageResource.ImageOptions(flipRtl = true)
-        ImageResource sortDescending();
-    }
 
     /**
      * The current state of the presenter reflected in the view.
@@ -138,33 +85,15 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     private final List<Column<T, ?>> columns = new ArrayList<>();
     private final Map<Column<T, ?>, String> columnWidths = new HashMap<>();
 
-    private boolean cellWasEditing;
-    protected boolean cellIsEditing;
-
-    private HandlerRegistration keyboardSelectionReg;
-    /**
-     * Indicates, that keyboard styles will be removed, when table loses focus
-     */
-    private boolean removeKeyboardStylesOnBlur = false;
-
     protected final GridStyle style;
 
-    private String selectedRowStyle;
-    private String selectedRowCellStyle;
-    private String focusedCellStyle;
-    private String focusedCellLastInRowStyle;
-    private String topOfFocusedCellStyle;
-    private String rightOfFocusedCellStyle;
-
     private HeaderBuilder<T> footerBuilder;
-    private int nonNullFootersCount = 0;
     private final List<Header<?>> footers = new ArrayList<>();
 
     /**
      * Indicates that at least one column handles selection.
      */
     private HeaderBuilder<T> headerBuilder;
-    private int nonNullHeadersCount = 0;
     private final List<Header<?>> headers = new ArrayList<>();
 
     /**
@@ -174,7 +103,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     private boolean columnsChanged;
     private boolean headersChanged;
 
-    private GPropertyTableBuilder<T> tableBuilder;
+    protected GPropertyTableBuilder<T> tableBuilder;
 
     private final TableWidget tableData;
     protected TableScrollPanel tableDataScroller; // vertical scroller
@@ -186,6 +115,12 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     private TableScrollPanel tableHeaderScroller;
 
     private final FlexTable emptyTableWidgetContainer;
+
+    protected DataGridSelectionHandler selectionHandler;
+
+    public void setSelectionHandler(DataGridSelectionHandler selectionHandler) {
+        this.selectionHandler = selectionHandler;
+    }
 
     private int renderedRowCount = 0;
 
@@ -299,34 +234,57 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 
         setTableFocusable(true);
 
-        initSinkEvents();
-        initStyles(style);
-
-        setKeyboardSelectionHandler(new DataGridKeyboardSelectionHandler<>(this));
+        initSinkEvents(this);
+        addStyleName(style.dataGridWidget());
 
         MainFrame.addColorThemeChangeListener(this);
     }
 
-    public void initStyles(GridStyle style) {
-        selectedRowStyle = style.dataGridKeyboardSelectedRow();
-        selectedRowCellStyle = style.dataGridKeyboardSelectedRowCell();
-        focusedCellStyle = style.dataGridFocusedCell();
-        focusedCellLastInRowStyle = style.dataGridFocusedCellLastInRow();
-        topOfFocusedCellStyle = style.dataGridTopOfFocusedCell();
-        rightOfFocusedCellStyle = style.dataGridRightOfFocusedCell();
-
-        addStyleName(style.dataGridWidget());
+    private static Set<String> browserKeyEvents;
+    private static Set<String> getBrowserKeyEvents() {
+        if(browserKeyEvents == null) {
+            Set<String> eventTypes = new HashSet<>();
+            eventTypes.add(BrowserEvents.KEYPRESS);
+            eventTypes.add(BrowserEvents.KEYDOWN);
+            eventTypes.add(BrowserEvents.KEYUP);
+            browserKeyEvents = eventTypes;
+        }
+        return browserKeyEvents;
     }
 
-    public void initSinkEvents() {
-        Set<String> eventTypes = new HashSet<>();
-        eventTypes.add(BrowserEvents.FOCUS);
-        eventTypes.add(BrowserEvents.BLUR);
-        eventTypes.add(BrowserEvents.KEYDOWN); // Used for keyboard navigation.
-        eventTypes.add(BrowserEvents.KEYUP); // Used by subclasses for selection.
-        eventTypes.add(BrowserEvents.CLICK); // Used by subclasses for selection.
-        eventTypes.add(BrowserEvents.MOUSEDOWN); // No longer used, but here for legacy support.
-        CellBasedWidgetImpl.get().sinkEvents(this, eventTypes);
+    private static Set<String> browserEvents;
+    private static Set<String> getBrowserEvents() {
+        if(browserEvents == null) {
+            Set<String> eventTypes = new HashSet<>();
+            eventTypes.add(BrowserEvents.FOCUS);
+            eventTypes.add(BrowserEvents.BLUR);
+            eventTypes.add(BrowserEvents.CLICK);
+            eventTypes.add(BrowserEvents.DBLCLICK);
+            eventTypes.add(BrowserEvents.MOUSEDOWN);
+            // for tooltips on header
+            eventTypes.add(BrowserEvents.MOUSEUP);
+            eventTypes.add(BrowserEvents.MOUSEOVER);
+            eventTypes.add(BrowserEvents.MOUSEOUT);
+            eventTypes.addAll(getBrowserKeyEvents());
+            browserEvents = eventTypes;
+        }
+        return browserEvents;
+    }
+    // should be called for every widget that has Widget.onBrowserEvent implemented
+    // however now there are 3 ways of handling events:
+    // form bindings: uses addDOMHandler which add sinkEvents automatically (and does basic dispatching)
+    // grid / panel handlers : uses this initSinkEvents + consumed event
+    // all others : manual sinkEvents
+    public static void initSinkEvents(Widget widget) {
+        CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserEvents());
+
+        Event.sinkEvents(widget.getElement(), Event.ONPASTE);
+    }
+    public static boolean checkSinkEvents(Event event) {
+        return getBrowserEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE;
+    }
+    public static boolean checkSinkKeyEvents(Event event) {
+        return getBrowserKeyEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE;
     }
 
     public GridStyle getStyle() {
@@ -365,7 +323,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 
     @Override
     public void setFocus(boolean focused) {
-        Element focusHolderElement = getFocusHolderElement();
+        Element focusHolderElement = getTableDataFocusElement();
 
         if (focused) {
             focusHolderElement.focus();
@@ -374,14 +332,13 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         }
     }
 
-    @Override
-    public HandlerRegistration addCellPreviewHandler(CellPreviewEvent.Handler<T> handler) {
-        return addHandler(handler, CellPreviewEvent.getType());
+    public void focus() {
+        setFocus(true);
     }
 
-    @Override
-    public HandlerRegistration addKeyboardRowChangedHandler(KeyboardRowChangedEvent.Handler handler) {
-        return addHandler(handler, KeyboardRowChangedEvent.getType());
+    private Runnable rowChangedHandler;
+    public void setRowChangedHandler(Runnable handler) {
+        rowChangedHandler = handler;
     }
 
     /**
@@ -485,6 +442,10 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         }
         super.onBrowserEvent(event);
 
+        // here grid handles somewhy other than sink events, so will check it after super
+        if(!checkSinkEvents(event))
+            return;
+
         String eventType = event.getType();
         if (BrowserEvents.FOCUS.equals(eventType)) {
             // Remember the focus state.
@@ -522,166 +483,95 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         TableSectionElement tfoot = getTableFootElement();
         TableSectionElement thead = getTableHeadElement();
 
-        Element cellParent = null;
+        int row = -1;
+        Column<T, ?> column = null;
+        Element columnParent = null;
+
+        Header header = null;
         Element headerParent = null;
+        Header footer = null;
         Element footerParent = null;
 
         TableSectionElement targetTableSection = null;
-        TableCellElement targetTableCell = null;
-        String eventType = event.getType();
 
-        if (target == getFocusHolderElement()) {
-            // forward events bubbled on table container to current cell,
-            // but don't forward blur or focus events on the container itself
-            if (!BrowserEvents.BLUR.equals(eventType) &&
-                !BrowserEvents.BLUR.equals(eventType) &&
-                !BrowserEvents.CLICK.equals(eventType) &&
-                !BrowserEvents.DBLCLICK.equals(eventType)) {
+        if (target == getTableDataFocusElement()) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
+            if (checkSinkKeyEvents(event)) {
                 targetTableSection = tbody;
 
-                targetTableCell = getKeyboardSelectedTableCellElement();
-                if (targetTableCell != null) {
-                    cellParent = targetTableCell.getFirstChildElement();
-                }
+                row = getSelectedRow();
+                columnParent = getSelectedElement();
+                if(columnParent != null)
+                    column = tableBuilder.getColumn(columnParent);
             }
         } else {
-            Element maybeTableCell = null;
             Element cur = target;
-            while (cur != null && targetTableSection == null) {
-                /*
-                 * Found the table section. Return the most recent cell element that we
-                 * discovered.
-                 */
+            while (cur != null) {
                 if (cur == tbody || cur == tfoot || cur == thead) {
                     targetTableSection = cur.cast(); // We found the table section.
-                    if (maybeTableCell != null) {
-                        targetTableCell = maybeTableCell.cast();
-                        break;
-                    }
+                    break;
                 }
 
-                // Look for a table cell.
-                String tagName = cur.getTagName();
-                if (TAG_TD.equalsIgnoreCase(tagName) || TAG_TH.equalsIgnoreCase(tagName)) {
-                  /*
-                   * Found a table cell, but we can't return yet because it may be part
-                   * of a sub table within the a CellTable cell.
-                   */
-                    maybeTableCell = cur;
+                if(row < 0)
+                    row = tableBuilder.getRowValueIndex(cur);
+                if (column == null) {
+                    column = tableBuilder.getColumn(cur);
+                    if(column != null)
+                        columnParent = cur;
+                }
+                if (header == null && !noHeaders) {
+                    header = headerBuilder.getHeader(cur);
+                    if(header != null)
+                        headerParent = cur;
+                }
+                if (footer == null && !noFooters) {
+                    footer = footerBuilder.getHeader(cur);
+                    if(footer != null)
+                        footerParent = cur;
                 }
 
-                // Look for the most immediate cell parent if not already found.
-                if (cellParent == null && tableBuilder.isColumn(cur)) {
-                    cellParent = cur;
-                }
-
-                /*
-                 * Look for the most immediate header parent if not already found. Its
-                 * possible that the footer or header will mistakenly identify a header
-                 * from the other section, so we remember both. When we eventually reach
-                 * the target table section element, we'll know for sure if its a header
-                 * of footer.
-                 */
-                if (headerParent == null && !noHeaders && headerBuilder.isHeader(cur)) {
-                    headerParent = cur;
-                }
-                if (footerParent == null && !noFooters && footerBuilder.isHeader(cur)) {
-                    footerParent = cur;
-                }
-
-                // Iterate.
                 cur = cur.getParentElement();
             }
         }
 
-        if (targetTableCell == null) {
-            return;
-        }
-
-        /*
-         * Forward the event to the associated header, footer, or column.
-         */
-        TableRowElement targetTableRow = targetTableCell.getParentElement().cast();
-
-        int col = targetTableCell.getCellIndex();
-        if (targetTableSection == thead || targetTableSection == tfoot) {
-            boolean isHeader = (targetTableSection == thead);
-            headerParent = isHeader ? headerParent : footerParent;
-
-            // Fire the event to the header.
-            if (headerParent != null) {
-                Header<?> header = isHeader ? headerBuilder.getHeader(headerParent) : footerBuilder.getHeader(footerParent);
-
-                if (header != null) {
-                    if (consumesEventType(header.getConsumedEvents(), eventType)) {
-                        header.onBrowserEvent(headerParent, event);
-                    }
-                }
-            }
-        } else if (targetTableSection == tbody) {
-
-            int row = tableBuilder.getRowValueIndex(targetTableRow);
-
-          /*
-           * Fire a preview event. The preview event is fired even if the TD does
-           * not contain a cell so the selection handler and keyboard handler have a
-           * chance to act.
-           */
-            if (isRowWithinBounds(row)) {
+        if (targetTableSection == thead) {
+            if (header != null)
+                header.onBrowserEvent(headerParent, event);
+        } else if(targetTableSection == tfoot) {
+            if (footer != null)
+                footer.onBrowserEvent(footerParent, event);
+        } else {
+            if (column != null) {
                 T value = getRowValue(row);
+                Context context = new Context(row, getColumnIndex(column), value);
 
-                Context context = new Context(row, col, value);
-                CellPreviewEvent<T> previewEvent = CellPreviewEvent.fire(this, event, this, context, value, cellIsEditing);
+                Consumed consumedResult = new Consumed();
+                Runnable consumed = () -> {
+                    GwtClientUtils.stopPropagation(event);
+                    consumedResult.is = true;
+                };
 
-                // Pass the event to the cell.
-                if (cellParent != null && !previewEvent.isCanceled()) {
-                    HasCell<T, ?> column;
-                    column = tableBuilder.getColumn(context, value, cellParent);
-                    if (column != null) {
-                        fireEventToCell(event, eventType, cellParent, value, context, column);
-                    }
-                }
+                // first handling cell changes with mouse (cross focus)
+                selectionHandler.onCellBefore(event, context, consumed);
+                if(consumedResult.is)
+                    return;
+
+                // then cell events (this focus)
+                fireEventToCell(event, columnParent, value, context, column, consumed);
+                if(consumedResult.is)
+                    return;
+
+                // in the end cell changes with (this focus)
+                selectionHandler.onCellAfter(event, context, consumed);
+                if(consumedResult.is)
+                    return;
             }
         }
     }
 
-    /**
-     * Set the handler that handles keyboard selection/navigation.
-     */
-    public void setKeyboardSelectionHandler(CellPreviewEvent.Handler<T> keyboardSelectionReg) {
-        // Remove the old manager.
-        if (this.keyboardSelectionReg != null) {
-            this.keyboardSelectionReg.removeHandler();
-            this.keyboardSelectionReg = null;
-        }
-
-        // Add the new manager.
-        if (keyboardSelectionReg != null) {
-            this.keyboardSelectionReg = addCellPreviewHandler(keyboardSelectionReg);
-        }
+    private static class Consumed {
+        public boolean is;
     }
 
-    /**
-     * Check if a cell consumes the specified event type.
-     *
-     * @param cell      the cell
-     * @param eventType the event type to check
-     * @return true if consumed, false if not
-     */
-    protected boolean cellConsumesEventType(Cell<?> cell, String eventType) {
-        return consumesEventType(cell.getConsumedEvents(), eventType);
-    }
-
-    protected boolean consumesEventType(Set<String> consumedEvents, String eventType) {
-        return consumedEvents != null && consumedEvents.contains(eventType);
-    }
-
-    /**
-     * Check that the row is within the correct bounds.
-     *
-     * @param row row index to check
-     * @throws IndexOutOfBoundsException
-     */
     protected void checkRowBounds(int row) {
         if (!isRowWithinBounds(row)) {
             throw new IndexOutOfBoundsException("Row index: " + row + ", Row size: " + getRowCount());
@@ -732,15 +622,6 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     }
 
     /**
-     * Adds a column to the end of the table.
-     *
-     * @param col the column to be added
-     */
-    public void addColumn(Column<T, ?> col) {
-        insertColumn(getColumnCount(), col);
-    }
-
-    /**
      * Adds a column to the end of the table with an associated header.
      *
      * @param col    the column to be added
@@ -748,16 +629,6 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
      */
     public void addColumn(Column<T, ?> col, Header<?> header) {
         insertColumn(getColumnCount(), col, header);
-    }
-
-    /**
-     * Inserts a column into the table at the specified index.
-     *
-     * @param beforeIndex the index to insert the column
-     * @param col         the column to be added
-     */
-    public void insertColumn(int beforeIndex, Column<T, ?> col) {
-        insertColumn(beforeIndex, col, (Header<?>) null, (Header<?>) null);
     }
 
     /**
@@ -800,32 +671,10 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         columns.add(beforeIndex, col);
 
         // Increment the keyboard selected column.
-        int selectedColumn = getKeyboardSelectedColumn();
+        int selectedColumn = getSelectedColumn();
         if (beforeIndex <= selectedColumn) {
-            ensurePendingState().keyboardSelectedColumn = min(selectedColumn + 1, columns.size() - 1);
+            ensurePendingState().selectedColumn = min(selectedColumn + 1, columns.size() - 1);
         }
-
-        // Sink events used by the new column.
-        Set<String> consumedEvents = new HashSet<>();
-        {
-            Set<String> cellEvents = col.getCell().getConsumedEvents();
-            if (cellEvents != null) {
-                consumedEvents.addAll(cellEvents);
-            }
-        }
-        if (header != null) {
-            Set<String> headerEvents = header.getConsumedEvents();
-            if (headerEvents != null) {
-                consumedEvents.addAll(headerEvents);
-            }
-        }
-        if (footer != null) {
-            Set<String> footerEvents = footer.getConsumedEvents();
-            if (footerEvents != null) {
-                consumedEvents.addAll(footerEvents);
-            }
-        }
-        CellBasedWidgetImpl.get().sinkEvents(this, consumedEvents);
 
         refreshColumnsAndRedraw();
     }
@@ -837,11 +686,11 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
             return;
         }
 
-        int selectedColumn = getKeyboardSelectedColumn();
+        int selectedColumn = getSelectedColumn();
         if (oldIndex == selectedColumn) {
-            ensurePendingState().keyboardSelectedColumn = newIndex;
+            ensurePendingState().selectedColumn = newIndex;
         } else if (oldIndex < selectedColumn && selectedColumn > 0) {
-            ensurePendingState().keyboardSelectedColumn--;
+            ensurePendingState().selectedColumn--;
         }
 
         Column<T, ?> column = columns.remove(oldIndex);
@@ -882,10 +731,10 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         headers.remove(index);
         footers.remove(index);
 
-        int selectedColumn = getKeyboardSelectedColumn();
+        int selectedColumn = getSelectedColumn();
         // Decrement the keyboard selected column.
         if (index <= selectedColumn && selectedColumn > 0) {
-            ensurePendingState().keyboardSelectedColumn = selectedColumn - 1;
+            ensurePendingState().selectedColumn = selectedColumn - 1;
         }
 
         // Redraw the table asynchronously.
@@ -924,19 +773,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         return columns.indexOf(column);
     }
 
-    /**
-     * Get the width of a {@link Column}.
-     *
-     * @param column the column
-     * @return the width of the column, or null if not set
-     * @see #setColumnWidth(Column, double, Unit)
-     */
     public String getColumnWidth(Column<T, ?> column) {
         return columnWidths.get(column);
-    }
-
-    public CellTableBuilder<T> getTableBuilder() {
-        return tableBuilder;
     }
 
     public void setTableBuilder(GPropertyTableBuilder<T> tableBuilder) {
@@ -980,8 +818,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
      *
      * @return the currently selected column, or -1 if none selected
      */
-    public int getKeyboardSelectedColumn() {
-        return getCurrentState().keyboardSelectedColumn;
+    public int getSelectedColumn() {
+        return getCurrentState().selectedColumn;
     }
 
     /**
@@ -1001,23 +839,6 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         return getRowElementNoFlush(row);
     }
 
-    // is single
-    public boolean isRemoveKeyboardStylesOnBlur() {
-        return false;
-    }
-
-    /**
-     * Set the width of a {@link Column}. The width will persist with the column
-     * and takes precedence of any width set via
-     * {@link #setColumnWidth(int, double, Unit)}.
-     *
-     * @param column the column
-     * @param width  the width of the column
-     */
-    public void setColumnWidth(Column<T, ?> column, double width, Unit unit) {
-        setColumnWidth(column, width + unit.getType());
-    }
-
     /**
      * Set the width of a {@link Column}. The width will persist with the column
      * and takes precedence of any width set via
@@ -1029,16 +850,6 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     public void setColumnWidth(Column<T, ?> column, String width) {
         columnWidths.put(column, width);
         updateColumnWidthImpl(column, width);
-    }
-
-    /**
-     * Set the {@link HeaderBuilder} used to build the footer section of the
-     * table.
-     */
-    public void setFooterBuilder(HeaderBuilder<T> builder) {
-        assert builder != null : "builder cannot be null";
-        this.footerBuilder = builder;
-        refreshColumnsAndRedraw();
     }
 
     /**
@@ -1066,8 +877,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
      *
      * @param column the column index, greater than or equal to zero
      */
-    public final void setKeyboardSelectedColumn(int column) {
-        setKeyboardSelectedColumn(column, true);
+    public final void setSelectedColumn(int column) {
+        setSelectedColumn(column, true);
     }
 
     /**
@@ -1076,12 +887,12 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
      *
      * @param column     the column index, greater than or equal to zero
      * @param stealFocus true to focus on the new column
-     * @see #setKeyboardSelectedColumn(int)
+     * @see #setSelectedColumn(int)
      */
-    public void setKeyboardSelectedColumn(int column, boolean stealFocus) {
+    public void setSelectedColumn(int column, boolean stealFocus) {
         assert column >= 0 : "Column must be zero or greater";
 
-        if (getKeyboardSelectedColumn() == column) {
+        if (getSelectedColumn() == column) {
             return;
         }
 
@@ -1094,10 +905,10 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
             }
         }
 
-        ensurePendingState().setKeyboardSelectedColumn(column);
+        ensurePendingState().setSelectedColumn(column);
 
         // Reselect the row to move the selected column.
-        setKeyboardSelectedRow(getKeyboardSelectedRow(), stealFocus);
+        setSelectedRow(getSelectedRow(), stealFocus);
     }
 
     /**
@@ -1118,8 +929,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
      *
      * @param row the row index relative to the page start
      */
-    public final void setKeyboardSelectedRow(int row) {
-        setKeyboardSelectedRow(row, true);
+    public final void setSelectedRow(int row) {
+        setSelectedRow(row, true);
     }
 
     /**
@@ -1128,13 +939,13 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
      * @param row        the row index
      * @param stealFocus true to steal focus
      */
-    public void setKeyboardSelectedRow(int row, boolean stealFocus) {
+    public void setSelectedRow(int row, boolean stealFocus) {
         if (stealFocus) {
-            ensurePendingState().keyboardStealFocus = stealFocus;
+            ensurePendingState().stealFocus = stealFocus;
         }
 
         int rowCount = getRowCount();
-        if (rowCount == 0 || getKeyboardSelectedRow() == row) {
+        if (rowCount == 0 || getSelectedRow() == row) {
             return;
         }
 
@@ -1144,9 +955,9 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
             row = rowCount - 1;
         }
 
-        ensurePendingState().setKeyboardSelectedRow(row);
+        ensurePendingState().setSelectedRow(row);
 
-        KeyboardRowChangedEvent.fire(this);
+        rowChangedHandler.run();
     }
 
     protected void setDesiredVerticalScrollPosition(int newVerticalScrollPosition) {
@@ -1280,8 +1091,21 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         return getTableBodyElement().getRows().getItem(row);
     }
 
-    private Element getKeyboardSelectedElement() {
-        return getCellParentElement(getKeyboardSelectedTableCellElement());
+    protected Element getSelectedElement() {
+        TableCellElement result = null;
+        int colIndex = getSelectedColumn();
+        if (colIndex >= 0) {// Do not use getRowElement() because that will flush the presenter.
+            int rowIndex = getSelectedRow();
+            TableRowElement tr = getRowElementNoFlush(rowIndex);
+            if (tr != null) {
+                int cellCount = tr.getCells().getLength();
+                if (cellCount > 0) {
+                    int column = min(colIndex, cellCount - 1);
+                    result = tr.getCells().getItem(column);
+                }
+            }
+        }
+        return result;
     }
 
     protected final TableElement getTableElement() {
@@ -1312,44 +1136,11 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         updateSelectedRowStyles();
     }
 
-    protected Element getFocusHolderElement() {
+    protected Element getTableDataFocusElement() {
         if(!noScrollers)
             return tableDataScroller.getElement();
         else
             return tableData.getElement();
-    }
-
-    /**
-     * Get the keyboard selected element from the selected table cell.
-     *
-     * @return the keyboard selected element, or null if there is none
-     */
-    protected Element getCellParentElement(TableCellElement td) {
-        if (td == null) {
-            return null;
-        }
-
-        /*
-         * The TD itself is a cell parent, which means its internal structure
-         * (including the tabIndex that we set) could be modified by its Cell. We
-         * return the TD to be safe.
-         */
-        if (tableBuilder.isColumn(td)) {
-            return td;
-        }
-
-        /*
-         * The default table builder adds a focusable div to the table cell because
-         * TDs aren't focusable in all browsers. If the user defines a custom table
-         * builder with a different structure, we must assume the keyboard selected
-         * element is the TD itself.
-         */
-        Element firstChild = td.getFirstChildElement();
-        if (firstChild != null && td.getChildCount() == 1 && "div".equalsIgnoreCase(firstChild.getTagName())) {
-            return firstChild;
-        }
-
-        return td;
     }
 
     /**
@@ -1364,74 +1155,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         }
     }
 
-    /**
-     * Fire an event to the Cell within the specified {@link TableCellElement}.
-     */
-    private <C> void fireEventToCell(Event event, String eventType, Element cellParent, final T rowValue, Context context, HasCell<T, C> column) {
-        // Check if the cell consumes the event.
-        if (preFireEventToCell(event, eventType, cellParent, rowValue, context, column)) {
-            fireEventToCellImpl(event, eventType, cellParent, rowValue, context, column);
-            postFireEventToCell(event, eventType, cellParent, rowValue, context, column);
-        }
-    }
-
-    protected <C> boolean preFireEventToCell(Event event, String eventType, Element cellParent, final T rowValue, Context context, HasCell<T, C> column) {
-        Cell<C> cell = column.getCell();
-        cellWasEditing = cell.isEditing(context, cellParent, column.getValue(rowValue));
-        return cellConsumesEventType(cell, eventType);
-    }
-
-    protected <C> void fireEventToCellImpl(Event event, String eventType, Element cellParent, final T rowValue, Context context, HasCell<T, C> column) {
-        // Fire the event to the cell.
-        column.getCell().onBrowserEvent(context, cellParent, column.getValue(rowValue), event);
-    }
-
-    protected <C> void postFireEventToCell(Event event, String eventType, Element cellParent, final T rowValue, Context context, HasCell<T, C> column) {
-        // Reset focus if needed.
-        cellIsEditing = column.getCell().isEditing(context, cellParent, column.getValue(rowValue));
-        if (cellWasEditing && !cellIsEditing) {
-            setFocus(true);
-        }
-    }
-
-    /**
-     * Get the {@link TableCellElement} that is currently keyboard selected.
-     *
-     * @return the table cell element, or null if not selected
-     */
-    private TableCellElement getKeyboardSelectedTableCellElement() {
-        int colIndex = getKeyboardSelectedColumn();
-        if (colIndex < 0) {
-            return null;
-        }
-
-        // Do not use getRowElement() because that will flush the presenter.
-        int rowIndex = getKeyboardSelectedRow();
-        TableRowElement tr = getRowElementNoFlush(rowIndex);
-        if (tr != null) {
-            int cellCount = tr.getCells().getLength();
-            if (cellCount > 0) {
-                int column = min(colIndex, cellCount - 1);
-                return tr.getCells().getItem(column);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Apply a style to a row and all cells in the row.
-     *
-     * @param tr        the row element
-     * @param rowStyle  the style to apply to the row
-     * @param cellStyle the style to apply to the cells
-     * @param add       true to add the style, false to remove
-     */
-    private void setRowStyleName(TableRowElement tr, String rowStyle, String cellStyle, boolean add) {
-        setStyleName(tr, rowStyle, add);
-        NodeList<TableCellElement> cells = tr.getCells();
-        for (int i = 0; i < cells.getLength(); i++) {
-            setStyleName(cells.getItem(i), cellStyle, add);
-        }
+    protected <C> void fireEventToCell(Event event, Element cellParent, final T rowValue, Context context, Column<T, C> column, Runnable consumed) {
+        column.onBrowserEvent(context, cellParent, column.getValue(rowValue), event, consumed);
     }
 
     /**
@@ -1478,8 +1203,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
      *
      * @return the currently selected row, or -1 if none selected
      */
-    public int getKeyboardSelectedRow() {
-        return getCurrentState().getKeyboardSelectedRow();
+    public int getSelectedRow() {
+        return getCurrentState().getSelectedRow();
     }
 
     /**
@@ -1487,8 +1212,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
      *
      * @return the value, or null if a value was not selected
      */
-    public T getKeyboardSelectedRowValue() {
-        int selectedRow = getKeyboardSelectedRow();
+    public T getSelectedRowValue() {
+        int selectedRow = getSelectedRow();
         return isRowWithinBounds(selectedRow) ? getRowValue(selectedRow) : null;
     }
 
@@ -1581,10 +1306,6 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
             updateHeadersImpl(columnsChanged);
         }
 
-        boolean stealFocus = pendingState.keyboardStealFocus;
-
-        pendingState.pendingWasFocused = isFocused = isFocused || stealFocus;
-
         isRefreshing = true;
 
         updateTableData(pendingState);
@@ -1593,8 +1314,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     }
 
     protected void preResolvePendingStateAfterUpdate() {
-        int rowToShow = pendingState.keyboardSelectedRowSet ? pendingState.keyboardSelectedRow : -1;
-        int colToShow = pendingState.keyboardSelectedColumnSet ? pendingState.keyboardSelectedColumn : -1;
+        int rowToShow = pendingState.selectedRowSet ? pendingState.selectedRow : -1;
+        int colToShow = pendingState.selectedColumnSet ? pendingState.selectedColumn : -1;
 
         //force browser-flush
         preAfterUpdateTableData(pendingState, rowToShow, colToShow);
@@ -1605,7 +1326,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
             return;
         }
 
-        boolean stealFocus = pendingState.keyboardStealFocus;
+        boolean stealFocus = pendingState.stealFocus;
 
         isRefreshing = true;
 
@@ -1616,9 +1337,9 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         headersChanged = false;
         columnsChanged = false;
 
-        if (stealFocus && !cellIsEditing) {
-            setFocus(true);
-        }
+//        if (stealFocus) {
+//            setFocus(true);
+//        }
 
         updateSelectedRowStyles();
 
@@ -1750,8 +1471,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
     }
 
     private void updateSelectedRowStyles() {
-        int newLocalSelectedRow = getKeyboardSelectedRow();
-        int newLocalSelectedCol = getKeyboardSelectedColumn();
+        int newLocalSelectedRow = getSelectedRow();
+        int newLocalSelectedCol = getSelectedColumn();
 
         updateSelectedRow(newLocalSelectedRow, newLocalSelectedCol);
 
@@ -1775,7 +1496,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         // SET NEW STATE
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rowCount) {
             boolean isFocused = focusable && this.isFocused;
-            updateSelectedRowCellsBackground(newLocalSelectedRow, rows, isFocused || (focusable && !isRemoveKeyboardStylesOnBlur()), isFocused ? newLocalSelectedCol : -1);
+            updateSelectedRowCellsBackground(newLocalSelectedRow, rows, isFocused || focusable, isFocused ? newLocalSelectedCol : -1);
         }
     }
 
@@ -1785,11 +1506,10 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         for (int column = 0; column < cells.getLength(); column++) {
             TableCellElement td = cells.getItem(column);
 
-            String background = td.getAttribute(GPropertyTableBuilder.BKCOLOR);
-            if(background.isEmpty())
+            String background = td.getPropertyString(GPropertyTableBuilder.BKCOLOR);
+            if(background != null && background.isEmpty())
                 background = null;
 
-            Style tdStyle = td.getStyle();
             String setColor;
             if (selected) {
                 setColor = (column == focusedColumn) ? getFocusedCellBackgroundColor(true) : getSelectedRowBackgroundColor(true);
@@ -1800,10 +1520,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
                 setColor = background != null ? getDisplayColor(background) : null;
             }
 
-            if(setColor != null)
-                tdStyle.setBackgroundColor(setColor);
-            else
-                tdStyle.clearBackgroundColor();
+            GFormController.setBackgroundColor(td, setColor);
         }
     }
 
@@ -1915,7 +1632,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 
     public void setTableFocusable(boolean focusable) {
         this.focusable = focusable;
-        setFocusable(getFocusHolderElement(), focusable);
+        setFocusable(getTableDataFocusElement(), focusable);
     }
 
     @Override
@@ -1930,15 +1647,15 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
      */
     private static class State<T> {
         protected final List<T> rowData;
-        protected int keyboardSelectedRow = 0;
-        protected int keyboardSelectedColumn = 0;
+        protected int selectedRow = 0;
+        protected int selectedColumn = 0;
 
-        private boolean keyboardStealFocus = false;
+        private boolean stealFocus = false;
 
         private int desiredVerticalScrollPosition = -1;
 
-        private boolean keyboardSelectedRowSet = false;
-        private boolean keyboardSelectedColumnSet = false;
+        private boolean selectedRowSet = false;
+        private boolean selectedColumnSet = false;
 
         /**
          * The list of ranges that has to be redrawn.
@@ -1952,7 +1669,6 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         int pendingScrollLeft;
         int pendingCurrentScrollTop;
         int pendingCurrentScrollLeft;
-        boolean pendingWasFocused;
         boolean pendingHasVerticalScroll;
 
         public State() {
@@ -1965,26 +1681,26 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 
         public State(State<T> state) {
             this(new ArrayList<>(state.rowData));
-            this.keyboardSelectedRow = state.getKeyboardSelectedRow();
-            this.keyboardSelectedColumn = state.getKeyboardSelectedColumn();
+            this.selectedRow = state.getSelectedRow();
+            this.selectedColumn = state.getSelectedColumn();
         }
 
-        public int getKeyboardSelectedRow() {
-            return keyboardSelectedRow;
+        public int getSelectedRow() {
+            return selectedRow;
         }
 
-        public void setKeyboardSelectedRow(int keyboardSelectedRow) {
-            this.keyboardSelectedRow = keyboardSelectedRow;
-            this.keyboardSelectedRowSet = true;
+        public void setSelectedRow(int selectedRow) {
+            this.selectedRow = selectedRow;
+            this.selectedRowSet = true;
         }
 
-        public int getKeyboardSelectedColumn() {
-            return keyboardSelectedColumn;
+        public int getSelectedColumn() {
+            return selectedColumn;
         }
 
-        public void setKeyboardSelectedColumn(int keyboardSelectedColumn) {
-            this.keyboardSelectedColumn = keyboardSelectedColumn;
-            this.keyboardSelectedColumnSet = true;
+        public void setSelectedColumn(int selectedColumn) {
+            this.selectedColumn = selectedColumn;
+            this.selectedColumnSet = true;
         }
 
         public int getRowCount() {
@@ -2157,14 +1873,18 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         protected final TableColElement colgroupElement;
         protected final TableSectionElement sectionElement;
 
-        public TableWrapperWidget() {
+        public TableWrapperWidget(String extraClass) {
             tableElement = Document.get().createTableElement();
 
             tableElement.addClassName("dataGridTableWrapperWidget");
+            if(extraClass != null)
+                tableElement.addClassName(extraClass);
 
             colgroupElement = tableElement.appendChild(Document.get().createColGroupElement());
 
             sectionElement = createSectionElement();
+
+            setElement(tableElement);
         }
 
         protected abstract TableSectionElement createSectionElement();
@@ -2204,12 +1924,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 
     private class HeaderWidget extends TableWrapperWidget {
         public HeaderWidget() {
-            this(style.dataGridHeader());
-        }
-
-        protected HeaderWidget(String headerStyle) {
-            tableElement.addClassName(headerStyle);
-            setElement(tableElement);
+            super(style.dataGridHeader());
         }
 
         @Override
@@ -2218,7 +1933,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         }
     }
 
-    private class FooterWidget extends HeaderWidget {
+    private class FooterWidget extends TableWrapperWidget {
         private FooterWidget() {
             super(style.dataGridFooter());
         }
@@ -2233,17 +1948,7 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
 //        private final DivElement containerElement;
 
         public TableWidget() {
-//            containerElement = Document.get().createDivElement();
-//            containerElement.getStyle().setOutlineStyle(OutlineStyle.NONE);
-//            containerElement.appendChild(tableElement);
-//
-////            setFocusable(containerElement, true);
-//
-////            GwtClientUtils.setupFillParent(tableElement);
-//
-//            setElement(containerElement);
-
-            setElement(tableElement);
+            super(null);
         }
 
         @Override
@@ -2263,75 +1968,44 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
         super.onResize();
     }
 
-    /**
-     * Default implementation of a keyboard navigation handler for tables that
-     * supports navigation between cells.
-     *
-     * @param <T> the data type of each row
-     */
-    public static class DataGridKeyboardSelectionHandler<T> implements CellPreviewEvent.Handler<T> {
-        /**
-         * The number of rows to jump when PAGE_UP or PAGE_DOWN
-         */
-        private final DataGrid<T> display;
+    public static abstract class DataGridSelectionHandler<T> {
+        protected final DataGrid<T> display;
 
-        /**
-         * Construct a new keyboard selection handler for the specified table.
-         *
-         * @param display the display being handled
-         */
-        public DataGridKeyboardSelectionHandler(DataGrid<T> display) {
+        public DataGridSelectionHandler(DataGrid<T> display) {
             this.display = display;
         }
 
-        public DataGrid<T> getDisplay() {
-            return display;
-        }
-
-        @Override
-        public void onCellPreview(CellPreviewEvent<T> event) {
-            NativeEvent nativeEvent = event.getNativeEvent();
-            String eventType = event.getNativeEvent().getType();
-            if (BrowserEvents.KEYDOWN.equals(eventType) && !event.isCellEditing()) {
-                if (handleKeyEvent(event)) {
-                    handledEvent(event);
-                }
-            } else if (BrowserEvents.CLICK.equals(eventType) ||
+        public void onCellBefore(Event event, Context context, Runnable consumed) {
+            String eventType = event.getType();
+            if (BrowserEvents.CLICK.equals(eventType) ||
                     BrowserEvents.FOCUS.equals(eventType) ||
-                    (BrowserEvents.MOUSEDOWN.equals(eventType) && nativeEvent.getButton() == Event.BUTTON_RIGHT)) {
+                    (BrowserEvents.MOUSEDOWN.equals(eventType) && event.getButton() == Event.BUTTON_RIGHT)) {
 
-                boolean stealFocus = false;
-                if (BrowserEvents.CLICK.equals(eventType)) {
-                    // If a natively focusable element was just clicked, then do not steal focus.
-                    Element target = Element.as(event.getNativeEvent().getEventTarget());
-                    stealFocus = !CellBasedWidgetImpl.get().isFocusable(target);
-                }
+                int col = context.getColumn();
+                int row = context.getIndex();
+                if ((display.getSelectedColumn() != col) || (display.getSelectedRow() != row)) {
 
-                int col = event.getColumn();
-                int row = event.getIndex();
-                if ((display.getKeyboardSelectedColumn() != col) || (display.getKeyboardSelectedRow() != row)) {
+                    display.setSelectedRow(row, true);
+                    display.setSelectedColumn(col, true);
 
-                    display.setKeyboardSelectedRow(row, true);
-
-                    // Update the column index.
-                    display.setKeyboardSelectedColumn(col, true);
-                    
-                    handledEvent(event);
-                } else if (stealFocus) {
-                    display.setFocus(stealFocus);
-                }
-
-                // Do not cancel the event as the click may have occurred on a Cell.
+                    consumed.run();
+                } else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus
+                        !CellBasedWidgetImpl.get().isFocusable(Element.as(event.getEventTarget())))
+                    display.focus();
             }
         }
 
-        protected void handledEvent(CellPreviewEvent<?> event) {
-            event.setCanceled(true);
-            event.getNativeEvent().preventDefault();
+        public void onCellAfter(Event event, Context context, Runnable consumed) {
+            String eventType = event.getType();
+            if (BrowserEvents.KEYDOWN.equals(eventType)) {
+                if (handleKeyEvent(event)) {
+                    consumed.run();
+                }
+            }
         }
 
-        public boolean handleKeyEvent(CellPreviewEvent<T> event) {
-            int keyCode = event.getNativeEvent().getKeyCode();
+        public boolean handleKeyEvent(Event event) {
+            int keyCode = event.getKeyCode();
             switch (keyCode) {
                 case KeyCodes.KEY_RIGHT:
                     return nextColumn(true);
@@ -2342,34 +2016,34 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
                 case KeyCodes.KEY_UP:
                     return nextRow(false);
                 case KeyCodes.KEY_PAGEDOWN:
-                    display.setKeyboardSelectedRow(display.getKeyboardSelectedRow() + display.pageIncrement);
+                    display.setSelectedRow(display.getSelectedRow() + display.pageIncrement);
                     return true;
                 case KeyCodes.KEY_PAGEUP:
-                    display.setKeyboardSelectedRow(display.getKeyboardSelectedRow() - display.pageIncrement);
+                    display.setSelectedRow(display.getSelectedRow() - display.pageIncrement);
                     return true;
                 case KeyCodes.KEY_HOME:
-                    display.setKeyboardSelectedRow(0);
+                    display.setSelectedRow(0);
                     return true;
                 case KeyCodes.KEY_END:
-                    display.setKeyboardSelectedRow(display.getRowCount() - 1);
+                    display.setSelectedRow(display.getRowCount() - 1);
                     return true;
             }
             return false;
         }
 
-        protected boolean nextRow(boolean down) {
-            int rowIndex = getDisplay().getKeyboardSelectedRow();
-            display.setKeyboardSelectedRow(down ? rowIndex + 1 : rowIndex - 1);
+        public boolean nextRow(boolean down) {
+            int rowIndex = display.getSelectedRow();
+            display.setSelectedRow(down ? rowIndex + 1 : rowIndex - 1);
             return true;
         }
 
-        protected boolean nextColumn(boolean forward) {
+        public boolean nextColumn(boolean forward) {
             if (display.renderedRowCount > 0) {
                 int rowCount = display.getRowCount();
                 int columnCount = display.getColumnCount();
 
-                int rowIndex = display.getKeyboardSelectedRow();
-                int columnIndex = display.getKeyboardSelectedColumn();
+                int rowIndex = display.getSelectedRow();
+                int columnIndex = display.getSelectedColumn();
 
                 if (forward) {
                     if (columnIndex == columnCount - 1) {
@@ -2391,8 +2065,8 @@ public class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Foc
                     }
                 }
 
-                display.setKeyboardSelectedRow(rowIndex);
-                display.setKeyboardSelectedColumn(columnIndex);
+                display.setSelectedRow(rowIndex);
+                display.setSelectedColumn(columnIndex);
             }
             //allways handle KEY_LEFT/RIGHT
             return true;

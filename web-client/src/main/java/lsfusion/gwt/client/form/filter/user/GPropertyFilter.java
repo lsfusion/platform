@@ -8,8 +8,7 @@ public class GPropertyFilter {
     public GGroupObject groupObject;
     public GPropertyDraw property;
     public GFilterValue value;
-    public Object initValue;
-    
+
     public GGroupObjectValue columnKey;
 
     public boolean negation;

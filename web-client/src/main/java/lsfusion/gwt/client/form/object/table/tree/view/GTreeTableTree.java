@@ -260,15 +260,15 @@ public class GTreeTableTree {
         return values.get(property).get(key);
     }
 
-    public boolean isEditable(GGroupObject group, int column, GGroupObjectValue key) {
+    public boolean isReadOnly(GGroupObject group, int column, GGroupObjectValue key) {
         if (column >= 1) {
             GPropertyDraw property = getProperty(group, column);
             if (property != null && !property.isReadOnly()) {
                 Map<GGroupObjectValue, Object> propReadOnly = readOnly.get(property);
-                return propReadOnly == null || propReadOnly.get(key) == null;
+                return propReadOnly != null && propReadOnly.get(key) != null;
             }
         }
-        return false;
+        return true;
     }
 
     public void putValue(GPropertyDraw property, GGroupObjectValue key, Object value) {

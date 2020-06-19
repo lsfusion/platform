@@ -27,7 +27,6 @@ import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
@@ -98,13 +97,7 @@ public class GGridController extends GAbstractTableController {
 
             this.userPreferences = userPreferences;
 
-            getFormLayout().addBaseComponent(groupObject.grid, this.gridView, () -> {
-                Scheduler.get().scheduleDeferred(() -> {
-                    table.focus();
-                    scrollToTop();
-                });
-                return true;
-            });
+            getFormLayout().addBaseComponent(groupObject.grid, this.gridView, getDefaultFocusReceiver());
 
             configureToolbar();
 
@@ -184,17 +177,6 @@ public class GGridController extends GAbstractTableController {
         assert isList();
         
         addFilterButton();
-
-        if (groupObject.toolbar.showGroupChange) {
-            addToolbarSeparator();
-            
-            addToToolbar(new GToolbarButton("groupchange.png", messages.formGridGroupGroupChange() + " (F12)") {
-                @Override
-                public void addListener() {
-                    addClickHandler(event -> table.groupChange());
-                }
-            });
-        }
 
         if (groupObject.toolbar.showCountQuantity || groupObject.toolbar.showCalculateSum) {
             addToolbarSeparator();
@@ -604,8 +586,8 @@ public class GGridController extends GAbstractTableController {
         return isList() && table.containsProperty(property);
     }
 
-    public int getKeyboardSelectedRow() {
-        return table.getKeyboardSelectedRow();
+    public int getSelectedRow() {
+        return table.getSelectedRow();
     }
 
     public boolean isPropertyInPanel(GPropertyDraw property) {
@@ -626,12 +608,9 @@ public class GGridController extends GAbstractTableController {
     }
 
     public boolean focusFirstWidget() {
-        if (isList()) {
-            GTableView table = this.table;
-            if (GwtClientUtils.isShowing(table.getThisWidget())) {
-                table.focus();
-                return true;
-            }
+        if (GwtClientUtils.isShowing(table.getThisWidget())) {
+            table.focus();
+            return true;
         }
 
         return panel.focusFirstWidget();

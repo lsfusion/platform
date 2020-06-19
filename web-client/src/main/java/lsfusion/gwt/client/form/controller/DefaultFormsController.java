@@ -2,11 +2,11 @@ package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.*;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.window.GModalityType;
@@ -105,7 +105,7 @@ public abstract class DefaultFormsController implements FormsController {
         return resizableSimplePanel;
     }
 
-    public Widget openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
+    public Widget openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
         if(forbidDuplicate && MainFrame.forbidDuplicateForms && formsList.contains(form.sID)) {
             tabsPanel.selectTab(formsList.indexOf(form.sID));
             return null;
@@ -137,7 +137,7 @@ public abstract class DefaultFormsController implements FormsController {
         tabsPanel.selectTab(formsList.indexOf(formCanonicalName));
     }
 
-    private ModalForm showModalForm(GForm form, GModalityType modality, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
+    private ModalForm showModalForm(GForm form, GModalityType modality, Event initFilterEvent, final WindowHiddenHandler handler) {
         assert modality.isModalWindow();
 
         return ModalForm.showForm(this, form, modality.isDialog(), initFilterEvent, handler);

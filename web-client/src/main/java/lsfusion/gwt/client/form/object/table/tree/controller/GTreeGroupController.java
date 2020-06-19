@@ -55,16 +55,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
         treeView = new GridPanel(resizePanel, resizePanel);
 
-        getFormLayout().addBaseComponent(treeGroup, treeView, new DefaultFocusReceiver() {
-            @Override
-            public boolean focus() {
-                boolean focused = focusFirstWidget();
-                if (focused) {
-                    scrollToTop();
-                }
-                return focused;
-            }
-        });
+        getFormLayout().addBaseComponent(treeGroup, treeView, getDefaultFocusReceiver());
 
         addFilterButton();
 
@@ -285,7 +276,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     public boolean focusFirstWidget() {
         if (isShowing(tree)) {
-            tree.setFocus(true);
+            tree.focus();
             return true;
         }
 

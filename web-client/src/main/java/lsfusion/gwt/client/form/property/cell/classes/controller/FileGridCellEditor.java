@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
@@ -11,10 +12,8 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.GImage;
 import lsfusion.gwt.client.base.view.ProgressBar;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import org.moxieapps.gwt.uploader.client.File;
 import org.moxieapps.gwt.uploader.client.Uploader;
@@ -48,7 +47,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     }
 
     @Override
-    protected Widget createComponent(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+    protected Widget createComponent(Element parent, Object oldValue) {
         int addButtonWidth = 133;
         int addButtonHeight = 31;
         
@@ -360,8 +359,8 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     }
 
     @Override
-    public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
-        super.startEditing(editEvent, context, parent, oldValue);
+    public void startEditing(Event editEvent, Element parent, Object oldValue) {
+        super.startEditing(editEvent, parent, oldValue);
         focusPanel.setFocus(true);
     }
 

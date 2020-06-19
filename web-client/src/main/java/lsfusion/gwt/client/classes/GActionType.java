@@ -7,8 +7,8 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.view.ActionGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -24,8 +24,8 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new ActionGridCellRenderer(property);
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new ActionCellRenderer(property);
     }
 
     @Override

@@ -37,8 +37,6 @@ public class GGridPropertyTableHeader extends Header<String> {
     private int headerHeight;
 
     public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip) {
-        super(DBLCLICK, MOUSEDOWN, MOUSEMOVE, MOUSEOVER, MOUSEOUT);
-
         this.caption = caption;
         this.table = table;
         this.toolTip = toolTip;

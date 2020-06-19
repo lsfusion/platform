@@ -1,14 +1,14 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public class HTMLGridCellRenderer extends GridCellRenderer<Object> {
-    public HTMLGridCellRenderer() { super(); }
+public class HTMLCellRenderer extends CellRenderer<Object> {
+    public HTMLCellRenderer() { super(); }
 
     @Override
-    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
+    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
         element.setInnerHTML("<iframe src=\"" + value + "\" style=\"width:100%; height:100%;\" >Unfortunately this content could not be displayed</iframe>");
     }
 

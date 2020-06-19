@@ -2,8 +2,8 @@ package lsfusion.gwt.client.classes.data.link;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.view.HTMLGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.HTMLCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class GHTMLLinkType extends GLinkType {
     @Override
@@ -12,7 +12,7 @@ public class GHTMLLinkType extends GLinkType {
     }
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new HTMLGridCellRenderer();
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new HTMLCellRenderer();
     }
 }

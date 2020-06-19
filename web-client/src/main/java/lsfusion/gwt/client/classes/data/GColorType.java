@@ -5,10 +5,10 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.ColorGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.ColorGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.ColorCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
 
@@ -21,8 +21,8 @@ public class GColorType extends GDataType {
     }
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new ColorGridCellRenderer();
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new ColorCellRenderer();
     }
 
     @Override

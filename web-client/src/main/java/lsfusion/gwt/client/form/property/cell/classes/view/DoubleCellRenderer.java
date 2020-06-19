@@ -2,8 +2,8 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-public class DoubleGridCellRenderer extends NumberGridCellRenderer {
-    public DoubleGridCellRenderer(GPropertyDraw property) {
+public class DoubleCellRenderer extends NumberCellRenderer {
+    public DoubleCellRenderer(GPropertyDraw property) {
         super(property);
     }
 

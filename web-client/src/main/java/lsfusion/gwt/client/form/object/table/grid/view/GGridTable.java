@@ -11,17 +11,14 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.KeyboardRowChangedEvent;
-import lsfusion.gwt.client.base.view.grid.TableScrollPanel;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
+import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
@@ -35,9 +32,6 @@ import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.cell.view.GridEditableCell;
 
 import java.util.*;
 
@@ -74,8 +68,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private final ArrayList<GridDataRecord> currentRecords = new ArrayList<>();
     private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
-
-    private GridTableKeyboardSelectionHandler keyboardSelectionHandler;
 
     private GGridController groupObjectController;
     
@@ -134,20 +126,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             font = groupObject.grid.font;
         }
 
-        keyboardSelectionHandler =  new GridTableKeyboardSelectionHandler(this);
-        setKeyboardSelectionHandler(keyboardSelectionHandler);
-        editBindingMap.setKeyAction(new GKeyStroke(GKeyStroke.KEY_F12), GEditBindingMap.GROUP_CHANGE);
+        setSelectionHandler(new GridTableSelectionHandler(this));
 
-        addKeyboardRowChangedHandler(new KeyboardRowChangedEvent.Handler() {
-            @Override
-            public void onKeyboardRowChanged(KeyboardRowChangedEvent event) {
-                final GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
-                if (selectedRecord != null && !selectedRecord.getKey().equals(currentKey)) {
-                    validateAndCommit();
-                    
-                    setCurrentKey(selectedRecord.getKey());
-                    form.changeGroupObjectLater(groupObject, selectedRecord.getKey());
-                }
+        setRowChangedHandler(() -> {
+            final GridDataRecord selectedRecord = getSelectedRowValue();
+            if (selectedRecord != null && !selectedRecord.getKey().equals(currentKey)) {
+                assert !form.isEditing();
+//                    if(form.isEditing())
+//                        form.commitEditingTable();
+                setCurrentKey(selectedRecord.getKey());
+                form.changeGroupObjectLater(groupObject, selectedRecord.getKey());
             }
         });
 
@@ -172,8 +160,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         };
 
         tableDataScroller.addScrollHandler(event -> {
-            int selectedRow = getKeyboardSelectedRow();
-            GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
+            int selectedRow = getSelectedRow();
+            GridDataRecord selectedRecord = getSelectedRowValue();
             if (selectedRecord != null) {
                 int scrollHeight = tableDataScroller.getClientHeight();
                 int scrollTop = tableDataScroller.getVerticalScrollPosition();
@@ -190,7 +178,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     newRow = getFirstSeenRow(scrollTop, selectedRow);
                 }
                 if (newRow != -1) {
-                    setKeyboardSelectedRow(newRow, false);
+                    setSelectedRow(newRow, false);
                 }
             }
         });
@@ -202,8 +190,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public Widget getWidget() {
         return super.getWidget();
     }
-    public Element getFocusHolderElement() {
-        return super.getFocusHolderElement();
+    public Element getTableDataFocusElement() {
+        return super.getTableDataFocusElement();
     }
 
     protected int getFirstSeenRow(int tableTop, int start) {
@@ -298,7 +286,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
 
             if (currentKey != null && rowKeys.contains(currentKey)) {
-                setKeyboardSelectedRow(rowKeys.indexOf(currentKey), false);
+                setSelectedRow(rowKeys.indexOf(currentKey), false);
             }
 
             rowsUpdated = false;
@@ -620,11 +608,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler() {
-        return keyboardSelectionHandler;
-    }
-
-    @Override
     public GAbstractTableController getGroupController() {
         return groupObjectController;
     }
@@ -642,7 +625,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public GGroupObjectValue getCurrentColumn() {
-        GGroupObjectValue property = getSelectedColumn();
+        GGroupObjectValue property = getSelectedColumnKey();
         if (property == null && getColumnCount() > 0) {
             property = getColumnKey(0);
         }
@@ -650,7 +633,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
-        GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
+        GridDataRecord selectedRecord = getSelectedRowValue();
         int column = getPropertyIndex(property, columnKey);
         if (selectedRecord != null && column != -1 && column < getColumnCount()) {
             return getColumn(column).getValue(selectedRecord);
@@ -688,9 +671,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                 form.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
                     @Override
-                    public void pressed(EventTarget eventTarget) {
-                        focusProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
-                        editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.CHANGE);
+                    public void pressed(Event event) {
+//                        focusProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
+                        onEditEvent(event, true, getCurrentCellContext(), getSelectedElement(), () -> {});
                     }
 
                     @Override
@@ -785,7 +768,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return getGridColumn(column).property;
     }
 
-    public GPropertyDraw getProperty(Cell.Context context) {
+    public GPropertyDraw getProperty(Context context) {
         return getProperty(context.getColumn());
     }
 
@@ -849,12 +832,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return key;
     }
 
-    public GGroupObjectValue getSelectedColumn() {
+    public GGroupObjectValue getSelectedColumnKey() {
         return getColumnKey(getCurrentCellContext());
     }
 
     @Override
-    public GGroupObjectValue getColumnKey(Cell.Context context) {
+    public GGroupObjectValue getColumnKey(Context context) {
         return getColumnKey(context.getColumn());
     }
 
@@ -863,17 +846,17 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public boolean isEditable(Cell.Context context) {
+    public boolean isReadOnly(Context context) {
         GPropertyDraw property = getProperty(context);
         if (property != null && !property.isReadOnly()) {
             GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
             GridColumn column = (GridColumn) getColumn(context.getColumn());
-            return column != null && rowRecord != null && !rowRecord.isReadonly(column.columnID);
+            return column == null || rowRecord == null || rowRecord.isReadonly(column.columnID);
         }
-        return false;
+        return true;
     }
 
-    public Object getValueAt(Cell.Context context) {
+    public Object getValueAt(Context context) {
         Column column = getColumn(context.getColumn());
         Object rowValue = context.getRowValue();
         if (column == null || rowValue == null) {
@@ -905,7 +888,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public void pasteData(final List<List<String>> table) {
-        final int selectedColumn = getKeyboardSelectedColumn();
+        final int selectedColumn = getSelectedColumn();
 
         if (selectedColumn == -1 || table.isEmpty()) {
             return;
@@ -949,7 +932,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             if (tableHeight == 0) {
                 return;
             }
-            TableRowElement rowElement = getChildElement(getKeyboardSelectedRow());
+            TableRowElement rowElement = getChildElement(getSelectedRow());
             if (rowElement != null) {
                 int rowHeight = rowElement.getClientHeight();
                 Integer currentPageSize = currentGridPreferences.pageSize;
@@ -969,7 +952,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
+    public void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
         groupObjectController.quickEditFilter(event, filterProperty, columnKey);
     }
 
@@ -997,7 +980,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 if (isRowWithinBounds(i)) {
                     Object value = getValueAt(i, searchColumn);
                     if (value != null && value.toString().regionMatches(true, 0, lastQuickSearchPrefix, 0, lastQuickSearchPrefix.length())) {
-                        setKeyboardSelectedRow(i);
+                        setSelectedRow(i);
                         break;
                     }
                 }
@@ -1014,11 +997,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         int ind = getPropertyIndex(propertyDraw, null);
         if (ind != -1) {
-            setKeyboardSelectedColumn(ind, false);
+            setSelectedColumn(ind, false);
         }
     }
 
-    public void setValueAt(Cell.Context context, Object value) {
+    public void setValueAt(Context context, Object value) {
         GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
         GridColumn column = (GridColumn) getColumn(context.getColumn());
 
@@ -1240,17 +1223,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return getCurrentPreferences().getUserSortComparator();
     }
 
-    private class GridColumn extends Column<GridDataRecord, Object> {
+    private class GridColumn extends GridPropertyColumn {
         private final int columnID;
 
-        public final GPropertyDraw property;
         public final GGroupObjectValue columnKey;
 
         public GridColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
-            super(new GridEditableCell(GGridTable.this));
+            super(property);
+
             this.columnID = nextColumnID++;
 
-            this.property = property;
             this.columnKey = columnKey;
         }
 
@@ -1262,19 +1244,18 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
 
-    public class GridTableKeyboardSelectionHandler extends GridPropertyTableKeyboardSelectionHandler<GridDataRecord> {
-        public GridTableKeyboardSelectionHandler(DataGrid<GridDataRecord> table) {
+    public class GridTableSelectionHandler extends GridPropertyTableSelectionHandler<GridDataRecord> {
+        public GridTableSelectionHandler(DataGrid<GridDataRecord> table) {
             super(table);
         }
 
         @Override
-        public boolean handleKeyEvent(CellPreviewEvent<GridDataRecord> event) {
-            NativeEvent nativeEvent = event.getNativeEvent();
+        public boolean handleKeyEvent(Event event) {
 
-            assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
+            assert BrowserEvents.KEYDOWN.equals(event.getType());
 
-            int keyCode = nativeEvent.getKeyCode();
-            boolean ctrlPressed = nativeEvent.getCtrlKey();
+            int keyCode = event.getKeyCode();
+            boolean ctrlPressed = event.getCtrlKey();
             if (keyCode == KeyCodes.KEY_HOME && ctrlPressed) {
                 form.scrollToEnd(groupObject, false);
                 return true;

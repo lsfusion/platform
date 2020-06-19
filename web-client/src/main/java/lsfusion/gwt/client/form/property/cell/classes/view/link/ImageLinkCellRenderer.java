@@ -2,10 +2,10 @@ package lsfusion.gwt.client.form.property.cell.classes.view.link;
 
 import com.google.gwt.core.client.GWT;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.view.ImageGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.ImageCellRenderer;
 
-public class ImageLinkGridCellRenderer extends ImageGridCellRenderer {
-    public ImageLinkGridCellRenderer(GPropertyDraw property) {
+public class ImageLinkCellRenderer extends ImageCellRenderer {
+    public ImageLinkCellRenderer(GPropertyDraw property) {
         super(property);
     }
 

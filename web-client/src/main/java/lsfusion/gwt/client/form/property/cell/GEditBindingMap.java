@@ -1,11 +1,9 @@
 package lsfusion.gwt.client.form.property.cell;
 
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.cell.controller.InternalEditEvent;
-import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -25,12 +23,7 @@ public class GEditBindingMap implements Serializable {
         boolean accept(NativeEvent e);
     }
 
-    public static final transient EditEventFilter numberEventFilter = new GEditBindingMap.EditEventFilter() {
-        @Override
-        public boolean accept(NativeEvent e) {
-            return isCommonNumberEditEvent(e);
-        }
-    };
+    public static final transient EditEventFilter numberEventFilter = e -> isCommonNumberEditEvent(e);
 
     private HashMap<GKeyStroke, String> keyBindingMap;
     private LinkedHashMap<String, String> contextMenuBindingMap;
@@ -45,37 +38,35 @@ public class GEditBindingMap implements Serializable {
         this.mouseBinding = mouseBinding;
     }
 
-    public String getKeyPressAction(EditEvent editEvent) {
-        if (editEvent instanceof NativeEditEvent) {
-            NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
-            if (KEYDOWN.equals(nativeEvent.getType())) {
-                return getKeyAction(getKeyStroke(nativeEvent));
-            }
+    public String getEventSID(Event event) {
+        String eventType = event.getType();
+
+        String keyAction;
+        if (KEYDOWN.equals(eventType) && (keyAction = getKeyAction(getKeyStroke(event))) != null) {
+            return keyAction;
+        } else if (CLICK.equals(eventType)) {
+            return mouseBinding;
         }
         return null;
     }
-
-    public String getEventSID(EditEvent event, EditEventFilter editEventFilter, boolean hasEditObjectAction) {
-        if (event instanceof NativeEditEvent) {
-            NativeEvent nativeEvent = ((NativeEditEvent) event).getNativeEvent();
-            String eventType = nativeEvent.getType();
-            if (CLICK.equals(eventType)) {
-                return mouseBinding;
-            } else if (isPossibleEditKeyEvent(nativeEvent)) {
-                if (editEventFilter != null && !editEventFilter.accept(nativeEvent)) {
-                    return null;
-                }
-
-                if (hasEditObjectAction && isEditObjectEvent(nativeEvent)) {
-                    return EDIT_OBJECT;
-                }
-
-                if (isCommonEditKeyEvent(nativeEvent)) {
-                    return CHANGE;
-                }
+    public static String getDefaultEventSID(Event event, EditEventFilter editEventFilter) {
+        String eventType = event.getType();
+        if (CLICK.equals(eventType))
+            return CHANGE;
+        if (isGroupChangeKeyEvent(event))
+            return GROUP_CHANGE;
+        if (isPossibleEditKeyEvent(event)) {
+            if (editEventFilter != null && !editEventFilter.accept(event)) {
+                return null;
             }
-        } else if (event instanceof InternalEditEvent) {
-            return ((InternalEditEvent) event).getAction();
+
+            if (isEditObjectEvent(event)) {
+                return EDIT_OBJECT;
+            }
+
+            if (isCommonEditKeyEvent(event)) {
+                return CHANGE;
+            }
         }
 
         return null;
@@ -83,10 +74,6 @@ public class GEditBindingMap implements Serializable {
 
     public void setMouseAction(String actionSID) {
         mouseBinding = actionSID;
-    }
-
-    public String getMouseAction() {
-        return mouseBinding;
     }
 
     public void setKeyAction(GKeyStroke key, String actionSID) {
@@ -97,10 +84,6 @@ public class GEditBindingMap implements Serializable {
         return keyBindingMap != null ? keyBindingMap.get(key) : null;
     }
 
-    public void setContextMenuAction(String actionSID, String caption) {
-        createContextMenuItems().put(actionSID, caption);
-    }
-
     private HashMap<GKeyStroke,String> createKeyBindingMap() {
         if (keyBindingMap == null) {
             keyBindingMap = new HashMap<>();
@@ -108,47 +91,14 @@ public class GEditBindingMap implements Serializable {
         return keyBindingMap;
     }
 
-    public LinkedHashMap<String, String> createContextMenuItems() {
-        if (contextMenuBindingMap == null) {
-            contextMenuBindingMap = new LinkedHashMap<>();
-        }
-        return contextMenuBindingMap;
-    }
-
     public LinkedHashMap<String, String> getContextMenuItems() {
         return contextMenuBindingMap;
     }
 
-    public static boolean isEditableAwareEditEvent(String actionSID) {
+    public static boolean isChange(String actionSID) {
         return CHANGE.equals(actionSID)
                 || CHANGE_WYS.equals(actionSID)
-                || EDIT_OBJECT.equals(actionSID)
                 || GROUP_CHANGE.equals(actionSID);
     }
 
-    public static String getPropertyEventActionSID(EditEvent e, GPropertyDraw property, GEditBindingMap overrideMap) {
-        String actionSID = null;
-        if (property != null) {
-            EditEventFilter eventFilter = property.changeType == null ? null : property.changeType.getEditEventFilter();
-
-            if (property.editBindingMap != null) {
-                actionSID = property.editBindingMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
-            }
-
-            if (actionSID == null && overrideMap != null) {
-                actionSID = overrideMap.getKeyPressAction(e);
-                if (actionSID == null) {
-                    actionSID = overrideMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
-                }
-            }
-        }
-        return actionSID;
-    }
-
-    public static String getPropertyKeyPressActionSID(EditEvent e, GPropertyDraw property) {
-        if (property.editBindingMap != null) {
-            return property.editBindingMap.getKeyPressAction(e);
-        }
-        return null;
-    }
 }

@@ -7,10 +7,10 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateTimeGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.DateGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.DateCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -26,8 +26,8 @@ public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTi
     }
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateGridCellRenderer(property);
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new DateCellRenderer(property);
     }
 
     @Override

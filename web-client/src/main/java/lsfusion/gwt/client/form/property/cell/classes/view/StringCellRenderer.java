@@ -3,14 +3,13 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.base.GwtSharedUtils.multiplyString;
 
-public class StringGridCellRenderer extends StringBasedGridCellRenderer<String> {
+public class StringCellRenderer extends StringBasedCellRenderer<String> {
     private boolean echoSymbols;
     private boolean isVarString;
 
-    public StringGridCellRenderer(GPropertyDraw property, boolean isVarString) {
+    public StringCellRenderer(GPropertyDraw property, boolean isVarString) {
         super(property);
         this.isVarString = isVarString;
         echoSymbols = property.echoSymbols;

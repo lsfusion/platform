@@ -4,10 +4,10 @@ import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DoubleGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.DoubleGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.DoubleCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
 
@@ -17,8 +17,8 @@ public class GDoubleType extends GIntegralType {
     protected static String defaultPattern = "#,###.##########";
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DoubleGridCellRenderer(property);
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new DoubleCellRenderer(property);
     }
 
     @Override

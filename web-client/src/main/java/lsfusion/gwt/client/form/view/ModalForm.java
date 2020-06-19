@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.Dimension;
@@ -12,17 +13,15 @@ import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 
 import static java.lang.Math.min;
 
 public class ModalForm extends ResizableModalWindow {
 
-    private final EditEvent initFilterEvent;
+    private final Event initFilterEvent;
     private final GFormController form;
 
-    public ModalForm(FormsController formsController, GForm gForm, boolean isDialog, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
+    public ModalForm(FormsController formsController, GForm gForm, boolean isDialog, Event initFilterEvent, final WindowHiddenHandler hiddenHandler) {
         super(hiddenHandler);
 
         this.initFilterEvent = initFilterEvent;
@@ -86,8 +85,8 @@ public class ModalForm extends ResizableModalWindow {
     }
 
     private void initialFormChangesReceived() {
-        if (initFilterEvent != null && initFilterEvent instanceof NativeEditEvent) {
-            NativeEvent event = ((NativeEditEvent) initFilterEvent).getNativeEvent();
+        if (initFilterEvent != null) {
+            Event event = initFilterEvent;
             if (GKeyStroke.isPossibleStartFilteringEvent(event) && !GKeyStroke.isSpaceKeyEvent(event)) {
                 form.getInitialFilterProperty(new ErrorHandlingCallback<NumberResult>() {
                     @Override
@@ -103,7 +102,7 @@ public class ModalForm extends ResizableModalWindow {
         }
     }
 
-    public static ModalForm showForm(FormsController formsController, GForm form, boolean isDialog, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
+    public static ModalForm showForm(FormsController formsController, GForm form, boolean isDialog, Event initFilterEvent, final WindowHiddenHandler hiddenHandler) {
         ModalForm modalForm = new ModalForm(formsController, form, isDialog, initFilterEvent, hiddenHandler);
         modalForm.justCenter();
         return modalForm;

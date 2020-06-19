@@ -9,19 +9,17 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DatePicker;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.classes.data.GDateType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.text.ParseException;
@@ -73,19 +71,16 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
     }
 
     @Override
-    public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+    public void startEditing(Event event, Element parent, Object oldValue) {
         String input = null;
         boolean selectAll = true;
-        if (editEvent instanceof NativeEditEvent) {
-            NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
-            String eventType = nativeEvent.getType();
-            if (KEYDOWN.equals(eventType) && GKeyStroke.isDeleteKeyEvent(nativeEvent)) {
-                input = "";
-                selectAll = false;
-            } else if (KEYPRESS.equals(eventType)) {
-                input = String.valueOf((char)nativeEvent.getCharCode());
-                selectAll = false;
-            }
+        String eventType = event.getType();
+        if (KEYDOWN.equals(eventType) && GKeyStroke.isDeleteKeyEvent(event)) {
+            input = "";
+            selectAll = false;
+        } else if (KEYPRESS.equals(eventType)) {
+            input = String.valueOf((char) event.getCharCode());
+            selectAll = false;
         }
 
         Date oldDate = valueAsDate(oldValue);
@@ -100,7 +95,7 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
                 input != null ? input : formatToString(oldDate != null ? oldDate : new Date())
         );
 
-        super.startEditing(editEvent, context, parent, oldDate);
+        super.startEditing(event, parent, oldDate);
 
         editBox.getElement().focus();
         if (selectAll) {

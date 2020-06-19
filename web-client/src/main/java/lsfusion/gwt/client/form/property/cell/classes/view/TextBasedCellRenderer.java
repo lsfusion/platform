@@ -4,20 +4,22 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
-public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
+public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     protected GPropertyDraw property;
 
-    TextBasedGridCellRenderer(GPropertyDraw property) {
+    protected TextBasedCellRenderer(GPropertyDraw property) {
         this.property = property;
     }
 
-    public void renderStatic(Element element, GFont font, boolean isSingle) {
+    public void renderStatic(Element element, RenderContext renderContext) {
         Style style = element.getStyle();
 
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
@@ -25,42 +27,36 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
             style.setTextAlign(textAlignStyle);
         }
 
-        renderStaticContent(element, font);
+        renderStaticContent(element, renderContext);
     }
 
-    protected void renderStaticContent(Element element, GFont font) {
+    protected void renderStaticContent(Element element, RenderContext renderContext) {
         Style style = element.getStyle();
         // важно оставить множественные пробелы
         style.setWhiteSpace(Style.WhiteSpace.PRE);
         style.setPosition(Style.Position.RELATIVE);
-        setPadding(style);
 
-        //нужно для эллипсиса, но подтормаживает рендеринг,
-        //оставлено закомменченым просто для справки
-//        style.setOverflow(Style.Overflow.HIDDEN);
-//        style.setTextOverflow(Style.TextOverflow.ELLIPSIS);
+        setPadding(style);
     }
 
-    protected void setPadding(Style style) {
-        style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
-        style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
-
+    private static void setPadding(Style style) {
         style.setPaddingBottom(0, Style.Unit.PX);
         style.setPaddingTop(0, Style.Unit.PX);
+
+        style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
+        style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
     }
 
-    protected void setBasedTextFonts(Style style, GFont font, boolean isSingle) {
-        if (property.font == null && isSingle) {
-            property.font = font;
-        }
+    public static void setBasedTextFonts(GPropertyDraw property, Style style, UpdateContext updateContext) {
+        GFont font = property.font != null ? property.font : updateContext.getFont();
 
-        if (property.font != null) {
-            property.font.apply(style);
+        if (font != null) {
+            font.apply(style);
         }
     }
 
-    public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
-        setBasedTextFonts(element.getStyle(), font, isSingle);
+    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
+        setBasedTextFonts(property, element.getStyle(), updateContext);
         if (value == null) {
             element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
             setInnerText(element, null);

@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CheckBox;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
@@ -16,7 +17,6 @@ import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -106,7 +106,6 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
         GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
         GDataFilterValueView dataView = new GDataFilterValueView(this, dataValue, condition.property, logicsSupplier) {
-            @Override
             public void applyFilter() {
                 handler.applyFilter();
             }
@@ -206,7 +205,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         valueView.focusOnValue();
     }
 
-    public void startEditing(EditEvent keyEvent) {
+    public void startEditing(Event keyEvent) {
         valueView.startEditing(keyEvent);
     }
 

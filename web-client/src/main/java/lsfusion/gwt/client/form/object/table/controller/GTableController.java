@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -29,6 +30,8 @@ public interface GTableController {
     GPropertyDraw getSelectedProperty();
     GGroupObjectValue getSelectedColumn();
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
+
+    GFormController getForm();
 
     void setContainerCaption(GContainer container, String caption);
 

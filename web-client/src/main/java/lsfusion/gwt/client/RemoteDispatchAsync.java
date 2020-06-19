@@ -26,7 +26,6 @@ public abstract class RemoteDispatchAsync {
 
     public <A extends RequestAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback, boolean direct) {
         fillAction(action);
-        fillQueuedAction(action);
         queueAction(action, callback, direct);
     }
 
@@ -42,13 +41,14 @@ public abstract class RemoteDispatchAsync {
     protected void onAsyncFinished() {
     }
 
-    protected <A extends Action<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback, boolean direct) {
+    protected <A extends RequestAction<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback, boolean direct) {
         Log.debug("Queueing action: " + action.toString());
 
         final QueuedAction queuedAction = new QueuedAction(action, callback);
-        // в десктопе реализован механизм direct запросов, которые работают не через очередь, а напрямую блокируют EDT.
-        // в вебе нет возможности реализовать подобный механизм. поэтому ставим direct запросы в начало очереди.
-        // иначе мог произойти deadlock, когда, к примеру, между ExecuteEventAction и continueServerInvocation вклинивался changePageSize
+        fillQueuedAction(action);
+        // in desktop there is direct query mechanism (for continuing single invocating), which blocks EDT, and guarantee synchronization
+        // in web there is no such mechanism, so we'll put the queued action to the very beginning of the queue
+        // otherwise there might be deadlock, when, for example, between ExecuteEventAction and continueServerInvocation there was changePageSize
         if (direct) {
             q.add(0, queuedAction);
         } else {
