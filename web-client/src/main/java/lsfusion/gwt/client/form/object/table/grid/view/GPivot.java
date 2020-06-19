@@ -1321,7 +1321,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             
             colAttrHeaderDblClickHandler: function (event, element, colKeyValues, isSubtotal) {
                 if(instance.@GPivot::isSortColumn(*)(isSubtotal, colKeyValues)) {
-                    instance.@GPivot::colAttrHeaderDblClickAction(*)(colKeyValues, event.ctrlKey, event.shiftKey);
+                    instance.@GPivot::colAttrHeaderDblClickAction(*)(colKeyValues, element, instance.@GPivot::getColumnName(Ljava/lang/String;Lcom/google/gwt/core/client/JsArrayString;)("cols", colKeyValues), event.ctrlKey, event.shiftKey);
                 }
             },
             
@@ -1330,7 +1330,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             },
 
             rowAxisHeaderDblClickHandler: function (event, element, attrName) {
-                instance.@GPivot::colAttrHeaderDblClickAction(*)(attrName, event.ctrlKey, event.shiftKey);
+                instance.@GPivot::colAttrHeaderDblClickAction(*)(attrName, element, attrName, event.ctrlKey, event.shiftKey);
             },
             
             renderValueCell: function (td, value, rowKeyValues, colKeyValues) {
@@ -1467,7 +1467,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return row.length() <= headerIndex;
     }
 
-    private void colAttrHeaderDblClickAction(Object element, boolean ctrlKey, boolean shiftKey) {
+    private void colAttrHeaderDblClickAction(Object element, Element th, String columnCaption, boolean ctrlKey, boolean shiftKey) {
 
         JsArrayMixed sortCols = config.getArrayMixed("sortCols");
         if(sortCols == null) {
@@ -1479,19 +1479,31 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             remove(sortCols, sortCol);
         } else if(ctrlKey) {
             if (sortCol == null) {
-                sortCols.push(createSortCol(element, true));
+                sortCol = createSortCol(element, true);
+                sortCols.push(sortCol);
             } else {
                 sortCol.changeDirection();
             }
         } else {
+            unwrapSort(rendererElement);
             boolean direction = sortCol != null ? sortCol.getDirection() : false;
             sortCols = JsArrayMixed.createArray().cast();
-            sortCols.push(createSortCol(element, !direction));
+            sortCol = createSortCol(element, !direction);
+            sortCols.push(sortCol);
         }
+
+        th.removeAllChildren();
+        GGridPropertyTableHeader.renderTD(th, 0, shiftKey ? null : sortCol.getDirection(), columnCaption);
 
         config = overrideSortCols(config, sortCols);
         updateView(true, null);
     }
+
+    private native void unwrapSort(com.google.gwt.dom.client.Element element) /*-{
+        $wnd.$(element).find(".dataGridHeaderCell-wrapsortdiv").each(function () {
+            @lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader::unwrapSort(*)(this);
+        })
+    }-*/;
 
     private boolean isSortColumn(boolean isSubtotal, JsArrayString colKeyValues) {
         return isSubtotal || colKeyValues.length() == config.getArrayString("cols").length();
