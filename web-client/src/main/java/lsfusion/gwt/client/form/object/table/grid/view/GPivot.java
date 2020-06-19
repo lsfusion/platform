@@ -1476,34 +1476,67 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
         SortCol sortCol = findSortCol(sortCols, element);
         if (shiftKey) {
+            unwrapThis(th);
             remove(sortCols, sortCol);
         } else if(ctrlKey) {
+            rerenderSort(sortCol, th, columnCaption);
             if (sortCol == null) {
-                sortCol = createSortCol(element, true);
-                sortCols.push(sortCol);
+                sortCols.push(createSortCol(element, true));
             } else {
                 sortCol.changeDirection();
             }
         } else {
-            unwrapSort(rendererElement);
+            unwrapOthers(rendererElement, th);
+            rerenderSort(sortCol, th, columnCaption);
             boolean direction = sortCol != null ? sortCol.getDirection() : false;
             sortCols = JsArrayMixed.createArray().cast();
-            sortCol = createSortCol(element, !direction);
-            sortCols.push(sortCol);
+            sortCols.push(createSortCol(element, !direction));
         }
-
-        th.removeAllChildren();
-        GGridPropertyTableHeader.renderTD(th, 0, shiftKey ? null : sortCol.getDirection(), columnCaption);
 
         config = overrideSortCols(config, sortCols);
         updateView(true, null);
     }
 
-    private native void unwrapSort(com.google.gwt.dom.client.Element element) /*-{
-        $wnd.$(element).find(".dataGridHeaderCell-wrapsortdiv").each(function () {
-            @lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader::unwrapSort(*)(this);
+    private native void unwrapThis(Element currentElement) /*-{
+        $wnd.$(currentElement).find(".dataGridHeaderCell-wrapsortdiv").each(function () {
+            @GGridPropertyTableHeader::unwrapSort(*)(this);
         })
     }-*/;
+
+    private native void unwrapOthers(Element element, Element currentElement) /*-{
+        $wnd.$(element).find(".dataGridHeaderCell-wrapsortdiv").each(function () {
+            if(!@GPivot::isDescendant(*)(currentElement, this)) {
+                @GGridPropertyTableHeader::unwrapSort(*)(this);
+            }
+        })
+    }-*/;
+
+    private static native boolean isDescendant(Element parent, Element child) /*-{
+        var node = child.parentNode;
+        while (node != null) {
+            if (node === parent) {
+                return true;
+            }
+            node = node.parentNode;
+        }
+        return false;
+    }-*/;
+
+    private void rerenderSort(SortCol sortCol, Element th, String columnCaption) {
+        if(sortCol != null) {
+            changeSortDirImage(th, !sortCol.getDirection());
+        } else {
+            th.removeAllChildren();
+            GGridPropertyTableHeader.renderTD(th, 0, true, columnCaption);
+        }
+    }
+
+    private native void changeSortDirImage(Element element, boolean sortDir) /*-{
+        $wnd.$(element).find(".dataGridHeaderCell-sortimg").each(function () {
+            @GGridPropertyTableHeader::changeDirection(*)(this, sortDir);
+        })
+    }-*/;
+
 
     private boolean isSortColumn(boolean isSubtotal, JsArrayString colKeyValues) {
         return isSubtotal || colKeyValues.length() == config.getArrayString("cols").length();

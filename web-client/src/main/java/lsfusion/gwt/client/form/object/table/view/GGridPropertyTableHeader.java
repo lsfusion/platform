@@ -199,6 +199,10 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
     }
 
+    public static void changeDirection(ImageElement img, boolean sortDir) {
+        GwtClientUtils.setThemeImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
+    }
+
     private static void renderCaption(Element captionElement, String caption) {
         captionElement.setInnerText(caption == null ? "" : EscapeUtils.unicodeEscape(caption));
     }
