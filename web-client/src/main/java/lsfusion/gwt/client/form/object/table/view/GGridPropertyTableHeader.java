@@ -187,18 +187,6 @@ public class GGridPropertyTableHeader extends Header<String> {
         return wrappedTh;
     }
 
-    public static void unwrapSort(Element th) {
-        Element parent = th.getParentElement();
-        th.removeFromParent();
-        for (int i = th.getChildCount() - 1; i >= 0; i--) {
-            Element child = (Element) th.getChild(i);
-            if (child.hasClassName("dataGridHeaderCell-caption")) {
-                child.removeClassName("dataGridHeaderCell-sortdiv");
-                parent.appendChild(child);
-            }
-        }
-    }
-
     public static void changeDirection(ImageElement img, boolean sortDir) {
         GwtClientUtils.setThemeImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
     }
