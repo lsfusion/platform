@@ -50,7 +50,6 @@
 
     padding: 0 2px;
     font-weight: normal;
-    user-select: none;
 }
 
 /* it's hard to tell why, but setting overflow:hidden, prevents getting divs bigger than their parents */

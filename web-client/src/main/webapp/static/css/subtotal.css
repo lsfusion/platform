@@ -58,7 +58,6 @@
     /* AxisLabel */
     table.pvtTable .pvtAxisLabel {
 	    white-space: nowrap;
-        user-select: none;
     }
     table.pvtTable .pvtAxisLabel.expanded {
 	    white-space: nowrap;
@@ -71,7 +70,6 @@
     table.pvtTable tbody tr th.pvtRowLabel {
 	    vertical-align: top;
 	    white-space: nowrap;
-        user-select: none;
     }
     table.pvtTable tbody tr th.pvtRowLabel.rowexpanded {
     }
@@ -91,7 +89,6 @@
     /* ColLabel */
     table.pvtTable thead tr th.pvtColLabel {
 	    white-space: nowrap;
-        user-select: none;
     }
 
     /* ColLabelFiller */

@@ -396,6 +396,13 @@
       createValueTD = function(value, rowKey, colKey, aggregator, className, attributes, eventHandlers) {
         var td;
         td = createElement("td", className, attributes, eventHandlers);
+        td.onmousedown = function(event) {
+          if (event.detail > 1) {
+            if (callbacks != null) {
+              return event.preventDefault();
+            }
+          }
+        };
         td.ondblclick = function(event) {
           if (callbacks != null) {
             return callbacks.valueCellDblClickHandler(event, td, rowKey, colKey);
@@ -430,6 +437,13 @@
           createArrowAndTextDivs(th, "axisHeaderArrowDiv", "axisHeaderTextDiv");
           textElement = th.textDiv;
         }
+        textElement.onmousedown = function(event) {
+          if (event.detail > 1) {
+            if (callbacks != null) {
+              return event.preventDefault();
+            }
+          }
+        };
         textElement.ondblclick = function(event) {
           if (callbacks != null) {
             return callbacks.colAxisHeaderDblClickHandler(event, textElement, attr);
@@ -461,6 +475,13 @@
         var th;
         th = createElement("th", className, attributes);
         if (!isArrow) {
+          th.onmousedown = function(event) {
+            if (event.detail > 1) {
+              if (callbacks != null) {
+                return event.preventDefault();
+              }
+            }
+          };
           th.ondblclick = function(event) {
             if (callbacks != null) {
               return callbacks.rowAxisHeaderDblClickHandler(event, th, attr);
@@ -481,6 +502,13 @@
         var th;
         th = createElement("th", className, attributes);
         if (!isArrow) {
+          th.onmousedown = function(event) {
+            if (event.detail > 1) {
+              if (callbacks != null) {
+                return event.preventDefault();
+              }
+            }
+          };
           th.ondblclick = function(event) {
             if (callbacks != null) {
               return callbacks.rowAttrHeaderDblClickHandler(event, th, rowKey, cellAttr);
@@ -505,6 +533,13 @@
           createArrowAndTextDivs(th, "colAttrHeaderArrowDiv", "colAttrHeaderTextDiv");
           textElement = th.textDiv;
         }
+        textElement.onmousedown = function(event) {
+          if (event.detail > 1) {
+            if (callbacks != null) {
+              return event.preventDefault();
+            }
+          }
+        };
         textElement.ondblclick = function(event) {
           if (callbacks != null) {
             return callbacks.colAttrHeaderDblClickHandler(event, textElement, colKey, isSubtotal);
