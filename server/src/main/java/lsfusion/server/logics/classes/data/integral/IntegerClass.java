@@ -96,7 +96,7 @@ public class IntegerClass extends IntClass<Integer> {
 
     public Integer parseString(String s) throws ParseException {
         try {
-            return Integer.parseInt(s);
+            return s.trim().isEmpty() ? null : Integer.parseInt(s);
         } catch (Exception e) {
             throw new ParseException("error parsing int: " + s, e);
         }

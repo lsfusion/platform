@@ -102,7 +102,7 @@ public class LongClass extends IntClass<Long> {
 
     public Long parseString(String s) throws ParseException {
         try {
-            return Long.parseLong(s);
+            return s.trim().isEmpty() ? null : Long.parseLong(s);
         } catch (Exception e) {
             throw new ParseException("error parsing long: " + s, e);
         }
