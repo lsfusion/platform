@@ -140,6 +140,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
         return actionSID;
     }
+    public boolean isFilterChange(Event editEvent) {
+        return GEditBindingMap.isDefaultFilterChange(editEvent, baseType.getEditEventFilter());
+    }
 
     public static class AddRemove implements Serializable {
         public GObject object;

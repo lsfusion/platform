@@ -11,10 +11,12 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -379,7 +381,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 allWindows.addAll(commonWindows.keySet());
 
                 windowsController.initializeWindows(allWindows, formsWindow);
-                formsController.restoreFullScreen();
+                formsController.initRoot();
 
                 navigatorController.update();
 

@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
@@ -92,17 +93,17 @@ public abstract class GPropertyTable<T> extends DataGrid<T> {
         CopyPasteUtils.setEmptySelection(getSelectedElement());
     }
 
-    public void onEditEvent(Event event, boolean forceChange, Context editContext, Element editCellParent, Runnable consumed) {
+    public void onEditEvent(EventHandler handler, boolean forceChange, Context editContext, Element editCellParent) {
         GPropertyDraw property = getProperty(editContext);
         GGroupObjectValue columnKey = getColumnKey(editContext);
 
-        form.executePropertyEventAction(property, columnKey, editCellParent, event, forceChange,
+        form.executePropertyEventAction(property, columnKey, editCellParent, handler, forceChange,
                 () -> getValueAt(editContext),
                 value -> setValueAt(editContext, value),
                 () -> isReadOnly(editContext),
                 getRenderContext(),
                 getUpdateContext(),
-                ((GGridPropertyTable) GPropertyTable.this)::selectNextRow, consumed);
+                ((GGridPropertyTable) GPropertyTable.this)::selectNextRow);
     }
 
     public RenderContext getRenderContext() {
@@ -125,5 +126,18 @@ public abstract class GPropertyTable<T> extends DataGrid<T> {
             line = line.replaceAll("\r\n", "\n");    // браузеры заменяют разделители строк на "\r\n"
             pasteData(GwtClientUtils.getClipboardTable(line));
         }
+    }
+
+
+    @Override
+    public void changeSelectedColumn(int column) {
+        form.checkCommitEditing();
+        super.changeSelectedColumn(column);
+    }
+
+    @Override
+    public void changeSelectedRow(int row) {
+        form.checkCommitEditing();
+        super.changeSelectedRow(row);
     }
 }

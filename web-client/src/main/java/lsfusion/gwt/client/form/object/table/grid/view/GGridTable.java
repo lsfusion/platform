@@ -11,8 +11,8 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
@@ -178,7 +178,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     newRow = getFirstSeenRow(scrollTop, selectedRow);
                 }
                 if (newRow != -1) {
-                    setSelectedRow(newRow, false);
+                    changeSelectedRow(newRow);
                 }
             }
         });
@@ -285,11 +285,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 redraw();
             }
 
-            if (currentKey != null && rowKeys.contains(currentKey)) {
-                setSelectedRow(rowKeys.indexOf(currentKey), false);
-            }
+            updateCurrentRecord();
 
             rowsUpdated = false;
+        }
+    }
+
+    private void updateCurrentRecord() {
+        if (currentKey != null && rowKeys.contains(currentKey)) {
+            setSelectedRow(rowKeys.indexOf(currentKey));
         }
     }
 
@@ -673,7 +677,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     @Override
                     public void pressed(Event event) {
 //                        focusProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
-                        onEditEvent(event, true, getCurrentCellContext(), getSelectedElement(), () -> {});
+                        onEditEvent(new EventHandler(event), true, getCurrentCellContext(), getSelectedElement());
                     }
 
                     @Override
@@ -980,7 +984,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 if (isRowWithinBounds(i)) {
                     Object value = getValueAt(i, searchColumn);
                     if (value != null && value.toString().regionMatches(true, 0, lastQuickSearchPrefix, 0, lastQuickSearchPrefix.length())) {
-                        setSelectedRow(i);
+                        changeSelectedRow(i);
                         break;
                     }
                 }
@@ -997,7 +1001,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         int ind = getPropertyIndex(propertyDraw, null);
         if (ind != -1) {
-            setSelectedColumn(ind, false);
+            changeSelectedColumn(ind);
         }
     }
 
@@ -1255,11 +1259,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
-            boolean ctrlPressed = event.getCtrlKey();
-            if (keyCode == KeyCodes.KEY_HOME && ctrlPressed) {
+            if (keyCode == KeyCodes.KEY_HOME && event.getCtrlKey()) {
                 form.scrollToEnd(groupObject, false);
                 return true;
-            } else if (keyCode == KeyCodes.KEY_END && ctrlPressed) {
+            } else if (keyCode == KeyCodes.KEY_END && event.getCtrlKey()) {
                 form.scrollToEnd(groupObject, true);
                 return true;
             }

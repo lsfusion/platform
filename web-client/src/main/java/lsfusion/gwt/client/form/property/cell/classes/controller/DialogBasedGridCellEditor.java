@@ -21,10 +21,6 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
     protected final int width;
     protected final int height;
 
-    public DialogBasedGridCellEditor(EditManager editManager, GPropertyDraw property, String title) {
-        this(editManager, property, title, -1, -1);
-    }
-
     public DialogBasedGridCellEditor(EditManager editManager, GPropertyDraw property, String title, int width, int height) {
         this.editManager = editManager;
         this.property = property;

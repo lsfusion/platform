@@ -1,7 +1,10 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
@@ -21,6 +24,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public class GFilterView extends ResizableFocusPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -81,17 +85,23 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         FlowPanel controlPanel = new FlowPanel();
         filterContainer.add(controlPanel);
 
-        sinkEvents(Event.ONKEYDOWN);
+        addDomHandler(event -> handleKeyEvent(event.getNativeEvent()), KeyDownEvent.getType());
     }
 
-    @Override
-    public void onBrowserEvent(Event event) {
-        if (event.getKeyCode() == KeyCodes.KEY_ESCAPE) {
-            GwtClientUtils.stopPropagation(event);
-            allRemovedPressed();
-        } else {
-            super.onBrowserEvent(event);
-        }
+    private void handleKeyEvent(NativeEvent nativeEvent) {
+        assert nativeEvent.getType().equals(BrowserEvents.KEYDOWN);
+        int keyCode = nativeEvent.getKeyCode();
+        if(keyCode == KeyCodes.KEY_ESCAPE)
+            processBinding(nativeEvent, this::allRemovedPressed);
+        else if(keyCode == KeyCodes.KEY_ENTER)
+            processBinding(nativeEvent, this::applyFilter);
+    }
+
+    // similar to GFormController.processBinding
+    private void processBinding(NativeEvent event, Runnable action) {
+        controller.checkCommitEditing();
+        action.run();
+        stopPropagation(event);
     }
 
     public void showDialog(List<GPropertyFilter> conditions, GTableController logicsSupplier, Event keyEvent, GPropertyDraw propertyDraw) {

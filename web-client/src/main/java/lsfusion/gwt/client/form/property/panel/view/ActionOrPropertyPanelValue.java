@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -33,18 +33,18 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue {
     }
 
     @Override
-    protected void onEditEvent(Event event, Runnable consumed) {
-        onEditEvent(event, false, consumed);
+    protected void onEditEvent(EventHandler handler) {
+        onEditEvent(handler, false);
     }
 
-    public void onEditEvent(Event event, boolean forceChange, Runnable consumed) {
-        form.executePropertyEventAction(property, columnKey, getRenderElement(), event, forceChange,
+    public void onEditEvent(EventHandler handler, boolean forceChange) {
+        form.executePropertyEventAction(property, columnKey, getRenderElement(), handler, forceChange,
                 this::getValue,
                 this::setValue,
                 () -> readOnly,
                 getRenderContext(),
                 getUpdateContext(),
-                down -> {}, consumed);
+                down -> {});
     }
 
     @Override

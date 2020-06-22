@@ -84,6 +84,11 @@ public abstract class GAbstractTableController implements GTableController {
                 public void filterHidden() {
                     focusFirstWidget();
                 }
+
+                @Override
+                public void checkCommitEditing() {
+                    formController.checkCommitEditing();
+                }
             };
 
             addToToolbar(filter.getToolbarButton());

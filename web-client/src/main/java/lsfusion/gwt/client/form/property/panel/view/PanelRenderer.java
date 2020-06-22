@@ -4,12 +4,12 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 public abstract class PanelRenderer {
 
@@ -83,7 +83,7 @@ public abstract class PanelRenderer {
     }
 
     public void onChange(Event event) {
-        value.onEditEvent(event, true, () -> {});
+        value.onEditEvent(new EventHandler(event), true);
     }
 
     private Object foreground;

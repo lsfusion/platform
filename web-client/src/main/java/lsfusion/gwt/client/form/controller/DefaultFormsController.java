@@ -1,11 +1,15 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
@@ -81,15 +85,33 @@ public abstract class DefaultFormsController implements FormsController {
         setFullScreenMode(storage != null && storage.getItem("full_screen") != null);
     }
 
+    private static ResizableFocusPanel focusPanel;
+    private static LayoutPanel layoutPanel;
+    public void initRoot() {
+        focusPanel = new ResizableFocusPanel();
+//        focusPanel.addFocusHandler(event -> GWT.log("FORM FOCUSED"));
+//        focusPanel.addBlurHandler(event -> GWT.log("FORM BLURED"));
+        RootLayoutPanel.get().add(focusPanel);
+
+        layoutPanel = new LayoutPanel();
+        focusPanel.add(layoutPanel);
+        Window.addResizeHandler(event -> layoutPanel.onResize());
+        GwtClientUtils.setupFillParent(layoutPanel.getElement());
+
+        restoreFullScreen();
+    }
+    public void updateRoot(Widget widget) {
+        layoutPanel.clear();
+        layoutPanel.add(widget);
+    }
+
     public void maximizeTabsPanel(){
-        RootLayoutPanel.get().clear();
-        RootLayoutPanel.get().add(tabsPanel);
+        updateRoot(tabsPanel);
     }
 
     public void normalizeTabsPanel() {
-        RootLayoutPanel.get().clear();
         resizableSimplePanel.setFillWidget(tabsPanel);
-        RootLayoutPanel.get().add(windowsController.getRootView());
+        updateRoot(windowsController.getRootView());
     }
 
     public Widget updateViewButton() {

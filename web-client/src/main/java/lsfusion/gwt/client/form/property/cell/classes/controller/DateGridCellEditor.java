@@ -25,9 +25,6 @@ import lsfusion.gwt.client.view.StyleDefaults;
 import java.text.ParseException;
 import java.util.Date;
 
-import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
-import static com.google.gwt.dom.client.BrowserEvents.KEYPRESS;
-
 public class DateGridCellEditor extends PopupBasedGridCellEditor {
 
     private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat();
@@ -74,11 +71,10 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
     public void startEditing(Event event, Element parent, Object oldValue) {
         String input = null;
         boolean selectAll = true;
-        String eventType = event.getType();
-        if (KEYDOWN.equals(eventType) && GKeyStroke.isDeleteKeyEvent(event)) {
+        if (GKeyStroke.isCharDeleteKeyEvent(event)) {
             input = "";
             selectAll = false;
-        } else if (KEYPRESS.equals(eventType)) {
+        } else if (GKeyStroke.isCharAddKeyEvent(event)) {
             input = String.valueOf((char) event.getCharCode());
             selectAll = false;
         }

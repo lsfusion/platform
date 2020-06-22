@@ -16,7 +16,7 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
 
 public abstract class Column<T, C> {
@@ -26,7 +26,7 @@ public abstract class Column<T, C> {
 
   public abstract C getValue(T object);
 
-  public abstract void onBrowserEvent(Context context, Element parent, C value, Event event, Runnable consumed);
+  public abstract void onBrowserEvent(Context context, Element parent, C value, EventHandler handler);
 
   public abstract void renderDom(Context context, Element cellElement, C value);
 

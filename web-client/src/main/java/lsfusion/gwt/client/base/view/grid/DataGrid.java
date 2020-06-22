@@ -22,7 +22,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
@@ -79,8 +79,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
      * The command used to resolve the pending state.
      */
     boolean isFocused;
-
-    private boolean focusable = true;
 
     private final List<Column<T, ?>> columns = new ArrayList<>();
     private final Map<Column<T, ?>, String> columnWidths = new HashMap<>();
@@ -225,14 +223,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             setFillWidget(headerPanel);
         }
 
-        // вообще в оригинальном DataGrid в этот контейнер предполагается класть виджеты, информирующие о том, что таблица пуста.
-        // но мы пока ограничимся просто наличием самого этого контейнера.
-        // нам нужно, чтобы в пустой таблице у него была какая-нибудь минимальная высота (а значит и ненулевая ширина)
-        // и чтобы при необходимости он вылезал за viewport скролл-панели, тем самым вызывая горизонтальный скроллбар
         emptyTableWidgetContainer = new FlexTable();
         emptyTableWidgetContainer.setHeight("1px");
 
-        setTableFocusable(true);
+        getTableDataFocusElement().setTabIndex(0);
 
         initSinkEvents(this);
         addStyleName(style.dataGridWidget());
@@ -321,6 +315,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         return 0;
     }
 
+    // transfering focus to table data element
     @Override
     public void setFocus(boolean focused) {
         Element focusHolderElement = getTableDataFocusElement();
@@ -423,8 +418,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
      */
     @Override
     public final void onBrowserEvent(Event event) {
-        CellBasedWidgetImpl.get().onBrowserEvent(this, event);
-
         // Ignore spurious events (such as onblur) while we refresh the table.
         if (isRefreshing) {
             return;
@@ -455,15 +448,16 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             // Remember the blur state.
             isFocused = false;
             onBlur();
-        } else if (BrowserEvents.KEYDOWN.equals(eventType)) {
-            // A key event indicates that we already have focus.
-            isFocused = true;
-        } else if (BrowserEvents.MOUSEDOWN.equals(eventType)
-                && CellBasedWidgetImpl.get().isFocusable(Element.as(target))) {
-            // If a natively focusable element was just clicked, then we must have
-            // focus.
-            isFocused = true;
         }
+//        else if (BrowserEvents.KEYDOWN.equals(eventType)) {
+//            // A key event indicates that we already have focus.
+//            isFocused = true;
+//        } else if (BrowserEvents.MOUSEDOWN.equals(eventType)
+//                && CellBasedWidgetImpl.get().isFocusable(Element.as(target))) {
+//            // If a natively focusable element was just clicked, then we must have
+//            // focus.
+//            isFocused = true;
+//        }
 
         // Let subclasses handle the event now.
         onBrowserEvent2(event);
@@ -544,25 +538,21 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                 T value = getRowValue(row);
                 Context context = new Context(row, getColumnIndex(column), value);
 
-                Consumed consumedResult = new Consumed();
-                Runnable consumed = () -> {
-                    GwtClientUtils.stopPropagation(event);
-                    consumedResult.is = true;
-                };
+                EventHandler handler = new EventHandler(event);
 
                 // first handling cell changes with mouse (cross focus)
-                selectionHandler.onCellBefore(event, context, consumed);
-                if(consumedResult.is)
+                selectionHandler.onCellBefore(handler, context);
+                if(handler.consumed)
                     return;
 
                 // then cell events (this focus)
-                fireEventToCell(event, columnParent, value, context, column, consumed);
-                if(consumedResult.is)
+                fireEventToCell(handler, columnParent, value, context, column);
+                if(handler.consumed)
                     return;
 
                 // in the end cell changes with (this focus)
-                selectionHandler.onCellAfter(event, context, consumed);
-                if(consumedResult.is)
+                selectionHandler.onCellAfter(handler, context);
+                if(handler.consumed)
                     return;
             }
         }
@@ -602,23 +592,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
     protected void onUnload() {
         isFocused = false;
         super.onUnload();
-    }
-
-    /**
-     * Make an element focusable or not.
-     *
-     * @param elem      the element
-     * @param focusable true to make focusable, false to make unfocusable
-     */
-    protected static void setFocusable(Element elem, boolean focusable) {
-        if (focusable) {
-            elem.setTabIndex(0);
-        } else {
-            // Chrome: Elements remain focusable after removing the tabIndex, so set it to -1 first.
-            elem.setTabIndex(-1);
-            elem.removeAttribute("tabIndex");
-            elem.removeAttribute("accessKey");
-        }
     }
 
     /**
@@ -822,128 +795,45 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         return getCurrentState().selectedColumn;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * <p>
-     * The row element may not be the same as the TR element at the specified
-     * index if some row values are rendered with additional rows.
-     * </p>
-     *
-     * @param row the row index, relative to the page start
-     * @return the row element, or null if it doesn't exists
-     * @throws IndexOutOfBoundsException if the row index is outside of the
-     *                                   current page
-     */
     protected TableRowElement getChildElement(int row) {
         return getRowElementNoFlush(row);
     }
 
-    /**
-     * Set the width of a {@link Column}. The width will persist with the column
-     * and takes precedence of any width set via
-     * {@link #setColumnWidth(int, String)}.
-     *
-     * @param column the column
-     * @param width  the width of the column
-     */
     public void setColumnWidth(Column<T, ?> column, String width) {
         columnWidths.put(column, width);
         updateColumnWidthImpl(column, width);
     }
 
-    /**
-     * Set the {@link HeaderBuilder} used to build the header section of the
-     * table.
-     */
-    public void setHeaderBuilder(HeaderBuilder<T> builder) {
-        assert builder != null : "builder cannot be null";
-        this.headerBuilder = builder;
-        refreshColumnsAndRedraw();
+    // when row or column are changed by keypress in grid (KEYUP, PAGEUP, etc), no focus is lost
+    // so to handle this there are to ways of doing that, either with GFormController.checkCommitEditing, or moving focus to grid
+    // so far will do it with checkCommitEditing (like in form bindings)
+    // see overrides
+    public void changeSelectedColumn(int column) {
+//        setFocus(true);
+        setSelectedColumn(column);
+    }
+    public void changeSelectedRow(int row) {
+//        setFocus(true);
+        setSelectedRow(row);
+
+        rowChangedHandler.run();
     }
 
-    /**
-     * Set the keyboard selected column index.
-     * <p/>
-     * <p>
-     * If keyboard selection is disabled, this method does nothing.
-     * </p>
-     * <p/>
-     * <p>
-     * If the keyboard selected column is greater than the number of columns in
-     * the keyboard selected row, the last column in the row is selected, but the
-     * column index is remembered.
-     * </p>
-     *
-     * @param column the column index, greater than or equal to zero
-     */
-    public final void setSelectedColumn(int column) {
-        setSelectedColumn(column, true);
-    }
-
-    /**
-     * Set the keyboard selected column index and optionally focus on the new
-     * cell.
-     *
-     * @param column     the column index, greater than or equal to zero
-     * @param stealFocus true to focus on the new column
-     * @see #setSelectedColumn(int)
-     */
-    public void setSelectedColumn(int column, boolean stealFocus) {
+    public void setSelectedColumn(int column) {
         assert column >= 0 : "Column must be zero or greater";
 
         if (getSelectedColumn() == column) {
             return;
         }
 
-        if (column < 0) {
-            column = 0;
-        } else {
-            int columnCount = getColumnCount();
-            if (column >= columnCount) {
-                column = columnCount - 1;
-            }
+        int columnCount = getColumnCount();
+        if (column >= columnCount) {
+            column = columnCount - 1;
         }
 
         ensurePendingState().setSelectedColumn(column);
-
-        // Reselect the row to move the selected column.
-        setSelectedRow(getSelectedRow(), stealFocus);
     }
-
-    /**
-     * Set the keyboard selected row. The row index is the index relative to the
-     * current page start index.
-     *
-     * <p>
-     * If keyboard selection is disabled, this method does nothing.
-     * </p>
-     *
-     * <p>
-     * If the keyboard selected row is outside of the range of the current page
-     * (that is, less than 0 or greater than or equal to the page size), the page
-     * or range will be adjusted depending on the keyboard paging policy. If the
-     * keyboard paging policy is limited to the current range, the row index will
-     * be clipped to the current page.
-     * </p>
-     *
-     * @param row the row index relative to the page start
-     */
-    public final void setSelectedRow(int row) {
-        setSelectedRow(row, true);
-    }
-
-    /**
-     * Set the row index of the keyboard selected element.
-     *
-     * @param row        the row index
-     * @param stealFocus true to steal focus
-     */
-    public void setSelectedRow(int row, boolean stealFocus) {
-        if (stealFocus) {
-            ensurePendingState().stealFocus = stealFocus;
-        }
-
+    public void setSelectedRow(int row) {
         int rowCount = getRowCount();
         if (rowCount == 0 || getSelectedRow() == row) {
             return;
@@ -956,8 +846,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         }
 
         ensurePendingState().setSelectedRow(row);
-
-        rowChangedHandler.run();
     }
 
     protected void setDesiredVerticalScrollPosition(int newVerticalScrollPosition) {
@@ -1155,8 +1043,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         }
     }
 
-    protected <C> void fireEventToCell(Event event, Element cellParent, final T rowValue, Context context, Column<T, C> column, Runnable consumed) {
-        column.onBrowserEvent(context, cellParent, column.getValue(rowValue), event, consumed);
+    protected <C> void fireEventToCell(EventHandler handler, Element cellParent, final T rowValue, Context context, Column<T, C> column) {
+        column.onBrowserEvent(context, cellParent, column.getValue(rowValue), handler);
     }
 
     /**
@@ -1326,8 +1214,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             return;
         }
 
-        boolean stealFocus = pendingState.stealFocus;
-
         isRefreshing = true;
 
         afterUpdateTableData(pendingState);
@@ -1336,10 +1222,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
         headersChanged = false;
         columnsChanged = false;
-
-//        if (stealFocus) {
-//            setFocus(true);
-//        }
 
         updateSelectedRowStyles();
 
@@ -1495,8 +1377,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
         // SET NEW STATE
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rowCount) {
-            boolean isFocused = focusable && this.isFocused;
-            updateSelectedRowCellsBackground(newLocalSelectedRow, rows, isFocused || focusable, isFocused ? newLocalSelectedCol : -1);
+            updateSelectedRowCellsBackground(newLocalSelectedRow, rows, true, this.isFocused ? newLocalSelectedCol : -1);
         }
     }
 
@@ -1538,7 +1419,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
         // SET NEW STATE
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rows.getLength() && newLocalSelectedCol >= 0 && newLocalSelectedCol < columnCount) {
-            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRows, focusable && isFocused);
+            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRows, isFocused);
         }
     }
 
@@ -1630,11 +1511,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             tableFooter.hideUnusedColumns(columnCount);
     }
 
-    public void setTableFocusable(boolean focusable) {
-        this.focusable = focusable;
-        setFocusable(getTableDataFocusElement(), focusable);
-    }
-
     @Override
     public void colorThemeChanged() {
         refreshColumnsAndRedraw();
@@ -1649,8 +1525,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         protected final List<T> rowData;
         protected int selectedRow = 0;
         protected int selectedColumn = 0;
-
-        private boolean stealFocus = false;
 
         private int desiredVerticalScrollPosition = -1;
 
@@ -1975,7 +1849,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             this.display = display;
         }
 
-        public void onCellBefore(Event event, Context context, Runnable consumed) {
+        public void onCellBefore(EventHandler handler, Context context) {
+            Event event = handler.event;
             String eventType = event.getType();
             if (BrowserEvents.CLICK.equals(eventType) ||
                     BrowserEvents.FOCUS.equals(eventType) ||
@@ -1985,23 +1860,22 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                 int row = context.getIndex();
                 if ((display.getSelectedColumn() != col) || (display.getSelectedRow() != row)) {
 
-                    display.setSelectedRow(row, true);
-                    display.setSelectedColumn(col, true);
+                    changeColumn(col);
+                    changeRow(row);
 
-                    consumed.run();
-                } else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus
-                        !CellBasedWidgetImpl.get().isFocusable(Element.as(event.getEventTarget())))
-                    display.focus();
+                    handler.consume();
+                }
+//                else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus
+//                        !CellBasedWidgetImpl.get().isFocusable(Element.as(event.getEventTarget())))
+//                    display.focus();
             }
         }
 
-        public void onCellAfter(Event event, Context context, Runnable consumed) {
+        public void onCellAfter(EventHandler handler, Context context) {
+            Event event = handler.event;
             String eventType = event.getType();
-            if (BrowserEvents.KEYDOWN.equals(eventType)) {
-                if (handleKeyEvent(event)) {
-                    consumed.run();
-                }
-            }
+            if (BrowserEvents.KEYDOWN.equals(eventType) && handleKeyEvent(event))
+                handler.consume();
         }
 
         public boolean handleKeyEvent(Event event) {
@@ -2016,25 +1890,29 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                 case KeyCodes.KEY_UP:
                     return nextRow(false);
                 case KeyCodes.KEY_PAGEDOWN:
-                    display.setSelectedRow(display.getSelectedRow() + display.pageIncrement);
-                    return true;
+                    return changeRow(display.getSelectedRow() + display.pageIncrement);
                 case KeyCodes.KEY_PAGEUP:
-                    display.setSelectedRow(display.getSelectedRow() - display.pageIncrement);
-                    return true;
+                    return changeRow(display.getSelectedRow() - display.pageIncrement);
                 case KeyCodes.KEY_HOME:
-                    display.setSelectedRow(0);
-                    return true;
+                    return changeRow(0);
                 case KeyCodes.KEY_END:
-                    display.setSelectedRow(display.getRowCount() - 1);
-                    return true;
+                    return changeRow(display.getRowCount() - 1);
             }
             return false;
         }
 
+        protected boolean changeColumn(int column) {
+            display.changeSelectedColumn(column);
+            return true;
+        }
+        protected boolean changeRow(int row) {
+            display.changeSelectedRow(row);
+            return true;
+        }
+
         public boolean nextRow(boolean down) {
             int rowIndex = display.getSelectedRow();
-            display.setSelectedRow(down ? rowIndex + 1 : rowIndex - 1);
-            return true;
+            return changeRow(down ? rowIndex + 1 : rowIndex - 1);
         }
 
         public boolean nextColumn(boolean forward) {
@@ -2065,11 +1943,9 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                     }
                 }
 
-                display.setSelectedRow(rowIndex);
-                display.setSelectedColumn(columnIndex);
+                return changeColumn(columnIndex) || changeRow(rowIndex);
             }
-            //allways handle KEY_LEFT/RIGHT
-            return true;
+            return false;
         }
     }
 }

@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -30,8 +30,13 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    protected void onEditEvent(Event event, Runnable consumed) {
-        form.edit(property, getRenderElement(), property.baseType, event, false, null,
-                this::getValue, this::setValue, afterCommit, () -> {}, getRenderContext(), getUpdateContext(), down -> {});
+    protected void onEditEvent(EventHandler handler) {
+        if(property.isFilterChange(handler.event)) {
+            handler.consume();
+            form.edit(property, getRenderElement(), property.baseType, handler.event, false, null,
+                    this::getValue, this::setValue, afterCommit, () -> {
+                    }, getRenderContext(), getUpdateContext(), down -> {
+                    });
+        }
     }
 }

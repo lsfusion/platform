@@ -5,11 +5,10 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.SimplePanel;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.grid.CellBasedWidgetImpl;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -17,10 +16,7 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.text.ParseException;
-import java.util.HashSet;
-import java.util.Set;
 
-import static com.google.gwt.dom.client.BrowserEvents.*;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
@@ -100,6 +96,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
 //            startEditing(new NativeEditEvent(event));
 //            stopPropagation(event);
 //        }
+        super.onBrowserEvent(event);
 
         if(!DataGrid.checkSinkEvents(event))
             return;
@@ -112,12 +109,12 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
                 removeStyleName("dataPanelRendererGridPanelFocused");
         }
 
-        Runnable consumed = () -> stopPropagation(event);
-        form.onPropertyBrowserEvent(event, getRenderElement(),
-            () -> onEditEvent(event, consumed),
+        EventHandler handler = new EventHandler(event);
+        form.onPropertyBrowserEvent(handler, getRenderElement(),
+            () -> onEditEvent(handler),
             () -> CopyPasteUtils.putIntoClipboard(getRenderElement()),
-            () -> executePaste(event),
-            consumed);
+            () -> executePaste(handler.event)
+        );
     }
 
     private void executePaste(Event event) {
@@ -129,7 +126,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
         }
     }
 
-    protected abstract void onEditEvent(Event event, Runnable consumed);
+    protected abstract void onEditEvent(EventHandler handler);
 
     protected abstract RenderContext getRenderContext();
 

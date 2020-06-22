@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
@@ -21,8 +22,6 @@ public class GDataFilterValueView extends GFilterValueView {
 
         cell = new GDataFilterPropertyValue(property, logicsSupplier.getForm(), value -> valueChanged(value));
         cell.addSimple(this);
-
-        add(cell);
     }
 
     @Override
@@ -52,6 +51,6 @@ public class GDataFilterValueView extends GFilterValueView {
     }
 
     public void startEditing(Event keyEvent) {
-        cell.onEditEvent(keyEvent, () -> {});
+        cell.onEditEvent(new EventHandler(keyEvent));
     }
 }

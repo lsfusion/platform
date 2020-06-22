@@ -608,7 +608,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     public boolean focusFirstWidget() {
-        if (GwtClientUtils.isShowing(table.getThisWidget())) {
+        if (table != null && GwtClientUtils.isShowing(table.getThisWidget())) {
             table.focus();
             return true;
         }
@@ -641,8 +641,8 @@ public class GGridController extends GAbstractTableController {
     public void focusProperty(GPropertyDraw property) {
         if(property.grid) {
             GTableView table = this.table;
+            table.focus();
             table.focusProperty(property);
-            table.focus();            
         } else {
             panel.focusProperty(property);
         }

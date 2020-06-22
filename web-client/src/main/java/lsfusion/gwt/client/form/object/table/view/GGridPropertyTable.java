@@ -9,6 +9,7 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -273,12 +274,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
-            boolean ctrlPressed = event.getCtrlKey();
-            if (keyCode == KeyCodes.KEY_HOME && !ctrlPressed) {
-                display.setSelectedColumn(0);
+            if (keyCode == KeyCodes.KEY_HOME && !event.getCtrlKey()) {
+                changeColumn(0);
                 return true;
-            } else if (keyCode == KeyCodes.KEY_END && !ctrlPressed) {
-                display.setSelectedColumn(display.getColumnCount() - 1);
+            } else if (keyCode == KeyCodes.KEY_END && !event.getCtrlKey()) {
+                changeColumn(display.getColumnCount() - 1);
                 return true;
             }
             return super.handleKeyEvent(event);
@@ -397,11 +397,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         @Override
-        public void onBrowserEvent(Context context, Element parent, Object value, Event event, Runnable consumed) {
-            form.onPropertyBrowserEvent(event, parent,
-                    () -> onEditEvent(event, false, context, parent, consumed),
+        public void onBrowserEvent(Context context, Element parent, Object value, EventHandler handler) {
+            form.onPropertyBrowserEvent(handler, parent,
+                    () -> onEditEvent(handler, false, context, parent),
                     () -> CopyPasteUtils.putIntoClipboard(parent),
-                    () -> executePaste(event), consumed);
+                    () -> executePaste(handler.event));
         }
 
         @Override

@@ -5,7 +5,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
-import lsfusion.gwt.client.base.view.CopyPasteUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
@@ -28,8 +28,6 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     protected final EditManager editManager;
     protected final String inputElementTagName;
 
-    protected String currentText = "";
-
     public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, "input");
     }
@@ -42,59 +40,55 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
 
     @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
-        currentText = renderToString(oldValue);
+        String text = renderToString(oldValue);
         InputElement inputElement = getInputElement(parent);
         boolean selectAll = true;
-        String eventType = event.getType();
-        if (KEYDOWN.equals(eventType) && (GKeyStroke.isDeleteKeyEvent(event) || GKeyStroke.isBackspaceKeyEvent(event))) {
-            currentText = "";
+        if (GKeyStroke.isCharDeleteKeyEvent(event)) {
+            text = "";
             selectAll = false;
-        } else if (KEYPRESS.equals(eventType)) {
-            int charCode = event.getCharCode();
-            if (charCode != 0) {
-                String input = String.valueOf((char)charCode);
-                currentText = checkInputValidity(parent, input) ? input : "";
-                selectAll = false;
-            }
+        } else if (GKeyStroke.isCharAddKeyEvent(event)) {
+            String input = String.valueOf((char) event.getCharCode());
+            text = checkInputValidity(parent, input) ? input : "";
+            selectAll = false;
         }
-        inputElement.setValue(currentText);
+        inputElement.setValue(text);
         inputElement.focus();
 
         if (selectAll) {
-            textBoxImpl.setSelectionRange(inputElement, 0, currentText.length());
+            textBoxImpl.setSelectionRange(inputElement, 0, text.length());
         } else {
             //перемещаем курсор в конец текста
-            textBoxImpl.setSelectionRange(inputElement, currentText.length(), 0);
+            textBoxImpl.setSelectionRange(inputElement, text.length(), 0);
         }
     }
 
     @Override
-    public void onBrowserEvent(Element parent, Event event, Runnable consumed) {
+    public void onBrowserEvent(Element parent, EventHandler handler) {
+        Event event = handler.event;
+
         String type = event.getType();
-        boolean keyDown = KEYDOWN.equals(type);
-        boolean keyPress = KEYPRESS.equals(type);
-        if (keyDown || keyPress) {
+        boolean charInput = GKeyStroke.isCharInputKeyEvent(event);
+        if (charInput || GKeyStroke.isCharDeleteKeyEvent(event) ||
+                GKeyStroke.isCharNavigateKeyEvent(event)) {
+            if(charInput && !checkInputValidity(parent, String.valueOf((char) event.getCharCode())))
+                handler.consume(); // this thing is needed to disable inputting incorrect symbols
+            else
+                handler.consume(true);
+        } else if (KEYDOWN.equals(type)) {
             int keyCode = event.getKeyCode();
-            if (keyPress && keyCode == KeyCodes.KEY_ENTER) {
-                consumed.run();
-                enterPressed(event, parent);
-            } else if (keyDown && keyCode == KeyCodes.KEY_ESCAPE) {
-                consumed.run();
-                editManager.cancelEditing();
-            } else if (keyDown && keyCode == KeyCodes.KEY_DOWN) {
-                consumed.run();
-                arrowPressed(event, parent, true);
-            } else if (keyDown && keyCode == KeyCodes.KEY_UP) {
-                consumed.run();
-                arrowPressed(event, parent, false);
-            } else {
-                if (GKeyStroke.isCommonEditKeyEvent(event) && (!GKeyStroke.isDeleteKeyEvent(event) || keyPress) && !GKeyStroke.isBackspaceKeyEvent(event) &&
-                        !checkInputValidity(parent, String.valueOf((char) event.getCharCode()))) {
-                    consumed.run();
-                } else {
-                    currentText = getCurrentText(parent);
-                }
+            if (keyCode == KeyCodes.KEY_ENTER) {
+                enterPressed(handler, parent);
+            } else if (keyCode == KeyCodes.KEY_ESCAPE) {
+                escapePressed(handler, parent);
             }
+//                else
+//                if (keyCode == KeyCodes.KEY_DOWN) {
+//                    handler.consume();
+//                    arrowPressed(event, parent, true);
+//                } else if (keyCode == KeyCodes.KEY_UP) {
+//                    handler.consume();
+//                    arrowPressed(event, parent, false);
+//                }
         } else if (BLUR.equals(type)) {
             // Cancel the change. Ensure that we are blurring the input element and
             // not the parent element itself.
@@ -104,10 +98,6 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
                 if (inputElementTagName.equals(target.getTagName().toLowerCase())) {
                     validateAndCommit(parent, true);
                 }
-            }
-        } else if(event.getTypeInt() == Event.ONPASTE) {
-            if (!checkInputValidity(parent, CopyPasteUtils.getClipboardData(event))) {
-                consumed.run();
             }
         }
     }
@@ -136,12 +126,20 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         return value == null ? "" : value.toString();
     }
 
-    protected void enterPressed(NativeEvent event, Element parent) {
-        validateAndCommit(parent, false);
+    protected boolean checkEnterEvent(Event event) {
+        return GKeyStroke.isPlainKeyEvent(event);
     }
-
-    protected void arrowPressed(NativeEvent event, Element parent, boolean down) {
-        commitAndChangeRow(parent, down);
+    protected void enterPressed(EventHandler handler, Element parent) {
+        if(checkEnterEvent(handler.event)) {
+            handler.consume();
+            validateAndCommit(parent, false);
+        }
+    }
+    protected void escapePressed(EventHandler handler, Element parent) {
+        if(GKeyStroke.isPlainKeyEvent(handler.event)) {
+            handler.consume();
+            editManager.cancelEditing();
+        }
     }
 
     @Override
@@ -149,7 +147,6 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         final InputElement input = Document.get().createTextInputElement();
         
         input.setTabIndex(-1);
-        input.setValue(currentText);
         input.addClassName("boxSized");
         input.addClassName("textBasedGridCellEditor");
 
@@ -181,23 +178,18 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         textareaStyle.setFontSize(DEFAULT_FONT_PT_SIZE, Style.Unit.PT);
     }
 
+    public void commitEditing(Element parent) {
+        validateAndCommit(parent, true);
+    }
+
     public void validateAndCommit(Element parent, boolean cancelIfInvalid) {
         String value = getCurrentText(parent);
         try {
             editManager.commitEditing(tryParseInputText(value, true));
         } catch (ParseException ignore) {
-            //если выкинулся ParseException и фокус ещё в эдиторе, то не заканчиваем редактирование
             if (cancelIfInvalid) {
                 editManager.cancelEditing();
             }
-        }
-    }
-
-    private void commitAndChangeRow(Element parent, boolean moveDown) {
-        try {
-            String value = getCurrentText(parent);
-            editManager.commitEditing(tryParseInputText(value, true), editContext -> editContext.selectNextRow(moveDown));
-        } catch (ParseException ignore) {
         }
     }
 

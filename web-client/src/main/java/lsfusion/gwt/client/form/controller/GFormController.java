@@ -30,9 +30,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
-import lsfusion.gwt.client.base.view.DialogBoxHelper;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
@@ -71,7 +69,6 @@ import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.EditContext;
@@ -97,7 +94,6 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
-import static lsfusion.gwt.client.form.event.GKeyStroke.isPossibleEditKeyEvent;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChange;
 
@@ -186,7 +182,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         initializeAutoRefresh();
 
-        install(this);
+        addDomHandler(event -> handleKeyEvent(event.getNativeEvent()), KeyDownEvent.getType());
+        addDomHandler(event -> handleMouseEvent(event.getNativeEvent()), ClickEvent.getType());
+        addDomHandler(event -> handleMouseEvent(event.getNativeEvent()), DoubleClickEvent.getType());
     }
 
     protected void unregisterForm() {
@@ -711,27 +709,28 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void executePropertyEventAction(final GPropertyDraw property, final GGroupObjectValue columnKey,
-                                           Element element, Event event, boolean forceChange,
+                                           Element element, EventHandler handler, boolean forceChange,
                                            Supplier<Object> getValue, Consumer<Object> setValue, // we need access to the model
                                            Supplier<Boolean> checkReadOnly,
-                                           RenderContext renderContext, UpdateContext updateContext, EditContext editContext,
-                                           Runnable consumed) {
+                                           RenderContext renderContext, UpdateContext updateContext, EditContext editContext) {
+        Event event = handler.event;
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
-            consumed.run();
-            GPropertyContextMenuPopup.show(property, event.getClientX(), event.getClientY(), actionSID -> executePropertyActionSID(property, columnKey, element, event, getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext, editContext, () -> {}));
+            handler.consume();
+            GPropertyContextMenuPopup.show(property, event.getClientX(), event.getClientY(), actionSID -> executePropertyActionSID(property, columnKey, element, new EventHandler(event), getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext, editContext));
         } else {
             String actionSID = forceChange ? CHANGE : property.getEventSID(event);
             if (actionSID != null)
-                executePropertyActionSID(property, columnKey, element, event, getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext, editContext, consumed);
+                executePropertyActionSID(property, columnKey, element, handler, getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext, editContext);
         }
     }
 
-    private void executePropertyActionSID(GPropertyDraw property, GGroupObjectValue columnKey, Element element, Event event, Supplier<Object> getValue, Consumer<Object> setValue, Supplier<Boolean> checkReadOnly, String actionSID, RenderContext renderContext, UpdateContext updateContext, EditContext editContext, Runnable consumed) {
+    private void executePropertyActionSID(GPropertyDraw property, GGroupObjectValue columnKey, Element element, EventHandler handler, Supplier<Object> getValue, Consumer<Object> setValue, Supplier<Boolean> checkReadOnly, String actionSID, RenderContext renderContext, UpdateContext updateContext, EditContext editContext) {
         if (isChange(actionSID) && checkReadOnly.get()) {
             return;
         }
 
-        consumed.run();
+        handler.consume();
+        Event event = handler.event;
 
         final boolean asyncModifyObject = isAsyncModifyObject(property);
         if (GEditBindingMap.CHANGE.equals(actionSID) && (asyncModifyObject || property.changeType != null)) {
@@ -1356,12 +1355,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private final HashMap<GInputEvent, ArrayList<Binding>> bindings = new HashMap<>();
 
-    public void install(Widget rootWidget) {
-        rootWidget.addDomHandler(event -> handleKeyEvent(event.getNativeEvent()), KeyDownEvent.getType());
-        rootWidget.addDomHandler(event -> handleMouseEvent(event.getNativeEvent()), ClickEvent.getType());
-        rootWidget.addDomHandler(event -> handleMouseEvent(event.getNativeEvent()), DoubleClickEvent.getType());
-    }
-    
     public void addPropertyBindings(GPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
         if(propertyDraw.changeKey != null) {
             Binding binding = bindingSupplier.get();
@@ -1422,9 +1415,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
             for (Binding binding : orderedBindings.values()) {
                 if (binding.enabled()) {
-                    if (isEditing())
-                        validateAndCommit();
-
+                    checkCommitEditing();
                     binding.pressed((Event) event);
                     stopPropagation(event);
                     return true;
@@ -1432,6 +1423,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         }
         return false;
+    }
+
+    public void checkCommitEditing() {
+        if(cellEditor != null)
+            cellEditor.commitEditing(editElement);
     }
 
     private boolean bindDialog(Binding binding) {
@@ -1511,15 +1507,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             return;
         }
 
-        if (isPossibleEditKeyEvent(nativeEvent)) {
-            GKeyStroke key = GKeyStroke.getKeyStroke(nativeEvent);
-            
-            processBinding(new GKeyInputEvent(key, null), nativeEvent, new GGroupObjectSupplier() {
-                public GGroupObject get() {
-                    return getGroupObject(Element.as(target));
-                }
-            });
-        }
+        GKeyStroke key = GKeyStroke.getKeyStroke(nativeEvent);
+
+        processBinding(new GKeyInputEvent(key, null), nativeEvent, new GGroupObjectSupplier() {
+            public GGroupObject get() {
+                return getGroupObject(Element.as(target));
+            }
+        });
     }
 
     private void handleMouseEvent(NativeEvent nativeEvent) {
@@ -1553,14 +1547,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return cellEditor != null;
     }
 
-    public void validateAndCommit() {
-        if(cellEditor != null && cellEditor instanceof TextBasedGridCellEditor) {
-            ((TextBasedGridCellEditor) cellEditor).validateAndCommit(editElement, true);
-        }
-    }
-
     public void edit(GPropertyDraw property, Element element, GType type, Event event, boolean hasOldValue, Object oldValue, Supplier<Object> getValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, RenderContext renderContext, UpdateContext updateContext, EditContext editContext) {
-        cellEditor = type.createGridCellEditor(this, property);
+        assert cellEditor == null;
+        GridCellEditor cellEditor = type.createGridCellEditor(this, property);
         if (cellEditor != null) {
             editGetValue = getValue;
 
@@ -1577,9 +1566,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
             if (cellEditor.replaceCellRenderer()) {
                 removeAllChildren(element);
-                cellEditor.renderDom(element.<DivElement>cast(), renderContext, updateContext);
+                cellEditor.renderDom(element, renderContext, updateContext);
             }
 
+            this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
             cellEditor.startEditing(event, element, hasOldValue ? oldValue : getValue.get());
         } else
             editCancel.run();
@@ -1666,15 +1656,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public <T> void onPropertyBrowserEvent(Event event, Element cellParent, Runnable onEdit, Runnable onCut, Runnable onPaste, Runnable consumed) {
+    public <T> void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Runnable onEdit, Runnable onCut, Runnable onPaste) {
         if (cellEditor != null && editElement == cellParent) {
-            cellEditor.onBrowserEvent(cellParent, event, consumed);
+            cellEditor.onBrowserEvent(cellParent, handler);
         } else {
-            if (GKeyStroke.isCopyToClipboardEvent(event)) {
-                consumed.run();
+            if (GKeyStroke.isCopyToClipboardEvent(handler.event)) {
+                handler.consume();
                 onCut.run();
-            } else if (GKeyStroke.isPasteFromClipboardEvent(event)) {  // для IE, в котором не удалось словить ONPASTE, но он и так даёт доступ к буферу обмена
-                consumed.run();
+            } else if (GKeyStroke.isPasteFromClipboardEvent(handler.event)) {
+                handler.consume();
                 onPaste.run();
             } else {
                 onEdit.run();

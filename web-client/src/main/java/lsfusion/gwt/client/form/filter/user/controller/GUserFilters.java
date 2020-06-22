@@ -136,4 +136,5 @@ public abstract class GUserFilters {
 
     public abstract void remoteApplyQuery();
     public abstract void filterHidden();
+    public abstract void checkCommitEditing();
 }

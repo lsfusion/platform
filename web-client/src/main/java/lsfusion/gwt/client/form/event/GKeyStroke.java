@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.event;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.io.Serializable;
 
@@ -116,22 +117,12 @@ public class GKeyStroke implements Serializable {
     }
 
     public static GKeyStroke getKeyStroke(NativeEvent e) {
-        assert BrowserEvents.KEYDOWN.equals(e.getType()) ||
-                BrowserEvents.KEYPRESS.equals(e.getType()) ||
-                BrowserEvents.KEYUP.equals(e.getType());
+        assert BrowserEvents.KEYDOWN.equals(e.getType());
         return new GKeyStroke(e.getKeyCode(), e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
     }
 
     public static boolean isSpaceKeyEvent(NativeEvent event) {
         return event.getKeyCode() == KEY_SPACE;
-    }
-    
-    public static boolean isBackspaceKeyEvent(NativeEvent event) {
-        return event.getKeyCode() == KEY_BACKSPACE;
-    }
-    
-    public static boolean isDeleteKeyEvent(NativeEvent event) {
-        return event.getKeyCode() == KEY_DELETE;
     }
 
     public static boolean isEnterKeyEvent(NativeEvent event) {
@@ -139,65 +130,57 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isEditObjectEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && isBackspaceKeyEvent(event);
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F9;
     }
 
     public static boolean isGroupChangeKeyEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
     }
 
-    public static boolean isCommonEditKeyEvent(NativeEvent event) {
-        if (event.getCtrlKey() || event.getAltKey() || event.getMetaKey()) {
-            return false;
-        }
+    public static boolean isCharModifyKeyEvent(NativeEvent event, GEditBindingMap.EditEventFilter editEventFilter) {
+        return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event)) || isCharDeleteKeyEvent(event)));
+    }
 
-        String eventType = event.getType();
-        int keyCode = event.getKeyCode();
-        if (KEYPRESS.equals(eventType)) {
-            return keyCode != KEY_ENTER && keyCode != KEY_ESCAPE && event.getCharCode() != 0;
-        } else if (KEYDOWN.equals(eventType)) {
+    // what events should be stealed by TextBasedEditor
+    public static boolean isCharNavigateKeyEvent(NativeEvent event) {
+        if (KEYDOWN.equals(event.getType())) {
+            int keyCode = event.getKeyCode();
+            return keyCode == KEY_LEFT || keyCode == KEY_RIGHT;
+        }
+        return false;
+    }
+
+    public static boolean isPlainKeyEvent(NativeEvent event) {
+        return !(event.getCtrlKey() || event.getAltKey() || event.getMetaKey());
+    }
+    public static boolean isCharDeleteKeyEvent(NativeEvent event) {
+        if (isPlainKeyEvent(event) && KEYDOWN.equals(event.getType())) {
+            int keyCode = event.getKeyCode();
             return keyCode == KEY_DELETE || keyCode == KEY_BACKSPACE;
         }
         return false;
     }
 
-    public static boolean isCommonNumberEditEvent(NativeEvent event) {
-        String eventType = event.getType();
-        return isCommonEditKeyEvent(event) &&
-               (isDigitKeyEvent(event) || 
-                       (KEYPRESS.equals(eventType) && event.getCharCode() == KEY_MINUS) ||
-                       (isDeleteKeyEvent(event) && KEYDOWN.equals(eventType)) || 
-                       isBackspaceKeyEvent(event));
+    public static boolean isCharInputKeyEvent(Event event) {
+        return isCharAddKeyEvent(event) || event.getTypeInt() == Event.ONPASTE;
     }
-
-    private static boolean isDigitKeyEvent(NativeEvent event) {
-        int charCode = event.getCharCode();
-        return KEYPRESS.equals(event.getType()) && charCode >= KEY_0 && charCode <= KEY_9;
-    }
-
-    public static boolean isPossibleEditKeyEvent(NativeEvent event) {
-        if (isCommonEditKeyEvent(event)) {
-            return true;
-        }
-
-        String eventType = event.getType();
-        int keyCode = event.getKeyCode();
-        if (KEYDOWN.equals(eventType)) {
-            return keyCode != KEY_TAB
-                    && keyCode != KEY_HOME
-                    && keyCode != KEY_END
-                    && keyCode != KEY_PAGEUP
-                    && keyCode != KEY_PAGEDOWN
-                    && keyCode != KEY_LEFT
-                    && keyCode != KEY_RIGHT
-                    && keyCode != KEY_UP
-                    && keyCode != KEY_DOWN;
+    public static boolean isCharAddKeyEvent(NativeEvent event) {
+        if(KEYPRESS.equals(event.getType()) && isPlainKeyEvent(event)) {
+            int keyCode = event.getKeyCode();
+            return keyCode != KEY_ENTER && keyCode != KEY_ESCAPE && event.getCharCode() != 0;
         }
         return false;
     }
 
+    public static boolean isNumberAddKeyEvent(NativeEvent event) {
+        assert isCharAddKeyEvent(event);
+
+        int charCode = event.getCharCode();
+        return ((charCode >= KEY_0 && charCode <= KEY_9) || charCode == KEY_MINUS);
+    }
+
     public static boolean isPossibleStartFilteringEvent(NativeEvent event) {
-        return isCommonEditKeyEvent(event) && (!isDeleteKeyEvent(event) || KEYPRESS.equals(event.getType())) && !isBackspaceKeyEvent(event);
+        return isCharAddKeyEvent(event);
     }
 
     public static boolean isReplaceFilterEvent(NativeEvent event) {
@@ -210,10 +193,6 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isRemoveAllFiltersEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2 && event.getShiftKey();
-    }
-
-    public static boolean isApplyFilterEvent(NativeEvent event) {
-        return KEYPRESS.equals(event.getType()) && event.getKeyCode() == KEY_ENTER;
     }
 
     public static boolean isCopyToClipboardEvent(NativeEvent event) {

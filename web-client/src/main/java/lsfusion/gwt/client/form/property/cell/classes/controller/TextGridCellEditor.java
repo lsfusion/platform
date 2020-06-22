@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.*;
+import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -41,7 +43,6 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
         cellParent.getStyle().setPadding(0, Style.Unit.PX);
 
         setBaseTextFonts(textareaStyle, updateContext);
-        textArea.setValue(currentText);
     }
 
     @Override
@@ -50,13 +51,10 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
     }
 
     @Override
-    protected void enterPressed(NativeEvent event, Element parent) {
-        if (event.getShiftKey()) {
-            super.enterPressed(event, parent);
-        }
+    protected boolean checkEnterEvent(Event event) {
+        return event.getShiftKey();
     }
 
-    @Override
     protected void arrowPressed(NativeEvent event, Element parent, boolean down) {
         //NOP
     }

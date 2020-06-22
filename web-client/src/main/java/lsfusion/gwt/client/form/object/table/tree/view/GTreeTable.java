@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
@@ -164,12 +165,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         private final String TREE_NODE_ATTRIBUTE = "__tree_node";
 
         @Override
-        public void onBrowserEvent(Context context, Element parent, Object value, Event event, Runnable consumed) {
+        public void onBrowserEvent(Context context, Element parent, Object value, EventHandler handler) {
+            Event event = handler.event;
             if (CLICK.equals(event.getType())) {
                 String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
                 if (attrID != null) {
                     changeTreeState(context, value, event);
-                    GwtClientUtils.stopPropagation(event);
+                    handler.consume();
                 }
             }
         }
@@ -469,7 +471,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 for (GTreeGridRecord record : currentRecords) {
                     if (record.getKey().equals(currentPath)) {
                         setCurrentRecord(record);
-                        setSelectedRow(i, false);
+                        setSelectedRow(i);
                         return;
                     }
                     i++;
