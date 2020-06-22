@@ -1693,13 +1693,13 @@
               dataClass: opts.dataClass,
               callbacks: opts.callbacks
             };
-            subopts.rendererOptions.hideColAxisHeadersColumn = opts.hideColAxisHeadersColumn;
             subopts.rendererOptions.rowSubtotalDisplay = {
               splitPositions: opts.splitRows
             };
             subopts.rendererOptions.colSubtotalDisplay = {
               splitPositions: opts.splitCols
             };
+            subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length === 1;
             numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
             vals = [];
             _this.find(".pvtRows li div.pvtAttr").each(function() {

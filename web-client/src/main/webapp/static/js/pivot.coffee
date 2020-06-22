@@ -1082,13 +1082,13 @@ callWithJQuery ($) ->
                     dataClass: opts.dataClass
                     callbacks: opts.callbacks
                     
-                subopts.rendererOptions.hideColAxisHeadersColumn = opts.hideColAxisHeadersColumn
-                    
                 subopts.rendererOptions.rowSubtotalDisplay = 
                     splitPositions: opts.splitRows
                 subopts.rendererOptions.colSubtotalDisplay = 
                     splitPositions: opts.splitCols
-                
+
+                subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length == 1
+
                 numInputsToProcess = opts.aggregators[aggregator.val()]([])().numInputs ? 0
                 vals = []
                 @find(".pvtRows li div.pvtAttr").each -> subopts.rows.push $(this).data("attrName")

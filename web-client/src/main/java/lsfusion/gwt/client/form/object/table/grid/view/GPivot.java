@@ -218,7 +218,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
         config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
         config = overrideCallbacks(config, getCallbacks());
-        config = overrideHideColAxisHeadersColumn(config, false);
         
         int rowHeight = 0;
         for(GPropertyDraw property : properties) {
