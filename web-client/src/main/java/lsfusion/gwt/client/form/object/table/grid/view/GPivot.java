@@ -902,7 +902,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
         GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
-            renderArrow(th, isExpanded, getTreeColumnValue(rowKeyValues.length() - 1, isExpanded, isLastChildList));
+            int level = getRowLevel(rowKeyValues.length() - 1);
+            renderArrow(th, isExpanded, getTreeColumnValue(level, isExpanded, isLastChildList));
         } else {
             renderAttrCell(th, value, attrName);
         }
@@ -977,7 +978,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
-            int level = indexOf(config.getArrayString("rows"), attrName);
+            int level = getRowLevel(indexOf(config.getArrayString("rows"), attrName));
             JsArrayBoolean isLastChildList = JsArrayBoolean.createArray().cast();
             for(int i = 0; i <= level; i++) {
                 isLastChildList.push(true);
@@ -989,6 +990,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
             GGridPropertyTableHeader.renderTD(jsElement, rowHeight, sortDir, fromObject(value).toString());
         }
+    }
+
+    private int getRowLevel(int rowIndex) {
+        if(rowIndex >= 0) {
+            JsArrayInteger splitRows = config.getArrayInteger("splitRows");
+            for(int i = 0; i < splitRows.length(); i++) {
+                if(rowIndex <= splitRows.get(i))
+                    return i;
+            }
+        }
+        return -1;
     }
 
     public void renderValue(Element jsElement, JavaScriptObject value) {

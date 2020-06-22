@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayMixed;
-import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -432,6 +429,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             return Object.keys(this);
         }-*/;
         protected native final JsArrayString getArrayString(String string) /*-{
+            return this[string];
+        }-*/;
+        protected native final JsArrayInteger getArrayInteger(String string) /*-{
             return this[string];
         }-*/;
         protected native final JsArrayMixed getArrayMixed(String string) /*-{
