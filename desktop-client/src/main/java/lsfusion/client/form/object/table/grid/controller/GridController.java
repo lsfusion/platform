@@ -43,7 +43,6 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public class GridController extends AbstractTableController {
     private static final String PRINT_XLS_ICON_PATH = "excelbw.png";
-    private static final String PRINT_GROUP_ICON_PATH = "reportbw.png";
     private static final String GROUP_CHANGE_ICON_PATH = "groupchange.png";
     public static final String USER_PREFERENCES_ICON_PATH = "userPreferences.png";
     private static final String UPDATE_ICON_PATH = "update.png";
@@ -187,17 +186,8 @@ public class GridController extends AbstractTableController {
             });
         }
 
-        if (groupObject.toolbar.showPrint || groupObject.toolbar.showXls) {
+        if (groupObject.toolbar.showXls) {
             addToolbarSeparator();
-        }
-
-        if (groupObject.toolbar.showPrint) {
-            addToToolbar(new ToolbarGridButton(PRINT_GROUP_ICON_PATH, getString("form.grid.print.grid")) {
-                @Override
-                public void addListener() {
-                    addActionListener(e -> RmiQueue.runAction(() -> formController.runSingleGroupReport(GridController.this)));
-                }
-            });
         }
 
         if (groupObject.toolbar.showXls) {
