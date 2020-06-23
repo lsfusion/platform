@@ -179,17 +179,6 @@ public class GGridController extends GAbstractTableController {
         
         addFilterButton();
 
-        if (groupObject.toolbar.showGroupChange) {
-            addToolbarSeparator();
-            
-            addToToolbar(new GToolbarButton("groupchange.png", messages.formGridGroupGroupChange() + " (F12)") {
-                @Override
-                public void addListener() {
-                    addClickHandler(event -> table.groupChange());
-                }
-            });
-        }
-
         if (groupObject.toolbar.showPrintGroupXls) {
             addToolbarSeparator();
         }
