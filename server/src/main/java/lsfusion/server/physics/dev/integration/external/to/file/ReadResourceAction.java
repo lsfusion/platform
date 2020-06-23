@@ -37,12 +37,13 @@ public class ReadResourceAction extends InternalAction {
             String resourcePath = (String) context.getKeyValue(resourcePathInterface).getValue();
 
             InputStream stream = null;
+            //same as in FormReportManager.findCustomReportFileName
             if (resourcePath.startsWith("/")) {
                 //absolute path
                 stream = ResourceUtils.getResourceAsStream(resourcePath);
             } else {
                 //relative path
-                Pattern pattern = Pattern.compile("/.*\\.jrxml");
+                Pattern pattern = Pattern.compile("/.*" + resourcePath);
                 Collection<String> allResources = ResourceUtils.getResources(pattern);
 
                 for (String entry : allResources) {

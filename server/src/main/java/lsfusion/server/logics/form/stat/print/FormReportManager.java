@@ -224,7 +224,7 @@ public abstract class FormReportManager extends FormDataManager {
     private String findCustomReportFileName(String fileName) {
         if(fileName.startsWith("/")) {
             //absolute path
-            return ResourceUtils.getResourceAsStream(fileName) != null ? fileName : null;
+            return ResourceUtils.getResource(fileName) != null ? fileName : null;
         } else {
             //relative path
             Collection<String> result = reportInterface.getBL().getAllCustomReports();

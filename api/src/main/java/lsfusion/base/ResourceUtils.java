@@ -156,6 +156,10 @@ public class ResourceUtils {
         return resource != null ? new ImageIcon(resource) : null;
     }
 
+    public static URL getResource(String path) {
+        return ResourceUtils.class.getResource(path);
+    }
+
     public static InputStream getResourceAsStream(String path) {
         return ResourceUtils.class.getResourceAsStream(path);
     }
