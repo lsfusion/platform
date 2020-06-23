@@ -945,15 +945,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             ((TabbedContainerView)formLayout.getContainerView(component.container)).activateTab(component);
     }
 
-    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        dispatcher.execute(new CalculateSum(propertyDraw.ID, columnKey), new ErrorHandlingCallback<NumberResult>() {
-            @Override
-            public void success(NumberResult result) {
-                controllers.get(groupObject).showSum(result.value, propertyDraw);
-            }
-        });
-    }
-
     // change group mode with force refresh
     public long changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize, GListViewType viewType) {
         return changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null, viewType);

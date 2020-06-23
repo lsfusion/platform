@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.SimpleImageButton;
-import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -19,7 +18,6 @@ import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GUserPreferencesDialog;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCalculateSumButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.view.*;
 import lsfusion.gwt.client.form.object.table.view.GridPanel;
@@ -168,7 +166,6 @@ public class GGridController extends GAbstractTableController {
         updateSettingsButton();
     }
 
-    private GCalculateSumButton sumButton;
     private GToolbarButton gridTableButton;
     private GToolbarButton pivotTableButton;
     private GToolbarButton settingsButton;
@@ -191,29 +188,6 @@ public class GGridController extends GAbstractTableController {
                     addClickHandler(event -> table.groupChange());
                 }
             });
-        }
-
-        if (groupObject.toolbar.showCalculateSum) {
-            addToolbarSeparator();
-        }
-
-        if (groupObject.toolbar.showCalculateSum) {
-            sumButton = new GCalculateSumButton() {
-                @Override
-                public void addListener() {
-                    addClickHandler(event -> {
-                        GPropertyDraw property = getSelectedProperty();
-                        if(property != null) {
-                            if (property.baseType instanceof GIntegralType) {
-                                formController.calculateSum(groupObject, property, table.getCurrentColumn());
-                            } else {
-                                showSum(null, property);
-                            }
-                        }
-                    });
-                }
-            };
-            addToToolbar(sumButton);
         }
 
         if (groupObject.toolbar.showPrintGroup || groupObject.toolbar.showPrintGroupXls) {
@@ -301,11 +275,6 @@ public class GGridController extends GAbstractTableController {
         forceUpdateTableButton.addStyleName("actionPanelRenderer");
 
         addToToolbar(forceUpdateTableButton);
-    }
-
-    public void showSum(Number sum, GPropertyDraw property) {
-        assert isList();
-        sumButton.showPopup(sum, property);
     }
 
     public void processFormChanges(long requestIndex, GFormChanges fc, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects) {

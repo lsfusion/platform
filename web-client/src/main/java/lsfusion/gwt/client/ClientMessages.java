@@ -44,9 +44,6 @@ public interface ClientMessages extends Messages {
     String formTreeCollapse();
     String formTreeCollapseCurrent();
 
-    String formQueriesCalculateSum();
-    String formQueriesSumResult();
-    String formQueriesUnableToCalculateSum();
     String formQueriesFilter();
     String formQueriesFilterAddCondition();
     String formQueriesFilterRemoveCondition();
