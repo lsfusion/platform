@@ -762,17 +762,6 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     @Override
-    public void groupChange() {
-        final int rowIndex = getSelectedRow();
-        final int columnIndex = getSelectedColumn();
-        if (rowIndex == -1 || columnIndex == -1)
-            JOptionPane.showMessageDialog(form.getLayout(), getString("form.grid.group.groupchange.no.column.selected"),
-                    getString("errors.error"), JOptionPane.ERROR_MESSAGE);
-        else
-            RmiQueue.runAction(() -> editCellAt(rowIndex, columnIndex, new InternalEditEvent(this, ServerResponse.GROUP_CHANGE)));
-    }
-
-    @Override
     public boolean changePropertyOrders(LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
         LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> setOrders = new LinkedHashMap<>();
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet())

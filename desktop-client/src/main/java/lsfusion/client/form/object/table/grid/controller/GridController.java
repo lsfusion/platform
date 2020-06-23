@@ -43,7 +43,6 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public class GridController extends AbstractTableController {
     private static final String PRINT_XLS_ICON_PATH = "excelbw.png";
-    private static final String GROUP_CHANGE_ICON_PATH = "groupchange.png";
     public static final String USER_PREFERENCES_ICON_PATH = "userPreferences.png";
     private static final String UPDATE_ICON_PATH = "update.png";
     private static final String OK_ICON_PATH = "ok.png";
@@ -118,32 +117,6 @@ public class GridController extends AbstractTableController {
     private void configureToolbar() {
         if (filter != null) {
             addToToolbar(filter.getToolbarButton());
-        }
-
-        if (groupObject.toolbar.showGroupChange && table instanceof GridTable) {
-            addToolbarSeparator();
-            ToolbarGridButton groupChangeButton = new ToolbarGridButton(GROUP_CHANGE_ICON_PATH, getString("form.grid.group.groupchange") + " (F12)") {
-                @Override
-                public void addListener() {
-                    addActionListener(e -> {
-                        table.groupChange();
-                    });
-
-                    ((GridTable) table).addFocusListener(new FocusListener() {
-                        @Override
-                        public void focusGained(FocusEvent e) {
-                            setEnabled(true);
-                        }
-
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            setEnabled(false);
-                        }
-                    });
-                }
-            };
-            groupChangeButton.setEnabled(false);
-            addToToolbar(groupChangeButton);
         }
 
         if (groupObject.toolbar.showCountRows || groupObject.toolbar.showCalculateSum || groupObject.toolbar.showGroupReport) {
