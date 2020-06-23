@@ -190,23 +190,14 @@ public class GGridController extends GAbstractTableController {
             });
         }
 
-        if (groupObject.toolbar.showPrintGroup || groupObject.toolbar.showPrintGroupXls) {
+        if (groupObject.toolbar.showPrintGroupXls) {
             addToolbarSeparator();
-        }
-
-        if (groupObject.toolbar.showPrintGroup) {
-            addToToolbar(new GToolbarButton("reportbw.png", messages.formGridPrintGrid()) {
-                @Override
-                public void addListener() {
-                    addClickHandler(event -> table.runGroupReport(false));
-                }
-            });
         }
 
         if (groupObject.toolbar.showPrintGroupXls) {
             addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
                 public void addListener() {
-                    addClickHandler(event -> table.runGroupReport(true));
+                    addClickHandler(event -> table.runGroupReport());
                 }
             });
         }

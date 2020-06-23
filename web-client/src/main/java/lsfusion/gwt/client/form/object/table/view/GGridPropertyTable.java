@@ -234,8 +234,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.GROUP_CHANGE);
     }
 
-    public void runGroupReport(boolean toExcel) {
-        form.runGroupReport(groupObject.ID, toExcel);
+    public void runGroupReport() {
+        form.runGroupReport(groupObject.ID);
     }
 
     public void afterAppliedChanges() {

@@ -203,7 +203,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         toolbar.visible = clientToolbar.visible;
         toolbar.showGroupChange = clientToolbar.showGroupChange;
         toolbar.showGroup = clientToolbar.showGroupReport;
-        toolbar.showPrintGroup = clientToolbar.showPrint;
         toolbar.showPrintGroupXls = clientToolbar.showXls;
         toolbar.showGridSettings = clientToolbar.showSettings;
         return toolbar;

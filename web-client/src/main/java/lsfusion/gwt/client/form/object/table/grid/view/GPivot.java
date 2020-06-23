@@ -307,13 +307,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
 
     @Override
-    public void runGroupReport(boolean toExcel) {
-        Element drawElement = getDrawElement();
-        if (toExcel) {
-            exportToExcel(drawElement);
-        } else {
-            exportToPdf(drawElement);
-        }
+    public void runGroupReport() {
+        exportToExcel(getDrawElement());
     }
 
     public static native void exportToExcel(Element element)
@@ -348,17 +343,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
 
             $wnd.TableToExcel.save(workbook, "lsfReport.xlsx");
-        }-*/;
-
-    public static native void exportToPdf(Element element)
-        /*-{
-            var docDefinition = {
-                pageOrientation: 'landscape',
-                content: [
-                    $wnd.htmlToPdfmake(element.getElementsByClassName("subtotalouterdiv")[0].outerHTML)
-                ]
-            };
-            $wnd.pdfMake.createPdf(docDefinition).download('lsfReport.pdf');
         }-*/;
 
     private NativeHashMap<String, Column> columnMap;

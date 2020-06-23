@@ -54,11 +54,6 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
-        <!-- export pivot to pdf -->
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/html-to-pdfmake/docs/browser.js"></script>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pdfmake@0.1.57/build/pdfmake.min.js"></script>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pdfmake@0.1.57/build/vfs_fonts.js"></script>
-
         <!-- export pivot to excel -->
         <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
 

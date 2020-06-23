@@ -975,8 +975,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return new GFormUserPreferences(groupObjectGeneralPreferencesList, groupObjectUserPreferencesList);
     }
 
-    public void runGroupReport(Integer groupObjectID, final boolean toExcel) {
-        syncDispatch(new GroupReport(groupObjectID, toExcel, getUserPreferences()), new ErrorHandlingCallback<GroupReportResult>() {
+    public void runGroupReport(Integer groupObjectID) {
+        syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new ErrorHandlingCallback<GroupReportResult>() {
             @Override
             public void success(GroupReportResult result) {
                 GwtClientUtils.downloadFile(result.filename, "lsfReport", result.extension);
