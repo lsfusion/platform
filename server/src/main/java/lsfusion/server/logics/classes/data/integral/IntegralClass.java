@@ -168,4 +168,8 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     public FlexAlignment getValueAlignment() {
         return FlexAlignment.END;
     }
+
+    protected boolean isEmptyString(String s) {
+        return s.trim().isEmpty();
+    }
 }
