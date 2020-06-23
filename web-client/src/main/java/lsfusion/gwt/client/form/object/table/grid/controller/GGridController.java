@@ -20,14 +20,12 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferenc
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GUserPreferencesDialog;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCalculateSumButton;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuantityButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.view.*;
 import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
@@ -170,7 +168,6 @@ public class GGridController extends GAbstractTableController {
         updateSettingsButton();
     }
 
-    private GCountQuantityButton quantityButton;
     private GCalculateSumButton sumButton;
     private GToolbarButton gridTableButton;
     private GToolbarButton pivotTableButton;
@@ -196,17 +193,8 @@ public class GGridController extends GAbstractTableController {
             });
         }
 
-        if (groupObject.toolbar.showCountQuantity || groupObject.toolbar.showCalculateSum) {
+        if (groupObject.toolbar.showCalculateSum) {
             addToolbarSeparator();
-        }
-
-        if (groupObject.toolbar.showCountQuantity) {
-            quantityButton = new GCountQuantityButton() {
-                public void addListener() {
-                    addClickHandler(event -> formController.countRecords(groupObject));
-                }
-            };
-            addToToolbar(quantityButton);
         }
 
         if (groupObject.toolbar.showCalculateSum) {
@@ -313,11 +301,6 @@ public class GGridController extends GAbstractTableController {
         forceUpdateTableButton.addStyleName("actionPanelRenderer");
 
         addToToolbar(forceUpdateTableButton);
-    }
-
-    public void showRecordQuantity(int quantity) {
-        assert isList();
-        quantityButton.showPopup(quantity);
     }
 
     public void showSum(Number sum, GPropertyDraw property) {

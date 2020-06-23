@@ -51,7 +51,6 @@ public interface ClientMessages extends Messages {
     String formQueriesFilterAddCondition();
     String formQueriesFilterRemoveCondition();
     String formQueriesFilterResetConditions();
-    String formQueriesNumberOfEntries();
 
     String formGridPreferences();
     String formGridPreferencesSaving();
