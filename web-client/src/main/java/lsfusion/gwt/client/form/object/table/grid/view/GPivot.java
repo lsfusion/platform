@@ -902,20 +902,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
             int level = getRowLevel(rowKeyValues.length() - 1);
-            renderArrow(th, isExpanded, getTreeColumnValue(level, isExpanded, isLastChildList));
+            renderArrow(th, getTreeColumnValue(level, isExpanded, true, isLastChildList));
         } else {
             renderAttrCell(th, value, attrName);
         }
     }
 
-    private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, JsArrayBoolean isLastChildList) {
+    private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, JsArrayBoolean isLastChildList) {
         GTreeColumnValue treeColumnValue = new GTreeColumnValue(level, "level" + level);
         treeColumnValue.setOpen(isExpanded);
+        treeColumnValue.setOpenDotBottom(openDotBottom);
 
         HashMap<Integer, Boolean> lastInLevelMap = new HashMap<>();
-        if(isLastChildList.length() == 1) {
-            lastInLevelMap.put(0, isLastChildList.get(0));
-        } else {
+        if(isLastChildList != null) {
             for (int i = 1; i < isLastChildList.length(); i++) {
                 lastInLevelMap.put(i - 1, isLastChildList.get(i));
             }
@@ -941,7 +940,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
-            renderArrow(jsElement, isExpanded, null);
+            renderArrow(jsElement, getTreeColumnValue(0, isExpanded, false, null));
         } else {
             isSubtotal = isSubtotal || colKeyValues.length() == 0; // just in case, because in theory when there are no col keys it should be a total
 
@@ -977,12 +976,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
-            int level = getRowLevel(indexOf(config.getArrayString("rows"), attrName));
+            Boolean openDotBottom = !attrName.equals(COLUMN);
+            int level = attrName.equals(COLUMN) ? 0 : getRowLevel(indexOf(config.getArrayString("rows"), attrName));
             JsArrayBoolean isLastChildList = JsArrayBoolean.createArray().cast();
             for(int i = 0; i <= level; i++) {
                 isLastChildList.push(true);
             }
-            renderArrow(jsElement, isExpanded, getTreeColumnValue(level, isExpanded, isLastChildList));
+            renderArrow(jsElement, getTreeColumnValue(level, isExpanded, openDotBottom, isLastChildList));
         } else {
             SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), attrName);
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
@@ -1006,17 +1006,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         jsElement.setPropertyObject("textContent", value);
     }
 
-    private void renderArrow(Element jsElement, Boolean isExpanded, GTreeColumnValue treeColumnValue) {
+    private void renderArrow(Element jsElement, GTreeColumnValue treeColumnValue) {
         jsElement.removeAllChildren();
-        if (treeColumnValue != null) {
+        if (treeColumnValue.getLevel() > 0) {
             jsElement.getStyle().setPaddingLeft(5, Style.Unit.PX);
-            GTreeGridControlCell.renderDom(jsElement, treeColumnValue);
-        } else if (isExpanded != null) {
-            ImageElement img = Document.get().createImageElement();
-            img.addClassName(isExpanded ? "expanded-image" : "collapsed-image");
-            GwtClientUtils.setThemeImage(isExpanded ? ICON_OPEN : ICON_CLOSED, img::setSrc);
-            jsElement.appendChild(img);
         }
+        GTreeGridControlCell.renderDom(jsElement, treeColumnValue);
     }
 
     private void rerenderArrow(ImageElement img, Boolean isExpanded) {

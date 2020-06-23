@@ -133,7 +133,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         } else if (ICON_EMPTY.equals(indentIcon) || ICON_LEAF.equals(indentIcon) || ICON_CLOSED.equals(indentIcon)) {
             changeDots(element, false, false);
         } else if (ICON_OPEN.equals(indentIcon)) {
-            changeDots(element, false, true);
+            changeDots(element, false, treeValue.isOpenDotBottom());
         }
 
         if(ICON_CLOSED.equals(indentIcon)) {

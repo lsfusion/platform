@@ -80,6 +80,10 @@ table.pvtTable .pvtColLabel {
     text-align: center
 }
 
+table.pvtTable .pvtColLabel .wrapperDiv {
+    text-align: left
+}
+
 table.pvtTable .pvtTotalLabel {
     text-align: right
 }
