@@ -2,11 +2,15 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.DivWidget;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.SimpleImageButton;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -77,6 +81,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     public void initPageSizeWidget() {
         FlexPanel messageAndButton = new FlexPanel();
         messageAndButton.addCentered(new Label(ClientMessages.Instance.get().formGridPageSizeHit(pageSize)));
+        messageAndButton.getElement().getStyle().setPaddingRight(4, Style.Unit.PX);
 
         SimpleImageButton showAllButton = new SimpleImageButton(ClientMessages.Instance.get().formGridPageSizeShowAll());
         showAllButton.addClickHandler(event -> {

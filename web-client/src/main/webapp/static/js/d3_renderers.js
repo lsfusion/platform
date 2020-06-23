@@ -79,7 +79,7 @@
         return d.value;
       }).nodes).enter().append("div").attr("class", "node").style("background", function(d) {
         if (d.children != null) {
-          return "lightgrey";
+          return "var(--component-background-color)";
         } else {
           return color(d.name);
         }

@@ -57,7 +57,7 @@ callWithJQuery ($, d3) ->
             .data(treemap.padding([15,0,0,0]).value( (d) -> d.value ).nodes)
             .enter().append("div")
             .attr("class", "node")
-            .style("background", (d) -> if d.children? then "lightgrey" else color(d.name) )
+            .style("background", (d) -> if d.children? then "var(--component-background-color)" else color(d.name) )
             .text( (d) -> d.name )
             .call ->
                 this.style("left",  (d) -> d.x+"px" )

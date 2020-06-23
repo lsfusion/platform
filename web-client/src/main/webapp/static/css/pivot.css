@@ -284,7 +284,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .pvtFilterBox {
-    z-index: auto;
+    z-index: 100; /* todo: temporarily restored, needs investigation. should be drawn behind dialogs (e.g. filter dialog, busy dialog) */
     width: 300px;
     border: 1px solid var(--component-border-color);
     background-color: var(--background-color);
@@ -352,6 +352,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .pvtRendererHeader {
     flex : 0 1 auto;
+    padding: 0 2px 2px;
 }
 
 .pvtRendererBody {
@@ -364,6 +365,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 .pvtRendererFooter {
     flex : 0 1 auto;
+    padding: 2px 2px 0;
 }
 
 .pvtRendererScrollDiv {
