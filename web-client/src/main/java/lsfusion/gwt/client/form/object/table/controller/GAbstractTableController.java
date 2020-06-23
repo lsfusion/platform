@@ -57,21 +57,19 @@ public abstract class GAbstractTableController implements GTableController {
     }
 
     public void addFilterButton() {
-        if (showFilter()) {
-            filter = new GUserFilters(this) {
-                @Override
-                public void remoteApplyQuery() {
-                    changeFilter(new ArrayList<>(getConditions()));
-                }
+        filter = new GUserFilters(this) {
+            @Override
+            public void remoteApplyQuery() {
+                changeFilter(new ArrayList<>(getConditions()));
+            }
 
-                @Override
-                public void filterHidden() {
-                    focusFirstWidget();
-                }
-            };
+            @Override
+            public void filterHidden() {
+                focusFirstWidget();
+            }
+        };
 
-            addToToolbar(filter.getToolbarButton());
-        }
+        addToToolbar(filter.getToolbarButton());
     }
 
     @Override

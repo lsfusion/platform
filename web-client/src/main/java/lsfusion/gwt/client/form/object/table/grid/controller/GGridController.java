@@ -176,8 +176,6 @@ public class GGridController extends GAbstractTableController {
 
     private void configureToolbar() {
         assert isList();
-        
-        addFilterButton();
 
         if (groupObject.toolbar.showPrintGroupXls) {
             addToolbarSeparator();
@@ -222,18 +220,24 @@ public class GGridController extends GAbstractTableController {
             addToToolbar(mapTableButton);
         }
 
-        if (groupObject.toolbar.showGridSettings) {
+        if(showFilter() || groupObject.toolbar.showGridSettings) {
             addToolbarSeparator();
 
-            settingsButton = new GToolbarButton("userPreferences.png", messages.formGridPreferences()) {
-                @Override
-                public void addListener() {
-                    addClickHandler(event -> {
-                        changeSettings();
-                    });
-                }
-            };
-            addToToolbar(settingsButton);
+            if (showFilter()) {
+                addFilterButton();
+            }
+
+            if (groupObject.toolbar.showGridSettings) {
+                settingsButton = new GToolbarButton("userPreferences.png", messages.formGridPreferences()) {
+                    @Override
+                    public void addListener() {
+                        addClickHandler(event -> {
+                            changeSettings();
+                        });
+                    }
+                };
+                addToToolbar(settingsButton);
+            }
         }
 
         addToolbarSeparator();

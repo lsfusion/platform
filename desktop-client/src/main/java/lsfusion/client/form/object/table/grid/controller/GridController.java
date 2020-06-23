@@ -115,14 +115,6 @@ public class GridController extends AbstractTableController {
     }
 
     private void configureToolbar() {
-        if (filter != null) {
-            addToToolbar(filter.getToolbarButton());
-        }
-
-        if (groupObject.toolbar.showCountRows || groupObject.toolbar.showCalculateSum || groupObject.toolbar.showGroupReport) {
-            addToolbarSeparator();
-        }
-
         if (groupObject.toolbar.showCountRows) {
             addToToolbar(new CountQuantityButton() {
                 public void addListener() {
@@ -193,35 +185,43 @@ public class GridController extends AbstractTableController {
             });
         }
 
-        if (groupObject.toolbar.showSettings && table instanceof GridTable) {
+        boolean showSettings = groupObject.toolbar.showSettings && table instanceof GridTable;
+        if(filter != null || showSettings) {
             addToolbarSeparator();
-            ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    for (int i = 0; i < ((GridTable) table).getTableModel().getColumnCount(); ++i) {
-                        ((GridTable) table).setUserWidth(((GridTable) table).getTableModel().getColumnProperty(i), ((GridTable) table).getColumnModel().getColumn(i).getWidth());
-                    }
-                }
-            });
-            userPreferencesButton = new ToolbarGridButton(USER_PREFERENCES_ICON_PATH, getUserPreferencesButtonTooltip());
-            userPreferencesButton.showBackground(table.hasUserPreferences());
 
-            userPreferencesButton.addActionListener(e -> {
-                if(table instanceof GridTable) {
-                    UserPreferencesDialog dialog = new UserPreferencesDialog(MainFrame.instance, (GridTable) table, this, getFormController().hasCanonicalName()) {
-                        @Override
-                        public void preferencesChanged() {
-                            RmiQueue.runAction(() -> {
-                                userPreferencesButton.showBackground((((GridTable) table).generalPreferencesSaved() || ((GridTable) table).userPreferencesSaved()));
-                                userPreferencesButton.setToolTipText(getUserPreferencesButtonTooltip());
-                            });
+            if (filter != null) {
+                addToToolbar(filter.getToolbarButton());
+            }
+
+            if (showSettings) {
+                ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        for (int i = 0; i < ((GridTable) table).getTableModel().getColumnCount(); ++i) {
+                            ((GridTable) table).setUserWidth(((GridTable) table).getTableModel().getColumnProperty(i), ((GridTable) table).getColumnModel().getColumn(i).getWidth());
                         }
-                    };
-                    dialog.setVisible(true);
-                }
-            });
+                    }
+                });
+                userPreferencesButton = new ToolbarGridButton(USER_PREFERENCES_ICON_PATH, getUserPreferencesButtonTooltip());
+                userPreferencesButton.showBackground(table.hasUserPreferences());
 
-            addToToolbar(userPreferencesButton);
+                userPreferencesButton.addActionListener(e -> {
+                    if(table instanceof GridTable) {
+                        UserPreferencesDialog dialog = new UserPreferencesDialog(MainFrame.instance, (GridTable) table, this, getFormController().hasCanonicalName()) {
+                            @Override
+                            public void preferencesChanged() {
+                                RmiQueue.runAction(() -> {
+                                    userPreferencesButton.showBackground((((GridTable) table).generalPreferencesSaved() || ((GridTable) table).userPreferencesSaved()));
+                                    userPreferencesButton.setToolTipText(getUserPreferencesButtonTooltip());
+                                });
+                            }
+                        };
+                        dialog.setVisible(true);
+                    }
+                });
+
+                addToToolbar(userPreferencesButton);
+            }
         }
 
         manualUpdateTableButton = new ToolbarGridButton(UPDATE_ICON_PATH, getString("form.grid.manual.update")) {
