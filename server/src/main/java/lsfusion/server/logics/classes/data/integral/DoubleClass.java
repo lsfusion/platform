@@ -95,7 +95,7 @@ public class DoubleClass extends IntegralClass<Double> {
 
     public Double parseString(String s) throws ParseException {
         try {
-            return s.trim().isEmpty() ? null : Double.parseDouble(BaseUtils.replaceCommaSeparator(s));
+            return isEmptyString(s) ? null : Double.parseDouble(BaseUtils.replaceCommaSeparator(s));
         } catch (Exception e) {
             throw new ParseException("error parsing double: " + s, e);
         }

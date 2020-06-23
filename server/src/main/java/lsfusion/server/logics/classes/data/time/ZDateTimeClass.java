@@ -149,6 +149,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
     public Instant parseString(String s) throws ParseException {
         try {
             try {
+                //other date-time classes use smartParse with isEmpty check inside
                 return s.trim().isEmpty() ? null : Instant.parse(s); // actually DateTimeFormatter.ISO_INSTANT will be used
             } catch (DateTimeParseException ignored) {
                 return ZonedDateTime.parse(s, DateTimeFormatter.ISO_DATE_TIME).toInstant();
