@@ -177,20 +177,6 @@ public class GGridController extends GAbstractTableController {
     private void configureToolbar() {
         assert isList();
 
-        if (groupObject.toolbar.showPrintGroupXls) {
-            addToolbarSeparator();
-        }
-
-        if (groupObject.toolbar.showPrintGroupXls) {
-            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
-                public void addListener() {
-                    addClickHandler(event -> table.runGroupReport());
-                }
-            });
-        }
-
-        addToolbarSeparator();
-
         gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
             public void addListener() {
                 addClickHandler(event -> {
@@ -220,8 +206,9 @@ public class GGridController extends GAbstractTableController {
             addToToolbar(mapTableButton);
         }
 
-        if(showFilter() || groupObject.toolbar.showGridSettings) {
-            addToolbarSeparator();
+        addToolbarSeparator();
+
+        if(showFilter() || groupObject.toolbar.showGridSettings || groupObject.toolbar.showPrintGroupXls) {
 
             if (showFilter()) {
                 addFilterButton();
@@ -238,9 +225,17 @@ public class GGridController extends GAbstractTableController {
                 };
                 addToToolbar(settingsButton);
             }
-        }
 
-        addToolbarSeparator();
+            if (groupObject.toolbar.showPrintGroupXls) {
+                addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
+                    public void addListener() {
+                        addClickHandler(event -> table.runGroupReport());
+                    }
+                });
+            }
+
+            addToolbarSeparator();
+        }
 
         manualUpdateTableButton = new GToolbarButton("update.png", messages.formGridManualUpdate()) {
             public void addListener() {
