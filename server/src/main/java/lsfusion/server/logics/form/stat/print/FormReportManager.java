@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.stat.print;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -221,15 +222,20 @@ public abstract class FormReportManager extends FormDataManager {
     public final static String reportsDir = ""; // "reports/" 
     
     private String findCustomReportFileName(String fileName) {
+        if(fileName.startsWith("/")) {
+            //absolute path
+            return ResourceUtils.getResourceAsStream(fileName) != null ? fileName : null;
+        } else {
+            //relative path
+            Collection<String> result = reportInterface.getBL().getAllCustomReports();
 
-        Collection<String> result = reportInterface.getBL().getAllCustomReports();
-        
-        for(String entry : result){
-            if(entry.endsWith("/" + fileName))
-                return entry; //"/" + reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
+            for(String entry : result){
+                if(entry.endsWith("/" + fileName))
+                    return entry; //"/" + reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
+            }
+
+            return null; // не нашли "/" + reportsDir + filePath;
         }
-        
-        return null; // не нашли "/" + reportsDir + filePath;
     }
 
     private String getReportFileName(GroupObjectHierarchy.ReportNode reportNode, String reportPrefix) {
