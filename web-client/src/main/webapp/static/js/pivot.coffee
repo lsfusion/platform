@@ -1169,7 +1169,11 @@ callWithJQuery ($) ->
                 pivotScrollDiv.pivot(materializedInput,subopts,locale)
 
                 opts.afterRefresh() if opts.afterRefresh?
-
+                
+                # to do: ugly solution, needs to be improved 
+                if pivotScrollDiv[0].children[0].className == "js-plotly-plot"
+                    Plotly.relayout(pivotScrollDiv[0].children[0], {});
+                
                 @data "pivotUIOptions", pivotUIOptions
 
                 # if requested make sure unused columns are in alphabetical order
