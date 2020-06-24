@@ -1802,9 +1802,6 @@
             if (opts.afterRefresh != null) {
               opts.afterRefresh();
             }
-            if (pivotScrollDiv[0].children[0].className === "js-plotly-plot") {
-              Plotly.relayout(pivotScrollDiv[0].children[0], {});
-            }
             _this.data("pivotUIOptions", pivotUIOptions);
             if (opts.autoSortUnusedAttrs) {
               unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");

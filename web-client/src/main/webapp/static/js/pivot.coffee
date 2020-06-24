@@ -1170,14 +1170,10 @@ callWithJQuery ($) ->
 
                 opts.afterRefresh() if opts.afterRefresh?
                 
-                # to do: ugly solution, needs to be improved 
-                if pivotScrollDiv[0].children[0].className == "js-plotly-plot"
-                    Plotly.relayout(pivotScrollDiv[0].children[0], {});
-                
                 @data "pivotUIOptions", pivotUIOptions
 
                 # if requested make sure unused columns are in alphabetical order
-                if opts.autoSortUnusedAttrs
+                if opts.autoSortUnusedAttrs 
                     unusedAttrsContainer = @find("td.pvtUnused.pvtAxisContainer")
                     $(unusedAttrsContainer).children("li")
                         .sort((a, b) => naturalSort($(a).text(), $(b).text()))

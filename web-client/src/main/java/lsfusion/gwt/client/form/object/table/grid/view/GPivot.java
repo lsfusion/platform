@@ -1,7 +1,9 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.*;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.ImageElement;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -504,6 +506,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void afterRefresh() {
         checkPadding(true); // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
+        resizePlotlyChart();
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
@@ -525,7 +528,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return getElement(rendererElement, ".headerdiv");
     }
 
-    private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
+    private Element getPlotlyChartElement() {
+        return getElement(rendererElement, "div.js-plotly-plot");
+    }
+    
+   private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
     }-*/;
 
@@ -1272,7 +1279,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     @Override
     public void onResize() {
         checkPadding(false);
-
+        resizePlotlyChart();    
         super.onResize();
     }
 
@@ -1292,6 +1299,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
+    public native void resizePlotlyChart() /*-{
+        var plotlyElement = this.@GPivot::getPlotlyChartElement(*)();
+        if (plotlyElement) {
+            $wnd.Plotly.relayout(plotlyElement, '');
+        }
+    }-*/;
+    
     private GroupColumnAggregator getGroupAggregator(GPropertyDraw property, JsArrayString lastColumns) {
         GroupColumnAggregator aggr = GroupColumnAggregator.create();
 
