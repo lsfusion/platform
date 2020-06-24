@@ -1392,27 +1392,6 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void runSingleGroupReport(final GridController groupController) {
-        commitOrCancelCurrentEditing();
-        try {
-            rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runSingleGroupReport") {
-                @Override
-                protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.PRINT, getUserPreferences());
-                }
-
-                @Override
-                public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
-                    if (generationData != null) {
-                        MainFrame.instance.runReport(false, "Print", generationData, null, null);
-                    }
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     public void runSingleGroupXlsExport(final GridController groupController) {
         commitOrCancelCurrentEditing();
         rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runSingleGroupXlsExport") {

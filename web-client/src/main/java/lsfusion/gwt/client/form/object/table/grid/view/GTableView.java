@@ -63,8 +63,7 @@ public interface GTableView {
     void modifyGroupObject(GGroupObjectValue key, boolean add, int position);
 
     // toolbar features
-    void groupChange();
-    void runGroupReport(boolean toExcel);
+    void runGroupReport();
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey); // for filter to set default value
 
     boolean hasUserPreferences();

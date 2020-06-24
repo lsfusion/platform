@@ -48,7 +48,6 @@ public interface ClientTableView {
     void modifyGroupObject(ClientGroupObjectValue key, boolean add, int position);
 
     // toolbar features
-    void groupChange();
     Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey); // for filter to set default value
 
     boolean hasUserPreferences();

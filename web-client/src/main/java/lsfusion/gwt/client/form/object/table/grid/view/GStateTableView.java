@@ -319,12 +319,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public void groupChange() {
-
-    }
-
-    @Override
-    public void runGroupReport(boolean toExcel) {
+    public void runGroupReport() {
     }
 
     @Override

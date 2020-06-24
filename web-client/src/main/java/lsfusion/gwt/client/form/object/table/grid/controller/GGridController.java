@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.SimpleImageButton;
-import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -19,15 +18,12 @@ import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GUserPreferencesDialog;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCalculateSumButton;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuantityButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.view.*;
 import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
@@ -170,8 +166,6 @@ public class GGridController extends GAbstractTableController {
         updateSettingsButton();
     }
 
-    private GCountQuantityButton quantityButton;
-    private GCalculateSumButton sumButton;
     private GToolbarButton gridTableButton;
     private GToolbarButton pivotTableButton;
     private GToolbarButton settingsButton;
@@ -182,74 +176,6 @@ public class GGridController extends GAbstractTableController {
 
     private void configureToolbar() {
         assert isList();
-        
-        addFilterButton();
-
-        if (groupObject.toolbar.showGroupChange) {
-            addToolbarSeparator();
-            
-            addToToolbar(new GToolbarButton("groupchange.png", messages.formGridGroupGroupChange() + " (F12)") {
-                @Override
-                public void addListener() {
-                    addClickHandler(event -> table.groupChange());
-                }
-            });
-        }
-
-        if (groupObject.toolbar.showCountQuantity || groupObject.toolbar.showCalculateSum) {
-            addToolbarSeparator();
-        }
-
-        if (groupObject.toolbar.showCountQuantity) {
-            quantityButton = new GCountQuantityButton() {
-                public void addListener() {
-                    addClickHandler(event -> formController.countRecords(groupObject));
-                }
-            };
-            addToToolbar(quantityButton);
-        }
-
-        if (groupObject.toolbar.showCalculateSum) {
-            sumButton = new GCalculateSumButton() {
-                @Override
-                public void addListener() {
-                    addClickHandler(event -> {
-                        GPropertyDraw property = getSelectedProperty();
-                        if(property != null) {
-                            if (property.baseType instanceof GIntegralType) {
-                                formController.calculateSum(groupObject, property, table.getCurrentColumn());
-                            } else {
-                                showSum(null, property);
-                            }
-                        }
-                    });
-                }
-            };
-            addToToolbar(sumButton);
-        }
-
-        if (groupObject.toolbar.showPrintGroup || groupObject.toolbar.showPrintGroupXls) {
-            addToolbarSeparator();
-        }
-
-        if (groupObject.toolbar.showPrintGroup) {
-            addToToolbar(new GToolbarButton("reportbw.png", messages.formGridPrintGrid()) {
-                @Override
-                public void addListener() {
-                    addClickHandler(event -> table.runGroupReport(false));
-                }
-            });
-        }
-
-        if (groupObject.toolbar.showPrintGroupXls) {
-            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
-                public void addListener() {
-                    addClickHandler(event -> table.runGroupReport(true));
-                }
-            });
-        }
-
-        addToolbarSeparator();
 
         gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
             public void addListener() {
@@ -280,21 +206,39 @@ public class GGridController extends GAbstractTableController {
             addToToolbar(mapTableButton);
         }
 
-        if (groupObject.toolbar.showGridSettings) {
-            addToolbarSeparator();
+        addToolbarSeparator();
 
-            settingsButton = new GToolbarButton("userPreferences.png", messages.formGridPreferences()) {
-                @Override
-                public void addListener() {
-                    addClickHandler(event -> {
-                        changeSettings();
-                    });
-                }
-            };
-            addToToolbar(settingsButton);
+        if(showFilter() || groupObject.toolbar.showGridSettings) {
+
+            if (showFilter()) {
+                addFilterButton();
+            }
+
+            if (groupObject.toolbar.showGridSettings) {
+                settingsButton = new GToolbarButton("userPreferences.png", messages.formGridPreferences()) {
+                    @Override
+                    public void addListener() {
+                        addClickHandler(event -> {
+                            changeSettings();
+                        });
+                    }
+                };
+                addToToolbar(settingsButton);
+            }
+
+            addToolbarSeparator();
         }
 
-        addToolbarSeparator();
+        if(groupObject.toolbar.showPrintGroupXls) {
+            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
+                public void addListener() {
+                    addClickHandler(event -> table.runGroupReport());
+                }
+            });
+
+            addToolbarSeparator();
+        }
+
 
         manualUpdateTableButton = new GToolbarButton("update.png", messages.formGridManualUpdate()) {
             public void addListener() {
@@ -313,16 +257,6 @@ public class GGridController extends GAbstractTableController {
         forceUpdateTableButton.addStyleName("actionPanelRenderer");
 
         addToToolbar(forceUpdateTableButton);
-    }
-
-    public void showRecordQuantity(int quantity) {
-        assert isList();
-        quantityButton.showPopup(quantity);
-    }
-
-    public void showSum(Number sum, GPropertyDraw property) {
-        assert isList();
-        sumButton.showPopup(sum, property);
     }
 
     public void processFormChanges(long requestIndex, GFormChanges fc, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects) {

@@ -28,8 +28,6 @@ public interface ClientMessages extends Messages {
     String formRendererRequired();
 
     String formGridExportToXlsx();
-    String formGridPrintGrid();
-    String formGridGroupGroupChange();
 
     String formGridTableView();
     String formGridPivotView();
@@ -44,14 +42,10 @@ public interface ClientMessages extends Messages {
     String formTreeCollapse();
     String formTreeCollapseCurrent();
 
-    String formQueriesCalculateSum();
-    String formQueriesSumResult();
-    String formQueriesUnableToCalculateSum();
     String formQueriesFilter();
     String formQueriesFilterAddCondition();
     String formQueriesFilterRemoveCondition();
     String formQueriesFilterResetConditions();
-    String formQueriesNumberOfEntries();
 
     String formGridPreferences();
     String formGridPreferencesSaving();

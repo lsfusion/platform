@@ -429,18 +429,6 @@ input[type=checkbox]:focus {
     margin: 0 2px 0 0;
 }
 
-/* ------------ Popups  ------------ */
-.popup {
-    background-color: var(--background-color);
-    border: 1px outset var(--component-border-color);
-}
-
-.popup-sumBox {
-    padding: 0 2px;
-    text-align: right;
-    width: 8em;
-}
-
 /* ------------ File upload dialog  ------------ */
 .dropFilesLabel {
     margin-top: 6px;
