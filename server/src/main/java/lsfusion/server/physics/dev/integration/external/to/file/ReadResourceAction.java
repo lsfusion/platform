@@ -17,8 +17,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class ReadResourceAction extends InternalAction {
@@ -43,14 +43,10 @@ public class ReadResourceAction extends InternalAction {
                 stream = ResourceUtils.getResourceAsStream(resourcePath);
             } else {
                 //relative path
-                Pattern pattern = Pattern.compile("/.*" + resourcePath);
-                Collection<String> allResources = ResourceUtils.getResources(pattern);
-
-                for (String entry : allResources) {
-                    if (entry.endsWith("/" + resourcePath)) {
-                        stream = getClass().getResourceAsStream(entry);
-                        break;
-                    }
+                Pattern pattern = Pattern.compile(".*/" + resourcePath.replace(".", "\\."));
+                List<String> allResources = ResourceUtils.getResources(pattern);
+                if(!allResources.isEmpty()) {
+                    stream = getClass().getResourceAsStream(allResources.get(0));
                 }
             }
 

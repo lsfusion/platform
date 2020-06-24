@@ -18,7 +18,7 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ResourceUtils {
 
-    public static Collection<String> getResources(final List<Pattern> patterns) {
+    public static List<String> getResources(final List<Pattern> patterns) {
         final ArrayList<String> retval = new ArrayList<>();
         for (final String element : getClassPathElements()) {
             if (!isRedundantString(element)) {
@@ -29,7 +29,7 @@ public class ResourceUtils {
         return retval;
     }
     
-    public static Collection<String> getResources(final Pattern pattern) {
+    public static List<String> getResources(final Pattern pattern) {
         return getResources(Collections.singletonList(pattern));
     }
 
