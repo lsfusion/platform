@@ -44,6 +44,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass serverException;
     public ConcreteCustomClass launch;
     public ConcreteCustomClass connection;
+    public ConcreteCustomClass clientType;
     public ConcreteCustomClass connectionStatus;
     public ConcreteCustomClass session;
 
@@ -64,6 +65,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP javaVersionConnection;
     public LP is64JavaConnection;
     public LP screenSizeConnection;
+    public LP clientTypeConnection;
     public LP<PropertyInterface> connectionStatusConnection;
     public LP connectTimeConnection;
     public LP launchConnection;
@@ -123,6 +125,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         serverException = (ConcreteCustomClass) findClass("ServerException");
         launch = (ConcreteCustomClass) findClass("Launch");
         connection = (ConcreteCustomClass) findClass("Connection");
+        clientType = (ConcreteCustomClass) findClass("ClientType");
         connectionStatus = (ConcreteCustomClass) findClass("ConnectionStatus");
         session = (ConcreteCustomClass) findClass("Session");
     }
@@ -152,6 +155,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         javaVersionConnection = findProperty("javaVersion[Connection]");
         is64JavaConnection = findProperty("is64Java[Connection]");
         screenSizeConnection = findProperty("screenSize[Connection]");
+        clientTypeConnection = findProperty("clientType[Connection]");
         connectionStatusConnection = (LP<PropertyInterface>) findProperty("connectionStatus[Connection]");
 
         connectTimeConnection = findProperty("connectTime[Connection]");

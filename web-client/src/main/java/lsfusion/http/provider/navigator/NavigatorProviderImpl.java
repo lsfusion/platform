@@ -7,6 +7,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -38,7 +39,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null, request.getQueryString()); // we don't need client language and country because they were already provided when authenticating (see method above)
     }
 
-    private static NavigatorInfo getNavigatorInfo(HttpServletRequest request) {
+    private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, Integer screenWidth, Integer screenHeight) {
         String osVersion = System.getProperty("os.name");
         String processor = System.getenv("PROCESSOR_IDENTIFIER");
 
@@ -65,20 +66,29 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 //        String language = clientLocale.getLanguage();
 //        String country = clientLocale.getCountry();
 
+        ClientType clientType = ClientType.WEB;
+        String screenSize = null;
+        if(screenWidth != null && screenHeight != null) {
+            if(screenWidth <= 600) {
+                clientType = ClientType.MOBILE;
+            }
+            screenSize = screenWidth + "x" + screenHeight;
+        }
         return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
-                maximumMemory, freeMemory, javaVersion, null, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+                maximumMemory, freeMemory, javaVersion, screenSize, clientType, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
-    public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
+    @Override
+    public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request, Integer screenWidth, Integer screenHeight) throws RemoteException {
         String sessionID = nextSessionID();
-        addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request));
+        addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request, screenWidth, screenHeight));
         return sessionID;
     }
 
-    private NavigatorSessionObject createNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
+    private NavigatorSessionObject createNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request, Integer screenWidth, Integer screenHeight) throws RemoteException {
         AuthenticationToken lsfToken = LSFAuthenticationToken.getAppServerToken();
 
-        RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, getNavigatorInfo(request));
+        RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, getNavigatorInfo(request, screenWidth, screenHeight));
 
         return new NavigatorSessionObject(remoteNavigator, sessionObject.getLogicsName(getSessionInfo(request)));
     }
@@ -111,7 +121,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     public NavigatorSessionObject createOrGetNavigatorSessionObject(String sessionID, LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
         NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.get(sessionID);
         if(navigatorSessionObject == null) {
-            navigatorSessionObject = createNavigatorSessionObject(sessionObject, request);
+            navigatorSessionObject = createNavigatorSessionObject(sessionObject, request, null, null);
             addLogicsAndNavigatorSessionObject(sessionID, navigatorSessionObject);
         }
         return navigatorSessionObject;

@@ -9,7 +9,7 @@ import java.rmi.RemoteException;
 
 public interface NavigatorProvider {
 
-    String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
+    String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request, Integer screenWidth, Integer screenHeight) throws RemoteException;
     NavigatorSessionObject getNavigatorSessionObject(String sessionID) throws SessionInvalidatedException;
     NavigatorSessionObject createOrGetNavigatorSessionObject(String sessionID, LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
     void removeNavigatorSessionObject(String sessionID) throws RemoteException;

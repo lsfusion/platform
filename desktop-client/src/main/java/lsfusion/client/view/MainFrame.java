@@ -20,6 +20,7 @@ import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
+import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -146,7 +147,7 @@ public abstract class MainFrame extends JFrame {
             
             MainController.changeColorTheme(clientSettings.colorTheme);
 
-            frame.executeNavigatorAction("SystemEvents.onDesktopClientStarted[]", 0, null, null);
+            frame.executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null, null);
         } catch (Throwable e) {
             closeSplashScreen();
             logger.error(getString("client.error.application.initialization"), e);
@@ -280,7 +281,7 @@ public abstract class MainFrame extends JFrame {
         }
 
         return new NavigatorInfo(MainController.getSessionInfo(), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
-                maximumMemory, freeMemory, javaVersion, screenSize, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+                maximumMemory, freeMemory, javaVersion, screenSize, ClientType.DESKTOP, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
     public ClientFormController currentForm;
