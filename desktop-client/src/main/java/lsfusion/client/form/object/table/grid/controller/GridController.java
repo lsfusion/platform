@@ -178,7 +178,7 @@ public class GridController extends AbstractTableController {
         }
 
         boolean showSettings = groupObject.toolbar.showSettings && table instanceof GridTable;
-        if(filter != null || showSettings || groupObject.toolbar.showXls) {
+        if(filter != null || showSettings) {
             if (filter != null) {
                 addToToolbar(filter.getToolbarButton());
             }
@@ -213,14 +213,16 @@ public class GridController extends AbstractTableController {
                 addToToolbar(userPreferencesButton);
             }
 
-            if (groupObject.toolbar.showXls) {
-                addToToolbar(new ToolbarGridButton(PRINT_XLS_ICON_PATH, getString("form.grid.export.to.xlsx")) {
-                    @Override
-                    public void addListener() {
-                        addActionListener(e -> RmiQueue.runAction(() -> formController.runSingleGroupXlsExport(GridController.this)));
-                    }
-                });
-            }
+            addToolbarSeparator();
+        }
+
+        if(groupObject.toolbar.showXls) {
+            addToToolbar(new ToolbarGridButton(PRINT_XLS_ICON_PATH, getString("form.grid.export.to.xlsx")) {
+                @Override
+                public void addListener() {
+                    addActionListener(e -> RmiQueue.runAction(() -> formController.runSingleGroupXlsExport(GridController.this)));
+                }
+            });
 
             addToolbarSeparator();
         }

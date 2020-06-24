@@ -208,7 +208,7 @@ public class GGridController extends GAbstractTableController {
 
         addToolbarSeparator();
 
-        if(showFilter() || groupObject.toolbar.showGridSettings || groupObject.toolbar.showPrintGroupXls) {
+        if(showFilter() || groupObject.toolbar.showGridSettings) {
 
             if (showFilter()) {
                 addFilterButton();
@@ -226,16 +226,19 @@ public class GGridController extends GAbstractTableController {
                 addToToolbar(settingsButton);
             }
 
-            if (groupObject.toolbar.showPrintGroupXls) {
-                addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
-                    public void addListener() {
-                        addClickHandler(event -> table.runGroupReport());
-                    }
-                });
-            }
+            addToolbarSeparator();
+        }
+
+        if(groupObject.toolbar.showPrintGroupXls) {
+            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
+                public void addListener() {
+                    addClickHandler(event -> table.runGroupReport());
+                }
+            });
 
             addToolbarSeparator();
         }
+
 
         manualUpdateTableButton = new GToolbarButton("update.png", messages.formGridManualUpdate()) {
             public void addListener() {
