@@ -224,7 +224,7 @@ isWeb() = isWebDesktop() OR isWebMobile();
 
 //backward compatibility
 onClientStarted () + {
-    IF isDesktop() THEN {
+    IF isNativeDesktop() THEN {
         onDesktopClientStarted();
     }
     IF isWeb() THEN {
