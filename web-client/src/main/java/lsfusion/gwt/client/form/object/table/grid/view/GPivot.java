@@ -45,9 +45,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private final String ICON_LEAF = "tree_leaf.png";
     private final String ICON_OPEN = "tree_open.png";
     private final String ICON_CLOSED = "tree_closed.png";
-    
-    private final String CELL_ROW_LEVEL_ATTRIBUTE_KEY = "data-row-level"; 
-    private final String CELL_COLUMN_LEVEL_ATTRIBUTE_KEY = "data-column-level"; 
+    private final static String ICON_BRANCH = "tree_dots_branch.png";
+    private final static String ICON_PASSBY = "tree_dots_passby.png";
+
+    private final String CELL_ROW_LEVEL_ATTRIBUTE_KEY = "data-row-level";
+    private final String CELL_COLUMN_LEVEL_ATTRIBUTE_KEY = "data-column-level";
 
     public GPivot(GFormController formController, GGridController gridController) {
         super(formController, gridController);
@@ -647,10 +649,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             });
         }
 
+        changeDots = function (className, branch) {
+            var imgs = outerDiv.getElementsByClassName(className)
+            Array.prototype.forEach.call(imgs, function(img) {
+                instance.@GPivot::rerenderDots(*)(img, branch)
+            });
+        }
+
         if (outerDiv !== undefined) {
             changeImages("leaf-image", null)
             changeImages("expanded-image", true)
             changeImages("collapsed-image", false)
+            changeDots("branch-image", true)
+            changeDots("passby-image", false)
         }
     }-*/;
 
@@ -660,7 +671,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             $wnd.$.pivotUtilities.colorThemeChanged(plot);
         }
     }-*/;
-    
+
     private void updateTableCellsBackground() {
         NodeList<Element> tds = getElements(getTableDataScroller(), "td, th");
         for (int i = 0; i < tds.getLength(); i++) {
@@ -914,10 +925,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             // value is aggregator result
             renderValue(jsElement, value);
         }
-        
+
         setValueCellBackground(jsElement, rowKeys.length(), columnKeys.length(), false);
     }
-    
+
     public void setValueCellBackground(Element td, Integer rowLevel, Integer columnLevel, boolean refresh) {
         int[] panelRGB = StyleDefaults.getPanelBackgroundRGB();
         int[] componentRGB = StyleDefaults.getComponentBackgroundRGB();
@@ -962,7 +973,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         } else if (rowColor != null) {
             td.getStyle().setBackgroundColor(rowColor);
         }
-    } 
+    }
 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
         GPropertyTableBuilder.renderTD(th, rowHeight);
@@ -972,7 +983,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         } else {
             renderAttrCell(th, value, attrName);
         }
-        
+
         setValueCellBackground(th, rowKeyValues.length(), null, false);
     }
 
@@ -1084,6 +1095,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void rerenderArrow(ImageElement img, Boolean isExpanded) {
         GwtClientUtils.setThemeImage(isExpanded == null ? ICON_LEAF : isExpanded ? ICON_OPEN : ICON_CLOSED, img::setSrc);
+    }
+
+    private void rerenderDots(ImageElement img, boolean branch) {
+        if(branch) {
+            GwtClientUtils.setThemeImage(ICON_BRANCH, img::setSrc);
+        } else {
+            GwtClientUtils.setThemeImage(ICON_PASSBY, str -> img.getStyle().setBackgroundImage("url('" + str + "')"));
+        }
     }
 
     private int getArrowColumnWidth(int arrowLevels) {

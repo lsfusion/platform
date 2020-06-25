@@ -144,6 +144,8 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
             img.addClassName("expanded-image");
         } else if(ICON_LEAF.equals(indentIcon)) {
             img.addClassName("leaf-image");
+        } else if(ICON_BRANCH.equals(indentIcon)) {
+            img.addClassName("branch-image");
         }
 
         setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
@@ -156,29 +158,35 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         if (dotTop && dotBottom) {
             ensureDotsAndSetBackground(element);
             element.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
-            top.getStyle().clearBackgroundImage();
-            bottom.getStyle().clearBackgroundImage();
+            clearBackground(top);
+            clearBackground(bottom);
             return;
         } else {
-            element.getStyle().clearBackgroundImage();
+            clearBackground(element);
         }
         if (dotTop) {
             ensureDotsAndSetBackground(top);
             top.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
         } else {
-            top.getStyle().clearBackgroundImage();
+            clearBackground(top);
         }
 
         if (dotBottom) {
             ensureDotsAndSetBackground(bottom);
             bottom.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
         } else {
-            bottom.getStyle().clearBackgroundImage();
+            clearBackground(bottom);
         }
     }
 
     private static void ensureDotsAndSetBackground(Element element) {
+        element.addClassName("passby-image");
         setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
+    }
+
+    private static void clearBackground(Element element) {
+        element.removeClassName("passby-image");
+        element.getStyle().clearBackgroundImage();
     }
 
     private static String getNodeIcon(GTreeColumnValue treeValue) {
