@@ -2,7 +2,7 @@ package lsfusion.gwt.client.view;
 
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
+import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class StyleDefaults {
@@ -22,10 +22,15 @@ public class StyleDefaults {
     public static String focusedCellBackgroundColor;
     public static String focusedCellBorderColor;
     
+    public static int[] panelBackgroundRGB;
+    public static int[] componentBackgroundRGB;
+    
     public static void reset() {
         selectedRowBackgroundColor = null;
         focusedCellBackgroundColor = null;
         focusedCellBorderColor = null;
+        panelBackgroundRGB = null;
+        componentBackgroundRGB = null;
     }
 
     private static String getSelectedColor(boolean canBeMixed) {
@@ -74,9 +79,26 @@ public class StyleDefaults {
         }
         return focusedCellBorderColor;
     }
+    
+    public static int[] getPanelBackgroundRGB() {
+        if (panelBackgroundRGB == null) {
+            int pbRGB = toRGB(getPanelBackground(colorTheme));
+            panelBackgroundRGB = new int[]{getRed(pbRGB), getGreen(pbRGB), getBlue(pbRGB)};
+        }   
+        return panelBackgroundRGB;
+    }
+
+    public static int[] getComponentBackgroundRGB() {
+        if (componentBackgroundRGB == null) {
+            int cbRGB = toRGB(getComponentBackground(colorTheme));
+            componentBackgroundRGB = new int[]{getRed(cbRGB), getGreen(cbRGB), getBlue(cbRGB)};
+        }
+        return componentBackgroundRGB;
+    }
 
     
-    // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.    
+    // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.
+    // maybe getComputedStyle(document.documentElement).getPropertyValue() should be used instead where possible
     public static String getDefaultComponentBackground() {
         return "#FFFFFF";
     }
@@ -87,6 +109,15 @@ public class StyleDefaults {
                 return "#45494A";
             default:
                 return getDefaultComponentBackground();
+        }
+    }
+    
+    public static String getPanelBackground(GColorTheme theme) {
+        switch (theme) {
+            case DARK:
+                return "#3C3F41";
+            default:
+                return "#F2F2F2";
         }
     }
 

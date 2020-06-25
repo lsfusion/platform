@@ -4,7 +4,7 @@
     --scrollbar-color: #DCDCDC;
     --text-color: #000000; /* also hardcoded in StyleDefaults.java */
     --disabled-text-color: #888;
-    --background-color: #F2F2F2;
+    --background-color: #F2F2F2; /* also hardcoded in StyleDefaults.java */
     --component-background-color: #FFFFFF; /* also hardcoded in StyleDefaults.java */
     --split-border-color: var(--component-border-color);
     --dialog-border-color: var(--scrollbar-color);

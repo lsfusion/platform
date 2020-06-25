@@ -67,10 +67,13 @@ table.pvtTable thead tr th {
 table.pvtTable tbody tr th,
 table.pvtTable thead tr th {
     color: var(--text-color);
+}
+
+table.pvtTable thead tr th {
     background-color: var(--background-color);
 }
 
-table.pvtTable thead tr th:last-of-type,
+table.pvtTable thead tr th:last-of-type:not(.colshow),
 table.pvtTable tbody tr td:last-of-type{
     /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
     border-right: 1px solid var(--grid-separator-border-color);
@@ -352,7 +355,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .pvtRendererHeader {
     flex : 0 1 auto;
-    padding: 0 2px 2px;
 }
 
 .pvtRendererBody {
@@ -365,7 +367,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 .pvtRendererFooter {
     flex : 0 1 auto;
-    padding: 2px 2px 0;
 }
 
 .pvtRendererScrollDiv {

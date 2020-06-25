@@ -80,8 +80,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     public void initPageSizeWidget() {
         FlexPanel messageAndButton = new FlexPanel();
-        messageAndButton.addCentered(new Label(ClientMessages.Instance.get().formGridPageSizeHit(pageSize)));
-        messageAndButton.getElement().getStyle().setPaddingRight(4, Style.Unit.PX);
+        Label messageLabel = new Label(ClientMessages.Instance.get().formGridPageSizeHit(pageSize));
+        messageLabel.getElement().getStyle().setPaddingRight(4, Style.Unit.PX);
+        messageAndButton.addCentered(messageLabel);
 
         SimpleImageButton showAllButton = new SimpleImageButton(ClientMessages.Instance.get().formGridPageSizeShowAll());
         showAllButton.addClickHandler(event -> {
@@ -92,6 +93,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
         FlexPanel centeredMessageAndButton = new FlexPanel(true);
         centeredMessageAndButton.addCentered(messageAndButton);
+        centeredMessageAndButton.getElement().getStyle().setPadding(2, Style.Unit.PX);
 
         this.pageSizeWidget = centeredMessageAndButton;
         this.pageSizeWidget.setVisible(false);
