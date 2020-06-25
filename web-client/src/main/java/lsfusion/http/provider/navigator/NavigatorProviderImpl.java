@@ -59,7 +59,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
         Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
         String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
-        ClientType clientType = connectionInfo != null && connectionInfo.mobile ? ClientType.MOBILE : ClientType.WEB;
+        ClientType clientType = connectionInfo != null && connectionInfo.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP;
         String screenSize = connectionInfo != null ? connectionInfo.screenSize : null;
 
 //        we don't need client locale here, because it was already updated when authenticating

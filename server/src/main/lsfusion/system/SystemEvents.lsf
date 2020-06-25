@@ -57,9 +57,10 @@ revision '{system.events.revision.launch}'= DATA STRING[10] (Launch);
 CLASS Connection '{system.events.connection}';
 
 CLASS ClientType '{system.events.client.type}' {
-    desktop '{system.events.client.type.desktop}',
-    web '{system.events.client.type.web}',
-    mobile '{system.events.client.type.mobile}'
+    nativeDesktop '{system.events.client.type.native.desktop}',
+    nativeMobile '{system.events.client.type.native.mobile}',
+    webDesktop '{system.events.client.type.web.desktop}',
+    webMobile '{system.events.client.type.web.mobile}'
 }
 
 TABLE clientType (ClientType);
@@ -210,17 +211,23 @@ currentConnection = NATIVE Connection();
 
 clientType = DATA ClientType (Connection);
 nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
-isDesktopConnection() = clientType(currentConnection()) == ClientType.desktop;
-isWebMobileConnection() = clientType(currentConnection()) == ClientType.mobile;
-isWebDesktopConnection() = clientType(currentConnection()) == ClientType.web;
-isWebConnection() = isWebMobileConnection() OR isWebDesktopConnection();
+
+isNativeDesktop() = clientType(currentConnection()) == ClientType.nativeDesktop;
+isNativeMobile() = clientType(currentConnection()) == ClientType.nativeMobile;
+isWebDesktop() = clientType(currentConnection()) == ClientType.webDesktop;
+isWebMobile() = clientType(currentConnection()) == ClientType.webMobile;
+
+isDesktop() = isNativeDesktop() OR isWebDesktop();
+isMobile() = isNativeMobile() OR isWebMobile();
+isNative() = isNativeDesktop() OR isNativeMobile();
+isWeb() = isWebDesktop() OR isWebMobile();
 
 //backward compatibility
 onClientStarted () + {
-    IF isDesktopConnection() THEN {
+    IF isDesktop() THEN {
         onDesktopClientStarted();
     }
-    IF isWebConnection() THEN {
+    IF isWeb() THEN {
         onWebClientStarted(); 
     }
 }

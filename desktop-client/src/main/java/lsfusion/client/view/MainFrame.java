@@ -281,7 +281,7 @@ public abstract class MainFrame extends JFrame {
         }
 
         return new NavigatorInfo(MainController.getSessionInfo(), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
-                maximumMemory, freeMemory, javaVersion, screenSize, ClientType.DESKTOP, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+                maximumMemory, freeMemory, javaVersion, screenSize, ClientType.NATIVE_DESKTOP, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
     public ClientFormController currentForm;
