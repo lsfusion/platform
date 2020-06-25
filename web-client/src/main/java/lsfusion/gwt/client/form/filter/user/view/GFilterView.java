@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
@@ -21,6 +21,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 import java.util.*;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalSeparator;
 import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
 
 public class GFilterView extends ResizableFocusPanel implements GFilterConditionView.UIHandler {
@@ -76,7 +77,10 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         buttonsPanel.add(leftButtonsPanel);
         buttonsPanel.add(rightButtonsPanel);
 
-        mainContainer.add(new HorizontalLineWidget());
+        Widget horizontalSeparator = createHorizontalSeparator();
+        horizontalSeparator.getElement().getStyle().setMarginTop(5, Style.Unit.PX);
+        horizontalSeparator.getElement().getStyle().setMarginBottom(7, Style.Unit.PX);
+        mainContainer.add(horizontalSeparator);
         mainContainer.add(buttonsPanel);
 
         FlowPanel controlPanel = new FlowPanel();
@@ -211,13 +215,6 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
             GFilterConditionView view = conditionViews.values().iterator().next();
             view.setSelectedPropertyDraw(propertyDraw);
             view.startEditing(keyEvent);
-        }
-    }
-
-    private class HorizontalLineWidget extends Widget {
-        public HorizontalLineWidget() {
-            super();
-            setElement(Document.get().createHRElement());
         }
     }
 }

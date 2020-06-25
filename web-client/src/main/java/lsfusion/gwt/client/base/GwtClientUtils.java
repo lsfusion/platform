@@ -246,6 +246,12 @@ public class GwtClientUtils {
         return separator;
     }
 
+    public static Widget createHorizontalSeparator() {
+        SimplePanel separator = new SimplePanel();
+        separator.addStyleName("horizontalSeparator");
+        return separator;
+    }
+
     public static String getUserAgent() {
         return Window.Navigator.getUserAgent().toLowerCase();
     }
