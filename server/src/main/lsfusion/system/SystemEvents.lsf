@@ -211,15 +211,16 @@ currentConnection = NATIVE Connection();
 clientType = DATA ClientType (Connection);
 nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
 isDesktopConnection() = clientType(currentConnection()) == ClientType.desktop;
-isWebConnection() = clientType(currentConnection()) == ClientType.web;
-isMobileConnection() = clientType(currentConnection()) == ClientType.mobile;
+isWebMobileConnection() = clientType(currentConnection()) == ClientType.mobile;
+isWebDesktopConnection() = clientType(currentConnection()) == ClientType.web;
+isWebConnection() = isWebMobileConnection() OR isWebDesktopConnection();
 
 //backward compatibility
 onClientStarted () + {
     IF isDesktopConnection() THEN {
         onDesktopClientStarted();
     }
-    IF isWebConnection() OR isMobileConnection() THEN {
+    IF isWebConnection() THEN {
         onWebClientStarted(); 
     }
 }

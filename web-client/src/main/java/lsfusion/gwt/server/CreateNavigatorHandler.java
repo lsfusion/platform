@@ -26,7 +26,7 @@ public class CreateNavigatorHandler extends LogicsActionHandler<CreateNavigatorA
         return runRequest(action, new LogicsRunnable<StringResult>() {
            public StringResult run(LogicsSessionObject sessionObject) throws RemoteException {
                try {
-                   return new StringResult(servlet.getNavigatorProvider().createNavigator(sessionObject, servlet.getRequest(), action.screenWidth, action.screenHeight));
+                   return new StringResult(servlet.getNavigatorProvider().createNavigator(sessionObject, servlet.getRequest(), action.connectionInfo));
                } catch (RemoteMessageException e) {
                    servlet.getRequest().getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
                    throw e;

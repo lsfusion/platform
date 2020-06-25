@@ -9,8 +9,8 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <title>${title}</title>
         <link rel="shortcut icon" href="${logicsIcon}" />
-        <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
-        <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
+        <link rel="stylesheet" media="only screen and (min-device-width: "${minDesktopWidth}"px)" href="static/noauth/css/login.css"/>
+        <link rel="stylesheet" media="only screen and (max-device-width: "${maxMobileWidth}"px)" href="static/noauth/css/mobile_login.css"/>
     </head>
     <body onload="document.loginForm.username.focus();">
 

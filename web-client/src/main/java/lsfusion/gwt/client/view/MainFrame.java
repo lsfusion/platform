@@ -31,6 +31,7 @@ import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.CreateNavigatorAction;
@@ -58,6 +59,8 @@ import java.util.Map;
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint, ServerMessageProvider {
     private static final ClientMessages messages = ClientMessages.Instance.get();
+
+    public static int maxMobileWidth = 600;
 
     public static LogicsDispatchAsync logicsDispatchAsync;
     public static NavigatorDispatchAsync navigatorDispatchAsync;
@@ -396,7 +399,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
         logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
-        logicsDispatchAsync.execute(new CreateNavigatorAction(screenWidth, screenHeight), new ErrorHandlingCallback<StringResult>() {
+        logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, screenWidth <= maxMobileWidth)), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
                 navigatorDispatchAsync = new NavigatorDispatchAsync(result.get());
