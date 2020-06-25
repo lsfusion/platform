@@ -574,10 +574,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
         var renderers = $wnd.$.extend(
             localizeRendererNames($wnd.$.pivotUtilities.subtotal_renderers),
-            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers),
+            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers)
 //            $wnd.$.pivotUtilities.c3_renderers,
 //            $wnd.$.pivotUtilities.renderers,
-            localizeRendererNames($wnd.$.pivotUtilities.d3_renderers)
+//            localizeRendererNames($wnd.$.pivotUtilities.d3_renderers)
         );
 
         return {
