@@ -630,7 +630,7 @@
      */
     PivotData = (function() {
       function PivotData(input, opts) {
-        var ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9;
+        var ref, ref1, ref10, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9;
         if (opts == null) {
           opts = {};
         }
@@ -660,6 +660,7 @@
         this.allTotal = this.aggregator(this, [], []);
         this.sorted = false;
         this.callbacks = opts.callbacks;
+        this.sortItems = (ref10 = opts.sortCols) != null ? ref10 : [];
         PivotData.forEachRecord(this.input, this.derivedAttributes, (function(_this) {
           return function(record) {
             if (_this.filter(record)) {
@@ -1234,7 +1235,7 @@
         },
         sorters: {},
         valueHeight: null,
-        componentHeight: null,
+        componentHeightString: null,
         cellHorizontalPadding: null
       };
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
@@ -1285,7 +1286,7 @@
         rendererControl = $("<td>").addClass("pvtUiCell");
         rendererControlDiv = $("<div>").appendTo(rendererControl);
         renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControlDiv).css({
-          height: opts.componentHeight
+          height: opts.componentHeightString
         }).bind("change", function() {
           return refresh();
         });
@@ -1348,7 +1349,7 @@
           unused.addClass('pvtHorizList');
         }
         fn1 = function(attr) {
-          var attrElem, checkContainer, closeFilterBox, controls, filterItem, filterItemExcluded, finalButtons, hasExcludedItem, len2, listItem, n, placeholder, ref1, sorter, triangleLink, v, value, valueCount, valueList, values;
+          var attrElem, attrElemText, checkContainer, closeFilterBox, controls, filterItem, filterItemExcluded, finalButtons, hasExcludedItem, len2, listItem, n, placeholder, ref1, sorter, triangleLink, v, value, valueCount, valueList, values;
           values = (function() {
             var results;
             results = [];
@@ -1359,7 +1360,7 @@
           })();
           hasExcludedItem = false;
           valueList = $("<div>").draggable().addClass('pvtFilterBox').hide();
-          valueList.append($("<h4>").append($("<span>").text(attr), $("<span>").addClass("count").text("(" + values.length + ")")));
+          valueList.append($("<h4>").append($("<pvtAttr>").text(attr), $("<span>").addClass("count").text("(" + values.length + ")")));
           if (values.length > opts.menuLimit) {
             valueList.append($("<p>").html(opts.localeStrings.tooMany));
           } else {
@@ -1373,7 +1374,7 @@
                 placeholder: placeholder,
                 "class": "pvtSearch"
               }).css({
-                height: opts.valueHeight,
+                height: opts.valueHeight + "px",
                 padding: "0 " + opts.cellHorizontalPadding + "px"
               }).bind("keyup", function() {
                 var accept, accept_gen, filter;
@@ -1408,7 +1409,7 @@
               $("<button>", {
                 type: "button"
               }).appendTo(controls).html(opts.localeStrings.selectAll).css({
-                height: opts.componentHeight
+                height: opts.componentHeightString
               }).bind("click", function() {
                 valueList.find("input:visible:not(:checked)").prop("checked", true).toggleClass("changed");
                 return false;
@@ -1416,7 +1417,7 @@
               $("<button>", {
                 type: "button"
               }).appendTo(controls).html(opts.localeStrings.selectNone).css({
-                height: opts.componentHeight
+                height: opts.componentHeightString
               }).bind("click", function() {
                 valueList.find("input:visible:checked").prop("checked", false).toggleClass("changed");
                 return false;
@@ -1458,7 +1459,7 @@
             $("<button>", {
               type: "button"
             }).text(opts.localeStrings.apply).appendTo(finalButtons).css({
-              height: opts.componentHeight
+              height: opts.componentHeightString
             }).bind("click", function() {
               if (valueList.find(".changed").removeClass("changed").length) {
                 refresh();
@@ -1469,7 +1470,7 @@
           $("<button>", {
             type: "button"
           }).text(opts.localeStrings.cancel).appendTo(finalButtons).css({
-            height: opts.componentHeight
+            height: opts.componentHeightString
           }).bind("click", function() {
             valueList.find(".changed:checked").removeClass("changed").prop("checked", false);
             valueList.find(".changed:not(:checked)").removeClass("changed").prop("checked", true);
@@ -1489,13 +1490,15 @@
           });
           listItem = $("<li>").addClass("axis_" + i);
           listItem.css({
-            lineHeight: opts.valueHeight
+            lineHeight: opts.valueHeight + "px"
           });
-          attrElem = listItem.append($("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink));
+          attrElem = $("<div>").addClass('pvtAttr').data("attrName", attr).appendTo(listItem);
+          attrElemText = $("<span>").addClass('pvtAttrText').text(attr).prop("title", attr).appendTo(attrElem);
+          attrElem.append(triangleLink);
           if (hasExcludedItem) {
-            attrElem.addClass('pvtFilteredAttribute');
+            attrElemText.addClass('pvtFilteredAttribute');
           }
-          return unusedDiv.append(attrElem).append(valueList);
+          return unusedDiv.append(listItem).append(valueList);
         };
         for (i in shownInDragDrop) {
           if (!hasProp.call(shownInDragDrop, i)) continue;
@@ -1504,7 +1507,7 @@
         }
         tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable);
         aggregator = $("<select>").addClass('pvtAggregator').css({
-          height: opts.componentHeight
+          height: opts.componentHeightString
         }).bind("change", function() {
           return refresh();
         });
@@ -1677,7 +1680,8 @@
               items: 'li',
               placeholder: 'pvtPlaceholder',
               tolerance: "pointer",
-              forcePlaceholderSize: true
+              forcePlaceholderSize: true,
+              cancel: ".pvtTriangle"
             });
             subopts = {
               derivedAttributes: opts.derivedAttributes,
@@ -1695,12 +1699,13 @@
             subopts.rendererOptions.colSubtotalDisplay = {
               splitPositions: opts.splitCols
             };
+            subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length === 1;
             numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
             vals = [];
-            _this.find(".pvtRows li span.pvtAttr").each(function() {
+            _this.find(".pvtRows li div.pvtAttr").each(function() {
               return subopts.rows.push($(this).data("attrName"));
             });
-            _this.find(".pvtCols li span.pvtAttr").each(function() {
+            _this.find(".pvtCols li div.pvtAttr").each(function() {
               return subopts.cols.push($(this).data("attrName"));
             });
             _this.find(".pvtVals select.pvtAttrDropdown").each(function() {
@@ -1791,6 +1796,8 @@
             if (opts.onRefresh != null) {
               opts.onRefresh(pivotUIOptions);
             }
+            opts.sortCols = pivotUIOptions.sortCols;
+            subopts.sortCols = opts.sortCols;
             pivotScrollDiv.pivot(materializedInput, subopts, locale);
             if (opts.afterRefresh != null) {
               opts.afterRefresh();
@@ -1822,7 +1829,8 @@
           items: 'li',
           placeholder: 'pvtPlaceholder',
           tolerance: "pointer",
-          forcePlaceholderSize: true
+          forcePlaceholderSize: true,
+          cancel: ".pvtTriangle"
         });
       } catch (error) {
         e = error;

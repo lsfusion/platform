@@ -116,9 +116,6 @@
         <param-name>log4jExposeWebAppRoot</param-name>
         <param-value>false</param-value>
     </context-param>
-    <listener>
-        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-    </listener>
 
     <!-- Spring configuration -->
     <context-param>

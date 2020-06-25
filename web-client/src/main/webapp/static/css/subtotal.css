@@ -38,6 +38,7 @@
     }
 
     .subtotalouterdiv .scrolldiv {
+        background-color: var(--component-background-color);
         position: relative;
         overflow: auto;
         height: 100%;
@@ -62,20 +63,8 @@
     table.pvtTable .pvtAxisLabel.expanded {
 	    white-space: nowrap;
     }
-    table.pvtTable .pvtAxisLabel.expanded .axisHeaderArrowDiv {
-        cursor: zoom-out !important;
-    }
-    table.pvtTable .pvtAxisLabel.expanded.zoom {
-        cursor: zoom-out !important;
-    }
     table.pvtTable .pvtAxisLabel.collapsed {
 	    white-space: nowrap;
-    }
-    table.pvtTable .pvtAxisLabel.collapsed .axisHeaderArrowDiv {
-        cursor: zoom-in !important;
-    }
-    table.pvtTable .pvtAxisLabel.collapsed.zoom {
-        cursor: zoom-in !important;
     }
 
     /* RowLabel */
@@ -85,13 +74,7 @@
     }
     table.pvtTable tbody tr th.pvtRowLabel.rowexpanded {
     }
-    table.pvtTable tbody tr th.pvtRowLabel.rowexpanded.zoom  {
-        cursor: zoom-out !important;
-    }
     table.pvtTable tbody tr th.pvtRowLabel.rowcollapsed {
-    }
-    table.pvtTable tbody tr th.pvtRowLabel.rowcollapsed.zoom {
-        cursor: zoom-in !important;
     }
 
     /* RowLabelFiller */
@@ -107,12 +90,6 @@
     /* ColLabel */
     table.pvtTable thead tr th.pvtColLabel {
 	    white-space: nowrap;
-    }
-    table.pvtTable thead tr th.pvtColLabel.colexpanded .colAttrHeaderArrowDiv {
-	    cursor: zoom-out !important;
-    }
-    table.pvtTable thead tr th.pvtColLabel.colcollapsed .colAttrHeaderArrowDiv {
-	    cursor: zoom-in !important;
     }
 
     /* ColLabelFiller */

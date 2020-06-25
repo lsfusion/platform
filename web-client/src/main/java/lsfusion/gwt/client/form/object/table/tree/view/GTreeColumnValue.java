@@ -6,6 +6,7 @@ import java.util.Map;
 public class GTreeColumnValue {
     private int level;
     private Boolean open;
+    private boolean openDotBottom = true;
     private String sID;
     private Map<Integer, Boolean> lastInLevelMap = new HashMap<>();
 
@@ -28,6 +29,14 @@ public class GTreeColumnValue {
 
     public void setOpen(Boolean open) {
         this.open = open;
+    }
+
+    public boolean isOpenDotBottom() {
+        return openDotBottom;
+    }
+
+    public void setOpenDotBottom(boolean openDotBottom) {
+        this.openDotBottom = openDotBottom;
     }
 
     public String getSID() {

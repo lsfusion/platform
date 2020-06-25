@@ -274,7 +274,7 @@ input[type=checkbox]:focus {
     overflow: visible;
     position: relative;
     border: 1px solid var(--panel-border-color);
-    margin: 1em 1px 1px 1px;
+    margin: 9px 1px 1px 1px;
     padding: 2px 1px 1px 1px;
     border-radius: var(--panel-border-radius);
 }

@@ -15,8 +15,8 @@
     <properties>
         <!-- DEPENDENCY VERSIONS -->
         <junit.version>4.10</junit.version>
-        <log4j.version>1.2.16</log4j.version>
-        <log4j.extras.version>1.0</log4j.extras.version>
+        <log4j.version>1.2.17</log4j.version>
+        <log4j.extras.version>1.1</log4j.extras.version>
         <xbasej.version>1.0.1</xbasej.version>
         <jacob.version>1.15-M3</jacob.version>
         <commons.lang.version>3.8.1</commons.lang.version>
@@ -36,7 +36,7 @@
         <jasper.htmlcomponent.version>6.12.2</jasper.htmlcomponent.version>
         <ecj.version>4.6.1</ecj.version>
         <olap4j.version>1.2.0</olap4j.version>
-        <apache.poi.version>4.1.1</apache.poi.version>
+        <apache.poi.version>4.1.2</apache.poi.version>
         <docking.frames.version>1.1.3p1</docking.frames.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
         <batik.version>1.8</batik.version>
@@ -56,7 +56,6 @@
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
         <imageio-jpeg.version>3.3.2</imageio-jpeg.version>
-        <jnlp.api.version>7.0</jnlp.api.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <informix.version>4.10.9</informix.version>
         <mysql.version>5.1.21</mysql.version>
@@ -67,11 +66,10 @@
         <org.jdbf.version>1.1</org.jdbf.version>
         <org.jfree.version>1.0.23</org.jfree.version>
 
-        <spring.version>4.3.22.RELEASE</spring.version>
-        <spring.security.version>4.2.11.RELEASE</spring.security.version>
+        <spring.version>5.2.7.RELEASE</spring.version>
+        <spring.security.version>5.3.0.RELEASE</spring.security.version>
         <aspectj.version>1.9.2</aspectj.version>
 
-        <servlet.api.version>2.5</servlet.api.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
         <json.version>20180813</json.version>
         <junrar.version>0.7</junrar.version>
@@ -85,9 +83,11 @@
         <httpcomponents.httpclient-android.version>4.3.5.1</httpcomponents.httpclient-android.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
-        <gwt.version>2.8.2-patched-1</gwt.version>
+        <gwt.version>2.9.0-patched-1</gwt.version>
 
-        <smartgwt.version>3.0p</smartgwt.version>
+        <com.google.gson.version>2.2.4</com.google.gson.version>
+        <org.apache.tomcat.api.version>9.0.36</org.apache.tomcat.api.version>
+
         <gwt.log.version>3.3.2</gwt.log.version>
         <gwt.dnd.version>3.3.4</gwt.dnd.version>
         <gin.version>2.1.2</gin.version>
@@ -101,8 +101,6 @@
 
         <javax.xml.bind.version>2.3.0</javax.xml.bind.version>
 
-        <asm.version>5.0.4</asm.version>
-
         <tess4j.version>4.3.1</tess4j.version>
         <pdfbox.version>2.0.12</pdfbox.version>
         <fax4j.version>0.44.2</fax4j.version>
@@ -112,11 +110,6 @@
     <dependencyManagement>
         <dependencies>
             <!--Common libraries-->
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
@@ -214,8 +207,8 @@
                 <version>${jasper.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>eclipse</groupId>
-                        <artifactId>jdtcore</artifactId>
+                        <groupId>org.eclipse.jdt</groupId>
+                        <artifactId>org.eclipse.jdt.core</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -352,11 +345,6 @@
                 <version>${imageio-jpeg.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.jnlp</groupId>
-                <artifactId>jnlp-api</artifactId>
-                <version>${jnlp.api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.oracle</groupId>
                 <artifactId>ojdbc14</artifactId>
                 <version>${ojdbc14.version}</version>
@@ -403,6 +391,16 @@
             </dependency>
 
             <!-- Spring libraries -->
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-oauth2-client</artifactId>
+                <version>${spring.security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-oauth2-jose</artifactId>
+                <version>${spring.security.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
@@ -457,23 +455,6 @@
             </dependency>
 
             <!-- WEB-related libraries -->
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>${servlet.api.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${validation.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${validation.api.version}</version>
-                <classifier>sources</classifier>
-            </dependency>
             <dependency>
                 <groupId>org.json</groupId>
                 <artifactId>json</artifactId>
@@ -531,13 +512,6 @@
                 <groupId>com.google.gwt</groupId>
                 <artifactId>gwt-user</artifactId>
                 <version>${gwt.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.gwt</groupId>
-                <artifactId>gwt-dev</artifactId>
-                <version>${gwt.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>javax.annotation</groupId>
@@ -548,11 +522,6 @@
                 <groupId>javax.ejb</groupId>
                 <artifactId>javax.ejb-api</artifactId>
                 <version>${javax.ejb.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.smartgwt</groupId>
-                <artifactId>smartgwt</artifactId>
-                <version>${smartgwt.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.gwt.inject</groupId>
@@ -593,6 +562,16 @@
                 <groupId>org.vectomatic</groupId>
                 <artifactId>lib-gwt-svg</artifactId>
                 <version>${lib.gwt.svg.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${com.google.gson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-api</artifactId>
+                <version>${org.apache.tomcat.api.version}</version>
             </dependency>
 
             <!--java 11 dependencies-->
@@ -665,7 +644,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>gwt-maven-plugin</artifactId>
-                    <version>2.8.2</version>
+                    <version>2.9.0</version>
                     <executions>
                         <execution>
                             <phase>compile</phase>
@@ -683,11 +662,6 @@
                         <dependency>
                             <groupId>com.google.gwt</groupId>
                             <artifactId>gwt-codeserver</artifactId>
-                            <version>${gwt.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.google.gwt</groupId>
-                            <artifactId>gwt-dev</artifactId>
                             <version>${gwt.version}</version>
                         </dependency>
                     </dependencies>

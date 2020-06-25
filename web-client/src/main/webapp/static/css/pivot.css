@@ -80,6 +80,10 @@ table.pvtTable .pvtColLabel {
     text-align: center
 }
 
+table.pvtTable .pvtColLabel .wrapperDiv {
+    text-align: left
+}
+
 table.pvtTable .pvtTotalLabel {
     text-align: right
 }
@@ -108,7 +112,7 @@ table.pvtTable tbody tr td {
     -moz-border-radius: var(--panel-border-radius);
 }
 
-.pvtRows li span.pvtAttr, .pvtCols li span.pvtAttr {
+.pvtRows li div.pvtAttr, .pvtCols li div.pvtAttr {
     background: var(--selection-color);
 }
 
@@ -175,7 +179,6 @@ table.pvtTable tbody tr td {
 }
 
 .pvtAxisContainer li.pvtPlaceholder {
-    max-width: 50px;
     vertical-align: bottom;
     outline: 1px dashed var(--component-border-color);
     outline-offset: -1px;
@@ -187,7 +190,7 @@ table.pvtTable tbody tr td {
     margin: 4px;
 }
 
-.pvtAxisContainer li span.pvtAttr {
+.pvtAxisContainer li div.pvtAttr {
     -webkit-text-size-adjust: 100%;
     border: 1px solid var(--component-border-color);
     border-radius: var(--combobox-border-radius);
@@ -195,7 +198,7 @@ table.pvtTable tbody tr td {
     background-color: var(--component-background-color);
     padding: 0 5px;
     white-space: nowrap;
-    flex: 1 0 0;
+    display: flex;
     align-self: start;
     -webkit-border-radius: var(--combobox-border-radius);
     -moz-border-radius: var(--combobox-border-radius);
@@ -212,7 +215,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     padding: 2px;
 }
 
-.paxis li span.pvtAttr {
+.paxis li div.pvtAttr {
     background-color: var(--selection-color);
 }
 
@@ -236,6 +239,8 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 .pvtTriangle {
     cursor: pointer;
     color: var(--text-color);
+    align-self: center;
+    padding-left: 3px;
 }
 
 .pvtHorizList {
@@ -256,6 +261,16 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     margin-right: 0;
 }
 
+.pvtAxisContainer li.pvtPlaceholder { /*should be after .pvtUnused.pvtVertList li*/
+    max-width: 50px;
+}
+
+.pvtAttrText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 125px;
+}
+
 .pvtVertList > li.pvtPlaceholder {
     margin: 4px 0 0 0;
 }
@@ -269,7 +284,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .pvtFilterBox {
-    z-index: auto;
+    z-index: 100; /* todo: temporarily restored, needs investigation. should be drawn behind dialogs (e.g. filter dialog, busy dialog) */
     width: 300px;
     border: 1px solid var(--component-border-color);
     background-color: var(--background-color);
@@ -337,6 +352,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .pvtRendererHeader {
     flex : 0 1 auto;
+    padding: 0 2px 2px;
 }
 
 .pvtRendererBody {
@@ -349,6 +365,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 .pvtRendererFooter {
     flex : 0 1 auto;
+    padding: 2px 2px 0;
 }
 
 .pvtRendererScrollDiv {
@@ -362,6 +379,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .pvtRenderer {
     margin: 5px 0 5px 5px;
+    max-width: 150px;
 }
 
 .pvtAggregator {

@@ -8,6 +8,50 @@ callWithJQuery = (pivotModule) ->
         pivotModule jQuery, Plotly
 
 callWithJQuery ($, Plotly) ->
+    computedStyle = null
+    CSSProps =
+        paper_bgcolor: null
+        plot_bgcolor: null
+        font_color: null
+        axis_grid_color: null
+        axis_line_color: null
+        axis_zeroline_color: null
+
+    getCSSPropertyValue = (propertyName) ->
+        if computedStyle == null
+            computedStyle = getComputedStyle(document.documentElement)
+        return computedStyle.getPropertyValue(propertyName)
+    
+    getPaperBGColor = () ->
+        if CSSProps.paper_bgcolor == null
+            CSSProps.paper_bgcolor = getCSSPropertyValue('--background-color')
+        return CSSProps.paper_bgcolor
+
+    getPlotBGColor = () ->
+        if CSSProps.plot_bgcolor == null
+            CSSProps.plot_bgcolor = getCSSPropertyValue('--component-background-color')
+        return CSSProps.plot_bgcolor
+
+    getFontColor = () ->
+        if CSSProps.font_color == null
+            CSSProps.font_color = getCSSPropertyValue('--text-color')
+        return CSSProps.font_color
+
+    getAxisGridColor = () ->
+        if CSSProps.axis_grid_color == null
+            CSSProps.axis_grid_color = getCSSPropertyValue('--grid-separator-border-color')
+        return CSSProps.axis_grid_color
+
+    getAxisLineColor = () ->
+        if CSSProps.axis_line_color == null
+            CSSProps.axis_line_color = getCSSPropertyValue('--component-border-color')
+        return CSSProps.axis_line_color
+
+    getAxisZeroLineColor = () ->
+        if CSSProps.axis_zeroline_color == null
+            CSSProps.axis_zeroline_color = getCSSPropertyValue('--component-border-color')
+        return CSSProps.axis_zeroline_color
+
 
     makePlotlyChart = (reverse, traceOptions = {}, layoutOptions = {}, transpose = false) ->
         (pivotData, opts) ->
@@ -70,6 +114,11 @@ callWithJQuery ($, Plotly) ->
                 title: titleText
                 hovermode: 'closest'
                 autosize: true
+                paper_bgcolor: getPaperBGColor()
+                plot_bgcolor: getPlotBGColor()
+                font: {
+                    color: getFontColor()
+                }
 
             if traceOptions.type == 'pie'
                 columns = Math.ceil(Math.sqrt(data.length))
@@ -87,9 +136,15 @@ callWithJQuery ($, Plotly) ->
                 layout.xaxis =
                     title: if transpose then fullAggName else null
                     automargin: true
+                    gridcolor: getAxisGridColor()
+                    linecolor: getAxisLineColor()
+                    zerolinecolor: getAxisZeroLineColor()
                 layout.yaxis =
                     title: if transpose then null else fullAggName
                     automargin: true
+                    gridcolor: getAxisGridColor()
+                    linecolor: getAxisLineColor()
+                    zerolinecolor: getAxisZeroLineColor()
 
 
             result = $("<div>").appendTo $("body")
@@ -128,6 +183,11 @@ callWithJQuery ($, Plotly) ->
             xaxis: {title: pivotData.colAttrs.join('-'), automargin: true},
             yaxis: {title: pivotData.rowAttrs.join('-'), automargin: true},
             autosize: true
+            paper_bgcolor: getPaperBGColor()
+            plot_bgcolor: getPlotBGColor()
+            font: {
+                color: getFontColor()
+            }
         }
 
         renderArea = $("<div>", style: "display:none;").appendTo $("body")
@@ -151,4 +211,32 @@ callWithJQuery ($, Plotly) ->
         }, {}, false),
         "HORIZONTAL_BARCHART": makePlotlyChart(true, {type: 'bar', orientation: 'h'}, { barmode: 'group' }, true),
         "HORIZONTAL_STACKED_BARCHART": makePlotlyChart(true, { type: 'bar', orientation: 'h'}, { barmode: 'relative' }, true)
+
+    $.pivotUtilities.colorThemeChanged = (plot) ->
+        computedStyle = null
+        CSSProps.paper_bgcolor = null
+        CSSProps.plot_bgcolor = null
+        CSSProps.font_color = null
+        CSSProps.axis_grid_color = null
+        CSSProps.axis_line_color = null
+        CSSProps.axis_zeroline_color = null
         
+        relayout = () ->
+            update =
+                paper_bgcolor: getPaperBGColor()
+                plot_bgcolor: getPlotBGColor()
+                font: {
+                    color: getFontColor()
+                }
+                xaxis:
+                    gridcolor: getAxisGridColor()
+                    linecolor: getAxisLineColor()
+                    zerolinecolor: getAxisZeroLineColor()
+                yaxis:
+                    gridcolor: getAxisGridColor()
+                    linecolor: getAxisLineColor()
+                    zerolinecolor: getAxisZeroLineColor()
+            Plotly.relayout(plot, update)
+            
+        # to defer the task. otherwise new <theme>.css is not applied yet and getComputedStyle() returns values from the previous one
+        setTimeout(relayout)  

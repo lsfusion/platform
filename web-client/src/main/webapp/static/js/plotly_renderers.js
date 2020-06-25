@@ -13,7 +13,58 @@
   };
 
   callWithJQuery(function($, Plotly) {
-    var makePlotlyChart, makePlotlyScatterChart;
+    var CSSProps, computedStyle, getAxisGridColor, getAxisLineColor, getAxisZeroLineColor, getCSSPropertyValue, getFontColor, getPaperBGColor, getPlotBGColor, makePlotlyChart, makePlotlyScatterChart;
+    computedStyle = null;
+    CSSProps = {
+      paper_bgcolor: null,
+      plot_bgcolor: null,
+      font_color: null,
+      axis_grid_color: null,
+      axis_line_color: null,
+      axis_zeroline_color: null
+    };
+    getCSSPropertyValue = function(propertyName) {
+      if (computedStyle === null) {
+        computedStyle = getComputedStyle(document.documentElement);
+      }
+      return computedStyle.getPropertyValue(propertyName);
+    };
+    getPaperBGColor = function() {
+      if (CSSProps.paper_bgcolor === null) {
+        CSSProps.paper_bgcolor = getCSSPropertyValue('--background-color');
+      }
+      return CSSProps.paper_bgcolor;
+    };
+    getPlotBGColor = function() {
+      if (CSSProps.plot_bgcolor === null) {
+        CSSProps.plot_bgcolor = getCSSPropertyValue('--component-background-color');
+      }
+      return CSSProps.plot_bgcolor;
+    };
+    getFontColor = function() {
+      if (CSSProps.font_color === null) {
+        CSSProps.font_color = getCSSPropertyValue('--text-color');
+      }
+      return CSSProps.font_color;
+    };
+    getAxisGridColor = function() {
+      if (CSSProps.axis_grid_color === null) {
+        CSSProps.axis_grid_color = getCSSPropertyValue('--grid-separator-border-color');
+      }
+      return CSSProps.axis_grid_color;
+    };
+    getAxisLineColor = function() {
+      if (CSSProps.axis_line_color === null) {
+        CSSProps.axis_line_color = getCSSPropertyValue('--component-border-color');
+      }
+      return CSSProps.axis_line_color;
+    };
+    getAxisZeroLineColor = function() {
+      if (CSSProps.axis_zeroline_color === null) {
+        CSSProps.axis_zeroline_color = getCSSPropertyValue('--component-border-color');
+      }
+      return CSSProps.axis_zeroline_color;
+    };
     makePlotlyChart = function(reverse, traceOptions, layoutOptions, transpose) {
       if (traceOptions == null) {
         traceOptions = {};
@@ -96,7 +147,12 @@
         layout = {
           title: titleText,
           hovermode: 'closest',
-          autosize: true
+          autosize: true,
+          paper_bgcolor: getPaperBGColor(),
+          plot_bgcolor: getPlotBGColor(),
+          font: {
+            color: getFontColor()
+          }
         };
         if (traceOptions.type === 'pie') {
           columns = Math.ceil(Math.sqrt(data.length));
@@ -121,11 +177,17 @@
         } else {
           layout.xaxis = {
             title: transpose ? fullAggName : null,
-            automargin: true
+            automargin: true,
+            gridcolor: getAxisGridColor(),
+            linecolor: getAxisLineColor(),
+            zerolinecolor: getAxisZeroLineColor()
           };
           layout.yaxis = {
             title: transpose ? null : fullAggName,
-            automargin: true
+            automargin: true,
+            gridcolor: getAxisGridColor(),
+            linecolor: getAxisLineColor(),
+            zerolinecolor: getAxisZeroLineColor()
           };
         }
         result = $("<div>").appendTo($("body"));
@@ -186,7 +248,12 @@
             title: pivotData.rowAttrs.join('-'),
             automargin: true
           },
-          autosize: true
+          autosize: true,
+          paper_bgcolor: getPaperBGColor(),
+          plot_bgcolor: getPlotBGColor(),
+          font: {
+            color: getFontColor()
+          }
         };
         renderArea = $("<div>", {
           style: "display:none;"
@@ -198,7 +265,7 @@
         return result;
       };
     };
-    return $.pivotUtilities.plotly_renderers = {
+    $.pivotUtilities.plotly_renderers = {
       "BARCHART": makePlotlyChart(true, {
         type: 'bar'
       }, {
@@ -232,6 +299,38 @@
       }, {
         barmode: 'relative'
       }, true)
+    };
+    return $.pivotUtilities.colorThemeChanged = function(plot) {
+      var relayout;
+      computedStyle = null;
+      CSSProps.paper_bgcolor = null;
+      CSSProps.plot_bgcolor = null;
+      CSSProps.font_color = null;
+      CSSProps.axis_grid_color = null;
+      CSSProps.axis_line_color = null;
+      CSSProps.axis_zeroline_color = null;
+      relayout = function() {
+        var update;
+        update = {
+          paper_bgcolor: getPaperBGColor(),
+          plot_bgcolor: getPlotBGColor(),
+          font: {
+            color: getFontColor()
+          },
+          xaxis: {
+            gridcolor: getAxisGridColor(),
+            linecolor: getAxisLineColor(),
+            zerolinecolor: getAxisZeroLineColor()
+          },
+          yaxis: {
+            gridcolor: getAxisGridColor(),
+            linecolor: getAxisLineColor(),
+            zerolinecolor: getAxisZeroLineColor()
+          }
+        };
+        return Plotly.relayout(plot, update);
+      };
+      return setTimeout(relayout);
     };
   });
 

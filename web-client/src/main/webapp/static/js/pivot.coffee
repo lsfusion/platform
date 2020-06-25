@@ -321,7 +321,8 @@ callWithJQuery ($) ->
             @allTotal = @aggregator(this, [], [])
             @sorted = false
             @callbacks = opts.callbacks
-
+            @sortItems = opts.sortCols ? []
+            
             # iterate through input, accumulating data for cells
             PivotData.forEachRecord @input, @derivedAttributes, (record) =>
                 @processRecord(record) if @filter(record)
@@ -682,7 +683,7 @@ callWithJQuery ($) ->
             filter: -> true
             sorters: {}
             valueHeight: null
-            componentHeight: null
+            componentHeightString: null
             cellHorizontalPadding: null
 
         localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings)
@@ -729,7 +730,7 @@ callWithJQuery ($) ->
             renderer = $("<select>")
                 .addClass('pvtRenderer')
                 .appendTo(rendererControlDiv)
-                .css(height: opts.componentHeight)
+                .css(height: opts.componentHeightString)
                 .bind "change", -> refresh() #capture reference
             for own x of opts.renderers
                 $("<option>").val(x).html(x).appendTo(renderer)
@@ -766,7 +767,7 @@ callWithJQuery ($) ->
                     valueList = $("<div>").draggable().addClass('pvtFilterBox').hide()
 
                     valueList.append $("<h4>").append(
-                        $("<span>").text(attr),
+                        $("<pvtAttr>").text(attr),
                         $("<span>").addClass("count").text("(#{values.length})"),
                         )
                     if values.length > opts.menuLimit
@@ -779,7 +780,7 @@ callWithJQuery ($) ->
                             $("<input>", {type: "text"}).appendTo(controls)
                                 .attr({placeholder: placeholder, class: "pvtSearch"})
                                 .css
-                                    height: opts.valueHeight
+                                    height: opts.valueHeight + "px"
                                     padding: "0 " + opts.cellHorizontalPadding + "px" 
                                 .bind "keyup", ->
                                     filter = $(this).val().toLowerCase().trim()
@@ -805,14 +806,14 @@ callWithJQuery ($) ->
                             controls.append $("<br>")
                             $("<button>", {type:"button"}).appendTo(controls)
                                 .html(opts.localeStrings.selectAll)
-                                .css(height: opts.componentHeight)
+                                .css(height: opts.componentHeightString)
                                 .bind "click", ->
                                     valueList.find("input:visible:not(:checked)")
                                         .prop("checked", true).toggleClass("changed")
                                     return false
                             $("<button>", {type:"button"}).appendTo(controls)
                                 .html(opts.localeStrings.selectNone)
-                                .css(height: opts.componentHeight)
+                                .css(height: opts.componentHeightString)
                                 .bind "click", ->
                                     valueList.find("input:visible:checked")
                                         .prop("checked", false).toggleClass("changed")
@@ -854,7 +855,7 @@ callWithJQuery ($) ->
                     if values.length <= opts.menuLimit
                         $("<button>", {type: "button"}).text(opts.localeStrings.apply)
                             .appendTo(finalButtons)
-                            .css(height: opts.componentHeight)
+                            .css(height: opts.componentHeightString)
                             .bind "click", ->
                                 if valueList.find(".changed").removeClass("changed").length
                                     refresh()
@@ -862,7 +863,7 @@ callWithJQuery ($) ->
 
                     $("<button>", {type: "button"}).text(opts.localeStrings.cancel)
                         .appendTo(finalButtons)
-                        .css(height: opts.componentHeight)
+                        .css(height: opts.componentHeightString)
                         .bind "click", ->
                             valueList.find(".changed:checked")
                                 .removeClass("changed").prop("checked", false)
@@ -879,18 +880,21 @@ callWithJQuery ($) ->
                             valueList.css(left: left, top: top, maxHeight: "#{listHeight - 1}px").show()
 
                     listItem = $("<li>").addClass("axis_#{i}")
-                    listItem.css(lineHeight: opts.valueHeight)
-                    attrElem = listItem.append $("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink)
+                    listItem.css(lineHeight: opts.valueHeight + "px")
 
-                    attrElem.addClass('pvtFilteredAttribute') if hasExcludedItem
-                    unusedDiv.append(attrElem).append(valueList)
+                    attrElem = $("<div>").addClass('pvtAttr').data("attrName", attr).appendTo(listItem)
+                    attrElemText = $("<span>").addClass('pvtAttrText').text(attr).prop("title", attr).appendTo(attrElem)
+                    attrElem.append(triangleLink)
+
+                    attrElemText.addClass('pvtFilteredAttribute') if hasExcludedItem
+                    unusedDiv.append(listItem).append(valueList)
 
             tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable)
 
             #aggregator menu and value area
 
             aggregator = $("<select>").addClass('pvtAggregator')
-                .css(height: opts.componentHeight)
+                .css(height: opts.componentHeightString)
                 .bind "change", -> refresh() #capture reference
             for own x of opts.aggregators
                 aggregator.append $("<option>").val(x).html(x)
@@ -1054,12 +1058,12 @@ callWithJQuery ($) ->
                     opts.splitCols = newSplitPaxis
                 else
                     opts.splitRows = newSplitPaxis
-
+            
             #set up for refreshing
             refreshDelayed = =>
                 refreshPaxis(true)
                 refreshPaxis(false)
-
+                
                 @find(".pvtAxisContainer").sortable
                     update: (e, ui) -> refresh() if not ui.sender?
                     connectWith: @find(".pvtAxisContainer")
@@ -1067,6 +1071,7 @@ callWithJQuery ($) ->
                     placeholder: 'pvtPlaceholder'
                     tolerance: "pointer"
                     forcePlaceholderSize: true
+                    cancel: ".pvtTriangle" # in Firefox click event is triggered and pvtFilterBox is shown after drop
 
                 subopts =
                     derivedAttributes: opts.derivedAttributes
@@ -1081,11 +1086,13 @@ callWithJQuery ($) ->
                     splitPositions: opts.splitRows
                 subopts.rendererOptions.colSubtotalDisplay = 
                     splitPositions: opts.splitCols
-                
+
+                subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length == 1
+
                 numInputsToProcess = opts.aggregators[aggregator.val()]([])().numInputs ? 0
                 vals = []
-                @find(".pvtRows li span.pvtAttr").each -> subopts.rows.push $(this).data("attrName")
-                @find(".pvtCols li span.pvtAttr").each -> subopts.cols.push $(this).data("attrName")
+                @find(".pvtRows li div.pvtAttr").each -> subopts.rows.push $(this).data("attrName")
+                @find(".pvtCols li div.pvtAttr").each -> subopts.cols.push $(this).data("attrName")
                 @find(".pvtVals select.pvtAttrDropdown").each ->
                     if numInputsToProcess == 0
                         $(this).remove()
@@ -1156,6 +1163,9 @@ callWithJQuery ($) ->
                     
                 opts.onRefresh(pivotUIOptions) if opts.onRefresh?
                 
+                opts.sortCols = pivotUIOptions.sortCols
+                subopts.sortCols = opts.sortCols
+                
                 pivotScrollDiv.pivot(materializedInput,subopts,locale)
 
                 opts.afterRefresh() if opts.afterRefresh?
@@ -1185,6 +1195,7 @@ callWithJQuery ($) ->
                     placeholder: 'pvtPlaceholder'
                     tolerance: "pointer"
                     forcePlaceholderSize: true
+                    cancel: ".pvtTriangle" # in Firefox click event is triggered and pvtFilterBox is shown after drop
         catch e
             console.error(e.stack) if console?
             @html opts.localeStrings.uiRenderError

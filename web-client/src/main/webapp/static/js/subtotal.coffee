@@ -12,7 +12,10 @@ callWithJQuery ($) ->
     class SubtotalPivotData extends $.pivotUtilities.PivotData
         constructor: (input, opts) ->
             super input, opts
-
+            
+            @rowAttrGroups = convertAttrsToGroups @rowAttrs, opts.rendererOptions.rowSubtotalDisplay.splitPositions
+            @rowAttrIndex = buildRowAttrsIndex @rowAttrGroups
+                
         processKey = (record, totals, keys, attrs, getAggregator) ->
             key = []
             addKey = false
@@ -48,7 +51,85 @@ callWithJQuery ($) ->
                     @tree[flatRowKey][flatColKey] = @aggregator this, fRowKey, fColKey if not @tree[flatRowKey][flatColKey]
                     @tree[flatRowKey][flatColKey].push record
 
+        sortKeys: () =>
+            if not @sorted
+                @sorted = true
+                @rowKeys.sort @rowAttrsSortPredicate()
+
+                v = (r,c) => @getAggregator(r,c).value()
+                switch @colOrder
+                    when "value_a_to_z" then @colKeys.sort (a,b) =>  naturalSort v([],a), v([],b)
+                    when "value_z_to_a" then @colKeys.sort (a,b) => -naturalSort v([],a), v([],b)
+                    else                     @colKeys.sort @arrSort(@colAttrs)
+
+        rowAttrsSortPredicate: () =>
+            groupPredicates = (@groupPredicate group for group in @rowAttrGroups)
+            @multiplePredicatesSort groupPredicates
+
+        groupPredicate: (attrGroup) =>
+            predicates = []
+            for sortItem in @sortItems
+                if typeof sortItem.value is 'string'
+                    if sortItem.value in attrGroup
+                        predicates.push @rowAxisPredicate sortItem
+                else
+                    lastKeyIndex = @rowAttrIndex[attrGroup[attrGroup.length-1]]
+                    predicates.push @valuePredicate sortItem, lastKeyIndex
+            if predicates.length == 0
+                predicates.push @defaultPredicate attrGroup, @rowAttrIndex      
+            @multiplePredicatesSort predicates
+        
+        rowAxisPredicate: (sortItem) =>
+            index = @rowAttrIndex[sortItem.value]
+            (a, b) ->
+                if sortItem.direction
+                    return $.pivotUtilities.naturalSort(a[index], b[index])
+                else
+                    return -$.pivotUtilities.naturalSort(a[index], b[index])
+            
+        valuePredicate: (sortItem, lastKeyIndex) =>
+            value = (r, c) => @getAggregator(r, c).value()
+            colKey = sortItem.value 
+            (a, b) ->
+                if sortItem.direction
+                    return $.pivotUtilities.naturalSort(value(a[0..lastKeyIndex], colKey), value(b[0..lastKeyIndex], colKey))
+                else
+                    return -$.pivotUtilities.naturalSort(value(a[0..lastKeyIndex], colKey), value(b[0..lastKeyIndex], colKey))
+            
+        defaultPredicate: (attrGroup, rowAttrIndex) =>
+            (a, b) ->
+                for attr in attrGroup
+                    i = rowAttrIndex[attr]
+                    result = $.pivotUtilities.naturalSort(a[i], b[i])
+                    return result if result != 0
+                return 0
+            
+        multiplePredicatesSort: (predicates) =>
+            (a, b) ->
+                for predicate in predicates
+                    result = predicate(a, b)
+                    return result if result != 0
+                return 0
+
+        buildRowAttrsIndex = (attrGroups) =>
+            i = 0
+            index = {}
+            for attrGroup in attrGroups
+                for attr in attrGroup
+                    index[attr] = i
+                    ++i
+            return index        
+                
+        convertAttrsToGroups = (attrs, splitPositions) =>
+            attrGroups = []
+            prev = 0
+            for pos in splitPositions
+                attrGroups.push(attrs[prev..pos])
+                prev = pos + 1
+            return attrGroups
+            
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData
+
 
     SubtotalRenderer = (pivotData, opts) ->
         defaults =
@@ -101,10 +182,12 @@ callWithJQuery ($) ->
         arrowCollapsed = opts.arrowCollapsed
         
         rowSplitPositions = opts.rowSubtotalDisplay.splitPositions
-
+        rowGroups = pivotData.rowAttrGroups
+        
         rowArrowsPadding = 5
         rowArrowsLevelPadding = 10
         
+        hideColAxisHeadersColumn = opts.hideColAxisHeadersColumn ? false
         emptyTopAttrTH = null
         
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
@@ -135,7 +218,8 @@ callWithJQuery ($) ->
 
         createValueTD = (value, rowKey, colKey, aggregator, className, attributes, eventHandlers) ->
             td = createElement "td", className, attributes, eventHandlers
-            td.ondblclick = (event) -> callbacks.valueCellDblClickHandler td, rowKey, colKey, event.clientX, event.clientY if callbacks?
+            td.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
+            td.ondblclick = (event) -> callbacks.valueCellDblClickHandler event, td, rowKey, colKey if callbacks?
             renderValueCell td, value, rowKey, colKey, aggregator
             return td
 
@@ -163,8 +247,9 @@ callWithJQuery ($) ->
             if isExpanded?
                 createArrowAndTextDivs th, "axisHeaderArrowDiv", "axisHeaderTextDiv"
                 textElement = th.textDiv
-                    
-            textElement.ondblclick = (event) -> callbacks.axisHeaderDblClickHandler textElement, attr if callbacks?
+
+            textElement.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
+            textElement.ondblclick = (event) -> callbacks.colAxisHeaderDblClickHandler event, textElement, attr if callbacks?
             renderColAxisHeader th, textContent, attr, isExpanded, false
             return th
             
@@ -186,7 +271,8 @@ callWithJQuery ($) ->
         createRowAxisHeaderTH = (attr, className, textContent, isArrow, isExpanded, attributes) ->
             th = createElement "th", className, attributes
             if not isArrow
-                th.ondblclick = (event) -> callbacks.axisHeaderDblClickHandler th, attr if callbacks?
+                th.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
+                th.ondblclick = (event) -> callbacks.rowAxisHeaderDblClickHandler event, th, attr if callbacks?
             renderRowAxisHeader th, textContent, attr, isArrow, isExpanded
             return th
             
@@ -196,16 +282,17 @@ callWithJQuery ($) ->
             else
                 th.textContent = if isArrow then arrowText isExpanded else textContent
                 
-        createRowAttrHeaderTH = (rowKey, cellAttr, className, value, isArrow, isExpanded, attributes) ->
+        createRowAttrHeaderTH = (rowKey, cellAttr, className, value, isArrow, isExpanded, isLastChildList, attributes) ->
             th = createElement "th", className, attributes
             if not isArrow
-                th.ondblclick = (event) -> callbacks.rowAttrHeaderDblClickHandler th, rowKey, cellAttr if callbacks?
-            renderRowAttrHeader th, value, rowKey, cellAttr, isArrow, isExpanded
+                th.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
+                th.ondblclick = (event) -> callbacks.rowAttrHeaderDblClickHandler event, th, rowKey, cellAttr if callbacks?
+            renderRowAttrHeader th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChildList
             return th
 
-        renderRowAttrHeader = (th, value, rowKey, cellAttr, isArrow, isExpanded) ->
+        renderRowAttrHeader = (th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChildList) ->
             if callbacks?
-                callbacks.renderRowAttrHeaderCell th, value, rowKey, cellAttr, isExpanded, isArrow
+                callbacks.renderRowAttrHeaderCell th, value, rowKey, cellAttr, isExpanded, isArrow, isLastChildList
             else 
                 th.textContent = if isArrow then arrowText isExpanded else value
             
@@ -215,8 +302,9 @@ callWithJQuery ($) ->
             if isExpanded?
                 createArrowAndTextDivs th, "colAttrHeaderArrowDiv", "colAttrHeaderTextDiv"
                 textElement = th.textDiv
-                
-            textElement.ondblclick = (event) -> callbacks.colAttrHeaderDblClickHandler textElement, colKey, isSubtotal if callbacks?
+
+            textElement.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
+            textElement.ondblclick = (event) -> callbacks.colAttrHeaderDblClickHandler event, textElement, colKey, isSubtotal if callbacks?
             if colKey.length == colAttrs.length or isSubtotal or colKey.length == 0
                 colsData.push { width : getColumnWidth(true, colKey, null, false), colnode : attributes["data-colnode"] }      
             renderColAttrHeader th, value, colKey, isSubtotal, isExpanded, false
@@ -356,17 +444,18 @@ callWithJQuery ($) ->
                 hClass = classCollapsed
                 ah.clickStatus = clickStatusCollapsed
                 ah.onClick = expandAxis
-
-            ah.th = createColAxisHeaderTH ah.text, "pvtAxisLabel #{hClass}", ah.text, isExpanded 
-            if not disabledArrow
-                ah.th.arrowDiv.onclick = (event) ->
-                    event = event || window.event
-                    ah.onClick axisHeaders, index, attrs, opts
+            
+            if not hideColAxisHeadersColumn    
+                ah.th = createColAxisHeaderTH ah.text, "pvtAxisLabel #{hClass}", ah.text, isExpanded 
+                if not disabledArrow
+                    ah.th.arrowDiv.onclick = (event) ->
+                        event = event || window.event
+                        ah.onClick axisHeaders, index, attrs, opts
             axisHeaders.ah.push ah
             return ah 
 
         arrowColumnIsNeeded = () ->
-            return rowSplitPositions.length > 1
+            return rowGroups.length > 1
 
         buildRowAxisHeader = (axisHeaders, index, attrs, opts, disabledArrow) ->
             ah =
@@ -387,18 +476,17 @@ callWithJQuery ($) ->
                 ah.clickStatus = clickStatusCollapsed
                 ah.onClick = expandAxis
 
-            firstIndex = firstIndexInGroup opts.splitPositions, index
-            for i in [firstIndex..opts.splitPositions[index]] 
-                if i == firstIndex and arrowColumnIsNeeded()
+            for attr, i in rowGroups[index] 
+                if i == 0 and arrowColumnIsNeeded()
                     zoomClassPart = if isExpanded? then classZoom else ""
-                    arrowTh = createRowAxisHeaderTH attrs[i], "pvtAxisLabel #{hClass} #{zoomClassPart}", "", true, isExpanded, {style: "padding-left: #{rowArrowsPadding + index * rowArrowsLevelPadding}px;"}
+                    arrowTh = createRowAxisHeaderTH attr, "pvtAxisLabel #{hClass} #{zoomClassPart}", "", true, isExpanded, {style: "padding-left: #{rowArrowsPadding + index * rowArrowsLevelPadding}px;"}
                     ah.arrowTh = arrowTh
                     ah.ths.push arrowTh 
-                th = createRowAxisHeaderTH attrs[i], "pvtAxisLabel #{hClass}", attrs[i], false          
+                th = createRowAxisHeaderTH attr, "pvtAxisLabel #{hClass}", attr, false          
                 ah.ths.push th
-                ah.values.push attrs[i]
+                ah.values.push attr
 
-            flatText = attrs[firstIndex..opts.splitPositions[index]].join String.fromCharCode(0)
+            flatText = rowGroups[index].join String.fromCharCode(0)
             ah.text = flatText 
             if not disabledArrow 
                 ah.arrowTh.onclick = (event) ->
@@ -419,8 +507,8 @@ callWithJQuery ($) ->
                 expandAttrHeader: expandRow
                 ah: []
 
-            rowGroupsNumber = rowSplitPositions.length
-            longestRowGroupLength = longestGroupLength rowSplitPositions
+            rowGroupsNumber = rowGroups.length
+            longestRowGroupLength = longestGroupLength rowGroups
 
             rowsNumber = Math.max rowGroupsNumber, colAttrs.length 
 
@@ -436,8 +524,7 @@ callWithJQuery ($) ->
                     for th in ah.ths
                         tr.appendChild th  
                     ah.tr = tr
-                    firstIndex = firstIndexInGroup rowSplitPositions, curGroup
-                    groupLen = rowSplitPositions[curGroup] - firstIndex + 1   
+                    groupLen = rowGroups[curGroup].length   
                     if groupLen < longestRowGroupLength
                         tr.appendChild createElement "th", null, {colspan: longestRowGroupLength - groupLen}       
                 else if row == 0 and longestRowGroupLength > 0
@@ -447,21 +534,17 @@ callWithJQuery ($) ->
                     curCol = row - (rowsNumber - colAttrs.length)
                     disabled = not colSubtotalIsEnabled opts.colSubtotalDisplay, curCol
                     ah = buildColAxisHeader colAxisHeaders, curCol, colAttrs, opts.colSubtotalDisplay, disabled
-                    tr.appendChild ah.th
+                    tr.appendChild ah.th if not hideColAxisHeadersColumn
                     ah.tr = tr
-                else if row == 0 and colAttrs.length > 0
+                else if row == 0 and colAttrs.length > 0 and not hideColAxisHeadersColumn
                     tr.appendChild createElement "th", null, {rowspan: rowsNumber - colAttrs.length}      
 
             return [colAxisHeaders, rowAxisHeaders, trs]
 
-        firstIndexInGroup = (splitPositions, groupIndex) ->
-            return if groupIndex == 0 then 0 else splitPositions[groupIndex-1] + 1
-
-        longestGroupLength = (splitPositions) ->
+        longestGroupLength = (splitGroups) ->
             len = 0
-            for pos, i in splitPositions
-                prev = if i == 0 then -1 else splitPositions[i-1]   
-                len = Math.max len, pos - prev
+            for group in splitGroups
+                len = Math.max len, group.length 
             return len
 
         colSubtotalIsEnabled = (subtotalOpts, index) ->
@@ -510,13 +593,17 @@ callWithJQuery ($) ->
 
 
         buildRowTotalsHeader = (tr, span, colsWidth) ->
-            th = createColAttrHeaderTH [], false, "pvtTotalLabel rowTotal", "", undefined, colsWidth,  
+            th = createColAttrHeaderTH [], true, "pvtTotalLabel rowTotal", "", undefined, colsWidth,  
                 rowspan: span
             tr.appendChild th
 
-        buildRowHeader = (tbody, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts) ->
-            buildRowHeader tbody, axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts for chKey in h.children
-
+        buildRowHeader = (tbody, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, isLastChildList, opts) ->
+            for i in [0...h.children.length]
+                chKey = h.children[i]
+                isLastChildList.push i == h.children.length - 1
+                buildRowHeader tbody, axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, isLastChildList, opts
+                isLastChildList.pop()
+            h.isLastChildList = isLastChildList[..]
             ah = axisHeaders.ah[h.col]
             ah.attrHeaders.push h
 
@@ -524,8 +611,8 @@ callWithJQuery ($) ->
             h.onClick = collapseRow
             firstChild = h[h.children[0]] if h.children.length isnt 0
 
-            colSpan = 1 + longestGroupLength(rowSplitPositions) - h.values.length
-            colSpan += 1 if colAttrs.length > 0
+            colSpan = 1 + longestGroupLength(rowGroups) - h.values.length
+            colSpan += 1 if colAttrs.length > 0 and not hideColAxisHeadersColumn
             h.tr = createElement "tr", "row#{h.row}"
             if h.children.length is 0
                 tbody.appendChild h.tr
@@ -542,15 +629,14 @@ callWithJQuery ($) ->
             
             zoomClassPart = if isExpanded? then classZoom else ""
             arrowClass = "pvtRowLabel #{classRowShow} row#{h.row} rowcol#{h.col} #{classRowExpanded} #{zoomClassPart}"
-            h.arrowTh = createRowAttrHeaderTH h.key, undefined, arrowClass, "", true, isExpanded, arrowOpts
+            h.arrowTh = createRowAttrHeaderTH h.key, undefined, arrowClass, "", true, isExpanded, h.isLastChildList, arrowOpts
             if arrowColumnIsNeeded()
                 h.ths.push h.arrowTh
                 h.tr.appendChild h.arrowTh
             
             for i in [0...h.values.length]
-                attrIndex = i + firstIndexInGroup rowSplitPositions, h.col
                 thClass = "pvtRowLabel #{classRowShow} row#{h.row} rowcol#{h.col} #{classRowExpanded}"
-                th = createRowAttrHeaderTH h.key, rowAttrs[attrIndex], thClass, h.values[i], false, undefined, 
+                th = createRowAttrHeaderTH h.key, rowGroups[h.col][i], thClass, h.values[i], false, undefined, h.isLastChildList, 
                     "data-rownode": h.node
                 th.colSpan = colSpan if i+1 == h.values.length
                 
@@ -625,9 +711,10 @@ callWithJQuery ($) ->
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
-            colspan = rowHeadersColumns + (if colAttrs.length == 0 then 0 else 1) + (if arrowColumnIsNeeded() then 1 else 0) 
-            th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, {colspan: colspan}
-            tr.appendChild th
+            colspan = rowHeadersColumns + (if colAttrs.length == 0 or hideColAxisHeadersColumn then 0 else 1) + (if arrowColumnIsNeeded() then 1 else 0)
+            if colspan > 0
+                th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, [], {colspan: colspan}
+                tr.appendChild th
             return tr
 
         buildColTotals = (tr, attrHeaders, rowAttrs, colAttrs, opts) ->
@@ -675,14 +762,15 @@ callWithJQuery ($) ->
                 ah.onClick = expandAxis
 
         adjustColAxisHeader = (axisHeaders, col, opts) ->
-            ah = axisHeaders.ah[col]
-            if ah.expandedCount is 0
-                collapseColAxisHeaders axisHeaders, col, opts
-            else if ah.expandedCount is ah.expandables
-                replaceClass ah.th, classCollapsed, classExpanded
-                renderColAxisHeader ah.th, ah.text, ah.text, true, true
-                ah.clickStatus = clickStatusExpanded
-                ah.onClick = collapseColAxis
+            if not hideColAxisHeadersColumn
+                ah = axisHeaders.ah[col]
+                if ah.expandedCount is 0
+                    collapseColAxisHeaders axisHeaders, col, opts
+                else if ah.expandedCount is ah.expandables
+                    replaceClass ah.th, classCollapsed, classExpanded
+                    renderColAxisHeader ah.th, ah.text, ah.text, true, true
+                    ah.clickStatus = clickStatusExpanded
+                    ah.onClick = collapseColAxis
 
         adjustRowAxisHeader = (axisHeaders, row, opts) ->
             ah = axisHeaders.ah[row]
@@ -836,7 +924,7 @@ callWithJQuery ($) ->
             replaceClass cell, classRowShow, classRowHide for cell in ch.sTr.querySelectorAll "th, td" if ch.sTr
 
         collapseShowRowSubtotal = (h, opts) ->
-            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, false
+            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, false, h.isLastChildList
             for cell in h.tr.querySelectorAll "th, td"
                 removeClass cell, "#{classRowExpanded}"
                 addClass cell, "#{classRowCollapsed}"
@@ -863,7 +951,7 @@ callWithJQuery ($) ->
             replaceClass cell, classRowHide, classRowShow for cell in ch.sTr.querySelectorAll "th, td" if ch.sTr
 
         expandShowRowSubtotal = (h, opts) ->
-            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true
+            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true, h.isLastChildList
             for cell in h.tr.querySelectorAll "th, td"
                 removeClass cell, "#{classRowCollapsed} #{classRowHide}"
                 addClass cell, "#{classRowExpanded} #{classRowShow}"
@@ -873,7 +961,7 @@ callWithJQuery ($) ->
                     addClass cell, "#{classRowExpanded} #{classRowShow}"
 
         expandHideRowSubtotal = (h, opts) ->
-            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true
+            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true, h.isLastChildList
             for cell in h.tr.querySelectorAll "th, td"
                 removeClass cell, "#{classRowCollapsed} #{classRowShow}"
                 addClass cell, "#{classRowExpanded} #{classRowHide}"
@@ -938,9 +1026,9 @@ callWithJQuery ($) ->
         
         getColumnWidth = (isAttrColumn, colKeyValues, axisValues, isArrow) ->
             if callbacks?
-                return callbacks.getColumnWidth isAttrColumn, colKeyValues, axisValues, isArrow, rowSplitPositions.length - 1
+                return callbacks.getColumnWidth isAttrColumn, colKeyValues, axisValues, isArrow, rowGroups.length - 1
             else
-                return if isArrow then 15 + 10 * (rowSplitPositions.length - 1) else 50
+                return if isArrow then 15 + 10 * (rowGroups.length - 1) else 50
             
         rowHeaderColsData = (trs, rowAttrsCnt) ->
             if trs.length > 0
@@ -954,7 +1042,7 @@ callWithJQuery ($) ->
                     first = 1
 
                 lastShift = 0                    
-                if colAttrs.length > 0
+                if colAttrs.length > 0 and not hideColAxisHeadersColumn
                     colsData[colCnt-1].width = getColumnWidth false, null, [], false
                     lastShift = 1
                     
@@ -970,7 +1058,7 @@ callWithJQuery ($) ->
                     colsData[i].width = getColumnWidth false, null, columns[i], false  
                 return colsData
             else    
-                return [getColumnWidth(false, null, [], false)]
+                return [getColumnWidth(true, [], null, false)]
             
         findAxisHeadersColCount = (tr) ->
             colCnt = 0
@@ -1009,7 +1097,7 @@ callWithJQuery ($) ->
                         overallSpan += colKeyHeaders[chKey].th.colSpan
 
                 buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length, colsData
-                rowAttrHeadersCount = rowSplitPositions.length
+                rowAttrHeadersCount = rowGroups.length
                 if rowAttrHeadersCount > colAttrs.length
                     emptyTopAttrTH = createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length}
                     rowAxisHeaders.ah[0].tr.appendChild emptyTopAttrTH
@@ -1028,13 +1116,16 @@ callWithJQuery ($) ->
             bodyTable.appendChild tbody
             
             if rowAttrs.length isnt 0
-                buildRowTotalsHeader rowAxisHeaders.ah[0].tr, rowSplitPositions.length, colsData if colAttrs.length is 0
+                buildRowTotalsHeader rowAxisHeaders.ah[0].tr, rowGroups.length, colsData if colAttrs.length is 0
                 if rowKeyHeaders?
                     node = counter: 0
-                    buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, opts for chKey in rowKeyHeaders.children
+                    childrenCnt = rowKeyHeaders.children.length
+                    for i in [0...childrenCnt]
+                        chKey = rowKeyHeaders.children[i]
+                        buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, [i == childrenCnt - 1], opts 
 
             buildValues tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts
-            tr = buildColTotalsHeader longestGroupLength(rowSplitPositions), colAttrs
+            tr = buildColTotalsHeader longestGroupLength(rowGroups), colAttrs
             buildColTotals tr, colAttrHeaders, rowAttrs, colAttrs, opts if colAttrs.length > 0
             buildGrandTotal tbody, tr, rowAttrs, colAttrs, opts
 
