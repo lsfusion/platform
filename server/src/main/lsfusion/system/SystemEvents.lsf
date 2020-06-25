@@ -3,7 +3,6 @@ MODULE SystemEvents;
 REQUIRE System, Reflection, Time;
 
 onStarted  ABSTRACT LIST ( );
-onClientStarted ABSTRACT LIST ();
 onDesktopClientStarted  ABSTRACT LIST ( );
 onWebClientStarted  ABSTRACT LIST ( );
 
@@ -55,21 +54,6 @@ revision '{system.events.revision.launch}'= DATA STRING[10] (Launch);
 @defineLog (Launch, '{system.events.define.log.of.launches}', log, date);
 
 CLASS Connection '{system.events.connection}';
-
-CLASS ClientType '{system.events.client.type}' {
-    nativeDesktop '{system.events.client.type.native.desktop}',
-    nativeMobile '{system.events.client.type.native.mobile}',
-    webDesktop '{system.events.client.type.web.desktop}',
-    webMobile '{system.events.client.type.web.mobile}'
-}
-
-TABLE clientType (ClientType);
-
-FORM clientTypes
-    OBJECTS t = ClientType
-    PROPERTIES(t) READONLY staticCaption
-    LIST ClientType OBJECT t
-;
 
 CLASS ConnectionStatus '{system.events.connection.status}' {
     connectedConnection '{system.events.connection.status.connected}',
@@ -209,29 +193,6 @@ EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown,
 
 currentConnection = NATIVE Connection();
 
-clientType = DATA ClientType (Connection);
-nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
-
-isNativeDesktop() = clientType(currentConnection()) == ClientType.nativeDesktop;
-isNativeMobile() = clientType(currentConnection()) == ClientType.nativeMobile;
-isWebDesktop() = clientType(currentConnection()) == ClientType.webDesktop;
-isWebMobile() = clientType(currentConnection()) == ClientType.webMobile;
-
-isDesktop() = isNativeDesktop() OR isWebDesktop();
-isMobile() = isNativeMobile() OR isWebMobile();
-isNative() = isNativeDesktop() OR isNativeMobile();
-isWeb() = isWebDesktop() OR isWebMobile();
-
-//backward compatibility
-onClientStarted () + {
-    IF isDesktop() THEN {
-        onDesktopClientStarted();
-    }
-    IF isWeb() THEN {
-        onWebClientStarted(); 
-    }
-}
-
 //заменили user на customUser
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session));
@@ -309,7 +270,7 @@ FORM connections '{system.events.form.connections}'
     OBJECTS c=Connection
     PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
                             javaVersion, is64Java, screenSize, processor, architecture, cores, physicalMemory,
-                            totalMemory, maximumMemory, freeMemory, nameClientType, nameConnectionStatus, connectTime,
+                            totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
                             disconnectTime, shutdown GRID CHANGEABLE
 
     OBJECTS n=Form
@@ -444,7 +405,7 @@ FORM pings '{system.events.form.pings}'
     OBJECTS cn = Connection
     PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
                              javaVersion, is64Java, screenSize, processor, architecture, cores, physicalMemory,
-                             totalMemory, maximumMemory, freeMemory, nameClientType, nameConnectionStatus, connectTime,
+                             totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
                              disconnectTime
     FILTERS computer(cn) == c
     FILTERGROUP filtersConnection
