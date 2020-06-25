@@ -673,14 +673,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }-*/;
 
     private void updateTableCellsBackground() {
-        NodeList<Element> tds = getElements(getTableDataScroller(), "td, th");
-        for (int i = 0; i < tds.getLength(); i++) {
-            Element td = tds.getItem(i);
-            String rowLevelString = GwtSharedUtils.nullEmpty(td.getAttribute(CELL_ROW_LEVEL_ATTRIBUTE_KEY));
-            Integer rowLevel = rowLevelString != null ? Integer.decode(rowLevelString) : null;
-            String columnLevelString = GwtSharedUtils.nullEmpty(td.getAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY));
-            Integer columnLevel = columnLevelString != null ? Integer.decode(columnLevelString) : null;
-            setValueCellBackground(td, rowLevel, columnLevel, true);
+        Element tableDataScroller = getTableDataScroller();
+        if (tableDataScroller != null) {
+            NodeList<Element> tds = getElements(tableDataScroller, "td, th");
+            for (int i = 0; i < tds.getLength(); i++) {
+                Element td = tds.getItem(i);
+                String rowLevelString = GwtSharedUtils.nullEmpty(td.getAttribute(CELL_ROW_LEVEL_ATTRIBUTE_KEY));
+                Integer rowLevel = rowLevelString != null ? Integer.decode(rowLevelString) : null;
+                String columnLevelString = GwtSharedUtils.nullEmpty(td.getAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY));
+                Integer columnLevel = columnLevelString != null ? Integer.decode(columnLevelString) : null;
+                setValueCellBackground(td, rowLevel, columnLevel, true);
+            }
         }
     }
 
