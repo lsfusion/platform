@@ -1773,9 +1773,6 @@
       "TABLE": function(pvtData, opts) {
         return SubtotalRenderer(pvtData, opts);
       },
-      "TABLE_BARCHART": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).barchart();
-      },
       "TABLE_HEATMAP": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).heatmap("heatmap", opts);
       },

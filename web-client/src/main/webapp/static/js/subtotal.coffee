@@ -1149,7 +1149,7 @@ callWithJQuery ($) ->
 
     $.pivotUtilities.subtotal_renderers =
         "TABLE"             : (pvtData, opts) -> SubtotalRenderer pvtData, opts
-        "TABLE_BARCHART"    : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
+#        "TABLE_BARCHART"    : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
         "TABLE_HEATMAP"     : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
         "TABLE_ROW_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts
         "TABLE_COL_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "colheatmap", opts
