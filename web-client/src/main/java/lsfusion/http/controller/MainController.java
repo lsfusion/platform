@@ -5,6 +5,7 @@ import lsfusion.base.Result;
 import lsfusion.base.ServerMessages;
 import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationFailureHandler;
 import lsfusion.http.authentication.LSFAuthenticationToken;
@@ -39,6 +40,8 @@ public class MainController {
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
+        model.addAttribute("maxMobileWidth", MainFrame.maxMobileWidth);
+        model.addAttribute("minDesktopWidth", MainFrame.maxMobileWidth + 1);
 
         model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
         if (checkVersionError.result != null) {
