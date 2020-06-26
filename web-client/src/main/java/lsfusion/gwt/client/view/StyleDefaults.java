@@ -6,6 +6,8 @@ import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class StyleDefaults {
+    public static int maxMobileWidth = 600;
+
     public static final int VALUE_HEIGHT = 20;
     public static final String VALUE_HEIGHT_STRING = VALUE_HEIGHT + "px";
 

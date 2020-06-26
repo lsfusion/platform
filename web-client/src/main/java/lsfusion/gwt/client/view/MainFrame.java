@@ -31,6 +31,7 @@ import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.CreateNavigatorAction;
@@ -383,7 +384,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
                 navigatorController.update();
 
-                formsController.executeNotificationAction("SystemEvents.onWebClientStarted[]", 0);
+                formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0);
             }
         });
     }
@@ -393,8 +394,10 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         String portString = Window.Location.getParameter("port");
         Integer port = portString != null ? Integer.valueOf(portString) : null;
         String exportName = Window.Location.getParameter("exportName");
+        Integer screenWidth = Window.getClientWidth();
+        Integer screenHeight = Window.getClientHeight();
         logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
-        logicsDispatchAsync.execute(new CreateNavigatorAction(), new ErrorHandlingCallback<StringResult>() {
+        logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, screenWidth <= StyleDefaults.maxMobileWidth)), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
                 navigatorDispatchAsync = new NavigatorDispatchAsync(result.get());
