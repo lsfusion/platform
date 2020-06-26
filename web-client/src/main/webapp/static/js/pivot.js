@@ -1199,7 +1199,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
+      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1533,13 +1533,6 @@
             next: "key_a_to_z"
           }
         };
-        rowOrderArrow = $("<a>", {
-          role: "button"
-        }).addClass("pvtRowOrder").data("order", opts.rowOrder).html(ordering[opts.rowOrder].rowSymbol).bind("click", function() {
-          $(this).data("order", ordering[$(this).data("order")].next);
-          $(this).html(ordering[$(this).data("order")].rowSymbol);
-          return refresh();
-        });
         colOrderArrow = $("<a>", {
           role: "button"
         }).addClass("pvtColOrder").data("order", opts.colOrder).html(ordering[opts.colOrder].colSymbol).bind("click", function() {
@@ -1548,7 +1541,7 @@
           return refresh();
         });
         aggrSelector = $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1);
-        $("<div>").appendTo(aggrSelector).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
+        $("<div>").appendTo(aggrSelector).append(aggregator).append(colOrderArrow).append($("<br>"));
         pvtColumns = $("<td>").addClass('pvtHorizList pvtCols pvtUiCell');
         pvtColumnsDiv = $("<div>").addClass('pvtUiCellHDiv').appendTo(pvtColumns);
         tr1.append(pvtColumns);
@@ -1744,7 +1737,7 @@
             subopts.vals = vals;
             subopts.aggregator = opts.aggregators[aggregator.val()](vals);
             subopts.renderer = opts.renderers[renderer.val()];
-            subopts.rowOrder = rowOrderArrow.data("order");
+            subopts.rowOrder = "key_a_to_z";
             subopts.colOrder = colOrderArrow.data("order");
             exclusions = {};
             _this.find('input.pvtFilter').not(':checked').each(function() {

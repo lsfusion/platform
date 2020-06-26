@@ -115,13 +115,13 @@
             case "value_a_to_z":
               return this.colKeys.sort((function(_this) {
                 return function(a, b) {
-                  return naturalSort(v([], a), v([], b));
+                  return $.pivotUtilities.naturalSort(v([], a), v([], b));
                 };
               })(this));
             case "value_z_to_a":
               return this.colKeys.sort((function(_this) {
                 return function(a, b) {
-                  return -naturalSort(v([], a), v([], b));
+                  return -$.pivotUtilities.naturalSort(v([], a), v([], b));
                 };
               })(this));
             default:

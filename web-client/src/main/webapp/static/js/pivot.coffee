@@ -904,13 +904,6 @@ callWithJQuery ($) ->
                 value_a_to_z: {rowSymbol: "&darr;", colSymbol: "&rarr;", next: "value_z_to_a"}
                 value_z_to_a: {rowSymbol: "&uarr;", colSymbol: "&larr;", next: "key_a_to_z"}
 
-            rowOrderArrow = $("<a>", role: "button").addClass("pvtRowOrder")
-                .data("order", opts.rowOrder).html(ordering[opts.rowOrder].rowSymbol)
-                .bind "click", ->
-                    $(this).data("order", ordering[$(this).data("order")].next)
-                    $(this).html(ordering[$(this).data("order")].rowSymbol)
-                    refresh()
-
             colOrderArrow = $("<a>", role: "button").addClass("pvtColOrder")
                 .data("order", opts.colOrder).html(ordering[opts.colOrder].colSymbol)
                 .bind "click", ->
@@ -921,7 +914,6 @@ callWithJQuery ($) ->
             aggrSelector = $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1)
             $("<div>").appendTo(aggrSelector)
               .append(aggregator)
-              .append(rowOrderArrow)
               .append(colOrderArrow)
               .append($("<br>"))
 
@@ -1123,7 +1115,7 @@ callWithJQuery ($) ->
                 subopts.vals = vals
                 subopts.aggregator = opts.aggregators[aggregator.val()](vals)
                 subopts.renderer = opts.renderers[renderer.val()]
-                subopts.rowOrder = rowOrderArrow.data("order")
+                subopts.rowOrder = "key_a_to_z"
                 subopts.colOrder = colOrderArrow.data("order")
                 #construct filter here
                 exclusions = {}

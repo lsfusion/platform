@@ -58,8 +58,8 @@ callWithJQuery ($) ->
 
                 v = (r,c) => @getAggregator(r,c).value()
                 switch @colOrder
-                    when "value_a_to_z" then @colKeys.sort (a,b) =>  naturalSort v([],a), v([],b)
-                    when "value_z_to_a" then @colKeys.sort (a,b) => -naturalSort v([],a), v([],b)
+                    when "value_a_to_z" then @colKeys.sort (a,b) =>  $.pivotUtilities.naturalSort v([],a), v([],b)
+                    when "value_z_to_a" then @colKeys.sort (a,b) => -$.pivotUtilities.naturalSort v([],a), v([],b)
                     else                     @colKeys.sort @arrSort(@colAttrs)
 
         rowAttrsSortPredicate: () =>
