@@ -142,7 +142,7 @@ public class GConnectionLostManager {
         private boolean fatal;
 
         public GBlockDialog(boolean fatal, boolean showReconnect) {
-            super(false, true, false, false, false);
+            super(false, false, false);
             this.attempt = 0;
             setGlassEnabled(true);
             this.fatal = fatal;

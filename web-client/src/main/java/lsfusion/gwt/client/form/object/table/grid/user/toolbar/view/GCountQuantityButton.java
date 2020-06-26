@@ -16,7 +16,7 @@ public abstract class GCountQuantityButton extends GToolbarButton {
     }
 
     public void showPopup(int result) {
-        PopupPanel popup = new PopupPanel(true, false);
+        PopupPanel popup = new PopupPanel(true);
         popup.addStyleName("popup");
         popup.setWidget(new Label(messages.formQueriesNumberOfEntries() + ": " + format.format(result)));
         GwtClientUtils.showPopupInWindow(popup, getAbsoluteLeft() + getOffsetWidth(), getAbsoluteTop());

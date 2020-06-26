@@ -6,10 +6,12 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public abstract class AbstractGridCellEditor implements GridCellEditor {
     @Override
-    public abstract void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext);
+    public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public boolean replaceCellRenderer() {
-        return true;
+        return false;
     }
 }

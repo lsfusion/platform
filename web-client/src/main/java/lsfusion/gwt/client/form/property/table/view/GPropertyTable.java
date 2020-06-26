@@ -38,8 +38,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> {
         this.form = iform;
         this.groupObject = iGroupObject;
 
-        sinkEvents(Event.ONPASTE);
-
         //  Have the enter key work the same as the tab key
         if(groupObject != null) {
             form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER), null), getEnterBinding(false));
@@ -102,8 +100,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> {
                 value -> setValueAt(editContext, value),
                 () -> isReadOnly(editContext),
                 getRenderContext(),
-                getUpdateContext(),
-                ((GGridPropertyTable) GPropertyTable.this)::selectNextRow);
+                getUpdateContext());
     }
 
     public RenderContext getRenderContext() {
@@ -118,16 +115,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> {
         tableBuilder.setCellHeight(cellHeight);
         setRowHeight(cellHeight + 1); //1px for border
     }
-
-    public void executePaste(Event event) {
-        String line = CopyPasteUtils.getClipboardData(event);
-        if (!line.isEmpty()) {
-            stopPropagation(event);
-            line = line.replaceAll("\r\n", "\n");    // браузеры заменяют разделители строк на "\r\n"
-            pasteData(GwtClientUtils.getClipboardTable(line));
-        }
-    }
-
 
     @Override
     public void changeSelectedColumn(int column) {

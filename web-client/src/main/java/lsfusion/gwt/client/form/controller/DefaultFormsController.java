@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Event;
@@ -92,6 +91,7 @@ public abstract class DefaultFormsController implements FormsController {
 //        focusPanel.addFocusHandler(event -> GWT.log("FORM FOCUSED"));
 //        focusPanel.addBlurHandler(event -> GWT.log("FORM BLURED"));
         RootLayoutPanel.get().add(focusPanel);
+        GFormController.initKeyEventHandler(focusPanel, this::getCurrentForm);
 
         layoutPanel = new LayoutPanel();
         focusPanel.add(layoutPanel);
@@ -127,19 +127,19 @@ public abstract class DefaultFormsController implements FormsController {
         return resizableSimplePanel;
     }
 
-    public Widget openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
+    public FormDockable openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
         if(forbidDuplicate && MainFrame.forbidDuplicateForms && formsList.contains(form.sID)) {
-            tabsPanel.selectTab(formsList.indexOf(form.sID));
+            selectTab(form.sID);
             return null;
         }
         if (modalityType.isModalWindow()) {
             ModalForm modalForm = showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
-            registerForm(modalForm.getForm());
+            registerForm(modalForm.getForm(), true);
             return null;
         } else {
             FormDockable dockable = addDockable(new FormDockable(form), form.sID);
             dockable.initialize(this, form); // initialize should be after addDockable, otherwise offsetTop and other sizes are not recalculated in preAfterUpdateTableData, and it breaks scrolling (for example LAST option at form opening)
-            registerForm(dockable.getForm());
+            registerForm(dockable.getForm(), false);
 
             dockable.setHiddenHandler(() -> {
                 if (hiddenHandler != null) {
@@ -147,12 +147,12 @@ public abstract class DefaultFormsController implements FormsController {
                 }
                 removeDockable(dockable, form.sID);
             });
-            return dockable.getContentWidget();
+            return dockable;
         }
     }
 
-    public void selectTab(Widget widget) {
-        tabsPanel.selectTab(widget);
+    public void selectTab(FormDockable dockable) {
+        tabsPanel.selectTab(dockable.getContentWidget());
     }
 
     public void selectTab(String formCanonicalName) {
@@ -168,35 +168,34 @@ public abstract class DefaultFormsController implements FormsController {
     private FormDockable addDockable(FormDockable dockable, String formSID) {
         formsList.add(formSID);
         tabsPanel.add(dockable.getContentWidget(), dockable.getTabWidget());
-        tabsPanel.selectTab(dockable.getContentWidget());
+        selectTab(dockable);
         return dockable;
     }
 
     private void removeDockable(FormDockable dockable, String formSID) {
-        unregisterForm(dockable.getForm());
+        unregisterForm(dockable.getForm(), false);
         formsList.remove(formSID);
         tabsPanel.remove(dockable.getContentWidget());
     }
 
-    public void registerForm(GFormController form) {
+    private GFormController prevCurrentForm;
+    public void registerForm(GFormController form, boolean isModal) {
         gFormControllersList.add(form);
+        if(isModal)
+            prevCurrentForm = getCurrentForm();
         setCurrentForm(form);
     }
 
-    @Override
-    public void unregisterForm(GFormController form) {
-        if(form != null) {
-            gFormControllersList.remove(form);
-            dropCurrentForm(form);
-        }
+    public void unregisterForm(GFormController form, boolean isModal) {
+        gFormControllersList.remove(form);
+        dropCurrentForm(form);
+        if(isModal)
+            setCurrentForm(prevCurrentForm);
     }
 
     public abstract void setCurrentForm(GFormController form);
-    
-    public abstract void dropCurrentForm(GFormController form);
 
-    @Override
-    public void select(Widget tabContent) {
-        tabsPanel.selectTab(tabContent);
-    }
+    public abstract GFormController getCurrentForm();
+
+    public abstract void dropCurrentForm(GFormController form);
 }

@@ -21,7 +21,7 @@ public abstract class GCalculateSumButton extends GToolbarButton {
     }
 
     public void showPopup(Number result, GPropertyDraw property) {
-        PopupPanel popup = new PopupPanel(true, false);
+        PopupPanel popup = new PopupPanel(true);
         popup.addStyleName("popup");
 
         ResizableHorizontalPanel panel = new ResizableHorizontalPanel();

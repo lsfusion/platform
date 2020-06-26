@@ -48,7 +48,7 @@ public class GBusyDialog extends WindowBox {
     }
 
     public GBusyDialog() {
-        super(false, true, false, false, inDevMode());
+        super(false, false, inDevMode());
         setModal(true);
         setGlassEnabled(true);
 

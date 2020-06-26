@@ -95,7 +95,7 @@ public class DialogBoxHelper {
     }
 
     @SuppressWarnings("GWTStyleCheck")
-    public static final class MessageBox extends DialogBox {
+    public static final class MessageBox extends DialogModalBox {
         private Widget contents;
         private CloseCallback closeCallback;
         private HorizontalPanel buttonPane;
@@ -138,7 +138,6 @@ public class DialogBoxHelper {
             mainPane.setCellHorizontalAlignment(buttonPane, HasAlignment.ALIGN_CENTER);
 
             setGlassEnabled(true);
-            setModal(true);
 
             setText(caption);
             setWidget(mainPane);
@@ -194,7 +193,7 @@ public class DialogBoxHelper {
         }
 
         public void showCenter() {
-            super.center();
+            center();
             activeButton.getElement().focus();
         }
     }

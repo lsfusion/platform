@@ -8,6 +8,7 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.PopupPanel;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class ResizableModalWindow extends ResizableWindow {
     private ModalMask modalMask;
@@ -23,6 +24,28 @@ public class ResizableModalWindow extends ResizableWindow {
         this.hiddenHandler = ihiddenHandler;
 
         addHandlers();
+    }
+
+    private Element focusedElement;
+
+    @Override
+    public void show() {
+        focusedElement = GwtClientUtils.getFocusedElement();
+
+        if (modalMask == null) {
+            modalMask = new ModalMask();
+            modalMask.show();
+        }
+
+        super.show();
+    }
+
+    @Override
+    public void hide() {
+        super.hide();
+
+        if(focusedElement != null)
+            focusedElement.focus();
     }
 
     private void addHandlers() {
@@ -55,15 +78,6 @@ public class ResizableModalWindow extends ResizableWindow {
 
     public void setWindowHiddenHandler(WindowHiddenHandler hiddenHandler) {
         this.hiddenHandler = hiddenHandler;
-    }
-
-    @Override
-    protected void attach() {
-        if (modalMask == null) {
-            modalMask = new ModalMask();
-            modalMask.show();
-        }
-        super.attach();
     }
 
     private boolean eventTargetsPopup(NativeEvent event) {

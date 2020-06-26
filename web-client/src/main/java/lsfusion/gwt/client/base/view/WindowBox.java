@@ -42,7 +42,7 @@ import com.google.gwt.user.client.ui.*;
  *      and vice-versa   
  * </pre>
  */
-public class WindowBox extends DialogBox implements HasOpenHandlers<WindowBox> {
+public class WindowBox extends DialogModalBox implements HasOpenHandlers<WindowBox> {
 
     private static final int MIN_WIDTH = 100;
     private static final int MIN_HEIGHT = 100;
@@ -66,76 +66,6 @@ public class WindowBox extends DialogBox implements HasOpenHandlers<WindowBox> {
     private boolean minimized;
 
     /**
-     * Creates a DialogBoxEx which is permanent (no auto-hide), non-modal, has a "minimize"- and "close"-button
-     * in the top-right corner and is not resizeable. The dialog box should not be shown until a child widget has been
-     * added using {@link #add(com.google.gwt.user.client.ui.IsWidget)}.
-     * <br><br>
-     * This is the equivalent for calling <code>DialogBoxEx(false, false, true, false)</code>.
-     *
-     * @see WindowBox#DialogBoxEx(boolean, boolean, boolean, boolean)
-     */
-    public WindowBox() {
-        this(false, false, true, true, false);
-    }
-
-    /**
-     * Creates a DialogBoxEx which is permanent, non-modal, has a "minimize"- and "close"-button and is optionally resizeable.
-     * The dialog box should not be shown until a child widget has been added using
-     * {@link #setWidget(com.google.gwt.user.client.ui.Widget)}.
-     *
-     * @see WindowBox#DialogBoxEx(boolean, boolean, boolean, boolean)
-     *
-     * @param resizeable <code>true</code> to allow resizing by dragging the borders 
-     */
-    public WindowBox(boolean resizeable) {
-        this(false, false, true, true, resizeable);
-    }
-
-    /**
-     * Creates a DialogBoxEx which is permanent and nonmodal, optionally resizeable and/or has a "minimize"- and 
-     * "close"-button. The dialog box should not be shown until a child widget has been added using
-     * {@link #setWidget(com.google.gwt.user.client.ui.Widget)}.
-     *
-     * @see WindowBox#DialogBoxEx(boolean, boolean, boolean, boolean)
-     *
-     * @param resizeable <code>true</code> to allow resizing by dragging the borders 
-     * @param showCloseIcon <code>true</code> to show "close"-icon in the top right corner of the header
-     */
-    public WindowBox(boolean showCloseIcon, boolean resizeable) {
-        this(false, false, true, showCloseIcon, resizeable);
-    }
-
-    /**
-     * Creates a DialogBoxEx which is permanent and nonmodal, optionally resizeable and/or has a "minimize"- and
-     * "close"-button. The dialog box should not be shown until a child widget has been added using
-     * {@link #setWidget(com.google.gwt.user.client.ui.Widget)}.
-     *
-     * @see WindowBox#DialogBoxEx(boolean, boolean, boolean, boolean)
-     *
-     * @param showMinimizeIcon <code>true</code> to show "minimize"-icon int the top right corner of the header
-     * @param resizeable <code>true</code> to allow resizing by dragging the borders 
-     * @param showCloseIcon <code>true</code> to show "close"-icon in the top right corner of the header
-     */
-    public WindowBox(boolean showMinimizeIcon, boolean showCloseIcon, boolean resizeable) {
-        this(false, false, showMinimizeIcon, showCloseIcon, resizeable);
-    }
-
-    /**
-     * Creates a DialogBoxEx which is permanent, optionally modal, resizeable and/or has a "minimize"- and 
-     * "close"-button. The dialog box should not be shown until a child widget has been added using
-     * {@link #setWidget(com.google.gwt.user.client.ui.Widget)}.
-     *
-     * @param modal <code>true</code> if keyboard and mouse events for widgets not contained by the dialog 
-     *          should be ignored
-     * @param showMinimizeIcon <code>true</code> to show "minimize"-icon int the top right corner of the header
-     * @param resizeable <code>true</code> to allow resizing by dragging the borders 
-     * @param showCloseIcon <code>true</code> to show "close"-icon in the top right corner of the header
-     */
-    public WindowBox(boolean modal, boolean showMinimizeIcon, boolean showCloseIcon, boolean resizeable) {
-        this(false, modal, showMinimizeIcon, showCloseIcon, resizeable);
-    }
-
-    /**
      * Creates an empty DialogBoxEx with all configuration options.
      * The dialog box should not be shown until a child widget has been added using
      * {@link #setWidget(com.google.gwt.user.client.ui.Widget)}.
@@ -144,16 +74,12 @@ public class WindowBox extends DialogBox implements HasOpenHandlers<WindowBox> {
      * @see com.google.gwt.user.client.ui.DialogBox#DialogBox(boolean)
      * @see com.google.gwt.user.client.ui.DialogBox#DialogBox(boolean, boolean)
      * @see com.google.gwt.user.client.ui.DialogBox#DialogBox(boolean, boolean, boolean)
-     *
-     * @param autoHide <code>true</code> if the dialog should be automatically hidden when the user clicks outside of it
-     * @param modal <code>true</code> if keyboard and mouse events for widgets not contained by the dialog 
-     *          should be ignored
-     * @param showMinimizeIcon <code>true</code> to show "minimize"-icon int the top right corner of the header
+     *@param showMinimizeIcon <code>true</code> to show "minimize"-icon int the top right corner of the header
      * @param showCloseIcon <code>true</code> to show "close"-icon in the top right corner of the header
-     * @param resizeable <code>true</code> to allow resizing by dragging the borders 
+     * @param resizeable <code>true</code> to allow resizing by dragging the borders
      */
-    public WindowBox(boolean autoHide, boolean modal, boolean showMinimizeIcon, boolean showCloseIcon, boolean resizeable) {
-        super(autoHide, modal);
+    public WindowBox(boolean showMinimizeIcon, boolean showCloseIcon, boolean resizeable) {
+        super();
 
         this.setStyleName("gwt-extras-WindowBox", true);
 

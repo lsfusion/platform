@@ -198,23 +198,11 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         CloseEvent.fire(this, this);
     }
 
-    public void center() {
-        attach();
-        justCenter();
-    }
-
-    protected void attach() {
+    public void show() {
         windowController.getBoundaryPanel().add(this);
-    }
-
-    protected void justCenter() {
-        int left = (Window.getClientWidth() - getOffsetWidth()) / 2;
-        int top = (Window.getClientHeight() - getOffsetHeight()) / 2;
-
-//        left = Math.max(Window.getScrollLeft() + left, 0);
-//        top = Math.max(Window.getScrollTop() + top, 0);
-
-        windowController.getBoundaryPanel().setWidgetPosition(this, left, top);
+        windowController.getBoundaryPanel().setWidgetPosition(this,
+                (Window.getClientWidth() - getOffsetWidth()) / 2,
+                (Window.getClientHeight() - getOffsetHeight()) / 2);
     }
 
     public HandlerRegistration addCloseHandler(CloseHandler<ResizableWindow> handler) {

@@ -144,6 +144,131 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         GPropertyDraw getProperty();
     }
 
+    private final static String ICON_LEAF = "tree_leaf.png";
+    private final static String ICON_OPEN = "tree_open.png";
+    private final static String ICON_CLOSED = "tree_closed.png";
+    private final static String ICON_PASSBY = "tree_dots_passby.png";
+    private final static String ICON_EMPTY = "tree_empty.png";
+    private final static String ICON_BRANCH = "tree_dots_branch.png";
+
+    private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
+
+    public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
+        for (int i = 0; i <= treeValue.getLevel(); i++) {
+            DivElement img = createIndentElement(cellElement);
+            updateIndentElement(img, treeValue, i);
+        }
+    }
+
+    private static DivElement createIndentElement(Element cellElement) {
+        DivElement div = cellElement.appendChild(Document.get().createDivElement());
+        div.getStyle().setFloat(Style.Float.LEFT);
+        div.getStyle().setHeight(100, Style.Unit.PCT);
+        div.getStyle().setWidth(16, Style.Unit.PX);
+
+        DivElement vert = Document.get().createDivElement();
+        vert.getStyle().setWidth(16, Style.Unit.PX);
+        vert.getStyle().setHeight(100, Style.Unit.PCT);
+
+        DivElement top = vert.appendChild(Document.get().createDivElement());
+        top.getStyle().setHeight(50, Style.Unit.PCT);
+
+        DivElement bottom = vert.appendChild(Document.get().createDivElement());
+        bottom.getStyle().setHeight(50, Style.Unit.PCT);
+        bottom.getStyle().setPosition(Style.Position.RELATIVE);
+
+        ImageElement img = bottom.appendChild(Document.get().createImageElement());
+        img.getStyle().setPosition(Style.Position.ABSOLUTE);
+        img.getStyle().setTop(-8, Style.Unit.PX);
+
+        return div.appendChild(vert);
+    }
+
+    private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
+        String indentIcon;
+        ImageElement img = element.getElementsByTagName("img").getItem(0).cast();
+        int nodeLevel = treeValue.getLevel();
+        if (indentLevel < nodeLevel - 1) {
+            indentIcon = treeValue.isLastInLevel(indentLevel) ? ICON_EMPTY : ICON_PASSBY;
+            img.removeAttribute(TREE_NODE_ATTRIBUTE);
+        } else if (indentLevel == nodeLevel - 1) {
+            indentIcon = ICON_BRANCH;
+            img.removeAttribute(TREE_NODE_ATTRIBUTE);
+        } else {
+            assert indentLevel == nodeLevel;
+            img.setAttribute(TREE_NODE_ATTRIBUTE, treeValue.getSID());
+            indentIcon = getNodeIcon(treeValue);
+        }
+
+        if (ICON_PASSBY.equals(indentIcon)) {
+            changeDots(element, true, true);
+        } else if (ICON_BRANCH.equals(indentIcon)) {
+            if (treeValue.isLastInLevel(indentLevel)) {
+                changeDots(element, true, false); //end
+            } else {
+                changeDots(element, true, true); //branch
+            }
+        } else if (ICON_EMPTY.equals(indentIcon) || ICON_LEAF.equals(indentIcon) || ICON_CLOSED.equals(indentIcon)) {
+            changeDots(element, false, false);
+        } else if (ICON_OPEN.equals(indentIcon)) {
+            changeDots(element, false, treeValue.isOpenDotBottom());
+        }
+
+        if(ICON_CLOSED.equals(indentIcon)) {
+            img.removeClassName("expanded-image");
+            img.addClassName("collapsed-image");
+        } else if(ICON_OPEN.equals(indentIcon)) {
+            img.removeClassName("collapsed-image");
+            img.addClassName("expanded-image");
+        } else if(ICON_LEAF.equals(indentIcon)) {
+            img.addClassName("leaf-image");
+        }
+
+        setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
+    }
+
+    private static void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
+        Element top = element.getFirstChild().cast();
+        Element bottom = element.getLastChild().cast();
+
+        if (dotTop && dotBottom) {
+            ensureDotsAndSetBackground(element);
+            element.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
+            top.getStyle().clearBackgroundImage();
+            bottom.getStyle().clearBackgroundImage();
+            return;
+        } else {
+            element.getStyle().clearBackgroundImage();
+        }
+        if (dotTop) {
+            ensureDotsAndSetBackground(top);
+            top.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
+        } else {
+            top.getStyle().clearBackgroundImage();
+        }
+
+        if (dotBottom) {
+            ensureDotsAndSetBackground(bottom);
+            bottom.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
+        } else {
+            bottom.getStyle().clearBackgroundImage();
+        }
+    }
+
+    private static void ensureDotsAndSetBackground(Element element) {
+        setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
+    }
+
+    private static String getNodeIcon(GTreeColumnValue treeValue) {
+        if (treeValue.getOpen() == null) {
+            return ICON_LEAF;
+        } else if (treeValue.getOpen()) {
+            return ICON_OPEN;
+        } else {
+            return ICON_CLOSED;
+        }
+    }
+
     // actually singleton
     private class ExpandTreeColumn extends Column<GTreeGridRecord, Object> implements TreeGridColumn {
         @Override
@@ -155,14 +280,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         public GPropertyDraw getProperty() {
             return null;
         }
-
-        private final String ICON_LEAF = "tree_leaf.png";
-        private final String ICON_OPEN = "tree_open.png";
-        private final String ICON_CLOSED = "tree_closed.png";
-        private final String ICON_PASSBY = "tree_dots_passby.png";
-        private final String ICON_EMPTY = "tree_empty.png";
-        private final String ICON_BRANCH = "tree_dots_branch.png";
-        private final String TREE_NODE_ATTRIBUTE = "__tree_node";
 
         @Override
         public void onBrowserEvent(Context context, Element parent, Object value, EventHandler handler) {
@@ -192,11 +309,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         @Override
         public void renderDom(Context context, Element cellElement, Object value) {
-            GTreeColumnValue treeValue = (GTreeColumnValue) value;
-            for (int i = 0; i <= treeValue.getLevel(); i++) {
-                DivElement img = createIndentElement(cellElement);
-                updateIndentElement(img, treeValue, i);
-            }
+            GTreeTable.renderExpandDom(cellElement, (GTreeColumnValue) value);
         }
 
         @Override
@@ -217,105 +330,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 }
 
                 updateIndentElement(img, treeValue, i);
-            }
-        }
-
-        private DivElement createIndentElement(Element cellElement) {
-            DivElement div = cellElement.appendChild(Document.get().createDivElement());
-            div.getStyle().setFloat(Style.Float.LEFT);
-            div.getStyle().setHeight(100, Style.Unit.PCT);
-            div.getStyle().setWidth(16, Style.Unit.PX);
-
-            DivElement vert = Document.get().createDivElement();
-            vert.getStyle().setWidth(16, Style.Unit.PX);
-            vert.getStyle().setHeight(100, Style.Unit.PCT);
-
-            DivElement top = vert.appendChild(Document.get().createDivElement());
-            top.getStyle().setHeight(50, Style.Unit.PCT);
-
-            DivElement bottom = vert.appendChild(Document.get().createDivElement());
-            bottom.getStyle().setHeight(50, Style.Unit.PCT);
-            bottom.getStyle().setPosition(Style.Position.RELATIVE);
-
-            ImageElement img = bottom.appendChild(Document.get().createImageElement());
-            img.getStyle().setPosition(Style.Position.ABSOLUTE);
-            img.getStyle().setTop(-8, Style.Unit.PX);
-
-            return div.appendChild(vert);
-        }
-
-        private void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
-            String indentIcon;
-            ImageElement img = element.getElementsByTagName("img").getItem(0).cast();
-            int nodeLevel = treeValue.getLevel();
-            if (indentLevel < nodeLevel - 1) {
-                indentIcon = treeValue.isLastInLevel(indentLevel) ? ICON_EMPTY : ICON_PASSBY;
-                img.removeAttribute(TREE_NODE_ATTRIBUTE);
-            } else if (indentLevel == nodeLevel - 1) {
-                indentIcon = ICON_BRANCH;
-                img.removeAttribute(TREE_NODE_ATTRIBUTE);
-            } else {
-                assert indentLevel == nodeLevel;
-                img.setAttribute(TREE_NODE_ATTRIBUTE, treeValue.getSID());
-                indentIcon = getNodeIcon(treeValue);
-            }
-
-            if (ICON_PASSBY.equals(indentIcon)) {
-                changeDots(element, true, true);
-            } else if (ICON_BRANCH.equals(indentIcon)) {
-                if (treeValue.isLastInLevel(indentLevel)) {
-                    changeDots(element, true, false); //end
-                } else {
-                    changeDots(element, true, true); //branch
-                }
-            } else if (ICON_EMPTY.equals(indentIcon) || ICON_LEAF.equals(indentIcon) || ICON_CLOSED.equals(indentIcon)) {
-                changeDots(element, false, false);
-            } else if (ICON_OPEN.equals(indentIcon)) {
-                changeDots(element, false, true);
-            }
-
-            setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
-        }
-
-        private void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
-            Element top = element.getFirstChild().cast();
-            Element bottom = element.getLastChild().cast();
-
-            if (dotTop && dotBottom) {
-                ensureDotsAndSetBackground(element);
-                element.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
-                top.getStyle().clearBackgroundImage();
-                bottom.getStyle().clearBackgroundImage();
-                return;
-            } else {
-                element.getStyle().clearBackgroundImage();
-            }
-            if (dotTop) {
-                ensureDotsAndSetBackground(top);
-                top.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
-            } else {
-                top.getStyle().clearBackgroundImage();
-            }
-
-            if (dotBottom) {
-                ensureDotsAndSetBackground(bottom);
-                bottom.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
-            } else {
-                bottom.getStyle().clearBackgroundImage();
-            }
-        }
-
-        private void ensureDotsAndSetBackground(Element element) {
-            setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
-        }
-
-        private String getNodeIcon(GTreeColumnValue treeValue) {
-            if (treeValue.getOpen() == null) {
-                return ICON_LEAF;
-            } else if (treeValue.getOpen()) {
-                return ICON_OPEN;
-            } else {
-                return ICON_CLOSED;
             }
         }
     }

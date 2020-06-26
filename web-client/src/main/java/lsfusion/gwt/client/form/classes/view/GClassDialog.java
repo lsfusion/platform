@@ -104,7 +104,7 @@ public class GClassDialog extends ResizableModalWindow {
 
     public static GClassDialog showDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, ClassChosenHandler classChosenHandler) {
         GClassDialog classDlg = new GClassDialog(baseClass, defaultClass, concreate, classChosenHandler);
-        classDlg.center();
+        classDlg.show();
         return classDlg;
     }
 }

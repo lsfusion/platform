@@ -39,6 +39,11 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
+    public boolean replaceCellRenderer() {
+        return true;
+    }
+
+    @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
         String text = renderToString(oldValue);
         InputElement inputElement = getInputElement(parent);
@@ -96,7 +101,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
             if (Element.is(eventTarget)) {
                 Element target = Element.as(eventTarget);
                 if (inputElementTagName.equals(target.getTagName().toLowerCase())) {
-                    validateAndCommit(parent, true);
+                    validateAndCommit(parent, true, true);
                 }
             }
         }
@@ -132,7 +137,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     protected void enterPressed(EventHandler handler, Element parent) {
         if(checkEnterEvent(handler.event)) {
             handler.consume();
-            validateAndCommit(parent, false);
+            validateAndCommit(parent, false, false);
         }
     }
     protected void escapePressed(EventHandler handler, Element parent) {
@@ -179,13 +184,13 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     public void commitEditing(Element parent) {
-        validateAndCommit(parent, true);
+        validateAndCommit(parent, true, false);
     }
 
-    public void validateAndCommit(Element parent, boolean cancelIfInvalid) {
+    public void validateAndCommit(Element parent, boolean cancelIfInvalid, boolean blurred) {
         String value = getCurrentText(parent);
         try {
-            editManager.commitEditing(tryParseInputText(value, true));
+            editManager.commitEditing(tryParseInputText(value, true), blurred);
         } catch (ParseException ignore) {
             if (cancelIfInvalid) {
                 editManager.cancelEditing();

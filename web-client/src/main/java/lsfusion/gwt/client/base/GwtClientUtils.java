@@ -2,6 +2,8 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.BodyElement;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
@@ -701,4 +703,21 @@ public class GwtClientUtils {
     public static String getCurrentLanguage() {
         return getCurrentLocaleName().substring(0, 2);
     }
+
+    public static native Element getFocusedElement() /*-{
+        return $doc.activeElement;
+    }-*/;
+
+    public static Element getFocusedChild(Element containerElement) {
+        Element focusedElement = getFocusedElement();
+        Element element = focusedElement;
+        BodyElement body = Document.get().getBody();
+        while (element != body) {
+            if(element == containerElement)
+                return focusedElement;
+            element = element.getParentElement().cast();
+        }
+        return null;
+    }
+
 }

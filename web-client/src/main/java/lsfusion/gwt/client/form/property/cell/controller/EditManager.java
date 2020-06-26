@@ -1,15 +1,12 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
-import lsfusion.gwt.client.form.property.cell.view.EditContext;
-
 import java.util.function.Consumer;
 
 public interface EditManager {
     default void commitEditing(Object value) {
-        commitEditing(value, editContext -> {});
+        commitEditing(value, false);
     }
-
-    void commitEditing(Object value, Consumer<EditContext> afterFinish);
+    void commitEditing(Object value, boolean blurred);  // assert if blurred then editor rerender dom
 
     void cancelEditing();
 }

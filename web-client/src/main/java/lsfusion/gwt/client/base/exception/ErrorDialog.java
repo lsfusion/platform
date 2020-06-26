@@ -89,12 +89,14 @@ public class ErrorDialog extends ResizableModalWindow {
         setContentWidget(focusPanel);
     }
 
-    public void showCenter() {
-        super.center();
+    @Override
+    public void show() {
+        super.show();
+
         closeButton.setFocus(true);
     }
 
     public static void show(String caption, String message, String javaStack, String lsfStack) {
-        new ErrorDialog(caption, message, javaStack, lsfStack).showCenter();
+        new ErrorDialog(caption, message, javaStack, lsfStack).show();
     }
 }

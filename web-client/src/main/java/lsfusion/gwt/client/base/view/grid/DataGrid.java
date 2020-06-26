@@ -16,6 +16,7 @@
  */
 package lsfusion.gwt.client.base.view.grid;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
@@ -246,12 +247,21 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         return browserKeyEvents;
     }
 
-    private static Set<String> browserEvents;
-    private static Set<String> getBrowserEvents() {
-        if(browserEvents == null) {
+    private static Set<String> browserFocusEvents;
+    private static Set<String> getBrowserFocusEvents() {
+        if(browserFocusEvents == null) {
             Set<String> eventTypes = new HashSet<>();
             eventTypes.add(BrowserEvents.FOCUS);
             eventTypes.add(BrowserEvents.BLUR);
+            browserFocusEvents = eventTypes;
+        }
+        return browserFocusEvents;
+    }
+
+    private static Set<String> browserMouseEvents;
+    private static Set<String> getBrowserMouseEvents() {
+        if(browserMouseEvents == null) {
+            Set<String> eventTypes = new HashSet<>();
             eventTypes.add(BrowserEvents.CLICK);
             eventTypes.add(BrowserEvents.DBLCLICK);
             eventTypes.add(BrowserEvents.MOUSEDOWN);
@@ -259,23 +269,36 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             eventTypes.add(BrowserEvents.MOUSEUP);
             eventTypes.add(BrowserEvents.MOUSEOVER);
             eventTypes.add(BrowserEvents.MOUSEOUT);
+            browserMouseEvents = eventTypes;
+        }
+        return browserMouseEvents;
+    }
+
+    private static Set<String> browserEvents;
+    private static Set<String> getBrowserEvents() {
+        if(browserEvents == null) {
+            Set<String> eventTypes = new HashSet<>();
+            eventTypes.addAll(getBrowserFocusEvents());
+            eventTypes.addAll(getBrowserMouseEvents());
             eventTypes.addAll(getBrowserKeyEvents());
             browserEvents = eventTypes;
         }
         return browserEvents;
     }
     // should be called for every widget that has Widget.onBrowserEvent implemented
-    // however now there are 3 ways of handling events:
-    // form bindings: uses addDOMHandler which add sinkEvents automatically (and does basic dispatching)
+    // however now there are 2 ways of handling events:
     // grid / panel handlers : uses this initSinkEvents + consumed event
-    // all others : manual sinkEvents
+    // form bindings and others : manual sinkEvents
     public static void initSinkEvents(Widget widget) {
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserEvents());
 
-        Event.sinkEvents(widget.getElement(), Event.ONPASTE);
+        widget.sinkEvents(Event.ONPASTE);
     }
     public static boolean checkSinkEvents(Event event) {
-        return getBrowserEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE;
+        String eventType = event.getType();
+        return getBrowserFocusEvents().contains(eventType) ||
+                getBrowserMouseEvents().contains(eventType) ||
+                checkSinkKeyEvents(event);
     }
     public static boolean checkSinkKeyEvents(Event event) {
         return getBrowserKeyEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE;
@@ -464,7 +487,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
     }
 
     @SuppressWarnings("deprecation")
-    protected void onBrowserEvent2(Event event) {
+    protected <C> void onBrowserEvent2(Event event) {
         // Get the event target.
         EventTarget eventTarget = event.getEventTarget();
         if (!Element.is(eventTarget)) {
@@ -478,7 +501,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         TableSectionElement thead = getTableHeadElement();
 
         int row = -1;
-        Column<T, ?> column = null;
+        Column<T, C> column = null;
         Element columnParent = null;
 
         Header header = null;
@@ -495,7 +518,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                 row = getSelectedRow();
                 columnParent = getSelectedElement();
                 if(columnParent != null)
-                    column = tableBuilder.getColumn(columnParent);
+                    column = (Column<T, C>) tableBuilder.getColumn(columnParent);
             }
         } else {
             Element cur = target;
@@ -508,7 +531,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                 if(row < 0)
                     row = tableBuilder.getRowValueIndex(cur);
                 if (column == null) {
-                    column = tableBuilder.getColumn(cur);
+                    column = (Column<T, C>) tableBuilder.getColumn(cur);
                     if(column != null)
                         columnParent = cur;
                 }
@@ -546,7 +569,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                     return;
 
                 // then cell events (this focus)
-                fireEventToCell(handler, columnParent, value, context, column);
+                column.onBrowserEvent(context, columnParent, column.getValue(value), handler);
                 if(handler.consumed)
                     return;
 
@@ -1041,10 +1064,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         if (col < 0 || col >= getColumnCount()) {
             throw new IndexOutOfBoundsException("Column index is out of bounds: " + col);
         }
-    }
-
-    protected <C> void fireEventToCell(EventHandler handler, Element cellParent, final T rowValue, Context context, Column<T, C> column) {
-        column.onBrowserEvent(context, cellParent, column.getValue(rowValue), handler);
     }
 
     /**

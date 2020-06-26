@@ -145,7 +145,7 @@ public class GKeyStroke implements Serializable {
     public static boolean isCharNavigateKeyEvent(NativeEvent event) {
         if (KEYDOWN.equals(event.getType())) {
             int keyCode = event.getKeyCode();
-            return keyCode == KEY_LEFT || keyCode == KEY_RIGHT;
+            return keyCode == KEY_LEFT || keyCode == KEY_RIGHT || keyCode == KEY_END || keyCode == KEY_HOME;
         }
         return false;
     }
@@ -162,7 +162,7 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isCharInputKeyEvent(Event event) {
-        return isCharAddKeyEvent(event) || event.getTypeInt() == Event.ONPASTE;
+        return isCharAddKeyEvent(event) || isPasteFromClipboardEvent(event);
     }
     public static boolean isCharAddKeyEvent(NativeEvent event) {
         if(KEYPRESS.equals(event.getType()) && isPlainKeyEvent(event)) {
@@ -202,15 +202,11 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isPasteFromClipboardEvent(Event event) {
+        // it's hard to tell why but Event.ONPASTE is not triggered for ActionOrPropertyValue
+        // however that way paste for DataGrid is called twice (but we'll ignore that for now)
         return (KEYDOWN.equals(event.getType()) &&
                 ((event.getKeyCode() == KEY_V && event.getCtrlKey()) ||
                 (event.getKeyCode() == KEY_INSERT && event.getShiftKey())))
                 || event.getTypeInt() == Event.ONPASTE;
-    }
-
-    public static boolean shouldPreventDefaultBrowserAction(NativeEvent event) {
-        int keyCode = event.getKeyCode();
-        return keyCode == KEY_BACKSPACE ||
-                (keyCode == KEY_R && event.getCtrlKey());
     }
 }

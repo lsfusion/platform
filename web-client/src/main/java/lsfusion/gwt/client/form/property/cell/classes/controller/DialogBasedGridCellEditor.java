@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -27,7 +26,7 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
         this.width = width;
         this.height = height;
         
-        dialog = new WindowBox(false, true, false, true, true) {
+        dialog = new WindowBox(false, true, true) {
             @Override
             protected void onCloseClick(ClickEvent event) {
                 DialogBasedGridCellEditor.this.onCloseClick();
@@ -54,11 +53,6 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
 
     @Override
     public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
-    }
-
-    @Override
-    public boolean replaceCellRenderer() {
-        return false;
     }
 
     protected final void commitEditing(Object value) {

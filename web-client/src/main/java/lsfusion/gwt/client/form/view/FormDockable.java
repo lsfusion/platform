@@ -19,7 +19,7 @@ import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 public final class FormDockable {
     private TabWidget tabWidget;
     private ContentWidget contentWidget;
-    private Widget blockingWidget; //GFormController
+    private FormDockable blockingForm; //GFormController
 
     private GFormController form;
 
@@ -59,8 +59,8 @@ public final class FormDockable {
             }
 
             @Override
-            public void setBlockingWidget(Widget blocking) {
-                blockingWidget = blocking;
+            public void setBlockingForm(FormDockable blocking) {
+                blockingForm = blocking;
             }
 
             @Override
@@ -68,7 +68,7 @@ public final class FormDockable {
                 tabWidget.setBlocked(false);
                 contentWidget.setBlocked(false);
                 if(contentWidget.isAttached())
-                    getFormsController().select(contentWidget);
+                    getFormsController().selectTab(FormDockable.this);
             }
 
             @Override
@@ -132,8 +132,8 @@ public final class FormDockable {
                 public void onClick(ClickEvent clickEvent) {
                     if(content instanceof GFormController) {
                         FormsController formsController = ((GFormController) content).getFormsController();
-                        if(formsController instanceof DefaultFormsController && blockingWidget != null) {
-                            ((DefaultFormsController) formsController).selectTab(blockingWidget);
+                        if(formsController instanceof DefaultFormsController && blockingForm != null) {
+                            formsController.selectTab(blockingForm);
                         }
                     }
                 }

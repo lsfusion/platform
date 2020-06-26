@@ -401,7 +401,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             form.onPropertyBrowserEvent(handler, parent,
                     () -> onEditEvent(handler, false, context, parent),
                     () -> CopyPasteUtils.putIntoClipboard(parent),
-                    () -> executePaste(handler.event));
+                    () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
         }
 
         @Override

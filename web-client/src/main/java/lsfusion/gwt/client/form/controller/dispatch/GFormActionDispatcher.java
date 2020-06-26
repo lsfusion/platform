@@ -13,7 +13,6 @@ import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -135,9 +134,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     private RenderContext editRenderContext;
     private UpdateContext editUpdateContext;
-    private EditContext editEditContext;
 
-    public void executePropertyActionSID(GPropertyDraw property, GGroupObjectValue columnKey, Element element, Event event, Supplier<Object> getValue, Consumer<Object> setValue, String actionSID, RenderContext renderContext, UpdateContext updateContext, EditContext editContext) {
+    public void executePropertyActionSID(GPropertyDraw property, GGroupObjectValue columnKey, Element element, Event event, Supplier<Object> getValue, Consumer<Object> setValue, String actionSID, RenderContext renderContext, UpdateContext updateContext) {
         editProperty = property;
         editColumnKey = columnKey;
 
@@ -149,7 +147,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
         editRenderContext = renderContext;
         editUpdateContext = updateContext;
-        editEditContext = editContext;
 
         form.executeEventAction(property, columnKey, actionSID);
     }
@@ -166,7 +163,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         // we should not drop at least editSetValue since GUpdateEditValueAction might use it
         form.edit(editProperty, editElement, action.readType, editEvent, action.hasOldValue, action.oldValue, editGetValue, value -> {},
                 value -> continueDispatching(new GUserInputResult(value)),
-                () -> continueDispatching(GUserInputResult.canceled), editRenderContext, editUpdateContext, editEditContext);
+                () -> continueDispatching(GUserInputResult.canceled), editRenderContext, editUpdateContext);
 
         return null;
     }

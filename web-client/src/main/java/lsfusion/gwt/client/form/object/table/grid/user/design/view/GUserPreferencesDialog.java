@@ -234,7 +234,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
     }
 
     public void showDialog() {
-        center();
+        show();
         focusPanel.setFocus(true);
     }
 

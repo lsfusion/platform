@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
@@ -40,8 +41,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
     public ActionOrPropertyValue(GPropertyDraw property, GFormController form) {
         setElement(Document.get().createDivElement());
 
-//        sinkEvents(Event.ONPASTE);
-// , CLICK, KEYDOWN, KEYPRESS, BLUR
         DataGrid.initSinkEvents(this);
 
         this.property = property;
@@ -109,21 +108,16 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
                 removeStyleName("dataPanelRendererGridPanelFocused");
         }
 
-        EventHandler handler = new EventHandler(event);
+        EventHandler handler = createEventHandler(event);
         form.onPropertyBrowserEvent(handler, getRenderElement(),
             () -> onEditEvent(handler),
             () -> CopyPasteUtils.putIntoClipboard(getRenderElement()),
-            () -> executePaste(handler.event)
+            () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line))
         );
     }
 
-    private void executePaste(Event event) {
-        String line = CopyPasteUtils.getClipboardData(event).trim();
-        if (!line.isEmpty()) {
-            stopPropagation(event);
-            line = line.replaceAll("\r\n", "\n");    // браузеры заменяют разделители строк на "\r\n"
-            pasteValue(line);
-        }
+    public EventHandler createEventHandler(Event event) {
+        return new EventHandler(event);
     }
 
     protected abstract void onEditEvent(EventHandler handler);

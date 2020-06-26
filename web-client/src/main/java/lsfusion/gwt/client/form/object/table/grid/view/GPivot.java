@@ -18,7 +18,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValue;
-import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridControlCell;
+import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -1012,7 +1012,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         if (treeColumnValue.getLevel() > 0) {
             jsElement.getStyle().setPaddingLeft(5, Style.Unit.PX);
         }
-        GTreeGridControlCell.renderDom(jsElement, treeColumnValue);
+        GTreeTable.renderExpandDom(jsElement, treeColumnValue);
     }
 
     private void rerenderArrow(ImageElement img, Boolean isExpanded) {

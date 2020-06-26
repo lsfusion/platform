@@ -71,11 +71,11 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
+import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
@@ -86,6 +86,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -182,14 +183,21 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         initializeAutoRefresh();
 
-        addDomHandler(event -> handleKeyEvent(event.getNativeEvent()), KeyDownEvent.getType());
         addDomHandler(event -> handleMouseEvent(event.getNativeEvent()), ClickEvent.getType());
         addDomHandler(event -> handleMouseEvent(event.getNativeEvent()), DoubleClickEvent.getType());
     }
 
+    // will handle key events in upper container which will be better from UX point of view
+    public static void initKeyEventHandler(Widget widget, Supplier<GFormController> currentForm) {
+        widget.addDomHandler(event -> {
+            GFormController form = currentForm.get();
+            if(form != null)
+                form.handleKeyEvent(event.getNativeEvent());
+        }, KeyDownEvent.getType());
+    }
+
     protected void unregisterForm() {
-        if(formsController != null)
-            formsController.unregisterForm(this);
+        formsController.unregisterForm(this, true);
     }
 
     public GGridController getController(GGroupObject groupObject) {
@@ -609,13 +617,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             block();
         }
 
-        Widget blockingWidget = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, () -> {
+        FormDockable blockingForm = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, () -> {
             unblock();
             handler.onHidden();
         });
 
         if (modalityType == GModalityType.DOCKED_MODAL) {
-            setBlockingWidget(blockingWidget);
+            setBlockingForm(blockingForm);
         }
     }
 
@@ -712,19 +720,19 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                                            Element element, EventHandler handler, boolean forceChange,
                                            Supplier<Object> getValue, Consumer<Object> setValue, // we need access to the model
                                            Supplier<Boolean> checkReadOnly,
-                                           RenderContext renderContext, UpdateContext updateContext, EditContext editContext) {
+                                           RenderContext renderContext, UpdateContext updateContext) {
         Event event = handler.event;
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(property, event.getClientX(), event.getClientY(), actionSID -> executePropertyActionSID(property, columnKey, element, new EventHandler(event), getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext, editContext));
+            GPropertyContextMenuPopup.show(property, event.getClientX(), event.getClientY(), actionSID -> executePropertyActionSID(property, columnKey, element, new EventHandler(event), getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext));
         } else {
             String actionSID = forceChange ? CHANGE : property.getEventSID(event);
             if (actionSID != null)
-                executePropertyActionSID(property, columnKey, element, handler, getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext, editContext);
+                executePropertyActionSID(property, columnKey, element, handler, getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext);
         }
     }
 
-    private void executePropertyActionSID(GPropertyDraw property, GGroupObjectValue columnKey, Element element, EventHandler handler, Supplier<Object> getValue, Consumer<Object> setValue, Supplier<Boolean> checkReadOnly, String actionSID, RenderContext renderContext, UpdateContext updateContext, EditContext editContext) {
+    private void executePropertyActionSID(GPropertyDraw property, GGroupObjectValue columnKey, Element element, EventHandler handler, Supplier<Object> getValue, Consumer<Object> setValue, Supplier<Boolean> checkReadOnly, String actionSID, RenderContext renderContext, UpdateContext updateContext) {
         if (isChange(actionSID) && checkReadOnly.get()) {
             return;
         }
@@ -739,18 +747,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     @Override
                     public void closed(DialogBoxHelper.OptionType chosenOption) {
                         if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            executeSimpleChange(asyncModifyObject, property, columnKey, element, event, getValue, setValue, renderContext, updateContext, editContext);
+                            executeSimpleChange(asyncModifyObject, property, columnKey, element, event, getValue, setValue, renderContext, updateContext);
                         }
                     }
                 });
             } else {
-                executeSimpleChange(asyncModifyObject, property, columnKey, element, event, getValue, setValue, renderContext, updateContext, editContext);
+                executeSimpleChange(asyncModifyObject, property, columnKey, element, event, getValue, setValue, renderContext, updateContext);
             }
         } else
-            actionDispatcher.executePropertyActionSID(property, columnKey, element, event, getValue, setValue, actionSID, renderContext, updateContext, editContext);
+            actionDispatcher.executePropertyActionSID(property, columnKey, element, event, getValue, setValue, actionSID, renderContext, updateContext);
     }
 
-    private void executeSimpleChange(boolean asyncModifyObject, GPropertyDraw property, GGroupObjectValue columnKey, Element element, Event event, final Supplier<Object> getValue, final Consumer<Object> setValue, RenderContext renderContext, UpdateContext updateContext, EditContext editContext) {
+    private void executeSimpleChange(boolean asyncModifyObject, GPropertyDraw property, GGroupObjectValue columnKey, Element element, Event event, final Supplier<Object> getValue, final Consumer<Object> setValue, RenderContext renderContext, UpdateContext updateContext) {
         if (asyncModifyObject)
             modifyObject(property, columnKey);
         else {
@@ -761,7 +769,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     setValue.accept(value);
 
                 changeProperty(property, columnKey, (Serializable) value, oldValue);
-            }, value -> {}, () -> {}, renderContext, updateContext, editContext);
+            }, value -> {}, () -> {}, renderContext, updateContext);
         }
     }
 
@@ -1107,7 +1115,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         //do nothing by default
     }
 
-    public void setBlockingWidget(Widget blockingWidget) {
+    public void setBlockingForm(FormDockable blockingForm) {
         //do nothing by default
     }
 
@@ -1200,7 +1208,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         if (selected) {
-            scheduleFocusFirstWidget();
+//            scheduleFocusFirstWidget();
             restoreGridScrollPositions();
         } else {
             // обходим баг Chrome со скроллингом
@@ -1284,17 +1292,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     protected void onInitialFormChangesReceived() {
-        scheduleFocusFirstWidget();
-    }
+        // we need to set focus in schedule finally (since tabpanel is animated for example)
+        Scheduler.get().scheduleFinally(this::focusFirstWidget);
 
-    public void scheduleFocusFirstWidget() {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                onResize();
-                getElement().getStyle().setOverflow(Style.Overflow.AUTO);
-                focusFirstWidget();
-            }
+        // it seems that this is needed for auto dialog sizing
+        Scheduler.get().scheduleDeferred(() -> {
+            onResize();
+            getElement().getStyle().setOverflow(Style.Overflow.AUTO);
         });
     }
 
@@ -1537,17 +1541,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private RenderContext editRenderContext;
     private UpdateContext editUpdateContext;
-    private EditContext editEditContext;
 
     private Consumer<Object> editBeforeCommit;
     private Consumer<Object> editAfterCommit;
     private Runnable editCancel;
 
+    private Element focusedElement;
+
     public boolean isEditing() {
         return cellEditor != null;
     }
 
-    public void edit(GPropertyDraw property, Element element, GType type, Event event, boolean hasOldValue, Object oldValue, Supplier<Object> getValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, RenderContext renderContext, UpdateContext updateContext, EditContext editContext) {
+    public void edit(GPropertyDraw property, Element element, GType type, Event event, boolean hasOldValue, Object oldValue, Supplier<Object> getValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, RenderContext renderContext, UpdateContext updateContext) {
         assert cellEditor == null;
         GridCellEditor cellEditor = type.createGridCellEditor(this, property);
         if (cellEditor != null) {
@@ -1562,9 +1567,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
             editRenderContext = renderContext;
             editUpdateContext = updateContext;
-            editEditContext = editContext;
 
             if (cellEditor.replaceCellRenderer()) {
+                focusedElement = GwtClientUtils.getFocusedElement();
+
                 removeAllChildren(element);
                 cellEditor.renderDom(element, renderContext, updateContext);
             }
@@ -1576,11 +1582,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     @Override
-    public void commitEditing(Object value, Consumer<EditContext> afterFinish) {
+    public void commitEditing(Object value, boolean blurred) {
         editBeforeCommit.accept(value);
         editBeforeCommit = null;
 
-        finishEditing(afterFinish);
+        finishEditing(blurred);
 
         editAfterCommit.accept(value);
         editAfterCommit = null;
@@ -1588,13 +1594,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     @Override
     public void cancelEditing() {
-        finishEditing(editContext -> {});
+        finishEditing(false);
 
         editCancel.run();
         editCancel = null;
     }
 
-    private void finishEditing(Consumer<EditContext> afterFinish) {
+    private void finishEditing(boolean blurred) {
         boolean replacedRenderer = cellEditor.replaceCellRenderer();
         cellEditor = null;
 
@@ -1611,13 +1617,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         UpdateContext updateContext = editUpdateContext;
         editUpdateContext = null;
 
-        if(replacedRenderer)
+        if(replacedRenderer) {
             rerender(property, element, renderContext);
 
-        update(property, element, getValue.get(), updateContext);
+            if(focusedElement != null && !blurred)
+                focusedElement.focus();
+        }
 
-        afterFinish.accept(editEditContext);
-        editEditContext = null;
+        update(property, element, getValue.get(), updateContext);
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
@@ -1661,10 +1668,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             cellEditor.onBrowserEvent(cellParent, handler);
         } else {
             if (GKeyStroke.isCopyToClipboardEvent(handler.event)) {
-                handler.consume();
                 onCut.run();
             } else if (GKeyStroke.isPasteFromClipboardEvent(handler.event)) {
-                handler.consume();
                 onPaste.run();
             } else {
                 onEdit.run();

@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import lsfusion.gwt.client.GForm;
@@ -53,8 +52,7 @@ public class ModalForm extends ResizableModalWindow {
 
         setContentWidget(form);
 
-        //сразу добавляем в DOM, чтобы можно было посчитать естественную ширину элементов
-        attach();
+        GFormController.initKeyEventHandler(this, () -> form);
     }
 
     public void setCaption(String caption, String tooltip) {
@@ -104,7 +102,7 @@ public class ModalForm extends ResizableModalWindow {
 
     public static ModalForm showForm(FormsController formsController, GForm form, boolean isDialog, Event initFilterEvent, final WindowHiddenHandler hiddenHandler) {
         ModalForm modalForm = new ModalForm(formsController, form, isDialog, initFilterEvent, hiddenHandler);
-        modalForm.justCenter();
+        modalForm.show();
         return modalForm;
     }
 }

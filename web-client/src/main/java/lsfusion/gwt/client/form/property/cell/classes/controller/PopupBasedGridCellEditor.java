@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.text.shared.SafeHtmlRenderer;
@@ -10,6 +9,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.AbstractGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -38,7 +38,7 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
         this.textAlign = textAlign;
         this.property = property;
 
-        popup = new PopupPanel(true, true) {
+        popup = new PopupDialogPanel() {
             @Override
             protected void onPreviewNativeEvent(Event.NativePreviewEvent event) {
                 if (Event.ONKEYUP == event.getTypeInt()) {
@@ -99,11 +99,6 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     @Override
     public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
         //NOP
-    }
-
-    @Override
-    public boolean replaceCellRenderer() {
-        return false;
     }
 
     protected String renderToString(Object value) {

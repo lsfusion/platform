@@ -15,10 +15,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue {
 
         this.columnKey = columnKey;
 
-        //        if (!property.focusable) {
-//            valueTable.setTableFocusable(false);
-//        }
-
         finalizeInit();
     }
 
@@ -43,8 +39,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue {
                 this::setValue,
                 () -> readOnly,
                 getRenderContext(),
-                getUpdateContext(),
-                down -> {});
+                getUpdateContext());
     }
 
     @Override

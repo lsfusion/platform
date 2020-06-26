@@ -211,6 +211,11 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
 
             @Override
+            public GFormController getCurrentForm() {
+                return MainFrame.this.getCurrentForm();
+            }
+
+            @Override
             public void dropCurrentForm(GFormController form) {
                 MainFrame.this.dropCurrentForm(form);
             }
@@ -346,10 +351,14 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
-    public static GFormController currentForm;
+    public GFormController currentForm;
 
     public void setCurrentForm(GFormController currentForm) {
         this.currentForm = currentForm;
+    }
+
+    public GFormController getCurrentForm() {
+        return currentForm;
     }
 
     public void dropCurrentForm(GFormController form) {
