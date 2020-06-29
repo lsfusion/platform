@@ -9,12 +9,12 @@ public enum PivotRendererType {
             return get().pivotTableRenderer();
         }
     }, 
-//    TABLE_BARCHART {
-//        @Override
-//        public String localize() {
-//            return get().pivotTableBarchartRenderer();
-//        }
-//    }, 
+    TABLE_BARCHART {
+        @Override
+        public String localize() {
+            return get().pivotTableBarchartRenderer();
+        }
+    }, 
     TABLE_HEATMAP {
         @Override
         public String localize() {
@@ -92,7 +92,7 @@ public enum PivotRendererType {
     public static PivotRendererType getType(String typeStr) {
         switch (typeStr) {
             case "Table": return TABLE;
-//            case "Table Bar Chart": return TABLE_BARCHART;
+            case "Table Bar Chart": return TABLE_BARCHART;
             case "Table Heatmap": return TABLE_HEATMAP;
             case "Table Row Heatmap": return TABLE_ROW_HEATMAP;
             case "Table Col Heatmap": return TABLE_COL_HEATMAP;
