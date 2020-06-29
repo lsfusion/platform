@@ -1,7 +1,6 @@
 package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
-import lsfusion.base.DateConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
@@ -19,13 +18,16 @@ import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.*;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.format.FormatStyle;
 
 import static lsfusion.base.DateConverter.instantToSqlTimestamp;
 import static lsfusion.base.DateConverter.sqlTimestampToInstant;
@@ -49,7 +51,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
     }
 
     public Class getReportJavaClass() {
-        return Instant.class;
+        return Timestamp.class;
     }
 
     public void fillReportDrawField(ReportDrawField reportField) {
