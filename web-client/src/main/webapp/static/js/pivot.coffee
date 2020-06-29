@@ -685,6 +685,7 @@ callWithJQuery ($) ->
             valueHeight: null
             componentHeightString: null
             cellHorizontalPadding: null
+            getDisplayColor: null
 
         localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings)
         localeDefaults =
@@ -1078,6 +1079,7 @@ callWithJQuery ($) ->
                     splitPositions: opts.splitRows
                 subopts.rendererOptions.colSubtotalDisplay = 
                     splitPositions: opts.splitCols
+                subopts.rendererOptions.getDisplayColor = opts.getDisplayColor
 
                 subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length == 1
 
@@ -1208,8 +1210,8 @@ callWithJQuery ($) ->
             min = Math.min(values...)
             max = Math.max(values...)
             return (x) ->
-                nonRed = 255 - Math.round 255*(x-min)/(max-min)
-                return "rgb(255,#{nonRed},#{nonRed})"
+                nonRed = if max == min then 0 else 255 - Math.round 255*(x-min)/(max-min)
+                return Array.from([255, nonRed, nonRed])
 
         heatmapper = (scope) =>
             forEachCell = (f) =>
@@ -1220,7 +1222,10 @@ callWithJQuery ($) ->
             values = []
             forEachCell (x) -> values.push x
             colorScale = colorScaleGenerator(values)
-            forEachCell (x, elem) -> elem.css "background-color", colorScale(x)
+            forEachCell (x, elem) -> 
+                heatColor = colorScale(x) 
+                elem.css "background-color", opts.getDisplayColor(heatColor)
+                elem[0].setAttribute("data-heat-color", "#{heatColor[0]},#{heatColor[1]},#{heatColor[2]}")
 
         switch scope
             when "heatmap"    then heatmapper ".pvtVal"

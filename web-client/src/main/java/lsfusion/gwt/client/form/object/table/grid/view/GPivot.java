@@ -36,6 +36,8 @@ import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.*;
 
+import static java.lang.Integer.decode;
+import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
 import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 import static lsfusion.gwt.client.view.StyleDefaults.getPanelBackground;
@@ -48,6 +50,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private final static String ICON_BRANCH = "tree_dots_branch.png";
     private final static String ICON_PASSBY = "tree_dots_passby.png";
 
+    private final String CELL_HEAT_COLOR_ATTRIBUTE_KEY = "data-heat-color";
     private final String CELL_ROW_LEVEL_ATTRIBUTE_KEY = "data-row-level";
     private final String CELL_COLUMN_LEVEL_ATTRIBUTE_KEY = "data-column-level";
 
@@ -601,6 +604,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             },
             afterRefresh: function () {
                 instance.@GPivot::afterRefresh(*)();
+            },
+            getDisplayColor: function (rgb) {
+                return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(III)(rgb[0], rgb[1], rgb[2]);
             }
         }
     }-*/;
@@ -678,11 +684,24 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             NodeList<Element> tds = getElements(tableDataScroller, "td, th");
             for (int i = 0; i < tds.getLength(); i++) {
                 Element td = tds.getItem(i);
-                String rowLevelString = GwtSharedUtils.nullEmpty(td.getAttribute(CELL_ROW_LEVEL_ATTRIBUTE_KEY));
-                Integer rowLevel = rowLevelString != null ? Integer.decode(rowLevelString) : null;
-                String columnLevelString = GwtSharedUtils.nullEmpty(td.getAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY));
-                Integer columnLevel = columnLevelString != null ? Integer.decode(columnLevelString) : null;
-                setValueCellBackground(td, rowLevel, columnLevel, true);
+                String heatColorString = td.getAttribute(CELL_HEAT_COLOR_ATTRIBUTE_KEY);
+                if (!GwtSharedUtils.isRedundantString(heatColorString)) {
+                    String[] splitColorString = heatColorString.split(",");
+                    assert splitColorString.length == 3;
+                    try {
+                        td.getStyle().setBackgroundColor(getDisplayColor(
+                                decode(splitColorString[0]),
+                                decode(splitColorString[1]),
+                                decode(splitColorString[2])));
+                    } catch (NumberFormatException ignored) {
+                    }
+                } else {
+                    String rowLevelString = nullEmpty(td.getAttribute(CELL_ROW_LEVEL_ATTRIBUTE_KEY));
+                    Integer rowLevel = rowLevelString != null ? decode(rowLevelString) : null;
+                    String columnLevelString = nullEmpty(td.getAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY));
+                    Integer columnLevel = columnLevelString != null ? decode(columnLevelString) : null;
+                    setValueCellBackground(td, rowLevel, columnLevel, true);
+                }
             }
         }
     }

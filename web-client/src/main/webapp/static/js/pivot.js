@@ -1236,7 +1236,8 @@
         sorters: {},
         valueHeight: null,
         componentHeightString: null,
-        cellHorizontalPadding: null
+        cellHorizontalPadding: null,
+        getDisplayColor: null
       };
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
       localeDefaults = {
@@ -1692,6 +1693,7 @@
             subopts.rendererOptions.colSubtotalDisplay = {
               splitPositions: opts.splitCols
             };
+            subopts.rendererOptions.getDisplayColor = opts.getDisplayColor;
             subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length === 1;
             numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
             vals = [];
@@ -1853,8 +1855,8 @@
           max = Math.max.apply(Math, values);
           return function(x) {
             var nonRed;
-            nonRed = 255 - Math.round(255 * (x - min) / (max - min));
-            return "rgb(255," + nonRed + "," + nonRed + ")";
+            nonRed = max === min ? 0 : 255 - Math.round(255 * (x - min) / (max - min));
+            return Array.from([255, nonRed, nonRed]);
           };
         };
       }
@@ -1876,7 +1878,10 @@
           });
           colorScale = colorScaleGenerator(values);
           return forEachCell(function(x, elem) {
-            return elem.css("background-color", colorScale(x));
+            var heatColor;
+            heatColor = colorScale(x);
+            elem.css("background-color", opts.getDisplayColor(heatColor));
+            return elem[0].setAttribute("data-heat-color", heatColor[0] + "," + heatColor[1] + "," + heatColor[2]);
           });
         };
       })(this);

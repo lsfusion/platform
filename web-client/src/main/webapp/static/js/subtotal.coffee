@@ -1132,16 +1132,15 @@ callWithJQuery ($) ->
             collapseColAxis colAxisHeaders, opts.colSubtotalDisplay.collapseAt, colAttrs, opts.colSubtotalDisplay
             collapseRowAxis rowAxisHeaders, opts.rowSubtotalDisplay.collapseAt, rowAttrs, opts.rowSubtotalDisplay
 
-            headerTable.setAttribute "data-numrows", rowKeys.length
-            headerTable.setAttribute "data-numcols", colKeys.length
             headerTable.style.display = ""
             
-            bodyTable.setAttribute "data-numrows", rowKeys.length
-            bodyTable.setAttribute "data-numcols", colKeys.length
             bodyTable.style.display = ""
 
             headerTable.insertBefore createColGroup(colsData), headerTable.firstChild
             bodyTable.insertBefore createColGroup(colsData), bodyTable.firstChild
+
+            outerDiv.setAttribute "data-numrows", rowKeys.length
+            outerDiv.setAttribute "data-numcols", colKeys.length
             
             return outerDiv
 
