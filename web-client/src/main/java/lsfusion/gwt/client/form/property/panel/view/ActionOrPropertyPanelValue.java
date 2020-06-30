@@ -51,9 +51,9 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue {
 
     @Override
     protected void onFocus(EventHandler handler) {
-        if(!isFocusable()) {
+        if(!isFocusable() && !form.isEditing(getRenderElement())) { // prevent focusing
             Element lastBlurredElement = form.getLastBlurredElement();
-            // in theory we also have to check if focused element still visible,
+            // in theory we also have to check if focused element still visible, isShowing in GwtClientUtils but now it's assumed that it is always visible
             if(lastBlurredElement != null && lastBlurredElement != getElement()) { // return focus back where it was
                 handler.consume();
                 lastBlurredElement.focus();

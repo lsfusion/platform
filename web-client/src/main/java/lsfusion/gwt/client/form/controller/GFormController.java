@@ -1588,6 +1588,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         property.getGridCellRenderer().renderDynamic(element, value, updateContext);
     }
+    public boolean isEditing(Element element) {
+        return editElement == element;
+    }
 
     public static void setBackgroundColor(Element element, String color) {
         if (color != null) {
