@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.view;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.EscapeUtils;
@@ -14,22 +15,31 @@ import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 
-public final class FormDockable {
+public final class FormDockable extends FormContainer<FormDockable.ContentWidget> {
     private TabWidget tabWidget;
-    private ContentWidget contentWidget;
     private FormDockable blockingForm; //GFormController
 
-    private GFormController form;
+    public FormDockable(DefaultFormsController formsController) {
+        super(formsController);
 
-    private WindowHiddenHandler hiddenHandler;
-
-    public FormDockable(GForm form) {
         tabWidget = new TabWidget("");
         tabWidget.setBlocked(false);
+    }
 
-        contentWidget = new ContentWidget(null);
+    @Override
+    protected ContentWidget initContentWidget() {
+        return new ContentWidget(null);
+    }
+
+    @Override
+    protected void setContent(Widget widget) {
+        contentWidget.setContent(widget);
     }
 
     public void setCaption(String caption, String tooltip) {
@@ -37,54 +47,28 @@ public final class FormDockable {
         tabWidget.setTooltip(tooltip);
     }
 
-    public void initialize(final FormsController formsController, final GForm gForm) {
-        form = new GFormController(formsController, gForm, false, false) {
-            @Override
-            public void onFormHidden(int closeDelay) {
-                super.onFormHidden(closeDelay);
-                if (hiddenHandler != null) {
-                    hiddenHandler.onHidden();
-                }
-            }
-
-            @Override
-            public void setFormCaption(String caption, String tooltip) {
-                setCaption(caption, tooltip);
-            }
-
-            @Override
-            public void block() {
-                tabWidget.setBlocked(true);
-                contentWidget.setBlocked(true);
-            }
-
-            @Override
-            public void setBlockingForm(FormDockable blocking) {
-                blockingForm = blocking;
-            }
-
-            @Override
-            public void unblock() {
-                tabWidget.setBlocked(false);
-                contentWidget.setBlocked(false);
-                if(contentWidget.isAttached())
-                    getFormsController().selectTab(FormDockable.this);
-            }
-
-            @Override
-            protected void onInitialFormChangesReceived() {
-                contentWidget.setContent(this);
-                super.onInitialFormChangesReceived();
-            }
-        };
+    @Override
+    public void show() {
+        formsController.addDockable(this);
     }
 
-    public GFormController getForm() {
-        return form;
+    @Override
+    public void hide() {
+        formsController.removeDockable(this);
     }
 
-    public void setHiddenHandler(WindowHiddenHandler hiddenHandler) {
-        this.hiddenHandler = hiddenHandler;
+    public void block() {
+        tabWidget.setBlocked(true);
+        contentWidget.setBlocked(true);
+    }
+
+    public void setBlockingForm(FormDockable blocking) {
+        blockingForm = blocking;
+    }
+
+    public void unblock() {
+        tabWidget.setBlocked(false);
+        contentWidget.setBlocked(false);
     }
 
     private void closePressed() {
@@ -98,7 +82,6 @@ public final class FormDockable {
     public Widget getContentWidget() {
         return contentWidget;
     }
-
 
     public class ContentWidget extends LayoutPanel {
         private final Widget mask;
@@ -153,16 +136,6 @@ public final class FormDockable {
                 addFullSizeChild(maskWrapper);
             } else {
                 remove(maskWrapper);
-            }
-
-            if (content instanceof GFormController) {
-                ((GFormController) content).setBlocked(blocked);
-            }
-        }
-
-        public void setSelected(boolean selected) {
-            if (content instanceof GFormController) {
-                ((GFormController) content).setSelected(selected);
             }
         }
     }

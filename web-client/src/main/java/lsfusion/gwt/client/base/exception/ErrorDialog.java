@@ -7,10 +7,11 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
+import lsfusion.gwt.client.base.view.ResizableSystemModalWindow;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 @SuppressWarnings("GWTStyleCheck")
-public class ErrorDialog extends ResizableModalWindow {
+public class ErrorDialog extends ResizableSystemModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private FlexPanel mainPane;
     private Button closeButton;

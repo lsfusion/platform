@@ -521,18 +521,6 @@ public class GGridController extends GAbstractTableController {
         panel.setVisible(true);
     }
 
-    public void beforeHidingGrid() {
-        if (isList()) {
-            table.beforeHiding();
-        }
-    }
-
-    public void afterShowingGrid() {
-        if (isList()) {
-            table.afterShowing();
-        }
-    }
-
     public void afterAppliedChanges() {
         if (isList()) {
             table.afterAppliedChanges();

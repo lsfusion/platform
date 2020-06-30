@@ -71,10 +71,6 @@ public interface GTableView {
     GGroupObjectUserPreferences getCurrentUserGridPreferences();
     GGroupObjectUserPreferences getGeneralGridPreferences();
 
-    // events
-    void beforeHiding();
-    void afterShowing();
-
     int getPageSize();
     boolean isGroup();
     GListViewType getViewType();

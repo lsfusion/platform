@@ -205,22 +205,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
     public abstract String getCellForeground(GridDataRecord rowValue, int row, int column);
 
-    public void beforeHiding() {
-        if (isShowing(this)) {
-            storeScrollPosition();
-            needToRestoreScrollPosition = true;
-        }
-    }
-
-    public void afterShowing() {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                afterAppliedChanges();
-            }
-        });
-    }
-
     public void storeScrollPosition() {
         int selectedRow = getSelectedRow();
         GridDataRecord selectedRecord = getSelectedRowValue();

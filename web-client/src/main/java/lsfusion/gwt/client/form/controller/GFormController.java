@@ -75,7 +75,9 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
+import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
+import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
@@ -106,11 +108,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final GFormActionDispatcher actionDispatcher;
 
     private final FormsController formsController;
+    private final FormContainer formContainer;
 
     private final GForm form;
     public final GFormLayout formLayout;
 
-    private final boolean isModal;
     private final boolean isDialog;
 
     private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<>();
@@ -124,7 +126,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final NativeHashMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeHashMap<>();
     private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<>();
 
-    private boolean initialFormChangesReceived = false;
     private boolean hasColumnGroupObjects;
 
     private Timer asyncTimer;
@@ -132,19 +133,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private LoadingManager loadingManager = MainFrame.busyDialog ? new GBusyDialogDisplayer(this) : new LoadingBlocker(this);
 
-    private boolean blocked = false;
-    private boolean selected = true;
-
     public FormsController getFormsController() {
         return formsController;
     }
 
-    public GFormController(FormsController formsController, GForm gForm, final boolean isModal, boolean isDialog) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
+        this.formContainer = formContainer;
         this.form = gForm;
-        this.isModal = isModal;
         this.isDialog = isDialog;
 
         dispatcher = new FormDispatchAsync(this);
@@ -162,6 +160,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             getElement().setAttribute("lsfusion-form", form.sID);
         }
 
+        getElement().getStyle().setOverflow(Style.Overflow.AUTO);
         setFillWidget(formLayout);
 
         updateFormCaption();
@@ -175,9 +174,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (form.initialFormChanges != null) {
             applyRemoteChanges(form.initialFormChanges);
             form.initialFormChanges = null;
-        } else if (!initialFormChangesReceived) { // возможно уже получили в initializeDefaultOrders()
+        } else
             getRemoteChanges();
-        }
 
         initializeUserOrders();
 
@@ -194,10 +192,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if(form != null)
                 form.handleKeyEvent(event.getNativeEvent());
         }, KeyDownEvent.getType());
-    }
-
-    protected void unregisterForm() {
-        formsController.unregisterForm(this, true);
     }
 
     public GGridController getController(GGroupObject groupObject) {
@@ -489,11 +483,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         // в конце скроллим все таблицы к текущим ключам
         afterAppliedChanges();
-
-        if (!initialFormChangesReceived) {
-            onInitialFormChangesReceived();
-            initialFormChangesReceived = true;
-        }
     }
 
     private void activateElements(GFormChanges fc) {
@@ -613,18 +602,23 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, final WindowHiddenHandler handler) {
-        if (modalityType == GModalityType.DOCKED_MODAL) {
-            block();
-        }
+        boolean isDockedModal = modalityType == GModalityType.DOCKED_MODAL;
+        if (isDockedModal)
+            ((FormDockable)formContainer).block();
 
-        FormDockable blockingForm = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, () -> {
-            unblock();
+        FormContainer blockingForm = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, () -> {
+            if(isDockedModal) {
+                ((FormDockable)formContainer).unblock();
+
+                formsController.selectTab((FormDockable) formContainer);
+            } else if(modalityType == GModalityType.DOCKED)
+                formsController.ensureTabSelected();
+
             handler.onHidden();
         });
 
-        if (modalityType == GModalityType.DOCKED_MODAL) {
-            setBlockingForm(blockingForm);
-        }
+        if (isDockedModal)
+            ((FormDockable)formContainer).setBlockingForm((FormDockable) blockingForm);
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -1111,22 +1105,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void block() {
-        //do nothing by default
-    }
-
-    public void setBlockingForm(FormDockable blockingForm) {
-        //do nothing by default
-    }
-
-    public void unblock() {
-        //do nothing by default
-    }
-
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
-    }
-
     protected void onFormHidden(int closeDelay) {
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
@@ -1179,7 +1157,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public boolean isModal() {
-        return isModal;
+        return formContainer instanceof ModalForm;
     }
 
     public boolean isDialog() {
@@ -1198,41 +1176,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         }
         return objects;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-
-        if (selected && blocked) { // чтобы автоматом не проставлять фокус под блокировку
-            return;
-        }
-
-        if (selected) {
-//            scheduleFocusFirstWidget();
-            restoreGridScrollPositions();
-        } else {
-            // обходим баг Chrome со скроллингом
-            // http://code.google.com/p/chromium/issues/detail?id=36428
-            storeGridScrollPositions();
-        }
-    }
-
-    public void storeGridScrollPositions() {
-        for (GGridController controller : controllers.values()) {
-            controller.beforeHidingGrid();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.beforeHidingGrid();
-        }
-    }
-
-    public void restoreGridScrollPositions() {
-        for (GGridController controller : controllers.values()) {
-            controller.afterShowingGrid();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.afterShowingGrid();
-        }
     }
 
     @Override
@@ -1291,18 +1234,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    protected void onInitialFormChangesReceived() {
-        // we need to set focus in schedule finally (since tabpanel is animated for example)
-        Scheduler.get().scheduleFinally(this::focusFirstWidget);
-
-        // it seems that this is needed for auto dialog sizing
-        Scheduler.get().scheduleDeferred(() -> {
-            onResize();
-            getElement().getStyle().setOverflow(Style.Overflow.AUTO);
-        });
-    }
-
-    private void focusFirstWidget() {
+    public void focusFirstWidget() {
         if (formLayout.focusDefaultWidget()) {
             return;
         }

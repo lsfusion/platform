@@ -16,7 +16,7 @@ import static lsfusion.gwt.client.base.view.ResizableWindow.Direction.*;
 /**
  * based on https://github.com/fredsa/gwt-dnd/blob/master/DragDrop/demo/com/allen_sauer/gwt/dnd/demo/client/example/window/WindowPanel.java
  */
-public class ResizableWindow extends Composite implements HasCloseHandlers<ResizableWindow> {
+public class ResizableWindow extends Composite {
 
     private static final int MIN_WIDGET_SIZE = 10;
 
@@ -53,8 +53,6 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
     private int contentHeight;
 
     private int contentWidth;
-
-    protected boolean initialOnLoad = true;
 
     public ResizableWindow() {
         windowController = WindowDragDropController.rootController;
@@ -184,29 +182,25 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         }
     }
 
-    @Override
-    protected void onLoad() {
-        if (initialOnLoad && contentWidget.getOffsetHeight() != 0) {
-            initialOnLoad = false;
-            headerWidget.setPixelSize(headerWidget.getOffsetWidth(), headerWidget.getOffsetHeight());
-            setContentSize(contentWidget.getOffsetWidth(), contentWidget.getOffsetHeight());
-        }
-    }
-
     public void hide() {
         windowController.getBoundaryPanel().remove(this);
-        CloseEvent.fire(this, this);
+    }
+
+    protected void onShow() {
+        headerWidget.setPixelSize(headerWidget.getOffsetWidth(), headerWidget.getOffsetHeight());
+
+        setContentSize(contentWidget.getOffsetWidth(), contentWidget.getOffsetHeight());
     }
 
     public void show() {
-        windowController.getBoundaryPanel().add(this);
+        windowController.getBoundaryPanel().add(this); // attaching
+        
+        onShow(); // need it after attach to have actual sizes calculated
+
+        // centering, has to be done after everything is calculated
         windowController.getBoundaryPanel().setWidgetPosition(this,
                 (Window.getClientWidth() - getOffsetWidth()) / 2,
                 (Window.getClientHeight() - getOffsetHeight()) / 2);
-    }
-
-    public HandlerRegistration addCloseHandler(CloseHandler<ResizableWindow> handler) {
-        return addHandler(handler, CloseEvent.getType());
     }
 
     public enum Direction {

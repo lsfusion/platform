@@ -11,12 +11,10 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -41,6 +39,7 @@ import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
+import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
@@ -206,18 +205,13 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
 
             @Override
-            public void setCurrentForm(GFormController form) {
-                MainFrame.this.setCurrentForm(form);
+            public void setCurrentForm(FormContainer formContainer) {
+                MainFrame.this.setCurrentForm(formContainer);
             }
 
             @Override
-            public GFormController getCurrentForm() {
+            public FormContainer getCurrentForm() {
                 return MainFrame.this.getCurrentForm();
-            }
-
-            @Override
-            public void dropCurrentForm(GFormController form) {
-                MainFrame.this.dropCurrentForm(form);
             }
         };
 
@@ -271,7 +265,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                             setShouldRepeatPingRequest(true);
                             super.success(result);
                             for (Integer idNotification : result.notificationList) {
-                                GFormController form = currentForm;
+                                GFormController form = currentForm != null ? currentForm.getForm() : null;
                                 if (form != null)
                                     try {
                                         form.executeNotificationAction(idNotification);
@@ -351,19 +345,14 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
-    public GFormController currentForm;
+    public FormContainer<?> currentForm;
 
-    public void setCurrentForm(GFormController currentForm) {
+    public void setCurrentForm(FormContainer currentForm) {
         this.currentForm = currentForm;
     }
 
-    public GFormController getCurrentForm() {
+    public FormContainer getCurrentForm() {
         return currentForm;
-    }
-
-    public void dropCurrentForm(GFormController form) {
-        if(currentForm != null && currentForm.equals(form))
-            currentForm = null;
     }
 
     private void initializeWindows(final DefaultFormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {

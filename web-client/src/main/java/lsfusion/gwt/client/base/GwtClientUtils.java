@@ -19,6 +19,8 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
@@ -338,17 +340,6 @@ public class GwtClientUtils {
         style.setPaddingBottom(paddingBottom, Style.Unit.PX);
         style.setPaddingLeft(paddingLeft, Style.Unit.PX);
         style.setPaddingRight(paddingRight, Style.Unit.PX);
-    }
-
-    public static void scheduleOnResize(final Widget widget) {
-        if (widget instanceof RequiresResize) {
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    ((RequiresResize) widget).onResize();
-                }
-            });
-        }
     }
 
     public static void showPopupInWindow(PopupPanel popup, int mouseX, int mouseY) {
@@ -720,4 +711,10 @@ public class GwtClientUtils {
         return null;
     }
 
+    public static <T> T findInList(List<T> list, Predicate<T> predicate) {
+        for(T element : list)
+            if(predicate.test(element))
+                return element;
+        return null;
+    }
 }

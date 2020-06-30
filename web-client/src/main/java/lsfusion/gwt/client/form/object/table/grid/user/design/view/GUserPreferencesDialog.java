@@ -29,7 +29,7 @@ import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_FAMILY;
 import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_SIZE;
 
 @SuppressWarnings("GWTStyleCheck")
-public abstract class GUserPreferencesDialog extends ResizableModalWindow {
+public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
 

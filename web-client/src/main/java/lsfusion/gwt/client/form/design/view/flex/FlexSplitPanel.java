@@ -5,7 +5,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
-import lsfusion.gwt.client.form.design.view.BeforeSelectionTabHandler;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.SplitPanelBase;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
@@ -45,12 +44,9 @@ public class FlexSplitPanel extends SplitPanelBase {
         style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);
 
         if(widget instanceof TabbedContainerView.Panel) // assert что все flex (дублирование с flexlinearcontainerview, но предполагается что flexSplit уйдет)
-            ((TabbedContainerView.Panel)widget).addBeforeSelectionTabHandler(new BeforeSelectionTabHandler() {
-                @Override
-                public void onBeforeSelection(int tabIndex) {
-                    if(tabIndex > 0)
-                        panel.fixFlexBasis((TabbedContainerView.Panel)widget);
-                }
+            ((TabbedContainerView.Panel)widget).setBeforeSelectionHandler(tabIndex -> {
+                if(tabIndex > 0)
+                    panel.fixFlexBasis((TabbedContainerView.Panel)widget);
             });
     }
 

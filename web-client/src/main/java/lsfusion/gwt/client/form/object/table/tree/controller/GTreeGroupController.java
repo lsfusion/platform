@@ -153,14 +153,6 @@ public class GTreeGroupController extends GAbstractTableController {
         return tree.isCurrentPathExpanded();
     }
 
-    public void beforeHidingGrid() {
-        tree.beforeHiding();
-    }
-
-    public void afterShowingGrid() {
-        tree.afterShowing();
-    }
-
     @Override
     public void updateCellBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);

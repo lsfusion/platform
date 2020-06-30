@@ -33,14 +33,6 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
         this(caption, imagePath, false);
     }
 
-    public ImageButton(String caption, boolean directionBottom) {
-        this(caption, null, directionBottom);
-    }
-
-    public ImageButton(String caption, boolean vertical, boolean alignCenter) {
-        this(caption, null, vertical, alignCenter);
-    }
-
     public ImageButton(String caption, String imagePath, boolean vertical) {
         this(caption, imagePath, vertical, true);
     }
@@ -81,6 +73,8 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
         getElement().appendChild(panel.getElement());
 
         MainFrame.addColorThemeChangeListener(this);
+
+        setFocusable(false);
     }
 
     public void setModuleImagePath(String imagePath) {
