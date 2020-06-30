@@ -38,9 +38,10 @@ import java.util.*;
 
 import static java.lang.Integer.decode;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
-import static lsfusion.gwt.client.base.view.ColorUtils.*;
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
+import static lsfusion.gwt.client.base.view.ColorUtils.toColorString;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
-import static lsfusion.gwt.client.view.StyleDefaults.getPanelBackground;
+import static lsfusion.gwt.client.view.StyleDefaults.getComponentBackground;
 
 public class GPivot extends GStateTableView implements ColorThemeChangeListener {
 
@@ -697,9 +698,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                     }
                 } else {
                     String rowLevelString = nullEmpty(td.getAttribute(CELL_ROW_LEVEL_ATTRIBUTE_KEY));
-                    Integer rowLevel = rowLevelString != null ? decode(rowLevelString) : null;
+                    int rowLevel = rowLevelString != null ? decode(rowLevelString) : -1;
                     String columnLevelString = nullEmpty(td.getAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY));
-                    Integer columnLevel = columnLevelString != null ? decode(columnLevelString) : null;
+                    int columnLevel = columnLevelString != null ? decode(columnLevelString) : -1;
                     setValueCellBackground(td, rowLevel, columnLevel, true);
                 }
             }
@@ -951,49 +952,48 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         setValueCellBackground(jsElement, rowKeys.length(), columnKeys.length(), false);
     }
 
-    public void setValueCellBackground(Element td, Integer rowLevel, Integer columnLevel, boolean refresh) {
-        int[] panelRGB = StyleDefaults.getPanelBackgroundRGB();
-        int[] componentRGB = StyleDefaults.getComponentBackgroundRGB();
+    public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
+        int totalRowLevels = config.getArrayString("splitRows").length();
+        int totalColLevels = config.getArrayString("cols").length();
+        String cellBackground = null;
 
-        String rowColor = null;
-        if (rowLevel != null) {
-            int totalRowLevels = config.getArrayString("splitRows").length();
-            if (rowLevel == 0) {
-                rowColor = getPanelBackground(colorTheme);
-            } else if (rowLevel > 0 && rowLevel < totalRowLevels) {
-                float coef = (float) (totalRowLevels - rowLevel) / totalRowLevels;
-                rowColor = toColorString(componentRGB[0] + (int) ((panelRGB[0] - componentRGB[0]) * coef),
-                        componentRGB[1] + (int) ((panelRGB[1] - componentRGB[1]) * coef),
-                        componentRGB[2] + (int) ((panelRGB[2] - componentRGB[2]) * coef));
+        int depth = 0;
+        if (rowLevel == 0 || columnLevel == 0) {
+            if (totalRowLevels == 0) {
+                cellBackground = getComponentBackground(colorTheme);
+            } else {
+                depth = Math.max(totalRowLevels + totalColLevels - 1, 1);
             }
-            if (!refresh) {
-                td.setAttribute(CELL_ROW_LEVEL_ATTRIBUTE_KEY, "" + rowLevel);
+        } else {
+            if (rowLevel > 0 && rowLevel < totalRowLevels) {
+                depth += totalRowLevels - rowLevel;
+            }
+            if (columnLevel > 0 && columnLevel < totalColLevels) {
+                depth += totalColLevels - columnLevel;
             }
         }
 
-        String columnColor = null;
-        if (columnLevel != null) {
-            int totalColLevels = config.getArrayString("cols").length();
-            if (columnLevel == 0) {
-                columnColor = getPanelBackground(colorTheme);
-            } else if (columnLevel > 0 && columnLevel < totalColLevels) {
-                int baseRed = rowColor == null ? componentRGB[0] : getRed(toRGB(rowColor));
-                int baseGreen = rowColor == null ? componentRGB[1] : getGreen(toRGB(rowColor));
-                int baseBlue = rowColor == null ? componentRGB[2] : getBlue(toRGB(rowColor));
-                float coef = (float) (totalColLevels - columnLevel) / totalColLevels;
-                columnColor = toColorString(baseRed + (int) ((panelRGB[0] - baseRed) * coef),
-                        baseGreen + (int) ((panelRGB[1] - baseGreen) * coef),
-                        baseBlue + (int) ((panelRGB[2] - baseBlue) * coef));
-            }
-            if (!refresh) {
-                td.setAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY, "" + columnLevel);
-            }
+        if (depth > 0) {
+            int[] baseRGB = StyleDefaults.getComponentBackgroundRGB();
+            int[] darkenStepRGB = StyleDefaults.getPivotGroupLevelDarkenStepRGB();
+            cellBackground = toColorString(
+                    baseRGB[0] + darkenStepRGB[0] * depth,
+                    baseRGB[1] + darkenStepRGB[1] * depth,
+                    baseRGB[2] + darkenStepRGB[2] * depth
+            );
+        }
+        
+        if (cellBackground != null) {
+            td.getStyle().setBackgroundColor(cellBackground);
         }
 
-        if (columnColor != null) {
-            td.getStyle().setBackgroundColor(columnColor);
-        } else if (rowColor != null) {
-            td.getStyle().setBackgroundColor(rowColor);
+        if (!refresh) {
+            if (rowLevel >= 0) {
+                td.setAttribute(CELL_ROW_LEVEL_ATTRIBUTE_KEY, String.valueOf(rowLevel));
+            }
+            if (columnLevel >= 0) {
+                td.setAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY, String.valueOf(columnLevel));
+            }
         }
     }
 
@@ -1006,7 +1006,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             renderAttrCell(th, value, attrName);
         }
 
-        setValueCellBackground(th, rowKeyValues.length(), null, false);
+        setValueCellBackground(th, rowKeyValues.length(), -1, false);
     }
 
     private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, JsArrayBoolean isLastChildList) {

@@ -24,15 +24,16 @@ public class StyleDefaults {
     public static String focusedCellBackgroundColor;
     public static String focusedCellBorderColor;
     
-    public static int[] panelBackgroundRGB;
     public static int[] componentBackgroundRGB;
+    
+    public static int[] pivotGroupLevelDarkenStepRGB;
     
     public static void reset() {
         selectedRowBackgroundColor = null;
         focusedCellBackgroundColor = null;
         focusedCellBorderColor = null;
-        panelBackgroundRGB = null;
         componentBackgroundRGB = null;
+        pivotGroupLevelDarkenStepRGB = null;
     }
 
     private static String getSelectedColor(boolean canBeMixed) {
@@ -82,20 +83,29 @@ public class StyleDefaults {
         return focusedCellBorderColor;
     }
     
-    public static int[] getPanelBackgroundRGB() {
-        if (panelBackgroundRGB == null) {
-            int pbRGB = toRGB(getPanelBackground(colorTheme));
-            panelBackgroundRGB = new int[]{getRed(pbRGB), getGreen(pbRGB), getBlue(pbRGB)};
-        }   
-        return panelBackgroundRGB;
-    }
-
     public static int[] getComponentBackgroundRGB() {
         if (componentBackgroundRGB == null) {
             int cbRGB = toRGB(getComponentBackground(colorTheme));
             componentBackgroundRGB = new int[]{getRed(cbRGB), getGreen(cbRGB), getBlue(cbRGB)};
         }
         return componentBackgroundRGB;
+    }
+    
+    public static int[] getPivotGroupLevelDarkenStepRGB() {
+        if (pivotGroupLevelDarkenStepRGB == null) {
+            int pbRGB = toRGB(getPanelBackground(colorTheme));
+            int[] panelRGB = new int[]{getRed(pbRGB), getGreen(pbRGB), getBlue(pbRGB)};
+            int[] componentRGB = getComponentBackgroundRGB();
+            
+            float darkenStep = 0.8f;
+
+            pivotGroupLevelDarkenStepRGB = new int[]{
+                    (int) ((panelRGB[0] - componentRGB[0]) * darkenStep),
+                    (int) ((panelRGB[1] - componentRGB[1]) * darkenStep),
+                    (int) ((panelRGB[2] - componentRGB[2]) * darkenStep)
+            };
+        }
+        return pivotGroupLevelDarkenStepRGB;
     }
 
     
