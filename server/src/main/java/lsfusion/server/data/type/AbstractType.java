@@ -26,9 +26,6 @@ import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import static lsfusion.base.DateConverter.safeDateToSql;
-import static lsfusion.base.DateConverter.sqlDateToLocalDate;
-
 public abstract class AbstractType<T> extends AbstractReader<T> implements Type<T> {
 
     public boolean isSafeType() {
@@ -161,7 +158,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
                 break;
             case NUMERIC:
                 if(DateUtil.isCellDateFormatted(cell)) {
-                    cellValue = DateClass.instance.formatString(sqlDateToLocalDate(safeDateToSql(cell.getDateCellValue()))); //in apache.poi 4.1: cell.getLocalDateTimeCellValue().toLocalDate()
+                    cellValue = DateClass.instance.formatString(cell.getLocalDateTimeCellValue().toLocalDate());
                 } else {
                     cellValue = new BigDecimal(formulaValue.getNumberValue()).toPlainString();
                 }

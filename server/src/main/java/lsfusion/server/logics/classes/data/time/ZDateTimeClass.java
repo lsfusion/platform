@@ -42,10 +42,6 @@ public class ZDateTimeClass extends DataClass<Instant> {
 
     private ZDateTimeClass() { super(LocalizedString.create("{classes.date.with.time.with.zone}")); }
 
-    public static DateFormat getDateTimeFormat() {
-        return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
-    }
-
     public int getReportPreferredWidth() {
         return 75;
     }
@@ -141,7 +137,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
     public Instant parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
         Instant cellValue;
         try {
-            cellValue = sqlTimestampToInstant(new Timestamp(cell.getDateCellValue().getTime()));//in apache.poi 4.1: cell.getLocalDateTimeCellValue();
+            cellValue = sqlTimestampToInstant(new Timestamp(cell.getDateCellValue().getTime()));
         } catch (IllegalStateException e) {
             return super.parseXLS(cell, formulaValue);
         }
@@ -188,7 +184,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
     @Override
     public void formatXLS(Instant object, Cell cell, ExportXLSWriter.Styles styles) {
         if(object != null) {
-            cell.setCellValue(instantToSqlTimestamp(object)); //no need to convert in apache.poi 4.1
+            cell.setCellValue(instantToSqlTimestamp(object));
         }
         cell.setCellStyle(styles.dateTime);
     }
