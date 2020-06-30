@@ -1071,6 +1071,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 GPropertyTableBuilder.renderTD(jsElement, rowHeight);
                 renderAttrCell(jsElement, value, lastRenderCol);
             }
+
+            if (value != null) {
+                jsElement.setTitle(fromObject(value).toString());
+            }
         }
     }
     
@@ -1088,7 +1092,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), attrName);
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
-            GGridPropertyTableHeader.renderTD(jsElement, rowHeight, sortDir, fromObject(value).toString());
+            String valueString = fromObject(value).toString();
+            GGridPropertyTableHeader.renderTD(jsElement, rowHeight, sortDir, valueString);
+
+            if (value != null) {
+                jsElement.setTitle(valueString);
+            }
         }
     }
 
