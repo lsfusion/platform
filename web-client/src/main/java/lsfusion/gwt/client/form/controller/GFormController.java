@@ -88,7 +88,6 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -1105,6 +1104,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
+    public void previewBlurEvent(Event event) {
+        formsController.setLastBlurredElement(Element.as(event.getEventTarget()));
+    }
+    public Element getLastBlurredElement() {
+        return formsController.getLastBlurredElement();
+    }
+
     protected void onFormHidden(int closeDelay) {
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
@@ -1552,8 +1558,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(replacedRenderer) {
             rerender(property, element, renderContext);
 
-            if(focusedElement != null && !blurred)
-                focusedElement.focus();
+            if(blurred) // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
+                formsController.setLastBlurredElement(renderContext.getFocusElement());
+            else {
+                if (focusedElement != null)
+                    focusedElement.focus();
+            }
         }
 
         update(property, element, getValue.get(), updateContext);

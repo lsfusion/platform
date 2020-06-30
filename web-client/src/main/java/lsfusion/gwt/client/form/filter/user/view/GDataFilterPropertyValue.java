@@ -24,11 +24,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    protected RenderContext getRenderContext() {
-        return RenderContext.DEFAULT;
-    }
-
-    @Override
     protected void onPaste(String objValue) {
     }
 

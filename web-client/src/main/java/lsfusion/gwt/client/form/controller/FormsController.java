@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.GForm;
@@ -22,4 +23,8 @@ public interface FormsController {
     void executeNotificationAction(String actionSID, int type);
 
     void setCurrentForm(FormContainer formContainer);
+    FormContainer getCurrentForm();
+
+    void setLastBlurredElement(Element element);
+    Element getLastBlurredElement();
 }

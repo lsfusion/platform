@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
@@ -81,10 +80,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
         form.rerender(this.property, getRenderElement(), getRenderContext());
     }
 
-    protected boolean isFocusable() {
-        return true;
-    }
-
     @Override
     public void onBrowserEvent(Event event) {
 //        if ((BrowserEvents.CLICK.equals(event.getType()) || GKeyStroke.isCommonEditKeyEvent(event) &&
@@ -100,20 +95,32 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
         if(!DataGrid.checkSinkEvents(event))
             return;
 
+        EventHandler handler = createEventHandler(event);
+
         if(BrowserEvents.FOCUS.equals(event.getType())) {
-            if(isFocusable())
-                addStyleName("dataPanelRendererGridPanelFocused");
+            onFocus(handler);
         } else if(BrowserEvents.BLUR.equals(event.getType())) {
-            if(isFocusable())
-                removeStyleName("dataPanelRendererGridPanelFocused");
+            onBlur(handler);
         }
 
-        EventHandler handler = createEventHandler(event);
+        if(handler.consumed)
+            return;
+
         form.onPropertyBrowserEvent(handler, getRenderElement(),
             () -> onEditEvent(handler),
             () -> CopyPasteUtils.putIntoClipboard(getRenderElement()),
             () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line))
         );
+    }
+
+    protected void onFocus(EventHandler handler) {
+        addStyleName("dataPanelRendererGridPanelFocused");
+    }
+
+    protected void onBlur(EventHandler handler) {
+        form.previewBlurEvent(handler.event);
+
+        removeStyleName("dataPanelRendererGridPanelFocused");
     }
 
     public EventHandler createEventHandler(Event event) {
@@ -122,7 +129,9 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
 
     protected abstract void onEditEvent(EventHandler handler);
 
-    protected abstract RenderContext getRenderContext();
+    protected RenderContext getRenderContext() {
+        return ActionOrPropertyValue.this::getElement;
+    }
 
     protected UpdateContext getUpdateContext() {
         return UpdateContext.DEFAULT;

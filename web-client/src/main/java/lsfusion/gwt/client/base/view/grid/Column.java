@@ -26,6 +26,8 @@ public abstract class Column<T, C> {
 
   public abstract C getValue(T object);
 
+  public abstract boolean isFocusable();
+
   public abstract void onBrowserEvent(Context context, Element parent, C value, EventHandler handler);
 
   public abstract void renderDom(Context context, Element cellElement, C value);

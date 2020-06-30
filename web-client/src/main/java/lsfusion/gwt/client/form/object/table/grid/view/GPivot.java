@@ -935,7 +935,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         CellRenderer<?> renderer = columnMap.get(columnName).property.getGridCellRenderer();
-        renderer.render(th, value, RenderContext.DEFAULT, () -> font);
+        renderer.render(th, value, this::getElement, () -> font);
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {

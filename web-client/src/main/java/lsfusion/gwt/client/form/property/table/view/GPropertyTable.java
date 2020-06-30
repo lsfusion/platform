@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property.table.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
@@ -104,7 +104,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> {
     }
 
     public RenderContext getRenderContext() {
-        return RenderContext.DEFAULT;
+        return this::getTableDataFocusElement;
     }
     public UpdateContext getUpdateContext() {
         return this::getFont;
@@ -117,9 +117,9 @@ public abstract class GPropertyTable<T> extends DataGrid<T> {
     }
 
     @Override
-    public void changeSelectedColumn(int column) {
+    public boolean changeSelectedColumn(int column) {
         form.checkCommitEditing();
-        super.changeSelectedColumn(column);
+        return super.changeSelectedColumn(column);
     }
 
     @Override

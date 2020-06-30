@@ -319,7 +319,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.pattern = clientPropertyDraw.getFormatPattern();
         propertyDraw.defaultPattern = propertyDraw.pattern;
 
-        propertyDraw.focusable = clientPropertyDraw.focusable == null || clientPropertyDraw.focusable;
+        propertyDraw.focusable = clientPropertyDraw.focusable;
         propertyDraw.checkEquals = clientPropertyDraw.checkEquals;
 
         propertyDraw.captionReader = convertCaptionReader(clientPropertyDraw.captionReader);

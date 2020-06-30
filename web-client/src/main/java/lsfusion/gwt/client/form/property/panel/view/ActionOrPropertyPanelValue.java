@@ -1,5 +1,8 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -15,17 +18,21 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue {
 
         this.columnKey = columnKey;
 
+        if(!isFocusable()) // need to avoid selecting by tab
+            setTabIndex(-1);
+
         finalizeInit();
+    }
+
+    private boolean isFocusable() {
+        if(property.focusable != null)
+            return property.focusable;
+        return property.changeKey == null;
     }
 
     private boolean readOnly;
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
-    }
-
-    @Override
-    protected RenderContext getRenderContext() {
-        return RenderContext.DEFAULT;
     }
 
     @Override
@@ -40,6 +47,21 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue {
                 () -> readOnly,
                 getRenderContext(),
                 getUpdateContext());
+    }
+
+    @Override
+    protected void onFocus(EventHandler handler) {
+        if(!isFocusable()) {
+            Element lastBlurredElement = form.getLastBlurredElement();
+            // in theory we also have to check if focused element still visible,
+            if(lastBlurredElement != null && lastBlurredElement != getElement()) { // return focus back where it was
+                handler.consume();
+                lastBlurredElement.focus();
+                return;
+            }
+        }
+
+        super.onFocus(handler);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.object.table.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.Math.max;
-import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.EditEventFilter;
 
@@ -147,8 +145,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
-    protected void onBlur() {
-        super.onBlur();
+    protected void onBlur(Event event) {
+        form.previewBlurEvent(event);
+
+        super.onBlur(event);
         changeBorder("var(--component-border-color)");
     }
 
@@ -259,10 +259,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
             int keyCode = event.getKeyCode();
             if (keyCode == KeyCodes.KEY_HOME && !event.getCtrlKey()) {
-                changeColumn(0);
+                for(int i=0;!changeColumn(i);i++);
                 return true;
             } else if (keyCode == KeyCodes.KEY_END && !event.getCtrlKey()) {
-                changeColumn(display.getColumnCount() - 1);
+                for(int i=display.getColumnCount()-1;!changeColumn(i);i--);
                 return true;
             }
             return super.handleKeyEvent(event);
@@ -375,6 +375,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected abstract class GridPropertyColumn extends Column<T, Object> {
         public final GPropertyDraw property;
+
+        @Override
+        public boolean isFocusable() {
+            return property.focusable == null || property.focusable;
+        }
 
         public GridPropertyColumn(GPropertyDraw property) {
             this.property = property;

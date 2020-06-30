@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
@@ -105,7 +107,15 @@ public abstract class DefaultFormsController implements FormsController {
     private static ResizableFocusPanel focusPanel;
     private static LayoutPanel layoutPanel;
     public void initRoot() {
-        focusPanel = new ResizableFocusPanel();
+        focusPanel = new ResizableFocusPanel() {
+            @Override
+            public void onBrowserEvent(Event event) {
+                if(BrowserEvents.BLUR.equals(event.getType()))
+                    setLastBlurredElement(Element.as(event.getEventTarget()));
+
+                super.onBrowserEvent(event);
+            }
+        };
 //        focusPanel.addFocusHandler(event -> GWT.log("FORM FOCUSED"));
 //        focusPanel.addBlurHandler(event -> GWT.log("FORM BLURED"));
         RootLayoutPanel.get().add(focusPanel);

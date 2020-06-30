@@ -463,15 +463,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             return;
 
         String eventType = event.getType();
-        if (BrowserEvents.FOCUS.equals(eventType)) {
-            // Remember the focus state.
-            isFocused = true;
+        if (BrowserEvents.FOCUS.equals(eventType))
             onFocus();
-        } else if (BrowserEvents.BLUR.equals(eventType)) {
-            // Remember the blur state.
-            isFocused = false;
-            onBlur();
-        }
+        else if (BrowserEvents.BLUR.equals(eventType))
+            onBlur(event);
+
 //        else if (BrowserEvents.KEYDOWN.equals(eventType)) {
 //            // A key event indicates that we already have focus.
 //            isFocused = true;
@@ -609,12 +605,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
      */
     protected boolean isRowRendered(int row) {
         return row >= 0 && row < renderedRowCount;
-    }
-
-    @Override
-    protected void onUnload() {
-        isFocused = false;
-        super.onUnload();
     }
 
     /**
@@ -831,9 +821,9 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
     // so to handle this there are to ways of doing that, either with GFormController.checkCommitEditing, or moving focus to grid
     // so far will do it with checkCommitEditing (like in form bindings)
     // see overrides
-    public void changeSelectedColumn(int column) {
+    public boolean changeSelectedColumn(int column) {
 //        setFocus(true);
-        setSelectedColumn(column);
+        return setSelectedColumn(column);
     }
     public void changeSelectedRow(int row) {
 //        setFocus(true);
@@ -842,11 +832,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         rowChangedHandler.run();
     }
 
-    public void setSelectedColumn(int column) {
+    public boolean setSelectedColumn(int column) {
         assert column >= 0 : "Column must be zero or greater";
 
         if (getSelectedColumn() == column) {
-            return;
+            return true;
         }
 
         int columnCount = getColumnCount();
@@ -854,7 +844,12 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             column = columnCount - 1;
         }
 
+        Column<T, ?> selectingColumn = getColumn(column);
+        if(!selectingColumn.isFocusable())
+            return false;
+
         ensurePendingState().setSelectedColumn(column);
+        return true;
     }
     public void setSelectedRow(int row) {
         int rowCount = getRowCount();
@@ -1040,10 +1035,14 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
     }
 
     protected void onFocus() {
+        isFocused = true;
+
         updateSelectedRowStyles();
     }
 
-    protected void onBlur() {
+    protected void onBlur(Event event) {
+        isFocused = false;
+
         updateSelectedRowStyles();
     }
 
@@ -1921,8 +1920,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         }
 
         protected boolean changeColumn(int column) {
-            display.changeSelectedColumn(column);
-            return true;
+            return display.changeSelectedColumn(column);
         }
         protected boolean changeRow(int row) {
             display.changeSelectedRow(row);
@@ -1942,27 +1940,32 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                 int rowIndex = display.getSelectedRow();
                 int columnIndex = display.getSelectedColumn();
 
-                if (forward) {
-                    if (columnIndex == columnCount - 1) {
-                        if (rowIndex != rowCount - 1) {
-                            columnIndex = 0;
-                            rowIndex++;
+                while(true) {
+                    if (forward) {
+                        if (columnIndex == columnCount - 1) {
+                            if (rowIndex != rowCount - 1) {
+                                columnIndex = 0;
+                                rowIndex++;
+                            }
+                        } else {
+                            columnIndex++;
                         }
                     } else {
-                        columnIndex++;
-                    }
-                } else {
-                    if (columnIndex == 0) {
-                        if (rowIndex != 0) {
-                            columnIndex = columnCount - 1;
-                            rowIndex--;
+                        if (columnIndex == 0) {
+                            if (rowIndex != 0) {
+                                columnIndex = columnCount - 1;
+                                rowIndex--;
+                            }
+                        } else {
+                            columnIndex--;
                         }
-                    } else {
-                        columnIndex--;
                     }
+
+                    if(changeColumn(columnIndex))
+                        break;
                 }
 
-                return changeColumn(columnIndex) || changeRow(rowIndex);
+                return changeRow(rowIndex);
             }
             return false;
         }

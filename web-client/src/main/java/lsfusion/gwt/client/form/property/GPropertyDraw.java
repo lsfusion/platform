@@ -78,7 +78,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GEditBindingMap editBindingMap;
 
     public ImageHolder imageHolder;
-    public boolean focusable;
+    public Boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
 

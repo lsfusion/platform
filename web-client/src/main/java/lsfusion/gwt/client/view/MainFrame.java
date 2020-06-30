@@ -3,14 +3,12 @@ package lsfusion.gwt.client.view;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -21,7 +19,6 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingBlocker;
@@ -77,8 +74,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static List<ColorThemeChangeListener> colorThemeChangeListeners = new ArrayList<>(); 
     
     public static GColorPreferences colorPreferences;
-
-    private final String tabSID = GwtSharedUtils.randomString(25);
 
     private LoadingManager loadingManager;
 
@@ -140,8 +135,16 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         private T link;
     }
 
+    private Element lastBlurredElement;
+    // Event.addNativePreviewHandler(this::previewNativeEvent); doesn't work since only mouse events are propagated see DOM.previewEvent(evt) usages (only mouse and keyboard events are previewed);
+    // this solution is not pretty clean since not all events are previewed, but for now, works pretty good
+    private void setLastBlurredElement(Element lastBlurredElement) {
+        this.lastBlurredElement = lastBlurredElement;
+    }
+
     public void initializeFrame() {
         currentForm = null;
+
         // we need to read settings first to have loadingManager set (for syncDispatch)
         navigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
             @Override
@@ -212,6 +215,16 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             @Override
             public FormContainer getCurrentForm() {
                 return MainFrame.this.getCurrentForm();
+            }
+
+            @Override
+            public void setLastBlurredElement(Element element) {
+                MainFrame.this.setLastBlurredElement(element);
+            }
+
+            @Override
+            public Element getLastBlurredElement() {
+                return MainFrame.this.lastBlurredElement;
             }
         };
 

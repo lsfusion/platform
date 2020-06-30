@@ -277,6 +277,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
+        public boolean isFocusable() {
+            return true;
+        }
+
+        @Override
         public GPropertyDraw getProperty() {
             return null;
         }
