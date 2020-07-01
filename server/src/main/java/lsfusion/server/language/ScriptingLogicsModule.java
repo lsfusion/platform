@@ -4058,7 +4058,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addTypeProp(findClass(className), bIs), Collections.singletonList(ccProp));
     }
 
-    public void addScriptedConstraint(LP<?> property, Event event, boolean checked, List<NamedPropertyUsage> propUsages, LP<?> messageProperty, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedConstraint(LP<?> property, Event event, boolean checked, List<NamedPropertyUsage> propUsages, LP<?> messageProperty, List<LPWithParams> properties, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if (!property.property.checkAlwaysNull(true)) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
@@ -4073,7 +4073,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             type = Property.CheckType.CHECK_SOME;
             checkedProps = mCheckedProps.immutable();
         }
-        addConstraint(property, messageProperty, type, checkedProps, event, this, debugPoint);
+        addConstraint(property, messageProperty, properties, type, checkedProps, event, this, debugPoint);
     }
 
     private PrevScope prevScope = null;

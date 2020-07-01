@@ -6,10 +6,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
@@ -25,6 +22,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -657,10 +655,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void addPropertyDraw(ObjectEntity object, Version version, Group group) {
-        addPropertyDraw(group, false, version, SetFact.singletonOrder(object));
+        addPropertyDraw(new ArrayList<>(), group, false, version, SetFact.singletonOrder(object));
     }
 
-    protected void addPropertyDraw(AbstractNode group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
+    protected void addPropertyDraw(List<ScriptingLogicsModule.LPWithParams> properties, AbstractNode group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
+        for(ScriptingLogicsModule.LPWithParams property : properties) {
+            MOrderSet<ObjectEntity> filterObjects = SetFact.mOrderSet();
+            for(Integer usedParam : property.usedParams) {
+                filterObjects.add(objects.get(usedParam));
+            }
+            addPropertyDraw(property.getLP(), version, filterObjects.immutableOrder());
+        }
+
         ImSet<ObjectEntity> objectsSet = objects.getSet();
         ImFilterRevValueMap<ObjectEntity, ValueClassWrapper> mObjectToClass = objectsSet.mapFilterRevValues();
         for(int i=0,size=objectsSet.size();i<size;i++) {

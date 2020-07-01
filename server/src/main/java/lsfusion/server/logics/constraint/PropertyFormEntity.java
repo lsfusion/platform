@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
@@ -18,9 +19,11 @@ import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.util.List;
+
 public class PropertyFormEntity extends AutoFormEntity {
 
-    public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule LM, Property<P> property, Property<X> messageProperty, Group recognizeGroup) {
+    public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule LM, Property<P> property, Property<X> messageProperty, List<ScriptingLogicsModule.LPWithParams> properties, Group recognizeGroup) {
         super(property.caption, LM.getVersion());
 
         Version version = LM.getVersion();
@@ -42,7 +45,7 @@ public class PropertyFormEntity extends AutoFormEntity {
         ImOrderSet<ObjectEntity> objects = groupObject.getOrderObjects();
         for(ObjectEntity object : objects)
             addPropertyDraw(LM.getObjValueProp(this, object), version, object);
-        addPropertyDraw(recognizeGroup, prev, version, objects);
+        addPropertyDraw(properties, recognizeGroup, prev, version, objects);
 
         //todo: раскомментить, чтобы можно было использовать форму в LogPropertyActionProperty
 //        for (ObjectEntity object : objects) {

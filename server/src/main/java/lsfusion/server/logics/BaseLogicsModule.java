@@ -559,9 +559,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         dbManager.addIndex(staticCaption);
     }
 
-    @IdentityStrongLazy
-    public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property messageProperty) { // messageProperty - nullable
-        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, getRecognizeGroup());
+    public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property messageProperty, List<ScriptingLogicsModule.LPWithParams> properties) { // messageProperty - nullable
+        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, properties, getRecognizeGroup());
         addAutoFormEntity(form);
         return form;
     }

@@ -4011,9 +4011,11 @@ scope {
 
 constraintStatement 
 @init {
+    List<TypedParameter> context = new ArrayList<>();
 	boolean checked = false;
 	LP<?> property = null;
 	List<NamedPropertyUsage> propUsages = null;
+	List<LPWithParams> properties = new ArrayList<>();
 	DebugInfo.DebugPoint debugPoint = null; 
 	if (inMainParseState()) {
 		debugPoint = getEventDebugPoint();
@@ -4021,7 +4023,7 @@ constraintStatement
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedConstraint(property, $et.event, checked, propUsages, $message.property.getLP(), debugPoint);
+		self.addScriptedConstraint(property, $et.event, checked, propUsages, $message.property.getLP(), properties, debugPoint);
 	}
 }
 	:	'CONSTRAINT'
@@ -4031,7 +4033,7 @@ constraintStatement
 				self.setPrevScope($et.event);
 			}
 		}
-		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inMainParseState()) property = self.checkSingleParam($expr.property).getLP(); }
+		expr=propertyExpression[context, true] { if (inMainParseState()) property = self.checkSingleParam($expr.property).getLP(); }
 		('CHECKED' { checked = true; }
 			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })?
 		)?
@@ -4041,6 +4043,7 @@ constraintStatement
 				self.dropPrevScope($et.event);
 			}
 		}
+		('PROPERTIES' propExprs=nonEmptyPropertyExpressionList[context, true] { properties = $propExprs.props; })?
 		';'
 	;
 
