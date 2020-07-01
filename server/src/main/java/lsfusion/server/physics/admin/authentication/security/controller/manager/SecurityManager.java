@@ -45,6 +45,7 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
+import org.apache.commons.text.RandomStringGenerator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -221,6 +222,23 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .setClaims(claims)
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact());
+    }
+
+    public AuthenticationToken oAuth2authenticateUser(String userName, ExecutionStack stack) {
+        String password = new RandomStringGenerator.Builder().withinRange(33, 45).build().generate(20);
+        try (DataSession session = createSession()) {
+            DataObject userObject = readUser(userName, session);
+            if (userObject == null) {
+                userObject = addUser(userName, password, session);
+                apply(session, stack);
+            }
+            if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
+                throw new LockedException();
+            }
+            return generateToken(userName);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
     
     public AuthenticationToken authenticateUser(String userName, String password, ExecutionStack stack) {

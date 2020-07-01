@@ -128,7 +128,7 @@
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
-    
+
     <!-- exposes request params and locale to the thread, used in LSFRemoteAuthenticationProvider and ServerMessages.getString (where there is no explicit request) -->
     <filter>
         <filter-name>springRequestContextFilter</filter-name>
@@ -146,6 +146,16 @@
     </filter>
     <filter-mapping>
         <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!--Filter to convert OAuth2 authentication token to LSFAuthenticationToken-->
+    <filter>
+        <filter-name>oauth2Filter</filter-name>
+        <filter-class>lsfusion.http.authentication.OAuth2Filter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>oauth2Filter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 

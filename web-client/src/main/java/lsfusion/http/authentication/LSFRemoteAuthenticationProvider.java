@@ -70,7 +70,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
         }
     }
 
-    private static Locale getUserLocale(RemoteLogicsInterface remoteLogics, Authentication auth, AuthenticationToken authToken) throws RemoteException {
+    protected static Locale getUserLocale(RemoteLogicsInterface remoteLogics, Authentication auth, AuthenticationToken authToken) throws RemoteException {
         try {
             SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(auth);
             ExternalResponse result = remoteLogics.exec(authToken, sessionInfo, "Authentication.getCurrentUserLocale", new ExternalRequest());

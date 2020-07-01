@@ -178,6 +178,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
+    public AuthenticationToken oAuth2authenticateUser(String userName) throws RemoteException {
+        return securityManager.oAuth2authenticateUser(userName, getStack());
+    }
+
+    @Override
     public long generateID() throws RemoteException {
         return dbManager.generateID();
     }

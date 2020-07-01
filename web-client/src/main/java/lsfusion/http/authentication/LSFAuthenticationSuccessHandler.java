@@ -14,9 +14,13 @@ import java.util.Locale;
 public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, final Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         // setting cookie before super.onAuthenticationSuccess() to have right cookie-path  
         Cookie localeCookie = new Cookie(ServerUtils.LOCALE_COOKIE_NAME, "");
+        authentication = OAuth2Filter.convertToken(request, response, authentication);
+        if (authentication == null) {
+            return;
+        }
         Locale userLocale = LSFAuthenticationToken.getUserLocale(authentication);
         if (userLocale != null) {
             localeCookie.setValue(userLocale.toString());

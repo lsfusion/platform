@@ -22,6 +22,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     // authentication
     AuthenticationToken authenticateUser(String userName, String password) throws RemoteException;
+    AuthenticationToken oAuth2authenticateUser(String userName) throws RemoteException;
 
     // stateful interfaces
     RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException;

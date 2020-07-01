@@ -54,6 +54,17 @@
                                 </c:if>
                             </fieldset>
                         </form>
+                        <br>
+                        <form id="github-login-form" name="github-login" action="/oauth2/authorization/github">
+                            <button class="loginBtn loginBtn--github" onclick="">
+                                Login with Github
+                            </button>
+                        </form>
+                        <form id="google-login-form" name="google-login" action="/oauth2/authorization/google">
+                            <button class="loginBtn loginBtn--google">
+                                Login with Google
+                            </button>
+                        </form>
                     </div>
                 </td>
             </tr>

@@ -51,6 +51,14 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
         return result;
     }
 
+    @Override
+    public AuthenticationToken oAuth2authenticateUser(String userName) throws RemoteException {
+        logRemoteMethodStartCall("oAuth2authenticateUser");
+        AuthenticationToken result = target.oAuth2authenticateUser(userName);
+        logRemoteMethodEndCall("oAuth2authenticateUser", result);
+        return result;
+    }
+
     public long generateID() throws RemoteException {
         logRemoteMethodStartCall("getUserInfo");
         long result = target.generateID();

@@ -44,20 +44,32 @@
     <http entry-point-ref="entryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
+        <oauth2-login login-page="/login" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
         <form-login login-page="/login" login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
         <!-- invalidate-session="false" no invalidating session to give user opportunity to relogin, when another tab is opened, but it's not that secure because user can login with another access, and the tab with different access will be available -->
         <!-- UPD: left invalidate-session="false" to be able to pass attributes between sessions (SPRING_SECURITY_LAST_EXCEPTION). 
          We invalidate session manually in LSFSimpleUrlLogoutSuccessHandler instead.-->
         <logout logout-url="/logout" success-handler-ref="successLogoutHandler" invalidate-session="false"/>
-        
+
         <csrf disabled="true"/>
 
         <custom-filter ref="characterEncodingFilter" before="FORM_LOGIN_FILTER"/>
         <custom-filter after="ANONYMOUS_FILTER" ref="anonymousFilter"/>
     </http>
 
+    <client-registrations>
+        <client-registration registration-id="github"
+                             client-id="9d1729e039d1eb38748f"
+                             client-secret="5ff48f27bfc6fd55f87ac316af80577f3b01e0f5"
+                             provider-id="github"/>
+        <client-registration registration-id="google"
+                             client-id="1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com"
+                             client-secret="Fa-bg6EpM71UXSa9rxvYiNQq"
+                             provider-id="google"/>
+    </client-registrations>
+
     <!-- Security beans -->
-    
+
     <b:bean id="characterEncodingFilter" class="org.springframework.web.filter.CharacterEncodingFilter">
         <b:property name="encoding" value="UTF-8"/>
         <b:property name="forceEncoding" value="true"/>
@@ -81,6 +93,9 @@
 
     <b:bean id="restAuthenticationEntryPoint" class="lsfusion.http.authentication.RestAuthenticationEntryPoint" >
     </b:bean>
+
+    <!--Convert OAuth2 authentication token to LSFAuthenticationToken-->
+    <b:bean id="oAuth2Filter" class="lsfusion.http.authentication.OAuth2Filter"/>
 
     <!-- Authentication configuration -->
     
