@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.*;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -14,6 +11,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -1034,8 +1032,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
-        GridCellRenderer<?> renderer = columnMap.get(columnName).property.getGridCellRenderer();
-        renderer.render(th, font, value, false);
+        GPropertyDraw property = columnMap.get(columnName).property;
+        Element cellElement = th;
+        if (property.baseType instanceof GActionType) {
+            cellElement = Document.get().createDivElement();
+            GPropertyTableBuilder.setRowHeight(cellElement, rowHeight);
+            th.appendChild(cellElement);
+            th.getStyle().setPadding(0, Style.Unit.PX);
+        }
+        property.getGridCellRenderer().render(cellElement, font, value, false);
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
