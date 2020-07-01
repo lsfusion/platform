@@ -4073,7 +4073,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             type = Property.CheckType.CHECK_SOME;
             checkedProps = mCheckedProps.immutable();
         }
-        addConstraint(property, messageProperty, properties, type, checkedProps, event, this, debugPoint);
+
+        List<Object> params = new ArrayList<>();
+        for(LPWithParams prop : properties) {
+            params.add(prop.getLP());
+            for(Integer usedParam : prop.usedParams) {
+                params.add(usedParam + 1);
+            }
+        }
+
+        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(getParamsPlainList(properties).toArray()));
+        addConstraint(property, messageProperty, readCalcImplements(innerInterfaces, params.toArray()), innerInterfaces, type, checkedProps, event, this, debugPoint);
     }
 
     private PrevScope prevScope = null;

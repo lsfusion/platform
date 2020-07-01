@@ -59,6 +59,8 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -655,35 +657,54 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void addPropertyDraw(ObjectEntity object, Version version, Group group) {
-        addPropertyDraw(new ArrayList<>(), group, false, version, SetFact.singletonOrder(object));
+        addPropertyDraw(ListFact.EMPTY(), SetFact.EMPTYORDER(), group, false, version, SetFact.singletonOrder(object));
     }
 
-    protected void addPropertyDraw(List<ScriptingLogicsModule.LPWithParams> properties, AbstractNode group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
-        for(ScriptingLogicsModule.LPWithParams property : properties) {
-            MOrderSet<ObjectEntity> filterObjects = SetFact.mOrderSet();
-            for(Integer usedParam : property.usedParams) {
-                filterObjects.add(objects.get(usedParam));
+    protected void addPropertyDraw(ImList<PropertyInterfaceImplement<PropertyInterface>> properties, ImOrderSet<PropertyInterface> innerInterfaces, AbstractNode group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
+        if(!properties.isEmpty()) {
+            ImList<ValueClass> innerClasses = ListFact.EMPTY();
+            for(ObjectEntity object : objects){
+                innerClasses = innerClasses.addList(object.baseClass);
             }
-            addPropertyDraw(property.getLP(), version, filterObjects.immutableOrder());
-        }
 
-        ImSet<ObjectEntity> objectsSet = objects.getSet();
-        ImFilterRevValueMap<ObjectEntity, ValueClassWrapper> mObjectToClass = objectsSet.mapFilterRevValues();
-        for(int i=0,size=objectsSet.size();i<size;i++) {
-            ObjectEntity object = objectsSet.get(i);
-            if (object.baseClass != null) 
-                mObjectToClass.mapValue(i, new ValueClassWrapper(object.baseClass));
-        }
-        ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = mObjectToClass.immutableRevValue();
-        ImSet<ValueClassWrapper> valueClasses = objectToClass.valuesSet();
+            final ImMap<PropertyInterface, ObjectEntity> interfaceObjects = innerInterfaces.mapSet(objects);
+            ImRevMap<PropertyInterface, ObjectEntity> mapObjects = innerInterfaces.mapOrderRevValues((i, value) -> interfaceObjects.get(value));
 
-        // here can be more precise heuristics than implemented in FormDataManager.getPrintTable (calculating expr and putting expr itself (not its values)  in a set)
+            for (PropertyInterfaceImplement<PropertyInterface> property : properties) {
+                Property<PropertyInterface> addProperty;
+                ImRevMap<PropertyInterface, ObjectEntity> addMapping;
+                if (property instanceof PropertyMapImplement) {
+                    PropertyMapImplement<PropertyInterface, PropertyInterface> mapProperty = (PropertyMapImplement<PropertyInterface, PropertyInterface>) property;
+                    addProperty = mapProperty.property;
+                    addMapping = mapProperty.mapping.join(mapObjects);
+                } else {
+                    ObjectEntity object = mapObjects.get((PropertyInterface) property);
+                    LP<PropertyInterface> objValueProp = ThreadLocalContext.getBusinessLogics().LM.getObjValueProp(this, object);
+                    addProperty = objValueProp.property;
+                    addMapping = objValueProp.getRevMap(object);
+                }
 
-        ImOrderSet<ValueClassWrapper> orderInterfaces = objects.mapOrder(objectToClass);
-        for (ActionOrPropertyClassImplement implement : group.getActionOrProperties(valueClasses, version)) {
-            ImSet<ValueClassWrapper> wrappers = implement.mapping.valuesSet();
-            ImOrderSet<ObjectEntity> filterObjects = objects.filterOrderIncl(objectToClass.filterValuesRev(wrappers).keys());
-            addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrappers), prev), version, filterObjects);
+                addPropertyDraw(addProperty, addMapping, version);
+            }
+        } else {
+            ImSet<ObjectEntity> objectsSet = objects.getSet();
+            ImFilterRevValueMap<ObjectEntity, ValueClassWrapper> mObjectToClass = objectsSet.mapFilterRevValues();
+            for(int i=0,size=objectsSet.size();i<size;i++) {
+                ObjectEntity object = objectsSet.get(i);
+                if (object.baseClass != null)
+                    mObjectToClass.mapValue(i, new ValueClassWrapper(object.baseClass));
+            }
+            ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = mObjectToClass.immutableRevValue();
+            ImSet<ValueClassWrapper> valueClasses = objectToClass.valuesSet();
+
+            // here can be more precise heuristics than implemented in FormDataManager.getPrintTable (calculating expr and putting expr itself (not its values)  in a set)
+
+            ImOrderSet<ValueClassWrapper> orderInterfaces = objects.mapOrder(objectToClass);
+            for (ActionOrPropertyClassImplement implement : group.getActionOrProperties(valueClasses, version)) {
+                ImSet<ValueClassWrapper> wrappers = implement.mapping.valuesSet();
+                ImOrderSet<ObjectEntity> filterObjects = objects.filterOrderIncl(objectToClass.filterValuesRev(wrappers).keys());
+                addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrappers), prev), version, filterObjects);
+            }
         }
     }
 
