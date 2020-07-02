@@ -79,7 +79,8 @@ fileSize = DATA LOCAL LONG ();
 getFileSize '{utils.get.file.size}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.GetFileSizeAction' (FILE);
 
 //zip files
-zipping '{utils.zipping.string}' = DATA LOCAL FILE (STRING[1000]);
+zipping '{utils.zipping.file}' = DATA LOCAL FILE (STRING[1000]);
+zippingPath '{utils.zipping.path}' = DATA LOCAL STRING (STRING[1000]);
 zipped '{utils.zipped}' = DATA LOCAL FILE ();
 makeZipFile '{utils.make.zip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeZipFileAction' ();
 
