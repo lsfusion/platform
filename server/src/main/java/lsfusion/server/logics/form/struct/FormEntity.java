@@ -681,22 +681,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    protected void addPropertyDraw(ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces, Version version, ImOrderSet<ObjectEntity> objects) {
-        ImList<ValueClass> innerClasses = ListFact.EMPTY();
-        for (ObjectEntity object : objects) {
-            innerClasses = innerClasses.addList(object.baseClass);
-        }
-
-        final ImMap<PropertyInterface, ObjectEntity> interfaceObjects = innerInterfaces.mapSet(objects);
-        ImRevMap<PropertyInterface, ObjectEntity> mapObjects = innerInterfaces.mapOrderRevValues((i, value) -> interfaceObjects.get(value));
-
-        for (PropertyMapImplement property : properties) {
-            Property<PropertyInterface> addProperty = property.property;
-            ImRevMap<PropertyInterface, ObjectEntity> addMapping = property.mapping.join(mapObjects);
-            addPropertyDraw(addProperty, addMapping, version);
-        }
-    }
-
     public static ImCol<ImSet<ValueClassWrapper>> getSubsets(ImSet<ValueClassWrapper> valueClasses) {
         if(valueClasses.size() == 1) // optimization
             return SetFact.singleton(valueClasses);

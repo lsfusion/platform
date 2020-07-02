@@ -4072,9 +4072,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             checkedProps = mCheckedProps.immutable();
         }
 
-        ImOrderSet<PropertyInterface> innerInterfaces = (ImOrderSet<PropertyInterface>) property.listInterfaces;
-        ImList<PropertyMapImplement> mapImplements = (ImList<PropertyMapImplement>) (ImList<?>) readCalcImplements(innerInterfaces, getParamsPlainList(properties).toArray());
-        addConstraint(property, messageProperty, mapImplements, innerInterfaces, type, checkedProps, event, this, debugPoint);
+        ImList<PropertyMapImplement<?, T>> mapImplements = (ImList<PropertyMapImplement<?, T>>) (ImList<?>) readCalcImplements(property.listInterfaces, getParamsPlainList(properties).toArray());
+        addConstraint(property, messageProperty, mapImplements, type, checkedProps, event, this, debugPoint);
     }
 
     private PrevScope prevScope = null;

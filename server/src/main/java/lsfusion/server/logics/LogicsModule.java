@@ -1923,17 +1923,17 @@ public abstract class LogicsModule {
     }
 
     public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange, DebugInfo.DebugPoint debugPoint) {
-        addConstraint(addProp(property), baseLM.addCProp(StringClass.text, message), ListFact.EMPTY(), SetFact.EMPTYORDER(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, debugPoint);
+        addConstraint(addProp(property), baseLM.addCProp(StringClass.text, message), ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, debugPoint);
     }
 
-    protected void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
+    protected <P extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
         if(!(lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET, event.getScope());
         // assert что lp уже в списке properties
-        setConstraint(lp.property, properties, innerInterfaces, messageLP.property, type, event, checkProps, debugPoint);
+        setConstraint(lp.property, properties, messageLP.property, type, event, checkProps, debugPoint);
     }
 
-    public <T extends PropertyInterface> void setConstraint(Property property, ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces, Property messageProperty, Property.CheckType type, Event event, ImSet<Property<?>> checkProperties, DebugInfo.DebugPoint debugPoint) {
+    public <P extends PropertyInterface> void setConstraint(Property property, ImList<PropertyMapImplement<?,P>> properties, Property messageProperty, Property.CheckType type, Event event, ImSet<Property<?>> checkProperties, DebugInfo.DebugPoint debugPoint) {
         assert type != Property.CheckType.CHECK_SOME || checkProperties != null;
         assert property.noDB();
 
@@ -1943,7 +1943,7 @@ public abstract class LogicsModule {
         ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
 //            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty, properties, innerInterfaces), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), ListFact.EMPTY(), FormPrintType.MESSAGE, false, 30, null, true, null, null, null).action.getImplement();
+        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<P>(property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), ListFact.EMPTY(), FormPrintType.MESSAGE, false, 30, null, true, null, null, null).action.getImplement();
         ActionMapImplement<?, ClassPropertyInterface> constraintAction =
                 PropertyFact.createListAction(
                         SetFact.EMPTY(),

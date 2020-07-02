@@ -22,7 +22,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class PropertyFormEntity extends AutoFormEntity {
 
-    public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule LM, Property<P> property, Property<X> messageProperty, ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces, Group recognizeGroup) {
+    public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule LM, Property<P> property, Property<X> messageProperty, ImList<PropertyMapImplement<?,P>> properties, Group recognizeGroup) {
         super(property.caption, LM.getVersion());
 
         Version version = LM.getVersion();
@@ -47,7 +47,9 @@ public class PropertyFormEntity extends AutoFormEntity {
                 addPropertyDraw(LM.getObjValueProp(this, object), version, object);
             addPropertyDraw(recognizeGroup, property.usePrevHeur(), version, objects);
         } else {
-            addPropertyDraw(properties, innerInterfaces, version, objects);
+            for (PropertyMapImplement prop : properties) {
+                addPropertyDraw(prop.property, prop.mapping.join(mapObjects), version);
+            }
         }
 
         //todo: раскомментить, чтобы можно было использовать форму в LogPropertyActionProperty
