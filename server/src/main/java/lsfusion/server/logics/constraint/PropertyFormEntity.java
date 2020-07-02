@@ -30,7 +30,6 @@ public class PropertyFormEntity extends AutoFormEntity {
         addPropertyDraw(messageProperty, MapFact.EMPTYREV(), version);
 
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.logPolicy);
-        boolean prev = property.usePrevHeur();
         
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues((ValueClass value) -> {
             // need to specify baseClass anyway, because we need it when adding recognizeGroup
@@ -44,7 +43,12 @@ public class PropertyFormEntity extends AutoFormEntity {
         ImOrderSet<ObjectEntity> objects = groupObject.getOrderObjects();
         for(ObjectEntity object : objects)
             addPropertyDraw(LM.getObjValueProp(this, object), version, object);
-        addPropertyDraw(properties, innerInterfaces, recognizeGroup, prev, version, objects);
+
+        if(properties.isEmpty()) {
+            addPropertyDraw(recognizeGroup, property.usePrevHeur(), version, objects);
+        } else {
+            addPropertyDraw(properties, innerInterfaces, version, objects);
+        }
 
         //todo: раскомментить, чтобы можно было использовать форму в LogPropertyActionProperty
 //        for (ObjectEntity object : objects) {
