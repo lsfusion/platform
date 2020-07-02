@@ -101,10 +101,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.DefaultIcon;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.*;
-import lsfusion.server.logics.property.AggregateProperty;
-import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyFact;
-import lsfusion.server.logics.property.Union;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -115,6 +112,7 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.AggregateGroupProperty;
@@ -4058,7 +4056,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addTypeProp(findClass(className), bIs), Collections.singletonList(ccProp));
     }
 
-    public void addScriptedConstraint(LP<?> property, Event event, boolean checked, List<NamedPropertyUsage> propUsages, LP<?> messageProperty, List<LPWithParams> properties, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    <T extends PropertyInterface> void addScriptedConstraint(LP<T> property, Event event, boolean checked, List<NamedPropertyUsage> propUsages, LP<?> messageProperty, List<LPWithParams> properties, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if (!property.property.checkAlwaysNull(true)) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
@@ -4075,7 +4073,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         ImOrderSet<PropertyInterface> innerInterfaces = (ImOrderSet<PropertyInterface>) property.listInterfaces;
-        addConstraint(property, messageProperty, readCalcImplements(innerInterfaces, getParamsPlainList(properties).toArray()), innerInterfaces, type, checkedProps, event, this, debugPoint);
+        ImList<PropertyMapImplement> mapImplements = (ImList<PropertyMapImplement>) (ImList<?>) readCalcImplements(innerInterfaces, getParamsPlainList(properties).toArray());
+        addConstraint(property, messageProperty, mapImplements, innerInterfaces, type, checkedProps, event, this, debugPoint);
     }
 
     private PrevScope prevScope = null;

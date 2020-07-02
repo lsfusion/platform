@@ -16,17 +16,17 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class PropertyFormEntity extends AutoFormEntity {
 
-    public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule LM, Property<P> property, Property<X> messageProperty, ImList<PropertyInterfaceImplement<PropertyInterface>> properties, ImOrderSet<PropertyInterface> innerInterfaces, Group recognizeGroup) {
+    public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule LM, Property<P> property, Property<X> messageProperty, ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces, Group recognizeGroup) {
         super(property.caption, LM.getVersion());
 
         Version version = LM.getVersion();
-        
+
         addPropertyDraw(messageProperty, MapFact.EMPTYREV(), version);
 
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.logPolicy);

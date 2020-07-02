@@ -681,7 +681,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    protected void addPropertyDraw(ImList<PropertyInterfaceImplement<PropertyInterface>> properties, ImOrderSet<PropertyInterface> innerInterfaces, Version version, ImOrderSet<ObjectEntity> objects) {
+    protected void addPropertyDraw(ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces, Version version, ImOrderSet<ObjectEntity> objects) {
         ImList<ValueClass> innerClasses = ListFact.EMPTY();
         for (ObjectEntity object : objects) {
             innerClasses = innerClasses.addList(object.baseClass);
@@ -690,20 +690,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         final ImMap<PropertyInterface, ObjectEntity> interfaceObjects = innerInterfaces.mapSet(objects);
         ImRevMap<PropertyInterface, ObjectEntity> mapObjects = innerInterfaces.mapOrderRevValues((i, value) -> interfaceObjects.get(value));
 
-        for (PropertyInterfaceImplement<PropertyInterface> property : properties) {
-            Property<PropertyInterface> addProperty;
-            ImRevMap<PropertyInterface, ObjectEntity> addMapping;
-            if (property instanceof PropertyMapImplement) {
-                PropertyMapImplement<PropertyInterface, PropertyInterface> mapProperty = (PropertyMapImplement<PropertyInterface, PropertyInterface>) property;
-                addProperty = mapProperty.property;
-                addMapping = mapProperty.mapping.join(mapObjects);
-            } else {
-                ObjectEntity object = mapObjects.get((PropertyInterface) property);
-                LP<PropertyInterface> objValueProp = ThreadLocalContext.getBusinessLogics().LM.getObjValueProp(this, object);
-                addProperty = objValueProp.property;
-                addMapping = objValueProp.getRevMap(object);
-            }
-
+        for (PropertyMapImplement property : properties) {
+            Property<PropertyInterface> addProperty = property.property;
+            ImRevMap<PropertyInterface, ObjectEntity> addMapping = property.mapping.join(mapObjects);
             addPropertyDraw(addProperty, addMapping, version);
         }
     }

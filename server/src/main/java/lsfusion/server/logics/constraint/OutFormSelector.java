@@ -15,7 +15,7 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.util.List;
@@ -24,10 +24,10 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
 
     private final Property<P> property;
     private final Property messageProperty;
-    private final ImList<PropertyInterfaceImplement<PropertyInterface>> properties;
+    private final ImList<PropertyMapImplement> properties;
     private final ImOrderSet<PropertyInterface> innerInterfaces;
 
-    public OutFormSelector(Property<P> property, Property messageProperty, ImList<PropertyInterfaceImplement<PropertyInterface>> properties, ImOrderSet<PropertyInterface> innerInterfaces) {
+    public OutFormSelector(Property<P> property, Property messageProperty, ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces) {
         this.property = property;
         this.messageProperty = messageProperty;
         this.properties = properties;

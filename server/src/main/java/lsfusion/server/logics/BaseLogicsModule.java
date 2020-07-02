@@ -59,7 +59,7 @@ import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
@@ -561,7 +561,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         dbManager.addIndex(staticCaption);
     }
 
-    public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property messageProperty, ImList<PropertyInterfaceImplement<PropertyInterface>> properties, ImOrderSet<PropertyInterface> innerInterfaces) { // messageProperty - nullable
+    public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property messageProperty, ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces) { // messageProperty - nullable
         PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, properties, innerInterfaces, getRecognizeGroup());
         addAutoFormEntity(form);
         return form;

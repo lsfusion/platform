@@ -1926,14 +1926,14 @@ public abstract class LogicsModule {
         addConstraint(addProp(property), baseLM.addCProp(StringClass.text, message), ListFact.EMPTY(), SetFact.EMPTYORDER(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, debugPoint);
     }
 
-    protected void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyInterfaceImplement<PropertyInterface>> properties, ImOrderSet<PropertyInterface> innerInterfaces, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
+    protected void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
         if(!(lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET, event.getScope());
         // assert что lp уже в списке properties
         setConstraint(lp.property, properties, innerInterfaces, messageLP.property, type, event, checkProps, debugPoint);
     }
 
-    public <T extends PropertyInterface> void setConstraint(Property property, ImList<PropertyInterfaceImplement<PropertyInterface>> properties, ImOrderSet<PropertyInterface> innerInterfaces, Property messageProperty, Property.CheckType type, Event event, ImSet<Property<?>> checkProperties, DebugInfo.DebugPoint debugPoint) {
+    public <T extends PropertyInterface> void setConstraint(Property property, ImList<PropertyMapImplement> properties, ImOrderSet<PropertyInterface> innerInterfaces, Property messageProperty, Property.CheckType type, Event event, ImSet<Property<?>> checkProperties, DebugInfo.DebugPoint debugPoint) {
         assert type != Property.CheckType.CHECK_SOME || checkProperties != null;
         assert property.noDB();
 
