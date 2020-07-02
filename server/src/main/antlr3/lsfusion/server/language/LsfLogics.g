@@ -4043,7 +4043,7 @@ constraintStatement
 				self.dropPrevScope($et.event);
 			}
 		}
-		('PROPERTIES' propExprs=nonEmptyPropertyExpressionListCheckSingleParam[context, true] { properties = $propExprs.props; })?
+		('PROPERTIES' propExprs=nonEmptyPropertyExpressionList[context, true] { properties = $propExprs.props; })?
 		';'
 	;
 
@@ -4919,14 +4919,6 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 }
 	:	first=propertyExpression[context, dynamic] { $props.add($first.property); }
 		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
-	;
-
-nonEmptyPropertyExpressionListCheckSingleParam[List<TypedParameter> context, boolean dynamic] returns [List<LPWithParams> props]
-@init {
-	$props = new ArrayList<>();
-}
-	:	first=propertyExpression[context, dynamic] { if (inMainParseState()) { $props.add(self.checkSingleParam($first.property)); } }
-		(',' next=propertyExpression[context, dynamic] { if (inMainParseState()) { $props.add(self.checkSingleParam($next.property)); } })*
 	;
 	
 constantProperty returns [LP property]

@@ -1217,7 +1217,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             property = new LPWithParams(wrapProperty(property.getLP()), property);
         return property;
     }
-    
+
+    public List<LPWithParams> checkSingleParams(List<LPWithParams> properties) {
+        for(int i = 0; i < properties.size(); i++) {
+            properties.set(i, checkSingleParam(properties.get(i)));
+        }
+        return properties;
+    }
+
     public LPWithParams checkSingleParam(LPWithParams property) {
         if (property.getLP() == null) {
             property = new LPWithParams(baseLM.object, property);
@@ -4072,6 +4079,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             checkedProps = mCheckedProps.immutable();
         }
 
+        properties = checkSingleParams(properties);
         ImList<PropertyMapImplement<?, T>> mapImplements = (ImList<PropertyMapImplement<?, T>>) (ImList<?>) readCalcImplements(property.listInterfaces, getParamsPlainList(properties).toArray());
         addConstraint(property, messageProperty, mapImplements, type, checkedProps, event, this, debugPoint);
     }
