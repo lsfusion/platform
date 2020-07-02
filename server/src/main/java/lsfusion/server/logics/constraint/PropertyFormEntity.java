@@ -41,10 +41,10 @@ public class PropertyFormEntity extends AutoFormEntity {
 
         // добавляем все свойства
         ImOrderSet<ObjectEntity> objects = groupObject.getOrderObjects();
-        for(ObjectEntity object : objects)
-            addPropertyDraw(LM.getObjValueProp(this, object), version, object);
 
         if(properties.isEmpty()) {
+            for(ObjectEntity object : objects)
+                addPropertyDraw(LM.getObjValueProp(this, object), version, object);
             addPropertyDraw(recognizeGroup, property.usePrevHeur(), version, objects);
         } else {
             addPropertyDraw(properties, innerInterfaces, version, objects);
