@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -746,8 +745,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         Event event = handler.event;
         handler.consume();
-        if(GMouseStroke.isChangeEvent(event) && GMouseStroke.isChangeEventConsumesFocus())
-            editContext.getFocusElement().focus(); // we need to focus element since change consumes mousedown and hence focus
 
         GPropertyDraw property = editContext.getProperty();
         final boolean asyncModifyObject = isAsyncModifyObject(property);
@@ -1604,10 +1601,28 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public <T> void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Runnable onEdit, Runnable onCut, Runnable onPaste) {
-        if (cellEditor != null && editContext.getRenderElement() == cellParent) {
+    public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Runnable onOuterEditBefore, Runnable onEdit, Runnable onOuterEditAfter, Runnable onCut, Runnable onPaste) {
+        boolean isPropertyEditing = cellEditor != null && editContext.getRenderElement() == cellParent;
+        if(isPropertyEditing)
             cellEditor.onBrowserEvent(cellParent, handler);
-        } else {
+
+        if(handler.consumed)
+            return;
+
+        if(GMouseStroke.isChangeEvent(handler.event))
+            focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
+        else if(GMouseStroke.isDownEvent(handler.event))
+            handler.consume(); // we want to postpone focusing (and focus later on CLICK event)
+
+        if(handler.consumed)
+            return;
+
+        onOuterEditBefore.run();
+
+        if(handler.consumed)
+            return;
+
+        if (!isPropertyEditing) { // if editor did not consume event, we don't want it to be handled by "renderer" since it doesn't exist
             if (GKeyStroke.isCopyToClipboardEvent(handler.event)) {
                 onCut.run();
             } else if (GKeyStroke.isPasteFromClipboardEvent(handler.event)) {
@@ -1616,5 +1631,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 onEdit.run();
             }
         }
+
+        if(handler.consumed)
+            return;
+
+        onOuterEditAfter.run();
     }
 }

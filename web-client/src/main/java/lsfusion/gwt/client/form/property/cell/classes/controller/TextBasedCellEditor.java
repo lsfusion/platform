@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -69,7 +70,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         String type = event.getType();
         boolean charInput = GKeyStroke.isCharInputKeyEvent(event);
         if (charInput || GKeyStroke.isCharDeleteKeyEvent(event) ||
-                GKeyStroke.isCharNavigateKeyEvent(event)) {
+                GKeyStroke.isCharNavigateKeyEvent(event) || GMouseStroke.isEvent(event)) {
             if(charInput && !checkInputValidity(parent, String.valueOf((char) event.getCharCode())))
                 handler.consume(); // this thing is needed to disable inputting incorrect symbols
             else

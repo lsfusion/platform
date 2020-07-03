@@ -4,7 +4,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -87,15 +86,14 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         } else if(BrowserEvents.BLUR.equals(event.getType())) {
             onBlur(handler);
         }
-
         if(handler.consumed)
             return;
 
-        form.onPropertyBrowserEvent(handler, getRenderElement(),
-            () -> onEditEvent(handler),
-            () -> CopyPasteUtils.putIntoClipboard(getRenderElement()),
-            () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line))
-        );
+        form.onPropertyBrowserEvent(handler, getRenderElement(), getFocusElement(),
+                () -> {}, // no outer context
+                () -> onEditEvent(handler),
+                () -> {}, // no outer context
+                () -> CopyPasteUtils.putIntoClipboard(getRenderElement()), () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line)));
     }
 
     protected void onFocus(EventHandler handler) {

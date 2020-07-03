@@ -22,10 +22,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -558,28 +555,16 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                 footer.onBrowserEvent(footerParent, event);
         } else {
             if (column != null) {
-                T value = getRowValue(row);
-                Context context = new Context(row, getColumnIndex(column), value);
+                Context context = new Context(row, getColumnIndex(column), getRowValue(row));
 
                 EventHandler handler = new EventHandler(event);
 
-                // first handling cell changes with mouse (cross focus)
-                selectionHandler.onCellBefore(handler, context, () -> isEditOnSingleClick(context));
-                if(handler.consumed)
-                    return;
-
-                // then cell events (this focus)
-                column.onBrowserEvent(context, columnParent, column.getValue(value), handler);
-                if(handler.consumed)
-                    return;
-
-                // in the end cell changes with (this focus)
-                selectionHandler.onCellAfter(handler, context);
-                if(handler.consumed)
-                    return;
+                onBrowserEvent(context, handler, column, columnParent);
             }
         }
     }
+
+    public abstract <C> void onBrowserEvent(Context context, EventHandler handler, Column<T, C> column, Element parent);
 
     protected void checkRowBounds(int row) {
         if (!isRowWithinBounds(row)) {
@@ -1899,7 +1884,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                     changeRow(row);
 
                     if(!isEditOnSingleClick.get())
-                        handler.consume(mouseChangeEvent && GMouseStroke.isChangeEventConsumesFocus()); // we need to propagate at least MOUSEDOWN since native handler is needed for focus event
+                        handler.consume(); // we need to propagate at least MOUSEDOWN since native handler is needed for focus event
                 }
 //                else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus
 //                        !CellBasedWidgetImpl.get().isFocusable(Element.as(event.getEventTarget())))

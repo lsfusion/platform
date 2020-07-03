@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.object.table.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
@@ -16,6 +15,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -378,6 +378,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
+    public <C> void onBrowserEvent(Context context, EventHandler handler, Column<T, C> column, Element parent) {
+        form.onPropertyBrowserEvent(handler, parent, getTableDataFocusElement(),
+                () -> selectionHandler.onCellBefore(handler, context, () -> isEditOnSingleClick(context)),
+                () -> column.onEditEvent(handler, null, context, parent),
+                () -> selectionHandler.onCellAfter(handler, context),
+                () -> CopyPasteUtils.putIntoClipboard(parent), () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
+    }
+
     protected abstract class GridPropertyColumn extends Column<T, Object> {
         public final GPropertyDraw property;
 
@@ -391,11 +399,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         @Override
-        public void onBrowserEvent(Context context, Element parent, Object value, EventHandler handler) {
-            form.onPropertyBrowserEvent(handler, parent,
-                    () -> onEditEvent(handler, null, context, parent),
-                    () -> CopyPasteUtils.putIntoClipboard(parent),
-                    () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
+        public void onEditEvent(EventHandler handler, GInputEvent bindingEvent, Context editContext, Element editCellParent) {
+            GGridPropertyTable.this.onEditEvent(handler, bindingEvent, editContext, editCellParent);
         }
 
         @Override
