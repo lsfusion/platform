@@ -54,13 +54,17 @@
 
 /* it's hard to tell why, but setting overflow:hidden, prevents getting divs bigger than their parents */
 
-.dataGridHeaderCell-div {
+.wrap-caption {
+    overflow: hidden;
+}
+
+.wrap-div {
     /* width : 100% by default*/
     height : 100%;
 
     overflow: hidden;
 }
-.dataGridHeaderCell-wrapcenter {
+.wrap-center {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -68,28 +72,30 @@
     overflow: hidden;
 }
 
-.dataGridHeaderCell-caption {
-    white-space: normal;
-
-    overflow: hidden;
-}
-
-.dataGridHeaderCell-wrapsortdiv {
+.wrap-wrapimgdiv {
     display: flex;
 
     overflow: hidden;
 }
-.dataGridHeaderCell-sortdiv {
+.wrap-imgdiv {
     flex: 1 1 auto;
     align-self: stretch;
 }
 
-.dataGridHeaderCell-sortimg {
+.wrap-img {
     /*overflow: hidden;*/
     margin: 1px 2px;
 
     flex: 0 0 auto;
     align-self: center;
+}
+
+.dataGridHeaderCell-caption {
+    white-space: normal;
+}
+
+.dataGridHeaderCell-sortimg {
+    /*overflow: hidden;*/
 }
 
 .dataGridFirstHeaderCell {

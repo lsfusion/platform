@@ -15,12 +15,12 @@ import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import net.auroris.ColorPicker.client.ColorPicker;
 
-public class ColorGridCellEditor extends PopupBasedGridCellEditor {
+public class ColorCellEditor extends PopupBasedCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private ColorPicker colorPicker;
 
-    public ColorGridCellEditor(EditManager editManager, GPropertyDraw property) {
+    public ColorCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
     }
 

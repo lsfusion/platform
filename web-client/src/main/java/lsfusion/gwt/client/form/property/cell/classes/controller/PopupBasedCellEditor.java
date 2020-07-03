@@ -11,15 +11,13 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.AbstractGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.form.property.cell.controller.WindowCellEditor;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
+public abstract class PopupBasedCellEditor implements WindowCellEditor {
     protected final SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
 
     protected GPropertyDraw property;
@@ -29,11 +27,11 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
 
     private final PopupPanel popup;
 
-    public PopupBasedGridCellEditor(EditManager editManager, GPropertyDraw property) {
+    public PopupBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null);
     }
 
-    public PopupBasedGridCellEditor(EditManager editManager, GPropertyDraw property, Style.TextAlign textAlign) {
+    public PopupBasedCellEditor(EditManager editManager, GPropertyDraw property, Style.TextAlign textAlign) {
         this.editManager = editManager;
         this.textAlign = textAlign;
         this.property = property;
@@ -94,11 +92,6 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     protected final void onCancel() {
         popup.hide();
         cancelEditing();
-    }
-
-    @Override
-    public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
-        //NOP
     }
 
     protected String renderToString(Object value) {

@@ -2,13 +2,12 @@ package lsfusion.gwt.client.classes.data.link;
 
 import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.LinkGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.LinkCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.FileCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
@@ -38,8 +37,8 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new LinkGridCellEditor(editManager, editProperty);
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new LinkCellEditor(editManager, editProperty);
     }
 
     @Override
@@ -48,7 +47,7 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor) {
+    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
         return 18;
     }
 

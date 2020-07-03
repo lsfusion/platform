@@ -11,12 +11,12 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.text.ParseException;
 
-public class TimeGridCellEditor extends TextBasedGridCellEditor {
+public class TimeCellEditor extends TextBasedCellEditor {
     private static final GTimeDTO midday = new GTimeDTO(12, 0, 0);
 
     private static DateTimeFormat format = GwtSharedUtils.getDefaultTimeFormat();
 
-    public TimeGridCellEditor(EditManager editManager, GPropertyDraw property) {
+    public TimeCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
     }
 

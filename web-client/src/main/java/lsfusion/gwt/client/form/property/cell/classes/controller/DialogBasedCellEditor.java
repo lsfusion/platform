@@ -6,12 +6,10 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.WindowBox;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.AbstractGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.form.property.cell.controller.WindowCellEditor;
 
-public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
+public abstract class DialogBasedCellEditor implements WindowCellEditor {
     protected final EditManager editManager;
     protected final GPropertyDraw property;
 
@@ -20,7 +18,7 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
     protected final int width;
     protected final int height;
 
-    public DialogBasedGridCellEditor(EditManager editManager, GPropertyDraw property, String title, int width, int height) {
+    public DialogBasedCellEditor(EditManager editManager, GPropertyDraw property, String title, int width, int height) {
         this.editManager = editManager;
         this.property = property;
         this.width = width;
@@ -29,7 +27,7 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
         dialog = new WindowBox(false, true, true) {
             @Override
             protected void onCloseClick(ClickEvent event) {
-                DialogBasedGridCellEditor.this.onCloseClick();
+                DialogBasedCellEditor.this.onCloseClick();
             }
         };
         dialog.setText(title);
@@ -49,10 +47,6 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
         }
         dialog.setWidget(content);
         dialog.center();
-    }
-
-    @Override
-    public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
     }
 
     protected final void commitEditing(Object value) {

@@ -20,11 +20,11 @@ public class GMouseInputEvent extends GInputEvent {
         this.mouseEvent = mouseEvent;
     }
 
-    public GMouseInputEvent(NativeEvent e) {
-        this(e.getType().equals(BrowserEvents.CLICK), e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
+    public GMouseInputEvent(NativeEvent e, boolean dblClick) {
+        this(dblClick, e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
     }
 
-    private GMouseInputEvent(boolean singleClick, boolean alt, boolean ctrl, boolean shift) {
+    private GMouseInputEvent(boolean dblClick, boolean alt, boolean ctrl, boolean shift) {
         String event = "";
         if (alt) {
             event += "alt ";
@@ -35,7 +35,7 @@ public class GMouseInputEvent extends GInputEvent {
         if (shift) {
             event += "shift ";
         }
-        this.mouseEvent = event + (singleClick ? CLK : DBLCLK);
+        this.mouseEvent = event + (dblClick ? DBLCLK : CLK);
     }
 
     public GMouseInputEvent(String mouseEvent, Map<String, GBindingMode> bindingModes) {

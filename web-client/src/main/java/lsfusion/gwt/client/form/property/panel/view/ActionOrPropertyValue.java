@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
@@ -21,7 +22,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 // property value renderer with editing
-public abstract class ActionOrPropertyValue extends FocusWidget {
+public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext {
 
     private Object value;
 
@@ -53,6 +54,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
         return getElement();
     }
 
+    @Override
+    public Element getFocusElement() {
+        return getElement();
+    }
+
     protected void finalizeInit() {
         this.form.render(this.property, getRenderElement(), getRenderContext());
     }
@@ -61,35 +67,14 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
         panel.add(this, panel.getWidgetCount(), GFlexAlignment.STRETCH, 1, property.getValueWidth(null), property.getValueHeight(null));
     }
 
-    public void addSimple(SimplePanel panel) {
-        panel.add(this);
-        setSimpleSize();
-    }
-
-    private void setSimpleSize() {
-        setWidth(property.getValueWidth(null) + "px");
-        setHeight(property.getValueHeight(null) + "px");
-    }
-
-    // there is some architecture bug in filters so for now will do this hack (later filter should rerender all GDataFilterValue)
-    public void changeProperty(GPropertyDraw property) {
-        this.property = property;
-
-        setSimpleSize(); // assert was added with addSimple
-
-        form.rerender(this.property, getRenderElement(), getRenderContext());
+    public void setBaseSize() {
+        FlexPanel.setBaseWidth(this, property.getValueWidth(null), property.getValueHeight(null));
+//        setWidth(property.getValueWidth(null) + "px");
+//        setHeight(property.getValueHeight(null) + "px");
     }
 
     @Override
     public void onBrowserEvent(Event event) {
-//        if ((BrowserEvents.CLICK.equals(event.getType()) || GKeyStroke.isCommonEditKeyEvent(event) &&
-//                !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey()) &&
-//                cellEditor == null &&
-//                event.getKeyCode() != KeyCodes.KEY_ESCAPE &&
-//                event.getKeyCode() != KeyCodes.KEY_ENTER) {
-//            startEditing(new NativeEditEvent(event));
-//            stopPropagation(event);
-//        }
         super.onBrowserEvent(event);
 
         if(!DataGrid.checkSinkEvents(event))
@@ -129,11 +114,16 @@ public abstract class ActionOrPropertyValue extends FocusWidget {
 
     protected abstract void onEditEvent(EventHandler handler);
 
-    protected RenderContext getRenderContext() {
-        return ActionOrPropertyValue.this::getElement;
+    @Override
+    public GPropertyDraw getProperty() {
+        return property;
     }
 
-    protected UpdateContext getUpdateContext() {
+    public RenderContext getRenderContext() {
+        return new RenderContext() {};
+    }
+
+    public UpdateContext getUpdateContext() {
         return UpdateContext.DEFAULT;
     }
 

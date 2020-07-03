@@ -14,7 +14,12 @@ public abstract class CellRenderer<T> {
         renderDynamic(element, value, updateContext);
     }
 
+    // should be consistent with getWidthPadding
     public void renderStatic(Element element, RenderContext renderContext) {}
+
+    public int getWidthPadding() {
+        return 0;
+    }
 
     public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
     }

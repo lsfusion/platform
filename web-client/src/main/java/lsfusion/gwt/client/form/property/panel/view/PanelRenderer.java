@@ -4,8 +4,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -23,13 +23,13 @@ public abstract class PanelRenderer {
     private String caption;
     private String tooltip;
 
-    public PanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
+    public PanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey, String styleName) {
         this.form = form;
         this.property = property;
         this.columnKey = columnKey;
 
         value = new ActionOrPropertyPanelValue(property, columnKey, form);
-        value.addStyleName("dataPanelRendererGridPanel");
+        value.addStyleName(styleName);
     }
 
     protected void finalizeInit() {
@@ -82,8 +82,8 @@ public abstract class PanelRenderer {
         }
     }
 
-    public void onChange(Event event) {
-        value.onEditEvent(new EventHandler(event), true);
+    public void onBinding(GInputEvent bindingEvent, Event event) {
+        value.onBinding(bindingEvent, event);
     }
 
     private Object foreground;

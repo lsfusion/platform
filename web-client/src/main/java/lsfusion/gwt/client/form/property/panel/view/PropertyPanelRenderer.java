@@ -29,7 +29,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     private final boolean vertical;
 
     public PropertyPanelRenderer(final GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
-        super(form, property, columnKey);
+        super(form, property, columnKey, "dataPanelRendererGridPanel");
 
         vertical = property.panelCaptionAbove;
 
@@ -94,7 +94,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             }
 
             //+extra for borders and margins
-            int width = property.getValueWidth(null) + 4;
+            int width = property.getValueWidthWithPadding(null) + 4;
             int height = property.getValueHeight(null) + 4;
 
             if (isVertical()) {

@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -10,8 +9,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
-public class TextGridCellEditor extends TextBasedGridCellEditor {
-    public TextGridCellEditor(EditManager editManager, GPropertyDraw property) {
+public class TextCellEditor extends TextBasedCellEditor {
+    public TextCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property, "textarea");
     }
 

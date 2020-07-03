@@ -19,6 +19,7 @@ import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
@@ -38,7 +39,6 @@ import java.util.*;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.min;
 import static java.lang.String.valueOf;
-import static java.util.Collections.singleton;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
@@ -675,9 +675,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                 form.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
                     @Override
-                    public void pressed(Event event) {
-//                        focusProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
-                        onEditEvent(new EventHandler(event), true, getCurrentCellContext(), getSelectedElement());
+                    public void pressed(GInputEvent bindingEvent, Event event) {
+                        int column = getPropertyIndex(property, null);
+                        if(column >= 0)
+                            onEditEvent(new EventHandler(event), bindingEvent, getSelectedCellContext(column), getSelectedElement(column));
                     }
 
                     @Override
@@ -837,7 +838,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public GGroupObjectValue getSelectedColumnKey() {
-        return getColumnKey(getCurrentCellContext());
+        return getColumnKey(getSelectedCellContext());
     }
 
     @Override
@@ -995,10 +996,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        if (propertyDraw == null) {
-            return;
-        }
-
         int ind = getPropertyIndex(propertyDraw, null);
         if (ind != -1) {
             changeSelectedColumn(ind);
@@ -1009,12 +1006,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
         GridColumn column = (GridColumn) getColumn(context.getColumn());
 
-        if (column != null && rowRecord != null) {
-            column.setValue(rowRecord, value);
-
-            setRowValue(context.getIndex(), rowRecord);
-            redrawColumns(singleton(column), false);
-        }
+//        if (column != null && rowRecord != null) {
+        column.setValue(rowRecord, value);
+        values.get(column.property).put(rowRecord.getKey(), value);
+        assert getRowValue(context.getIndex()) == rowRecord;
+//        }
     }
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {

@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
@@ -29,8 +30,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.*;
 
-import static com.google.gwt.dom.client.BrowserEvents.CLICK;
-import static java.util.Collections.singleton;
 import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
@@ -289,7 +288,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         public void onBrowserEvent(Context context, Element parent, Object value, EventHandler handler) {
             Event event = handler.event;
-            if (CLICK.equals(event.getType())) {
+            if (GMouseStroke.isChangeEvent(event)) {
                 String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
                 if (attrID != null) {
                     changeTreeState(context, value, event);
@@ -749,7 +748,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         super.onBrowserEvent2(event);
 
         if (event.getTypeInt() == Event.ONDBLCLICK) {
-            if (treeGroupController.isExpandOnClick() && isReadOnly(getCurrentCellContext()) && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {
+            if (treeGroupController.isExpandOnClick() && isReadOnly(getSelectedCellContext()) && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {
                 GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
                 if (node != null && node.isExpandable()) {
                     GwtClientUtils.stopPropagation(event);
@@ -770,21 +769,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     public void setValueAt(Context context, Object value) {
-        int row = context.getIndex();
-        int column = context.getColumn();
-
         GTreeGridRecord rowRecord = (GTreeGridRecord) context.getRowValue();
+        GPropertyDraw property = getProperty(context);
 
-        if (rowRecord != null) {
-            GPropertyDraw property = getProperty(context);
-            if (property != null) {
-                rowRecord.setValue(property, value);
-                tree.putValue(property, rowRecord.getKey(), value);
-            }
-        }
+//        if (rowRecord != null && property != null) {
+        rowRecord.setValue(property, value);
+        tree.values.get(property).put(rowRecord.getKey(), value);
+        assert getRowValue(context.getIndex()) == rowRecord;
+//        }
 
-        setRowData(row, Arrays.asList(rowRecord));
-        redrawColumns(singleton(getColumn(column)), false);
+//        redrawColumns(singleton(getColumn(context.getColumn())), false);
     }
 
     public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {

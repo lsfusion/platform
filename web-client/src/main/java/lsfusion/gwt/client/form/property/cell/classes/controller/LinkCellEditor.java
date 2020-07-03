@@ -3,8 +3,8 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-public class LinkGridCellEditor extends StringGridCellEditor {
-    public LinkGridCellEditor(EditManager editManager, GPropertyDraw property) {
+public class LinkCellEditor extends StringCellEditor {
+    public LinkCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property, true, 1000);
     }
 }

@@ -8,9 +8,9 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import java.text.ParseException;
 import java.util.Date;
 
-public class ZDateTimeGridCellEditor extends DateTimeGridCellEditor {
+public class ZDateTimeCellEditor extends DateTimeCellEditor {
 
-    public ZDateTimeGridCellEditor(EditManager editManager, GPropertyDraw property) {
+    public ZDateTimeCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
     }
 

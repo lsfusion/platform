@@ -101,7 +101,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
             CellRenderer renderer = null;
             if(convertDataToStrings)
-                renderer = properties.get(i).getGridCellRenderer();
+                renderer = properties.get(i).getCellRenderer();
 
             for (GGroupObjectValue columnKey : propColumnKeys) {
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
@@ -934,8 +934,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
-        CellRenderer<?> renderer = columnMap.get(columnName).property.getGridCellRenderer();
-        renderer.render(th, value, this::getElement, () -> font);
+        CellRenderer<?> renderer = columnMap.get(columnName).property.getCellRenderer();
+        renderer.render(th, value, new RenderContext() {}, () -> font);
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
@@ -963,9 +963,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 GGridPropertyTableHeader.renderTD(jsElement, 0, sortDir, fromObject(value).toString());
             } else {
                 if (isLastCol && sortDir != null) { // last column may have a sortDir
-                    jsElement = GGridPropertyTableHeader.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
+                    jsElement = GwtClientUtils.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
 
-                    jsElement = GGridPropertyTableHeader.wrapSort(jsElement, sortDir);
+                    jsElement = GwtClientUtils.wrapImg(jsElement, GGridPropertyTableHeader.getSortImgProcesspr(sortDir));
                 }
 
                 GPropertyTableBuilder.renderTD(jsElement, rowHeight);
@@ -1056,7 +1056,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private int getColumnMapWidth(String column) {
-        return columnMap.get(column).property.getValueWidth(null);
+        return columnMap.get(column).property.getValueWidthWithPadding(font);
     }
 
     public int getColumnWidth(boolean isValueColumn, JsArrayString colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {

@@ -7,16 +7,16 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.text.ParseException;
 
-public class IntegralGridCellEditor extends TextBasedGridCellEditor {
+public class IntegralCellEditor extends TextBasedCellEditor {
     protected final NumberFormat format;
 
     protected final GIntegralType type;
 
-    public IntegralGridCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property) {
+    public IntegralCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property) {
         this(type, editManager, property, NumberFormat.getDecimalFormat());
     }
 
-    public IntegralGridCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property, NumberFormat format) {
+    public IntegralCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property, NumberFormat format) {
         super(editManager, property);
         this.format = format;
         this.type = type;

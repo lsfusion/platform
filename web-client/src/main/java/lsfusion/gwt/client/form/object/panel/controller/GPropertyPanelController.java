@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
@@ -75,8 +76,8 @@ public class GPropertyPanelController {
 
                         form.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
                             @Override
-                            public void pressed(Event event) {
-                                newRenderer.onChange(event);
+                            public void pressed(GInputEvent bindingEvent, Event event) {
+                                newRenderer.onBinding(bindingEvent, event);
                             }
                             @Override
                             public boolean showing() {

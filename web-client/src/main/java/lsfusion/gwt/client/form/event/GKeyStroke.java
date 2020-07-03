@@ -7,8 +7,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.io.Serializable;
 
-import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
-import static com.google.gwt.dom.client.BrowserEvents.KEYPRESS;
+import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
 
 public class GKeyStroke implements Serializable {

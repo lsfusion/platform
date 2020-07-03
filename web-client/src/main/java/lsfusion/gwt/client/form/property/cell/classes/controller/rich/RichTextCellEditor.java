@@ -15,10 +15,10 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.DialogBasedGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.DialogBasedCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-public class RichTextGridCellEditor extends DialogBasedGridCellEditor {
+public class RichTextCellEditor extends DialogBasedCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private static int INITIAL_WIDTH = Math.min(800, Window.getClientWidth() - 20);
@@ -26,7 +26,7 @@ public class RichTextGridCellEditor extends DialogBasedGridCellEditor {
 
     private RichTextArea textArea;
 
-    public RichTextGridCellEditor(EditManager editManager, GPropertyDraw property) {
+    public RichTextCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property, property.getNotEmptyCaption(), INITIAL_WIDTH, INITIAL_HEIGHT);
     }
 

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -31,6 +32,7 @@ import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
@@ -69,8 +71,7 @@ import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
@@ -180,8 +181,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         initializeAutoRefresh();
 
-        addDomHandler(event -> handleMouseEvent(event.getNativeEvent()), ClickEvent.getType());
-        addDomHandler(event -> handleMouseEvent(event.getNativeEvent()), DoubleClickEvent.getType());
+        DataGrid.initSinkMouseEvents(this);
+    }
+
+    @Override
+    public void onBrowserEvent(Event event) {
+        super.onBrowserEvent(event);
+
+        if(GMouseStroke.isChangeEvent(event))
+            handleMouseEvent(event, false);
+        else if (GMouseStroke.isDoubleChangeEvent(event))
+            handleMouseEvent(event, true);
     }
 
     // will handle key events in upper container which will be better from UX point of view
@@ -235,7 +245,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (filter.key != null) {
             addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
                 @Override
-                public void pressed(Event event) {
+                public void pressed(GInputEvent bindingEvent, Event event) {
                     filterCheck.setValue(!filterCheck.getValue(), true);
                 }
                 @Override
@@ -261,7 +271,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if (filter.key != null) {
                 addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
                     @Override
-                    public void pressed(Event event) {
+                    public void pressed(GInputEvent bindingEvent, Event event) {
                         filterBox.setSelectedIndex(filterIndex + 1);
                         setRegularFilter(filterGroup, filterIndex);
                     }
@@ -709,60 +719,65 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         dispatcher.execute(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
     }
 
-    public void executePropertyEventAction(final GPropertyDraw property, final GGroupObjectValue columnKey,
-                                           Element element, EventHandler handler, boolean forceChange,
-                                           Supplier<Object> getValue, Consumer<Object> setValue, // we need access to the model
-                                           Supplier<Boolean> checkReadOnly,
-                                           RenderContext renderContext, UpdateContext updateContext) {
+    public void executePropertyEventAction(EventHandler handler, GInputEvent bindingEvent, ExecuteEditContext editContext) {
         Event event = handler.event;
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(property, event.getClientX(), event.getClientY(), actionSID -> executePropertyActionSID(property, columnKey, element, new EventHandler(event), getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext));
+            GPropertyContextMenuPopup.show(editContext.getProperty(), event.getClientX(), event.getClientY(), actionSID -> executePropertyActionSID(new EventHandler(event), actionSID, editContext));
         } else {
-            String actionSID = forceChange ? CHANGE : property.getEventSID(event);
-            if (actionSID != null)
-                executePropertyActionSID(property, columnKey, element, handler, getValue, setValue, checkReadOnly, actionSID, renderContext, updateContext);
+            String actionSID;
+            if(bindingEvent != null) {
+                if(bindingEvent instanceof GKeyInputEvent) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
+                    editContext.trySetFocus(); // we want element to be focused on key binding (if it's possible)
+                actionSID = CHANGE;
+            } else {
+                actionSID = editContext.getProperty().getEventSID(event);
+                if(actionSID == null)
+                    return;
+            }
+            executePropertyActionSID(handler, actionSID, editContext);
         }
     }
 
-    private void executePropertyActionSID(GPropertyDraw property, GGroupObjectValue columnKey, Element element, EventHandler handler, Supplier<Object> getValue, Consumer<Object> setValue, Supplier<Boolean> checkReadOnly, String actionSID, RenderContext renderContext, UpdateContext updateContext) {
-        if (isChange(actionSID) && checkReadOnly.get()) {
+    private void executePropertyActionSID(EventHandler handler, String actionSID, ExecuteEditContext editContext) {
+        if (isChange(actionSID) && editContext.isReadOnly()) {
             return;
         }
 
-        handler.consume();
         Event event = handler.event;
+        handler.consume();
+        if(GMouseStroke.isChangeEvent(event) && GMouseStroke.isChangeEventConsumesFocus())
+            editContext.getFocusElement().focus(); // we need to focus element since change consumes mousedown and hence focus
 
+        GPropertyDraw property = editContext.getProperty();
         final boolean asyncModifyObject = isAsyncModifyObject(property);
         if (GEditBindingMap.CHANGE.equals(actionSID) && (asyncModifyObject || property.changeType != null)) {
             if (property.askConfirm) {
-                blockingConfirm("lsFusion", property.askConfirmMessage, false, new DialogBoxHelper.CloseCallback() {
-                    @Override
-                    public void closed(DialogBoxHelper.OptionType chosenOption) {
-                        if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            executeSimpleChange(asyncModifyObject, property, columnKey, element, event, getValue, setValue, renderContext, updateContext);
-                        }
+                blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
+                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                        executeSimpleChange(asyncModifyObject, event, editContext);
                     }
                 });
             } else {
-                executeSimpleChange(asyncModifyObject, property, columnKey, element, event, getValue, setValue, renderContext, updateContext);
+                executeSimpleChange(asyncModifyObject, event, editContext);
             }
         } else
-            actionDispatcher.executePropertyActionSID(property, columnKey, element, event, getValue, setValue, actionSID, renderContext, updateContext);
+            actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
     }
 
-    private void executeSimpleChange(boolean asyncModifyObject, GPropertyDraw property, GGroupObjectValue columnKey, Element element, Event event, final Supplier<Object> getValue, final Consumer<Object> setValue, RenderContext renderContext, UpdateContext updateContext) {
+    private void executeSimpleChange(boolean asyncModifyObject, Event event, ExecuteEditContext editContext) {
+        GPropertyDraw property = editContext.getProperty();
         if (asyncModifyObject)
-            modifyObject(property, columnKey);
+            modifyObject(editContext.getProperty(), editContext.getColumnKey());
         else {
-            edit(property, element, property.changeType, event, false, null, getValue, value -> {
-                Object oldValue = getValue.get();
+            edit(property.changeType, event, false, null, value -> {
+                Object oldValue = editContext.getValue();
 
                 if(property.canUseChangeValueForRendering()) // changing model, to rerender new value
-                    setValue.accept(value);
+                    editContext.setValue(value);
 
-                changeProperty(property, columnKey, (Serializable) value, oldValue);
-            }, value -> {}, () -> {}, renderContext, updateContext);
+                changeProperty(property, editContext.getColumnKey(), (Serializable) value, oldValue);
+            }, value -> {}, () -> {}, editContext);
         }
     }
 
@@ -1287,7 +1302,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             this.isSuitable = isSuitable;
         }
 
-        public abstract void pressed(Event event);
+        public abstract void pressed(GInputEvent bindingEvent, Event event);
         public abstract boolean showing();
 
         public boolean enabled() {
@@ -1295,7 +1310,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private final HashMap<GInputEvent, ArrayList<Binding>> bindings = new HashMap<>();
+    private final NativeHashMap<GInputEvent, ArrayList<Binding>> bindings = new NativeHashMap<>();
 
     public void addPropertyBindings(GPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
         if(propertyDraw.changeKey != null) {
@@ -1358,7 +1373,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             for (Binding binding : orderedBindings.values()) {
                 if (binding.enabled()) {
                     checkCommitEditing();
-                    binding.pressed((Event) event);
+                    binding.pressed(ks, (Event) event);
                     stopPropagation(event);
                     return true;
                 }
@@ -1369,7 +1384,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void checkCommitEditing() {
         if(cellEditor != null)
-            cellEditor.commitEditing(editElement);
+            cellEditor.commitEditing(editContext.getRenderElement());
     }
 
     private boolean bindDialog(Binding binding) {
@@ -1458,63 +1473,52 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    private void handleMouseEvent(NativeEvent nativeEvent) {
+    private void handleMouseEvent(NativeEvent nativeEvent, boolean dblClick) {
         final EventTarget target = nativeEvent.getEventTarget();
         if (!Element.is(target)) {
             return;
         }
 
-        processBinding(new GMouseInputEvent(nativeEvent), nativeEvent, new GGroupObjectSupplier() {
-            public GGroupObject get() {
-                return getGroupObject(Element.as(target));
-            }
-        });
+        processBinding(new GMouseInputEvent(nativeEvent, dblClick), nativeEvent, () -> getGroupObject(Element.as(target)));
     }
 
-    private GridCellEditor cellEditor;
-    private GPropertyDraw editProperty;
+    private CellEditor cellEditor;
 
-    private Element editElement;
-    private Supplier<Object> editGetValue;
-
-    private RenderContext editRenderContext;
-    private UpdateContext editUpdateContext;
+    private EditContext editContext;
 
     private Consumer<Object> editBeforeCommit;
     private Consumer<Object> editAfterCommit;
     private Runnable editCancel;
 
     private Element focusedElement;
+    private Object forceSetFocus;
 
     public boolean isEditing() {
-        return cellEditor != null;
+        return editContext != null;
     }
 
-    public void edit(GPropertyDraw property, Element element, GType type, Event event, boolean hasOldValue, Object oldValue, Supplier<Object> getValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, RenderContext renderContext, UpdateContext updateContext) {
-        assert cellEditor == null;
-        GridCellEditor cellEditor = type.createGridCellEditor(this, property);
+    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext) {
+        assert this.editContext == null;
+        CellEditor cellEditor = type.createGridCellEditor(this, editContext.getProperty());
         if (cellEditor != null) {
-            editGetValue = getValue;
-
-            editProperty = property;
-            editElement = element;
-
             editBeforeCommit = beforeCommit;
             editAfterCommit = afterCommit;
             editCancel = cancel;
 
-            editRenderContext = renderContext;
-            editUpdateContext = updateContext;
+            this.editContext = editContext;
 
-            if (cellEditor.replaceCellRenderer()) {
+            Element element = editContext.getRenderElement();
+            if (cellEditor instanceof ReplaceCellEditor) {
                 focusedElement = GwtClientUtils.getFocusedElement();
+                if(!editContext.isFocusable()) // assert that otherwise it's already has focus
+                    forceSetFocus = editContext.forceSetFocus();
 
                 removeAllChildren(element);
-                cellEditor.renderDom(element, renderContext, updateContext);
+                ((ReplaceCellEditor)cellEditor).renderDom(element, editContext.getRenderContext(), editContext.getUpdateContext());
             }
 
             this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
-            cellEditor.startEditing(event, element, hasOldValue ? oldValue : getValue.get());
+            cellEditor.startEditing(event, element, hasOldValue ? oldValue : editContext.getValue());
         } else
             editCancel.run();
     }
@@ -1539,43 +1543,38 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void finishEditing(boolean blurred) {
-        boolean replacedRenderer = cellEditor.replaceCellRenderer();
+        boolean replaceEditor = cellEditor instanceof ReplaceCellEditor;
         cellEditor = null;
 
-        Supplier<Object> getValue = editGetValue;
-        editGetValue = null;
+        EditContext editContext = this.editContext;
+        this.editContext = null;
 
-        GPropertyDraw property = editProperty;
-        editProperty = null;
-        Element element = editElement;
-        editElement = null;
+        if(replaceEditor) {
+            rerender(editContext.getProperty(), editContext.getRenderElement(), editContext.getRenderContext());
 
-        RenderContext renderContext = editRenderContext;
-        editRenderContext = null;
-        UpdateContext updateContext = editUpdateContext;
-        editUpdateContext = null;
-
-        if(replacedRenderer) {
-            rerender(property, element, renderContext);
+            if(forceSetFocus != null) {
+                editContext.restoreSetFocus(forceSetFocus);
+                forceSetFocus = null;
+            }
 
             if(blurred) // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
-                formsController.setLastBlurredElement(renderContext.getFocusElement());
+                formsController.setLastBlurredElement(editContext.getFocusElement());
             else {
                 if (focusedElement != null)
                     focusedElement.focus();
             }
         }
 
-        update(property, element, getValue.get(), updateContext);
+        update(editContext.getProperty(), editContext.getRenderElement(), editContext.getValue(), editContext.getUpdateContext());
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
-        if(editElement == element) { // is edited
+        if(editContext != null && editContext.getRenderElement() == element) { // is edited
             assert false;
             return;
         }
 
-        property.getGridCellRenderer().renderStatic(element, renderContext);
+        property.getCellRenderer().renderStatic(element, renderContext);
     }
     public void rerender(GPropertyDraw property, Element element, RenderContext renderContext) {
         removeAllChildren(element);
@@ -1583,13 +1582,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         render(property, element, renderContext);
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
-        if(editElement == element) // is edited
+        if(editContext != null && editContext.getRenderElement() == element) // is edited
             return;
 
-        property.getGridCellRenderer().renderDynamic(element, value, updateContext);
-    }
-    public boolean isEditing(Element element) {
-        return editElement == element;
+        property.getCellRenderer().renderDynamic(element, value, updateContext);
     }
 
     public static void setBackgroundColor(Element element, String color) {
@@ -1609,7 +1605,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public <T> void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Runnable onEdit, Runnable onCut, Runnable onPaste) {
-        if (cellEditor != null && editElement == cellParent) {
+        if (cellEditor != null && editContext.getRenderElement() == cellParent) {
             cellEditor.onBrowserEvent(cellParent, handler);
         } else {
             if (GKeyStroke.isCopyToClipboardEvent(handler.event)) {

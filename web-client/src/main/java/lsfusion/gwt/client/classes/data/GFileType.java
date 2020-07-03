@@ -1,13 +1,12 @@
 package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.FileGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.FileCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.FileCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
@@ -41,8 +40,8 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new FileGridCellEditor(editManager, editProperty, description, multiple, storeName, validContentTypes);
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new FileCellEditor(editManager, editProperty, description, multiple, storeName, validContentTypes);
     }
 
     @Override
@@ -51,7 +50,7 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor) {
+    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
         return 18;
     }
 

@@ -9,8 +9,8 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
-import lsfusion.gwt.client.form.property.cell.controller.AbstractGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.controller.ReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
@@ -21,26 +21,21 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 import static lsfusion.gwt.client.view.StyleDefaults.DEFAULT_FONT_PT_SIZE;
 
-public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
+public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
     protected final GPropertyDraw property;
     protected final EditManager editManager;
     protected final String inputElementTagName;
 
-    public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property) {
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, "input");
     }
 
-    public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property, String inputElementTagName) {
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, String inputElementTagName) {
         this.inputElementTagName = inputElementTagName;
         this.editManager = editManager;
         this.property = property;
-    }
-
-    @Override
-    public boolean replaceCellRenderer() {
-        return true;
     }
 
     @Override

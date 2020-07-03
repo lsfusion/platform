@@ -16,7 +16,6 @@
  */
 package lsfusion.gwt.client.base.view.grid;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
@@ -29,12 +28,14 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 import static java.lang.Math.min;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
@@ -293,6 +294,9 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserEvents());
 
         widget.sinkEvents(Event.ONPASTE);
+    }
+    public static void initSinkMouseEvents(Widget widget) {
+        CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserMouseEvents());
     }
     public static boolean checkSinkEvents(Event event) {
         String eventType = event.getType();
@@ -560,7 +564,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                 EventHandler handler = new EventHandler(event);
 
                 // first handling cell changes with mouse (cross focus)
-                selectionHandler.onCellBefore(handler, context);
+                selectionHandler.onCellBefore(handler, context, () -> isEditOnSingleClick(context));
                 if(handler.consumed)
                     return;
 
@@ -575,10 +579,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                     return;
             }
         }
-    }
-
-    private static class Consumed {
-        public boolean is;
     }
 
     protected void checkRowBounds(int row) {
@@ -805,7 +805,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
      * @return the currently selected column, or -1 if none selected
      */
     public int getSelectedColumn() {
-        return getCurrentState().selectedColumn;
+        return getCurrentState().getSelectedColumn();
     }
 
     protected TableRowElement getChildElement(int row) {
@@ -823,45 +823,58 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
     // see overrides
     public boolean changeSelectedColumn(int column) {
 //        setFocus(true);
-        return setSelectedColumn(column);
+        int columnCount = getColumnCount();
+        if(columnCount == 0)
+            return true;
+        if (column < 0)
+            column = 0;
+        else if (column >= columnCount)
+            column = columnCount - 1;
+
+        if(!isFocusable(column))
+            return false;
+
+        setSelectedColumn(column);
+        return true;
     }
     public void changeSelectedRow(int row) {
 //        setFocus(true);
+        int rowCount = getRowCount();
+
+        if(rowCount == 0)
+            return;
+        if (row < 0)
+            row = 0;
+        else if (row >= rowCount)
+            row = rowCount - 1;
+
         setSelectedRow(row);
 
         rowChangedHandler.run();
     }
 
-    public boolean setSelectedColumn(int column) {
+    public void setSelectedColumn(int column) {
         assert column >= 0 : "Column must be zero or greater";
 
-        if (getSelectedColumn() == column) {
-            return true;
-        }
-
-        int columnCount = getColumnCount();
-        if (column >= columnCount) {
-            column = columnCount - 1;
-        }
-
-        Column<T, ?> selectingColumn = getColumn(column);
-        if(!selectingColumn.isFocusable())
-            return false;
+        if (getSelectedColumn() == column)
+            return;
 
         ensurePendingState().setSelectedColumn(column);
-        return true;
     }
-    public void setSelectedRow(int row) {
-        int rowCount = getRowCount();
-        if (rowCount == 0 || getSelectedRow() == row) {
-            return;
-        }
 
-        if (row < 0) {
-            row = 0;
-        } else if (row >= rowCount) {
-            row = rowCount - 1;
-        }
+    public boolean isFocusable(int column) {
+        return getColumn(column).isFocusable();
+    }
+    public boolean isFocusable(Context context) {
+        return isFocusable(context.getColumn());
+    }
+    public boolean isEditOnSingleClick(Context context) {
+        return !isFocusable(context);
+    }
+
+    public void setSelectedRow(int row) {
+        if (getSelectedRow() == row)
+            return;
 
         ensurePendingState().setSelectedRow(row);
     }
@@ -998,17 +1011,21 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
     }
 
     protected Element getSelectedElement() {
+        return getSelectedElement(getSelectedColumn());
+    }
+
+    protected Element getSelectedElement(int column) {
+        return getElement(getSelectedRow(), column);
+    }
+
+    protected Element getElement(int rowIndex, int colIndex) { // element used for rendering
         TableCellElement result = null;
-        int colIndex = getSelectedColumn();
-        if (colIndex >= 0) {// Do not use getRowElement() because that will flush the presenter.
-            int rowIndex = getSelectedRow();
-            TableRowElement tr = getRowElementNoFlush(rowIndex);
-            if (tr != null) {
-                int cellCount = tr.getCells().getLength();
-                if (cellCount > 0) {
-                    int column = min(colIndex, cellCount - 1);
-                    result = tr.getCells().getItem(column);
-                }
+        TableRowElement tr = getRowElementNoFlush(rowIndex); // Do not use getRowElement() because that will flush the presenter.
+        if (tr != null && colIndex >= 0) {
+            int cellCount = tr.getCells().getLength();
+            if (cellCount > 0) {
+                int column = min(colIndex, cellCount - 1);
+                result = tr.getCells().getItem(column);
             }
         }
         return result;
@@ -1867,12 +1884,12 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             this.display = display;
         }
 
-        public void onCellBefore(EventHandler handler, Context context) {
+        public void onCellBefore(EventHandler handler, Context context, Supplier<Boolean> isEditOnSingleClick) {
             Event event = handler.event;
-            String eventType = event.getType();
-            if (BrowserEvents.CLICK.equals(eventType) ||
-                    BrowserEvents.FOCUS.equals(eventType) ||
-                    (BrowserEvents.MOUSEDOWN.equals(eventType) && event.getButton() == Event.BUTTON_RIGHT)) {
+            boolean mouseChangeEvent = GMouseStroke.isChangeEvent(event);
+            if (mouseChangeEvent ||
+//                    BrowserEvents.FOCUS.equals(eventType) ||
+                    (BrowserEvents.MOUSEDOWN.equals(event.getType()) && event.getButton() == Event.BUTTON_RIGHT)) {
 
                 int col = context.getColumn();
                 int row = context.getIndex();
@@ -1881,7 +1898,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                     changeColumn(col);
                     changeRow(row);
 
-                    handler.consume();
+                    if(!isEditOnSingleClick.get())
+                        handler.consume(mouseChangeEvent && GMouseStroke.isChangeEventConsumesFocus()); // we need to propagate at least MOUSEDOWN since native handler is needed for focus event
                 }
 //                else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus
 //                        !CellBasedWidgetImpl.get().isFocusable(Element.as(event.getEventTarget())))
@@ -1946,7 +1964,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                             if (rowIndex != rowCount - 1) {
                                 columnIndex = 0;
                                 rowIndex++;
-                            }
+                            } else
+                                break;
                         } else {
                             columnIndex++;
                         }
@@ -1955,7 +1974,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                             if (rowIndex != 0) {
                                 columnIndex = columnCount - 1;
                                 rowIndex--;
-                            }
+                            } else
+                                break;
                         } else {
                             columnIndex--;
                         }

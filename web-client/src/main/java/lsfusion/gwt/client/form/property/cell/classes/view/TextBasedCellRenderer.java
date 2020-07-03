@@ -39,6 +39,11 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         setPadding(style);
     }
 
+    @Override
+    public int getWidthPadding() {
+        return CELL_HORIZONTAL_PADDING;
+    }
+
     private static void setPadding(Style style) {
         style.setPaddingBottom(0, Style.Unit.PX);
         style.setPaddingTop(0, Style.Unit.PX);

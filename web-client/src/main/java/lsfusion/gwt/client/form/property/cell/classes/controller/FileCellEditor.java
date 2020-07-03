@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-public class FileGridCellEditor extends DialogBasedGridCellEditor {
+public class FileCellEditor extends DialogBasedCellEditor {
     private boolean multiple;
     private boolean storeName;
     private String description;
@@ -38,7 +38,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
-    public FileGridCellEditor(EditManager editManager, GPropertyDraw property, String description, boolean multiple, boolean storeName, ArrayList<String> validContentTypes) {
+    public FileCellEditor(EditManager editManager, GPropertyDraw property, String description, boolean multiple, boolean storeName, ArrayList<String> validContentTypes) {
         super(editManager, property, messages.fileEditorTitle(), 500, 150);
         this.multiple = multiple;
         this.storeName = storeName;

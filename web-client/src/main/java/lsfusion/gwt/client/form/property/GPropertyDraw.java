@@ -17,7 +17,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
-import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -122,7 +121,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean columnKeysVertical;
     
     public GFlexAlignment valueAlignment;
-    
+
+    public Boolean editOnSingleClick;
+
     public boolean hide;
 
     private transient CellRenderer cellRenderer;
@@ -166,7 +167,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return baseType.createPanelRenderer(form, this, columnKey);
     }
 
-    public CellRenderer getGridCellRenderer() {
+    public CellRenderer getCellRenderer() {
         if (cellRenderer == null) {
             cellRenderer = baseType.createGridCellRenderer(this);
         }
@@ -177,7 +178,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(baseType instanceof GFormatType) {
             this.pattern = pattern != null ? pattern : defaultPattern;
 
-            CellRenderer renderer = getGridCellRenderer();
+            CellRenderer renderer = getCellRenderer();
             if (renderer instanceof FormatCellRenderer) {
                 ((FormatCellRenderer) renderer).updateFormat();
             } else
@@ -349,11 +350,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return null;
     }
 
-    public int getValueWidth(GFont parentFont) {
-        return getValueWidth(parentFont, null);
+    // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
+    public int getValueWidthWithPadding(GFont parentFont) {
+        return getValueWidth(parentFont) + getCellRenderer().getWidthPadding() * 2;
     }
 
-    public int getValueWidth(GFont parentFont, GWidthStringProcessor widthStringProcessor) {
+    public int getValueWidth(GFont parentFont) {
         if (valueWidth != -1) {
             return valueWidth;
         }
@@ -364,9 +366,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(widthString == null && charWidth != 0)
             widthString = GwtSharedUtils.replicate('0', charWidth);
         if(widthString != null)
-            return baseType.getFullWidthString(widthString, font, widthStringProcessor);
+            return baseType.getFullWidthString(widthString, font);
 
-        return baseType.getDefaultWidth(font, this, widthStringProcessor);
+        return baseType.getDefaultWidth(font, this);
     }
 
     public Object getFormat() {

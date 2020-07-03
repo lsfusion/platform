@@ -11,10 +11,10 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import java.text.ParseException;
 import java.util.Date;
 
-public class DateTimeGridCellEditor extends DateGridCellEditor {
+public class DateTimeCellEditor extends DateCellEditor {
     private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateTimeFormat();
 
-    public DateTimeGridCellEditor(EditManager editManager, GPropertyDraw property) {
+    public DateTimeCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
     }
 

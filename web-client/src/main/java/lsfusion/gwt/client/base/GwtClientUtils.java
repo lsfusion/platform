@@ -2,11 +2,7 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.BodyElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.http.client.*;
 import com.google.gwt.i18n.client.Dictionary;
@@ -716,5 +712,56 @@ public class GwtClientUtils {
             if(predicate.test(element))
                 return element;
         return null;
+    }
+
+    public static Element wrapCenteredImg(Element th, Integer setHeight, Consumer<ImageElement> imgProcessor) {
+        th = wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
+
+        // since it's a header we want to align it to the center (vertically and horizontally)
+        th = wrapCenter(th); // we have to do it after setting height (because that's the point of that centering)
+
+        // we don't want that container to be larger than the upper one
+        if(setHeight != null)
+            th.getStyle().setProperty("maxHeight", setHeight + "px");
+
+        if(imgProcessor != null)
+            th = wrapImg(th, imgProcessor);
+
+        th.addClassName("wrap-caption");
+        return th;
+    }
+
+    //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
+    public static Element wrapDiv(Element th) {
+        Element wrappedTh = Document.get().createDivElement();
+        wrappedTh.addClassName("wrap-div");
+        th.appendChild(wrappedTh);
+
+        return wrappedTh;
+    }
+
+    public static Element wrapCenter(Element th) {
+        th.addClassName("wrap-center"); // display flex : justify-content stretch, align-items
+
+        Element wrappedTh = Document.get().createDivElement();
+        th.appendChild(wrappedTh);
+
+        return wrappedTh;
+    }
+
+    public static Element wrapImg(Element th, Consumer<ImageElement> imgProcessor) {
+        th.addClassName("wrap-wrapimgdiv");
+
+        Element wrappedTh = Document.get().createDivElement();
+        wrappedTh.addClassName("wrap-imgdiv");
+
+        ImageElement img = Document.get().createImageElement();
+        img.addClassName("wrap-img");
+        imgProcessor.accept(img);
+        th.appendChild(img);
+
+        th.appendChild(wrappedTh);
+
+        return wrappedTh;
     }
 }

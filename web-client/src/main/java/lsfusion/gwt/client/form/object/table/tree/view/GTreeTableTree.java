@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.tree.view;
 
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
@@ -17,7 +18,7 @@ public class GTreeTableTree {
     public HashMap<GGroupObject, List<GPropertyDraw>> groupProperties = new HashMap<>();
     private Map<GGroupObject, Set<GTreeTableNode>> groupNodes = new HashMap<>();
 
-    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<>();
+    public NativeHashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new NativeHashMap<>();
     public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> readOnly = new HashMap<>();
 
     public GTreeTableNode root;
@@ -269,10 +270,6 @@ public class GTreeTableTree {
             }
         }
         return true;
-    }
-
-    public void putValue(GPropertyDraw property, GGroupObjectValue key, Object value) {
-        values.get(property).put(key, value);
     }
 
     public GTreeTableNode getNodeByRecord(GTreeGridRecord record) {

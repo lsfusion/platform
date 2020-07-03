@@ -7,8 +7,8 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.math.BigDecimal;
 
-public class DoubleGridCellEditor extends IntegralGridCellEditor {
-    public DoubleGridCellEditor(EditManager editManager, GPropertyDraw property, NumberFormat format) {
+public class DoubleCellEditor extends IntegralCellEditor {
+    public DoubleCellEditor(EditManager editManager, GPropertyDraw property, NumberFormat format) {
         super(GDoubleType.instance, editManager, property, format);
     }
 

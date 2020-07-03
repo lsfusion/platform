@@ -4,10 +4,10 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.NumericGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.NumericCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.NumberCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.math.BigDecimal;
@@ -57,8 +57,8 @@ public class GNumericType extends GDoubleType {
     }
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new NumericGridCellEditor(this, editManager, editProperty, getEditFormat(editProperty));
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new NumericCellEditor(this, editManager, editProperty, getEditFormat(editProperty));
     }
 
     @Override

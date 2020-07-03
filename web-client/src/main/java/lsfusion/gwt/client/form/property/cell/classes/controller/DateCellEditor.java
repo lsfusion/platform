@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
@@ -25,14 +24,14 @@ import lsfusion.gwt.client.view.StyleDefaults;
 import java.text.ParseException;
 import java.util.Date;
 
-public class DateGridCellEditor extends PopupBasedGridCellEditor {
+public class DateCellEditor extends PopupBasedCellEditor {
 
     private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat();
 
     protected DatePicker datePicker;
     protected TextBox editBox;
 
-    public DateGridCellEditor(EditManager editManager, GPropertyDraw property) {
+    public DateCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property, Style.TextAlign.RIGHT);
 
         datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {

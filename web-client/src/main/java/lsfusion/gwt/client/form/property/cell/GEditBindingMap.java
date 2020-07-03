@@ -3,12 +3,12 @@ package lsfusion.gwt.client.form.property.cell;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
@@ -38,19 +38,17 @@ public class GEditBindingMap implements Serializable {
     }
 
     public String getEventSID(Event event) {
-        String eventType = event.getType();
 
         String keyAction;
-        if (KEYDOWN.equals(eventType) && (keyAction = getKeyAction(getKeyStroke(event))) != null) {
+        if (KEYDOWN.equals(event.getType()) && (keyAction = getKeyAction(getKeyStroke(event))) != null) {
             return keyAction;
-        } else if (CLICK.equals(eventType)) {
+        } else if (GMouseStroke.isChangeEvent(event)) {
             return mouseBinding;
         }
         return null;
     }
     public static String getDefaultEventSID(Event event, EditEventFilter editEventFilter) {
-        String eventType = event.getType();
-        if (CLICK.equals(eventType))
+        if (GMouseStroke.isChangeEvent(event))
             return CHANGE;
         if (isGroupChangeKeyEvent(event))
             return GROUP_CHANGE;
@@ -61,8 +59,7 @@ public class GEditBindingMap implements Serializable {
         return null;
     }
     public static boolean isDefaultFilterChange(Event event, EditEventFilter editEventFilter) {
-        String eventType = event.getType();
-        if (CLICK.equals(eventType))
+        if (GMouseStroke.isChangeEvent(event))
             return true;
         if (isCharModifyKeyEvent(event, editEventFilter))
             return true;

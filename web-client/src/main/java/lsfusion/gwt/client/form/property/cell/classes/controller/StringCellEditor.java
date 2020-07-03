@@ -4,11 +4,11 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-public class StringGridCellEditor extends TextBasedGridCellEditor {
+public class StringCellEditor extends TextBasedCellEditor {
     private boolean isVarString;
     private int stringLength; 
 
-    public StringGridCellEditor(EditManager editManager, GPropertyDraw property, boolean isVarString, int stringLength) {
+    public StringCellEditor(EditManager editManager, GPropertyDraw property, boolean isVarString, int stringLength) {
         super(editManager, property);
         this.isVarString = isVarString;
         this.stringLength = stringLength;

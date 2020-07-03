@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.action.*;
@@ -12,16 +11,11 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
+import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
-import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
-
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;
@@ -124,32 +118,16 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     // editing (INPUT) functionality
 
-    private GPropertyDraw editProperty;
-    private GGroupObjectValue editColumnKey;
-
     protected Event editEvent;
-    protected Element editElement;
 
-    private Supplier<Object> editGetValue;
-    private Consumer<Object> editSetValue;
+    private EditContext editContext;
 
-    private RenderContext editRenderContext;
-    private UpdateContext editUpdateContext;
-
-    public void executePropertyActionSID(GPropertyDraw property, GGroupObjectValue columnKey, Element element, Event event, Supplier<Object> getValue, Consumer<Object> setValue, String actionSID, RenderContext renderContext, UpdateContext updateContext) {
-        editProperty = property;
-        editColumnKey = columnKey;
-
-        editElement = element;
+    public void executePropertyActionSID(Event event, String actionSID, ExecuteEditContext editContext) {
         editEvent = event;
 
-        editGetValue = getValue;
-        editSetValue = setValue;
+        this.editContext = editContext;
 
-        editRenderContext = renderContext;
-        editUpdateContext = updateContext;
-
-        form.executeEventAction(property, columnKey, actionSID);
+        form.executeEventAction(editContext.getProperty(), editContext.getColumnKey(), actionSID);
     }
 
     protected Event getEditEvent() {
@@ -162,15 +140,15 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         pauseDispatching();
 
         // we should not drop at least editSetValue since GUpdateEditValueAction might use it
-        form.edit(editProperty, editElement, action.readType, editEvent, action.hasOldValue, action.oldValue, editGetValue, value -> {},
+        form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue, value -> {},
                 value -> continueDispatching(new GUserInputResult(value)),
-                () -> continueDispatching(GUserInputResult.canceled), editRenderContext, editUpdateContext);
+                () -> continueDispatching(GUserInputResult.canceled), editContext);
 
         return null;
     }
 
     @Override
     public void execute(GUpdateEditValueAction action) {
-        editSetValue.accept(action.value);
+        editContext.setValue(action.value);
     }
 }

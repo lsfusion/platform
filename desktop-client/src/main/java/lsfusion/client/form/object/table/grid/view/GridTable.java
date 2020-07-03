@@ -347,7 +347,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     private boolean isEditOnSingleClick(int row, int col) {
-        return getProperty(row, col).editOnSingleClick;
+        Boolean editOnSingleClick = getProperty(row, col).editOnSingleClick;
+        if(editOnSingleClick != null)
+            return editOnSingleClick;
+        return false;
     }
 
     private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType, boolean alreadySet) {

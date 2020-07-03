@@ -3,10 +3,10 @@ package lsfusion.gwt.client.classes.data;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.DoubleGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.DoubleCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.DoubleCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
@@ -22,8 +22,8 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new DoubleGridCellEditor(editManager, editProperty, getEditFormat(editProperty));
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new DoubleCellEditor(editManager, editProperty, getEditFormat(editProperty));
     }
 
     @Override

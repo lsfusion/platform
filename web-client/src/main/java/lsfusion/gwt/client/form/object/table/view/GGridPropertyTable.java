@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
@@ -89,7 +90,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 editEventFilter = currentProperty.changeType.getEditEventFilter();
             }
 
-            if ((editEventFilter != null && !editEventFilter.accept(event) && !form.isEditing()) || isReadOnly(getCurrentCellContext())) {
+            if ((editEventFilter != null && !editEventFilter.accept(event) && !form.isEditing()) || isReadOnly(getSelectedCellContext())) {
                 stopPropagation(event);
                 if (useQuickSearchInsteadOfQuickFilter()) {
                     quickSearch(event);
@@ -118,8 +119,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         super.onBrowserEvent2(event);
     }
 
-    public Context getCurrentCellContext() {
-        return new Context(getSelectedRow(), getSelectedColumn(), getSelectedRowValue());
+    public Context getSelectedCellContext() {
+        return getSelectedCellContext(getSelectedColumn());
+    }
+
+    public Context getSelectedCellContext(int column) {
+        return new Context(getSelectedRow(), column, getSelectedRowValue());
     }
 
     protected boolean isAutoSize() {
@@ -157,7 +162,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public GPropertyDraw getSelectedProperty() {
-        return getProperty(getCurrentCellContext());
+        return getProperty(getSelectedCellContext());
     }
 
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
@@ -370,7 +375,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
     
     protected int getColumnBaseWidth(int i) {
-        return getColumnPropertyDraw(i).getValueWidth(font);
+        return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
     protected abstract class GridPropertyColumn extends Column<T, Object> {
@@ -388,7 +393,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         @Override
         public void onBrowserEvent(Context context, Element parent, Object value, EventHandler handler) {
             form.onPropertyBrowserEvent(handler, parent,
-                    () -> onEditEvent(handler, false, context, parent),
+                    () -> onEditEvent(handler, null, context, parent),
                     () -> CopyPasteUtils.putIntoClipboard(parent),
                     () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
         }
