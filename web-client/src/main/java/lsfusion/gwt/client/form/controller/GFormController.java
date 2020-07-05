@@ -1419,7 +1419,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private boolean bindEditing(Binding binding, NativeEvent event) {
         switch (binding.bindEditing) {
             case AUTO:
-                return !isEditing() || notTextCharEvent(event);
             case ALL:
                 return true;
             case ONLY:
@@ -1429,13 +1428,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindEditing);
         }
-    }
-
-    private static List<Character> textChars = Arrays.asList(new Character[]{KeyCodes.KEY_DELETE, KeyCodes.KEY_BACKSPACE, KeyCodes.KEY_ENTER,
-            KeyCodes.KEY_UP, KeyCodes.KEY_DOWN, KeyCodes.KEY_LEFT, KeyCodes.KEY_RIGHT});
-    private boolean notTextCharEvent(NativeEvent event) {
-        char c = (char) event.getKeyCode();
-        return event.getCtrlKey() || (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c) && !textChars.contains(c));
     }
 
     private boolean bindShowing(Binding binding) {

@@ -214,8 +214,13 @@ public class GwtClientUtils {
     }
 
     public static void stopPropagation(NativeEvent event) {
+        stopPropagation(event, false);
+    }
+
+    public static void stopPropagation(NativeEvent event, boolean propagateToNative) {
         event.stopPropagation();
-        event.preventDefault();
+        if(!propagateToNative)
+            event.preventDefault();
     }
 
     public static void stopPropagation(DomEvent event) {

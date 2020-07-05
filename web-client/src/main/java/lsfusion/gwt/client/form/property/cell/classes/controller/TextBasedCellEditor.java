@@ -68,10 +68,9 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         Event event = handler.event;
 
         String type = event.getType();
-        boolean charInput = GKeyStroke.isCharInputKeyEvent(event);
-        if (charInput || GKeyStroke.isCharDeleteKeyEvent(event) ||
+        if (GKeyStroke.isCharInputKeyEvent(event) || GKeyStroke.isCharDeleteKeyEvent(event) ||
                 GKeyStroke.isCharNavigateKeyEvent(event) || GMouseStroke.isEvent(event)) {
-            if(charInput && !checkInputValidity(parent, String.valueOf((char) event.getCharCode())))
+            if(GKeyStroke.isCharInputKeyEvent(event) && !checkInputValidity(parent, String.valueOf((char) event.getCharCode())))
                 handler.consume(); // this thing is needed to disable inputting incorrect symbols
             else
                 handler.consume(true);

@@ -13,11 +13,10 @@ public class GMouseStroke {
     // there are two options what to consider CHANGE event
     // CLICK vs MOUSEDOWN
     // with CLICK there is a problem that focus is set on MOUSEDOWN (browser default behaviour), which causes unnecessary blinking (especially with not focusable elements in grid)
-    // with MOUSEDOWN the problem is that double event should suppress single event if it was consumed (which happens with DBLCLICK / CLICK)
-    // because the double click behaviour it's really hard to emulate, we'll just consume mousedown and focus on click manually
+    // for CLICK - we just consume mousedown and focus on click manually
 
     public static boolean isChangeEvent(Event event) {
-        return isClickEvent(event);
+        return isDownEvent(event);
     }
     public static boolean isDoubleChangeEvent(Event event) {
         return isDblClickEvent(event);
