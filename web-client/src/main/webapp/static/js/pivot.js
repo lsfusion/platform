@@ -1199,7 +1199,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
+      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, pvtUiContainer, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1281,9 +1281,12 @@
           }
           return recordsProcessed++;
         });
+        pvtUiContainer = $("<div>", {
+          "class": "pvtUiContainer"
+        });
         uiTable = $("<table>", {
           "class": "pvtUi"
-        }).attr("cellpadding", 5);
+        }).attr("cellpadding", 5).appendTo(pvtUiContainer);
         rendererControl = $("<td>").addClass("pvtUiCell");
         rendererControlDiv = $("<div>").appendTo(rendererControl);
         renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControlDiv).css({
@@ -1499,7 +1502,8 @@
           if (hasExcludedItem) {
             attrElemText.addClass('pvtFilteredAttribute');
           }
-          return unusedDiv.append(listItem).append(valueList);
+          unusedDiv.append(listItem);
+          return pvtUiContainer.append(valueList);
         };
         for (i in shownInDragDrop) {
           if (!hasProp.call(shownInDragDrop, i)) continue;
@@ -1567,7 +1571,7 @@
         } else {
           uiTable.prepend($("<tr>").append(rendererControl).append(unused));
         }
-        this.html(uiTable);
+        this.html(pvtUiContainer);
         createPaxis = function(columns) {
           var paxis;
           if (columns) {

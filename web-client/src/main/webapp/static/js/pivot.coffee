@@ -722,7 +722,8 @@ callWithJQuery ($) ->
                 recordsProcessed++
 
             #start building the output
-            uiTable = $("<table>", "class": "pvtUi").attr("cellpadding", 5)
+            pvtUiContainer = $("<div>", "class": "pvtUiContainer")
+            uiTable = $("<table>", "class": "pvtUi").attr("cellpadding", 5).appendTo(pvtUiContainer)
 
             #renderer control
             rendererControl = $("<td>").addClass("pvtUiCell")
@@ -888,7 +889,8 @@ callWithJQuery ($) ->
                     attrElem.append(triangleLink)
 
                     attrElemText.addClass('pvtFilteredAttribute') if hasExcludedItem
-                    unusedDiv.append(listItem).append(valueList)
+                    unusedDiv.append(listItem)
+                    pvtUiContainer.append(valueList)
 
             tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable)
 
@@ -969,7 +971,7 @@ callWithJQuery ($) ->
                 uiTable.prepend $("<tr>").append(rendererControl).append(unused)
 
             #render the UI in its default state
-            @html uiTable
+            @html pvtUiContainer
 
             #set up the UI initial state as requested by moving elements around
 
