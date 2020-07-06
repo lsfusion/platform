@@ -59,6 +59,8 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -655,23 +657,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void addPropertyDraw(ObjectEntity object, Version version, Group group) {
-        addPropertyDraw(new ArrayList<>(), group, false, version, SetFact.singletonOrder(object));
+        addPropertyDraw(group, false, version, SetFact.singletonOrder(object));
     }
 
-    protected void addPropertyDraw(List<ScriptingLogicsModule.LPWithParams> properties, AbstractNode group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
-        for(ScriptingLogicsModule.LPWithParams property : properties) {
-            MOrderSet<ObjectEntity> filterObjects = SetFact.mOrderSet();
-            for(Integer usedParam : property.usedParams) {
-                filterObjects.add(objects.get(usedParam));
-            }
-            addPropertyDraw(property.getLP(), version, filterObjects.immutableOrder());
-        }
-
+    protected void addPropertyDraw(AbstractNode group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
         ImSet<ObjectEntity> objectsSet = objects.getSet();
         ImFilterRevValueMap<ObjectEntity, ValueClassWrapper> mObjectToClass = objectsSet.mapFilterRevValues();
         for(int i=0,size=objectsSet.size();i<size;i++) {
             ObjectEntity object = objectsSet.get(i);
-            if (object.baseClass != null) 
+            if (object.baseClass != null)
                 mObjectToClass.mapValue(i, new ValueClassWrapper(object.baseClass));
         }
         ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = mObjectToClass.immutableRevValue();

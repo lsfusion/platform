@@ -4919,7 +4919,7 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 }
 	:	first=propertyExpression[context, dynamic] { $props.add($first.property); }
 		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
-	; 
+	;
 	
 constantProperty returns [LP property]
 @init {

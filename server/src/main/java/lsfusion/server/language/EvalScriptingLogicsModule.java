@@ -42,7 +42,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void addScriptedConstraint(LP<?> property, Event event, boolean checked, List<NamedPropertyUsage> propUsages,
+    public <T extends PropertyInterface> void addScriptedConstraint(LP<T> property, Event event, boolean checked, List<NamedPropertyUsage> propUsages,
                                       LP<?> messageProperty, List<LPWithParams> properties, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("CONSTRAINT statement");
     }
