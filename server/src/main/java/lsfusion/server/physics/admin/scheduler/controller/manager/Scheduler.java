@@ -117,12 +117,12 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             }
 
             if(BL.schedulerLM.activeScheduledTask.read(session, scheduledTaskObject) != null) {
-                LocalTime timeFrom = getLocalTime(BL.schedulerLM.timeFromScheduledTask.read(session, scheduledTaskObject));
-                LocalTime timeTo = getLocalTime(BL.schedulerLM.timeToScheduledTask.read(session, scheduledTaskObject));
+                LocalTime timeFrom = (LocalTime) BL.schedulerLM.timeFromScheduledTask.read(session, scheduledTaskObject);
+                LocalTime timeTo = (LocalTime) BL.schedulerLM.timeToScheduledTask.read(session, scheduledTaskObject);
                 String daysOfWeek = (String) BL.schedulerLM.daysOfWeekScheduledTask.read(session, scheduledTaskObject);
                 String daysOfMonth = (String) BL.schedulerLM.daysOfMonthScheduledTask.read(session, scheduledTaskObject);
                 boolean runAtStart = BL.schedulerLM.runAtStartScheduledTask.read(session, scheduledTaskObject) != null;
-                LocalDateTime startDate = getLocalDateTime(BL.schedulerLM.startDateScheduledTask.read(session, scheduledTaskObject));
+                LocalDateTime startDate = (LocalDateTime) BL.schedulerLM.startDateScheduledTask.read(session, scheduledTaskObject);
                 Integer period = (Integer) BL.schedulerLM.periodScheduledTask.read(session, scheduledTaskObject);
                 Object schedulerStartType = BL.schedulerLM.schedulerStartTypeScheduledTask.read(session, scheduledTaskObject);
                 Object afterFinish = ((ConcreteCustomClass) BL.schedulerLM.findClass("SchedulerStartType")).getDataObject("afterFinish").object;
@@ -201,9 +201,9 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             DataObject currentScheduledTaskObject = new DataObject(scheduledTaskId, BL.schedulerLM.userScheduledTask);
             String nameScheduledTask = trim((String) value.get("nameScheduledTask"));
             Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
-            LocalDateTime startDate = getLocalDateTime(value.get("startDateScheduledTask"));
-            LocalTime timeFrom = getLocalTime(value.get("timeFromScheduledTask"));
-            LocalTime timeTo = getLocalTime(value.get("timeToScheduledTask"));
+            LocalDateTime startDate = (LocalDateTime) value.get("startDateScheduledTask");
+            LocalTime timeFrom = (LocalTime) value.get("timeFromScheduledTask");
+            LocalTime timeTo = (LocalTime) value.get("timeToScheduledTask");
             Integer period = (Integer) value.get("periodScheduledTask");
             Object schedulerStartType = value.get("schedulerStartTypeScheduledTask");
             boolean fixedDelay = afterFinish.equals(schedulerStartType);
