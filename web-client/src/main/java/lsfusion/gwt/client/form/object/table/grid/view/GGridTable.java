@@ -673,19 +673,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
                 properties.add(newColumnIndex, property);
 
-                form.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
-                    @Override
-                    public void pressed(GInputEvent bindingEvent, Event event) {
-                        int column = getPropertyIndex(property, null);
-                        if(column >= 0)
-                            onEditEvent(new EventHandler(event), bindingEvent, getSelectedCellContext(column), getSelectedElement(column));
-                    }
+                form.addPropertyBindings(property, (bindingEvent, event) -> {
+                    int column = getPropertyIndex(property, null);
+                    if(column >= 0)
+                        onEditEvent(new EventHandler(event), bindingEvent, getSelectedCellContext(column), getSelectedElement(column));
 
-                    @Override
-                    public boolean showing() {
-                        return isShowing(GGridTable.this);
-                    }
-                });
+                }, GGridTable.this);
 
                 this.columnKeys.put(property, columnKeys);
 

@@ -137,7 +137,7 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isCharModifyKeyEvent(NativeEvent event, GEditBindingMap.EditEventFilter editEventFilter) {
-        return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event)) || isCharDeleteKeyEvent(event)));
+        return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event))) || isCharDeleteKeyEvent(event));
     }
 
     // what events should be stealed by TextBasedEditor
@@ -180,18 +180,6 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isPossibleStartFilteringEvent(NativeEvent event) {
         return isCharAddKeyEvent(event);
-    }
-
-    public static boolean isReplaceFilterEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2;
-    }
-
-    public static boolean isAddFilterEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2 && event.getAltKey();
-    }
-
-    public static boolean isRemoveAllFiltersEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2 && event.getShiftKey();
     }
 
     public static boolean isCopyToClipboardEvent(NativeEvent event) {

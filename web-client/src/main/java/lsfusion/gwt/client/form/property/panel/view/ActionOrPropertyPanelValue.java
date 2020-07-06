@@ -37,7 +37,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     public boolean isFocusable() {
         if(property.focusable != null)
             return property.focusable;
-        return property.changeKey == null;
+        return !property.hasKeyBinding();
     }
 
     private boolean readOnly;

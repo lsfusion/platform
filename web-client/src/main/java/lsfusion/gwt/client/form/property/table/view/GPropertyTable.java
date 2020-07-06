@@ -9,10 +9,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GBindingMode;
-import lsfusion.gwt.client.form.event.GInputEvent;
-import lsfusion.gwt.client.form.event.GKeyInputEvent;
-import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
@@ -41,30 +38,17 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
         //  Have the enter key work the same as the tab key
         if(groupObject != null) {
-            form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER), null), getEnterBinding(false));
-            form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, true), null), getEnterBinding(true));
+            addEnterBinding(false);
+            addEnterBinding(true);
         }
     }
 
-    protected GFormController.Binding getEnterBinding(boolean shiftPressed) {
-        GFormController.Binding binding = new GFormController.Binding(groupObject, -100, null) {
-            @Override
-            public void pressed(GInputEvent bindingEvent, Event event) {
-                ((GGridPropertyTable)GPropertyTable.this).selectNextCellInColumn(!shiftPressed);
-            }
-
-            @Override
-            public boolean showing() {
-                return true;
-            }
-
-            @Override
-            public boolean enabled() {
-                return super.enabled();
-            }
-        };
-        binding.bindGroup = GBindingMode.ONLY;
-        return binding;
+    private void addEnterBinding(boolean shiftPressed) {
+        form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
+                new GBindingEnv(-100, null, GBindingMode.ONLY, null, null),
+                (bindingEvent, event) -> ((GGridPropertyTable) GPropertyTable.this).selectNextCellInColumn(!shiftPressed),
+                null,
+                groupObject);
     }
 
     public GPropertyDraw getProperty(Column column) {

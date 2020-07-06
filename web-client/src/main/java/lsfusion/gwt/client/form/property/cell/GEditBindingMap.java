@@ -89,10 +89,4 @@ public class GEditBindingMap implements Serializable {
         return contextMenuBindingMap;
     }
 
-    public static boolean isChange(String actionSID) {
-        return CHANGE.equals(actionSID)
-                || CHANGE_WYS.equals(actionSID)
-                || GROUP_CHANGE.equals(actionSID);
-    }
-
 }

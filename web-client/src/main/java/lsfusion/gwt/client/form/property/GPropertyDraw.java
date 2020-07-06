@@ -17,8 +17,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
-import lsfusion.gwt.client.form.event.GKeyInputEvent;
-import lsfusion.gwt.client.form.event.GMouseInputEvent;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -85,11 +84,24 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean noSort;
     public GCompare defaultCompare;
 
-    public GKeyInputEvent changeKey;
-    public Integer changeKeyPriority;
+    public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
     public boolean showChangeKey;
-    public GMouseInputEvent changeMouse;
-    public Integer changeMousePriority;
+
+    public boolean hasKeyBinding() {
+        for(GInputBindingEvent bindingEvent : bindingEvents)
+            if(bindingEvent.inputEvent instanceof GKeyInputEvent)
+                return true;
+        return false;
+    }
+    public String getKeyBindingText() {
+        assert hasKeyBinding();
+        String result = "";
+        for(GInputBindingEvent bindingEvent : bindingEvents)
+            if(bindingEvent.inputEvent instanceof GKeyInputEvent) {
+                result = (result.isEmpty() ? "" : result + ",") + ((GKeyInputEvent) bindingEvent.inputEvent).keyStroke;
+            }
+        return result;
+    }
 
     public boolean drawAsync;
 
@@ -136,6 +148,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (editBindingMap != null) { // property bindings
             actionSID = editBindingMap.getEventSID(editEvent);
         }
+        // not sure that it should be done like this since enter is used as a tab
+//        if (actionSID == null && baseType instanceof GActionType && GKeyStroke.isEnterKeyEvent(editEvent)) {
+//            return GEditBindingMap.CHANGE;
+//        }
         if (actionSID == null) {
             actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter());
         }
@@ -219,7 +235,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             caption = this.caption;
         }
 
-        return showChangeKey && changeKey != null ? caption + " (" + changeKey + ")" : caption;
+        if(showChangeKey && hasKeyBinding())
+            caption += " (" + getKeyBindingText() + ")";
+        return caption;
     }
 
     public String getEditCaption() {
@@ -272,10 +290,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             
     public String getTooltipText(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
-        String changeKeyText = changeKey == null ? "" : GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), changeKey.toString());
+        String keyBindingText = hasKeyBinding() ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), getKeyBindingText()) : null;
 
         if (!MainFrame.showDetailedInfo) {
-            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, changeKeyText);
+            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, keyBindingText);
         } else {
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
@@ -283,7 +301,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             
             if (baseType instanceof GActionType) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
-                        propCaption, changeKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
+                        propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String returnClass = this.returnClass.toString();
@@ -291,7 +309,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
                 
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedToolTipFormat(),
-                        propCaption, changeKeyText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,
+                        propCaption, keyBindingText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,
                         script, scriptPath, propertyFormName, scriptFormPath);
             }
         }

@@ -9,8 +9,7 @@ public class GKeyInputEvent extends GInputEvent {
     public GKeyInputEvent() {
     }
 
-    public GKeyInputEvent(GKeyStroke keyStroke, Map<String, GBindingMode> bindingModes) {
-        super(bindingModes);
+    public GKeyInputEvent(GKeyStroke keyStroke) {
         this.keyStroke = keyStroke;
     }
 

@@ -769,4 +769,14 @@ public class GwtClientUtils {
 
         return wrappedTh;
     }
+
+    public static boolean nullEquals(Object obj1, Object obj2) {
+        if (obj1 == null)
+            return obj2 == null;
+        return obj1.equals(obj2);
+    }
+
+    public static <T> T nvl(T value1, T value2) {
+        return value1 == null ? value2 : value1;
+    }
 }

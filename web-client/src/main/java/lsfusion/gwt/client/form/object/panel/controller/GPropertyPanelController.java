@@ -74,16 +74,7 @@ public class GPropertyPanelController {
                         Widget component = newRenderer.getComponent();
                         renderersPanel.addFill(component);
 
-                        form.addPropertyBindings(property, () -> new GFormController.Binding(property.groupObject) {
-                            @Override
-                            public void pressed(GInputEvent bindingEvent, Event event) {
-                                newRenderer.onBinding(bindingEvent, event);
-                            }
-                            @Override
-                            public boolean showing() {
-                                return isShowing(component);
-                            }
-                        });
+                        form.addPropertyBindings(property, newRenderer::onBinding, component);
 
                         renderer = newRenderer;
                     }

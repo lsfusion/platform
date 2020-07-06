@@ -38,11 +38,6 @@ public class GMouseInputEvent extends GInputEvent {
         this.mouseEvent = event + (dblClick ? DBLCLK : CLK);
     }
 
-    public GMouseInputEvent(String mouseEvent, Map<String, GBindingMode> bindingModes) {
-        super(bindingModes);
-        this.mouseEvent = mouseEvent;
-    }
-
     @Override
     public boolean equals(Object o) {
         return this == o || o instanceof GMouseInputEvent && mouseEvent.equals(((GMouseInputEvent) o).mouseEvent);

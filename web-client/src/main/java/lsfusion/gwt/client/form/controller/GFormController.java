@@ -89,7 +89,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -97,7 +96,6 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
-import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChange;
 
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider, EditManager {
     private static final int ASYNC_TIME_OUT = 50;
@@ -200,6 +198,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if(form != null)
                 form.handleKeyEvent(event.getNativeEvent());
         }, KeyDownEvent.getType());
+        widget.addDomHandler(event -> {
+            GFormController form = currentForm.get();
+            if(form != null)
+                form.handleKeyEvent(event.getNativeEvent());
+        }, KeyPressEvent.getType());
     }
 
     public GGridController getController(GGroupObject groupObject) {
@@ -241,18 +244,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         filterCheck.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
-        if (filter.key != null) {
-            addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
-                @Override
-                public void pressed(GInputEvent bindingEvent, Event event) {
-                    filterCheck.setValue(!filterCheck.getValue(), true);
-                }
-                @Override
-                public boolean showing() {
-                    return isShowing(filterCheck);
-                }
-            });
-        }
+        if (filter.key != null)
+            addBinding(new GKeyInputEvent(filter.key), (bindingEvent, event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
     }
 
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
@@ -267,20 +260,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
             final int filterIndex = i;
             filterBox.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
-            if (filter.key != null) {
-                addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
-                    @Override
-                    public void pressed(GInputEvent bindingEvent, Event event) {
-                        filterBox.setSelectedIndex(filterIndex + 1);
-                        setRegularFilter(filterGroup, filterIndex);
-                    }
-                    @Override
-                    public boolean showing() {
-                        return isShowing(filterBox);
-                    }
-                });
-            }
-
+            if (filter.key != null)
+                addBinding(new GKeyInputEvent(filter.key), (bindingEvent, event) -> {
+                    filterBox.setSelectedIndex(filterIndex + 1);
+                    setRegularFilter(filterGroup, filterIndex);
+                }, filterBox, filterGroup.groupObject);
         }
 
         filterBox.addChangeHandler(new ChangeHandler() {
@@ -722,7 +706,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Event event = handler.event;
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(editContext.getProperty(), event.getClientX(), event.getClientY(), actionSID -> executePropertyActionSID(new EventHandler(event), actionSID, editContext));
+            GPropertyContextMenuPopup.show(editContext.getProperty(), event.getClientX(), event.getClientY(), actionSID -> {
+                actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
+            });
         } else {
             String actionSID;
             if(bindingEvent != null) {
@@ -734,32 +720,35 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 if(actionSID == null)
                     return;
             }
-            executePropertyActionSID(handler, actionSID, editContext);
-        }
-    }
 
-    private void executePropertyActionSID(EventHandler handler, String actionSID, ExecuteEditContext editContext) {
-        if (isChange(actionSID) && editContext.isReadOnly()) {
-            return;
-        }
+            if ((GEditBindingMap.CHANGE.equals(actionSID) || GEditBindingMap.CHANGE_WYS.equals(actionSID) || GEditBindingMap.GROUP_CHANGE.equals(actionSID)) &&
+                    editContext.isReadOnly())
+                return;
 
-        Event event = handler.event;
-        handler.consume();
+            GPropertyDraw property = editContext.getProperty();
+            if(!property.hasChangeAction) // important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
+                return;
 
-        GPropertyDraw property = editContext.getProperty();
-        final boolean asyncModifyObject = isAsyncModifyObject(property);
-        if (GEditBindingMap.CHANGE.equals(actionSID) && (asyncModifyObject || property.changeType != null)) {
-            if (property.askConfirm) {
-                blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
-                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
+            handler.consume();
+
+            if (GEditBindingMap.CHANGE.equals(actionSID)) {
+                final boolean asyncModifyObject = isAsyncModifyObject(property);
+                if (asyncModifyObject || property.changeType != null) {
+                    if (property.askConfirm) {
+                        blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
+                            if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                                executeSimpleChange(asyncModifyObject, event, editContext);
+                            }
+                        });
+                    } else {
                         executeSimpleChange(asyncModifyObject, event, editContext);
                     }
-                });
-            } else {
-                executeSimpleChange(asyncModifyObject, event, editContext);
+                    return;
+                }
             }
-        } else
+
             actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
+        }
     }
 
     private void executeSimpleChange(boolean asyncModifyObject, Event event, ExecuteEditContext editContext) {
@@ -1280,26 +1269,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public abstract static class Binding {
-        public final GGroupObject groupObject;
-        public int priority;
-        public GBindingMode bindDialog;
-        public GBindingMode bindGroup;
-        public GBindingMode bindEditing;
-        public GBindingMode bindShowing;
-        Function<NativeEvent, Boolean> isSuitable;
+    public abstract static class Binding implements BindingExec {
+
+        public GGroupObject groupObject;
 
         public Binding(GGroupObject groupObject) {
-            this(groupObject, 0, null);
-        }
-
-        public Binding(GGroupObject groupObject, int priority, Function<NativeEvent, Boolean> isSuitable) {
             this.groupObject = groupObject;
-            this.priority = priority;
-            this.isSuitable = isSuitable;
         }
 
-        public abstract void pressed(GInputEvent bindingEvent, Event event);
         public abstract boolean showing();
 
         public boolean enabled() {
@@ -1307,38 +1284,42 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private final NativeHashMap<GInputEvent, ArrayList<Binding>> bindings = new NativeHashMap<>();
+    private final ArrayList<GBindingEvent> bindingEvents = new ArrayList<>();
+    private final ArrayList<Binding> bindings = new ArrayList<>();
 
-    public void addPropertyBindings(GPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
-        if(propertyDraw.changeKey != null) {
-            Binding binding = bindingSupplier.get();
-            if(propertyDraw.changeKeyPriority != null)
-                binding.priority = propertyDraw.changeKeyPriority;
-            addBinding(propertyDraw.changeKey, binding);
-        }
-        if(propertyDraw.changeMouse != null) {
-            Binding binding = bindingSupplier.get();
-            if(propertyDraw.changeMousePriority != null)
-                binding.priority = propertyDraw.changeMousePriority;
-            addBinding(propertyDraw.changeMouse, binding);
-        }
+    public interface BindingCheck {
+        boolean check(GInputEvent bindingEvent, Event event);
+    }
+    public interface BindingExec {
+        void exec(GInputEvent bindingEvent, Event event);
+    }
+    public void addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
+        for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
+            addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject);
     }
 
-    public void addBinding(GInputEvent event, Binding binding) {
-        assert event != null && binding != null;
+    public void addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
+    }
+    public void addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        addBinding((inputEvent, nativeEvent) -> inputEvent.equals(event), env, pressed, component, groupObject);
+    }
+    public void addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
+            @Override
+            public boolean showing() {
+                return component != null ? isShowing(component) : true;
+            }
 
-        ArrayList<Binding> groupBindings = bindings.computeIfAbsent(event, k -> new ArrayList<>());
-        if(binding.priority == 0)
-            binding.priority = groupBindings.size();
-        if(binding.bindDialog == null)
-            binding.bindDialog = event.bindingModes != null ? event.bindingModes.getOrDefault("dialog", GBindingMode.AUTO) : GBindingMode.AUTO;
-        if(binding.bindGroup == null)
-            binding.bindGroup = event.bindingModes != null ? event.bindingModes.getOrDefault("group", GBindingMode.AUTO) : GBindingMode.AUTO;
-        if(binding.bindEditing == null)
-            binding.bindEditing = event.bindingModes != null ? event.bindingModes.getOrDefault("editing", GBindingMode.AUTO) : GBindingMode.AUTO;
-        if(binding.bindShowing == null)
-            binding.bindShowing = event.bindingModes != null ? event.bindingModes.getOrDefault("showing", GBindingMode.AUTO) : GBindingMode.AUTO;
-        groupBindings.add(binding);
+            @Override
+            public void exec(GInputEvent bindingEvent, Event event) {
+                pressed.exec(bindingEvent, event);
+            }
+        });
+    }
+    public void addBinding(GBindingEvent event, Binding action) {
+        bindingEvents.add(event);
+        bindings.add(action);
     }
     
     private GGroupObject getGroupObject(Element elementTarget) {
@@ -1355,25 +1336,30 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GGroupObject get();
     }
 
-    public boolean processBinding(GInputEvent ks, NativeEvent event, GGroupObjectSupplier groupObjectSupplier) {
-        ArrayList<Binding> keyBinding = bindings.get(ks);
-        if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
+    public boolean processBinding(GInputEvent ks, Event event, GGroupObjectSupplier groupObjectSupplier) {
+        TreeMap<Integer, Binding> orderedBindings = new TreeMap<>(); // descending sorting by priority
 
-            TreeMap<Integer, Binding> orderedBindings = new TreeMap<>();
+        GGroupObject groupObject = groupObjectSupplier.get();
+        for (int i = 0, size = bindingEvents.size(); i < size; i++) {
+            GBindingEvent bindingEvent = bindingEvents.get(i);
+            if (bindingEvent.event.check(ks, event)) {
+                Binding binding = bindings.get(i);
+                boolean equalGroup;
+                GBindingEnv bindingEnv = bindingEvent.env;
+                if(bindDialog(bindingEnv) &&
+                    bindGroup(bindingEnv, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
+                    bindEditing(bindingEnv) &&
+                    bindShowing(bindingEnv, binding.showing()))
+                orderedBindings.put(-(GwtClientUtils.nvl(bindingEnv.priority, i) + (equalGroup ? 100 : 0)), binding); // increasing priority for group object
+            }
+        }
 
-            // increasing priority for group object
-            GGroupObject groupObject = groupObjectSupplier.get();
-            for(Binding binding : keyBinding) // descending sorting by priority
-                if((binding.isSuitable == null || binding.isSuitable.apply(event)) && bindDialog(binding) && bindGroup(groupObject, binding) && bindEditing(binding, event) && bindShowing(binding))
-                    orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
-
-            for (Binding binding : orderedBindings.values()) {
-                if (binding.enabled()) {
-                    checkCommitEditing();
-                    binding.pressed(ks, (Event) event);
-                    stopPropagation(event);
-                    return true;
-                }
+        for (Binding binding : orderedBindings.values()) {
+            if (binding.enabled()) {
+                checkCommitEditing();
+                binding.exec(ks, event);
+                stopPropagation(event);
+                return true;
             }
         }
         return false;
@@ -1384,7 +1370,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             cellEditor.commitEditing(editContext.getRenderElement());
     }
 
-    private boolean bindDialog(Binding binding) {
+    private boolean bindDialog(GBindingEnv binding) {
         switch (binding.bindDialog) {
             case AUTO:
             case ALL:
@@ -1398,25 +1384,21 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private boolean bindGroup(GGroupObject groupObject, Binding binding) {
-        switch (binding.bindGroup) {
+    private boolean bindGroup(GBindingEnv bindingEvent, boolean equalGroup) {
+        switch (bindingEvent.bindGroup) {
             case AUTO:
             case ALL:
                 return true;
             case ONLY:
-                return equalGroup(groupObject, binding);
+                return equalGroup;
             case NO:
-                return !equalGroup(groupObject, binding);
+                return !equalGroup;
             default:
-                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindGroup);
+                throw new UnsupportedOperationException("Unsupported bindingMode");
         }
     }
 
-    private boolean equalGroup(GGroupObject groupObject, Binding binding) {
-        return groupObject != null && groupObject.equals(binding.groupObject);
-    }
-
-    private boolean bindEditing(Binding binding, NativeEvent event) {
+    private boolean bindEditing(GBindingEnv binding) {
         switch (binding.bindEditing) {
             case AUTO:
             case ALL:
@@ -1430,36 +1412,30 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private boolean bindShowing(Binding binding) {
+    private boolean bindShowing(GBindingEnv binding, boolean showing) {
         switch (binding.bindShowing) {
             case ALL:
                 return true;
             case AUTO:
             case ONLY:
-                return binding.showing();
+                return showing;
             case NO:
-                return !binding.showing();
+                return !showing;
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindShowing);
         }
     }
 
-
     private void handleKeyEvent(NativeEvent nativeEvent) {
-        assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
-
         final EventTarget target = nativeEvent.getEventTarget();
         if (!Element.is(target)) {
             return;
         }
 
-        GKeyStroke key = GKeyStroke.getKeyStroke(nativeEvent);
-
-        processBinding(new GKeyInputEvent(key, null), nativeEvent, new GGroupObjectSupplier() {
-            public GGroupObject get() {
-                return getGroupObject(Element.as(target));
-            }
-        });
+        assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType()) || BrowserEvents.KEYPRESS.equals(nativeEvent.getType());
+        // we don't want keyInputEvent to be handled twice, so will use -1 keyStroke instead of real one
+        GKeyInputEvent key = BrowserEvents.KEYDOWN.equals(nativeEvent.getType()) ? new GKeyInputEvent(GKeyStroke.getKeyStroke(nativeEvent)) : new GKeyInputEvent(new GKeyStroke(-1));
+        processBinding(key, (Event) nativeEvent, () -> getGroupObject(Element.as(target)));
     }
 
     private void handleMouseEvent(NativeEvent nativeEvent, boolean dblClick) {
@@ -1468,7 +1444,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             return;
         }
 
-        processBinding(new GMouseInputEvent(nativeEvent, dblClick), nativeEvent, () -> getGroupObject(Element.as(target)));
+        processBinding(new GMouseInputEvent(nativeEvent, dblClick), (Event) nativeEvent, () -> getGroupObject(Element.as(target)));
     }
 
     private CellEditor cellEditor;

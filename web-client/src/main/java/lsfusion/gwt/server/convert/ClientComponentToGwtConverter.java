@@ -22,10 +22,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.form.design.*;
-import lsfusion.gwt.client.form.event.GBindingMode;
-import lsfusion.gwt.client.form.event.GKeyInputEvent;
-import lsfusion.gwt.client.form.event.GKeyStroke;
-import lsfusion.gwt.client.form.event.GMouseInputEvent;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -306,11 +303,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         if(clientPropertyDraw.defaultCompare != null)
             propertyDraw.defaultCompare = GCompare.get(clientPropertyDraw.defaultCompare.ordinal());
 
-        propertyDraw.changeKey = convertOrCast(clientPropertyDraw.changeKey);
-        propertyDraw.changeKeyPriority = clientPropertyDraw.changeKeyPriority;
+        if(clientPropertyDraw.changeKey != null)
+            propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeKey, clientPropertyDraw.changeKeyPriority, clientPropertyDraw.changeKey.bindingModes));
+        if(clientPropertyDraw.changeMouse != null)
+            propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeMouse, clientPropertyDraw.changeMousePriority, clientPropertyDraw.changeMouse.bindingModes));
         propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
-        propertyDraw.changeMouse = convertOrCast(clientPropertyDraw.changeMouse);
-        propertyDraw.changeMousePriority = clientPropertyDraw.changeMousePriority;
 
         propertyDraw.grid = clientPropertyDraw.isList;
 
@@ -370,6 +367,16 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return propertyDraw;
     }
 
+    public GInputBindingEvent convertBinding(lsfusion.interop.form.event.InputEvent event, Integer priority, Map<String, BindingMode> bindingModes) {
+        return new GInputBindingEvent((GInputEvent)convertOrCast(event),
+                        new GBindingEnv(priority != null && priority.equals(0) ? null : priority,
+                        convertOrCast(bindingModes != null ? bindingModes.get("dialog") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("group") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("editing") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("showing") : null)
+                        ));
+    }
+
     @Converter(from = EditBindingMap.class)
     public GEditBindingMap convertBindingMap(EditBindingMap editBindingMap) {
         HashMap<GKeyStroke, String> keyBindingMap = null;
@@ -402,37 +409,17 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     @Converter(from = KeyInputEvent.class)
     public GKeyInputEvent convertKeyInputEvent(KeyInputEvent keyInputEvent) {
-        return new GKeyInputEvent(convertOrCast(keyInputEvent.keyStroke), convertBindingModes(keyInputEvent.bindingModes));
+        return new GKeyInputEvent(convertOrCast(keyInputEvent.keyStroke));
     }
 
     @Converter(from = MouseInputEvent.class)
     public GMouseInputEvent convertMouseInputEvent(MouseInputEvent mouseInputEvent) {
-        return new GMouseInputEvent(convertOrCast(mouseInputEvent.mouseEvent), convertBindingModes(mouseInputEvent.bindingModes));
+        return new GMouseInputEvent(convertOrCast(mouseInputEvent.mouseEvent));
     }
 
-    private Map<String, GBindingMode> convertBindingModes(Map<String, BindingMode> bindingModes) {
-        Map<String, GBindingMode> gBindingModes = new HashMap<>();
-        if(bindingModes != null) {
-            for (Map.Entry<String, BindingMode> bindingModeEntry : bindingModes.entrySet()) {
-                GBindingMode mode = null;
-                switch (bindingModeEntry.getValue()) {
-                    case AUTO:
-                        gBindingModes.put(bindingModeEntry.getKey(), GBindingMode.AUTO);
-                        break;
-                    case ALL:
-                        gBindingModes.put(bindingModeEntry.getKey(), GBindingMode.ALL);
-                        break;
-                    case ONLY:
-                        gBindingModes.put(bindingModeEntry.getKey(), GBindingMode.ONLY);
-                        break;
-                    case NO:
-                        gBindingModes.put(bindingModeEntry.getKey(), GBindingMode.NO);
-                        break;
-                }
-
-            }
-        }
-        return gBindingModes;
+    @Converter(from = BindingMode.class)
+    public GBindingMode convertBindingMode(BindingMode bindingMode) {
+        return  GBindingMode.valueOf(bindingMode.name());
     }
 
     private int convertKeyCode(int keyCode) {

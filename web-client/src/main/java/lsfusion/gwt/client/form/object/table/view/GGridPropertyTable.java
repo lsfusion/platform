@@ -15,8 +15,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GInputEvent;
-import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
@@ -65,58 +64,62 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         this.font = font;
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
+
+        if(groupObject != null) {
+            // ADD FILTER
+            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2, true, false, false)),
+                    (bindingEvent, event) -> getGroupController().addFilter());
+            // REPLACE FILTER
+            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2)),
+                    (bindingEvent, event) -> getGroupController().replaceFilter());
+            // REMOVE FILTERS
+            GKeyStroke shiftF2 = new GKeyStroke(GKeyStroke.KEY_F2, false, false, true);
+            GKeyStroke escape = new GKeyStroke(KeyCodes.KEY_ESCAPE);
+            addFilterBinding((inputEvent, nativeEvent) -> {
+                        if(inputEvent instanceof GKeyInputEvent) {
+                            GKeyStroke keyStroke = ((GKeyInputEvent) inputEvent).keyStroke;
+                            if (keyStroke.equals(shiftF2))
+                                return true;
+                            if (keyStroke.equals(escape)) {
+                                GAbstractTableController goController = getGroupController();
+                                return goController.filter != null && goController.filter.hasConditions();
+                            }
+                        }
+                        return false;
+                    },
+                    (bindingEvent, event) -> getGroupController().removeFilters());
+            // AUTO FILTER
+            addFilterBinding((bindingEvent, event) -> GKeyStroke.isPossibleStartFilteringEvent(event),
+                (bindingEvent, event) -> {
+                    if (useQuickSearchInsteadOfQuickFilter()) {
+                        quickSearch(event);
+                    } else {
+                        GPropertyDraw filterProperty = null;
+                        GGroupObjectValue filterColumnKey = null;
+                        GPropertyDraw currentProperty = getSelectedProperty();
+                        if(currentProperty != null && currentProperty.quickFilterProperty != null) {
+                            filterProperty = currentProperty.quickFilterProperty;
+                            if(currentProperty.columnGroupObjects != null && filterProperty.columnGroupObjects != null && currentProperty.columnGroupObjects.equals(filterProperty.columnGroupObjects)) {
+                                filterColumnKey = getSelectedColumnKey();
+                            }
+                        }
+
+                        quickFilter(event, filterProperty, filterColumnKey);
+                    }
+                });
+        }
+    }
+
+    private void addFilterBinding(GInputEvent event, GFormController.BindingExec pressed) {
+        addFilterBinding((inputEvent, nativeEvent) -> inputEvent.equals(event), pressed);
+    }
+    private void addFilterBinding(GFormController.BindingCheck event, GFormController.BindingExec pressed) {
+        form.addBinding(event, new GBindingEnv(null, null, GBindingMode.ONLY, null, null), pressed, GGridPropertyTable.this, groupObject);
     }
 
     @Override
     protected GFont getFont() {
         return font;
-    }
-
-    @Override
-    protected void onBrowserEvent2(Event event) {
-        if (GKeyStroke.isAddFilterEvent(event)) {
-            stopPropagation(event);
-            getGroupController().addFilter();
-        } else if (GKeyStroke.isRemoveAllFiltersEvent(event)) {
-            stopPropagation(event);
-            getGroupController().removeFilters();
-        } else if (GKeyStroke.isReplaceFilterEvent(event)) {
-            stopPropagation(event);
-            getGroupController().replaceFilter();
-        } else if (GKeyStroke.isPossibleStartFilteringEvent(event)) {
-            EditEventFilter editEventFilter = null;
-            GPropertyDraw currentProperty = getSelectedProperty();
-            if (currentProperty != null && currentProperty.changeType != null) {
-                editEventFilter = currentProperty.changeType.getEditEventFilter();
-            }
-
-            if ((editEventFilter != null && !editEventFilter.accept(event) && !form.isEditing()) || isReadOnly(getSelectedCellContext())) {
-                stopPropagation(event);
-                if (useQuickSearchInsteadOfQuickFilter()) {
-                    quickSearch(event);
-                } else {
-                    GPropertyDraw filterProperty = null;
-                    GGroupObjectValue filterColumnKey = null;
-
-                    if(currentProperty != null && currentProperty.quickFilterProperty != null) {
-                        filterProperty = currentProperty.quickFilterProperty;
-                        if(currentProperty.columnGroupObjects != null && filterProperty.columnGroupObjects != null && currentProperty.columnGroupObjects.equals(filterProperty.columnGroupObjects)) {
-                            filterColumnKey = getSelectedColumnKey();
-                        }
-                    }
-
-                    quickFilter(event, filterProperty, filterColumnKey);
-                }
-            }
-        } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
-            GAbstractTableController goController = getGroupController();
-            if (goController.filter != null && goController.filter.hasConditions()) {
-                stopPropagation(event);
-                goController.removeFilters();
-                return;
-            }
-        }
-        super.onBrowserEvent2(event);
     }
 
     public Context getSelectedCellContext() {
