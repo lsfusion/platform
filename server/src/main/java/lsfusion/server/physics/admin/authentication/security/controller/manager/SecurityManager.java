@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -15,6 +16,7 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.PassObject;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -45,7 +47,6 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
-import org.apache.commons.text.RandomStringGenerator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -224,34 +225,48 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .compact());
     }
 
-    public AuthenticationToken oAuth2authenticateUser(String userName, ExecutionStack stack) {
-        String password = new RandomStringGenerator.Builder().withinRange(33, 45).build().generate(20);
-        try (DataSession session = createSession()) {
-            DataObject userObject = readUser(userName, session);
-            if (userObject == null) {
-                userObject = addUser(userName, password, session);
-                apply(session, stack);
+    public Pair<String, String> getOauth2ClientCredentials(String client, String authSecret){
+        String webClientAuthSecret;
+        try(DataSession session = createSession()) {
+            webClientAuthSecret = (String) authenticationLM.webClientSecretKey.read(session);
+            if (webClientAuthSecret.equals(authSecret) && client != null){
+                switch (client){
+                    case "google":
+                        return  new Pair<>((String) authenticationLM.googleClientId.read(session), (String) authenticationLM.googleClientSecret.read(session));
+                    case "github":
+                        return  new Pair<>((String) authenticationLM.githubClientId.read(session), (String) authenticationLM.githubClientSecret.read(session));
+                    default:
+                        return null;
+                }
             }
-            if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
-                throw new LockedException();
-            }
-            return generateToken(userName);
+            return null;
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
-    
-    public AuthenticationToken authenticateUser(String userName, String password, ExecutionStack stack) {
-        try(DataSession session = createSession()) {
-            DataObject userObject = readUser(userName, session);
-            authenticateUser(session, userObject, userName, password, stack);
+
+    private boolean isTrustedAuth(PassObject passObject, DataSession session) throws SQLException, SQLHandledException {
+        String webAuthSecret = passObject.getAuthSecret();
+        return webAuthSecret != null && webAuthSecret.equals(authenticationLM.webClientSecretKey.read(session));
+    }
+
+    public AuthenticationToken authenticateUser(String userName, PassObject passObject, ExecutionStack stack) {
+        DataObject userObject;
+        try (DataSession session = createSession()) {
+            userObject = readUser(userName, session);
+            if (isTrustedAuth(passObject, session) && userObject == null) {
+                String pwd = BaseUtils.generatePassword(20, false, true);
+                userObject = addUser(userName, pwd, session);
+                apply(session, stack);
+            }
+            authenticateUser(session, userObject, userName, passObject, stack);
             return generateToken(userName);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public void authenticateUser(DataSession session, DataObject userObject, String login, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void authenticateUser(DataSession session, DataObject userObject, String login, PassObject password, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (authenticationLM.useLDAP.read(session) != null) {
             String server = (String) authenticationLM.serverLDAP.read(session);
             Integer port = (Integer) authenticationLM.portLDAP.read(session);
@@ -259,10 +274,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
 
             try {
-                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(login, password);
+                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(login, password.getPassword());
                 if (ldapParameters.isConnected()) {
                     if (userObject == null) {
-                        userObject = addUser(login, password, session);
+                        userObject = addUser(login, password.getPassword(), session);
                     }
                     setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
                     apply(session);
@@ -279,12 +294,13 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             throw new LoginException();
         }
 
+        if (!isTrustedAuth(password, session) && !authenticationLM.checkPassword(session, userObject, password.getPassword(), stack)) {
+            throw new LoginException();
+        }
+
         if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
             throw new LockedException();
         }
-
-        if (!authenticationLM.checkPassword(session, userObject, password, stack))
-            throw new LoginException();
     }
 
     public SecurityPolicy getSecurityPolicy(DataSession session, DataObject userObject) {

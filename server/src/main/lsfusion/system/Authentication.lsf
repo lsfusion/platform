@@ -100,6 +100,25 @@ portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
 baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
 userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
 
+// OAuth
+webClientSecretKeyDefault = 'secretKey';
+googleClientIdDefault = '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
+googleClientSecretDefault = 'Fa-bg6EpM71UXSa9rxvYiNQq';
+githubClientIdDefault = '9d1729e039d1eb38748f';
+githubClientSecretDefault = '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
+
+webClientSecretKeyDB = DATA STRING ();
+googleClientIdDB = DATA STRING ();
+googleClientSecretDB  = DATA STRING ();
+githubClientIdDB = DATA STRING ();
+githubClientSecretDB = DATA STRING ();
+
+webClientSecretKey 'Web client secret' = OVERRIDE webClientSecretKeyDB(), webClientSecretKeyDefault();
+googleClientId 'Google client id' = OVERRIDE googleClientIdDB(), googleClientIdDefault();
+googleClientSecret 'Google client secret' = OVERRIDE googleClientSecretDB(), googleClientSecretDefault();
+githubClientId 'Github client id' = OVERRIDE githubClientIdDB(), githubClientIdDefault();
+githubClientSecret 'Github client secret' = OVERRIDE githubClientSecretDB(), githubClientSecretDefault();
+
 // lock
 isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
 isLockedLogin (login) = isLocked(customUser(login));
@@ -309,6 +328,12 @@ FORM customUsers '{authentication.users}'
     PROPERTIES() READONLY serverLanguage, serverCountry, serverTimezone, serverTwoDigitYearStart
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
+    
+    PROPERTIES()  webClientSecretKey BACKGROUND RGB(223, 232, 255),
+                  googleClientId BACKGROUND RGB(255, 99, 71),
+                  googleClientSecret BACKGROUND RGB(255, 99, 71),
+                  githubClientId BACKGROUND RGB(169, 169, 169),
+                  githubClientSecret BACKGROUND RGB(169, 169, 169) 
 ;
 
 DESIGN customUsers {
@@ -344,6 +369,14 @@ DESIGN customUsers {
                 MOVE PROPERTY(portLDAP());
                 MOVE PROPERTY(baseDNLDAP());
                 MOVE PROPERTY(userDNSuffixLDAP());
+            } 
+            NEW OAUTH2 {
+                caption = 'OAUTH2';
+                MOVE PROPERTY (webClientSecretKey());
+                MOVE PROPERTY (googleClientId());
+                MOVE PROPERTY (googleClientSecret());
+                MOVE PROPERTY (githubClientId());
+                MOVE PROPERTY (githubClientSecret());
             }
         }
     }

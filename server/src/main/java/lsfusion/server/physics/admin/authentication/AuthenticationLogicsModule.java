@@ -64,6 +64,12 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP baseDNLDAP;
     public LP userDNSuffixLDAP;
 
+    public LP webClientSecretKey;
+    public LP googleClientId;
+    public LP googleClientSecret;
+    public LP githubClientId;
+    public LP githubClientSecret;
+
     public LP useBusyDialog;
     public LP useRequestTimeout;
     public LP devMode;
@@ -158,6 +164,12 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         portLDAP = findProperty("portLDAP[]");
         baseDNLDAP = findProperty("baseDNLDAP[]");
         userDNSuffixLDAP = findProperty("userDNSuffixLDAP[]");
+
+        webClientSecretKey = findProperty("webClientSecretKey[]");
+        googleClientId = findProperty("googleClientId[]");
+        googleClientSecret = findProperty("googleClientSecret[]");
+        githubClientId = findProperty("githubClientId[]");
+        githubClientSecret = findProperty("githubClientSecret[]");
 
         useBusyDialog = findProperty("useBusyDialog[]");
         useRequestTimeout = findProperty("useRequestTimeout[]");

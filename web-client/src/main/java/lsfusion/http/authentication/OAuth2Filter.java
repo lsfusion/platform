@@ -7,6 +7,8 @@ import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.PassObject;
+import lsfusion.interop.logics.LogicsSessionObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
@@ -16,6 +18,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,24 +28,24 @@ import java.util.Locale;
 import static lsfusion.http.authentication.LSFRemoteAuthenticationProvider.getUserLocale;
 
 public class OAuth2Filter extends OncePerRequestFilter {
-
-    private static LogicsProvider logicsProvider;
+    private static final String authSecretKey = "authSecret";
 
     @Autowired
-    public void setLogicsProvider(LogicsProvider logicsProvider) {
-        OAuth2Filter.logicsProvider = logicsProvider;
-    }
+    private LogicsProvider logicsProvider;
+
+    @Autowired
+    private ServletContext servletContext;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        convertToken(request, response, SecurityContextHolder.getContext().getAuthentication());
+        convertToken(logicsProvider, request, response, SecurityContextHolder.getContext().getAuthentication(), servletContext);
         filterChain.doFilter(request, response);
     }
 
-    public static Authentication convertToken(HttpServletRequest request, HttpServletResponse response,
-                                              Authentication authentication) throws IOException {
+    public static Authentication convertToken(LogicsProvider logicsProvider, HttpServletRequest request, HttpServletResponse response,
+                                              Authentication authentication, ServletContext servletContext) throws IOException {
 
         if (!(authentication instanceof OAuth2AuthenticationToken)) {
             return authentication;
@@ -50,10 +53,11 @@ public class OAuth2Filter extends OncePerRequestFilter {
         OAuth2User principal = (OAuth2User) authentication.getPrincipal();
         String username = principal.getAttribute("email");
         LSFAuthenticationToken lsfAuthentication;
+        String authSecret = servletContext.getInitParameter(authSecretKey);
         try {
-            Pair<AuthenticationToken, Locale> authLocale = OAuth2Filter.logicsProvider.runRequest(request, sessionObject -> {
+            Pair<AuthenticationToken, Locale> authLocale = logicsProvider.runRequest(request, (LogicsSessionObject sessionObject) -> {
                 try {
-                    AuthenticationToken authToken = sessionObject.remoteLogics.oAuth2authenticateUser(username);
+                    AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(username, new PassObject(null, authSecret));
                     return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
                 } catch (LockedException le) {
                     throw new org.springframework.security.authentication.LockedException(le.getMessage());

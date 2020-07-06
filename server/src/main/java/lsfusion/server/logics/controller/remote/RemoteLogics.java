@@ -3,11 +3,13 @@ package lsfusion.server.logics.controller.remote;
 import com.google.common.base.Throwables;
 import com.google.common.io.Resources;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.lambda.CallableWithParam;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.PassObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -173,13 +175,13 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public AuthenticationToken authenticateUser(String userName, String password) throws RemoteException {
-        return securityManager.authenticateUser(userName, password, getStack());
+    public AuthenticationToken authenticateUser(String userName, PassObject passObject) throws RemoteException {
+        return securityManager.authenticateUser(userName, passObject, getStack());
     }
 
     @Override
-    public AuthenticationToken oAuth2authenticateUser(String userName) throws RemoteException {
-        return securityManager.oAuth2authenticateUser(userName, getStack());
+    public Pair<String, String> getOauth2ClientCredentials(String client, String authSecret) throws RemoteException {
+        return securityManager.getOauth2ClientCredentials(client, authSecret);
     }
 
     @Override

@@ -28,7 +28,12 @@
         <param-name>exportName</param-name>
         <param-value>default</param-value>
     </context-param>
-
+    <!--secret key to authenticate users without password-->
+    <context-param>
+        <description>Application authentication secret</description>
+        <param-name>authSecret</param-name>
+        <param-value>secretKey</param-value>
+    </context-param>
 
     <!-- UI (gwt) dispatch servlet-->
     <!-- it's tricky here, we already have a dispatch servlet (MainDispatchServlet), but we want it to be instantiated with spring (to autowire it), that's why we've implemented HttpRequestHandler interface and redirect HttpRequestHandler.handleRequest to Servlet.service (and in that xml we use "proxy" HttpRequestHandlerServlet) -->

@@ -1,9 +1,11 @@
 package lsfusion.client.controller.remote.proxy;
 
+import lsfusion.base.Pair;
 import lsfusion.client.navigator.controller.remote.proxy.RemoteNavigatorProxy;
 import lsfusion.client.session.remote.proxy.RemoteSessionProxy;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.PassObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -44,19 +46,19 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
     }
 
     @Override
-    public AuthenticationToken authenticateUser(String userName, String password) throws RemoteException {
+    public AuthenticationToken authenticateUser(String userName, PassObject passObject) throws RemoteException {
         logRemoteMethodStartCall("authenticateUser");
-        AuthenticationToken result = target.authenticateUser(userName, password);
+        AuthenticationToken result = target.authenticateUser(userName, passObject);
         logRemoteMethodEndCall("authenticateUser", result);
         return result;
     }
 
     @Override
-    public AuthenticationToken oAuth2authenticateUser(String userName) throws RemoteException {
-        logRemoteMethodStartCall("oAuth2authenticateUser");
-        AuthenticationToken result = target.oAuth2authenticateUser(userName);
-        logRemoteMethodEndCall("oAuth2authenticateUser", result);
-        return result;
+    public Pair<String, String> getOauth2ClientCredentials(String client, String authSecret) throws RemoteException {
+        logRemoteMethodStartCall("getClientCredentials");
+        Pair<String, String> clientCredentials = target.getOauth2ClientCredentials(client, authSecret);
+        logRemoteMethodStartCall("getClientCredentials");
+        return clientCredentials;
     }
 
     public long generateID() throws RemoteException {

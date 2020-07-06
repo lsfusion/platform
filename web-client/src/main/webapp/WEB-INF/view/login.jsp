@@ -56,7 +56,7 @@
                         </form>
                         <br>
                         <form id="github-login-form" name="github-login" action="/oauth2/authorization/github">
-                            <button class="loginBtn loginBtn--github" onclick="">
+                            <button class="loginBtn loginBtn--github">
                                 Login with Github
                             </button>
                         </form>

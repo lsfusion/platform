@@ -10,6 +10,7 @@ import lsfusion.interop.base.exception.LoginException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.connection.PassObject;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -52,7 +53,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
             Pair<AuthenticationToken, Locale> authLocale = runRequest(request, new LogicsRunnable<Pair<AuthenticationToken, Locale>>() {
                 public Pair<AuthenticationToken, Locale> run(LogicsSessionObject sessionObject) throws RemoteException {
                     try {
-                        AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(username, password);
+                        AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(username, new PassObject(password, null));
                         return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());

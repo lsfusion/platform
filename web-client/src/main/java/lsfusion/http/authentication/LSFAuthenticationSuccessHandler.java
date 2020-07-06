@@ -1,9 +1,12 @@
 package lsfusion.http.authentication;
 
 import lsfusion.base.ServerUtils;
+import lsfusion.http.provider.logics.LogicsProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -13,14 +16,20 @@ import java.util.Locale;
 
 public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
+    @Autowired
+    private LogicsProvider logicsProvider;
+
+    @Autowired
+    private ServletContext servletContext;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        // setting cookie before super.onAuthenticationSuccess() to have right cookie-path  
-        Cookie localeCookie = new Cookie(ServerUtils.LOCALE_COOKIE_NAME, "");
-        authentication = OAuth2Filter.convertToken(request, response, authentication);
+        authentication = OAuth2Filter.convertToken(logicsProvider, request, response, authentication, servletContext);
         if (authentication == null) {
             return;
         }
+        // setting cookie before super.onAuthenticationSuccess() to have right cookie-path
+        Cookie localeCookie = new Cookie(ServerUtils.LOCALE_COOKIE_NAME, "");
         Locale userLocale = LSFAuthenticationToken.getUserLocale(authentication);
         if (userLocale != null) {
             localeCookie.setValue(userLocale.toString());
