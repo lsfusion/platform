@@ -338,7 +338,7 @@ FORM changes '{system.events.form.changes}'
                             userLoginConnection, quantityAddedClasses, quantityRemovedClasses,
                             quantityChangedClasses, gChanges = changes, dateTime, pChanges = changes PANEL
     FILTERGROUP filtersChange
-                    FILTER '{system.events.form.changes.filter.user.login.connections}' userLoginConnection(s) 'F8' DEFAULT
+                    FILTER '{system.events.form.changes.filter.user.login.connections}' userLoginConnection(s) 'F8'
 ;
 
 DESIGN changes {
