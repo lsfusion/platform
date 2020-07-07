@@ -31,6 +31,10 @@ public class ColorUtils {
         return "#" + toHexString(iR) + toHexString(iG) + toHexString(iB);
     }
 
+    public static String toColorString(int iA, int iR, int iG, int iB) {
+        return toHexString(iA) + toHexString(iR) + toHexString(iG) + toHexString(iB);
+    }
+
     public static String toColorString(int iColor) {
         return toColorString(getRed(iColor), getGreen(iColor), getBlue(iColor));
     }

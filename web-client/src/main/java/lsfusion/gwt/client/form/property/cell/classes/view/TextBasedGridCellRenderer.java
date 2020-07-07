@@ -23,6 +23,17 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
             style.setTextAlign(textAlignStyle);
+            switch (textAlignStyle) {
+                case LEFT:
+                    element.setAttribute("data-a-h", "left");
+                    break;
+                case CENTER:
+                    element.setAttribute("data-a-h", "center");
+                    break;
+                case RIGHT:
+                    element.setAttribute("data-a-h", "right");
+                    break;
+            }
         }
 
         renderStaticContent(element, font);

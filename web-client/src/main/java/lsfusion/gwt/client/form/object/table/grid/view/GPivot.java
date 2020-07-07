@@ -40,6 +40,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.base.view.ColorUtils.toColorString;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 import static lsfusion.gwt.client.view.StyleDefaults.getComponentBackground;
+import static lsfusion.gwt.client.view.StyleDefaults.getDefaultComponentBackgroundARGB;
 
 public class GPivot extends GStateTableView implements ColorThemeChangeListener {
 
@@ -331,9 +332,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         /*-{
             var pvtTable = element.getElementsByClassName("subtotalouterdiv")[0];
 
-            //set bold
-            Array.from(pvtTable.querySelectorAll("th.pvtAxisLabel, th.pvtColLabel, th.pvtTotalLabel, th.pvtTotalLabel, th.pvtRowLabel, td.pvtTotal, td.pvtRowSubtotal, td.pvtGrandTotal")).forEach(function (item) {
-                item.setAttribute("data-f-bold", "true");
+            //set borders
+            Array.from(pvtTable.querySelectorAll(".pvtTotal")).forEach(function (item) {
+                item.setAttribute("data-b-a-s", "medium");
+                item.setAttribute("data-b-a-c", "FFE6E6E6");//--grid-separator-border-color in light.css
             });
 
             var workbook = $wnd.TableToExcel.tableToBook(pvtTable, {
@@ -948,17 +950,20 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
 
         setValueCellBackground(jsElement, rowKeys.length(), columnKeys.length(), false);
+        setTableToExcelAttributes(jsElement, "pvtVal");
     }
 
     public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
         int totalRowLevels = config.getArrayString("splitRows").length();
         int totalColLevels = config.getArrayString("cols").length();
         String cellBackground = null;
+        String dataFillColor = null;
 
         int depth = 0;
         if (rowLevel == 0 || columnLevel == 0) {
             if (totalRowLevels == 0) {
                 cellBackground = getComponentBackground(colorTheme);
+                dataFillColor = getDefaultComponentBackgroundARGB();
             } else {
                 depth = Math.max(totalRowLevels + totalColLevels - 1, 1);
             }
@@ -979,10 +984,21 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                     baseRGB[1] + darkenStepRGB[1] * depth,
                     baseRGB[2] + darkenStepRGB[2] * depth
             );
+            int[] baseRGBDefault = StyleDefaults.getComponentBackgroundRGBDefault();
+            int[] darkenStepRGBDefault = StyleDefaults.getPivotGroupLevelDarkenStepRGBDefault();
+            dataFillColor = toColorString(
+                    255,
+                    baseRGBDefault[0] + darkenStepRGBDefault[0] * depth,
+                    baseRGBDefault[1] + darkenStepRGBDefault[1] * depth,
+                    baseRGBDefault[2] + darkenStepRGBDefault[2] * depth
+            );
         }
         
         if (cellBackground != null) {
             td.getStyle().setBackgroundColor(cellBackground);
+        }
+        if(dataFillColor != null) {
+            td.setAttribute("data-fill-color", dataFillColor); //for tableToExcel.js
         }
 
         if (!refresh) {
@@ -1081,6 +1097,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 jsElement.setTitle(fromObject(value).toString());
             }
         }
+        setTableToExcelAttributes(jsElement, "pvtColLabel");
     }
     
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
@@ -1103,6 +1120,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             if (value != null) {
                 jsElement.setTitle(valueString);
             }
+        }
+        setTableToExcelAttributes(jsElement, "pvtAxisLabel");
+    }
+
+    private void setTableToExcelAttributes(Element jsElement, String parentClassName) {
+        while(jsElement != null && !jsElement.hasClassName(parentClassName)) {
+            jsElement = jsElement.getParentElement();
+        }
+        if(jsElement != null) {
+            jsElement.setAttribute("data-fill-color", "FFF2F2F2"); //--background-color in light.css
+            jsElement.setAttribute("data-b-a-s", "medium");
+            jsElement.setAttribute("data-b-a-c", "FFE6E6E6"); //--grid-separator-border-color in light.css
+
         }
     }
 
