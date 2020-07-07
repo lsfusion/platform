@@ -63,9 +63,8 @@
 
     <!-- Security beans -->
 
-    <!--for inject clientRegistrationRepository-->
+    <!--for for programmatic creation and inject custom clientRegistrationRepository because he has a dynamic number of registrations-->
     <b:bean id="oauth2Params" class="lsfusion.http.authentication.OAuth2ParamsConfiguration"/>
-
     <b:bean id="auth2AuthorizedClientService" class="org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService">
         <b:constructor-arg ref="clientRegistrationRepository"/>
     </b:bean>

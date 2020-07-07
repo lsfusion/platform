@@ -31,7 +31,7 @@ import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.PassObject;
+import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.LogicsRunnable;
@@ -448,7 +448,7 @@ public class MainController {
             final UserInfo fUserInfo = userInfo;
             authToken = runRequest(new LogicsRunnable<AuthenticationToken>() {
                 public AuthenticationToken run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return fUserInfo.isAnonymous() ? AuthenticationToken.ANONYMOUS : sessionObject.remoteLogics.authenticateUser(fUserInfo.name, new PassObject(fUserInfo.password, null));
+                    return fUserInfo.isAnonymous() ? AuthenticationToken.ANONYMOUS : sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(fUserInfo.name, fUserInfo.password));
                 }
             });
         } catch (Exception e) {

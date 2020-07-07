@@ -81,6 +81,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>lsfusion.platform</groupId>
             <artifactId>api</artifactId>
         </dependency>

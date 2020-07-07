@@ -7,7 +7,7 @@ import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.PassObject;
+import lsfusion.interop.connection.authentication.TrustedAuthentication;
 import lsfusion.interop.logics.LogicsSessionObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -57,7 +57,7 @@ public class OAuth2Filter extends OncePerRequestFilter {
         try {
             Pair<AuthenticationToken, Locale> authLocale = logicsProvider.runRequest(request, (LogicsSessionObject sessionObject) -> {
                 try {
-                    AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(username, new PassObject(null, authSecret));
+                    AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new TrustedAuthentication(username, authSecret));
                     return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
                 } catch (LockedException le) {
                     throw new org.springframework.security.authentication.LockedException(le.getMessage());

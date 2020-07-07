@@ -5,7 +5,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -15,8 +14,10 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
+import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.PassObject;
+import lsfusion.interop.connection.authentication.OAuth2Credentials;
+import lsfusion.interop.connection.authentication.TrustedAuthentication;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -225,18 +226,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .compact());
     }
 
-    public Pair<String, String> getOauth2ClientCredentials(String client, String authSecret){
+    public OAuth2Credentials getOauth2ClientCredentials(String client, String authSecret){
         String webClientAuthSecret;
-        try(DataSession session = createSession()) {
+        try (DataSession session = createSession()) {
             webClientAuthSecret = (String) authenticationLM.webClientSecretKey.read(session);
-            if (webClientAuthSecret.equals(authSecret) && client != null){
-                switch (client){
-                    case "google":
-                        return  new Pair<>((String) authenticationLM.googleClientId.read(session), (String) authenticationLM.googleClientSecret.read(session));
-                    case "github":
-                        return  new Pair<>((String) authenticationLM.githubClientId.read(session), (String) authenticationLM.githubClientSecret.read(session));
-                    default:
-                        return null;
+            if (webClientAuthSecret.equals(authSecret) && client != null) {
+                String clientId = (String) authenticationLM.findProperty(client + "ClientId[]").read(session);
+                String clientSecret = (String) authenticationLM.findProperty(client + "ClientSecret").read(session);
+                if (clientId != null && clientSecret !=null){
+                    return new OAuth2Credentials(clientId, clientSecret);
                 }
             }
             return null;
@@ -245,28 +243,31 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private boolean isTrustedAuth(PassObject passObject, DataSession session) throws SQLException, SQLHandledException {
-        String webAuthSecret = passObject.getAuthSecret();
+    private boolean isTrustedAuth(Authentication authentication, DataSession session) throws SQLException, SQLHandledException {
+        String webAuthSecret = null;
+        if (authentication instanceof TrustedAuthentication) {
+            webAuthSecret = authentication.getAuthSecret();
+        }
         return webAuthSecret != null && webAuthSecret.equals(authenticationLM.webClientSecretKey.read(session));
     }
 
-    public AuthenticationToken authenticateUser(String userName, PassObject passObject, ExecutionStack stack) {
+    public AuthenticationToken authenticateUser(Authentication authentication, ExecutionStack stack) {
         DataObject userObject;
         try (DataSession session = createSession()) {
-            userObject = readUser(userName, session);
-            if (isTrustedAuth(passObject, session) && userObject == null) {
+            userObject = readUser(authentication.getUserName(), session);
+            if (isTrustedAuth(authentication, session) && userObject == null) {
                 String pwd = BaseUtils.generatePassword(20, false, true);
-                userObject = addUser(userName, pwd, session);
+                userObject = addUser(authentication.getUserName(), pwd, session);
                 apply(session, stack);
             }
-            authenticateUser(session, userObject, userName, passObject, stack);
-            return generateToken(userName);
+            authenticateUser(session, userObject, authentication, stack);
+            return generateToken(authentication.getUserName());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public void authenticateUser(DataSession session, DataObject userObject, String login, PassObject password, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void authenticateUser(DataSession session, DataObject userObject, Authentication authentication, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (authenticationLM.useLDAP.read(session) != null) {
             String server = (String) authenticationLM.serverLDAP.read(session);
             Integer port = (Integer) authenticationLM.portLDAP.read(session);
@@ -274,10 +275,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
 
             try {
-                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(login, password.getPassword());
+                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(authentication.getUserName(), authentication.getPassword());
                 if (ldapParameters.isConnected()) {
                     if (userObject == null) {
-                        userObject = addUser(login, password.getPassword(), session);
+                        userObject = addUser(authentication.getUserName(), authentication.getPassword(), session);
                     }
                     setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
                     apply(session);
@@ -294,7 +295,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             throw new LoginException();
         }
 
-        if (!isTrustedAuth(password, session) && !authenticationLM.checkPassword(session, userObject, password.getPassword(), stack)) {
+        if (!isTrustedAuth(authentication, session) && !authenticationLM.checkPassword(session, userObject, authentication.getPassword(), stack)) {
             throw new LoginException();
         }
 
