@@ -19,7 +19,6 @@ import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
@@ -39,7 +38,6 @@ import java.util.*;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.min;
 import static java.lang.String.valueOf;
-import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GTableView {
@@ -673,11 +671,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
                 properties.add(newColumnIndex, property);
 
-                form.addPropertyBindings(property, (bindingEvent, event) -> {
+                form.addPropertyBindings(property, event -> {
                     int column = getPropertyIndex(property, null);
                     if(column >= 0)
-                        onEditEvent(new EventHandler(event), bindingEvent, getSelectedCellContext(column), getSelectedElement(column));
-
+                        onEditEvent(new EventHandler(event), true, getSelectedCellContext(column), getSelectedElement(column));
                 }, GGridTable.this);
 
                 this.columnKeys.put(property, columnKeys);

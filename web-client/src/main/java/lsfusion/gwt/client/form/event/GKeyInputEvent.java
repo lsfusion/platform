@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.event;
 
+import com.google.gwt.user.client.Event;
+
 import java.util.Map;
 
 public class GKeyInputEvent extends GInputEvent {
@@ -26,5 +28,10 @@ public class GKeyInputEvent extends GInputEvent {
     @Override
     public String toString() {
         return keyStroke.toString();
+    }
+
+    @Override
+    public boolean isEvent(Event event) {
+        return keyStroke.isEvent(event);
     }
 }

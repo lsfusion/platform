@@ -14,8 +14,6 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
 
     public ModalForm(DefaultFormsController formsController) {
         super(formsController);
-
-        GFormController.initKeyEventHandler(contentWidget, () -> form);
     }
 
     @Override

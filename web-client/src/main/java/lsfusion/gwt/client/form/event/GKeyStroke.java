@@ -115,17 +115,25 @@ public class GKeyStroke implements Serializable {
         return keyString;
     }
 
+    public boolean isEvent(Event event) {
+        return BrowserEvents.KEYDOWN.equals(event.getType()) && event.getKeyCode() == keyCode && event.getShiftKey() == shiftPressed && event.getAltKey() == altPressed && event.getCtrlKey() == ctrlPressed;
+    }
+
     public static GKeyStroke getKeyStroke(NativeEvent e) {
         assert BrowserEvents.KEYDOWN.equals(e.getType());
         return new GKeyStroke(e.getKeyCode(), e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
     }
 
     public static boolean isSpaceKeyEvent(NativeEvent event) {
-        return event.getKeyCode() == KEY_SPACE;
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_SPACE;
     }
 
     public static boolean isEnterKeyEvent(NativeEvent event) {
-        return event.getKeyCode() == KEY_ENTER;
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_ENTER;
+    }
+
+    public static boolean isEscapeKeyEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_ESCAPE;
     }
 
     public static boolean isEditObjectEvent(NativeEvent event) {
@@ -169,6 +177,10 @@ public class GKeyStroke implements Serializable {
             return keyCode != KEY_ENTER && keyCode != KEY_ESCAPE && event.getCharCode() != 0;
         }
         return false;
+    }
+
+    public static boolean isKeyEvent(Event event) {
+        return KEYPRESS.equals(event.getType()) || KEYDOWN.equals(event.getType());
     }
 
     public static boolean isNumberAddKeyEvent(NativeEvent event) {

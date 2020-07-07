@@ -7,10 +7,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
@@ -47,7 +44,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     protected void onEditEvent(EventHandler handler) {
-        onEditEvent(handler, null);
+        onEditEvent(handler, false);
     }
 
     @Override
@@ -65,11 +62,11 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         setFocus(true); // we can check if it's focusable, but it will be done automatically in onFocus
     }
 
-    public void onBinding(GInputEvent bindingEvent, Event event) {
-        onEditEvent(new EventHandler(event), bindingEvent);
+    public void onBinding(boolean isBinding, Event event) {
+        onEditEvent(new EventHandler(event), isBinding);
     }
-    public void onEditEvent(EventHandler handler, GInputEvent bindingEvent) {
-        form.executePropertyEventAction(handler, bindingEvent, this);
+    public void onEditEvent(EventHandler handler, boolean isBinding) {
+        form.executePropertyEventAction(handler, isBinding, this);
     }
 
     private boolean forceSetFocus;

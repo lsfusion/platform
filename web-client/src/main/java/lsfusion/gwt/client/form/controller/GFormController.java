@@ -185,10 +185,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void onBrowserEvent(Event event) {
         super.onBrowserEvent(event);
 
-        if(GMouseStroke.isChangeEvent(event))
-            handleMouseEvent(event, false);
-        else if (GMouseStroke.isDoubleChangeEvent(event))
-            handleMouseEvent(event, true);
+        if(GMouseStroke.isChangeEvent(event) || GMouseStroke.isDoubleChangeEvent(event))
+            handleMouseEvent(event);
     }
 
     // will handle key events in upper container which will be better from UX point of view
@@ -245,7 +243,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         filterCheck.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
         if (filter.key != null)
-            addBinding(new GKeyInputEvent(filter.key), (bindingEvent, event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
+            addBinding(new GKeyInputEvent(filter.key), (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
     }
 
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
@@ -261,7 +259,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             final int filterIndex = i;
             filterBox.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
             if (filter.key != null)
-                addBinding(new GKeyInputEvent(filter.key), (bindingEvent, event) -> {
+                addBinding(new GKeyInputEvent(filter.key), (event) -> {
                     filterBox.setSelectedIndex(filterIndex + 1);
                     setRegularFilter(filterGroup, filterIndex);
                 }, filterBox, filterGroup.groupObject);
@@ -702,7 +700,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         dispatcher.execute(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
     }
 
-    public void executePropertyEventAction(EventHandler handler, GInputEvent bindingEvent, ExecuteEditContext editContext) {
+    public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
         Event event = handler.event;
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
@@ -711,8 +709,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             });
         } else {
             String actionSID;
-            if(bindingEvent != null) {
-                if(bindingEvent instanceof GKeyInputEvent) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
+            if(isBinding) {
+                if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
                     editContext.trySetFocus(); // we want element to be focused on key binding (if it's possible)
                 actionSID = CHANGE;
             } else {
@@ -1288,10 +1286,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final ArrayList<Binding> bindings = new ArrayList<>();
 
     public interface BindingCheck {
-        boolean check(GInputEvent bindingEvent, Event event);
+        boolean check(Event event);
     }
     public interface BindingExec {
-        void exec(GInputEvent bindingEvent, Event event);
+        void exec(Event event);
     }
     public void addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
         for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
@@ -1302,7 +1300,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
     }
     public void addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding((inputEvent, nativeEvent) -> inputEvent.equals(event), env, pressed, component, groupObject);
+        addBinding(event::isEvent, env, pressed, component, groupObject);
     }
     public void addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
         addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
@@ -1312,8 +1310,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
 
             @Override
-            public void exec(GInputEvent bindingEvent, Event event) {
-                pressed.exec(bindingEvent, event);
+            public void exec(Event event) {
+                pressed.exec(event);
             }
         });
     }
@@ -1336,13 +1334,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GGroupObject get();
     }
 
-    public boolean processBinding(GInputEvent ks, Event event, GGroupObjectSupplier groupObjectSupplier) {
+    public boolean processBinding(Event event, GGroupObjectSupplier groupObjectSupplier) {
         TreeMap<Integer, Binding> orderedBindings = new TreeMap<>(); // descending sorting by priority
 
         GGroupObject groupObject = groupObjectSupplier.get();
         for (int i = 0, size = bindingEvents.size(); i < size; i++) {
             GBindingEvent bindingEvent = bindingEvents.get(i);
-            if (bindingEvent.event.check(ks, event)) {
+            if (bindingEvent.event.check(event)) {
                 Binding binding = bindings.get(i);
                 boolean equalGroup;
                 GBindingEnv bindingEnv = bindingEvent.env;
@@ -1357,7 +1355,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         for (Binding binding : orderedBindings.values()) {
             if (binding.enabled()) {
                 checkCommitEditing();
-                binding.exec(ks, event);
+                binding.exec(event);
                 stopPropagation(event);
                 return true;
             }
@@ -1431,20 +1429,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (!Element.is(target)) {
             return;
         }
-
-        assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType()) || BrowserEvents.KEYPRESS.equals(nativeEvent.getType());
-        // we don't want keyInputEvent to be handled twice, so will use -1 keyStroke instead of real one
-        GKeyInputEvent key = BrowserEvents.KEYDOWN.equals(nativeEvent.getType()) ? new GKeyInputEvent(GKeyStroke.getKeyStroke(nativeEvent)) : new GKeyInputEvent(new GKeyStroke(-1));
-        processBinding(key, (Event) nativeEvent, () -> getGroupObject(Element.as(target)));
+        processBinding((Event) nativeEvent, () -> getGroupObject(Element.as(target)));
     }
 
-    private void handleMouseEvent(NativeEvent nativeEvent, boolean dblClick) {
+    private void handleMouseEvent(NativeEvent nativeEvent) {
         final EventTarget target = nativeEvent.getEventTarget();
         if (!Element.is(target)) {
             return;
         }
-
-        processBinding(new GMouseInputEvent(nativeEvent, dblClick), (Event) nativeEvent, () -> getGroupObject(Element.as(target)));
+        processBinding((Event) nativeEvent, () -> getGroupObject(Element.as(target)));
     }
 
     private CellEditor cellEditor;

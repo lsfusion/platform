@@ -15,7 +15,6 @@ import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -287,7 +286,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void onEditEvent(EventHandler handler, GInputEvent bindingEvent, Context editContext, Element editCellParent) {
+        public void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent) {
             Event event = handler.event;
             if (GMouseStroke.isChangeEvent(event)) {
                 String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);

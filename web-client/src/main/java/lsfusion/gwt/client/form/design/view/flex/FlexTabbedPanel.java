@@ -15,7 +15,10 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
     protected TabDeck deck;
 
     public FlexTabbedPanel() {
-        FlexTabBar tabBar = new FlexTabBar();
+        this(null);
+    }
+    public FlexTabbedPanel(Widget extraTabWidget) {
+        FlexTabBar tabBar = new FlexTabBar(extraTabWidget);
         TabbedDeckPanel deck = new TabbedDeckPanel();
 
         panel = new FlexPanel(true);

@@ -44,6 +44,12 @@ public class GMouseInputEvent extends GInputEvent {
     }
 
     @Override
+    public boolean isEvent(Event event) {
+        boolean doubleChangeEvent = GMouseStroke.isDoubleChangeEvent(event);
+        return (GMouseStroke.isChangeEvent(event) || doubleChangeEvent) && equals(new GMouseInputEvent(event, doubleChangeEvent));
+    }
+
+    @Override
     public int hashCode() {
         return mouseEvent.hashCode();
     }

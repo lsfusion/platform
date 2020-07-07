@@ -2,11 +2,13 @@ package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -50,7 +52,7 @@ public abstract class DefaultFormsController implements FormsController {
 
         formsContainer = new ResizableSimplePanel();
 
-        tabsPanel = new FlexTabbedPanel();
+        tabsPanel = new FlexTabbedPanel(fullScreenButton);
 
         // unselected (but not removed)
         tabsPanel.setBeforeSelectionHandler(index -> {
@@ -104,38 +106,19 @@ public abstract class DefaultFormsController implements FormsController {
         setFullScreenMode(storage != null && storage.getItem("full_screen") != null);
     }
 
-    private static ResizableFocusPanel focusPanel;
-    private static LayoutPanel layoutPanel;
     public void initRoot() {
-        focusPanel = new ResizableFocusPanel() {
-            @Override
-            public void onBrowserEvent(Event event) {
-                if(BrowserEvents.BLUR.equals(event.getType()))
-                    setLastBlurredElement(Element.as(event.getEventTarget()));
-
-                super.onBrowserEvent(event);
-            }
-        };
-//        focusPanel.addFocusHandler(event -> GWT.log("FORM FOCUSED"));
-//        focusPanel.addBlurHandler(event -> GWT.log("FORM BLURED"));
-        RootLayoutPanel.get().add(focusPanel);
-        GFormController.initKeyEventHandler(focusPanel, () -> {
+        GFormController.initKeyEventHandler(RootPanel.get(), () -> {
             FormContainer currentForm = getCurrentForm();
             if(currentForm != null)
                 return currentForm.getForm();
             return null;
         });
 
-        layoutPanel = new LayoutPanel();
-        focusPanel.add(layoutPanel);
-        Window.addResizeHandler(event -> layoutPanel.onResize());
-        GwtClientUtils.setupFillParent(layoutPanel.getElement());
-
         restoreFullScreen();
     }
     public void updateRoot(Widget widget) {
-        layoutPanel.clear();
-        layoutPanel.add(widget);
+        RootLayoutPanel.get().clear();
+        RootLayoutPanel.get().add(widget);
     }
 
     public void maximizeTabsPanel(){

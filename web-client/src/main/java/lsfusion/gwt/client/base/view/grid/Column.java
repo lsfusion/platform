@@ -16,12 +16,8 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
-import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GInputEvent;
 
 public abstract class Column<T, C> {
 
@@ -32,7 +28,7 @@ public abstract class Column<T, C> {
 
   public abstract boolean isFocusable();
 
-  public abstract void onEditEvent(EventHandler handler, GInputEvent bindingEvent, Context editContext, Element editCellParent);
+  public abstract void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent);
 
   public abstract void renderDom(Context context, Element cellElement, C value);
 

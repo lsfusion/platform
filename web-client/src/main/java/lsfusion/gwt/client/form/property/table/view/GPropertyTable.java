@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.table.view;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -46,7 +45,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     private void addEnterBinding(boolean shiftPressed) {
         form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
                 new GBindingEnv(-100, null, GBindingMode.ONLY, null, null),
-                (bindingEvent, event) -> ((GGridPropertyTable) GPropertyTable.this).selectNextCellInColumn(!shiftPressed),
+                event -> ((GGridPropertyTable) GPropertyTable.this).selectNextCellInColumn(!shiftPressed),
                 null,
                 groupObject);
     }
@@ -84,8 +83,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 //        CopyPasteUtils.setEmptySelection(getSelectedElement());
 //    }
 
-    public void onEditEvent(EventHandler handler, GInputEvent bindingEvent, Context editContext, Element editCellParent) {
-        form.executePropertyEventAction(handler, bindingEvent,
+    public void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent) {
+        form.executePropertyEventAction(handler, isBinding,
                 new ExecuteEditContext() {
                     @Override
                     public RenderContext getRenderContext() {

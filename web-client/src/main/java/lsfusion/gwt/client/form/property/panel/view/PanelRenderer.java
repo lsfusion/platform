@@ -82,8 +82,8 @@ public abstract class PanelRenderer {
         }
     }
 
-    public void onBinding(GInputEvent bindingEvent, Event event) {
-        value.onBinding(bindingEvent, event);
+    public void onBinding(Event event) {
+        value.onBinding(true, event);
     }
 
     private Object foreground;

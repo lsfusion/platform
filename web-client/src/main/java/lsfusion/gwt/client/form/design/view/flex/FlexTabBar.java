@@ -26,7 +26,7 @@ public class FlexTabBar extends Composite implements TabBar {
 
     private Widget selectedTab;
 
-    public FlexTabBar() {
+    public FlexTabBar(Widget extraTabWidget) {
         initWidget(panel);
 
         sinkEvents(Event.ONMOUSEDOWN);
@@ -48,6 +48,8 @@ public class FlexTabBar extends Composite implements TabBar {
 
         panel.add(first, GFlexAlignment.STRETCH, 0);
         panel.add(rest, GFlexAlignment.STRETCH, 1);
+        if(extraTabWidget != null)
+            panel.add(extraTabWidget, GFlexAlignment.START, 0);
     }
 
     private Consumer<Integer> beforeSelectionHandler;
