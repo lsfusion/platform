@@ -846,7 +846,7 @@
             }
             ah.tr = tr;
           } else if (row === 0 && colAttrs.length > 0 && !hideColAxisHeadersColumn) {
-            tr.appendChild(createElement("th", null, {
+            tr.appendChild(createElement("th", "pvtEmptyHeader", {
               rowspan: rowsNumber - colAttrs.length
             }));
           }
@@ -1714,7 +1714,7 @@
           buildRowTotalsHeader(colAxisHeaders.ah[0].tr, colAttrs.length, colsData);
           rowAttrHeadersCount = rowGroups.length;
           if (rowAttrHeadersCount > colAttrs.length) {
-            emptyTopAttrTH = createElement("th", null, {
+            emptyTopAttrTH = createElement("th", "pvtEmptyHeader", {
               colspan: overallSpan + 1,
               rowspan: rowAttrHeadersCount - colAttrs.length
             });

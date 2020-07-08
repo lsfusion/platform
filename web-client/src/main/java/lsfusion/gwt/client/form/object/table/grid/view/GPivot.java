@@ -332,6 +332,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         /*-{
             var pvtTable = element.getElementsByClassName("subtotalouterdiv")[0];
 
+            //set background
+            Array.from(pvtTable.querySelectorAll(".pvtEmptyHeader")).forEach(function (item) {
+                item.setAttribute("data-fill-color", "FFF2F2F2"); //--background-color in light.css
+            });
+
             //set borders
             Array.from(pvtTable.querySelectorAll(".pvtTotal")).forEach(function (item) {
                 item.setAttribute("data-b-a-s", "medium");
@@ -950,7 +955,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
 
         setValueCellBackground(jsElement, rowKeys.length(), columnKeys.length(), false);
-        setTableToExcelAttributes(jsElement, "pvtVal");
+        setTableToExcelAttributes(jsElement, false);
     }
 
     public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
@@ -1097,7 +1102,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 jsElement.setTitle(fromObject(value).toString());
             }
         }
-        setTableToExcelAttributes(jsElement, "pvtColLabel");
+        if(!isSubtotal) {
+            while (jsElement != null && !jsElement.hasClassName("pvtColLabel")) {
+                jsElement = jsElement.getParentElement();
+            }
+        }
+        setTableToExcelAttributes(jsElement, true);
     }
     
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
@@ -1121,18 +1131,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 jsElement.setTitle(valueString);
             }
         }
-        setTableToExcelAttributes(jsElement, "pvtAxisLabel");
-    }
-
-    private void setTableToExcelAttributes(Element jsElement, String parentClassName) {
-        while(jsElement != null && !jsElement.hasClassName(parentClassName)) {
+        while(jsElement != null && !jsElement.hasClassName("pvtAxisLabel")) {
             jsElement = jsElement.getParentElement();
         }
+        setTableToExcelAttributes(jsElement, true);
+    }
+
+    private void setTableToExcelAttributes(Element jsElement, boolean background) {
         if(jsElement != null) {
-            jsElement.setAttribute("data-fill-color", "FFF2F2F2"); //--background-color in light.css
             jsElement.setAttribute("data-b-a-s", "medium");
             jsElement.setAttribute("data-b-a-c", "FFE6E6E6"); //--grid-separator-border-color in light.css
-
+            if(background) {
+                jsElement.setAttribute("data-fill-color", "FFF2F2F2"); //--background-color in light.css
+            }
         }
     }
 

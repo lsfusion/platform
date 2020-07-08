@@ -537,7 +537,7 @@ callWithJQuery ($) ->
                     tr.appendChild ah.th if not hideColAxisHeadersColumn
                     ah.tr = tr
                 else if row == 0 and colAttrs.length > 0 and not hideColAxisHeadersColumn
-                    tr.appendChild createElement "th", null, {rowspan: rowsNumber - colAttrs.length}      
+                    tr.appendChild createElement "th", "pvtEmptyHeader", {rowspan: rowsNumber - colAttrs.length}
 
             return [colAxisHeaders, rowAxisHeaders, trs]
 
@@ -1099,7 +1099,7 @@ callWithJQuery ($) ->
                 buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length, colsData
                 rowAttrHeadersCount = rowGroups.length
                 if rowAttrHeadersCount > colAttrs.length
-                    emptyTopAttrTH = createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length}
+                    emptyTopAttrTH = createElement "th", "pvtEmptyHeader", {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length}
                     rowAxisHeaders.ah[0].tr.appendChild emptyTopAttrTH
 
             bodyDiv = createElement "div", "bodydiv"
