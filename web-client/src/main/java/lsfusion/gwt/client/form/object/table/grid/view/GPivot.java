@@ -339,7 +339,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
             //set borders
             Array.from(pvtTable.querySelectorAll(".pvtTotal")).forEach(function (item) {
-                item.setAttribute("data-b-a-s", "medium");
+                item.setAttribute("data-b-a-s", "thin");
                 item.setAttribute("data-b-a-c", "FFE6E6E6");//--grid-separator-border-color in light.css
             });
 
@@ -1026,6 +1026,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
 
         setValueCellBackground(th, rowKeyValues.length(), -1, false);
+        setTableToExcelAttributes(th, false);
     }
 
     private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, JsArrayBoolean isLastChildList) {
@@ -1139,7 +1140,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void setTableToExcelAttributes(Element jsElement, boolean background) {
         if(jsElement != null) {
-            jsElement.setAttribute("data-b-a-s", "medium");
+            jsElement.setAttribute("data-b-a-s", "thin");
             jsElement.setAttribute("data-b-a-c", "FFE6E6E6"); //--grid-separator-border-color in light.css
             if(background) {
                 jsElement.setAttribute("data-fill-color", "FFF2F2F2"); //--background-color in light.css
@@ -1180,6 +1181,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         } else {
             GwtClientUtils.setThemeImage(ICON_PASSBY, str -> img.getStyle().setBackgroundImage("url('" + str + "')"));
         }
+    }
+
+    public void updateRowHeight(Element tr) {
+        tr.setAttribute("data-height", String.valueOf(rowHeight));
     }
 
     private int getArrowColumnWidth(int arrowLevels) {
@@ -1539,6 +1544,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
             checkPadding: function() {
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
+            },
+
+            setRowHeight: function (tr) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::updateRowHeight(*)(tr);
             }
         }
     }-*/;

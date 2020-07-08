@@ -850,6 +850,7 @@
               rowspan: rowsNumber - colAttrs.length
             }));
           }
+          callbacks.setRowHeight(tr);
         }
         return [colAxisHeaders, rowAxisHeaders, trs];
       };
@@ -951,6 +952,7 @@
         } else {
           tbody.insertBefore(h.tr, firstChild.tr);
         }
+        callbacks.setRowHeight(h.tr);
         h.ths = [];
         if (h.children.length !== 0) {
           isExpanded = true;
@@ -990,6 +992,7 @@
           if (!opts.rowSubtotalDisplay.displayOnTop) {
             h.sTr = createElement("tr", "row" + h.row);
             tbody.appendChild(h.sTr);
+            callbacks.setRowHeight(h.sTr);
           }
         }
         if ((ref3 = h.parent) != null) {
@@ -1093,6 +1096,7 @@
           });
           tr.appendChild(th);
         }
+        callbacks.setRowHeight(tr);
         return tr;
       };
       buildColTotals = function(tr, attrHeaders, rowAttrs, colAttrs, opts) {

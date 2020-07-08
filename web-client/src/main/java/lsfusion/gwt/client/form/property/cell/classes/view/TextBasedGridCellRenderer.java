@@ -60,18 +60,32 @@ public abstract class TextBasedGridCellRenderer<T> extends GridCellRenderer<T> {
         style.setPaddingTop(0, Style.Unit.PX);
     }
 
-    protected void setBasedTextFonts(Style style, GFont font, boolean isSingle) {
+    protected void setBasedTextFonts(Element element, GFont font, boolean isSingle) {
         if (property.font == null && isSingle) {
             property.font = font;
         }
 
         if (property.font != null) {
-            property.font.apply(style);
+            property.font.apply(element.getStyle());
+            setTableToExcelAttributes(element, property.font);
         }
     }
 
+    private void setTableToExcelAttributes(Element element, GFont font) {
+        if (font.family != null) {
+            element.setAttribute("data-f-name", font.family);
+        }
+        if (font.size > 0) {
+            element.setAttribute("data-f-sz", String.valueOf(font.size));
+        }
+        if(font.italic)
+            element.setAttribute("data-f-italic", "true");
+        if(font.bold)
+            element.setAttribute("data-f-bold", "true");
+    }
+
     public void renderDynamic(Element element, GFont font, Object value, boolean isSingle) {
-        setBasedTextFonts(element.getStyle(), font, isSingle);
+        setBasedTextFonts(element, font, isSingle);
         if (value == null) {
             element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
             setInnerText(element, null);
