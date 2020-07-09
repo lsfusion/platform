@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
@@ -81,7 +82,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             if (actionThrowable == null) {
                 continueServerInvocation(response.requestIndex, actionResults, continueIndex, continueRequestCallback);
             } else {
-                throwInServerInvocation(response.requestIndex, actionThrowable, continueIndex, continueRequestCallback);
+                throwInServerInvocation(response.requestIndex, LogClientExceptionAction.fromWebClientToWebServer(actionThrowable), continueIndex, continueRequestCallback);
             }
         } else {
             if (actionThrowable != null)

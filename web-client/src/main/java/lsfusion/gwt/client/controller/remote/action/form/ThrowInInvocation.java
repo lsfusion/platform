@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
 public class ThrowInInvocation extends FormRequestAction<ServerResponseResult> {
-    public Throwable throwable;
+    public Throwable throwable; // assert that throwable is already converted
     public int continueIndex;
 
     public ThrowInInvocation() {
