@@ -28,11 +28,9 @@ public class TextCellEditor extends TextBasedCellEditor {
         textArea.addClassName("textBasedGridCellEditor");
 
         Style textareaStyle = textArea.getStyle();
-//        textareaStyle.setBorderWidth(0, Style.Unit.PX);
         textareaStyle.setWidth(100, Style.Unit.PCT);
         textareaStyle.setHeight(100, Style.Unit.PCT);
 //        textareaStyle.setProperty("resize", "none");
-//        textareaStyle.setOutlineStyle(Style.OutlineStyle.NONE);
 
         TextCellRenderer.setPadding(textareaStyle, true);
         cellParent.getStyle().setPadding(0, Style.Unit.PX);

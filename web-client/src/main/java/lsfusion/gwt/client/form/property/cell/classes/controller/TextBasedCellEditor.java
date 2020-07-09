@@ -150,9 +150,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         input.addClassName("textBasedGridCellEditor");
 
         Style inputStyle = input.getStyle();
-        inputStyle.setBorderWidth(0, Style.Unit.PX);
-        inputStyle.setOutlineStyle(Style.OutlineStyle.NONE);
-        inputStyle.setMargin(0, Style.Unit.PX);
         inputStyle.setWidth(100, Style.Unit.PCT);
         inputStyle.setHeight(100, Style.Unit.PCT);
 

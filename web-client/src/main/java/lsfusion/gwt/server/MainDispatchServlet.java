@@ -233,9 +233,9 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
             return new RemoteRetryException(e, e instanceof SessionInvalidatedException ? 3 : ExceptionUtils.getFatalRemoteExceptionCount(e));
 
         RemoteInternalDispatchException clientException = new RemoteInternalDispatchException(ExceptionUtils.copyMessage(e), RemoteInternalException.getLsfStack(e));
-        ExceptionUtils.copyStackTraces(e, clientException);        
         //we do it because of problem with deserialization of exception's stacktrace
-        clientException.javaStack = ExceptionUtils.getStackTrace(clientException);
+        clientException.javaStack = RemoteInternalException.getJavaStack(e);
+        ExceptionUtils.copyStackTraces(e, clientException);
         return clientException;
     }
 
