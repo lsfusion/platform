@@ -138,7 +138,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     public LocalDateTime parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
         LocalDateTime cellValue;
         try {
-            cellValue = sqlTimestampToLocalDateTime(new Timestamp(cell.getDateCellValue().getTime()));//in apache.poi 4.1: cell.getLocalDateTimeCellValue();
+            cellValue = cell.getLocalDateTimeCellValue();
         } catch (IllegalStateException e) {
             return super.parseXLS(cell, formulaValue);
         }
@@ -190,7 +190,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     @Override
     public void formatXLS(LocalDateTime object, Cell cell, ExportXLSWriter.Styles styles) {
         if(object != null) {
-            cell.setCellValue(localDateTimeToSqlTimestamp(object)); //no need to convert in apache.poi 4.1
+            cell.setCellValue(object);
         }
         cell.setCellStyle(styles.dateTime);
     }

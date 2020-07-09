@@ -224,8 +224,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
-    public void runGroupReport(boolean toExcel) {
-        form.runGroupReport(groupObject.ID, toExcel);
+    public void runGroupReport() {
+        form.runGroupReport(groupObject.ID);
     }
 
     public void afterAppliedChanges() {

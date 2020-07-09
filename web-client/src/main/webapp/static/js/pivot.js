@@ -1199,7 +1199,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
+      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, pvtUiContainer, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1236,7 +1236,8 @@
         sorters: {},
         valueHeight: null,
         componentHeightString: null,
-        cellHorizontalPadding: null
+        cellHorizontalPadding: null,
+        getDisplayColor: null
       };
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
       localeDefaults = {
@@ -1280,9 +1281,12 @@
           }
           return recordsProcessed++;
         });
+        pvtUiContainer = $("<div>", {
+          "class": "pvtUiContainer"
+        });
         uiTable = $("<table>", {
           "class": "pvtUi"
-        }).attr("cellpadding", 5);
+        }).attr("cellpadding", 5).appendTo(pvtUiContainer);
         rendererControl = $("<td>").addClass("pvtUiCell");
         rendererControlDiv = $("<div>").appendTo(rendererControl);
         renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControlDiv).css({
@@ -1498,7 +1502,8 @@
           if (hasExcludedItem) {
             attrElemText.addClass('pvtFilteredAttribute');
           }
-          return unusedDiv.append(listItem).append(valueList);
+          unusedDiv.append(listItem);
+          return pvtUiContainer.append(valueList);
         };
         for (i in shownInDragDrop) {
           if (!hasProp.call(shownInDragDrop, i)) continue;
@@ -1533,13 +1538,6 @@
             next: "key_a_to_z"
           }
         };
-        rowOrderArrow = $("<a>", {
-          role: "button"
-        }).addClass("pvtRowOrder").data("order", opts.rowOrder).html(ordering[opts.rowOrder].rowSymbol).bind("click", function() {
-          $(this).data("order", ordering[$(this).data("order")].next);
-          $(this).html(ordering[$(this).data("order")].rowSymbol);
-          return refresh();
-        });
         colOrderArrow = $("<a>", {
           role: "button"
         }).addClass("pvtColOrder").data("order", opts.colOrder).html(ordering[opts.colOrder].colSymbol).bind("click", function() {
@@ -1548,7 +1546,7 @@
           return refresh();
         });
         aggrSelector = $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1);
-        $("<div>").appendTo(aggrSelector).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
+        $("<div>").appendTo(aggrSelector).append(aggregator).append(colOrderArrow).append($("<br>"));
         pvtColumns = $("<td>").addClass('pvtHorizList pvtCols pvtUiCell');
         pvtColumnsDiv = $("<div>").addClass('pvtUiCellHDiv').appendTo(pvtColumns);
         tr1.append(pvtColumns);
@@ -1573,7 +1571,7 @@
         } else {
           uiTable.prepend($("<tr>").append(rendererControl).append(unused));
         }
-        this.html(uiTable);
+        this.html(pvtUiContainer);
         createPaxis = function(columns) {
           var paxis;
           if (columns) {
@@ -1699,6 +1697,7 @@
             subopts.rendererOptions.colSubtotalDisplay = {
               splitPositions: opts.splitCols
             };
+            subopts.rendererOptions.getDisplayColor = opts.getDisplayColor;
             subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length === 1;
             numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
             vals = [];
@@ -1744,7 +1743,7 @@
             subopts.vals = vals;
             subopts.aggregator = opts.aggregators[aggregator.val()](vals);
             subopts.renderer = opts.renderers[renderer.val()];
-            subopts.rowOrder = rowOrderArrow.data("order");
+            subopts.rowOrder = "key_a_to_z";
             subopts.colOrder = colOrderArrow.data("order");
             exclusions = {};
             _this.find('input.pvtFilter').not(':checked').each(function() {
@@ -1860,8 +1859,8 @@
           max = Math.max.apply(Math, values);
           return function(x) {
             var nonRed;
-            nonRed = 255 - Math.round(255 * (x - min) / (max - min));
-            return "rgb(255," + nonRed + "," + nonRed + ")";
+            nonRed = max === min ? 0 : 255 - Math.round(255 * (x - min) / (max - min));
+            return Array.from([255, nonRed, nonRed]);
           };
         };
       }
@@ -1883,7 +1882,10 @@
           });
           colorScale = colorScaleGenerator(values);
           return forEachCell(function(x, elem) {
-            return elem.css("background-color", colorScale(x));
+            var heatColor;
+            heatColor = colorScale(x);
+            elem.css("background-color", opts.getDisplayColor(heatColor));
+            return elem[0].setAttribute("data-heat-color", heatColor[0] + "," + heatColor[1] + "," + heatColor[2]);
           });
         };
       })(this);

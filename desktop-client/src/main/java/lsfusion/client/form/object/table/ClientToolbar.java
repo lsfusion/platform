@@ -12,11 +12,11 @@ public class ClientToolbar extends ClientComponent {
 
     public boolean visible = true;
 
-    public boolean showGroupChange = true;
+    public boolean showGroupChange = true; //todo: убрать, когда все перейдут на версию 4 и уйдут все showGroupChange
     public boolean showCountRows = true;
     public boolean showCalculateSum = true;
     public boolean showGroupReport = true;
-    public boolean showPrint = true;
+    public boolean showPrint = true; //todo: убрать, когда все перейдут на версию 4 и уйдут все showPrintGroup
     public boolean showXls = true;
     public boolean showSettings = true;
 

@@ -79,7 +79,6 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new InterruptNavigatorHandler(this));
 
         //form
-        registry.addHandler(new CalculateSumHandler(this));
         registry.addHandler(new ChangeGroupObjectHandler(this));
         registry.addHandler(new ChangePageSizeHandler(this));
         registry.addHandler(new ChangeModeHandler(this));
@@ -90,7 +89,6 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new CollapseGroupObjectHandler(this));
         registry.addHandler(new CollapseGroupObjectRecursiveHandler(this));
         registry.addHandler(new ContinueInvocationHandler(this));
-        registry.addHandler(new CountRecordsHandler(this));
         registry.addHandler(new ExecuteEventActionHandler(this));
         registry.addHandler(new ExecuteNotificationHandler(this));
         registry.addHandler(new ExpandGroupObjectHandler(this));

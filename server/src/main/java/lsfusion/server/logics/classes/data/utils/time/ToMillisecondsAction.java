@@ -13,7 +13,6 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Iterator;
 
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getLocalDateTime;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.localDateTimeToSqlTimestamp;
 
 public class ToMillisecondsAction extends InternalAction {
@@ -28,7 +27,7 @@ public class ToMillisecondsAction extends InternalAction {
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        LocalDateTime timestamp = getLocalDateTime(context.getKeyValue(timestampInterface).getValue());
+        LocalDateTime timestamp = (LocalDateTime) context.getKeyValue(timestampInterface).getValue();
         try {
             findProperty("resultMilliseconds[]").change(timestamp != null ? localDateTimeToSqlTimestamp(timestamp).getTime() : null, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {

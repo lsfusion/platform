@@ -115,13 +115,13 @@
             case "value_a_to_z":
               return this.colKeys.sort((function(_this) {
                 return function(a, b) {
-                  return naturalSort(v([], a), v([], b));
+                  return $.pivotUtilities.naturalSort(v([], a), v([], b));
                 };
               })(this));
             case "value_z_to_a":
               return this.colKeys.sort((function(_this) {
                 return function(a, b) {
-                  return -naturalSort(v([], a), v([], b));
+                  return -$.pivotUtilities.naturalSort(v([], a), v([], b));
                 };
               })(this));
             default:
@@ -902,7 +902,7 @@
           }
           h.sTh = createColAttrHeaderTH(h.key, true, "pvtColLabelFiller " + classColShow + " col" + h.row + " colcol" + h.col + " " + classColExpanded, "", void 0, colsData, {
             "data-colnode": h.node,
-            "rowspan": colAttrs.length - h.col
+            "rowspan": colAttrs.length - h.col - 1
           });
           if (opts.colSubtotalDisplay.hideOnExpand) {
             replaceClass(h.sTh, classColShow, classColHide);
@@ -1757,14 +1757,12 @@
         buildGrandTotal(tbody, tr, rowAttrs, colAttrs, opts);
         collapseColAxis(colAxisHeaders, opts.colSubtotalDisplay.collapseAt, colAttrs, opts.colSubtotalDisplay);
         collapseRowAxis(rowAxisHeaders, opts.rowSubtotalDisplay.collapseAt, rowAttrs, opts.rowSubtotalDisplay);
-        headerTable.setAttribute("data-numrows", rowKeys.length);
-        headerTable.setAttribute("data-numcols", colKeys.length);
         headerTable.style.display = "";
-        bodyTable.setAttribute("data-numrows", rowKeys.length);
-        bodyTable.setAttribute("data-numcols", colKeys.length);
         bodyTable.style.display = "";
         headerTable.insertBefore(createColGroup(colsData), headerTable.firstChild);
         bodyTable.insertBefore(createColGroup(colsData), bodyTable.firstChild);
+        outerDiv.setAttribute("data-numrows", rowKeys.length);
+        outerDiv.setAttribute("data-numcols", colKeys.length);
         return outerDiv;
       };
       return main(rowAttrs, rowKeys, colAttrs, colKeys);

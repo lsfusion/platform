@@ -1007,24 +1007,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             ((TabbedContainerView)formLayout.getContainerView(component.container)).activateTab(component);
     }
 
-    public void countRecords(final GGroupObject groupObject) {
-        dispatcher.execute(new CountRecords(groupObject.ID), new ErrorHandlingCallback<NumberResult>() {
-            @Override
-            public void success(NumberResult result) {
-                controllers.get(groupObject).showRecordQuantity((Integer) result.value);
-            }
-        });
-    }
-
-    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        dispatcher.execute(new CalculateSum(propertyDraw.ID, columnKey), new ErrorHandlingCallback<NumberResult>() {
-            @Override
-            public void success(NumberResult result) {
-                controllers.get(groupObject).showSum(result.value, propertyDraw);
-            }
-        });
-    }
-
     // change group mode with force refresh
     public long changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize, GListViewType viewType) {
         return changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null, viewType);
@@ -1055,8 +1037,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return new GFormUserPreferences(groupObjectGeneralPreferencesList, groupObjectUserPreferencesList);
     }
 
-    public void runGroupReport(Integer groupObjectID, final boolean toExcel) {
-        syncDispatch(new GroupReport(groupObjectID, toExcel, getUserPreferences()), new ErrorHandlingCallback<GroupReportResult>() {
+    public void runGroupReport(Integer groupObjectID) {
+        syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new ErrorHandlingCallback<GroupReportResult>() {
             @Override
             public void success(GroupReportResult result) {
                 GwtClientUtils.downloadFile(result.filename, "lsfReport", result.extension);

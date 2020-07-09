@@ -43,8 +43,6 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public class GridController extends AbstractTableController {
     private static final String PRINT_XLS_ICON_PATH = "excelbw.png";
-    private static final String PRINT_GROUP_ICON_PATH = "reportbw.png";
-    private static final String GROUP_CHANGE_ICON_PATH = "groupchange.png";
     public static final String USER_PREFERENCES_ICON_PATH = "userPreferences.png";
     private static final String UPDATE_ICON_PATH = "update.png";
     private static final String OK_ICON_PATH = "ok.png";
@@ -117,100 +115,48 @@ public class GridController extends AbstractTableController {
     }
 
     private void configureToolbar() {
-        if (filter != null) {
-            addToToolbar(filter.getToolbarButton());
-        }
+        boolean showCalculateSum = groupObject.toolbar.showCalculateSum && table instanceof GridTable;
+        if(groupObject.toolbar.showCountRows || showCalculateSum) {
 
-        if (groupObject.toolbar.showGroupChange && table instanceof GridTable) {
-            addToolbarSeparator();
-            ToolbarGridButton groupChangeButton = new ToolbarGridButton(GROUP_CHANGE_ICON_PATH, getString("form.grid.group.groupchange") + " (F12)") {
-                @Override
-                public void addListener() {
-                    addActionListener(e -> {
-                        table.groupChange();
-                    });
-
-                    ((GridTable) table).addFocusListener(new FocusListener() {
-                        @Override
-                        public void focusGained(FocusEvent e) {
-                            setEnabled(true);
-                        }
-
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            setEnabled(false);
-                        }
-                    });
-                }
-            };
-            groupChangeButton.setEnabled(false);
-            addToToolbar(groupChangeButton);
-        }
-
-        if (groupObject.toolbar.showCountRows || groupObject.toolbar.showCalculateSum || groupObject.toolbar.showGroupReport) {
-            addToolbarSeparator();
-        }
-
-        if (groupObject.toolbar.showCountRows) {
-            addToToolbar(new CountQuantityButton() {
-                public void addListener() {
-                    addActionListener(e -> RmiQueue.runAction(() -> {
-                        try {
-                            showPopupMenu(formController.countRecords(getGroupObject().getID()));
-                        } catch (Exception ex) {
-                            throw Throwables.propagate(ex);
-                        }
-                    }));
-                }
-            });
-        }
-
-        if (groupObject.toolbar.showCalculateSum && table instanceof GridTable) {
-            addToToolbar(new CalculateSumButton() {
-                public void addListener() {
-                    addActionListener(e -> RmiQueue.runAction(() -> {
-                        try {
-                            ClientPropertyDraw property = table.getCurrentProperty();
-                            String caption = property.getPropertyCaption();
-                            if (property.baseType instanceof ClientIntegralClass) {
-                                ClientGroupObjectValue columnKey = ((GridTable) table).getTableModel().getColumnKey(Math.max(((GridTable) table).getSelectedColumn(), 0));
-                                Object sum = formController.calculateSum(property.getID(), columnKey.serialize());
-                                showPopupMenu(caption, sum);
-                            } else {
-                                showPopupMenu(caption, null);
+            if (groupObject.toolbar.showCountRows) {
+                addToToolbar(new CountQuantityButton() {
+                    public void addListener() {
+                        addActionListener(e -> RmiQueue.runAction(() -> {
+                            try {
+                                showPopupMenu(formController.countRecords(getGroupObject().getID()));
+                            } catch (Exception ex) {
+                                throw Throwables.propagate(ex);
                             }
-                        } catch (Exception ex) {
-                            throw Throwables.propagate(ex);
-                        }
-                    }));
-                }
-            });
-        }
+                        }));
+                    }
+                });
+            }
 
-        if (groupObject.toolbar.showPrint || groupObject.toolbar.showXls) {
+            if (showCalculateSum) {
+                addToToolbar(new CalculateSumButton() {
+                    public void addListener() {
+                        addActionListener(e -> RmiQueue.runAction(() -> {
+                            try {
+                                ClientPropertyDraw property = table.getCurrentProperty();
+                                String caption = property.getPropertyCaption();
+                                if (property.baseType instanceof ClientIntegralClass) {
+                                    ClientGroupObjectValue columnKey = ((GridTable) table).getTableModel().getColumnKey(Math.max(((GridTable) table).getSelectedColumn(), 0));
+                                    Object sum = formController.calculateSum(property.getID(), columnKey.serialize());
+                                    showPopupMenu(caption, sum);
+                                } else {
+                                    showPopupMenu(caption, null);
+                                }
+                            } catch (Exception ex) {
+                                throw Throwables.propagate(ex);
+                            }
+                        }));
+                    }
+                });
+            }
             addToolbarSeparator();
-        }
-
-        if (groupObject.toolbar.showPrint) {
-            addToToolbar(new ToolbarGridButton(PRINT_GROUP_ICON_PATH, getString("form.grid.print.grid")) {
-                @Override
-                public void addListener() {
-                    addActionListener(e -> RmiQueue.runAction(() -> formController.runSingleGroupReport(GridController.this)));
-                }
-            });
-        }
-
-        if (groupObject.toolbar.showXls) {
-            addToToolbar(new ToolbarGridButton(PRINT_XLS_ICON_PATH, getString("form.grid.export.to.xlsx")) {
-                @Override
-                public void addListener() {
-                    addActionListener(e -> RmiQueue.runAction(() -> formController.runSingleGroupXlsExport(GridController.this)));
-                }
-            });
         }
 
         if (groupObject.toolbar.showGroupReport && table instanceof GridTable) {
-            addToolbarSeparator();
             addToToolbar(new GroupingButton((GridTable) table) {
                 @Override
                 public List<FormGrouping> readGroupings() {
@@ -228,37 +174,57 @@ public class GridController extends AbstractTableController {
                     formController.saveGrouping(grouping);
                 }
             });
+            addToolbarSeparator();
         }
 
-        if (groupObject.toolbar.showSettings && table instanceof GridTable) {
-            addToolbarSeparator();
-            ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    for (int i = 0; i < ((GridTable) table).getTableModel().getColumnCount(); ++i) {
-                        ((GridTable) table).setUserWidth(((GridTable) table).getTableModel().getColumnProperty(i), ((GridTable) table).getColumnModel().getColumn(i).getWidth());
-                    }
-                }
-            });
-            userPreferencesButton = new ToolbarGridButton(USER_PREFERENCES_ICON_PATH, getUserPreferencesButtonTooltip());
-            userPreferencesButton.showBackground(table.hasUserPreferences());
+        boolean showSettings = groupObject.toolbar.showSettings && table instanceof GridTable;
+        if(filter != null || showSettings) {
+            if (filter != null) {
+                addToToolbar(filter.getToolbarButton());
+            }
 
-            userPreferencesButton.addActionListener(e -> {
-                if(table instanceof GridTable) {
-                    UserPreferencesDialog dialog = new UserPreferencesDialog(MainFrame.instance, (GridTable) table, this, getFormController().hasCanonicalName()) {
-                        @Override
-                        public void preferencesChanged() {
-                            RmiQueue.runAction(() -> {
-                                userPreferencesButton.showBackground((((GridTable) table).generalPreferencesSaved() || ((GridTable) table).userPreferencesSaved()));
-                                userPreferencesButton.setToolTipText(getUserPreferencesButtonTooltip());
-                            });
+            if (showSettings) {
+                ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        for (int i = 0; i < ((GridTable) table).getTableModel().getColumnCount(); ++i) {
+                            ((GridTable) table).setUserWidth(((GridTable) table).getTableModel().getColumnProperty(i), ((GridTable) table).getColumnModel().getColumn(i).getWidth());
                         }
-                    };
-                    dialog.setVisible(true);
+                    }
+                });
+                userPreferencesButton = new ToolbarGridButton(USER_PREFERENCES_ICON_PATH, getUserPreferencesButtonTooltip());
+                userPreferencesButton.showBackground(table.hasUserPreferences());
+
+                userPreferencesButton.addActionListener(e -> {
+                    if(table instanceof GridTable) {
+                        UserPreferencesDialog dialog = new UserPreferencesDialog(MainFrame.instance, (GridTable) table, this, getFormController().hasCanonicalName()) {
+                            @Override
+                            public void preferencesChanged() {
+                                RmiQueue.runAction(() -> {
+                                    userPreferencesButton.showBackground((((GridTable) table).generalPreferencesSaved() || ((GridTable) table).userPreferencesSaved()));
+                                    userPreferencesButton.setToolTipText(getUserPreferencesButtonTooltip());
+                                });
+                            }
+                        };
+                        dialog.setVisible(true);
+                    }
+                });
+
+                addToToolbar(userPreferencesButton);
+            }
+
+            addToolbarSeparator();
+        }
+
+        if(groupObject.toolbar.showXls) {
+            addToToolbar(new ToolbarGridButton(PRINT_XLS_ICON_PATH, getString("form.grid.export.to.xlsx")) {
+                @Override
+                public void addListener() {
+                    addActionListener(e -> RmiQueue.runAction(() -> formController.runSingleGroupXlsExport(GridController.this)));
                 }
             });
 
-            addToToolbar(userPreferencesButton);
+            addToolbarSeparator();
         }
 
         manualUpdateTableButton = new ToolbarGridButton(UPDATE_ICON_PATH, getString("form.grid.manual.update")) {

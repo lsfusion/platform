@@ -1951,7 +1951,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             try (DataSession session = createSystemTaskSession()) {
                 session.setNoCancelInTransaction(true);
 
-                LocalDate currentDate = getLocalDate(timeLM.currentDate.read(session));
+                LocalDate currentDate = (LocalDate) timeLM.currentDate.read(session);
                 LocalDate newDate = LocalDate.now();
                 if (currentDate == null || !currentDate.equals(newDate)) {
                     logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));

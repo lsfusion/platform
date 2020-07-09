@@ -6,10 +6,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
@@ -25,6 +22,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -61,6 +59,8 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -665,7 +665,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         ImFilterRevValueMap<ObjectEntity, ValueClassWrapper> mObjectToClass = objectsSet.mapFilterRevValues();
         for(int i=0,size=objectsSet.size();i<size;i++) {
             ObjectEntity object = objectsSet.get(i);
-            if (object.baseClass != null) 
+            if (object.baseClass != null)
                 mObjectToClass.mapValue(i, new ValueClassWrapper(object.baseClass));
         }
         ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = mObjectToClass.immutableRevValue();

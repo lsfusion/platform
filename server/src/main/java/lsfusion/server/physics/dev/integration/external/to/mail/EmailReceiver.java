@@ -106,7 +106,7 @@ public class EmailReceiver {
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
             for(ImMap<Object, Object> entry : emailResult.values()) {
-                skipEmails.add(getEmailId(localDateTimeToSqlTimestamp(getLocalDateTime(entry.get("dateTimeSentEmail"))), (String) entry.get("fromAddressEmail"),
+                skipEmails.add(getEmailId(localDateTimeToSqlTimestamp((LocalDateTime) entry.get("dateTimeSentEmail")), (String) entry.get("fromAddressEmail"),
                         (String) entry.get("subjectEmail"), null));
             }
 

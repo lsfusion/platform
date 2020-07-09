@@ -2,9 +2,9 @@ package lsfusion.server.logics.constraint;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
@@ -14,18 +14,19 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-
-import java.sql.SQLException;
 
 public class OutFormSelector<P extends PropertyInterface> implements FormSelector<ObjectSelector> {
 
     private final Property<P> property;
     private final Property messageProperty;
-    
-    public OutFormSelector(Property<P> property, Property messageProperty) {
+    private final ImList<PropertyMapImplement<?,P>> properties;
+
+    public OutFormSelector(Property<P> property, Property messageProperty, ImList<PropertyMapImplement<?, P>> properties) {
         this.property = property;
         this.messageProperty = messageProperty;
+        this.properties = properties;
     }
 
     @Override
@@ -40,6 +41,6 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
 
     @Override
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues) {
-        return new Pair<>(LM.getLogForm(property, messageProperty), MapFact.EMPTYREV());
+        return new Pair<>(LM.getLogForm(property, messageProperty, properties), MapFact.EMPTYREV());
     }
 }

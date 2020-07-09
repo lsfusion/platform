@@ -2,7 +2,6 @@ package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
-import lsfusion.base.SystemUtils;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
@@ -136,7 +135,7 @@ public class DateClass extends DataClass<LocalDate> {
     public LocalDate parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
         LocalDate cellValue;
         try {
-            cellValue = sqlDateToLocalDate(safeDateToSql(cell.getDateCellValue()));//in apache.poi 4.1: cell.getLocalDateTimeCellValue().toLocalDate();
+            cellValue = cell.getLocalDateTimeCellValue().toLocalDate();
         } catch (IllegalStateException e) {
             return super.parseXLS(cell, formulaValue); // if cell can not parse date, we'll try to parse it as a string
         }
@@ -180,7 +179,7 @@ public class DateClass extends DataClass<LocalDate> {
     @Override
     public void formatXLS(LocalDate object, Cell cell, ExportXLSWriter.Styles styles) {
         if (object != null) {
-            cell.setCellValue(localDateToSqlDate(object)); //no need to convert in apache.poi 4.1
+            cell.setCellValue(object);
         }
         cell.setCellStyle(styles.date);
     }

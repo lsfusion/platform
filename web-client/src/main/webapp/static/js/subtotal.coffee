@@ -58,8 +58,8 @@ callWithJQuery ($) ->
 
                 v = (r,c) => @getAggregator(r,c).value()
                 switch @colOrder
-                    when "value_a_to_z" then @colKeys.sort (a,b) =>  naturalSort v([],a), v([],b)
-                    when "value_z_to_a" then @colKeys.sort (a,b) => -naturalSort v([],a), v([],b)
+                    when "value_a_to_z" then @colKeys.sort (a,b) =>  $.pivotUtilities.naturalSort v([],a), v([],b)
+                    when "value_z_to_a" then @colKeys.sort (a,b) => -$.pivotUtilities.naturalSort v([],a), v([],b)
                     else                     @colKeys.sort @arrSort(@colAttrs)
 
         rowAttrsSortPredicate: () =>
@@ -579,7 +579,7 @@ callWithJQuery ($) ->
                         h.onClick axisHeaders, h, opts.colSubtotalDisplay 
                 h.sTh = createColAttrHeaderTH h.key, true, "pvtColLabelFiller #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", "", undefined, colsData, 
                     "data-colnode": h.node
-                    "rowspan":  colAttrs.length-h.col
+                    "rowspan":  colAttrs.length - h.col - 1
                 replaceClass h.sTh, classColShow, classColHide if opts.colSubtotalDisplay.hideOnExpand
                 h[h.children[0]].tr.appendChild h.sTh
 
@@ -1132,16 +1132,15 @@ callWithJQuery ($) ->
             collapseColAxis colAxisHeaders, opts.colSubtotalDisplay.collapseAt, colAttrs, opts.colSubtotalDisplay
             collapseRowAxis rowAxisHeaders, opts.rowSubtotalDisplay.collapseAt, rowAttrs, opts.rowSubtotalDisplay
 
-            headerTable.setAttribute "data-numrows", rowKeys.length
-            headerTable.setAttribute "data-numcols", colKeys.length
             headerTable.style.display = ""
             
-            bodyTable.setAttribute "data-numrows", rowKeys.length
-            bodyTable.setAttribute "data-numcols", colKeys.length
             bodyTable.style.display = ""
 
             headerTable.insertBefore createColGroup(colsData), headerTable.firstChild
             bodyTable.insertBefore createColGroup(colsData), bodyTable.firstChild
+
+            outerDiv.setAttribute "data-numrows", rowKeys.length
+            outerDiv.setAttribute "data-numcols", colKeys.length
             
             return outerDiv
 

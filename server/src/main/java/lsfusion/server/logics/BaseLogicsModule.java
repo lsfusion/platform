@@ -5,6 +5,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -58,6 +59,7 @@ import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
@@ -559,9 +561,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         dbManager.addIndex(staticCaption);
     }
 
-    @IdentityStrongLazy
-    public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property messageProperty) { // messageProperty - nullable
-        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, getRecognizeGroup());
+    public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property messageProperty, ImList<PropertyMapImplement<?, P>> properties) { // messageProperty - nullable
+        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, properties, getRecognizeGroup());
         addAutoFormEntity(form);
         return form;
     }

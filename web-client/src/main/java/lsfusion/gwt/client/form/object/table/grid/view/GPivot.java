@@ -8,8 +8,10 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -29,14 +31,28 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.*;
+
+import static java.lang.Integer.decode;
+import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
+import static lsfusion.gwt.client.base.view.ColorUtils.toColorString;
+import static lsfusion.gwt.client.view.MainFrame.colorTheme;
+import static lsfusion.gwt.client.view.StyleDefaults.getComponentBackground;
 
 public class GPivot extends GStateTableView implements ColorThemeChangeListener {
 
     private final String ICON_LEAF = "tree_leaf.png";
     private final String ICON_OPEN = "tree_open.png";
     private final String ICON_CLOSED = "tree_closed.png";
+    private final static String ICON_BRANCH = "tree_dots_branch.png";
+    private final static String ICON_PASSBY = "tree_dots_passby.png";
+
+    private final String CELL_HEAT_COLOR_ATTRIBUTE_KEY = "data-heat-color";
+    private final String CELL_ROW_LEVEL_ATTRIBUTE_KEY = "data-row-level";
+    private final String CELL_COLUMN_LEVEL_ATTRIBUTE_KEY = "data-column-level";
 
     public GPivot(GFormController formController, GGridController gridController) {
         super(formController, gridController);
@@ -308,13 +324,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
 
     @Override
-    public void runGroupReport(boolean toExcel) {
-        Element drawElement = getDrawElement();
-        if (toExcel) {
-            exportToExcel(drawElement);
-        } else {
-            exportToPdf(drawElement);
-        }
+    public void runGroupReport() {
+        exportToExcel(getDrawElement());
     }
 
     public static native void exportToExcel(Element element)
@@ -349,17 +360,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
 
             $wnd.TableToExcel.save(workbook, "lsfReport.xlsx");
-        }-*/;
-
-    public static native void exportToPdf(Element element)
-        /*-{
-            var docDefinition = {
-                pageOrientation: 'landscape',
-                content: [
-                    $wnd.htmlToPdfmake(element.getElementsByClassName("subtotalouterdiv")[0].outerHTML)
-                ]
-            };
-            $wnd.pdfMake.createPdf(docDefinition).download('lsfReport.pdf');
         }-*/;
 
     private NativeHashMap<String, Column> columnMap;
@@ -521,6 +521,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void afterRefresh() {
         checkPadding(true); // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
+        resizePlotlyChart();
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
@@ -542,8 +543,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return getElement(rendererElement, ".headerdiv");
     }
 
-    private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
+    private Element getPlotlyChartElement() {
+        return getElement(rendererElement, "div.js-plotly-plot");
+    }
+
+   private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
         return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
+    }-*/;
+
+    private native NodeList<Element> getElements(com.google.gwt.dom.client.Element element, String selector) /*-{
+        return element.querySelectorAll(selector);
     }-*/;
 
     private native Element getElement(com.google.gwt.dom.client.Element element, String selector) /*-{
@@ -568,10 +577,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
         var renderers = $wnd.$.extend(
             localizeRendererNames($wnd.$.pivotUtilities.subtotal_renderers),
-            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers),
+            localizeRendererNames($wnd.$.pivotUtilities.plotly_renderers)
 //            $wnd.$.pivotUtilities.c3_renderers,
 //            $wnd.$.pivotUtilities.renderers,
-            localizeRendererNames($wnd.$.pivotUtilities.d3_renderers)
+//            localizeRendererNames($wnd.$.pivotUtilities.d3_renderers)
         );
 
         return {
@@ -595,6 +604,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             },
             afterRefresh: function () {
                 instance.@GPivot::afterRefresh(*)();
+            },
+            getDisplayColor: function (rgb) {
+                return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(III)(rgb[0], rgb[1], rgb[2]);
             }
         }
     }-*/;
@@ -629,6 +641,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void colorThemeChanged() {
         refreshArrowImages(getElement());
         changePlotColorTheme(getElement());
+        updateTableCellsBackground();
     }
 
     private native void refreshArrowImages(JavaScriptObject pivotElement) /*-{
@@ -642,19 +655,53 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             });
         }
 
+        changeDots = function (className, branch) {
+            var imgs = outerDiv.getElementsByClassName(className)
+            Array.prototype.forEach.call(imgs, function(img) {
+                instance.@GPivot::rerenderDots(*)(img, branch)
+            });
+        }
+
         if (outerDiv !== undefined) {
             changeImages("leaf-image", null)
             changeImages("expanded-image", true)
             changeImages("collapsed-image", false)
+            changeDots("branch-image", true)
+            changeDots("passby-image", false)
         }
     }-*/;
 
     private native void changePlotColorTheme(JavaScriptObject pivotElement) /*-{
-        var plot = $wnd.$(pivotElement).find(".js-plotly-plot").get(0);
-        if (plot !== undefined) {
-            $wnd.$.pivotUtilities.colorThemeChanged(plot);
-        }
+        $wnd.$.pivotUtilities.colorThemeChanged(this.@GPivot::getPlotlyChartElement(*)());
     }-*/;
+
+    private void updateTableCellsBackground() {
+        Element tableDataScroller = getTableDataScroller();
+        if (tableDataScroller != null) {
+            NodeList<Element> tds = getElements(tableDataScroller, "td, th");
+            for (int i = 0; i < tds.getLength(); i++) {
+                Element td = tds.getItem(i);
+                String heatColorString = td.getAttribute(CELL_HEAT_COLOR_ATTRIBUTE_KEY);
+                if (!GwtSharedUtils.isRedundantString(heatColorString)) {
+                    String[] splitColorString = heatColorString.split(",");
+                    assert splitColorString.length == 3;
+                    try {
+                        td.getStyle().setBackgroundColor(getDisplayColor(
+                                decode(splitColorString[0]),
+                                decode(splitColorString[1]),
+                                decode(splitColorString[2])));
+                    } catch (NumberFormatException ignored) {
+                    }
+                } else {
+                    String rowLevelString = nullEmpty(td.getAttribute(CELL_ROW_LEVEL_ATTRIBUTE_KEY));
+                    int rowLevel = rowLevelString != null ? decode(rowLevelString) : -1;
+                    String columnLevelString = nullEmpty(td.getAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY));
+                    int columnLevel = columnLevelString != null ? decode(columnLevelString) : -1;
+                    setValueCellBackground(td, rowLevel, columnLevel, true);
+                }
+            }
+        }
+    }
 
     private static class Record extends JavaScriptObject {
 
@@ -897,6 +944,53 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             // value is aggregator result
             renderValue(jsElement, value);
         }
+
+        setValueCellBackground(jsElement, rowKeys.length(), columnKeys.length(), false);
+    }
+
+    public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
+        int totalRowLevels = config.getArrayString("splitRows").length();
+        int totalColLevels = config.getArrayString("cols").length();
+        String cellBackground = null;
+
+        int depth = 0;
+        if (rowLevel == 0 || columnLevel == 0) {
+            if (totalRowLevels == 0) {
+                cellBackground = getComponentBackground(colorTheme);
+            } else {
+                depth = Math.max(totalRowLevels + totalColLevels - 1, 1);
+            }
+        } else {
+            if (rowLevel > 0 && rowLevel < totalRowLevels) {
+                depth += totalRowLevels - rowLevel;
+            }
+            if (columnLevel > 0 && columnLevel < totalColLevels) {
+                depth += totalColLevels - columnLevel;
+            }
+        }
+
+        if (depth > 0) {
+            int[] baseRGB = StyleDefaults.getComponentBackgroundRGB();
+            int[] darkenStepRGB = StyleDefaults.getPivotGroupLevelDarkenStepRGB();
+            cellBackground = toColorString(
+                    baseRGB[0] + darkenStepRGB[0] * depth,
+                    baseRGB[1] + darkenStepRGB[1] * depth,
+                    baseRGB[2] + darkenStepRGB[2] * depth
+            );
+        }
+
+        if (cellBackground != null) {
+            td.getStyle().setBackgroundColor(cellBackground);
+        }
+
+        if (!refresh) {
+            if (rowLevel >= 0) {
+                td.setAttribute(CELL_ROW_LEVEL_ATTRIBUTE_KEY, String.valueOf(rowLevel));
+            }
+            if (columnLevel >= 0) {
+                td.setAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY, String.valueOf(columnLevel));
+            }
+        }
     }
 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
@@ -907,6 +1001,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         } else {
             renderAttrCell(th, value, attrName);
         }
+
+        setValueCellBackground(th, rowKeyValues.length(), -1, false);
     }
 
     private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, JsArrayBoolean isLastChildList) {
@@ -934,8 +1030,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
-        CellRenderer<?> renderer = columnMap.get(columnName).property.getCellRenderer();
-        renderer.render(th, value, new RenderContext() {}, () -> font);
+        GPropertyDraw property = columnMap.get(columnName).property;
+        Element cellElement = th;
+        if (property.baseType instanceof GActionType) {
+            cellElement = Document.get().createDivElement();
+            GPropertyTableBuilder.setRowHeight(cellElement, rowHeight);
+            th.appendChild(cellElement);
+            th.getStyle().setPadding(0, Style.Unit.PX);
+        }
+        property.getCellRenderer().render(th, value, new RenderContext() {}, () -> font);
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
@@ -971,6 +1074,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 GPropertyTableBuilder.renderTD(jsElement, rowHeight);
                 renderAttrCell(jsElement, value, lastRenderCol);
             }
+
+            if (value != null) {
+                jsElement.setTitle(fromObject(value).toString());
+            }
         }
     }
     
@@ -988,7 +1095,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), attrName);
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
-            GGridPropertyTableHeader.renderTD(jsElement, rowHeight, sortDir, fromObject(value).toString());
+            String valueString = fromObject(value).toString();
+            GGridPropertyTableHeader.renderTD(jsElement, rowHeight, sortDir, valueString);
+
+            if (value != null) {
+                jsElement.setTitle(valueString);
+            }
         }
     }
 
@@ -1017,6 +1129,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void rerenderArrow(ImageElement img, Boolean isExpanded) {
         GwtClientUtils.setThemeImage(isExpanded == null ? ICON_LEAF : isExpanded ? ICON_OPEN : ICON_CLOSED, img::setSrc);
+    }
+
+    private void rerenderDots(ImageElement img, boolean branch) {
+        if(branch) {
+            GwtClientUtils.setThemeImage(ICON_BRANCH, img::setSrc);
+        } else {
+            GwtClientUtils.setThemeImage(ICON_PASSBY, str -> img.getStyle().setBackgroundImage("url('" + str + "')"));
+        }
     }
 
     private int getArrowColumnWidth(int arrowLevels) {
@@ -1289,7 +1409,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     @Override
     public void onResize() {
         checkPadding(false);
-
+        resizePlotlyChart();
         super.onResize();
     }
 
@@ -1308,6 +1428,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
         }
     }
+
+    public native void resizePlotlyChart() /*-{
+        var plotlyElement = this.@GPivot::getPlotlyChartElement(*)();
+        if (plotlyElement) {
+            $wnd.Plotly.relayout(plotlyElement, '');
+        }
+    }-*/;
 
     private GroupColumnAggregator getGroupAggregator(GPropertyDraw property, JsArrayString lastColumns) {
         GroupColumnAggregator aggr = GroupColumnAggregator.create();

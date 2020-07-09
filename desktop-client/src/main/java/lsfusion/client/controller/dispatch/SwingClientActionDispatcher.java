@@ -6,6 +6,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileDialogUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.exception.ClientExceptionManager;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
@@ -114,7 +115,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     continueIndex++;
 
                     if (actionThrowable != null) {
-                        serverResponse = throwInServerInvocation(serverResponse.requestIndex, continueIndex, actionThrowable);
+                        serverResponse = throwInServerInvocation(serverResponse.requestIndex, continueIndex, ClientExceptionManager.fromDesktopClientToAppServer(actionThrowable));
                     } else {
                         serverResponse = continueServerInvocation(serverResponse.requestIndex, continueIndex, actionResults);
                     }

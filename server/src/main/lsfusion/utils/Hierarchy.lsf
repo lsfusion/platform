@@ -29,7 +29,7 @@ META defineHierarchyCustom (object, class)
     object(class child, LONG level)  = GROUP
                                                    MAX class parent IF level == level(child, parent);
 
-    level '{hierarchy.level}'(class child)  = GROUP SUM 1 IF level(child, class parent);
+    level '{hierarchy.level}'(class child)  = GROUP SUM 1 IF level(child, class parent) MATERIALIZED;
 
     levelRoot '{hierarchy.level}' (class child, class parent) = PARTITION SUM 1 IF level(child, parent)
                                                                       ORDER DESC level(child, parent)
