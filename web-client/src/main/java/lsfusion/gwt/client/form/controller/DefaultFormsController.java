@@ -108,7 +108,7 @@ public abstract class DefaultFormsController implements FormsController {
 
     public void initRoot() {
         GFormController.initKeyEventHandler(RootPanel.get(), () -> {
-            FormContainer currentForm = getCurrentForm();
+            FormContainer currentForm = MainFrame.getCurrentForm();
             if(currentForm != null)
                 return currentForm.getForm();
             return null;
@@ -207,7 +207,4 @@ public abstract class DefaultFormsController implements FormsController {
         }
     }
 
-    public abstract void setCurrentForm(FormContainer formContainer);
-
-    public abstract FormContainer getCurrentForm();
 }

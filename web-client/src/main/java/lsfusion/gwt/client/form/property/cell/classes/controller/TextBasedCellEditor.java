@@ -143,17 +143,17 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     @Override
     public void renderDom(final Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
-        final InputElement input = Document.get().createTextInputElement();
-        
+        final Element input = createInputElement();
+
         input.setTabIndex(-1);
         input.addClassName("boxSized");
-        input.addClassName("textBasedGridCellEditor");
 
         Style inputStyle = input.getStyle();
         inputStyle.setWidth(100, Style.Unit.PCT);
         inputStyle.setHeight(100, Style.Unit.PCT);
 
-        TextBasedCellRenderer.setPadding(inputStyle, false);
+        TextBasedCellRenderer.setPadding(inputStyle, isMultiLine());
+        cellParent.getStyle().setPadding(0, Style.Unit.PX);
         setBaseTextFonts(inputStyle, updateContext);
 
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
@@ -161,7 +161,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             inputStyle.setTextAlign(textAlignStyle);
         }
 
-        cellParent.getStyle().setPadding(0, Style.Unit.PX);
         cellParent.appendChild(input);
     }
 
@@ -183,6 +182,14 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 editManager.cancelEditing();
             }
         }
+    }
+
+    protected boolean isMultiLine() {
+        return false;
+    }
+
+    public Element createInputElement() {
+        return Document.get().createTextInputElement();
     }
 
     protected InputElement getInputElement(Element parent) {

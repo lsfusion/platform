@@ -21,15 +21,15 @@ public class TextCellRenderer extends StringBasedCellRenderer {
 
     @Override
     public void renderStaticContent(Element element, RenderContext renderContext) {
-        Style style = element.getStyle();
-
-        // default padding, lineheight (since we don't want it singleLine)
-        setPadding(style, true);
-
-        // setting word wrapping
+        super.renderStaticContent(element, renderContext);
         if (!rich) {
-            style.setProperty("wordWrap", "break-word");
+            element.getStyle().setProperty("wordWrap", "break-word");
         }
+    }
+
+    @Override
+    protected boolean isMultiLine() {
+        return true;
     }
 
     @Override

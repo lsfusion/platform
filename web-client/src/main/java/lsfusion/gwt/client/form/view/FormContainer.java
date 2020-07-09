@@ -16,6 +16,7 @@ import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.view.MainFrame;
 
 import static java.lang.Math.min;
 
@@ -46,7 +47,8 @@ public abstract class FormContainer<W extends Widget> {
     private Element focusedElement;
     public void onFocus(boolean add) {
         form.gainedFocus();
-        formsController.setCurrentForm(this);
+        MainFrame.setCurrentForm(this);
+        assert !MainFrame.isModalPopup();
 
         if(add || focusedElement == null)
             form.focusFirstWidget();
@@ -57,8 +59,8 @@ public abstract class FormContainer<W extends Widget> {
     public void onBlur(boolean remove) {
         focusedElement = remove ? null : GwtClientUtils.getFocusedChild(contentWidget.getElement());
 
-        assert formsController.getCurrentForm() == this;
-        formsController.setCurrentForm(null);
+        assert MainFrame.getAssertCurrentForm() == this;
+        MainFrame.setCurrentForm(null);
     }
 
     public void initForm(FormsController formsController, GForm gForm, WindowHiddenHandler hiddenHandler, boolean isDialog, Event initFilterEvent) {

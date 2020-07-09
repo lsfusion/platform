@@ -116,6 +116,10 @@ public class DateCellEditor extends PopupBasedCellEditor {
     }
 
     protected void onEnterPressed() {
+        commit();
+    }
+
+    public void commit() {
         try {
             commitEditing(parseString(editBox.getValue()));
         } catch (ParseException ignored) {

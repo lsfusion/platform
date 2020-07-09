@@ -95,7 +95,7 @@ public class RichTextCellEditor extends DialogBasedCellEditor {
         cancel();
     }
 
-    private void commit() {
+    public void commit() {
         Object currentText = textArea.getHTML();
         commitEditing(currentText);
     }

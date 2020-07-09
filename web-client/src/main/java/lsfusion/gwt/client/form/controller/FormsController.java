@@ -21,12 +21,4 @@ public interface FormsController {
     void executeNavigatorAction(GNavigatorAction action, NativeEvent nativeEvent);
 
     void executeNotificationAction(String actionSID, int type);
-
-    void setCurrentForm(FormContainer formContainer);
-    FormContainer getCurrentForm();
-
-    void setLastBlurredElement(Element element);
-    Element getLastBlurredElement();
-
-    boolean previewClickEvent(Element target, Event event);
 }

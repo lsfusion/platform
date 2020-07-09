@@ -11,7 +11,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
-import static lsfusion.gwt.client.view.StyleDefaults.CELL_VERTICAL_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.TEXT_MULTILINE_PADDING;
 
 public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     protected GPropertyDraw property;
@@ -34,7 +34,11 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     protected void renderStaticContent(Element element, RenderContext renderContext) {
         Style style = element.getStyle();
 
-        setPadding(style, false);
+        setPadding(style, isMultiLine());
+    }
+
+    protected boolean isMultiLine() {
+        return false;
     }
 
     @Override
@@ -47,14 +51,14 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
     public static int getHeightPadding(boolean multiLine) {
         if(multiLine)
-            return CELL_VERTICAL_PADDING;
+            return TEXT_MULTILINE_PADDING;
         return 0;
     }
     public static void setPadding(Style style, boolean multiLine) {
         if(multiLine) {
-            style.setPaddingTop(CELL_VERTICAL_PADDING, Style.Unit.PX);
-            style.setPaddingBottom(CELL_VERTICAL_PADDING, Style.Unit.PX);
-            style.setProperty("lineHeight", "normal"); // override
+            style.setPaddingTop(TEXT_MULTILINE_PADDING, Style.Unit.PX);
+            style.setPaddingBottom(TEXT_MULTILINE_PADDING, Style.Unit.PX);
+            style.setProperty("lineHeight", "normal"); // override base line height
 
             style.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
         } else {

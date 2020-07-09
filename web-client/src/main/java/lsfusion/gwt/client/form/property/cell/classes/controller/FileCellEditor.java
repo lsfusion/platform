@@ -259,16 +259,7 @@ public class FileCellEditor extends DialogBasedCellEditor {
         okButton = new Button("OK");
         okButton.setWidth("70px");
         okButton.setEnabled(false);
-        okButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                ArrayList<String> fileSIDS = new ArrayList<>();
-                for (String id : filePrefixes.keySet()) {
-                    fileSIDS.add(filePrefixes.get(id) + "_" + fileNames.get(id));
-                }
-                commitEditing(new GFilesDTO(fileSIDS, multiple, storeName, validContentTypes == null));
-            }
-        });
+        okButton.addClickHandler(event -> commit());
 
         HorizontalPanel buttons = new HorizontalPanel();
         buttons.setSpacing(3);
@@ -343,6 +334,14 @@ public class FileCellEditor extends DialogBasedCellEditor {
         vp.add(focusPanel);
         vp.setCellHeight(focusPanel, "100%");
         return vp;
+    }
+
+    public void commit() {
+        ArrayList<String> fileSIDS = new ArrayList<>();
+        for (String id : filePrefixes.keySet()) {
+            fileSIDS.add(filePrefixes.get(id) + "_" + fileNames.get(id));
+        }
+        commitEditing(new GFilesDTO(fileSIDS, multiple, storeName, validContentTypes == null));
     }
 
     private void setDisabled(boolean disabled) {

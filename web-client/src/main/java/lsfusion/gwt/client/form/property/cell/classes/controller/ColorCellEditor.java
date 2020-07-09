@@ -29,20 +29,10 @@ public class ColorCellEditor extends PopupBasedCellEditor {
         colorPicker = new ColorPicker();
 
         Button btnOk = new Button(messages.ok());
-        btnOk.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                commitEditing(new ColorDTO(colorPicker.getHexColor()));
-            }
-        });
+        btnOk.addClickHandler(event -> commit());
 
         Button btnCancel = new Button(messages.cancel());
-        btnCancel.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                onCancel();
-            }
-        });
+        btnCancel.addClickHandler(event -> onCancel());
 
         FlowPanel bottomPane = new FlowPanel();
         bottomPane.add(btnOk);
@@ -54,6 +44,10 @@ public class ColorCellEditor extends PopupBasedCellEditor {
         mainPane.setCellHorizontalAlignment(bottomPane, HasAlignment.ALIGN_RIGHT);
 
         return mainPane;
+    }
+
+    public void commit() {
+        commitEditing(new ColorDTO(colorPicker.getHexColor()));
     }
 
     @Override

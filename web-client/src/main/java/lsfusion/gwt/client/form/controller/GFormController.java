@@ -1093,13 +1093,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void previewBlurEvent(Event event) {
-        formsController.setLastBlurredElement(Element.as(event.getEventTarget()));
+        MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
     }
     public boolean previewClickEvent(Element target, Event event) {
-        return formsController.previewClickEvent(target, event);
+        return MainFrame.previewClickEvent(target, event);
     }
     public Element getLastBlurredElement() {
-        return formsController.getLastBlurredElement();
+        return MainFrame.getLastBlurredElement();
     }
 
     protected void onFormHidden(int closeDelay) {
@@ -1504,7 +1504,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
 
             if(blurred) // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
-                formsController.setLastBlurredElement(editContext.getFocusElement());
+                MainFrame.setLastBlurredElement(editContext.getFocusElement());
             else {
                 if (focusedElement != null)
                     focusedElement.focus();

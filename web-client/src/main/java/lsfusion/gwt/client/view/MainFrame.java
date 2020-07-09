@@ -137,21 +137,24 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         private T link;
     }
 
-    private Element lastBlurredElement;
+    private static Element lastBlurredElement;
     // Event.addNativePreviewHandler(this::previewNativeEvent); doesn't work since only mouse events are propagated see DOM.previewEvent(evt) usages (only mouse and keyboard events are previewed);
     // this solution is not pretty clean since not all events are previewed, but for now, works pretty good
-    private void setLastBlurredElement(Element lastBlurredElement) {
-        this.lastBlurredElement = lastBlurredElement;
+    public static void setLastBlurredElement(Element lastBlurredElement) {
+        MainFrame.lastBlurredElement = lastBlurredElement;
+    }
+    public static Element getLastBlurredElement() {
+        return lastBlurredElement;
     }
 
     // it's odd, but dblclk works even when the first click was on different target
     // for example double clicking on focused property, causes first mousedown/click on that property, after that its handler dialog is shown
     // the second click is handled by dialog, and double click is also triggered for that dialog (that shouldn't happen given to the browser dblclick specification), causing it to be hidden
     // so this way we fix that browser bug
-    private Element beforeLastClickedTarget;
-    private Element lastClickedTarget;
-    private Event lastClickedEvent;
-    public boolean previewClickEvent(Element target, Event event) {
+    private static Element beforeLastClickedTarget;
+    private static Element lastClickedTarget;
+    private static Event lastClickedEvent;
+    public static boolean previewClickEvent(Element target, Event event) {
         if (GMouseStroke.isClickEvent(event))
             if (event != lastClickedEvent) { // checking lastClickedEvent since it can be propagated (or not)
                 lastClickedEvent = event;
@@ -229,31 +232,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                     }
                 });
             }
-
-            @Override
-            public void setCurrentForm(FormContainer formContainer) {
-                MainFrame.this.setCurrentForm(formContainer);
-            }
-
-            @Override
-            public FormContainer getCurrentForm() {
-                return MainFrame.this.getCurrentForm();
-            }
-
-            @Override
-            public void setLastBlurredElement(Element element) {
-                MainFrame.this.setLastBlurredElement(element);
-            }
-
-            @Override
-            public Element getLastBlurredElement() {
-                return MainFrame.this.lastBlurredElement;
-            }
-
-            @Override
-            public boolean previewClickEvent(Element target, Event event) {
-                return MainFrame.this.previewClickEvent(target, event);
-            }
         };
 
         formsControllerLinker.link = formsController;
@@ -306,6 +284,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                             setShouldRepeatPingRequest(true);
                             super.success(result);
                             for (Integer idNotification : result.notificationList) {
+                                FormContainer<?> currentForm = MainFrame.getCurrentForm();
                                 GFormController form = currentForm != null ? currentForm.getForm() : null;
                                 if (form != null)
                                     try {
@@ -386,14 +365,28 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
-    public FormContainer<?> currentForm;
+    private static FormContainer<?> currentForm;
+    private static boolean modalPopup;
 
-    public void setCurrentForm(FormContainer currentForm) {
-        this.currentForm = currentForm;
+    public static void setCurrentForm(FormContainer currentForm) {
+        MainFrame.currentForm = currentForm;
     }
 
-    public FormContainer getCurrentForm() {
+    public static void setModalPopup(boolean modalPopup) {
+        MainFrame.modalPopup = modalPopup;
+    }
+
+    public static FormContainer getCurrentForm() {
+        if(!modalPopup)
+            return currentForm;
+        return null;
+    }
+    public static FormContainer getAssertCurrentForm() {
+        assert !modalPopup;
         return currentForm;
+    }
+    public static boolean isModalPopup() {
+        return modalPopup;
     }
 
     private void initializeWindows(final DefaultFormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {

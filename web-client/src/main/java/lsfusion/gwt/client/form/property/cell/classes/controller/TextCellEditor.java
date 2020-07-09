@@ -11,33 +11,26 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 public class TextCellEditor extends TextBasedCellEditor {
-    public TextCellEditor(EditManager editManager, GPropertyDraw property) {
+
+    private final boolean rich;
+
+    public TextCellEditor(EditManager editManager, GPropertyDraw property, boolean rich) {
         super(editManager, property, "textarea");
+        this.rich = rich;
     }
 
     @Override
-    public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
-        DivElement div = Document.get().createDivElement();
-        div.getStyle().setPaddingRight(8, Style.Unit.PX);
-        div.getStyle().setPaddingLeft(0, Style.Unit.PX);
-        div.getStyle().setHeight(100, Style.Unit.PCT);
+    public Element createInputElement() {
+        TextAreaElement input = Document.get().createTextAreaElement();
+        if (!rich) {
+            input.getStyle().setProperty("wordWrap", "break-word");
+        }
+        return input;
+    }
 
-        TextAreaElement textArea = div.appendChild(Document.get().createTextAreaElement());
-        textArea.setTabIndex(-1);
-        
-        textArea.addClassName("textBasedGridCellEditor");
-
-        Style textareaStyle = textArea.getStyle();
-        textareaStyle.setWidth(100, Style.Unit.PCT);
-        textareaStyle.setHeight(100, Style.Unit.PCT);
-//        textareaStyle.setProperty("resize", "none");
-
-        TextCellRenderer.setPadding(textareaStyle, true);
-        cellParent.getStyle().setPadding(0, Style.Unit.PX);
-        textareaStyle.setProperty("wordWrap", "break-word");
-        setBaseTextFonts(textareaStyle, updateContext);
-
-        cellParent.appendChild(div);
+    @Override
+    protected boolean isMultiLine() {
+        return true;
     }
 
     @Override
@@ -48,14 +41,5 @@ public class TextCellEditor extends TextBasedCellEditor {
     @Override
     protected boolean checkEnterEvent(Event event) {
         return event.getShiftKey();
-    }
-
-    protected void arrowPressed(NativeEvent event, Element parent, boolean down) {
-        //NOP
-    }
-
-    @Override
-    protected InputElement getInputElement(Element parent) {
-        return parent.getFirstChild().getFirstChild().cast();
     }
 }

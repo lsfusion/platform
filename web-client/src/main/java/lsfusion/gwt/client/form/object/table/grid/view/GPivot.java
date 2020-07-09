@@ -10,6 +10,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
@@ -238,8 +239,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         
         int rowHeight = 0;
         for(GPropertyDraw property : properties) {
-            int columnMinimumHeight = property.getValueHeightWithPadding(font);
-            rowHeight = Math.max(rowHeight, columnMinimumHeight);
+            rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
         }
         this.rowHeight = rowHeight;
 
@@ -1501,7 +1501,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }-*/;
 
     private void cellDblClickAction(JsArrayString rowKeyValues, JsArrayString colKeyValues, int x, int y) {
-        final PopupPanel popup = new PopupPanel(true);
+        final PopupDialogPanel popup = new PopupDialogPanel();
 
         List<String> menuItems = new ArrayList<>();
         JsArrayString cols = config.getArrayString("cols");

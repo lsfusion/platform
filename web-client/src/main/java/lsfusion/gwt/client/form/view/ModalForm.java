@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.view.MainFrame;
 
 import static java.lang.Math.min;
 
@@ -37,8 +38,9 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
 
     @Override
     public void show() {
-        prevForm = formsController.getCurrentForm();
-        prevForm.onBlur(false);
+        prevForm = MainFrame.getAssertCurrentForm();
+        if(prevForm != null) // if there were no currentForm
+            prevForm.onBlur(false);
 
         contentWidget.show();
 
@@ -51,7 +53,8 @@ public class ModalForm extends FormContainer<ResizableModalWindow> {
 
         contentWidget.hide();
 
-        prevForm.onFocus(false);
+        if(prevForm != null)
+            prevForm.onFocus(false);
     }
 
     public void setCaption(String caption, String tooltip) {

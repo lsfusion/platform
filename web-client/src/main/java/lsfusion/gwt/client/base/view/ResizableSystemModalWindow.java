@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class ResizableSystemModalWindow extends ResizableModalWindow {
 
@@ -17,6 +18,7 @@ public class ResizableSystemModalWindow extends ResizableModalWindow {
     @Override
     public void show() {
         focusedElement = GwtClientUtils.getFocusedElement();
+        MainFrame.setModalPopup(true);
 
         super.show();
     }
@@ -28,6 +30,7 @@ public class ResizableSystemModalWindow extends ResizableModalWindow {
         if (hiddenHandler != null)
             hiddenHandler.onHidden();
 
+        MainFrame.setModalPopup(false);
         if(focusedElement != null)
             focusedElement.focus();
     }
