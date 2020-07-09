@@ -23,13 +23,12 @@ public abstract class PanelRenderer {
     private String caption;
     private String tooltip;
 
-    public PanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey, String styleName) {
+    public PanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
         this.form = form;
         this.property = property;
         this.columnKey = columnKey;
 
         value = new ActionOrPropertyPanelValue(property, columnKey, form);
-        value.addStyleName(styleName);
     }
 
     protected void finalizeInit() {

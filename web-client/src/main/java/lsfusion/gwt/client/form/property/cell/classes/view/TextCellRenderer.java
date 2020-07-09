@@ -6,9 +6,6 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
-import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
-import static lsfusion.gwt.client.view.StyleDefaults.CELL_VERTICAL_PADDING;
-
 public class TextCellRenderer extends StringBasedCellRenderer {
     private final boolean rich;
 
@@ -18,18 +15,21 @@ public class TextCellRenderer extends StringBasedCellRenderer {
     }
 
     @Override
+    public int getHeightPadding() {
+        return getHeightPadding(true);
+    }
+
+    @Override
     public void renderStaticContent(Element element, RenderContext renderContext) {
         Style style = element.getStyle();
-        style.setPaddingTop(CELL_VERTICAL_PADDING, Style.Unit.PX);
-        style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
-        style.setPaddingBottom(0, Style.Unit.PX);
-        style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
 
-        style.setProperty("lineHeight", "normal");
+        // default padding, lineheight (since we don't want it singleLine)
+        setPadding(style, true);
+
+        // setting word wrapping
         if (!rich) {
             style.setProperty("wordWrap", "break-word");
         }
-        element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
     }
 
     @Override

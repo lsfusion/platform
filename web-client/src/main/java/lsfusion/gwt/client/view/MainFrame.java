@@ -35,6 +35,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
@@ -142,6 +143,27 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         this.lastBlurredElement = lastBlurredElement;
     }
 
+    // it's odd, but dblclk works even when the first click was on different target
+    // for example double clicking on focused property, causes first mousedown/click on that property, after that its handler dialog is shown
+    // the second click is handled by dialog, and double click is also triggered for that dialog (that shouldn't happen given to the browser dblclick specification), causing it to be hidden
+    // so this way we fix that browser bug
+    private Element beforeLastClickedTarget;
+    private Element lastClickedTarget;
+    private Event lastClickedEvent;
+    public boolean previewClickEvent(Element target, Event event) {
+        if (GMouseStroke.isClickEvent(event))
+            if (event != lastClickedEvent) { // checking lastClickedEvent since it can be propagated (or not)
+                lastClickedEvent = event;
+                beforeLastClickedTarget = lastClickedTarget;
+                lastClickedTarget = target;
+            }
+        if(GMouseStroke.isDblClickEvent(event)) {
+            if(beforeLastClickedTarget != null && lastClickedTarget != null && target == lastClickedTarget && beforeLastClickedTarget != lastClickedTarget)
+                return false;
+        }
+        return true;
+    }
+
     public void initializeFrame() {
         currentForm = null;
 
@@ -225,6 +247,11 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             @Override
             public Element getLastBlurredElement() {
                 return MainFrame.this.lastBlurredElement;
+            }
+
+            @Override
+            public boolean previewClickEvent(Element target, Event event) {
+                return MainFrame.this.previewClickEvent(target, event);
             }
         };
 

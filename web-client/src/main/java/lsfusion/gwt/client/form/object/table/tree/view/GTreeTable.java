@@ -552,7 +552,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 header.setToolTip(property.getTooltipText(value));
                 needsHeaderRefresh = true;
             }
-            rowHeight = Math.max(rowHeight, property.getValueHeight(font));
+            rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
         }
         setCellHeight(rowHeight);
         if (needsHeaderRefresh) {
@@ -743,8 +743,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    protected void onBrowserEvent2(Event event) {
-        super.onBrowserEvent2(event);
+    protected void onBrowserEvent2(Element target, Event event) {
+        super.onBrowserEvent2(target, event);
 
         if (event.getTypeInt() == Event.ONDBLCLICK) {
             if (treeGroupController.isExpandOnClick() && isReadOnly(getSelectedCellContext()) && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {

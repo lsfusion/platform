@@ -292,7 +292,7 @@ public class GGridController extends GAbstractTableController {
         forceUpdateTableButton.addClickHandler(event -> {
                     formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE, null);
                 });
-        forceUpdateTableButton.addStyleName("actionPanelRenderer");
+        forceUpdateTableButton.addStyleName("actionPanelRendererValue");
 
         addToToolbar(forceUpdateTableButton);
     }

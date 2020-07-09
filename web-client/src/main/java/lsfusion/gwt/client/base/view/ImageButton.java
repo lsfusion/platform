@@ -74,7 +74,7 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
 
         MainFrame.addColorThemeChangeListener(this);
 
-        setFocusable(false);
+//        setFocusable(false);
     }
 
     public void setModuleImagePath(String imagePath) {

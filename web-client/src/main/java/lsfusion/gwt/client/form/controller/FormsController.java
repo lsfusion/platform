@@ -27,4 +27,6 @@ public interface FormsController {
 
     void setLastBlurredElement(Element element);
     Element getLastBlurredElement();
+
+    boolean previewClickEvent(Element target, Event event);
 }

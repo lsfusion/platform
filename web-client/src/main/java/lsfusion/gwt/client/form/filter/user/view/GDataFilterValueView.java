@@ -21,9 +21,7 @@ public class GDataFilterValueView extends GFilterValueView {
         this.logicsSupplier = logicsSupplier;
 
         cell = new GDataFilterPropertyValue(property, logicsSupplier.getForm(), value -> valueChanged(value));
-        cell.setBaseSize();
-
-        add(cell);
+        cell.setStatic(this, true);
     }
 
     @Override

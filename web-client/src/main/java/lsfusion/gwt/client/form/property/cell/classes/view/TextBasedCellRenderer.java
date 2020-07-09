@@ -11,6 +11,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.CELL_VERTICAL_PADDING;
 
 public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     protected GPropertyDraw property;
@@ -32,21 +33,38 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
     protected void renderStaticContent(Element element, RenderContext renderContext) {
         Style style = element.getStyle();
-        // важно оставить множественные пробелы
-        style.setWhiteSpace(Style.WhiteSpace.PRE);
-        style.setPosition(Style.Position.RELATIVE);
 
-        setPadding(style);
+        setPadding(style, false);
     }
 
     @Override
     public int getWidthPadding() {
         return CELL_HORIZONTAL_PADDING;
     }
+    public int getHeightPadding() {
+        return getHeightPadding(false);
+    }
 
-    private static void setPadding(Style style) {
-        style.setPaddingBottom(0, Style.Unit.PX);
-        style.setPaddingTop(0, Style.Unit.PX);
+    public static int getHeightPadding(boolean multiLine) {
+        if(multiLine)
+            return CELL_VERTICAL_PADDING;
+        return 0;
+    }
+    public static void setPadding(Style style, boolean multiLine) {
+        if(multiLine) {
+            style.setPaddingTop(CELL_VERTICAL_PADDING, Style.Unit.PX);
+            style.setPaddingBottom(CELL_VERTICAL_PADDING, Style.Unit.PX);
+            style.setProperty("lineHeight", "normal"); // override
+
+            style.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
+        } else {
+            // since we are aligning text with lineheight set vertical padding to 0
+            style.setPaddingBottom(0, Style.Unit.PX);
+            style.setPaddingTop(0, Style.Unit.PX);
+
+            // we want to keep spaces
+            style.setWhiteSpace(Style.WhiteSpace.PRE);
+        }
 
         style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
         style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);

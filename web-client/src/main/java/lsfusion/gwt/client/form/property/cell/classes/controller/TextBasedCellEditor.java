@@ -19,7 +19,6 @@ import java.text.ParseException;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 import static lsfusion.gwt.client.view.StyleDefaults.DEFAULT_FONT_PT_SIZE;
 
 public abstract class TextBasedCellEditor implements ReplaceCellEditor {
@@ -154,15 +153,10 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         inputStyle.setBorderWidth(0, Style.Unit.PX);
         inputStyle.setOutlineStyle(Style.OutlineStyle.NONE);
         inputStyle.setMargin(0, Style.Unit.PX);
-        inputStyle.setPaddingTop(0, Style.Unit.PX);
-        inputStyle.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
-        inputStyle.setPaddingBottom(0, Style.Unit.PX);
-        inputStyle.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
         inputStyle.setWidth(100, Style.Unit.PCT);
         inputStyle.setHeight(100, Style.Unit.PCT);
 
-        cellParent.getStyle().setPadding(0, Style.Unit.PX);
-
+        TextBasedCellRenderer.setPadding(inputStyle, false);
         setBaseTextFonts(inputStyle, updateContext);
 
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
@@ -170,12 +164,13 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             inputStyle.setTextAlign(textAlignStyle);
         }
 
+        cellParent.getStyle().setPadding(0, Style.Unit.PX);
         cellParent.appendChild(input);
     }
 
     protected void setBaseTextFonts(Style textareaStyle, UpdateContext updateContext) {
         TextBasedCellRenderer.setBasedTextFonts(property, textareaStyle, updateContext);
-        textareaStyle.setFontSize(DEFAULT_FONT_PT_SIZE, Style.Unit.PT);
+//        textareaStyle.setFontSize(DEFAULT_FONT_PT_SIZE, Style.Unit.PT);
     }
 
     public void commitEditing(Element parent) {

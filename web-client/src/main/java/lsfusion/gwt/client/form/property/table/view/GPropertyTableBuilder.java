@@ -20,7 +20,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private final String lastColumnStyle;
 
     private int cellHeight = 16;
-    private boolean updateCellHeight;
 
     public GPropertyTableBuilder(DataGrid table) {
         super(table);
@@ -33,15 +32,10 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         lastColumnStyle = " " + style.dataGridLastCell();
     }
 
-    @Override
-    public void update(TableSectionElement tbodyElement, List<T> values, int minRenderedRow, int renderedRowCount, boolean columnsChanged) {
-        super.update(tbodyElement, values, minRenderedRow, renderedRowCount, columnsChanged);
-        updateCellHeight = false;
-    }
-
-    public void setCellHeight(int cellHeight) {
-        updateCellHeight = true;
+    public boolean setCellHeight(int cellHeight) {
+        boolean cellHeightChanged = this.cellHeight != cellHeight;
         this.cellHeight = cellHeight;
+        return cellHeightChanged;
     }
 
     @Override
@@ -67,9 +61,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             TableCellElement td = tr.insertCell(columnIndex);
             td.setClassName(tdClasses.toString());
 
-            updateTD(rowIndex, rowValue, td, columnIndex, true);
+            renderTD(td, cellHeight);
 
             renderCell(td, new Context(rowIndex, columnIndex, rowValue), column, rowValue);
+
+            updateTD(rowIndex, rowValue, td, columnIndex);
         }
     }
 
@@ -105,24 +101,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private void updateCellImpl(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
         Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-        updateTD(rowIndex, rowValue, td, columnIndex, updateCellHeight);
-
         updateCell(td, new Context(rowIndex, columnIndex, rowValue), column, rowValue);
+
+        updateTD(rowIndex, rowValue, td, columnIndex);
     }
 
     // need this for mixing color
     public static String BKCOLOR = "lsfusion-bkcolor";
 
-    protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
-        if (updateCellHeight) {
-            renderTD(td, cellHeight);
-
-            Element divElement = td.getFirstChildElement();
-            if (divElement != null) {
-                divElement.getStyle().setHeight(cellHeight, Style.Unit.PX);
-            }
-        }
-
+    protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
         td.setPropertyString(BKCOLOR, backgroundColor);
         GFormController.setBackgroundColor(td, backgroundColor);
@@ -133,10 +120,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public static void renderTD(Element td, int height) {
         setRowHeight(td, height);
-        // setting line height to height it's the easiest way to align text to the center vertically, however it works only for single lines (which is ok for row data)
-        td.getStyle().setLineHeight(height, Style.Unit.PX);
+        // vertical centering
+        // maybe it makes sense to move line-height to renderers (for example it is overridden in TextCellRenderer, but for now we'll keep it this way)
+        setLineHeight(td, height);
     }
 
+    // setting line height to height it's the easiest way to align text to the center vertically, however it works only for single lines (which is ok for row data)
+    public static void setLineHeight(Element td, int height) {
+        td.getStyle().setLineHeight(height, Style.Unit.PX);
+    }
     public static void setRowHeight(Element td, int height) {
         td.getStyle().setHeight(height, Style.Unit.PX);
     }

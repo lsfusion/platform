@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -183,10 +184,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     @Override
     public void onBrowserEvent(Event event) {
+        Element target = DataGrid.getTargetAndCheck(getElement(), event);
+        if(target == null)
+            return;
+        if(!previewClickEvent(target, event))
+            return;
+
         super.onBrowserEvent(event);
 
         if(GMouseStroke.isChangeEvent(event) || GMouseStroke.isDoubleChangeEvent(event))
-            handleMouseEvent(event);
+            handleMouseEvent(target, event);
     }
 
     // will handle key events in upper container which will be better from UX point of view
@@ -1106,6 +1113,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void previewBlurEvent(Event event) {
         formsController.setLastBlurredElement(Element.as(event.getEventTarget()));
     }
+    public boolean previewClickEvent(Element target, Event event) {
+        return formsController.previewClickEvent(target, event);
+    }
     public Element getLastBlurredElement() {
         return formsController.getLastBlurredElement();
     }
@@ -1432,12 +1442,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         processBinding((Event) nativeEvent, () -> getGroupObject(Element.as(target)));
     }
 
-    private void handleMouseEvent(NativeEvent nativeEvent) {
-        final EventTarget target = nativeEvent.getEventTarget();
-        if (!Element.is(target)) {
-            return;
-        }
-        processBinding((Event) nativeEvent, () -> getGroupObject(Element.as(target)));
+    private void handleMouseEvent(Element target, Event event) {
+        processBinding(event, () -> getGroupObject(target));
     }
 
     private CellEditor cellEditor;
@@ -1572,11 +1578,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         if(GMouseStroke.isChangeEvent(handler.event))
             focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
-        else if(GMouseStroke.isDownEvent(handler.event))
-            handler.consume(); // we want to postpone focusing (and focus later on CLICK event)
-
-        if(handler.consumed)
-            return;
 
         onOuterEditBefore.run();
 
@@ -1597,5 +1598,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             return;
 
         onOuterEditAfter.run();
+
+        if(handler.consumed)
+            return;
+
+        if(GMouseStroke.isDownEvent(handler.event))
+            handler.consume(); // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
     }
 }

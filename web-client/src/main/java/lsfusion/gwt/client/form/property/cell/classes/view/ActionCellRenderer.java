@@ -75,6 +75,10 @@ public class ActionCellRenderer extends CellRenderer {
     public int getWidthPadding() {
         return BUTTON_HORIZONTAL_PADDING;
     }
+    @Override
+    public int getHeightPadding() {
+        return 0;
+    }
 
     private static void setPadding(Style style) {
         style.setPaddingTop(0, Style.Unit.PX);

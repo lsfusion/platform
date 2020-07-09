@@ -222,7 +222,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         
         int rowHeight = 0;
         for(GPropertyDraw property : properties) {
-            int columnMinimumHeight = property.getValueHeight(font);
+            int columnMinimumHeight = property.getValueHeightWithPadding(font);
             rowHeight = Math.max(rowHeight, columnMinimumHeight);
         }
         this.rowHeight = rowHeight;

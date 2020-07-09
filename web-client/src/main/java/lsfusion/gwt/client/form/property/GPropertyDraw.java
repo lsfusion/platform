@@ -372,6 +372,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int getValueWidthWithPadding(GFont parentFont) {
         return getValueWidth(parentFont) + getCellRenderer().getWidthPadding() * 2;
     }
+    public int getValueHeightWithPadding(GFont parentFont) {
+        return getValueHeight(parentFont) + getCellRenderer().getHeightPadding() * 2;
+    }
 
     public int getValueWidth(GFont parentFont) {
         if (valueWidth != -1) {
@@ -398,21 +401,19 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return valueHeight;
         }
 
-        // we don't set padding to cell or button, but count them to have visual padding
-        int insets = StyleDefaults.CELL_VERTICAL_PADDING * 2;
+        int lineHeight;
         GFont usedFont = font != null ? font : parentFont;
-        int lines = charHeight == 0 ? baseType.getDefaultCharHeight() : charHeight;
-        int height;
-        if ((usedFont != null && usedFont.size > 0) || lines > 1) {
-            int lineHeight = GFontMetrics.getSymbolHeight(font);
-            height = lineHeight * lines + insets;
-        } else {
-            height = StyleDefaults.VALUE_HEIGHT;
-        }
-        
+        if (usedFont != null && usedFont.size > 0)
+            lineHeight = GFontMetrics.getSymbolHeight(usedFont);
+        else
+            lineHeight = StyleDefaults.VALUE_HEIGHT;
+        int lines = charHeight > 0 ? charHeight : baseType.getDefaultCharHeight();
+
+        int height = lineHeight * lines;
+
         final ImageDescription image = getImage();
         if (image != null && image.height >= 0) {
-            height = Math.max(image.height + insets, height);
+            height = Math.max(image.height, height);
         }
         return height;
     }

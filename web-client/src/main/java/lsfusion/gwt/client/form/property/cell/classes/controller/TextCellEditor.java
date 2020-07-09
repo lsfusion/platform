@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.view.TextCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -16,7 +17,7 @@ public class TextCellEditor extends TextBasedCellEditor {
 
     @Override
     public void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
-        DivElement div = cellParent.appendChild(Document.get().createDivElement());
+        DivElement div = Document.get().createDivElement();
         div.getStyle().setPaddingRight(8, Style.Unit.PX);
         div.getStyle().setPaddingLeft(0, Style.Unit.PX);
         div.getStyle().setHeight(100, Style.Unit.PCT);
@@ -27,21 +28,18 @@ public class TextCellEditor extends TextBasedCellEditor {
         textArea.addClassName("textBasedGridCellEditor");
 
         Style textareaStyle = textArea.getStyle();
-        textareaStyle.setBorderWidth(0, Style.Unit.PX);
-        textareaStyle.setPaddingTop(CELL_VERTICAL_PADDING, Style.Unit.PX);
-        textareaStyle.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
-        textareaStyle.setPaddingBottom(0, Style.Unit.PX);
-        textareaStyle.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
+//        textareaStyle.setBorderWidth(0, Style.Unit.PX);
         textareaStyle.setWidth(100, Style.Unit.PCT);
         textareaStyle.setHeight(100, Style.Unit.PCT);
-        textareaStyle.setProperty("resize", "none");
-        textareaStyle.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
-        textareaStyle.setProperty("wordWrap", "break-word");
-        textareaStyle.setOutlineStyle(Style.OutlineStyle.NONE);
+//        textareaStyle.setProperty("resize", "none");
+//        textareaStyle.setOutlineStyle(Style.OutlineStyle.NONE);
 
+        TextCellRenderer.setPadding(textareaStyle, true);
         cellParent.getStyle().setPadding(0, Style.Unit.PX);
-
+        textareaStyle.setProperty("wordWrap", "break-word");
         setBaseTextFonts(textareaStyle, updateContext);
+
+        cellParent.appendChild(div);
     }
 
     @Override

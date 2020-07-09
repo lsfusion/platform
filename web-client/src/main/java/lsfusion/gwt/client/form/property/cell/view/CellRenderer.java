@@ -20,6 +20,9 @@ public abstract class CellRenderer<T> {
     public int getWidthPadding() {
         return 0;
     }
+    public int getHeightPadding() {
+        return 0;
+    }
 
     public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
     }

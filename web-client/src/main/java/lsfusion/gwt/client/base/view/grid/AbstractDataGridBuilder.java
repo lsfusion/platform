@@ -50,7 +50,7 @@ public abstract class AbstractDataGridBuilder<T> {
         this.cellTable = cellTable;
     }
 
-    public void update(TableSectionElement tbodyElement, List<T> values, int minRenderedRow, int renderedRowCount, boolean columnsChanged) {
+    public void update(TableSectionElement tbodyElement, List<T> values, int minRenderedRow, int renderedRowCount, boolean rerenderRows) {
         //assertion that updateRanges is sorted
 
         int rowCount = tbodyElement.getChildCount();
@@ -61,7 +61,7 @@ public abstract class AbstractDataGridBuilder<T> {
             rowCount = renderedRowCount;
         }
 
-        if (columnsChanged) {
+        if (rerenderRows) {
             //rebuild rows if columns have been changed
             if (rowCount > 0) {
                 TableRowElement tr = tbodyElement.getFirstChild().cast();
@@ -135,7 +135,6 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
 
-    // should be consistent with getCellParentElement
     protected final <C> void renderCell(TableCellElement td, Context context, Column<T, C> column, T rowValue) {
         td.setPropertyObject(COLUMN_ATTRIBUTE, column);
         column.renderDom(context, td, column.getValue(rowValue));

@@ -105,11 +105,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         valueViews = new HashMap<>();
 
         GDataFilterValue dataValue = condition.value instanceof GDataFilterValue ? (GDataFilterValue) condition.value : new GDataFilterValue();
-        GDataFilterValueView dataView = new GDataFilterValueView(this, dataValue, condition.property, logicsSupplier) {
-            public void applyFilter() {
-                handler.applyFilter();
-            }
-        };
+        GDataFilterValueView dataView = new GDataFilterValueView(this, dataValue, condition.property, logicsSupplier);
         valueViews.put(dataValue, dataView);
 
         GObjectFilterValue objectValue = condition.value instanceof GObjectFilterValue ? (GObjectFilterValue) condition.value : new GObjectFilterValue();

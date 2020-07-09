@@ -4,16 +4,16 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
-import lsfusion.gwt.client.base.view.CopyPasteUtils;
-import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.text.ParseException;
 
@@ -47,6 +47,9 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.form = form;
 
         getRenderElement().setPropertyObject("groupObject", property.groupObject);
+
+        // aligning values vertically
+        GPropertyTableBuilder.setLineHeight(getRenderElement(), getHeight());
     }
 
     public Element getRenderElement() {
@@ -62,18 +65,49 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.form.render(this.property, getRenderElement(), getRenderContext());
     }
 
-    public void addFill(FlexPanel panel) {
-        panel.add(this, panel.getWidgetCount(), GFlexAlignment.STRETCH, 1, property.getValueWidth(null), property.getValueHeight(null));
+    private Widget borderWidget;
+
+    // when we don't want property value (it's content) to influence on layouting, and in particular flex - basis
+    // so we use absolute positioning for that (and not width 100%, or writing to div itself)
+    public void setStatic(ResizableSimplePanel panel, boolean isProperty) {
+        panel.setFillWidget(this);
+        borderWidget = panel;
+
+        setBaseSize(isProperty);
+    }
+    public void setDynamic(boolean isProperty) {
+        borderWidget = this;
+
+        setBaseSize(isProperty);
     }
 
-    public void setBaseSize() {
-        FlexPanel.setBaseWidth(this, property.getValueWidth(null), property.getValueHeight(null));
-//        setWidth(property.getValueWidth(null) + "px");
-//        setHeight(property.getValueHeight(null) + "px");
+    public void setBaseSize(boolean isProperty) {
+        // we have to set border for border element and not element itself, since absolute positioning include border INSIDE div, and default behaviour is OUTSIDE
+        borderWidget.addStyleName("panelRendererValue");
+        if(isProperty)
+            borderWidget.addStyleName("propertyPanelRendererValue");
+        else
+            borderWidget.addStyleName("actionPanelRendererValue");
+
+        FlexPanel.setBaseWidth(borderWidget, getWidth(), getHeight());
+    }
+
+    public int getHeight() {
+        return property.getValueHeight(null);
+    }
+
+    public int getWidth() {
+        return property.getValueWidth(null);
     }
 
     @Override
     public void onBrowserEvent(Event event) {
+        Element target = DataGrid.getTargetAndCheck(getElement(), event);
+        if(target == null)
+            return;
+        if(!form.previewClickEvent(target, event))
+            return;
+
         super.onBrowserEvent(event);
 
         if(!DataGrid.checkSinkEvents(event))
@@ -97,13 +131,13 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     protected void onFocus(EventHandler handler) {
-        addStyleName("dataPanelRendererGridPanelFocused");
+        borderWidget.addStyleName("panelRendererValueFocused");
     }
 
     protected void onBlur(EventHandler handler) {
         form.previewBlurEvent(handler.event);
 
-        removeStyleName("dataPanelRendererGridPanelFocused");
+        borderWidget.removeStyleName("panelRendererValueFocused");
     }
 
     public EventHandler createEventHandler(Event event) {

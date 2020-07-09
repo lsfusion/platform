@@ -166,8 +166,9 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     protected abstract GFont getFont();
 
     protected void setCellHeight(int cellHeight) {
-        tableBuilder.setCellHeight(cellHeight);
         setRowHeight(cellHeight + 1); //1px for border
+        if(tableBuilder.setCellHeight(cellHeight))
+            refreshColumnsAndRedraw();
     }
 
     @Override

@@ -295,6 +295,18 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
     public static void initSinkMouseEvents(Widget widget) {
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserMouseEvents());
     }
+    public static Element getTargetAndCheck(Element element, Event event) {
+        EventTarget eventTarget = event.getEventTarget();
+        //it seems that now all this is not needed
+//        if (!Element.is(eventTarget)) {
+//            return null;
+//        }
+        Element target = Element.as(eventTarget);
+//        if (!element.isOrHasChild(Element.as(eventTarget))) {
+//            return null;
+//        }
+        return target;
+    }
     public static boolean checkSinkEvents(Event event) {
         String eventType = event.getType();
         return getBrowserFocusEvents().contains(eventType) ||
@@ -435,10 +447,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
     /**
      * Handle browser events. Subclasses should override
-     * {@link #onBrowserEvent2(com.google.gwt.user.client.Event)} if they want to extend browser event
+     * {@link #onBrowserEvent2(Element, Event)} if they want to extend browser event
      * handling.
      *
-     * @see #onBrowserEvent2(com.google.gwt.user.client.Event)
+     * @see #onBrowserEvent2(Element, Event)
      */
     @Override
     public final void onBrowserEvent(Event event) {
@@ -449,14 +461,20 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
         // Verify that the target is still a child of this widget. IE fires focus
         // events even after the element has been removed from the DOM.
-        EventTarget eventTarget = event.getEventTarget();
-        if (!Element.is(eventTarget)) {
+//        EventTarget eventTarget = event.getEventTarget();
+//        if (!Element.is(eventTarget)) {
+//            return;
+//        }
+//        Element target = Element.as(eventTarget);
+//        if (!getElement().isOrHasChild(Element.as(eventTarget))) {
+//            return;
+//        }
+        Element target = getTargetAndCheck(getElement(), event);
+        if(target == null)
             return;
-        }
-        Element target = Element.as(eventTarget);
-        if (!getElement().isOrHasChild(Element.as(eventTarget))) {
+        if(!previewClickEvent(target, event))
             return;
-        }
+
         super.onBrowserEvent(event);
 
         // here grid handles somewhy other than sink events, so will check it after super
@@ -480,18 +498,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 //        }
 
         // Let subclasses handle the event now.
-        onBrowserEvent2(event);
+        onBrowserEvent2(target, event);
     }
 
     @SuppressWarnings("deprecation")
-    protected <C> void onBrowserEvent2(Event event) {
-        // Get the event target.
-        EventTarget eventTarget = event.getEventTarget();
-        if (!Element.is(eventTarget)) {
-            return;
-        }
-        final Element target = event.getEventTarget().cast();
-
+    protected <C> void onBrowserEvent2(Element target, Event event) {
         // Find the cell where the event occurred.
         TableSectionElement tbody = getTableBodyElement();
         TableSectionElement tfoot = getTableFootElement();
@@ -1035,6 +1046,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             return tableHeader.getSection();
         return null;
     }
+
+    protected abstract boolean previewClickEvent(Element target, Event event);
 
     protected void onFocus() {
         isFocused = true;

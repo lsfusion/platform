@@ -46,7 +46,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     public void changeProperty(GPropertyDraw property) {
         this.property = property;
 
-        setBaseSize(); // assert was added with addSimple
+        setBaseSize(true);
 
         form.rerender(this.property, getRenderElement(), getRenderContext());
     }

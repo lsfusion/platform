@@ -15,9 +15,9 @@ public class ActionPanelRenderer extends PanelRenderer {
 //    private final GFormController form;
 
     public ActionPanelRenderer(final GFormController form, final GPropertyDraw property, GGroupObjectValue columnKey) {
-        super(form, property, columnKey, "actionPanelRenderer");
+        super(form, property, columnKey);
 
-        value.setBaseSize();
+        value.setDynamic(false);
 
         finalizeInit();
     }

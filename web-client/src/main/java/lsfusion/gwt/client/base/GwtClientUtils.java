@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.http.client.*;
@@ -11,11 +10,11 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.lang.Math.max;
@@ -700,17 +699,24 @@ public class GwtClientUtils {
         return $doc.activeElement;
     }-*/;
 
-    public static Element getFocusedChild(Element containerElement) {
-        Element focusedElement = getFocusedElement();
-        Element element = focusedElement;
+    public static String getParentForm(Element element) {
         BodyElement body = Document.get().getBody();
         while (element != body) {
-            if(element == containerElement)
-                return focusedElement;
+            String attr = element.getAttribute("lsfusion-form");
+            if(attr != null && !attr.isEmpty())
+                return attr;
             element = element.getParentElement().cast();
         }
         return null;
     }
+
+    public static Element getFocusedChild(Element containerElement) {
+        Element focusedElement = getFocusedElement();
+        if(containerElement.isOrHasChild(focusedElement))
+            return focusedElement;
+        return null;
+    }
+
 
     public static <T> T findInList(List<T> list, Predicate<T> predicate) {
         for(T element : list)

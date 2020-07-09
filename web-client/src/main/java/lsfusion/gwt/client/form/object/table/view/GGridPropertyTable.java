@@ -141,6 +141,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
+    protected boolean previewClickEvent(Element target, Event event) {
+        return form.previewClickEvent(target, event);
+    }
+
+    @Override
     protected void onFocus() {
         super.onFocus();
         changeBorder("var(--focus-color)");

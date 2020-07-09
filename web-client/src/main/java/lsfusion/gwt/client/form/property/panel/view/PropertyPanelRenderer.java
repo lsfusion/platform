@@ -1,22 +1,18 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 
@@ -29,7 +25,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     private final boolean vertical;
 
     public PropertyPanelRenderer(final GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
-        super(form, property, columnKey, "dataPanelRendererGridPanel");
+        super(form, property, columnKey);
 
         vertical = property.panelCaptionAbove;
 
@@ -43,7 +39,10 @@ public class PropertyPanelRenderer extends PanelRenderer {
         }
         panel.add(label, GFlexAlignment.CENTER);
 
-        value.addFill(panel);
+        // we need to wrap into simple panel to make layout independent from property value
+        ResizableSimplePanel simplePanel = new ResizableSimplePanel();
+        value.setStatic(simplePanel, true);
+        panel.add(simplePanel, panel.getWidgetCount(), GFlexAlignment.STRETCH, 1); // getWidth(), getHeight()
 
         appendCorners(property);
 
@@ -95,7 +94,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
             //+extra for borders and margins
             int width = property.getValueWidthWithPadding(null) + 4;
-            int height = property.getValueHeight(null) + 4;
+            int height = property.getValueHeightWithPadding(null) + 4;
 
             if (isVertical()) {
                 pref.width = Math.max(pref.width, width);
