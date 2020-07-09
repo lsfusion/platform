@@ -16,6 +16,7 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
 import lsfusion.gwt.client.base.EscapeUtils;
 
 public class TextHeader extends Header<String> {
@@ -33,13 +34,13 @@ public class TextHeader extends Header<String> {
     }
 
     @Override
-    public void renderDom(TableCellElement th) {
+    public void renderDom(TableRowElement tr, TableCellElement th) {
         if (text != null) {
             th.setInnerText(EscapeUtils.unicodeEscape(text));
         }
     }
 
-    public void updateDom(TableCellElement th) {
+    public void updateDom(TableRowElement tr, TableCellElement th) {
         //do nothing as text is constant
     }
 }

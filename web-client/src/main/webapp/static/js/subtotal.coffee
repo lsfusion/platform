@@ -216,16 +216,16 @@ callWithJQuery ($) ->
             e.addEventListener event, handler for own event, handler of eventHandlers if eventHandlers?
             return e
 
-        createValueTD = (value, rowKey, colKey, aggregator, className, attributes, eventHandlers) ->
+        createValueTD = (tr, value, rowKey, colKey, aggregator, className, attributes, eventHandlers) ->
             td = createElement "td", className, attributes, eventHandlers
             td.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
             td.ondblclick = (event) -> callbacks.valueCellDblClickHandler event, td, rowKey, colKey if callbacks?
-            renderValueCell td, value, rowKey, colKey, aggregator
+            renderValueCell tr, td, value, rowKey, colKey, aggregator
             return td
 
-        renderValueCell = (td, value, rowKey, colKey, aggregator) ->
+        renderValueCell = (tr, td, value, rowKey, colKey, aggregator) ->
             if callbacks?
-                callbacks.renderValueCell td, value, rowKey, colKey
+                callbacks.renderValueCell tr, td, value, rowKey, colKey
             else
                 td.textContent = aggregator.format(value)
         
@@ -241,7 +241,7 @@ callWithJQuery ($) ->
             wrapperDiv.appendChild textDiv
             th.textDiv = textDiv;
                 
-        createColAxisHeaderTH = (attr, className, textContent, isExpanded, attributes) ->
+        createColAxisHeaderTH = (tr, attr, className, textContent, isExpanded, attributes) ->
             th = createElement "th", className, attributes
             textElement = th
             if isExpanded?
@@ -250,53 +250,53 @@ callWithJQuery ($) ->
 
             textElement.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
             textElement.ondblclick = (event) -> callbacks.colAxisHeaderDblClickHandler event, textElement, attr if callbacks?
-            renderColAxisHeader th, textContent, attr, isExpanded, false
+            renderColAxisHeader tr, th, textContent, attr, isExpanded, false
             return th
             
-        renderColAxisHeader = (th, textContent, attr, isExpanded, arrowOnly) ->
+        renderColAxisHeader = (tr, th, textContent, attr, isExpanded, arrowOnly) ->
             if isExpanded?
                 if callbacks?
-                    callbacks.renderAxisHeaderCell th.arrowDiv, textContent, attr, isExpanded, true
+                    callbacks.renderAxisHeaderCell tr, th, th.arrowDiv, textContent, attr, isExpanded, true
                     if not arrowOnly
-                        callbacks.renderAxisHeaderCell th.textDiv, textContent, attr, isExpanded, false
+                        callbacks.renderAxisHeaderCell tr, th, th.textDiv, textContent, attr, isExpanded, false
                 else
                     th.arrowDiv.textContent = arrowText isExpanded
                     if not arrowOnly
                         th.textDiv.textContent = textContent
             else if callbacks?                     
-                callbacks.renderAxisHeaderCell th, textContent, attr, isExpanded, false
+                callbacks.renderAxisHeaderCell tr, th, th, textContent, attr, isExpanded, false
             else
                 th.textContent = textContent
 
-        createRowAxisHeaderTH = (attr, className, textContent, isArrow, isExpanded, attributes) ->
+        createRowAxisHeaderTH = (tr, attr, className, textContent, isArrow, isExpanded, attributes) ->
             th = createElement "th", className, attributes
             if not isArrow
                 th.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
-                th.ondblclick = (event) -> callbacks.rowAxisHeaderDblClickHandler event, th, attr if callbacks?
-            renderRowAxisHeader th, textContent, attr, isArrow, isExpanded
+                th.ondblclick = (event) -> callbacks.rowAxisHeaderDblClickHandler event, tr, th, attr if callbacks?
+            renderRowAxisHeader tr, th, textContent, attr, isArrow, isExpanded
             return th
             
-        renderRowAxisHeader = (th, textContent, attr, isArrow, isExpanded) ->
+        renderRowAxisHeader = (tr, th, textContent, attr, isArrow, isExpanded) ->
             if callbacks?
-                callbacks.renderAxisHeaderCell th, textContent, attr, isExpanded, isArrow
+                callbacks.renderAxisHeaderCell tr, th, th, textContent, attr, isExpanded, isArrow
             else
                 th.textContent = if isArrow then arrowText isExpanded else textContent
                 
-        createRowAttrHeaderTH = (rowKey, cellAttr, className, value, isArrow, isExpanded, isLastChildList, attributes) ->
+        createRowAttrHeaderTH = (tr, rowKey, cellAttr, className, value, isArrow, isExpanded, isLastChildList, attributes) ->
             th = createElement "th", className, attributes
             if not isArrow
                 th.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
                 th.ondblclick = (event) -> callbacks.rowAttrHeaderDblClickHandler event, th, rowKey, cellAttr if callbacks?
-            renderRowAttrHeader th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChildList
+            renderRowAttrHeader tr, th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChildList
             return th
 
-        renderRowAttrHeader = (th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChildList) ->
+        renderRowAttrHeader = (tr, th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChildList) ->
             if callbacks?
-                callbacks.renderRowAttrHeaderCell th, value, rowKey, cellAttr, isExpanded, isArrow, isLastChildList
+                callbacks.renderRowAttrHeaderCell tr, th, value, rowKey, cellAttr, isExpanded, isArrow, isLastChildList
             else 
                 th.textContent = if isArrow then arrowText isExpanded else value
             
-        createColAttrHeaderTH = (colKey, isSubtotal, className, value, isExpanded, colsData, attributes) ->
+        createColAttrHeaderTH = (tr, colKey, isSubtotal, className, value, isExpanded, colsData, attributes) ->
             th = createElement "th", className, attributes
             textElement = th
             if isExpanded?
@@ -304,24 +304,24 @@ callWithJQuery ($) ->
                 textElement = th.textDiv
 
             textElement.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
-            textElement.ondblclick = (event) -> callbacks.colAttrHeaderDblClickHandler event, textElement, colKey, isSubtotal if callbacks?
+            textElement.ondblclick = (event) -> callbacks.colAttrHeaderDblClickHandler event, tr, textElement, colKey, isSubtotal if callbacks?
             if colKey.length == colAttrs.length or isSubtotal or colKey.length == 0
-                colsData.push { width : getColumnWidth(true, colKey, null, false), colnode : attributes["data-colnode"] }      
-            renderColAttrHeader th, value, colKey, isSubtotal, isExpanded, false
+                colsData.push { width : getColumnWidth(true, colKey, null, false), colnode : attributes["data-colnode"] }
+            renderColAttrHeader tr, th, value, colKey, isSubtotal, isExpanded, false
             return th
 
-        renderColAttrHeader = (th, value, colKey, isSubtotal, isExpanded, arrowOnly) ->
+        renderColAttrHeader = (tr, th, value, colKey, isSubtotal, isExpanded, arrowOnly) ->
             if isExpanded?
                 if callbacks?
-                    callbacks.renderColAttrHeaderCell th.arrowDiv, value, colKey, isSubtotal, isExpanded, true
+                    callbacks.renderColAttrHeaderCell tr, th, th.arrowDiv, value, colKey, isSubtotal, isExpanded, true
                     if not arrowOnly
-                        callbacks.renderColAttrHeaderCell th.textDiv, value, colKey, isSubtotal, isExpanded, false
+                        callbacks.renderColAttrHeaderCell tr, th, th.textDiv, value, colKey, isSubtotal, isExpanded, false
                 else
                     th.arrowDiv.textContent = arrowText isExpanded
                     if not arrowOnly
                         th.textDiv.textContent = value if not arrowOnly
             else if callbacks?
-                callbacks.renderColAttrHeaderCell th, value, colKey, isSubtotal, isExpanded, false
+                callbacks.renderColAttrHeaderCell tr, th, th, value, colKey, isSubtotal, isExpanded, false
             else
                 th.textContent = value
         
@@ -428,7 +428,7 @@ callWithJQuery ($) ->
                 headers)
             return headers
 
-        buildColAxisHeader = (axisHeaders, index, attrs, opts, disabledArrow) ->
+        buildColAxisHeader = (tr, axisHeaders, index, attrs, opts, disabledArrow) ->
             ah =
                 text: attrs[index]
                 expandedCount: 0
@@ -446,7 +446,7 @@ callWithJQuery ($) ->
                 ah.onClick = expandAxis
             
             if not hideColAxisHeadersColumn    
-                ah.th = createColAxisHeaderTH ah.text, "pvtAxisLabel #{hClass}", ah.text, isExpanded 
+                ah.th = createColAxisHeaderTH tr, ah.text, "pvtAxisLabel #{hClass}", ah.text, isExpanded
                 if not disabledArrow
                     ah.th.arrowDiv.onclick = (event) ->
                         event = event || window.event
@@ -457,7 +457,7 @@ callWithJQuery ($) ->
         arrowColumnIsNeeded = () ->
             return rowGroups.length > 1
 
-        buildRowAxisHeader = (axisHeaders, index, attrs, opts, disabledArrow) ->
+        buildRowAxisHeader = (tr, axisHeaders, index, attrs, opts, disabledArrow) ->
             ah =
                 text: ""
                 values: []
@@ -479,10 +479,10 @@ callWithJQuery ($) ->
             for attr, i in rowGroups[index] 
                 if i == 0 and arrowColumnIsNeeded()
                     zoomClassPart = if isExpanded? then classZoom else ""
-                    arrowTh = createRowAxisHeaderTH attr, "pvtAxisLabel #{hClass} #{zoomClassPart}", "", true, isExpanded, {style: "padding-left: #{rowArrowsPadding + index * rowArrowsLevelPadding}px;"}
+                    arrowTh = createRowAxisHeaderTH tr, attr, "pvtAxisLabel #{hClass} #{zoomClassPart}", "", true, isExpanded, {style: "padding-left: #{rowArrowsPadding + index * rowArrowsLevelPadding}px;"}
                     ah.arrowTh = arrowTh
                     ah.ths.push arrowTh 
-                th = createRowAxisHeaderTH attr, "pvtAxisLabel #{hClass}", attr, false          
+                th = createRowAxisHeaderTH tr, attr, "pvtAxisLabel #{hClass}", attr, false
                 ah.ths.push th
                 ah.values.push attr
 
@@ -520,7 +520,7 @@ callWithJQuery ($) ->
                 if row + rowGroupsNumber >= rowsNumber
                     curGroup = row - (rowsNumber - rowGroupsNumber)
                     disabled = curGroup == rowGroupsNumber - 1
-                    ah = buildRowAxisHeader rowAxisHeaders, curGroup, rowAttrs, opts.rowSubtotalDisplay, disabled 
+                    ah = buildRowAxisHeader tr, rowAxisHeaders, curGroup, rowAttrs, opts.rowSubtotalDisplay, disabled
                     for th in ah.ths
                         tr.appendChild th  
                     ah.tr = tr
@@ -528,17 +528,16 @@ callWithJQuery ($) ->
                     if groupLen < longestRowGroupLength
                         tr.appendChild createElement "th", null, {colspan: longestRowGroupLength - groupLen}       
                 else if row == 0 and longestRowGroupLength > 0
-                    tr.appendChild createElement "th", null, {colspan: longestRowGroupLength + (if arrowColumnIsNeeded() then 1 else 0), rowspan: rowsNumber - rowGroupsNumber}        
+                    tr.appendChild createElement "th", "pvtEmptyHeader", {colspan: longestRowGroupLength + (if arrowColumnIsNeeded() then 1 else 0), rowspan: rowsNumber - rowGroupsNumber}
 
                 if row + colAttrs.length >= rowsNumber
                     curCol = row - (rowsNumber - colAttrs.length)
                     disabled = not colSubtotalIsEnabled opts.colSubtotalDisplay, curCol
-                    ah = buildColAxisHeader colAxisHeaders, curCol, colAttrs, opts.colSubtotalDisplay, disabled
+                    ah = buildColAxisHeader tr, colAxisHeaders, curCol, colAttrs, opts.colSubtotalDisplay, disabled
                     tr.appendChild ah.th if not hideColAxisHeadersColumn
                     ah.tr = tr
                 else if row == 0 and colAttrs.length > 0 and not hideColAxisHeadersColumn
                     tr.appendChild createElement "th", "pvtEmptyHeader", {rowspan: rowsNumber - colAttrs.length}
-                callbacks.setRowHeight(tr)
 
             return [colAxisHeaders, rowAxisHeaders, trs]
 
@@ -565,7 +564,7 @@ callWithJQuery ($) ->
             h.onClick = collapseCol
 
             isExpanded = true if colSubtotalIsEnabled(opts.colSubtotalDisplay, h.col) and h.children.length isnt 0
-            h.th = createColAttrHeaderTH h.key, false, "pvtColLabel #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", h.value, isExpanded, colsData,
+            h.th = createColAttrHeaderTH ah.tr, h.key, false, "pvtColLabel #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", h.value, isExpanded, colsData,
                 "data-colnode": h.node    
                 "colspan": h.childrenSpan if h.children.length isnt 0
                 
@@ -577,8 +576,8 @@ callWithJQuery ($) ->
                 if not opts.colSubtotalDisplay.disableExpandCollapse
                     h.th.arrowDiv.onclick = (event) ->
                         event = event || window.event
-                        h.onClick axisHeaders, h, opts.colSubtotalDisplay 
-                h.sTh = createColAttrHeaderTH h.key, true, "pvtColLabelFiller #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", "", undefined, colsData, 
+                        h.onClick axisHeaders, h, opts.colSubtotalDisplay
+                h.sTh = createColAttrHeaderTH ah.tr, h.key, true, "pvtColLabelFiller #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", "", undefined, colsData,
                     "data-colnode": h.node
                     "rowspan":  colAttrs.length - h.col - 1
                 replaceClass h.sTh, classColShow, classColHide if opts.colSubtotalDisplay.hideOnExpand
@@ -588,14 +587,13 @@ callWithJQuery ($) ->
 
             h.clickStatus = clickStatusExpanded
             ah.tr.appendChild h.th
-            callbacks.setDefaultHeaderHeight(ah.tr)
             h.tr = ah.tr
             attrHeaders.push h
             node.counter++ 
 
 
         buildRowTotalsHeader = (tr, span, colsWidth) ->
-            th = createColAttrHeaderTH [], true, "pvtTotalLabel rowTotal", "", undefined, colsWidth,  
+            th = createColAttrHeaderTH tr, [], true, "pvtTotalLabel rowTotal", "", undefined, colsWidth,
                 rowspan: span
             tr.appendChild th
 
@@ -620,7 +618,6 @@ callWithJQuery ($) ->
                 tbody.appendChild h.tr
             else
                 tbody.insertBefore h.tr, firstChild.tr
-            callbacks.setRowHeight(h.tr)
 
             h.ths = []
 
@@ -632,14 +629,14 @@ callWithJQuery ($) ->
             
             zoomClassPart = if isExpanded? then classZoom else ""
             arrowClass = "pvtRowLabel #{classRowShow} row#{h.row} rowcol#{h.col} #{classRowExpanded} #{zoomClassPart}"
-            h.arrowTh = createRowAttrHeaderTH h.key, undefined, arrowClass, "", true, isExpanded, h.isLastChildList, arrowOpts
+            h.arrowTh = createRowAttrHeaderTH h.tr, h.key, undefined, arrowClass, "", true, isExpanded, h.isLastChildList, arrowOpts
             if arrowColumnIsNeeded()
                 h.ths.push h.arrowTh
                 h.tr.appendChild h.arrowTh
             
             for i in [0...h.values.length]
                 thClass = "pvtRowLabel #{classRowShow} row#{h.row} rowcol#{h.col} #{classRowExpanded}"
-                th = createRowAttrHeaderTH h.key, rowGroups[h.col][i], thClass, h.values[i], false, undefined, h.isLastChildList, 
+                th = createRowAttrHeaderTH h.tr, h.key, rowGroups[h.col][i], thClass, h.values[i], false, undefined, h.isLastChildList,
                     "data-rownode": h.node
                 th.colSpan = colSpan if i+1 == h.values.length
                 
@@ -657,7 +654,6 @@ callWithJQuery ($) ->
                 if not opts.rowSubtotalDisplay.displayOnTop
                     h.sTr = createElement "tr", "row#{h.row}"
                     tbody.appendChild h.sTr
-                    callbacks.setRowHeight(h.sTr)
 
             h.parent?.childrenSpan += 1
 
@@ -693,7 +689,7 @@ callWithJQuery ($) ->
                         cls += if opts.colSubtotalDisplay.hideOnExpand then " #{classColHide}" else " #{classColShow}"
                     else
                         cls += " #{classColShow}"
-                    td = createValueTD val, rh.key, ch.key, aggregator, cls, 
+                    td = createValueTD tr, val, rh.key, ch.key, aggregator, cls,
                         "data-value": val
                         "data-rownode": rh.node
                         "data-colnode": ch.node,
@@ -705,7 +701,7 @@ callWithJQuery ($) ->
                 # buildRowTotal
                 totalAggregator = rowTotals[rh.flatKey]
                 val = totalAggregator.value()
-                td = createValueTD val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
+                td = createValueTD tr, val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
                     "data-value": val
                     "data-row": "row#{rh.row}"
                     "data-rowcol": "col#{rh.col}"
@@ -717,9 +713,8 @@ callWithJQuery ($) ->
             tr = createElement "tr"
             colspan = rowHeadersColumns + (if colAttrs.length == 0 or hideColAxisHeadersColumn then 0 else 1) + (if arrowColumnIsNeeded() then 1 else 0)
             if colspan > 0
-                th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, [], {colspan: colspan}
+                th = createRowAttrHeaderTH tr, [], undefined, "pvtTotalLabel colTotal", "", false, undefined, [], {colspan: colspan}
                 tr.appendChild th
-            callbacks.setRowHeight(tr)
             return tr
 
         buildColTotals = (tr, attrHeaders, rowAttrs, colAttrs, opts) ->
@@ -732,7 +727,7 @@ callWithJQuery ($) ->
                     clsNames += " #{classColShow}"
                 totalAggregator = colTotals[h.flatKey]
                 val = totalAggregator.value()
-                td = createValueTD val, [], h.key, totalAggregator, clsNames, 
+                td = createValueTD tr, val, [], h.key, totalAggregator, clsNames,
                     "data-value": val
                     "data-for": "col#{h.col}"
                     "data-colnode": "#{h.node}",
@@ -742,7 +737,7 @@ callWithJQuery ($) ->
         buildGrandTotal = (tbody, tr, rowAttrs, colAttrs, opts) ->
             totalAggregator = allTotal
             val = totalAggregator.value()
-            td = createValueTD val, [], [], totalAggregator, "pvtGrandTotal", 
+            td = createValueTD tr, val, [], [], totalAggregator, "pvtGrandTotal",
                 {"data-value": val},
                 getTableEventHandlers val, [], [], rowAttrs, colAttrs, opts
             tr.appendChild td
@@ -753,7 +748,7 @@ callWithJQuery ($) ->
                 if colSubtotalIsEnabled opts, i
                     ah = axisHeaders.ah[i]
                     replaceClass ah.th, classExpanded, classCollapsed
-                    renderColAxisHeader ah.th, ah.text, ah.text, false, true
+                    renderColAxisHeader ah.tr, ah.th, ah.text, ah.text, false, true
                     ah.clickStatus = clickStatusCollapsed
                     ah.onClick = expandAxis
 
@@ -762,7 +757,7 @@ callWithJQuery ($) ->
                 ah = axisHeaders.ah[i]
                 for th in ah.ths
                     replaceClass th, classExpanded, classCollapsed
-                renderRowAxisHeader ah.arrowTh, "", ah.text, true, false      
+                renderRowAxisHeader ah.tr, ah.arrowTh, "", ah.text, true, false
                 ah.clickStatus = clickStatusCollapsed
                 ah.onClick = expandAxis
 
@@ -773,7 +768,7 @@ callWithJQuery ($) ->
                     collapseColAxisHeaders axisHeaders, col, opts
                 else if ah.expandedCount is ah.expandables
                     replaceClass ah.th, classCollapsed, classExpanded
-                    renderColAxisHeader ah.th, ah.text, ah.text, true, true
+                    renderColAxisHeader ah.tr, ah.th, ah.text, ah.text, true, true
                     ah.clickStatus = clickStatusExpanded
                     ah.onClick = collapseColAxis
 
@@ -784,7 +779,7 @@ callWithJQuery ($) ->
             else if ah.expandedCount is ah.expandables
                 for th in ah.ths
                     replaceClass th, classCollapsed, classExpanded
-                renderRowAxisHeader ah.arrowTh, "", ah.text, true, true
+                renderRowAxisHeader ah.tr, row, ah.arrowTh, "", ah.text, true, true
                 ah.clickStatus = clickStatusExpanded
                 ah.onClick = collapseRowAxis
 
@@ -805,7 +800,7 @@ callWithJQuery ($) ->
                 .removeClass classColExpanded
                 .addClass classColCollapsed
             if h.children.length isnt 0
-                renderColAttrHeader h.th, h.value, h.key, false, false, true
+                renderColAttrHeader h.tr, h.th, h.value, h.key, false, false, true
             h.th.colSpan = 1
             
         collapseShowColSubtotal = (h, opts) ->
@@ -822,7 +817,7 @@ callWithJQuery ($) ->
             col?.addClass classColShow
                         
             if h.children.length isnt 0
-                renderColAttrHeader h.th, h.value, h.key, false, false, true
+                renderColAttrHeader h.tr, h.th, h.value, h.key, false, false, true
             h.th.colSpan = 1
 
         collapseChildCol = (ch, h) ->
@@ -871,7 +866,7 @@ callWithJQuery ($) ->
             col?.addClass classColHide
             
             replaceClass h.th, classColHide, classColShow
-            renderColAttrHeader h.th, h.value, h.key, false, true, true
+            renderColAttrHeader h.tr, h.th, h.value, h.key, false, true, true
 
         expandShowColSubtotal = (h) ->
             outerDiv = $(h.th).closest 'div.subtotalouterdiv'
@@ -885,7 +880,7 @@ callWithJQuery ($) ->
             col?.addClass classColShow
             
             h.th.colSpan++
-            renderColAttrHeader h.th, h.value, h.key, false, true, true
+            renderColAttrHeader h.tr, h.th, h.value, h.key, false, true, true
 
         expandChildCol = (ch, opts) ->
             if ch.children.length isnt 0 and opts.hideOnExpand and ch.clickStatus is clickStatusExpanded
@@ -929,7 +924,7 @@ callWithJQuery ($) ->
             replaceClass cell, classRowShow, classRowHide for cell in ch.sTr.querySelectorAll "th, td" if ch.sTr
 
         collapseShowRowSubtotal = (h, opts) ->
-            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, false, h.isLastChildList
+            renderRowAttrHeader h.tr, h.arrowTh, "", h.key, undefined, true, false, h.isLastChildList
             for cell in h.tr.querySelectorAll "th, td"
                 removeClass cell, "#{classRowExpanded}"
                 addClass cell, "#{classRowCollapsed}"
@@ -956,7 +951,7 @@ callWithJQuery ($) ->
             replaceClass cell, classRowHide, classRowShow for cell in ch.sTr.querySelectorAll "th, td" if ch.sTr
 
         expandShowRowSubtotal = (h, opts) ->
-            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true, h.isLastChildList
+            renderRowAttrHeader h.tr, h.arrowTh, "", h.key, undefined, true, true, h.isLastChildList
             for cell in h.tr.querySelectorAll "th, td"
                 removeClass cell, "#{classRowCollapsed} #{classRowHide}"
                 addClass cell, "#{classRowExpanded} #{classRowShow}"
@@ -966,7 +961,7 @@ callWithJQuery ($) ->
                     addClass cell, "#{classRowExpanded} #{classRowShow}"
 
         expandHideRowSubtotal = (h, opts) ->
-            renderRowAttrHeader h.arrowTh, "", h.key, undefined, true, true, h.isLastChildList
+            renderRowAttrHeader h.tr, h.arrowTh, "", h.key, undefined, true, true, h.isLastChildList
             for cell in h.tr.querySelectorAll "th, td"
                 removeClass cell, "#{classRowCollapsed} #{classRowShow}"
                 addClass cell, "#{classRowExpanded} #{classRowHide}"

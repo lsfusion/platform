@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
 
@@ -82,7 +83,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 td.setVAlign(vAlign.getVerticalAlignString());
             }
 
-            updateTD(rowIndex, rowValue, td, columnIndex, true);
+            updateTD(rowIndex, rowValue, tr, td, columnIndex, true);
 
             // Add the inner div.
 
@@ -127,12 +128,12 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 //td.nextSibling is faster than cells[index]
                 //http://jsperf.com/nextsibling-vs-childnodes
                 TableCellElement td = tr.getFirstChild().cast();
-                updateCellImpl(rowIndex, rowValue, td, 0);
+                updateCellImpl(rowIndex, rowValue, tr, td, 0);
 
                 int columnIndex = 1;
                 while (columnIndex < columnCount) {
                     td = td.getNextSibling().cast();
-                    updateCellImpl(rowIndex, rowValue, td, columnIndex);
+                    updateCellImpl(rowIndex, rowValue, tr, td, columnIndex);
                     ++columnIndex;
                 }
             }
@@ -140,15 +141,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             NodeList<TableCellElement> cells = tr.getCells();
             for (int columnIndex : columnsToRedraw) {
                 TableCellElement td = cells.getItem(columnIndex);
-                updateCellImpl(rowIndex, rowValue, td, columnIndex);
+                updateCellImpl(rowIndex, rowValue, tr, td, columnIndex);
             }
         }
     }
 
-    private void updateCellImpl(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
+    private void updateCellImpl(int rowIndex, T rowValue, TableRowElement tr, TableCellElement td, int columnIndex) {
         Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-        updateTD(rowIndex, rowValue, td, columnIndex, updateCellHeight);
+        updateTD(rowIndex, rowValue, tr, td, columnIndex, updateCellHeight);
 
         DivElement div = td.getFirstChild().cast();
 
@@ -159,9 +160,9 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     // need this for mixing color
     public static String BKCOLOR = "lsfusion-bkcolor";
 
-    protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
+    protected void updateTD(int rowIndex, T rowValue, TableRowElement tr, TableCellElement td, int columnIndex, boolean updateCellHeight) {
         if (updateCellHeight) {
-            renderTD(td, cellHeight);
+            renderTD(tr, td, cellHeight);
 
             Element divElement = td.getFirstChildElement();
             if (divElement != null) {
@@ -186,13 +187,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
     }
 
-    public static void renderTD(Element td, int height) {
-        setRowHeight(td, height);
+    public static void renderTD(Element tr, Element td, int height) {
+        setRowHeight(tr, td, height);
         // setting line height to height it's the easiest way to align text to the center vertically, however it works only for single lines (which is ok for row data)
         td.getStyle().setLineHeight(height, Style.Unit.PX);
     }
 
-    public static void setRowHeight(Element td, int height) {
+    public static void setRowHeight(Element tr, Element td, int height) {
+        GPivot.setTableToExcelRowHeight(tr, height);
         td.getStyle().setHeight(height, Style.Unit.PX);
     }
 

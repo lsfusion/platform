@@ -18,6 +18,7 @@ package lsfusion.gwt.client.base.view.grid;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 import java.util.HashSet;
@@ -61,7 +62,7 @@ public abstract class Header<H> {
         //do nothing by default
     }
 
-    public abstract void renderDom(TableCellElement th);
+    public abstract void renderDom(TableRowElement tr, TableCellElement th);
 
-    public abstract void updateDom(TableCellElement th);
+    public abstract void updateDom(TableRowElement tr, TableCellElement th);
 }

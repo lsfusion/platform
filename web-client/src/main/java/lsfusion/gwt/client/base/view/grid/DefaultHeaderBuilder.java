@@ -132,7 +132,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
                 th.setClassName(cellClass);
             }
 
-            renderHeader(th, header);
+            renderHeader(tr, th, header);
 
             tr.appendChild(th);
         }
@@ -152,7 +152,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
             TableCellElement th = tr.getCells().getItem(curColumn).cast();
 
-            updateHeader(th, header);
+            updateHeader(tr, th, header);
         }
     }
 }
