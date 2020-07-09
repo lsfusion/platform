@@ -4,7 +4,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -49,7 +48,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         getRenderElement().setPropertyObject("groupObject", property.groupObject);
 
         // aligning values vertically
-        GPropertyTableBuilder.setLineHeight(getRenderElement(), getHeight());
+        GPropertyTableBuilder.setLineHeight(getRenderElement(), this.property.getValueHeight(null));
     }
 
     public Element getRenderElement() {
@@ -89,15 +88,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         else
             borderWidget.addStyleName("actionPanelRendererValue");
 
-        FlexPanel.setBaseWidth(borderWidget, getWidth(), getHeight());
-    }
-
-    public int getHeight() {
-        return property.getValueHeight(null);
-    }
-
-    public int getWidth() {
-        return property.getValueWidth(null);
+        // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
+        boolean isStatic = borderWidget != this;
+        FlexPanel.setBaseWidth(borderWidget,
+                isStatic ? property.getValueWidthWithPadding(null) : property.getValueWidth(null),
+                isStatic ? property.getValueHeightWithPadding(null ) : property.getValueHeight(null));
     }
 
     @Override
