@@ -221,22 +221,23 @@ callWithJQuery ($, Plotly) ->
         CSSProps.axis_line_color = null
         CSSProps.axis_zeroline_color = null
         
-        relayout = () ->
-            update =
-                paper_bgcolor: getPaperBGColor()
-                plot_bgcolor: getPlotBGColor()
-                font: {
-                    color: getFontColor()
-                }
-                xaxis:
-                    gridcolor: getAxisGridColor()
-                    linecolor: getAxisLineColor()
-                    zerolinecolor: getAxisZeroLineColor()
-                yaxis:
-                    gridcolor: getAxisGridColor()
-                    linecolor: getAxisLineColor()
-                    zerolinecolor: getAxisZeroLineColor()
-            Plotly.relayout(plot, update)
-            
-        # to defer the task. otherwise new <theme>.css is not applied yet and getComputedStyle() returns values from the previous one
-        setTimeout(relayout)  
+        if (plot != undefined)
+            relayout = () ->
+                update =
+                    paper_bgcolor: getPaperBGColor()
+                    plot_bgcolor: getPlotBGColor()
+                    font: {
+                        color: getFontColor()
+                    }
+                    xaxis:
+                        gridcolor: getAxisGridColor()
+                        linecolor: getAxisLineColor()
+                        zerolinecolor: getAxisZeroLineColor()
+                    yaxis:
+                        gridcolor: getAxisGridColor()
+                        linecolor: getAxisLineColor()
+                        zerolinecolor: getAxisZeroLineColor()
+                Plotly.relayout(plot, update)
+                
+            # to defer the task. otherwise new <theme>.css is not applied yet and getComputedStyle() returns values from the previous one
+            setTimeout(relayout)  

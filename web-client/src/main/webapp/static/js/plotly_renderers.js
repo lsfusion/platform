@@ -309,28 +309,30 @@
       CSSProps.axis_grid_color = null;
       CSSProps.axis_line_color = null;
       CSSProps.axis_zeroline_color = null;
-      relayout = function() {
-        var update;
-        update = {
-          paper_bgcolor: getPaperBGColor(),
-          plot_bgcolor: getPlotBGColor(),
-          font: {
-            color: getFontColor()
-          },
-          xaxis: {
-            gridcolor: getAxisGridColor(),
-            linecolor: getAxisLineColor(),
-            zerolinecolor: getAxisZeroLineColor()
-          },
-          yaxis: {
-            gridcolor: getAxisGridColor(),
-            linecolor: getAxisLineColor(),
-            zerolinecolor: getAxisZeroLineColor()
-          }
+      if (plot !== void 0) {
+        relayout = function() {
+          var update;
+          update = {
+            paper_bgcolor: getPaperBGColor(),
+            plot_bgcolor: getPlotBGColor(),
+            font: {
+              color: getFontColor()
+            },
+            xaxis: {
+              gridcolor: getAxisGridColor(),
+              linecolor: getAxisLineColor(),
+              zerolinecolor: getAxisZeroLineColor()
+            },
+            yaxis: {
+              gridcolor: getAxisGridColor(),
+              linecolor: getAxisLineColor(),
+              zerolinecolor: getAxisZeroLineColor()
+            }
+          };
+          return Plotly.relayout(plot, update);
         };
-        return Plotly.relayout(plot, update);
-      };
-      return setTimeout(relayout);
+        return setTimeout(relayout);
+      }
     };
   });
 

@@ -671,10 +671,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }-*/;
 
     private native void changePlotColorTheme(JavaScriptObject pivotElement) /*-{
-        var plot = $wnd.$(pivotElement).find(".js-plotly-plot").get(0);
-        if (plot !== undefined) {
-            $wnd.$.pivotUtilities.colorThemeChanged(plot);
-        }
+        $wnd.$.pivotUtilities.colorThemeChanged(this.@GPivot::getPlotlyChartElement(*)());
     }-*/;
 
     private void updateTableCellsBackground() {
