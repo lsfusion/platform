@@ -915,6 +915,7 @@
         }
         h.clickStatus = clickStatusExpanded;
         ah.tr.appendChild(h.th);
+        callbacks.setDefaultHeaderHeight(ah.tr);
         h.tr = ah.tr;
         attrHeaders.push(h);
         return node.counter++;

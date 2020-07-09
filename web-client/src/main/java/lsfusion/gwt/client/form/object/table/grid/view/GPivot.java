@@ -373,6 +373,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private WrapperObject config;
     private boolean settings = true;
 
+    private int DEFAULT_HEADER_HEIGHT = 34; //copy from GGridPropertyTableHeader
     private int rowHeight;
 
     public boolean isSettings() {
@@ -1138,12 +1139,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         setTableToExcelAttributes(jsElement, true);
     }
 
-    private void setTableToExcelAttributes(Element jsElement, boolean background) {
+    private void setTableToExcelAttributes(Element jsElement, boolean header) {
         if(jsElement != null) {
             jsElement.setAttribute("data-b-a-s", "thin");
             jsElement.setAttribute("data-b-a-c", "FFE6E6E6"); //--grid-separator-border-color in light.css
-            if(background) {
+            if(header) {
                 jsElement.setAttribute("data-fill-color", "FFF2F2F2"); //--background-color in light.css
+                jsElement.setAttribute("data-a-h", "center");
+                jsElement.setAttribute("data-a-v", "middle");
             }
         }
     }
@@ -1183,8 +1186,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
-    public void updateRowHeight(Element tr) {
-        tr.setAttribute("data-height", String.valueOf(rowHeight));
+    public void setRowHeight(Element tr, int height) {
+        tr.setAttribute("data-height", String.valueOf(height));
     }
 
     private int getArrowColumnWidth(int arrowLevels) {
@@ -1547,7 +1550,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             },
 
             setRowHeight: function (tr) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::updateRowHeight(*)(tr);
+                instance.@GPivot::setRowHeight(*)(tr, instance.@GPivot::rowHeight);
+            },
+
+            setDefaultHeaderHeight: function (tr) {
+                instance.@GPivot::setRowHeight(*)(tr, instance.@GPivot::DEFAULT_HEADER_HEIGHT);
             }
         }
     }-*/;
