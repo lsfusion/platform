@@ -579,7 +579,7 @@ callWithJQuery ($) ->
                         h.onClick axisHeaders, h, opts.colSubtotalDisplay 
                 h.sTh = createColAttrHeaderTH h.key, true, "pvtColLabelFiller #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", "", undefined, colsData, 
                     "data-colnode": h.node
-                    "rowspan":  colAttrs.length-h.col
+                    "rowspan":  colAttrs.length - h.col - 1
                 replaceClass h.sTh, classColShow, classColHide if opts.colSubtotalDisplay.hideOnExpand
                 h[h.children[0]].tr.appendChild h.sTh
 

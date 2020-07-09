@@ -902,7 +902,7 @@
           }
           h.sTh = createColAttrHeaderTH(h.key, true, "pvtColLabelFiller " + classColShow + " col" + h.row + " colcol" + h.col + " " + classColExpanded, "", void 0, colsData, {
             "data-colnode": h.node,
-            "rowspan": colAttrs.length - h.col
+            "rowspan": colAttrs.length - h.col - 1
           });
           if (opts.colSubtotalDisplay.hideOnExpand) {
             replaceClass(h.sTh, classColShow, classColHide);
