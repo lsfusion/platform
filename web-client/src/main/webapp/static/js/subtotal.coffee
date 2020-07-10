@@ -256,15 +256,15 @@ callWithJQuery ($) ->
         renderColAxisHeader = (th, textContent, attr, isExpanded, arrowOnly) ->
             if isExpanded?
                 if callbacks?
-                    callbacks.renderAxisHeaderCell th.arrowDiv, textContent, attr, isExpanded, true
+                    callbacks.renderAxisHeaderCell th, th.arrowDiv, textContent, attr, isExpanded, true
                     if not arrowOnly
-                        callbacks.renderAxisHeaderCell th.textDiv, textContent, attr, isExpanded, false
+                        callbacks.renderAxisHeaderCell th, th.textDiv, textContent, attr, isExpanded, false
                 else
                     th.arrowDiv.textContent = arrowText isExpanded
                     if not arrowOnly
                         th.textDiv.textContent = textContent
             else if callbacks?                     
-                callbacks.renderAxisHeaderCell th, textContent, attr, isExpanded, false
+                callbacks.renderAxisHeaderCell th, th, textContent, attr, isExpanded, false
             else
                 th.textContent = textContent
 
@@ -278,7 +278,7 @@ callWithJQuery ($) ->
             
         renderRowAxisHeader = (th, textContent, attr, isArrow, isExpanded) ->
             if callbacks?
-                callbacks.renderAxisHeaderCell th, textContent, attr, isExpanded, isArrow
+                callbacks.renderAxisHeaderCell th, th, textContent, attr, isExpanded, isArrow
             else
                 th.textContent = if isArrow then arrowText isExpanded else textContent
                 
@@ -313,15 +313,15 @@ callWithJQuery ($) ->
         renderColAttrHeader = (th, value, colKey, isSubtotal, isExpanded, arrowOnly) ->
             if isExpanded?
                 if callbacks?
-                    callbacks.renderColAttrHeaderCell th.arrowDiv, value, colKey, isSubtotal, isExpanded, true
+                    callbacks.renderColAttrHeaderCell th, th.arrowDiv, value, colKey, isSubtotal, isExpanded, true
                     if not arrowOnly
-                        callbacks.renderColAttrHeaderCell th.textDiv, value, colKey, isSubtotal, isExpanded, false
+                        callbacks.renderColAttrHeaderCell th, th.textDiv, value, colKey, isSubtotal, isExpanded, false
                 else
                     th.arrowDiv.textContent = arrowText isExpanded
                     if not arrowOnly
                         th.textDiv.textContent = value if not arrowOnly
             else if callbacks?
-                callbacks.renderColAttrHeaderCell th, value, colKey, isSubtotal, isExpanded, false
+                callbacks.renderColAttrHeaderCell th, th, value, colKey, isSubtotal, isExpanded, false
             else
                 th.textContent = value
         
@@ -528,7 +528,7 @@ callWithJQuery ($) ->
                     if groupLen < longestRowGroupLength
                         tr.appendChild createElement "th", null, {colspan: longestRowGroupLength - groupLen}       
                 else if row == 0 and longestRowGroupLength > 0
-                    tr.appendChild createElement "th", null, {colspan: longestRowGroupLength + (if arrowColumnIsNeeded() then 1 else 0), rowspan: rowsNumber - rowGroupsNumber}        
+                    tr.appendChild createElement "th", "pvtEmptyHeader", {colspan: longestRowGroupLength + (if arrowColumnIsNeeded() then 1 else 0), rowspan: rowsNumber - rowGroupsNumber}
 
                 if row + colAttrs.length >= rowsNumber
                     curCol = row - (rowsNumber - colAttrs.length)
@@ -538,7 +538,6 @@ callWithJQuery ($) ->
                     ah.tr = tr
                 else if row == 0 and colAttrs.length > 0 and not hideColAxisHeadersColumn
                     tr.appendChild createElement "th", "pvtEmptyHeader", {rowspan: rowsNumber - colAttrs.length}
-                callbacks.setRowHeight(tr)
 
             return [colAxisHeaders, rowAxisHeaders, trs]
 
@@ -588,7 +587,6 @@ callWithJQuery ($) ->
 
             h.clickStatus = clickStatusExpanded
             ah.tr.appendChild h.th
-            callbacks.setDefaultHeaderHeight(ah.tr)
             h.tr = ah.tr
             attrHeaders.push h
             node.counter++ 
@@ -620,7 +618,6 @@ callWithJQuery ($) ->
                 tbody.appendChild h.tr
             else
                 tbody.insertBefore h.tr, firstChild.tr
-            callbacks.setRowHeight(h.tr)
 
             h.ths = []
 
@@ -657,7 +654,6 @@ callWithJQuery ($) ->
                 if not opts.rowSubtotalDisplay.displayOnTop
                     h.sTr = createElement "tr", "row#{h.row}"
                     tbody.appendChild h.sTr
-                    callbacks.setRowHeight(h.sTr)
 
             h.parent?.childrenSpan += 1
 
@@ -719,7 +715,6 @@ callWithJQuery ($) ->
             if colspan > 0
                 th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, [], {colspan: colspan}
                 tr.appendChild th
-            callbacks.setRowHeight(tr)
             return tr
 
         buildColTotals = (tr, attrHeaders, rowAttrs, colAttrs, opts) ->
