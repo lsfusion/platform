@@ -71,7 +71,6 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.property.AggregateProperty;
-import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.caches.MapCacheAspect;
 import lsfusion.server.logics.property.cases.AbstractCase;
@@ -103,6 +102,8 @@ import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.ResourceBundleGenerator;
+import lsfusion.server.physics.dev.i18n.ReversedI18NDictionary;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
@@ -137,7 +138,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDate;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
@@ -170,6 +171,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private String orderDependencies;
 
+    private String lsfStrLiteralsLanguage;
+    private String lsfStrLiteralsCountry;
+    
     private String setTimezone;
     private String setLanguage;
     private String setCountry;
@@ -690,7 +694,42 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             }
         }
     }
+
+    public String getLsfStrLiteralsLanguage() {
+        return lsfStrLiteralsLanguage;
+    }
+
+    public String getLsfStrLiteralsCountry() {
+        return lsfStrLiteralsCountry;
+    }
+
+    public void setLsfStrLiteralsLanguage(String lsfStrLiteralsLanguage) {
+        this.lsfStrLiteralsLanguage = lsfStrLiteralsLanguage;
+    }
+
+    public void setLsfStrLiteralsCountry(String lsfStrLiteralsCountry) {
+        this.lsfStrLiteralsCountry = lsfStrLiteralsCountry;
+    }
     
+    private ReversedI18NDictionary dictionary;
+    
+    public void setReversedI18nDictionary(ReversedI18NDictionary dictionary) {
+        this.dictionary = dictionary;    
+    }
+
+    public ReversedI18NDictionary getReversedI18nDictionary() {
+        return dictionary;
+    }
+
+    private ResourceBundleGenerator generator;
+    public synchronized ResourceBundleGenerator getResourceBundleGenerator() {
+        if (generator == null) {
+            String prefix = ((topModule != null && !topModule.isEmpty()) ? topModule : "Project");
+            generator = new ResourceBundleGenerator(prefix + "ResourceBundle");
+        }
+        return generator;                
+    }
+
     private static class NamedDecl {
         public final LAP prop;
         public final String namespace;

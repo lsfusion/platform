@@ -357,7 +357,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            return ScriptedStringUtils.transformLocalizedStringLiteral(s);
+            return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL);
         } catch (ScriptedStringUtils.TransformationError | LocalizedString.FormatError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
