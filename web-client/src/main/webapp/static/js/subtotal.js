@@ -832,7 +832,7 @@
               }));
             }
           } else if (row === 0 && longestRowGroupLength > 0) {
-            tr.appendChild(createElement("th", null, {
+            tr.appendChild(createElement("th", "pvtEmptyHeader", {
               colspan: longestRowGroupLength + (arrowColumnIsNeeded() ? 1 : 0),
               rowspan: rowsNumber - rowGroupsNumber
             }));
@@ -850,7 +850,6 @@
               rowspan: rowsNumber - colAttrs.length
             }));
           }
-          callbacks.setRowHeight(tr);
         }
         return [colAxisHeaders, rowAxisHeaders, trs];
       };
@@ -915,7 +914,6 @@
         }
         h.clickStatus = clickStatusExpanded;
         ah.tr.appendChild(h.th);
-        callbacks.setDefaultHeaderHeight(ah.tr);
         h.tr = ah.tr;
         attrHeaders.push(h);
         return node.counter++;
@@ -953,7 +951,6 @@
         } else {
           tbody.insertBefore(h.tr, firstChild.tr);
         }
-        callbacks.setRowHeight(h.tr);
         h.ths = [];
         if (h.children.length !== 0) {
           isExpanded = true;
@@ -993,7 +990,6 @@
           if (!opts.rowSubtotalDisplay.displayOnTop) {
             h.sTr = createElement("tr", "row" + h.row);
             tbody.appendChild(h.sTr);
-            callbacks.setRowHeight(h.sTr);
           }
         }
         if ((ref3 = h.parent) != null) {
@@ -1097,7 +1093,6 @@
           });
           tr.appendChild(th);
         }
-        callbacks.setRowHeight(tr);
         return tr;
       };
       buildColTotals = function(tr, attrHeaders, rowAttrs, colAttrs, opts) {

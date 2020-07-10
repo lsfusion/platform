@@ -528,7 +528,7 @@ callWithJQuery ($) ->
                     if groupLen < longestRowGroupLength
                         tr.appendChild createElement "th", null, {colspan: longestRowGroupLength - groupLen}       
                 else if row == 0 and longestRowGroupLength > 0
-                    tr.appendChild createElement "th", null, {colspan: longestRowGroupLength + (if arrowColumnIsNeeded() then 1 else 0), rowspan: rowsNumber - rowGroupsNumber}        
+                    tr.appendChild createElement "th", "pvtEmptyHeader", {colspan: longestRowGroupLength + (if arrowColumnIsNeeded() then 1 else 0), rowspan: rowsNumber - rowGroupsNumber}
 
                 if row + colAttrs.length >= rowsNumber
                     curCol = row - (rowsNumber - colAttrs.length)
@@ -538,7 +538,6 @@ callWithJQuery ($) ->
                     ah.tr = tr
                 else if row == 0 and colAttrs.length > 0 and not hideColAxisHeadersColumn
                     tr.appendChild createElement "th", "pvtEmptyHeader", {rowspan: rowsNumber - colAttrs.length}
-                callbacks.setRowHeight(tr)
 
             return [colAxisHeaders, rowAxisHeaders, trs]
 
@@ -588,7 +587,6 @@ callWithJQuery ($) ->
 
             h.clickStatus = clickStatusExpanded
             ah.tr.appendChild h.th
-            callbacks.setDefaultHeaderHeight(ah.tr)
             h.tr = ah.tr
             attrHeaders.push h
             node.counter++ 
@@ -620,7 +618,6 @@ callWithJQuery ($) ->
                 tbody.appendChild h.tr
             else
                 tbody.insertBefore h.tr, firstChild.tr
-            callbacks.setRowHeight(h.tr)
 
             h.ths = []
 
@@ -657,7 +654,6 @@ callWithJQuery ($) ->
                 if not opts.rowSubtotalDisplay.displayOnTop
                     h.sTr = createElement "tr", "row#{h.row}"
                     tbody.appendChild h.sTr
-                    callbacks.setRowHeight(h.sTr)
 
             h.parent?.childrenSpan += 1
 
@@ -719,7 +715,6 @@ callWithJQuery ($) ->
             if colspan > 0
                 th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, [], {colspan: colspan}
                 tr.appendChild th
-            callbacks.setRowHeight(tr)
             return tr
 
         buildColTotals = (tr, attrHeaders, rowAttrs, colAttrs, opts) ->

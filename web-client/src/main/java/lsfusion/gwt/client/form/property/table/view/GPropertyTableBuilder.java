@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
 
@@ -193,6 +194,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     public static void setRowHeight(Element td, int height) {
+        GPivot.setTableToExcelRowHeight(td, height);
         td.getStyle().setHeight(height, Style.Unit.PX);
     }
 
