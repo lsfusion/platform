@@ -245,6 +245,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         JsArrayString jsArray = JsArrayString.createArray().cast();
         aggrCaptions.forEach(jsArray::push);
 
+        setStyleName(getDrawElement(), "pivotTable-noSettings", !settings);
+
         render(getDrawElement(), getPageSizeWidget().getElement(), data, config, jsArray, GwtClientUtils.getCurrentLanguage()); // we need to updateRendererState after it is painted
     }
 
@@ -375,8 +377,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void switchSettings() {
         settings = !settings;
         config = overrideShowUI(config, settings);
-
-        setStyleName(getDrawElement(), "pivotTable-noSettings", !settings);
 
         rerender();
 
