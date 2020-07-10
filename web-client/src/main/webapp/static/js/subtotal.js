@@ -455,9 +455,9 @@
       renderColAxisHeader = function(th, textContent, attr, isExpanded, arrowOnly) {
         if (isExpanded != null) {
           if (callbacks != null) {
-            callbacks.renderAxisHeaderCell(th, th.arrowDiv, textContent, attr, isExpanded, true);
+            callbacks.renderAxisHeaderCell(th.arrowDiv, textContent, attr, isExpanded, true);
             if (!arrowOnly) {
-              return callbacks.renderAxisHeaderCell(th, th.textDiv, textContent, attr, isExpanded, false);
+              return callbacks.renderAxisHeaderCell(th.textDiv, textContent, attr, isExpanded, false);
             }
           } else {
             th.arrowDiv.textContent = arrowText(isExpanded);
@@ -466,7 +466,7 @@
             }
           }
         } else if (callbacks != null) {
-          return callbacks.renderAxisHeaderCell(th, th, textContent, attr, isExpanded, false);
+          return callbacks.renderAxisHeaderCell(th, textContent, attr, isExpanded, false);
         } else {
           return th.textContent = textContent;
         }
@@ -493,7 +493,7 @@
       };
       renderRowAxisHeader = function(th, textContent, attr, isArrow, isExpanded) {
         if (callbacks != null) {
-          return callbacks.renderAxisHeaderCell(th, th, textContent, attr, isExpanded, isArrow);
+          return callbacks.renderAxisHeaderCell(th, textContent, attr, isExpanded, isArrow);
         } else {
           return th.textContent = isArrow ? arrowText(isExpanded) : textContent;
         }
@@ -557,9 +557,9 @@
       renderColAttrHeader = function(th, value, colKey, isSubtotal, isExpanded, arrowOnly) {
         if (isExpanded != null) {
           if (callbacks != null) {
-            callbacks.renderColAttrHeaderCell(th, th.arrowDiv, value, colKey, isSubtotal, isExpanded, true);
+            callbacks.renderColAttrHeaderCell(th.arrowDiv, value, colKey, isSubtotal, isExpanded, true);
             if (!arrowOnly) {
-              return callbacks.renderColAttrHeaderCell(th, th.textDiv, value, colKey, isSubtotal, isExpanded, false);
+              return callbacks.renderColAttrHeaderCell(th.textDiv, value, colKey, isSubtotal, isExpanded, false);
             }
           } else {
             th.arrowDiv.textContent = arrowText(isExpanded);
@@ -570,7 +570,7 @@
             }
           }
         } else if (callbacks != null) {
-          return callbacks.renderColAttrHeaderCell(th, th, value, colKey, isSubtotal, isExpanded, false);
+          return callbacks.renderColAttrHeaderCell(th, value, colKey, isSubtotal, isExpanded, false);
         } else {
           return th.textContent = value;
         }
@@ -832,7 +832,7 @@
               }));
             }
           } else if (row === 0 && longestRowGroupLength > 0) {
-            tr.appendChild(createElement("th", "pvtEmptyHeader", {
+            tr.appendChild(createElement("th", null, {
               colspan: longestRowGroupLength + (arrowColumnIsNeeded() ? 1 : 0),
               rowspan: rowsNumber - rowGroupsNumber
             }));
@@ -850,6 +850,7 @@
               rowspan: rowsNumber - colAttrs.length
             }));
           }
+          callbacks.setRowHeight(tr);
         }
         return [colAxisHeaders, rowAxisHeaders, trs];
       };
@@ -914,6 +915,7 @@
         }
         h.clickStatus = clickStatusExpanded;
         ah.tr.appendChild(h.th);
+        callbacks.setDefaultHeaderHeight(ah.tr);
         h.tr = ah.tr;
         attrHeaders.push(h);
         return node.counter++;
@@ -951,6 +953,7 @@
         } else {
           tbody.insertBefore(h.tr, firstChild.tr);
         }
+        callbacks.setRowHeight(h.tr);
         h.ths = [];
         if (h.children.length !== 0) {
           isExpanded = true;
@@ -990,6 +993,7 @@
           if (!opts.rowSubtotalDisplay.displayOnTop) {
             h.sTr = createElement("tr", "row" + h.row);
             tbody.appendChild(h.sTr);
+            callbacks.setRowHeight(h.sTr);
           }
         }
         if ((ref3 = h.parent) != null) {
@@ -1093,6 +1097,7 @@
           });
           tr.appendChild(th);
         }
+        callbacks.setRowHeight(tr);
         return tr;
       };
       buildColTotals = function(tr, attrHeaders, rowAttrs, colAttrs, opts) {

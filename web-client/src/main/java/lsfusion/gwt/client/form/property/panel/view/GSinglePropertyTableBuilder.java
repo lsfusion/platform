@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 public class GSinglePropertyTableBuilder extends GPropertyTableBuilder<Object> {
