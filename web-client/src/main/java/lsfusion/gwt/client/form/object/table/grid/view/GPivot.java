@@ -337,6 +337,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 item.setAttribute("data-fill-color", "FFF2F2F2"); //--background-color in light.css
             });
 
+            //set borders
+            Array.from(pvtTable.querySelectorAll(".pvtTotal")).forEach(function (item) {
+                item.setAttribute("data-b-a-s", "thin");
+                item.setAttribute("data-b-a-c", "FFE6E6E6");//--grid-separator-border-color in light.css
+            });
+
             var workbook = $wnd.TableToExcel.tableToBook(pvtTable, {
                 sheet: {
                     name: "lsfReport"
@@ -367,6 +373,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private WrapperObject config;
     private boolean settings = true;
 
+    private int DEFAULT_HEADER_HEIGHT = 34; //copy from GGridPropertyTableHeader
     private int rowHeight;
 
     public boolean isSettings() {
@@ -933,12 +940,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return getColumnName("rows", rowKeys);
     }
 
-    public void renderValueCell(Element tr, Element jsElement, JavaScriptObject value, JsArrayString rowKeys, JsArrayString columnKeys) {
-        GPropertyTableBuilder.renderTD(tr, jsElement, rowHeight);
+    public void renderValueCell(Element jsElement, JavaScriptObject value, JsArrayString rowKeys, JsArrayString columnKeys) {
+        GPropertyTableBuilder.renderTD(jsElement, rowHeight);
 
         String column = getColumnName(rowKeys, columnKeys);
         if(column != null)
-            renderColumn(tr, jsElement, value, column);
+            renderColumn(jsElement, value, column);
         else {
             try {
                 value = fromString(NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())));
@@ -949,7 +956,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
 
         setValueCellBackground(jsElement, rowKeys.length(), columnKeys.length(), false);
-        setTableToExcelAttributes(jsElement, false, false);
+        setTableToExcelAttributes(jsElement, false);
     }
 
     public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
@@ -1010,17 +1017,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
-    public void renderRowAttrCell(Element tr, Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
-        GPropertyTableBuilder.renderTD(tr, th, rowHeight);
+    public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
+        GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
             int level = getRowLevel(rowKeyValues.length() - 1);
             renderArrow(th, getTreeColumnValue(level, isExpanded, true, isLastChildList));
         } else {
-            renderAttrCell(tr, th, value, attrName);
+            renderAttrCell(th, value, attrName);
         }
 
         setValueCellBackground(th, rowKeyValues.length(), -1, false);
-        setTableToExcelAttributes(th, false, false);
+        setTableToExcelAttributes(th, false);
     }
 
     private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, JsArrayBoolean isLastChildList) {
@@ -1038,31 +1045,30 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return treeColumnValue;
     }
 
-    public void renderAttrCell(Element tr, Element th, JavaScriptObject value, String columnName) {
+    public void renderAttrCell(Element th, JavaScriptObject value, String columnName) {
         if (columnName != null && !columnName.equals(COLUMN)) {
-            renderColumn(tr, th, value, columnName);
+            renderColumn(th, value, columnName);
         } else {
             // value is either empty (i.e total is rendered) or name of the column
             renderValue(th, value);
         }
     }
 
-    private void renderColumn(Element tr, Element th, JavaScriptObject value, String columnName) {
+    private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GPropertyDraw property = columnMap.get(columnName).property;
         Element cellElement = th;
         if (property.baseType instanceof GActionType) {
             cellElement = Document.get().createDivElement();
-            GPropertyTableBuilder.setRowHeight(tr, cellElement, rowHeight);
+            GPropertyTableBuilder.setRowHeight(cellElement, rowHeight);
             th.appendChild(cellElement);
             th.getStyle().setPadding(0, Style.Unit.PX);
         }
         property.getGridCellRenderer().render(cellElement, font, value, false);
     }
 
-    public void renderColAttrCell(Element tr, Element th, Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
-        boolean center = false;
+    public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
-            GPropertyTableBuilder.renderTD(tr, jsElement, rowHeight);
+            GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             renderArrow(jsElement, getTreeColumnValue(0, isExpanded, false, null));
         } else {
             isSubtotal = isSubtotal || colKeyValues.length() == 0; // just in case, because in theory when there are no col keys it should be a total
@@ -1082,8 +1088,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             SortCol sortCol = isSortColumn(isSubtotal, colKeyValues) ? findSortCol(config.getArrayMixed("sortCols"), colKeyValues) : null;
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
-                GGridPropertyTableHeader.renderTD(tr, jsElement, 0, sortDir, fromObject(value).toString());
-                center = true;
+                GGridPropertyTableHeader.renderTD(jsElement, 0, sortDir, fromObject(value).toString());
             } else {
                 if (isLastCol && sortDir != null) { // last column may have a sortDir
                     jsElement = GGridPropertyTableHeader.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
@@ -1091,20 +1096,25 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                     jsElement = GGridPropertyTableHeader.wrapSort(jsElement, sortDir);
                 }
 
-                GPropertyTableBuilder.renderTD(tr, jsElement, rowHeight);
-                renderAttrCell(tr, jsElement, value, lastRenderCol);
+                GPropertyTableBuilder.renderTD(jsElement, rowHeight);
+                renderAttrCell(jsElement, value, lastRenderCol);
             }
 
             if (value != null) {
                 jsElement.setTitle(fromObject(value).toString());
             }
         }
-        setTableToExcelAttributes(th, true, center);
+        if(!isSubtotal) {
+            while (jsElement != null && !jsElement.hasClassName("pvtColLabel")) {
+                jsElement = jsElement.getParentElement();
+            }
+        }
+        setTableToExcelAttributes(jsElement, true);
     }
     
-    public void renderAxisCell(Element tr, Element th, Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
+    public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
-            GPropertyTableBuilder.renderTD(tr, jsElement, rowHeight);
+            GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             Boolean openDotBottom = !attrName.equals(COLUMN);
             int level = attrName.equals(COLUMN) ? 0 : getRowLevel(indexOf(config.getArrayString("rows"), attrName));
             JsArrayBoolean isLastChildList = JsArrayBoolean.createArray().cast();
@@ -1117,29 +1127,27 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
             String valueString = fromObject(value).toString();
-            GGridPropertyTableHeader.renderTD(tr, jsElement, rowHeight, sortDir, valueString);
+            GGridPropertyTableHeader.renderTD(jsElement, rowHeight, sortDir, valueString);
 
             if (value != null) {
                 jsElement.setTitle(valueString);
             }
         }
-        setTableToExcelAttributes(th, true, true);
-    }
-
-    public static void setTableToExcelRowHeight(Element tr, Integer rowHeight) {
-        String oldRowHeight = tr.getAttribute("data-height");
-        tr.setAttribute("data-height", String.valueOf(oldRowHeight.isEmpty() ? rowHeight : Math.max(rowHeight, Integer.parseInt(oldRowHeight))));
-    }
-
-    private void setTableToExcelAttributes(Element th, boolean header, boolean center) {
-        th.setAttribute("data-b-a-s", "thin");
-        th.setAttribute("data-b-a-c", "FFE6E6E6"); //--grid-separator-border-color in light.css
-        if (header) {
-            th.setAttribute("data-fill-color", "FFF2F2F2"); //--background-color in light.css
+        while(jsElement != null && !jsElement.hasClassName("pvtAxisLabel")) {
+            jsElement = jsElement.getParentElement();
         }
-        if(center) {
-            th.setAttribute("data-a-h", "center");
-            th.setAttribute("data-a-v", "middle");
+        setTableToExcelAttributes(jsElement, true);
+    }
+
+    private void setTableToExcelAttributes(Element jsElement, boolean header) {
+        if(jsElement != null) {
+            jsElement.setAttribute("data-b-a-s", "thin");
+            jsElement.setAttribute("data-b-a-c", "FFE6E6E6"); //--grid-separator-border-color in light.css
+            if(header) {
+                jsElement.setAttribute("data-fill-color", "FFF2F2F2"); //--background-color in light.css
+                jsElement.setAttribute("data-a-h", "center");
+                jsElement.setAttribute("data-a-v", "middle");
+            }
         }
     }
 
@@ -1176,6 +1184,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         } else {
             GwtClientUtils.setThemeImage(ICON_PASSBY, str -> img.getStyle().setBackgroundImage("url('" + str + "')"));
         }
+    }
+
+    public void setRowHeight(Element tr, int height) {
+        tr.setAttribute("data-height", String.valueOf(height));
     }
 
     private int getArrowColumnWidth(int arrowLevels) {
@@ -1499,9 +1511,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 instance.@GPivot::rowAttrHeaderDblClickAction(*)(rowKeyValues, attrName);
             },
             
-            colAttrHeaderDblClickHandler: function (event, tr, element, colKeyValues, isSubtotal) {
+            colAttrHeaderDblClickHandler: function (event, element, colKeyValues, isSubtotal) {
                 if(instance.@GPivot::isSortColumn(*)(isSubtotal, colKeyValues)) {
-                    instance.@GPivot::colAttrHeaderDblClickAction(*)(tr, colKeyValues, element, isSubtotal, event.ctrlKey, event.shiftKey);
+                    instance.@GPivot::colAttrHeaderDblClickAction(*)(colKeyValues, element, isSubtotal, event.ctrlKey, event.shiftKey);
                 }
             },
             
@@ -1509,24 +1521,24 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 //nothing
             },
 
-            rowAxisHeaderDblClickHandler: function (event, tr, element, attrName) {
-                instance.@GPivot::rowAxisHeaderDblClickAction(*)(tr, attrName, element, attrName, event.ctrlKey, event.shiftKey);
+            rowAxisHeaderDblClickHandler: function (event, element, attrName) {
+                instance.@GPivot::rowAxisHeaderDblClickAction(*)(attrName, element, attrName, event.ctrlKey, event.shiftKey);
             },
             
-            renderValueCell: function (tr, td, value, rowKeyValues, colKeyValues) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderValueCell(*)(tr, td, value, rowKeyValues, colKeyValues);
+            renderValueCell: function (td, value, rowKeyValues, colKeyValues) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderValueCell(*)(td, value, rowKeyValues, colKeyValues);
             },
 
-            renderRowAttrHeaderCell: function (tr, th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChildList) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderRowAttrCell(*)(tr, th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChildList);
+            renderRowAttrHeaderCell: function (th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChildList) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderRowAttrCell(*)(th, value, rowKeyValues, attrName, isExpanded, isArrow, isLastChildList);
             },
 
-            renderColAttrHeaderCell: function (tr, th, element, value, colKeyValues, isSubtotal, isExpanded, isArrow) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderColAttrCell(*)(tr, th, element, value, colKeyValues, isSubtotal, isExpanded, isArrow);
+            renderColAttrHeaderCell: function (element, value, colKeyValues, isSubtotal, isExpanded, isArrow) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderColAttrCell(*)(element, value, colKeyValues, isSubtotal, isExpanded, isArrow);
             },
 
-            renderAxisHeaderCell: function (tr, th, element, value, attrName, isExpanded, isArrow) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderAxisCell(*)(tr, th, element, value, attrName, isExpanded, isArrow);
+            renderAxisHeaderCell: function (element, value, attrName, isExpanded, isArrow) {
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderAxisCell(*)(element, value, attrName, isExpanded, isArrow);
             },
             
             getColumnWidth: function (isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels) {
@@ -1535,6 +1547,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
             checkPadding: function() {
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
+            },
+
+            setRowHeight: function (tr) {
+                instance.@GPivot::setRowHeight(*)(tr, instance.@GPivot::rowHeight);
+            },
+
+            setDefaultHeaderHeight: function (tr) {
+                instance.@GPivot::setRowHeight(*)(tr, instance.@GPivot::DEFAULT_HEADER_HEIGHT);
             }
         }
     }-*/;
@@ -1647,7 +1667,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return row.length() <= headerIndex;
     }
 
-    private void colAttrHeaderDblClickAction(Element tr, JsArrayString columnKeys, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
+    private void colAttrHeaderDblClickAction(JsArrayString columnKeys, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
         SortCol sortCol = modifySortCols(columnKeys, ctrlKey, shiftKey);
         if (shiftKey) {
             unwrapThis(th);
@@ -1659,13 +1679,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 changeSortDirImage(th, !sortCol.getDirection());
             } else {
                 th.removeAllChildren();
-                renderColAttrCell(tr, th, th, fromObject(columnKeys.get(columnKeys.length() - 1)), columnKeys, isSubtotal, false, false);
+                renderColAttrCell(th, fromObject(columnKeys.get(columnKeys.length() - 1)), columnKeys, isSubtotal, false, false);
             }
         }
         updateView(true, null);
     }
 
-    private void rowAxisHeaderDblClickAction(Element tr, String attrName, Element th, String columnCaption, boolean ctrlKey, boolean shiftKey) {
+    private void rowAxisHeaderDblClickAction(String attrName, Element th, String columnCaption, boolean ctrlKey, boolean shiftKey) {
         SortCol sortCol = modifySortCols(attrName, ctrlKey, shiftKey);
         if (shiftKey) {
             unwrapThis(th);
@@ -1677,7 +1697,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 changeSortDirImage(th, !sortCol.getDirection());
             } else {
                 th.removeAllChildren();
-                GGridPropertyTableHeader.renderTD(tr, th, rowHeight, true, columnCaption);
+                GGridPropertyTableHeader.renderTD(th, rowHeight, true, columnCaption);
             }
         }
         updateView(true, null);

@@ -140,7 +140,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
     /**
      * Renders a given Header into a given TableCellElement.
      */
-    protected final <H> void renderHeader(TableRowElement tr, TableCellElement th, Header<H> header) {
+    protected final <H> void renderHeader(TableCellElement th, Header<H> header) {
         // Generate a unique ID for the header.
         String headerId = idToHeaderMap.getKey(header);
         if (headerId == null) {
@@ -148,14 +148,14 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
             idToHeaderMap.put(headerId, header);
         }
         th.setAttribute(HEADER_ATTRIBUTE, headerId);
-        header.renderDom(tr, th);
+        header.renderDom(th);
     }
 
     /**
      * Renders a given Header into a given TableCellElement.
      */
-    protected final <H> void updateHeader(TableRowElement tr, TableCellElement th, Header<H> header) {
-        header.updateDom(tr, th);
+    protected final <H> void updateHeader(TableCellElement th, Header<H> header) {
+        header.updateDom(th);
     }
 
     private String getHeaderId(Element elem) {

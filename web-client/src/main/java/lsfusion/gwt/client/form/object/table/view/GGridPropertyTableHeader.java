@@ -7,7 +7,6 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.grid.Header;
-import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
@@ -110,10 +109,10 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     @Override
-    public void renderDom(TableRowElement tr, TableCellElement th) {
+    public void renderDom(TableCellElement th) {
         Boolean sortDir = table.getSortDirection(this);
 
-        renderedCaptionElement = renderTD(tr, th, headerHeight, sortDir, caption);
+        renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption);
         renderedSortDir = sortDir;
         renderedCaption = caption;
 
@@ -132,13 +131,13 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
     }
 
-    public final static int DEFAULT_HEADER_HEIGHT = 34;
+    private final static int DEFAULT_HEADER_HEIGHT = 34;
 
-    public static Element renderTD(Element tr, Element th, int height, Boolean sortDir, String caption) {
+    public static Element renderTD(Element th, int height, Boolean sortDir, String caption) {
         th = wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
 
         int setHeight = height > 0 ? height : DEFAULT_HEADER_HEIGHT;
-        GPropertyTableBuilder.setRowHeight(tr, th, setHeight);
+        GPropertyTableBuilder.setRowHeight(th, setHeight);
 
         // since it's a header we want to align it to the center (vertically and horizontally)
         th = wrapCenter(th); // we have to do it after setting height (because that's the point of that centering)
@@ -197,12 +196,12 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     @Override
-    public void updateDom(TableRowElement tr, TableCellElement th) {
+    public void updateDom(TableCellElement th) {
         Boolean sortDir = table.getSortDirection(this);
 
         if (!nullEquals(sortDir, renderedSortDir)) {
             GwtClientUtils.removeAllChildren(th);
-            renderDom(tr, th);
+            renderDom(th);
         } else if (!nullEquals(this.caption, renderedCaption)) {
             renderCaption(renderedCaptionElement, caption);
             renderedCaption = caption;
