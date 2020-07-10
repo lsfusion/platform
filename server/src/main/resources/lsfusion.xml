@@ -240,11 +240,21 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="initReversedI18NDictionaryTask" class="lsfusion.server.physics.dev.i18n.controller.init.InitReversedI18NDictionaryTask">
+        <property name="dependencies">
+            <set>
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+    
+    
     <bean id="initModuleDependenciesTask" class="lsfusion.server.physics.dev.module.controller.init.InitModuleDependenciesTask">
         <property name="dependencies">
             <set>
                 <ref bean="createModulesTask"/>
                 <ref bean="initLocalizerTask"/>
+                <ref bean="initReversedI18NDictionaryTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -807,6 +817,8 @@
 
         <property name="topModule" value="${logics.topModule:}"/>
         <property name="orderDependencies" value="${logics.orderDependencies:}"/>
+        <property name="lsfStrLiteralsLanguage" value="${logics.lsfStrLiteralsLanguage:#{null}}"/>
+        <property name="lsfStrLiteralsCountry" value="${logics.lsfStrLiteralsCountry:#{null}}"/>
         <property name="setTimezone" value="${user.setTimezone:#{null}}"/>
         <property name="setLanguage" value="${user.setLanguage:#{null}}"/>
         <property name="setCountry" value="${user.setCountry:#{null}}"/>

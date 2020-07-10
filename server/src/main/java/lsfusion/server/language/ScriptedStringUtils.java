@@ -1,5 +1,6 @@
 package lsfusion.server.language;
 
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class ScriptedStringUtils {
@@ -78,7 +79,20 @@ public class ScriptedStringUtils {
         return b.toString();        
     }
     
-    public static LocalizedString transformLocalizedStringLiteral(String s) throws TransformationError, LocalizedString.FormatError {
-        return LocalizedString.createChecked(transformLocalizedStringLiteralToSourceString(s));
+    public static LocalizedString transformLocalizedStringLiteral(String s, BusinessLogics BL) throws TransformationError, LocalizedString.FormatError {
+        String sourceString = transformLocalizedStringLiteralToSourceString(s);
+        
+        if (sourceString != null) {
+            LocalizedString.checkLocalizedStringFormat(sourceString);
+            if (LocalizedString.canBeOptimized(sourceString)) {
+                String translateId = BL.getReversedI18nDictionary().getValue(sourceString);
+                if (translateId != null) {
+                    sourceString = LocalizedString.OPEN_CH + translateId + LocalizedString.CLOSE_CH;
+                    return LocalizedString.create(sourceString, true);
+                }
+            }
+        }
+        
+        return LocalizedString.create(sourceString);
     }
 }
