@@ -1063,7 +1063,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
 
             @Override
-            public void setFont() {
+            public void setFont(GFont font) {
                 GPivot.setTableToExcelFontStyle(th, font);
             }
         }, new UpdateContext() {

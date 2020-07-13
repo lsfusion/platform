@@ -9,5 +9,5 @@ public interface RenderContext {
 
     void setAlignment();
 
-    void setFont();
+    void setFont(GFont font);
 }

@@ -174,7 +174,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             }
 
             @Override
-            public void setFont() {
+            public void setFont(GFont font) {
             }
         };
     }

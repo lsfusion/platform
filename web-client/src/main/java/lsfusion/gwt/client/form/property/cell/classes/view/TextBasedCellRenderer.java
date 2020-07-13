@@ -97,7 +97,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
         if (font != null) {
             font.apply(element.getStyle());
-            renderContext.setFont();
+            renderContext.setFont(font);
         }
     }
 

@@ -161,7 +161,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
             }
 
             @Override
-            public void setFont() {
+            public void setFont(GFont font) {
             }
         };
     }
