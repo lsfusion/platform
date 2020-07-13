@@ -118,6 +118,22 @@ currentRevision = DATA LOCAL STRING[10]();
 getCurrentRevision INTERNAL 'lsfusion.server.physics.admin.monitor.action.GetCurrentRevisionAction' ();
 
 onStarted() + { 
+    IF NOT clientId('Github') THEN {
+        NEW a = Auth{
+            writeGitDefaultCredentials(a);
+        }
+    }
+    IF NOT clientId('Google') THEN {
+        NEW a = Auth{
+            writeGoogleDefaultCredentials(a);
+        }
+    }
+    IF NOT webClientSecret() THEN {
+        NEW a = Auth{
+            writeWebClientDefaultCredentials(a);
+        }
+    }
+
     getCurrentRevision();
     NEW launch = Launch {
         computer(launch) <- currentComputer();

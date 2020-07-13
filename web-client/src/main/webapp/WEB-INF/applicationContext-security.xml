@@ -48,7 +48,7 @@
                       authentication-success-handler-ref="successLoginHandler"
                       authentication-failure-handler-ref="failureLoginHandler"
                       authorized-client-service-ref="auth2AuthorizedClientService"
-                      client-registration-repository-ref="clientRegistrationRepository"/>
+                      client-registration-repository-ref="lsfClientRegistrationRepository"/>
         <form-login login-page="/login" login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
         <!-- invalidate-session="false" no invalidating session to give user opportunity to relogin, when another tab is opened, but it's not that secure because user can login with another access, and the tab with different access will be available -->
         <!-- UPD: left invalidate-session="false" to be able to pass attributes between sessions (SPRING_SECURITY_LAST_EXCEPTION). 
@@ -64,9 +64,9 @@
     <!-- Security beans -->
 
     <!--for for programmatic creation and inject custom clientRegistrationRepository because he has a dynamic number of registrations-->
-    <b:bean id="oauth2Params" class="lsfusion.http.authentication.OAuth2ParamsConfiguration"/>
-    <b:bean id="auth2AuthorizedClientService" class="org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService">
-        <b:constructor-arg ref="clientRegistrationRepository"/>
+    <b:bean id="lsfClientRegistrationRepository" class="lsfusion.http.authentication.LSFClientRegistrationRepository"/>
+    <b:bean id="auth2AuthorizedClientService" lazy-init="true" class="org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService">
+        <b:constructor-arg ref="lsfClientRegistrationRepository"/>
     </b:bean>
 
     <b:bean id="characterEncodingFilter" class="org.springframework.web.filter.CharacterEncodingFilter">

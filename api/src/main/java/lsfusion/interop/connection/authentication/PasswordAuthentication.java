@@ -14,7 +14,6 @@ public class PasswordAuthentication extends Authentication {
         return super.getUserName();
     }
 
-    @Override
     public String getPassword() {
         return this.password;
     }

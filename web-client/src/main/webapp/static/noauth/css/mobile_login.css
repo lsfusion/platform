@@ -115,3 +115,10 @@ form p em {
 details summary::-webkit-details-marker {
     color: #75AEEA;
 }
+
+.href-center {
+    margin: 1em;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+}

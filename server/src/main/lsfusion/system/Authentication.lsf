@@ -100,24 +100,54 @@ portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
 baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
 userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
 
-// OAuth
-webClientSecretKeyDefault = 'secretKey';
-googleClientIdDefault = '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
-googleClientSecretDefault = 'Fa-bg6EpM71UXSa9rxvYiNQq';
-githubClientIdDefault = '9d1729e039d1eb38748f';
-githubClientSecretDefault = '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
+// OAuth and Web-client authentication
+CLASS Auth;
+id = DATA STRING (Auth);
+dataClientId = DATA STRING (Auth);
+dataClientSecret = DATA STRING (Auth);
+dataWebClientSecretKey = DATA STRING (Auth);
 
-webClientSecretKeyDB = DATA STRING ();
-googleClientIdDB = DATA STRING ();
-googleClientSecretDB  = DATA STRING ();
-githubClientIdDB = DATA STRING ();
-githubClientSecretDB = DATA STRING ();
+auth (id) = GROUP AGGR Auth a BY id(a);
 
-webClientSecretKey 'Web client secret' = OVERRIDE webClientSecretKeyDB(), webClientSecretKeyDefault();
-googleClientId 'Google client id' = OVERRIDE googleClientIdDB(), googleClientIdDefault();
-googleClientSecret 'Google client secret' = OVERRIDE googleClientSecretDB(), googleClientSecretDefault();
-githubClientId 'Github client id' = OVERRIDE githubClientIdDB(), githubClientIdDefault();
-githubClientSecret 'Github client secret' = OVERRIDE githubClientSecretDB(), githubClientSecretDefault();
+clientId(STRING str) = dataClientId(auth(str));
+clientSecret(STRING str) = dataClientSecret(auth(str));
+webClientSecret () = dataWebClientSecretKey(auth('WebClient'));
+
+writeGitDefaultCredentials (Auth a){
+        id(a) <- 'Github';
+        dataClientId(a) <- '9d1729e039d1eb38748f';
+        dataClientSecret(a) <- '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
+        dataWebClientSecretKey(a) <- NULL;
+        APPLY;
+}
+
+writeGoogleDefaultCredentials (Auth a){
+        id(a) <- 'Google';
+        dataClientId(a) <- '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
+        dataClientSecret(a) <- 'Fa-bg6EpM71UXSa9rxvYiNQq';
+        dataWebClientSecretKey(a) <- NULL;
+        APPLY;
+}
+
+writeWebClientDefaultCredentials (Auth a){
+        id(a) <- 'WebClient';
+        dataClientId(a) <- NULL;
+        dataClientSecret(a) <- NULL;
+        dataWebClientSecretKey(a) <- 'secretKey';
+        APPLY;
+}
+
+writeDefaultCredentials(Auth a) {
+    IF id(a) == 'Github' THEN {
+        writeGitDefaultCredentials(a);
+    } 
+    IF id(a) == 'Google' THEN {
+        writeGoogleDefaultCredentials(a);
+    } 
+    IF id(a) == 'WebClient' THEN {
+        writeWebClientDefaultCredentials(a);
+    } 
+}
 
 // lock
 isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
@@ -329,11 +359,13 @@ FORM customUsers '{authentication.users}'
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
     
-    PROPERTIES()  webClientSecretKey BACKGROUND RGB(223, 232, 255),
-                  googleClientId BACKGROUND RGB(255, 99, 71),
-                  googleClientSecret BACKGROUND RGB(255, 99, 71),
-                  githubClientId BACKGROUND RGB(169, 169, 169),
-                  githubClientSecret BACKGROUND RGB(169, 169, 169) 
+    OBJECTS auth = Auth 
+    PROPERTIES(auth)  NEW, DELETE,
+                      id,
+                      dataWebClientSecretKey,
+                      dataClientId,
+                      dataClientSecret
+    PROPERTIES (auth) GRID writeDefaultCredentials;
 ;
 
 DESIGN customUsers {
@@ -372,11 +404,11 @@ DESIGN customUsers {
             } 
             NEW OAUTH2 {
                 caption = 'OAUTH2';
-                MOVE PROPERTY (webClientSecretKey());
-                MOVE PROPERTY (googleClientId());
-                MOVE PROPERTY (googleClientSecret());
-                MOVE PROPERTY (githubClientId());
-                MOVE PROPERTY (githubClientSecret());
+                MOVE BOX (auth){
+                    GRID (auth){
+                    headerHeight = 50;
+                    }
+                }
             }
         }
     }

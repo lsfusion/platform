@@ -14,10 +14,8 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
-import lsfusion.interop.connection.authentication.Authentication;
+import lsfusion.interop.connection.authentication.*;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.authentication.OAuth2Credentials;
-import lsfusion.interop.connection.authentication.TrustedAuthentication;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -226,36 +224,43 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .compact());
     }
 
-    public OAuth2Credentials getOauth2ClientCredentials(String client, String authSecret){
-        String webClientAuthSecret;
+    private String getWebClientSecret() {
         try (DataSession session = createSession()) {
-            webClientAuthSecret = (String) authenticationLM.webClientSecretKey.read(session);
-            if (webClientAuthSecret.equals(authSecret) && client != null) {
-                String clientId = (String) authenticationLM.findProperty(client + "ClientId[]").read(session);
-                String clientSecret = (String) authenticationLM.findProperty(client + "ClientSecret").read(session);
-                if (clientId != null && clientSecret !=null){
-                    return new OAuth2Credentials(clientId, clientSecret);
-                }
-            }
-            return null;
+            return (String) authenticationLM.webClientSecret.read(session);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private boolean isTrustedAuth(Authentication authentication, DataSession session) throws SQLException, SQLHandledException {
+    public OAuth2Credentials getOauth2ClientCredentials(String client, String authSecret) {
+        String webClientAuthSecret = getWebClientSecret();
+        if (webClientAuthSecret != null && webClientAuthSecret.equals(authSecret) && client != null) {
+            try (DataSession session = createSession()){
+                String clientId = (String) authenticationLM.oauth2ClientId
+                        .read(session, new DataObject(client, StringClass.get(client.length())));
+                String clientSecret = (String) authenticationLM.oauth2ClientSecret
+                        .read(session, new DataObject(client, StringClass.get(client.length())));
+                return new OAuth2Credentials(clientId, clientSecret);
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
+        }
+        return null;
+    }
+
+    private boolean isTrustedAuth(Authentication authentication) {
         String webAuthSecret = null;
         if (authentication instanceof TrustedAuthentication) {
-            webAuthSecret = authentication.getAuthSecret();
+            webAuthSecret = ((TrustedAuthentication) authentication).getAuthSecret();
         }
-        return webAuthSecret != null && webAuthSecret.equals(authenticationLM.webClientSecretKey.read(session));
+        return webAuthSecret != null && webAuthSecret.equals(getWebClientSecret());
     }
 
     public AuthenticationToken authenticateUser(Authentication authentication, ExecutionStack stack) {
         DataObject userObject;
         try (DataSession session = createSession()) {
             userObject = readUser(authentication.getUserName(), session);
-            if (isTrustedAuth(authentication, session) && userObject == null) {
+            if (isTrustedAuth(authentication) && userObject == null) {
                 String pwd = BaseUtils.generatePassword(20, false, true);
                 userObject = addUser(authentication.getUserName(), pwd, session);
                 apply(session, stack);
@@ -268,17 +273,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     public void authenticateUser(DataSession session, DataObject userObject, Authentication authentication, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if (authenticationLM.useLDAP.read(session) != null) {
+        if (authenticationLM.useLDAP.read(session) != null && authentication instanceof PasswordAuthentication) {
             String server = (String) authenticationLM.serverLDAP.read(session);
             Integer port = (Integer) authenticationLM.portLDAP.read(session);
             String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
             String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
 
             try {
-                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(authentication.getUserName(), authentication.getPassword());
+                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(authentication.getUserName(), ((PasswordAuthentication)authentication).getPassword());
                 if (ldapParameters.isConnected()) {
                     if (userObject == null) {
-                        userObject = addUser(authentication.getUserName(), authentication.getPassword(), session);
+                        userObject = addUser(authentication.getUserName(), ((PasswordAuthentication)authentication).getPassword(), session);
                     }
                     setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
                     apply(session);
@@ -295,7 +300,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             throw new LoginException();
         }
 
-        if (!isTrustedAuth(authentication, session) && !authenticationLM.checkPassword(session, userObject, authentication.getPassword(), stack)) {
+        if (!isTrustedAuth(authentication) && authentication instanceof PasswordAuthentication
+                && !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication)authentication).getPassword(), stack)) {
             throw new LoginException();
         }
 

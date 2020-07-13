@@ -55,16 +55,12 @@
                             </fieldset>
                         </form>
                         <br>
-                        <form id="github-login-form" name="github-login" action="/oauth2/authorization/github">
-                            <button class="loginBtn loginBtn--github">
-                                Login with Github
-                            </button>
-                        </form>
-                        <form id="google-login-form" name="google-login" action="/oauth2/authorization/google">
-                            <button class="loginBtn loginBtn--google">
-                                Login with Google
-                            </button>
-                        </form>
+                        <c:forEach var="url" items="${urls}">
+                            <div class="href-center">
+                                <a href="${url.value}" class="loginBtn-oauth2"> Login with ${url.key}</a>
+                                <br>
+                            </div>
+                        </c:forEach>
                     </div>
                 </td>
             </tr>

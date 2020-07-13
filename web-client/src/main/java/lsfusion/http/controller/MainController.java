@@ -8,23 +8,33 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationFailureHandler;
 import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.authentication.LSFClientRegistrationRepository;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.logics.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class MainController {
 
     @Autowired
     LogicsProvider logicsProvider;
+
+    @Autowired
+    private LSFClientRegistrationRepository clientRegistrationRepository;
+
+    private final Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
+    private static final String authorizationRequestBaseUri = "/oauth2/authorization/";
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String processLogin(ModelMap model, HttpServletRequest request) {
@@ -39,6 +49,10 @@ public class MainController {
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
+
+        Iterable<ClientRegistration> clientRegistrations = clientRegistrationRepository;
+        clientRegistrations.forEach(registration -> oauth2AuthenticationUrls.put(registration.getClientName(), authorizationRequestBaseUri + registration.getRegistrationId()));
+        model.addAttribute("urls", oauth2AuthenticationUrls);
 
         model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
         if (checkVersionError.result != null) {

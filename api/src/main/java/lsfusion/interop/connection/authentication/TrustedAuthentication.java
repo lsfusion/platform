@@ -9,7 +9,6 @@ public class TrustedAuthentication extends Authentication {
         this.authSecret = authSecret;
     }
 
-    @Override
     public String getAuthSecret() {
         return this.authSecret;
     }

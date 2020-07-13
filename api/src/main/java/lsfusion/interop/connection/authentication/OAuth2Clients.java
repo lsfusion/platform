@@ -3,8 +3,8 @@ package lsfusion.interop.connection.authentication;
 import java.io.Serializable;
 
 public enum OAuth2Clients implements Serializable {
-    GOOGLE("google"),
-    GITHUB("github");
+    GOOGLE("Google"),
+    GITHUB("Github");
 
     public String client;
 
