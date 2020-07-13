@@ -28,18 +28,12 @@ public class StyleDefaults {
     
     public static int[] pivotGroupLevelDarkenStepRGB;
 
-    public static int[] componentBackgroundRGBDefault;
-    public static int[] pivotGroupLevelDarkenStepRGBDefault;
-
-
     public static void reset() {
         selectedRowBackgroundColor = null;
         focusedCellBackgroundColor = null;
         focusedCellBorderColor = null;
         componentBackgroundRGB = null;
         pivotGroupLevelDarkenStepRGB = null;
-        componentBackgroundRGBDefault = null;
-        pivotGroupLevelDarkenStepRGBDefault = null;
     }
 
     private static String getSelectedColor(boolean canBeMixed) {
@@ -114,40 +108,10 @@ public class StyleDefaults {
         return pivotGroupLevelDarkenStepRGB;
     }
 
-    public static int[] getComponentBackgroundRGBDefault() {
-        if (componentBackgroundRGBDefault == null) {
-            int cbRGB = toRGB(getComponentBackground(GColorTheme.DEFAULT));
-            componentBackgroundRGBDefault = new int[]{getRed(cbRGB), getGreen(cbRGB), getBlue(cbRGB)};
-        }
-        return componentBackgroundRGBDefault;
-    }
-
-    public static int[] getPivotGroupLevelDarkenStepRGBDefault() {
-        if (pivotGroupLevelDarkenStepRGBDefault == null) {
-            int pbRGB = toRGB(getPanelBackground(GColorTheme.DEFAULT));
-            int[] panelRGB = new int[]{getRed(pbRGB), getGreen(pbRGB), getBlue(pbRGB)};
-            int[] componentRGB = getComponentBackgroundRGBDefault();
-
-            float darkenStep = 0.8f;
-
-            pivotGroupLevelDarkenStepRGBDefault = new int[]{
-                    (int) ((panelRGB[0] - componentRGB[0]) * darkenStep),
-                    (int) ((panelRGB[1] - componentRGB[1]) * darkenStep),
-                    (int) ((panelRGB[2] - componentRGB[2]) * darkenStep)
-            };
-        }
-        return pivotGroupLevelDarkenStepRGBDefault;
-    }
-
-    
     // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.
     // maybe getComputedStyle(document.documentElement).getPropertyValue() should be used instead where possible
     public static String getDefaultComponentBackground() {
         return "#FFFFFF";
-    }
-
-    public static String getDefaultComponentBackgroundARGB() {
-        return "FFFFFFFF";
     }
 
     public static String getComponentBackground(GColorTheme theme) {
@@ -174,6 +138,15 @@ public class StyleDefaults {
                 return "#bbbbbb";
             default:
                 return "#000000";
+        }
+    }
+
+    public static String getGridSeparatorBorderColor(GColorTheme theme) {
+        switch (theme) {
+            case DARK:
+                return "#5E6364";
+            default:
+                return "#E6E6E6";
         }
     }
 }

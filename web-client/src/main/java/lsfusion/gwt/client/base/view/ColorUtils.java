@@ -167,4 +167,8 @@ public class ColorUtils {
         hsbvals[2] = brightness;
         return hsbvals;
     }
+
+    public static String rgbToArgb(String rgb) {
+        return rgb.replace("#", "FF");
+    }
 }
