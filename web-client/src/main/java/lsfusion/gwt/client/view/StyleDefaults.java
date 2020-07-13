@@ -28,7 +28,7 @@ public class StyleDefaults {
     public static int[] componentBackgroundRGB;
     
     public static int[] pivotGroupLevelDarkenStepRGB;
-    
+
     public static void reset() {
         selectedRowBackgroundColor = null;
         focusedCellBackgroundColor = null;
@@ -109,7 +109,6 @@ public class StyleDefaults {
         return pivotGroupLevelDarkenStepRGB;
     }
 
-    
     // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.
     // maybe getComputedStyle(document.documentElement).getPropertyValue() should be used instead where possible
     public static String getDefaultComponentBackground() {
@@ -140,6 +139,15 @@ public class StyleDefaults {
                 return "#bbbbbb";
             default:
                 return "#000000";
+        }
+    }
+
+    public static String getGridSeparatorBorderColor(GColorTheme theme) {
+        switch (theme) {
+            case DARK:
+                return "#5E6364";
+            default:
+                return "#E6E6E6";
         }
     }
 }

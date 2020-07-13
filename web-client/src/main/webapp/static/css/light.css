@@ -10,7 +10,7 @@
     --dialog-border-color: var(--scrollbar-color);
     --component-border-color: #c4c4c4;
     --panel-border-color: #D1D1D1;
-    --grid-separator-border-color: #E6E6E6;
+    --grid-separator-border-color: #E6E6E6; /* also hardcoded in StyleDefaults.java */
     --dialog-outer-border-color: #bbb;
     
     --caption-panel-legend-color: #929292; 

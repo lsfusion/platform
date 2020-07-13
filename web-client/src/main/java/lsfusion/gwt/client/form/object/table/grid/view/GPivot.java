@@ -40,10 +40,9 @@ import java.util.*;
 
 import static java.lang.Integer.decode;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
-import static lsfusion.gwt.client.base.view.ColorUtils.toColorString;
+import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
-import static lsfusion.gwt.client.view.StyleDefaults.getComponentBackground;
+import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 public class GPivot extends GStateTableView implements ColorThemeChangeListener {
 
@@ -330,13 +329,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         exportToExcel(getDrawElement());
     }
 
-    public static native void exportToExcel(Element element)
+    public native void exportToExcel(Element element)
         /*-{
+            var instance = this;
             var pvtTable = element.getElementsByClassName("subtotalouterdiv")[0];
 
-            //set bold
-            Array.from(pvtTable.querySelectorAll("th.pvtAxisLabel, th.pvtColLabel, th.pvtTotalLabel, th.pvtTotalLabel, th.pvtRowLabel, td.pvtTotal, td.pvtRowSubtotal, td.pvtGrandTotal")).forEach(function (item) {
-                item.setAttribute("data-f-bold", "true");
+            instance.@GPivot::updateTableToExcelPvtEmptyHeader(*)(pvtTable);
+
+            //set row height
+            Array.from(pvtTable.querySelectorAll("tr")).forEach(function (item) {
+                item.setAttribute("data-height", instance.@GPivot::getTableToExcelRowHeight(*)(item));
             });
 
             var workbook = $wnd.TableToExcel.tableToBook(pvtTable, {
@@ -678,6 +680,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }-*/;
 
     private void updateTableCellsBackground() {
+        Element tableHeader = getHeaderTableScroller();
+        if (tableHeader != null) {
+            NodeList<Element> tds = getElements(tableHeader, "td, th");
+            for (int i = 0; i < tds.getLength(); i++) {
+                setTableToExcelAttributes(tds.getItem(i), true, false);
+            }
+            updateTableToExcelPvtEmptyHeader(tableHeader);
+        }
+
         Element tableDataScroller = getTableDataScroller();
         if (tableDataScroller != null) {
             NodeList<Element> tds = getElements(tableDataScroller, "td, th");
@@ -984,6 +995,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         if (cellBackground != null) {
             td.getStyle().setBackgroundColor(cellBackground);
         }
+        td.setAttribute("data-fill-color", rgbToArgb(cellBackground != null ? cellBackground : getComponentBackground(colorTheme))); //for tableToExcel.js
 
         if (!refresh) {
             if (rowLevel >= 0) {
@@ -993,6 +1005,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 td.setAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY, String.valueOf(columnLevel));
             }
         }
+        setTableToExcelAttributes(td, false, false);
     }
 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
@@ -1052,6 +1065,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
+        boolean center = false;
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             renderArrow(jsElement, getTreeColumnValue(0, isExpanded, false, null));
@@ -1074,6 +1088,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
                 GGridPropertyTableHeader.renderTD(jsElement, 0, sortDir, fromObject(value).toString());
+                center = true;
             } else {
                 if (isLastCol && sortDir != null) { // last column may have a sortDir
                     jsElement = GwtClientUtils.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
@@ -1089,6 +1104,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 jsElement.setTitle(fromObject(value).toString());
             }
         }
+        setTableToExcelAttributes(jsElement, true, center);
     }
     
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
@@ -1111,6 +1127,84 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             if (value != null) {
                 jsElement.setTitle(valueString);
             }
+        }
+        setTableToExcelAttributes(jsElement, true, true);
+    }
+
+    private int getTableToExcelRowHeight(Element element) {
+        String dataHeight = element.getAttribute("data-height");
+        int rowHeight = 0;
+        if(dataHeight.isEmpty()) {
+            NodeList<Node> children = element.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                rowHeight = Math.max(rowHeight, getTableToExcelRowHeight((Element) children.getItem(i)));
+            }
+        } else {
+            rowHeight = Integer.parseInt(dataHeight);
+        }
+        return rowHeight;
+    }
+
+    public static void setTableToExcelRowHeight(Element element, Integer rowHeight) {
+        element.setAttribute("data-height", String.valueOf(rowHeight));
+    }
+
+    public static void setTableToExcelAlignment(Element element, GPropertyDraw property) {
+        Style style = element.getStyle();
+
+        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        if (textAlignStyle != null) {
+            style.setTextAlign(textAlignStyle);
+            switch (textAlignStyle) {
+                case LEFT:
+                    element.setAttribute("data-a-h", "left");
+                    break;
+                case CENTER:
+                    element.setAttribute("data-a-h", "center");
+                    break;
+                case RIGHT:
+                    element.setAttribute("data-a-h", "right");
+                    break;
+            }
+        }
+    }
+
+    public static void setTableToExcelFontStyle(Element element, GFont font) {
+        if (font.family != null) {
+            element.setAttribute("data-f-name", font.family);
+        }
+        if (font.size > 0) {
+            element.setAttribute("data-f-sz", String.valueOf(font.size));
+        }
+        if(font.italic)
+            element.setAttribute("data-f-italic", "true");
+        if(font.bold)
+            element.setAttribute("data-f-bold", "true");
+    }
+
+    private void setTableToExcelAttributes(Element element, boolean header, boolean center) {
+        while(element != null && !element.getNodeName().toLowerCase().matches("th|td")) {
+            element = element.getParentElement();
+        }
+        if(element != null) {
+            element.setAttribute("data-b-a-s", "thin"); //border
+            element.setAttribute("data-b-a-c", rgbToArgb(getGridSeparatorBorderColor(colorTheme))); //border color
+            element.setAttribute("data-f-color", rgbToArgb(getTextColor(colorTheme))); //font color
+            if (header) {
+                element.setAttribute("data-fill-color", rgbToArgb(getPanelBackground(colorTheme))); //background color
+            }
+            if (center) {
+                element.setAttribute("data-a-h", "center"); //horizontal alignment
+                element.setAttribute("data-a-v", "middle"); //vertical alignment
+            }
+        }
+    }
+
+    private void updateTableToExcelPvtEmptyHeader(Element pvtTable) {
+        NodeList<Element> tds = getElements(pvtTable, ".pvtEmptyHeader");
+        for (int i = 0; i < tds.getLength(); i++) {
+            Element td = tds.getItem(i);
+            td.setAttribute("data-fill-color", rgbToArgb(getPanelBackground(colorTheme)));
         }
     }
 
