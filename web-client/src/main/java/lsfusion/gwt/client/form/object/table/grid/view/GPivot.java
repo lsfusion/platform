@@ -14,6 +14,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -1139,6 +1140,39 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     public static void setTableToExcelRowHeight(Element element, Integer rowHeight) {
         element.setAttribute("data-height", String.valueOf(rowHeight));
+    }
+
+    public static void setTableToExcelAlignment(Element element, GPropertyDraw property) {
+        Style style = element.getStyle();
+
+        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        if (textAlignStyle != null) {
+            style.setTextAlign(textAlignStyle);
+            switch (textAlignStyle) {
+                case LEFT:
+                    element.setAttribute("data-a-h", "left");
+                    break;
+                case CENTER:
+                    element.setAttribute("data-a-h", "center");
+                    break;
+                case RIGHT:
+                    element.setAttribute("data-a-h", "right");
+                    break;
+            }
+        }
+    }
+
+    public static void setTableToExcelFontStyle(Element element, GFont font) {
+        if (font.family != null) {
+            element.setAttribute("data-f-name", font.family);
+        }
+        if (font.size > 0) {
+            element.setAttribute("data-f-sz", String.valueOf(font.size));
+        }
+        if(font.italic)
+            element.setAttribute("data-f-italic", "true");
+        if(font.bold)
+            element.setAttribute("data-f-bold", "true");
     }
 
     private void setTableToExcelAttributes(Element element, boolean header, boolean center) {
