@@ -5,14 +5,9 @@ import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
-
-import java.util.List;
+import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder

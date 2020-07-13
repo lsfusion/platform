@@ -2,11 +2,9 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEditor;
-import lsfusion.gwt.client.form.property.cell.controller.ReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -36,11 +34,12 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
     public void renderStaticContent(Element element, RenderContext renderContext) {
         render(property, element, renderContext, isMultiLine(), isWordWrap());
+        GPivot.setTableToExcelAlignment(element, property);
     }
 
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine, boolean wordWrap) {
         setPadding(element.getStyle(), multiLine);
-        setBasedTextFonts(property, element.getStyle(), renderContext);
+        setBasedTextFonts(property, element, renderContext);
         if(wordWrap)
             element.getStyle().setProperty("wordBreak", "break-word"); // wordWrap (overflow-wrap) doesn't work as expected
     }
@@ -93,11 +92,12 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
     }
 
-    public static void setBasedTextFonts(GPropertyDraw property, Style style, RenderContext renderContext) {
+    public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
         GFont font = property.font != null ? property.font : renderContext.getFont();
 
         if (font != null) {
-            font.apply(style);
+            font.apply(element.getStyle());
+            GPivot.setTableToExcelFontStyle(element, font);
         }
     }
 
