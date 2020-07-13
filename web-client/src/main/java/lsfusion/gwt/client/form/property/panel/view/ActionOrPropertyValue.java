@@ -155,6 +155,14 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
             public GFont getFont() {
                 return null;
             }
+
+            @Override
+            public void setAlignment() {
+            }
+
+            @Override
+            public void setFont() {
+            }
         };
     }
 

@@ -1056,6 +1056,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             public GFont getFont() {
                 return font;
             }
+
+            @Override
+            public void setAlignment() {
+                GPivot.setTableToExcelAlignment(th, property);
+            }
+
+            @Override
+            public void setFont() {
+                GPivot.setTableToExcelFontStyle(th, font);
+            }
         }, new UpdateContext() {
             @Override
             public boolean isStaticHeight() {
@@ -1170,16 +1180,20 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     public static void setTableToExcelFontStyle(Element element, GFont font) {
-        if (font.family != null) {
-            element.setAttribute("data-f-name", font.family);
+        if(font != null) {
+            if (font.family != null) {
+                element.setAttribute("data-f-name", font.family);
+            }
+            if (font.size > 0) {
+                element.setAttribute("data-f-sz", String.valueOf(font.size));
+            }
+            if(font.italic) {
+                element.setAttribute("data-f-italic", "true");
+            }
+            if(font.bold) {
+                element.setAttribute("data-f-bold", "true");
+            }
         }
-        if (font.size > 0) {
-            element.setAttribute("data-f-sz", String.valueOf(font.size));
-        }
-        if(font.italic)
-            element.setAttribute("data-f-italic", "true");
-        if(font.bold)
-            element.setAttribute("data-f-bold", "true");
     }
 
     private void setTableToExcelAttributes(Element element, boolean header, boolean center) {

@@ -168,6 +168,14 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             public GFont getFont() {
                 return GPropertyTable.this.getFont();
             }
+
+            @Override
+            public void setAlignment() {
+            }
+
+            @Override
+            public void setFont() {
+            }
         };
     }
     public UpdateContext getUpdateContext() {
