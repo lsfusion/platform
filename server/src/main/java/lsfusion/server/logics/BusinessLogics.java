@@ -102,6 +102,7 @@ import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.ResourceBundleGenerator;
 import lsfusion.server.physics.dev.i18n.ReversedI18NDictionary;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
@@ -718,6 +719,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public ReversedI18NDictionary getReversedI18nDictionary() {
         return dictionary;
+    }
+
+    private ResourceBundleGenerator generator;
+    public ResourceBundleGenerator getResourceBundleGenerator() {
+        if (generator == null) {
+            String prefix = ((topModule != null && !topModule.isEmpty()) ? topModule : "Project");
+            generator = new ResourceBundleGenerator(prefix + "ResourceBundle");
+        }
+        return generator;                
     }
 
     private static class NamedDecl {
