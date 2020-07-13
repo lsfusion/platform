@@ -711,7 +711,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                     String columnLevelString = nullEmpty(td.getAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY));
                     int columnLevel = columnLevelString != null ? decode(columnLevelString) : -1;
                     setValueCellBackground(td, rowLevel, columnLevel, true);
-                    setTableToExcelAttributes(tds.getItem(i), false, false);
                 }
             }
         }
@@ -960,7 +959,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
 
         setValueCellBackground(jsElement, rowKeys.length(), columnKeys.length(), false);
-        setTableToExcelAttributes(jsElement, false, false);
     }
 
     public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
@@ -1007,6 +1005,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 td.setAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY, String.valueOf(columnLevel));
             }
         }
+        setTableToExcelAttributes(td, false, false);
     }
 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
@@ -1019,7 +1018,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
 
         setValueCellBackground(th, rowKeyValues.length(), -1, false);
-        setTableToExcelAttributes(th, false, false);
     }
 
     private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, JsArrayBoolean isLastChildList) {
