@@ -12,6 +12,11 @@ public class ImageCellRenderer extends FileBasedCellRenderer {
     }
 
     @Override
+    protected String getDefaultVertAlignment() {
+        return "stretch";
+    }
+
+    @Override
     protected String getFilePath(Object value) {
         return value instanceof String && !value.equals("null") ?
                 GwtClientUtils.getDownloadURL((String) value, null, ((GImageType) property.baseType).extension, false) :

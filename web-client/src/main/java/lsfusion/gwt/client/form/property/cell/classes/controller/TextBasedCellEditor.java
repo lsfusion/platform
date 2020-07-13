@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -19,7 +20,6 @@ import java.text.ParseException;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.view.StyleDefaults.DEFAULT_FONT_PT_SIZE;
 
 public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
@@ -142,31 +142,28 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     }
 
     @Override
-    public void renderDom(final Element cellParent, RenderContext renderContext, UpdateContext updateContext) {
-        final Element input = createInputElement();
+    public void render(Element cellParent, RenderContext renderContext) {
+        Element inputElement = createInputElement();
 
-        input.setTabIndex(-1);
-        input.addClassName("boxSized");
+        Style.TextAlign textAlign = property.getTextAlignStyle();
+        if(textAlign != null)
+            inputElement.getStyle().setTextAlign(textAlign);
 
-        Style inputStyle = input.getStyle();
-        inputStyle.setWidth(100, Style.Unit.PCT);
-        inputStyle.setHeight(100, Style.Unit.PCT);
+        inputElement.getStyle().setHeight(100, Style.Unit.PCT);
+        inputElement.getStyle().setWidth(100, Style.Unit.PCT); // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
 
-        TextBasedCellRenderer.setPadding(inputStyle, isMultiLine());
-        cellParent.getStyle().setPadding(0, Style.Unit.PX);
-        setBaseTextFonts(inputStyle, updateContext);
+        TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine(), false);
 
-        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
-        if (textAlignStyle != null) {
-            inputStyle.setTextAlign(textAlignStyle);
-        }
-
-        cellParent.appendChild(input);
+        cellParent.appendChild(inputElement);
     }
 
-    protected void setBaseTextFonts(Style textareaStyle, UpdateContext updateContext) {
-        TextBasedCellRenderer.setBasedTextFonts(property, textareaStyle, updateContext);
-//        textareaStyle.setFontSize(DEFAULT_FONT_PT_SIZE, Style.Unit.PT);
+    @Override
+    public void clearRender(Element cellParent, RenderContext renderContext) {
+        GwtClientUtils.removeAllChildren(cellParent);
+    }
+
+    protected boolean isMultiLine() {
+        return false;
     }
 
     public void commitEditing(Element parent) {
@@ -182,10 +179,6 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
                 editManager.cancelEditing();
             }
         }
-    }
-
-    protected boolean isMultiLine() {
-        return false;
     }
 
     public Element createInputElement() {

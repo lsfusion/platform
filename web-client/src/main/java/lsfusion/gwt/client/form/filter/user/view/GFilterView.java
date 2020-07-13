@@ -9,6 +9,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.DialogModalBox;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.ResizableFocusPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
@@ -33,7 +34,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     private static final String APPLY = "filtapply.png";
     private static final String CANCEL = "filtcancel.png";
 
-    private DialogBox filterDialog;
+    private DialogModalBox filterDialog;
 
     private ResizableVerticalPanel filterContainer;
 
@@ -113,7 +114,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
             for (GPropertyFilter condition : conditions) {
                 addCondition(condition, logicsSupplier);
             }
-            filterDialog = new DialogBox(false, true, new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
+            filterDialog = new DialogModalBox(new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
             filterDialog.setGlassEnabled(true);
             filterDialog.setWidget(this);
             filterDialog.center();

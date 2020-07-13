@@ -13,6 +13,6 @@ public class GHTMLLinkType extends GLinkType {
 
     @Override
     public CellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new HTMLCellRenderer();
+        return new HTMLCellRenderer(property);
     }
 }

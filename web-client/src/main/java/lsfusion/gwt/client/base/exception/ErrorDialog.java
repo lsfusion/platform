@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
@@ -78,12 +79,10 @@ public class ErrorDialog extends ResizableSystemModalWindow {
 
         mainPane.setHeight("100%");
         FocusPanel focusPanel = new FocusPanel(mainPane);
-        focusPanel.addKeyDownHandler(new KeyDownHandler() {
-            @Override
-            public void onKeyDown(KeyDownEvent event) {
-                if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-                    hide();
-                }
+        focusPanel.addKeyDownHandler(event -> {
+            if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+                GwtClientUtils.stopPropagation(event);
+                hide();
             }
         });
         

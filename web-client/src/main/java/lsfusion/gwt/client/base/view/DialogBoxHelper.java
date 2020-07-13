@@ -154,6 +154,7 @@ public class DialogBoxHelper {
 
             if (Event.ONKEYDOWN == event.getTypeInt()) {
                 if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
+                    GwtClientUtils.stopPropagation(event.getNativeEvent());
                     hide(OptionType.CANCEL); // что-нибудь, преобразуемое в 1
                 }
             }

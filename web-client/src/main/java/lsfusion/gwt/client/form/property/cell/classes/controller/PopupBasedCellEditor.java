@@ -9,6 +9,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -41,6 +42,7 @@ public abstract class PopupBasedCellEditor implements WindowCellEditor {
             protected void onPreviewNativeEvent(Event.NativePreviewEvent event) {
                 if (Event.ONKEYUP == event.getTypeInt()) {
                     if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
+                        GwtClientUtils.stopPropagation(event.getNativeEvent());
                         onEscapePressed();
                     }
                 }

@@ -231,15 +231,9 @@ input[type=checkbox]:focus {
 }
 
 /* ------------ Cell Renderer related styles ------------ */
-.logicalRendererWrapper {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    justify-content: center;
-}
 
 .logicalRendererCheckBox {
-    margin: 0;
+    /*margin: 0;*/
     pointer-events: none;
 }
 

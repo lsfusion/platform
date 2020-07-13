@@ -218,6 +218,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
             @Override
             public void onKeyDown(KeyDownEvent event) {
                 if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+                    GwtClientUtils.stopPropagation(event);
                     hide();
                 }
             }
@@ -457,6 +458,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
                 refreshValues(font);
                 grid.font = font;
                 grid.columnsPreferencesChanged();
+                grid.refreshColumnsAndRedraw();
                 focusPanel.setFocus(true);
                 super.failure(caught);
             }

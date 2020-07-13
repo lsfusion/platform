@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -1357,7 +1356,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void checkCommitEditing() {
         if(cellEditor != null)
-            cellEditor.commitEditing(editContext.getRenderElement());
+            cellEditor.commitEditing(getEditElement());
     }
 
     private boolean bindDialog(GBindingEnv binding) {
@@ -1430,6 +1429,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private CellEditor cellEditor;
 
+    public Element getEditElement() {
+        return editContext.getRenderElement();
+    }
+
     private EditContext editContext;
 
     private Consumer<Object> editBeforeCommit;
@@ -1459,12 +1462,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 if(!editContext.isFocusable()) // assert that otherwise it's already has focus
                     forceSetFocus = editContext.forceSetFocus();
 
-                removeAllChildren(element);
-                ((ReplaceCellEditor)cellEditor).renderDom(element, editContext.getRenderContext(), editContext.getUpdateContext());
+                RenderContext renderContext = editContext.getRenderContext();
+                editContext.getProperty().getCellRenderer().clearRender(element, renderContext); // dropping previous render
+                ((ReplaceCellEditor)cellEditor).render(element, renderContext); // rendering new one, filling inputElement
             }
 
             this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
-            cellEditor.startEditing(event, element, hasOldValue ? oldValue : editContext.getValue());
+            cellEditor.startEditing(event, getEditElement(), hasOldValue ? oldValue : editContext.getValue());
         } else
             editCancel.run();
     }
@@ -1489,14 +1493,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void finishEditing(boolean blurred) {
-        boolean replaceEditor = cellEditor instanceof ReplaceCellEditor;
-        cellEditor = null;
+        CellEditor cellEditor = this.cellEditor;
+        this.cellEditor = null;
 
         EditContext editContext = this.editContext;
         this.editContext = null;
 
-        if(replaceEditor) {
-            rerender(editContext.getProperty(), editContext.getRenderElement(), editContext.getRenderContext());
+        Element renderElement = editContext.getRenderElement();
+        if(cellEditor instanceof ReplaceCellEditor) {
+            RenderContext renderContext = editContext.getRenderContext();
+            ((ReplaceCellEditor) cellEditor).clearRender(renderElement, renderContext);
+            editContext.getProperty().getCellRenderer().renderStatic(renderElement, renderContext);
 
             if(forceSetFocus != null) {
                 editContext.restoreSetFocus(forceSetFocus);
@@ -1511,7 +1518,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         }
 
-        update(editContext.getProperty(), editContext.getRenderElement(), editContext.getValue(), editContext.getUpdateContext());
+        update(editContext.getProperty(), renderElement, editContext.getValue(), editContext.getUpdateContext());
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
@@ -1521,11 +1528,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         property.getCellRenderer().renderStatic(element, renderContext);
-    }
-    public void rerender(GPropertyDraw property, Element element, RenderContext renderContext) {
-        removeAllChildren(element);
-
-        render(property, element, renderContext);
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
         if(editContext != null && editContext.getRenderElement() == element) // is edited
@@ -1551,9 +1553,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Runnable onOuterEditBefore, Runnable onEdit, Runnable onOuterEditAfter, Runnable onCut, Runnable onPaste) {
-        boolean isPropertyEditing = cellEditor != null && editContext.getRenderElement() == cellParent;
+        boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
         if(isPropertyEditing)
-            cellEditor.onBrowserEvent(cellParent, handler);
+            cellEditor.onBrowserEvent(getEditElement(), handler);
 
         if(handler.consumed)
             return;

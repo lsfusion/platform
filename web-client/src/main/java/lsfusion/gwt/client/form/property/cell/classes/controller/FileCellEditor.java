@@ -306,12 +306,10 @@ public class FileCellEditor extends DialogBasedCellEditor {
 
         focusPanel = new FocusPanel(panel);
         focusPanel.addStyleName("uploadDialogContainer");
-        focusPanel.addKeyDownHandler(new KeyDownHandler() {
-            @Override
-            public void onKeyDown(KeyDownEvent event) {
-                if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-                    cancelEditing();
-                }
+        focusPanel.addKeyDownHandler(event -> {
+            if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+                GwtClientUtils.stopPropagation(event);
+                cancelEditing();
             }
         });
 

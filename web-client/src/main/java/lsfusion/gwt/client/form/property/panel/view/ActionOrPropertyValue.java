@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -46,9 +47,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.form = form;
 
         getRenderElement().setPropertyObject("groupObject", property.groupObject);
-
-        // aligning values vertically
-        GPropertyTableBuilder.setLineHeight(getRenderElement(), this.property.getValueHeight(null));
     }
 
     public Element getRenderElement() {
@@ -147,11 +145,26 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     public RenderContext getRenderContext() {
-        return new RenderContext() {};
+        return new RenderContext() {
+            @Override
+            public Integer getStaticHeight() {
+                return null;
+            }
+
+            @Override
+            public GFont getFont() {
+                return null;
+            }
+        };
     }
 
     public UpdateContext getUpdateContext() {
-        return UpdateContext.DEFAULT;
+        return new UpdateContext() {
+            @Override
+            public boolean isStaticHeight() {
+                return false;
+            }
+        };
     }
 
     protected abstract void onPaste(String objValue);

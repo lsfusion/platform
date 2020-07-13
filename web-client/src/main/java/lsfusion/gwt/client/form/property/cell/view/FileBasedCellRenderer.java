@@ -10,18 +10,12 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     protected static final String ICON_EMPTY = "empty.png";
     protected static final String ICON_FILE = "file.png";
 
-    protected GPropertyDraw property;
-
     @Override
-    public void renderStatic(Element element, RenderContext renderContext) {
-        element.getStyle().setWhiteSpace(Style.WhiteSpace.PRE);
-
-        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
-        if (textAlignStyle != null) element.setAttribute("align", textAlignStyle.getCssName());
+    public void renderStaticContent(Element element, RenderContext renderContext) {
     }
 
     @Override
-    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         element.setInnerText(null);
         element.removeAllChildren();
 
@@ -43,6 +37,13 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         }
     }
 
+    @Override
+    public void clearRenderContent(Element element, RenderContext renderContext) {
+        element.getStyle().clearPadding();
+        element.removeClassName("requiredValueString");
+        element.setTitle("");
+    }
+
     protected void setBasedEmptyElement(Element element) {
         element.getStyle().setPaddingRight(4, Style.Unit.PX);
         element.getStyle().setPaddingLeft(4, Style.Unit.PX);
@@ -54,7 +55,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     protected abstract String getFilePath(Object value);
 
     protected FileBasedCellRenderer(GPropertyDraw property) {
-        this.property = property;
+        super(property);
     }
 
     public String format(Object value) {

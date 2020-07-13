@@ -12,6 +12,10 @@ public class DialogModalBox extends DialogBox {
         super(false, true);
     }
 
+    public DialogModalBox(Caption captionWidget) {
+        super(false, true, captionWidget);
+    }
+
     private Element focusedElement;
 
     @Override

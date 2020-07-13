@@ -13,12 +13,6 @@ public class FileCellRenderer extends FileBasedCellRenderer {
     }
 
     @Override
-    public void renderStatic(Element element, RenderContext renderContext) {
-        super.renderStatic(element, renderContext);
-        element.getStyle().setHeight(100, Style.Unit.PCT);
-    }
-
-    @Override
     protected String getFilePath(Object value) {
         StringBuilder sb = new StringBuilder();
         GwtClientUtils.setThemeImage(value == null ? ICON_EMPTY : ICON_FILE, sb::append);

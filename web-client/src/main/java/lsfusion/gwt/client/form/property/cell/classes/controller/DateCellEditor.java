@@ -12,6 +12,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DatePicker;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.classes.data.GDateType;
@@ -45,6 +46,7 @@ public class DateCellEditor extends PopupBasedCellEditor {
             @Override
             public void onKeyPress(KeyPressEvent event) {
                 if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+                    GwtClientUtils.stopPropagation(event);
                     onEnterPressed();
                 }
             }

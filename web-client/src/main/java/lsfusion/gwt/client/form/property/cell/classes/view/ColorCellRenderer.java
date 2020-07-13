@@ -3,19 +3,32 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class ColorCellRenderer extends CellRenderer<Object> {
-    @Override
-    public void renderStatic(Element element, RenderContext renderContext) {
-        element.setInnerText(EscapeUtils.UNICODE_NBSP);
-        element.getStyle().setBorderWidth(0, Style.Unit.PX);
+
+    public ColorCellRenderer(GPropertyDraw property) {
+        super(property);
     }
 
     @Override
-    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
+    public void renderStaticContent(Element element, RenderContext renderContext) {
+        element.setInnerText(EscapeUtils.UNICODE_NBSP);
+//        element.getStyle().setBorderWidth(0, Style.Unit.PX);
+    }
+
+    @Override
+    public void clearRenderContent(Element element, RenderContext renderContext) {
+        element.getStyle().clearColor();
+        element.getStyle().clearBackgroundColor();
+        element.setTitle(null);
+    }
+
+    @Override
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         String color = getColorValue(value);
         element.getStyle().setColor(color);
         element.getStyle().setBackgroundColor(color);

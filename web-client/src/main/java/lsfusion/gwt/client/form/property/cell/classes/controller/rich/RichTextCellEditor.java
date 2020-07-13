@@ -75,15 +75,14 @@ public class RichTextCellEditor extends DialogBasedCellEditor {
             }
         });
 
-        textArea.addKeyDownHandler(new KeyDownHandler() {
-            @Override
-            public void onKeyDown(KeyDownEvent event) {
-                int keyCode = event.getNativeKeyCode();
-                if (keyCode == KeyCodes.KEY_ENTER && event.isControlKeyDown()) {
-                    commit();
-                } else if (keyCode == KeyCodes.KEY_ESCAPE) {
-                    cancel();
-                } 
+        textArea.addKeyDownHandler(event -> {
+            int keyCode = event.getNativeKeyCode();
+            if (keyCode == KeyCodes.KEY_ENTER && event.isControlKeyDown()) {
+                GwtClientUtils.stopPropagation(event);
+                commit();
+            } else if (keyCode == KeyCodes.KEY_ESCAPE) {
+                GwtClientUtils.stopPropagation(event);
+                cancel();
             }
         });
         

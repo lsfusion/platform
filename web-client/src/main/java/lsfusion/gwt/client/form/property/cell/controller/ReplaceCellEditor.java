@@ -6,5 +6,7 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public interface ReplaceCellEditor extends CellEditor {
 
-    void renderDom(Element cellParent, RenderContext renderContext, UpdateContext updateContext);
+    void render(Element cellParent, RenderContext renderContext);
+
+    void clearRender(Element cellParent, RenderContext renderContext);
 }

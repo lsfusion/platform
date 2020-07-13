@@ -13,24 +13,30 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.function.Consumer;
 
-import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
-import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.setBasedTextFonts;
 import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 
 // actually extends TextBasedCellRenderer for optimization purposes, when there are no images
 public class ActionCellRenderer extends CellRenderer {
 
-    private final GPropertyDraw property;
-
     public ActionCellRenderer(GPropertyDraw property) {
-        this.property = property;
+        super(property);
     }
 
     public static final String TEXT = "lsf-text-button";
     public static final String IMAGE = "lsf-image-button";
 
     @Override
-    public void renderStatic(Element element, RenderContext renderContext) {
+    protected boolean isSimpleText() {
+        return property.imageHolder == null;
+    }
+
+    @Override
+    protected Style.TextAlign getDefaultHorzAlignment() {
+        return Style.TextAlign.CENTER;
+    }
+
+    @Override
+    public void renderStaticContent(Element element, RenderContext renderContext) {
         element.addClassName("gwt-Button");
 
         Style style = element.getStyle();
@@ -39,15 +45,10 @@ public class ActionCellRenderer extends CellRenderer {
         String setText;
         Element textElement;
         if(property.imageHolder == null) { // optimization;
-            Style.TextAlign textAlignStyle = property.getTextAlignStyle();
-            if (textAlignStyle == null)
-                textAlignStyle = Style.TextAlign.CENTER;
-            style.setTextAlign(textAlignStyle);
-
             textElement = element;
             setText = "...";
         } else {
-            textElement = GwtClientUtils.wrapCenteredImg(element, null, imageElement -> {
+            textElement = GwtClientUtils.wrapAlignedFlexImg(element, imageElement -> { // assert that in renderStatic it is wrapped into wrap-center
                 element.setPropertyObject(IMAGE, imageElement);
             });
             setText = null;
@@ -58,6 +59,13 @@ public class ActionCellRenderer extends CellRenderer {
         // using widgets can lead to some leaks
         // also there is a problem with focuses (all inner elements, should be not focusable), outer borders and extra elements
 //        AppImageButton button = new AppImageButton(property.imageHolder, null);
+    }
+
+    @Override
+    public void clearRenderContent(Element element, RenderContext renderContext) {
+        element.removeClassName("gwt-Button");
+        element.getStyle().clearPadding();
+        element.setPropertyObject(TEXT, null);
     }
 
     public static void setLabelText(Element element, String text) {
@@ -88,7 +96,7 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         boolean enabled = (value != null) && (Boolean) value;
 
         if(property.imageHolder != null) {

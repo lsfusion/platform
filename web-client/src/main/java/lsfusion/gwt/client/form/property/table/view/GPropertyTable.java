@@ -158,10 +158,25 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     public RenderContext getRenderContext() {
-        return new RenderContext() {};
+        return new RenderContext() {
+            @Override
+            public Integer getStaticHeight() {
+                return tableBuilder.getCellHeight();
+            }
+
+            @Override
+            public GFont getFont() {
+                return GPropertyTable.this.getFont();
+            }
+        };
     }
     public UpdateContext getUpdateContext() {
-        return this::getFont;
+        return new UpdateContext() {
+            @Override
+            public boolean isStaticHeight() {
+                return true;
+            }
+        };
     }
     protected abstract GFont getFont();
 

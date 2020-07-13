@@ -1,11 +1,13 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 
 import java.util.function.Consumer;
@@ -44,11 +46,16 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     // there is some architecture bug in filters so for now will do this hack (later filter should rerender all GDataFilterValue)
     public void changeProperty(GPropertyDraw property) {
+        Element renderElement = getRenderElement();
+        RenderContext renderContext = getRenderContext();
+
+        this.property.getCellRenderer().clearRender(renderElement, renderContext);
+
         this.property = property;
 
         setBaseSize(true);
 
-        form.rerender(this.property, getRenderElement(), getRenderContext());
+        property.getCellRenderer().renderStatic(renderElement, renderContext);
     }
 
     @Override

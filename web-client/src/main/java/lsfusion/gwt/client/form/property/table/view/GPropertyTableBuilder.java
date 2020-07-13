@@ -38,6 +38,10 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         return cellHeightChanged;
     }
 
+    public int getCellHeight() {
+        return cellHeight;
+    }
+
     @Override
     public void buildRowImpl(int rowIndex, T rowValue, TableRowElement tr) {
 
@@ -120,15 +124,16 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public static void renderTD(Element td, int height) {
         setRowHeight(td, height);
-        // vertical centering
-        // maybe it makes sense to move line-height to renderers (for example it is overridden in TextCellRenderer, but for now we'll keep it this way)
-        setLineHeight(td, height);
     }
 
     // setting line height to height it's the easiest way to align text to the center vertically, however it works only for single lines (which is ok for row data)
     public static void setLineHeight(Element td, int height) {
         td.getStyle().setLineHeight(height, Style.Unit.PX);
     }
+    public static void clearLineHeight(Element td) {
+        td.getStyle().clearLineHeight();
+    }
+
     public static void setRowHeight(Element td, int height) {
         td.getStyle().setHeight(height, Style.Unit.PX);
     }

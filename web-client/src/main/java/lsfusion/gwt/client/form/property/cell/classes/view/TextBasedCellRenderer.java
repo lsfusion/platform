@@ -2,8 +2,11 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.ReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -14,30 +17,47 @@ import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 import static lsfusion.gwt.client.view.StyleDefaults.TEXT_MULTILINE_PADDING;
 
 public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
-    protected GPropertyDraw property;
 
     protected TextBasedCellRenderer(GPropertyDraw property) {
-        this.property = property;
+        super(property);
     }
 
-    public void renderStatic(Element element, RenderContext renderContext) {
-        Style style = element.getStyle();
-
-        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
-        if (textAlignStyle != null) {
-            style.setTextAlign(textAlignStyle);
-        }
-
-        renderStaticContent(element, renderContext);
+    @Override
+    protected boolean isSimpleText() {
+        return !isMultiLine();
     }
 
-    protected void renderStaticContent(Element element, RenderContext renderContext) {
-        Style style = element.getStyle();
+    @Override
+    protected String getDefaultVertAlignment() {
+        if(isMultiLine())
+            return "stretch";
+        return super.getDefaultVertAlignment();
+    }
 
-        setPadding(style, isMultiLine());
+    public void renderStaticContent(Element element, RenderContext renderContext) {
+        render(property, element, renderContext, isMultiLine(), isWordWrap());
+    }
+
+    public static void render(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine, boolean wordWrap) {
+        setPadding(element.getStyle(), multiLine);
+        setBasedTextFonts(property, element.getStyle(), renderContext);
+        if(wordWrap)
+            element.getStyle().setProperty("wordBreak", "break-word"); // wordWrap (overflow-wrap) doesn't work as expected
+    }
+
+    @Override
+    public void clearRenderContent(Element element, RenderContext renderContext) {
+        element.getStyle().clearPadding();
+
+        if(isWordWrap())
+            element.getStyle().clearProperty("wordBreak");
     }
 
     protected boolean isMultiLine() {
+        return false;
+    }
+
+    protected boolean isWordWrap() {
         return false;
     }
 
@@ -46,7 +66,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         return CELL_HORIZONTAL_PADDING;
     }
     public int getHeightPadding() {
-        return getHeightPadding(false);
+        return getHeightPadding(isMultiLine());
     }
 
     public static int getHeightPadding(boolean multiLine) {
@@ -58,7 +78,6 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         if(multiLine) {
             style.setPaddingTop(TEXT_MULTILINE_PADDING, Style.Unit.PX);
             style.setPaddingBottom(TEXT_MULTILINE_PADDING, Style.Unit.PX);
-            style.setProperty("lineHeight", "normal"); // override base line height
 
             style.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
         } else {
@@ -74,16 +93,15 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
     }
 
-    public static void setBasedTextFonts(GPropertyDraw property, Style style, UpdateContext updateContext) {
-        GFont font = property.font != null ? property.font : updateContext.getFont();
+    public static void setBasedTextFonts(GPropertyDraw property, Style style, RenderContext renderContext) {
+        GFont font = property.font != null ? property.font : renderContext.getFont();
 
         if (font != null) {
             font.apply(style);
         }
     }
 
-    public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
-        setBasedTextFonts(property, element.getStyle(), updateContext);
+    public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         if (value == null) {
             element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
             setInnerText(element, null);

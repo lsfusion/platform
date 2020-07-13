@@ -12,20 +12,17 @@ import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 public class TextCellEditor extends TextBasedCellEditor {
 
-    private final boolean rich;
-
-    public TextCellEditor(EditManager editManager, GPropertyDraw property, boolean rich) {
+    public TextCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property, "textarea");
-        this.rich = rich;
     }
 
     @Override
     public Element createInputElement() {
-        TextAreaElement input = Document.get().createTextAreaElement();
-        if (!rich) {
-            input.getStyle().setProperty("wordWrap", "break-word");
-        }
-        return input;
+        TextAreaElement inputElement = Document.get().createTextAreaElement();
+        // without setting boxSized class textarea behaviour is pretty odd when text is very large or inside td (position of textarea is really unpredictable)
+        // maybe for regular input it also makes sense, but so far it's not evident
+        inputElement.addClassName("boxSized");
+        return inputElement;
     }
 
     @Override

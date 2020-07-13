@@ -137,7 +137,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         int setHeight = height > 0 ? height : DEFAULT_HEADER_HEIGHT;
         GPropertyTableBuilder.setRowHeight(th, setHeight);
 
-        th = GwtClientUtils.wrapCenteredImg(th, setHeight, getSortImgProcesspr(sortDir));
+        th = GwtClientUtils.wrapCenteredImg(th, true, setHeight, getSortImgProcesspr(sortDir));
         th.addClassName("dataGridHeaderCell-caption"); // wrap normal to have multi-line headers
         renderCaption(th, caption);
 

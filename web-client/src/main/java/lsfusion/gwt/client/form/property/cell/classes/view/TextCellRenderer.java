@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
@@ -15,21 +17,13 @@ public class TextCellRenderer extends StringBasedCellRenderer {
     }
 
     @Override
-    public int getHeightPadding() {
-        return getHeightPadding(true);
-    }
-
-    @Override
-    public void renderStaticContent(Element element, RenderContext renderContext) {
-        super.renderStaticContent(element, renderContext);
-        if (!rich) {
-            element.getStyle().setProperty("wordWrap", "break-word");
-        }
-    }
-
-    @Override
     protected boolean isMultiLine() {
         return true;
+    }
+
+    @Override
+    protected boolean isWordWrap() {
+        return !rich;
     }
 
     @Override

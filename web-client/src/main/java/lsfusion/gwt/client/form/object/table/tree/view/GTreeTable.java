@@ -153,6 +153,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
 
     public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
+//        GPropertyTableBuilder.setLineHeight(jsElement, rowHeight);
         for (int i = 0; i <= treeValue.getLevel(); i++) {
             DivElement img = createIndentElement(cellElement);
             updateIndentElement(img, treeValue, i);

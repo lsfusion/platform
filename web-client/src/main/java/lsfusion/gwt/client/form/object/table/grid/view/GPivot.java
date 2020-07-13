@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -29,6 +30,7 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -1031,14 +1033,22 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GPropertyDraw property = columnMap.get(columnName).property;
-        Element cellElement = th;
-        if (property.baseType instanceof GActionType) {
-            cellElement = Document.get().createDivElement();
-            GPropertyTableBuilder.setRowHeight(cellElement, rowHeight);
-            th.appendChild(cellElement);
-            th.getStyle().setPadding(0, Style.Unit.PX);
-        }
-        property.getCellRenderer().render(th, value, new RenderContext() {}, () -> font);
+        property.getCellRenderer().render(th, value, new RenderContext() {
+            @Override
+            public Integer getStaticHeight() {
+                return rowHeight;
+            }
+
+            @Override
+            public GFont getFont() {
+                return font;
+            }
+        }, new UpdateContext() {
+            @Override
+            public boolean isStaticHeight() {
+                return true;
+            }
+        });
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
@@ -1116,6 +1126,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     public void renderValue(Element jsElement, JavaScriptObject value) {
+        GPropertyTableBuilder.setLineHeight(jsElement, rowHeight);
+
         jsElement.setPropertyObject("textContent", value);
     }
 

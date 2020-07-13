@@ -84,10 +84,13 @@
 
 .wrap-img {
     /*overflow: hidden;*/
-    margin: 1px 2px;
-
     flex: 0 0 auto;
     align-self: center;
+}
+
+.wrap-img-margins {
+    /*overflow: hidden;*/
+    margin: 1px 2px;
 }
 
 .dataGridHeaderCell-caption {
