@@ -13,7 +13,7 @@
   };
 
   callWithJQuery(function($, Plotly) {
-    var CSSProps, computedStyle, getAxisGridColor, getAxisLineColor, getAxisZeroLineColor, getCSSPropertyValue, getFontColor, getPaperBGColor, getPlotBGColor, makePlotlyChart, makePlotlyScatterChart;
+    var CSSProps, computedStyle, getAxisGridColor, getAxisLineColor, getAxisZeroLineColor, getCSSPropertyValue, getFontColor, getJoinedAttrsNames, getPaperBGColor, getPlotBGColor, makePlotlyChart, makePlotlyScatterChart;
     computedStyle = null;
     CSSProps = {
       paper_bgcolor: null,
@@ -64,6 +64,20 @@
         CSSProps.axis_zeroline_color = getCSSPropertyValue('--component-border-color');
       }
       return CSSProps.axis_zeroline_color;
+    };
+    getJoinedAttrsNames = function(attrs, opts) {
+      var attr, attrsString, j, len;
+      attrsString = '';
+      for (j = 0, len = attrs.length; j < len; j++) {
+        attr = attrs[j];
+        if (attr !== opts.localeStrings.columnAttr) {
+          if (attrsString !== '') {
+            attrsString += '-';
+          }
+          attrsString += attr;
+        }
+      }
+      return attrsString;
     };
     makePlotlyChart = function(reverse, traceOptions, layoutOptions, transpose) {
       if (traceOptions == null) {
@@ -131,21 +145,26 @@
           return $.extend(trace, traceOptions);
         });
         if (transpose ^ reverse) {
-          hAxisTitle = pivotData.rowAttrs.join("-");
-          groupByTitle = pivotData.colAttrs.join("-");
+          hAxisTitle = getJoinedAttrsNames(pivotData.rowAttrs, opts);
+          groupByTitle = getJoinedAttrsNames(pivotData.colAttrs, opts);
         } else {
-          hAxisTitle = pivotData.colAttrs.join("-");
-          groupByTitle = pivotData.rowAttrs.join("-");
+          hAxisTitle = getJoinedAttrsNames(pivotData.colAttrs, opts);
+          groupByTitle = getJoinedAttrsNames(pivotData.rowAttrs, opts);
         }
-        titleText = fullAggName;
-        if (hAxisTitle !== "") {
-          titleText += " " + opts.localeStrings.vs + " " + hAxisTitle;
+        titleText = hAxisTitle !== "" ? "" + hAxisTitle : "";
+        if (groupByTitle !== "" && hAxisTitle !== "") {
+          titleText += " " + opts.localeStrings.vs + " ";
         }
         if (groupByTitle !== "") {
-          titleText += " " + opts.localeStrings.by + " " + groupByTitle;
+          titleText += "" + groupByTitle;
         }
         layout = {
-          title: titleText,
+          title: {
+            text: titleText,
+            font: {
+              size: 12
+            }
+          },
           hovermode: 'closest',
           autosize: true,
           paper_bgcolor: getPaperBGColor(),
@@ -155,6 +174,12 @@
           }
         };
         if (traceOptions.type === 'pie') {
+          layout.margin = {
+            l: 30,
+            r: 30,
+            t: titleText !== "" ? 40 : 30,
+            b: 30
+          };
           columns = Math.ceil(Math.sqrt(data.length));
           rows = Math.ceil(data.length / columns);
           layout.grid = {
@@ -176,18 +201,37 @@
           }
         } else {
           layout.xaxis = {
-            title: transpose ? fullAggName : null,
+            title: {
+              text: transpose ? fullAggName : null,
+              font: {
+                size: 12
+              }
+            },
             automargin: true,
             gridcolor: getAxisGridColor(),
             linecolor: getAxisLineColor(),
             zerolinecolor: getAxisZeroLineColor()
           };
+          if (transpose) {
+            layout.xaxis.title.standoff = 10;
+          }
           layout.yaxis = {
-            title: transpose ? null : fullAggName,
+            title: {
+              text: transpose ? null : fullAggName,
+              font: {
+                size: 12
+              }
+            },
             automargin: true,
             gridcolor: getAxisGridColor(),
             linecolor: getAxisLineColor(),
             zerolinecolor: getAxisZeroLineColor()
+          };
+          layout.margin = {
+            l: 50,
+            r: 30,
+            t: titleText !== "" ? 40 : 30,
+            b: transpose ? 50 : 30
           };
         }
         result = $("<div>").appendTo($("body"));
@@ -197,7 +241,7 @@
     };
     makePlotlyScatterChart = function() {
       return function(pivotData, opts) {
-        var colKey, colKeys, data, defaults, j, k, layout, len, len1, renderArea, result, rowKey, rowKeys, v;
+        var colAttrsString, colKey, colKeys, data, defaults, j, k, layout, len, len1, renderArea, result, rowAttrsString, rowKey, rowKeys, titleText, v;
         defaults = {
           localeStrings: {
             vs: "vs",
@@ -237,16 +281,47 @@
             }
           }
         }
+        colAttrsString = getJoinedAttrsNames(pivotData.colAttrs, opts);
+        rowAttrsString = getJoinedAttrsNames(pivotData.rowAttrs, opts);
+        titleText = rowAttrsString !== "" ? "" + rowAttrsString : "";
+        if (colAttrsString !== "" && rowAttrsString !== "") {
+          titleText += " " + opts.localeStrings.vs + " ";
+        }
+        if (colAttrsString !== "") {
+          titleText += "" + colAttrsString;
+        }
         layout = {
-          title: pivotData.rowAttrs.join("-") + ' vs ' + pivotData.colAttrs.join("-"),
+          title: {
+            text: titleText,
+            font: {
+              size: 12
+            }
+          },
+          margin: {
+            l: 50,
+            r: 30,
+            t: titleText !== "" ? 40 : 30,
+            b: colAttrsString !== '' ? 50 : 30
+          },
           hovermode: 'closest',
           xaxis: {
-            title: pivotData.colAttrs.join('-'),
+            title: {
+              text: colAttrsString,
+              font: {
+                size: 12
+              },
+              standoff: 10
+            },
             automargin: true
           },
           yaxis: {
-            title: pivotData.rowAttrs.join('-'),
-            automargin: true
+            title: {
+              text: rowAttrsString,
+              font: {
+                size: 12
+              },
+              automargin: true
+            }
           },
           autosize: true,
           paper_bgcolor: getPaperBGColor(),

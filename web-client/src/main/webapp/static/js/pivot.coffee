@@ -687,7 +687,7 @@ callWithJQuery ($) ->
             cellHorizontalPadding: null
             getDisplayColor: null
 
-        localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings)
+        localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings, columnAttr: inputOpts.columnAttributeName)
         localeDefaults =
             rendererOptions: {
                 localeStrings
