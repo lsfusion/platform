@@ -9,11 +9,6 @@ public class PasswordAuthentication extends Authentication {
         this.password = password;
     }
 
-    @Override
-    public String getUserName() {
-        return super.getUserName();
-    }
-
     public String getPassword() {
         return this.password;
     }

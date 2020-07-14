@@ -94,7 +94,7 @@
     </b:bean>
 
     <!--Convert OAuth2 authentication token to LSFAuthenticationToken-->
-    <b:bean id="oAuth2Filter" class="lsfusion.http.authentication.OAuth2Filter"/>
+    <b:bean id="oAuth2Filter" class="lsfusion.http.authentication.OAuth2ToLSFTokenFilter"/>
 
     <!-- Authentication configuration -->
     

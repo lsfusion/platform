@@ -27,7 +27,7 @@ import java.util.Locale;
 
 import static lsfusion.http.authentication.LSFRemoteAuthenticationProvider.getUserLocale;
 
-public class OAuth2Filter extends OncePerRequestFilter {
+public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
     private static final String authSecretKey = "authSecret";
 
     @Autowired

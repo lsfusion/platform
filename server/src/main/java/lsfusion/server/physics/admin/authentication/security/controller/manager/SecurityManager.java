@@ -248,65 +248,51 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return null;
     }
 
-    private boolean isTrustedAuth(Authentication authentication) {
-        String webAuthSecret = null;
-        if (authentication instanceof TrustedAuthentication) {
-            webAuthSecret = ((TrustedAuthentication) authentication).getAuthSecret();
-        }
-        return webAuthSecret != null && webAuthSecret.equals(getWebClientSecret());
-    }
-
     public AuthenticationToken authenticateUser(Authentication authentication, ExecutionStack stack) {
-        DataObject userObject;
         try (DataSession session = createSession()) {
-            userObject = readUser(authentication.getUserName(), session);
-            if (isTrustedAuth(authentication) && userObject == null) {
-                String pwd = BaseUtils.generatePassword(20, false, true);
-                userObject = addUser(authentication.getUserName(), pwd, session);
-                apply(session, stack);
-            }
-            authenticateUser(session, userObject, authentication, stack);
-            return generateToken(authentication.getUserName());
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public void authenticateUser(DataSession session, DataObject userObject, Authentication authentication, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if (authenticationLM.useLDAP.read(session) != null && authentication instanceof PasswordAuthentication) {
-            String server = (String) authenticationLM.serverLDAP.read(session);
-            Integer port = (Integer) authenticationLM.portLDAP.read(session);
-            String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
-            String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
-
-            try {
-                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(authentication.getUserName(), ((PasswordAuthentication)authentication).getPassword());
-                if (ldapParameters.isConnected()) {
-                    if (userObject == null) {
-                        userObject = addUser(authentication.getUserName(), ((PasswordAuthentication)authentication).getPassword(), session);
+            DataObject userObject;
+            if (authentication instanceof PasswordAuthentication) {
+                userObject = readUser(authentication.getUserName(), session);
+                if (authenticationLM.useLDAP.read(session) != null) {
+                    String server = (String) authenticationLM.serverLDAP.read(session);
+                    Integer port = (Integer) authenticationLM.portLDAP.read(session);
+                    String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
+                    String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
+                    try {
+                        LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix)
+                                .authenticate(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword());
+                        if (ldapParameters.isConnected()) {
+                            if (userObject == null) {
+                                userObject = addUser(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword(), session);
+                            }
+                            setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(),
+                                    ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
+                            apply(session);
+                        } else {
+                            throw new LoginException();
+                        }
+                    } catch (CommunicationException e) {
+                        systemLogger.error("LDAP authentication failed", e);
                     }
-                    setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
-                    apply(session);
-                    return;
-                } else {
+                }
+                if (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword(), stack)) {
                     throw new LoginException();
                 }
-            } catch (CommunicationException e) {
-                systemLogger.error("LDAP authentication failed", e);
+            } else {
+                String webClientAuthSecret = ((TrustedAuthentication) authentication).getAuthSecret();
+                userObject = readUser(authentication.getUserName(), session);
+                if ((webClientAuthSecret != null && webClientAuthSecret.equals(getWebClientSecret())) && userObject == null) {
+                    String pwd = BaseUtils.generatePassword(20, false, true);
+                    userObject = addUser(authentication.getUserName(), pwd, session);
+                    apply(session, stack);
+                }
             }
-        }
-
-        if (userObject == null) {
-            throw new LoginException();
-        }
-
-        if (!isTrustedAuth(authentication) && authentication instanceof PasswordAuthentication
-                && !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication)authentication).getPassword(), stack)) {
-            throw new LoginException();
-        }
-
-        if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
-            throw new LockedException();
+            if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
+                throw new LockedException();
+            }
+            return generateToken(authentication.getUserName());
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
     }
 

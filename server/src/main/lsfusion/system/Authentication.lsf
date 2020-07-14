@@ -101,52 +101,50 @@ baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
 userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
 
 // OAuth and Web-client authentication
-CLASS Auth;
-id = DATA STRING (Auth);
-dataClientId = DATA STRING (Auth);
-dataClientSecret = DATA STRING (Auth);
-dataWebClientSecretKey = DATA STRING (Auth);
+CLASS OAuth2;
+id = DATA STRING (OAuth2);
+dataClientId = DATA STRING (OAuth2);
+dataClientSecret = DATA STRING (OAuth2);
 
-auth (id) = GROUP AGGR Auth a BY id(a);
+auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
 
 clientId(STRING str) = dataClientId(auth(str));
 clientSecret(STRING str) = dataClientSecret(auth(str));
-webClientSecret () = dataWebClientSecretKey(auth('WebClient'));
 
-writeGitDefaultCredentials (Auth a){
-        id(a) <- 'Github';
-        dataClientId(a) <- '9d1729e039d1eb38748f';
-        dataClientSecret(a) <- '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
-        dataWebClientSecretKey(a) <- NULL;
-        APPLY;
+writeGitDefaultCredentials (OAuth2 oa){
+        id(oa) <- 'Github';
+        dataClientId(oa) <- '9d1729e039d1eb38748f';
+        dataClientSecret(oa) <- '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
 }
 
-writeGoogleDefaultCredentials (Auth a){
-        id(a) <- 'Google';
-        dataClientId(a) <- '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
-        dataClientSecret(a) <- 'Fa-bg6EpM71UXSa9rxvYiNQq';
-        dataWebClientSecretKey(a) <- NULL;
-        APPLY;
+writeGoogleDefaultCredentials (OAuth2 oa){
+        id(oa) <- 'Google';
+        dataClientId(oa) <- '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
+        dataClientSecret(oa) <- 'Fa-bg6EpM71UXSa9rxvYiNQq';
 }
 
-writeWebClientDefaultCredentials (Auth a){
-        id(a) <- 'WebClient';
-        dataClientId(a) <- NULL;
-        dataClientSecret(a) <- NULL;
-        dataWebClientSecretKey(a) <- 'secretKey';
-        APPLY;
+dataWebClientSecretKey = DATA STRING ();
+webClientSecret () = dataWebClientSecretKey();
+
+writeWebClientDefaultCredentials (){
+        dataWebClientSecretKey() <- 'secretKey';
 }
 
-writeDefaultCredentials(Auth a) {
-    IF id(a) == 'Github' THEN {
-        writeGitDefaultCredentials(a);
-    } 
-    IF id(a) == 'Google' THEN {
-        writeGoogleDefaultCredentials(a);
-    } 
-    IF id(a) == 'WebClient' THEN {
-        writeWebClientDefaultCredentials(a);
-    } 
+writeDefaultCredentials() {
+    IF NOT clientId('Github') THEN {
+        NEW oa = OAuth2{
+            writeGitDefaultCredentials(oa);
+        }
+    }
+    IF NOT clientId('Google') THEN {
+        NEW oa = OAuth2{
+            writeGoogleDefaultCredentials(oa);
+        }
+    }
+    IF NOT webClientSecret() THEN {
+            writeWebClientDefaultCredentials();
+    }
+    APPLY;
 }
 
 // lock
@@ -359,13 +357,12 @@ FORM customUsers '{authentication.users}'
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
     
-    OBJECTS auth = Auth 
+    OBJECTS auth = OAuth2 
     PROPERTIES(auth)  NEW, DELETE,
                       id,
-                      dataWebClientSecretKey,
                       dataClientId,
                       dataClientSecret
-    PROPERTIES (auth) GRID writeDefaultCredentials;
+    PROPERTIES () dataWebClientSecretKey
 ;
 
 DESIGN customUsers {
@@ -409,6 +406,10 @@ DESIGN customUsers {
                     headerHeight = 50;
                     }
                 }
+            }
+            NEW WEBAUTH {
+                caption = 'WEB-AUTH';
+                MOVE PROPERTY(dataWebClientSecretKey());
             }
         }
     }

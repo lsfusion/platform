@@ -24,7 +24,7 @@ public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSucc
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        authentication = OAuth2Filter.convertToken(logicsProvider, request, response, authentication, servletContext);
+        authentication = OAuth2ToLSFTokenFilter.convertToken(logicsProvider, request, response, authentication, servletContext);
         if (authentication == null) {
             return;
         }

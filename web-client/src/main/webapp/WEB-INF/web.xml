@@ -157,7 +157,7 @@
     <!--Filter to convert OAuth2 authentication token to LSFAuthenticationToken-->
     <filter>
         <filter-name>oauth2Filter</filter-name>
-        <filter-class>lsfusion.http.authentication.OAuth2Filter</filter-class>
+        <filter-class>lsfusion.http.authentication.OAuth2ToLSFTokenFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>oauth2Filter</filter-name>

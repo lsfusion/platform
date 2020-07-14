@@ -14,7 +14,6 @@ import lsfusion.interop.logics.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,8 +49,7 @@ public class MainController {
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
 
-        Iterable<ClientRegistration> clientRegistrations = clientRegistrationRepository;
-        clientRegistrations.forEach(registration -> oauth2AuthenticationUrls.put(registration.getClientName(), authorizationRequestBaseUri + registration.getRegistrationId()));
+        clientRegistrationRepository.forEach(registration -> oauth2AuthenticationUrls.put(registration.getClientName(), authorizationRequestBaseUri + registration.getRegistrationId()));
         model.addAttribute("urls", oauth2AuthenticationUrls);
 
         model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
