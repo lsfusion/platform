@@ -13,6 +13,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.function.Consumer;
 
+import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.clearBasedTextFonts;
+import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.setBasedTextFonts;
 import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 
 // actually extends TextBasedCellRenderer for optimization purposes, when there are no images
@@ -39,9 +41,6 @@ public class ActionCellRenderer extends CellRenderer {
     public void renderStaticContent(Element element, RenderContext renderContext) {
         element.addClassName("gwt-Button");
 
-        Style style = element.getStyle();
-        setPadding(style);
-
         String setText;
         Element textElement;
         if(property.imageHolder == null) { // optimization;
@@ -53,6 +52,10 @@ public class ActionCellRenderer extends CellRenderer {
             });
             setText = null;
         }
+
+        setPadding(element.getStyle());
+        setBasedTextFonts(property, textElement, renderContext);
+
         element.setPropertyObject(TEXT, textElement);
         setLabelText(element, setText);
 
@@ -66,6 +69,11 @@ public class ActionCellRenderer extends CellRenderer {
         element.removeClassName("gwt-Button");
         element.getStyle().clearPadding();
         element.setPropertyObject(TEXT, null);
+
+        if(property.imageHolder == null)
+            clearBasedTextFonts(property, element.getStyle(), renderContext);
+
+        element.removeClassName("gwt-Button-disabled");
     }
 
     public static void setLabelText(Element element, String text) {
@@ -103,6 +111,10 @@ public class ActionCellRenderer extends CellRenderer {
             ImageDescription image = property.getImage(enabled);
             setImage(element, image != null ? GwtClientUtils.getAppImagePath(image.url) : null, null);
         }
+        if(!enabled)
+            element.addClassName("gwt-Button-disabled");
+        else
+            element.removeClassName("gwt-Button-disabled");
     }
 
     @Override

@@ -82,7 +82,7 @@ public abstract class PanelRenderer {
     }
 
     public void onBinding(Event event) {
-        value.onBinding(true, event);
+        value.onBinding(event);
     }
 
     private Object foreground;

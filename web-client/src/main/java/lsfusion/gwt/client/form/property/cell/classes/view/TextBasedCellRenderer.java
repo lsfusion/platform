@@ -46,6 +46,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
         element.getStyle().clearPadding();
+        clearBasedTextFonts(property, element.getStyle(), renderContext);
 
         if(isWordWrap())
             element.getStyle().clearProperty("wordBreak");
@@ -96,6 +97,13 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
         if (font != null) {
             font.apply(element.getStyle());
+        }
+    }
+    public static void clearBasedTextFonts(GPropertyDraw property, Style style, RenderContext renderContext) {
+        GFont font = property.font != null ? property.font : renderContext.getFont();
+
+        if (font != null) {
+            font.clear(style);
         }
     }
 

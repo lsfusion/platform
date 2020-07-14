@@ -36,6 +36,16 @@ public class GFont implements Serializable {
         style.setFontStyle(italic ? Style.FontStyle.ITALIC : Style.FontStyle.NORMAL);
         style.setFontWeight(bold ? Style.FontWeight.BOLD : Style.FontWeight.NORMAL);
     }
+    public void clear(Style style) {
+        if (family != null) {
+            style.clearProperty("fontFamily");
+        }
+        if (size > 0) {
+            style.clearFontSize();
+        }
+        style.clearFontSize();
+        style.clearFontWeight();
+    }
 
     public boolean isBold() {
         return bold;

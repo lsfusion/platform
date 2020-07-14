@@ -97,11 +97,11 @@ button {
 .gwt-Button:active, button:active { /* should come after ':hover' and ':focus' */
     background-color: var(--button-active-background-color);
 }
-.gwt-Button[disabled], button[disabled] {
+.gwt-Button-disabled, button[disabled] {
     cursor: default;
     color: var(--disabled-text-color);
 }
-.gwt-Button[disabled]:hover, button[disabled]:hover {
+.gwt-Button-disabled:hover, button[disabled]:hover {
     border: 1px outset var(--button-disabled-hover-border-color);
     background: var(--background-color);
 }

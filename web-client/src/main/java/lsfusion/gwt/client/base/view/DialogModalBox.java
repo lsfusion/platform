@@ -31,7 +31,9 @@ public class DialogModalBox extends DialogBox {
         super.hide();
 
         MainFrame.setModalPopup(false);
-        if(focusedElement != null)
+        if(focusedElement != null) {
             focusedElement.focus();
+            focusedElement = null; // just in case because sometimes hide is called without show (and the same DialogModalBox is used several time)
+        }
     }
 }

@@ -434,7 +434,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 ", caption='" + caption + '\'' +
                 ", baseType=" + baseType +
                 ", changeType=" + changeType +
-                ", imagePath='" + imageHolder.getDefaultImage() + '\'' +
+                (imageHolder != null ? ", imagePath='" + imageHolder.getDefaultImage() + '\'' : "") +
                 ", focusable=" + focusable +
                 ", checkEquals=" + checkEquals +
                 ", editType=" + editType +

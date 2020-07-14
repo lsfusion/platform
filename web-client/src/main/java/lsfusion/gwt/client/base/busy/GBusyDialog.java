@@ -181,7 +181,8 @@ public class GBusyDialog extends WindowBox {
     }
 
     public void hideBusyDialog() {
-        hide();
+        if(isShowing())
+            hide();
         messagePanel.clear();
         btnExit.setEnabled(false);
         btnReconnect.setEnabled(false);

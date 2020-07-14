@@ -226,7 +226,8 @@ public class GConnectionLostManager {
         public void hideDialog() {
             if (showButtonsTimer != null)
                 showButtonsTimer.cancel();
-            hide();
+            if(isShowing())
+                hide();
             blockDialog.makeMaskVisible(false);
         }
 

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GInputEvent;
@@ -62,8 +63,18 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         setFocus(true); // we can check if it's focusable, but it will be done automatically in onFocus
     }
 
-    public void onBinding(boolean isBinding, Event event) {
-        onEditEvent(new EventHandler(event), isBinding);
+    public void onBinding(Event event) {
+        addStyleName("panelRendererValueBinding");
+        Timer t = new Timer() {
+            @Override
+            public void run() {
+                removeStyleName("panelRendererValueBinding");
+                cancel();
+            }
+        };
+        t.schedule(400);
+
+        onEditEvent(new EventHandler(event), true);
     }
     public void onEditEvent(EventHandler handler, boolean isBinding) {
         form.executePropertyEventAction(handler, isBinding, this);

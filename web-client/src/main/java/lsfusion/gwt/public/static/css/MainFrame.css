@@ -267,6 +267,10 @@ input[type=checkbox]:focus {
     border: 1px solid var(--component-hover-border-color);
 }
 
+.panelRendererValueBinding {
+    background-color: var(--button-active-background-color);
+}
+
 /* ------------ Caption panel ------------ */
 .captionPanel {
     padding-top: 1px;
