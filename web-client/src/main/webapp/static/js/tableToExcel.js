@@ -82,6 +82,7 @@ parcelRequire = function(e, r, t, n) {
                                 var m = f[n];
                                 if (c = n + 1, s = 1, "true" !== m.getAttribute("data-exclude")) {
                                     if (m.getAttribute("data-height")) e.getRow(c).height = parseFloat(m.getAttribute("data-height"));
+                                    if (m.getAttribute("data-outline-level")) e.getRow(c).outlineLevel = parseInt(m.getAttribute("data-outline-level"));
                                     var h = t(m.children);
                                     for (b = 0; b < h.length; ++b) {
                                         var v = h[b];

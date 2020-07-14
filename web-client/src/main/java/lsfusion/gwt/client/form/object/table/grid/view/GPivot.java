@@ -324,10 +324,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     @Override
     public void runGroupReport() {
-        exportToExcel(getDrawElement());
+        exportToExcel(config, getDrawElement());
     }
 
-    public native void exportToExcel(Element element)
+    public native void exportToExcel(WrapperObject config, Element element)
         /*-{
             var instance = this;
             var pvtTable = element.getElementsByClassName("subtotalouterdiv")[0];
@@ -357,6 +357,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 }
                 column.width = (dataMax < 10 ? 10 : dataMax) * 1.2; //1.2 is magic coefficient to better fit width
             }
+
+            worksheet.properties.outlineProperties = {summaryBelow: false};
 
             $wnd.TableToExcel.save(workbook, "lsfReport.xlsx");
         }-*/;
@@ -1203,11 +1205,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void updateTableToExcelAttributes(Element pvtTable) {
-        //set row height
-        NodeList<Element> tds = getElements(pvtTable, "tr");
-        for (int i = 0; i < tds.getLength(); i++) {
-            Element td = tds.getItem(i);
-            td.setAttribute("data-height", String.valueOf(getTableToExcelRowHeight(td)));
+        //set row height, outlineLevel
+        NodeList<Element> trs = getElements(pvtTable, "tr");
+        for (int i = 0; i < trs.getLength(); i++) {
+            Element tr = trs.getItem(i);
+            tr.setAttribute("data-height", String.valueOf(getTableToExcelRowHeight(tr)));
+            String rowLevel = nullEmpty(getAttributeRecursive(tr, CELL_ROW_LEVEL_ATTRIBUTE_KEY));
+            if(rowLevel != null) {
+                tr.setAttribute("data-outline-level", String.valueOf(Integer.parseInt(rowLevel) - 1));
+            }
         }
 
         //set alignment, font family, size, italic, bold
