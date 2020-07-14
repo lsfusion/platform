@@ -87,6 +87,7 @@ button {
 }
 .gwt-Button, button {
     cursor: pointer;
+    color: var(--text-color);
 }
 
 .gwt-Button:hover, button:hover {
