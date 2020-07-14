@@ -38,7 +38,6 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine, boolean wordWrap) {
         setPadding(element.getStyle(), multiLine);
-        renderContext.setAlignment();
         setBasedTextFonts(property, element, renderContext);
         if(wordWrap)
             element.getStyle().setProperty("wordBreak", "break-word"); // wordWrap (overflow-wrap) doesn't work as expected
@@ -97,7 +96,6 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
         if (font != null) {
             font.apply(element.getStyle());
-            renderContext.setFont(font);
         }
     }
 

@@ -6,8 +6,4 @@ public interface RenderContext {
     Integer getStaticHeight();
 
     GFont getFont();
-
-    void setAlignment();
-
-    void setFont(GFont font);
 }

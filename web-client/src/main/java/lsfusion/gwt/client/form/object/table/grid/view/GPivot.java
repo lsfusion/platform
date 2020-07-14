@@ -5,14 +5,12 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -336,10 +334,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
             instance.@GPivot::updateTableToExcelPvtEmptyHeader(*)(pvtTable);
 
-            //set row height
-            Array.from(pvtTable.querySelectorAll("tr")).forEach(function (item) {
-                item.setAttribute("data-height", instance.@GPivot::getTableToExcelRowHeight(*)(item));
-            });
+            instance.@GPivot::updateTableToExcelAttributes(*)(pvtTable);
 
             var workbook = $wnd.TableToExcel.tableToBook(pvtTable, {
                 sheet: {
@@ -1046,6 +1041,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GPropertyDraw property = columnMap.get(columnName).property;
+        GPivot.setTableToExcelPropertyAttributes(th, property);
         property.getCellRenderer().render(th, value, new RenderContext() {
             @Override
             public Integer getStaticHeight() {
@@ -1055,16 +1051,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             @Override
             public GFont getFont() {
                 return font;
-            }
-
-            @Override
-            public void setAlignment() {
-                GPivot.setTableToExcelAlignment(th, property);
-            }
-
-            @Override
-            public void setFont(GFont font) {
-                GPivot.setTableToExcelFontStyle(th, font);
             }
         }, new UpdateContext() {
             @Override
@@ -1159,12 +1145,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         element.setAttribute("data-height", String.valueOf(rowHeight));
     }
 
-    public static void setTableToExcelAlignment(Element element, GPropertyDraw property) {
-        Style style = element.getStyle();
-
+    public static void setTableToExcelPropertyAttributes(Element element, GPropertyDraw property) {
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
-            style.setTextAlign(textAlignStyle);
             switch (textAlignStyle) {
                 case LEFT:
                     element.setAttribute("data-a-h", "left");
@@ -1177,20 +1160,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                     break;
             }
         }
-    }
-
-    public static void setTableToExcelFontStyle(Element element, GFont font) {
-        if(font != null) {
-            if (font.family != null) {
-                element.setAttribute("data-f-name", font.family);
+        if(property.font != null) {
+            if (property.font.family != null) {
+                element.setAttribute("data-f-name", property.font.family);
             }
-            if (font.size > 0) {
-                element.setAttribute("data-f-sz", String.valueOf(font.size));
+            if (property.font.size > 0) {
+                element.setAttribute("data-f-sz", String.valueOf(property.font.size));
             }
-            if(font.italic) {
+            if(property.font.italic) {
                 element.setAttribute("data-f-italic", "true");
             }
-            if(font.bold) {
+            if(property.font.bold) {
                 element.setAttribute("data-f-bold", "true");
             }
         }
@@ -1220,6 +1200,46 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             Element td = tds.getItem(i);
             td.setAttribute("data-fill-color", rgbToArgb(getPanelBackground(colorTheme)));
         }
+    }
+
+    private void updateTableToExcelAttributes(Element pvtTable) {
+        //set row height
+        NodeList<Element> tds = getElements(pvtTable, "tr");
+        for (int i = 0; i < tds.getLength(); i++) {
+            Element td = tds.getItem(i);
+            td.setAttribute("data-height", String.valueOf(getTableToExcelRowHeight(td)));
+        }
+
+        //set alignment, font family, size, italic, bold
+        NodeList<Element> ths = getElements(pvtTable, "th");
+        for (int i = 0; i < ths.getLength(); i++) {
+            Element th = ths.getItem(i);
+            for(String attribute : new String[]{"data-a-h", "data-f-name", "data-f-sz", "data-f-italic", "data-f-bold"}) {
+                updateAttribute(th, attribute);
+            }
+        }
+    }
+
+    private void updateAttribute(Element element, String attribute) {
+        String value = getAttributeRecursive(element, attribute);
+        if(!value.isEmpty()) {
+            element.setAttribute(attribute, value);
+        }
+    }
+
+    private String getAttributeRecursive(Element element, String attribute) {
+        String value = element.getAttribute(attribute);
+        if (value.isEmpty()) {
+            NodeList<Node> children = element.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                Node child = children.getItem(i);
+                if (child.getNodeType() == Node.ELEMENT_NODE) {
+                    value = getAttributeRecursive((Element) child, attribute);
+                    if (!value.isEmpty()) break;
+                }
+            }
+        }
+        return value;
     }
 
     private int getRowLevel(int rowIndex) {
