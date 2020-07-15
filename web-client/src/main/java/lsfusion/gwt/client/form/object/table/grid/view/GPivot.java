@@ -54,6 +54,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private final String CELL_ROW_LEVEL_ATTRIBUTE_KEY = "data-row-level";
     private final String CELL_COLUMN_LEVEL_ATTRIBUTE_KEY = "data-column-level";
 
+    //default values from mainframe.css
+    private final static String defaultFontFamily = "Segoe UI";
+    private final static int defaultFontSize = 9;
+
     public GPivot(GFormController formController, GGridController gridController) {
         super(formController, gridController);
 
@@ -1132,22 +1136,22 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         setTableToExcelAttributes(jsElement, true, true);
     }
 
-    private int getTableToExcelRowHeight(Element element) {
+    private double getTableToExcelRowHeight(Element element) {
         String dataHeight = element.getAttribute("data-height");
-        int rowHeight = 0;
+        double rowHeight = 0;
         if(dataHeight.isEmpty()) {
             NodeList<Node> children = element.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 rowHeight = Math.max(rowHeight, getTableToExcelRowHeight((Element) children.getItem(i)));
             }
         } else {
-            rowHeight = Integer.parseInt(dataHeight);
+            rowHeight = Double.parseDouble(dataHeight);
         }
         return rowHeight;
     }
 
     public static void setTableToExcelRowHeight(Element element, Integer rowHeight) {
-        element.setAttribute("data-height", String.valueOf(rowHeight));
+        element.setAttribute("data-height", String.valueOf(rowHeight * 0.75)); //convert pixels to points
     }
 
     public static void setTableToExcelPropertyAttributes(Element element, GPropertyDraw property) {
@@ -1165,13 +1169,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                     break;
             }
         }
+
+        //default values from mainframe.css
+        element.setAttribute("data-f-name", property.font != null && property.font.family != null ? property.font.family : defaultFontFamily);
+        element.setAttribute("data-f-sz", String.valueOf(property.font != null && property.font.size > 0 ? property.font.size : defaultFontSize));
         if(property.font != null) {
-            if (property.font.family != null) {
-                element.setAttribute("data-f-name", property.font.family);
-            }
-            if (property.font.size > 0) {
-                element.setAttribute("data-f-sz", String.valueOf(property.font.size));
-            }
             if(property.font.italic) {
                 element.setAttribute("data-f-italic", "true");
             }
@@ -1217,6 +1219,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             if(rowLevel != null) {
                 tr.setAttribute("data-outline-level", String.valueOf(Integer.parseInt(rowLevel) - 1));
             }
+        }
+
+        NodeList<Element> headers = getElements(pvtTable, ".pvtAxisLabel, .pvtColLabel");
+        for (int i = 0; i < headers.getLength(); i++) {
+            Element header = headers.getItem(i);
+            header.setAttribute("data-f-name", defaultFontFamily);
+            header.setAttribute("data-f-sz", String.valueOf(defaultFontSize));
         }
 
         //set alignment, font family, size, italic, bold

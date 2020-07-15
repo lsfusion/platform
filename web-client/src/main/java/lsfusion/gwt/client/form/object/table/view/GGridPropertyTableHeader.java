@@ -112,7 +112,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     public void renderDom(TableCellElement th) {
         Boolean sortDir = table.getSortDirection(this);
 
-        renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption);
+        renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, false);
         renderedSortDir = sortDir;
         renderedCaption = caption;
 
@@ -134,8 +134,12 @@ public class GGridPropertyTableHeader extends Header<String> {
     private final static int DEFAULT_HEADER_HEIGHT = 34;
 
     public static Element renderTD(Element th, int height, Boolean sortDir, String caption) {
+        return renderTD(th, height, sortDir, caption, true);
+    }
+
+    public static Element renderTD(Element th, int height, Boolean sortDir, String caption, boolean tableToExcel) {
         int setHeight = height > 0 ? height : DEFAULT_HEADER_HEIGHT;
-        GPropertyTableBuilder.setRowHeight(th, setHeight);
+        GPropertyTableBuilder.setRowHeight(th, setHeight, tableToExcel);
 
         th = GwtClientUtils.wrapCenteredImg(th, true, setHeight, getSortImgProcesspr(sortDir));
         th.addClassName("dataGridHeaderCell-caption"); // wrap normal to have multi-line headers

@@ -64,7 +64,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             TableCellElement td = tr.insertCell(columnIndex);
             td.setClassName(tdClasses.toString());
 
-            renderTD(td, cellHeight);
+            renderTD(td, cellHeight, false);
 
             renderCell(td, new Context(rowIndex, columnIndex, rowValue), column, rowValue);
 
@@ -122,7 +122,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     public static void renderTD(Element td, int height) {
-        setRowHeight(td, height);
+        renderTD(td, height, true);
+    }
+
+    public static void renderTD(Element td, int height, boolean tableToExcel) {
+        setRowHeight(td, height, tableToExcel);
     }
 
     // setting line height to height it's the easiest way to align text to the center vertically, however it works only for single lines (which is ok for row data)
@@ -133,8 +137,10 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         td.getStyle().clearLineHeight();
     }
 
-    public static void setRowHeight(Element td, int height) {
-        GPivot.setTableToExcelRowHeight(td, height);
+    public static void setRowHeight(Element td, int height, boolean tableToExcel) {
+        if(tableToExcel) {
+            GPivot.setTableToExcelRowHeight(td, height);
+        }
         td.getStyle().setHeight(height, Style.Unit.PX);
     }
 
