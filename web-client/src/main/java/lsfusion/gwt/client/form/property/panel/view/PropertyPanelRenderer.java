@@ -5,10 +5,12 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -40,26 +42,21 @@ public class PropertyPanelRenderer extends PanelRenderer {
         panel.add(label, GFlexAlignment.CENTER);
 
         // we need to wrap into simple panel to make layout independent from property value
-        ResizableSimplePanel simplePanel = new ResizableSimplePanel();
+        ResizableComplexPanel simplePanel = new ResizableComplexPanel();
         value.setStatic(simplePanel, true);
         panel.add(simplePanel, panel.getWidgetCount(), GFlexAlignment.STRETCH, 1); // getWidth(), getHeight()
 
-        appendCorners(property);
+        appendCorners(property, simplePanel); // it's a hack to add
 
         finalizeInit();
     }
 
-    public void appendCorners(GPropertyDraw property) {
-        if (property.notNull) {
+    public void appendCorners(GPropertyDraw property, com.google.gwt.user.client.ui.Panel panel) {
+        if (property.notNull || property.hasChangeAction) {
             DivElement changeEventSign = Document.get().createDivElement();
             changeEventSign.addClassName("rightBottomCornerTriangle");
-            changeEventSign.addClassName("notNullCornerTriangle");
-            value.getRenderElement().appendChild(changeEventSign);
-        } else if (property.hasChangeAction) {
-            DivElement changeEventSign = Document.get().createDivElement();
-            changeEventSign.addClassName("rightBottomCornerTriangle");
-            changeEventSign.addClassName("changeActionCornerTriangle");
-            value.getRenderElement().appendChild(changeEventSign);
+            changeEventSign.addClassName(property.notNull ? "notNullCornerTriangle" : "changeActionCornerTriangle");
+            panel.getElement().appendChild(changeEventSign);
         }
     }
 

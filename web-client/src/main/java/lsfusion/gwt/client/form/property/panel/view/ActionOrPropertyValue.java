@@ -4,6 +4,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -17,6 +18,7 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.text.ParseException;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
@@ -66,8 +68,9 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     // when we don't want property value (it's content) to influence on layouting, and in particular flex - basis
     // so we use absolute positioning for that (and not width 100%, or writing to div itself)
-    public void setStatic(ResizableSimplePanel panel, boolean isProperty) {
-        panel.setFillWidget(this);
+    public void setStatic(Panel panel, boolean isProperty) { // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
+        panel.add(this);
+        setupFillParent(getElement());
         borderWidget = panel;
 
         setBaseSize(isProperty);
