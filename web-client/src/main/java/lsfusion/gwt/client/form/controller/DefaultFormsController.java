@@ -196,9 +196,14 @@ public abstract class DefaultFormsController implements FormsController {
         if(tabsPanel.getSelectedTab() < 0 && (size = forms.size()) > 0) {
             FormDockable lastFocusedForm = null;
             int maxOrder = 0;
-            for(int i=0;i<size;i++)
-                if(lastFocusedForm == null || formFocusOrder.get(i) > maxOrder)
+            int formOrder;
+            for(int i=0;i<size;i++) {
+                formOrder = formFocusOrder.get(i);
+                if (lastFocusedForm == null || formOrder > maxOrder) {
                     lastFocusedForm = forms.get(i);
+                    maxOrder = formOrder;
+                }
+            }
             selectTab(lastFocusedForm);
         }
     }
