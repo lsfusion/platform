@@ -1,11 +1,12 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.SimplePanel;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
-public class GFilterValueView extends SimplePanel {
+public class GFilterValueView extends ResizableSimplePanel {
     protected GFilterValueListener listener;
 
     public GFilterValueView(GFilterValueListener listener) {
@@ -22,7 +23,7 @@ public class GFilterValueView extends SimplePanel {
     public void propertySet(GPropertyFilter condition) {}
     public void propertyChanged(GPropertyFilter condition) {}
 
-    public void startEditing(EditEvent keyEvent) {
+    public void startEditing(Event keyEvent) {
         focusOnValue();
     }
 

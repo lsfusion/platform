@@ -1,24 +1,24 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.*;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.view.FixFlexBasisComposite;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.form.design.view.BeforeSelectionTabHandler;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Consumer;
 
-public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPanel, HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, RequiresResize, ProvidesResize {
+public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPanel, RequiresResize, ProvidesResize {
     private final FlexPanel panel;
-    private final List<BeforeSelectionTabHandler> beforeSelectionTabHandlers = new ArrayList<>();
     protected TabBar tabBar;
     protected TabDeck deck;
 
     public FlexTabbedPanel() {
-        FlexTabBar tabBar = new FlexTabBar();
+        this(null);
+    }
+    public FlexTabbedPanel(Widget extraTabWidget) {
+        FlexTabBar tabBar = new FlexTabBar(extraTabWidget);
         TabbedDeckPanel deck = new TabbedDeckPanel();
 
         panel = new FlexPanel(true);
@@ -28,18 +28,8 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
         this.tabBar = tabBar;
         this.deck = deck;
 
-        tabBar.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
-            @Override
-            public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
-                onBeforeTabSelected(event);
-            }
-        });
-        tabBar.addSelectionHandler(new SelectionHandler<Integer>() {
-            @Override
-            public void onSelection(SelectionEvent<Integer> event) {
-                FlexTabbedPanel.this.onTabSelected(event);
-            }
-        });
+        tabBar.setBeforeSelectionHandler(this::onBeforeTabSelected);
+        tabBar.setSelectionHandler(index -> FlexTabbedPanel.this.onTabSelected(index));
 
         initWidget(panel);
 
@@ -47,33 +37,42 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
         deck.setStyleName("gwt-TabPanelBottom");
     }
 
-    private void onBeforeTabSelected(BeforeSelectionEvent<Integer> event) {
-        BeforeSelectionEvent<Integer> panelEvent = BeforeSelectionEvent.fire(this, event.getItem());
-        if (panelEvent != null && panelEvent.isCanceled()) {
-            event.cancel();
+    private void onBeforeTabSelected(Integer index) {
+        if(beforeSelectionHandler != null)
+            beforeSelectionHandler.accept(index);
+    }
+
+    private void onTabSelected(Integer tabIndex) {
+
+        deck.showWidget(tabIndex);
+
+        if(selectionHandler != null)
+            selectionHandler.accept(tabIndex);
+
+        scheduleOnResize(asWidget());
+    }
+
+    public static void scheduleOnResize(final Widget widget) {
+        if (widget instanceof RequiresResize) {
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    ((RequiresResize) widget).onResize();
+                }
+            });
         }
     }
 
-    public void addBeforeSelectionTabHandler(BeforeSelectionTabHandler handler) {
-        beforeSelectionTabHandlers.add(handler);
+    private Consumer<Integer> beforeSelectionHandler;
+    public void setBeforeSelectionHandler(Consumer<Integer> handler) {
+        assert beforeSelectionHandler == null;
+        beforeSelectionHandler = handler;
     }
 
-    private void onTabSelected(SelectionEvent<Integer> event) {
-        int tabIndex = event.getSelectedItem();
-        for(BeforeSelectionTabHandler beforeSelectionTabHandler : beforeSelectionTabHandlers)
-            beforeSelectionTabHandler.onBeforeSelection(tabIndex);
-        deck.showWidget(tabIndex);
-        SelectionEvent.fire(this, tabIndex);
-    }
-
-    @Override
-    public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> handler) {
-        return addHandler(handler, BeforeSelectionEvent.getType());
-    }
-
-    @Override
-    public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
-        return addHandler(handler, SelectionEvent.getType());
+    private Consumer<Integer> selectionHandler;
+    public void setSelectionHandler(Consumer<Integer> handler) {
+        assert selectionHandler == null;
+        selectionHandler = handler;
     }
 
     @Override
@@ -140,6 +139,8 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
     @Override
     public boolean remove(int index) {
         if (index != -1) {
+            if(index == getSelectedTab() && beforeSelectionHandler != null)
+                beforeSelectionHandler.accept(-1);
             tabBar.removeTab(index);
             return deck.remove(index);
         }
@@ -166,7 +167,6 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
         return tabBar.getSelectedTab();
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     public void selectTab(int index) {
         tabBar.selectTab(index);
     }

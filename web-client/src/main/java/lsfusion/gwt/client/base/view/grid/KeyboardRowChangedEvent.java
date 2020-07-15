@@ -11,13 +11,10 @@ public class KeyboardRowChangedEvent extends GwtEvent<KeyboardRowChangedEvent.Ha
         void onKeyboardRowChanged(KeyboardRowChangedEvent event);
     }
 
-    public interface HasKeyboardRowChangedHandlers extends HasHandlers {
-        HandlerRegistration addKeyboardRowChangedHandler(Handler handler);
-    }
-
     private static Type<KeyboardRowChangedEvent.Handler> TYPE;
 
-    public static void fire(HasKeyboardRowChangedHandlers source) {
+    public static void fire(DataGrid source) {
+
         if (TYPE != null) {
             KeyboardRowChangedEvent event = new KeyboardRowChangedEvent();
             source.fireEvent(event);

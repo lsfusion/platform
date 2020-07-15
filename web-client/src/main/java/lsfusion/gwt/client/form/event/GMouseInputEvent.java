@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.event;
 
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 
@@ -19,15 +20,11 @@ public class GMouseInputEvent extends GInputEvent {
         this.mouseEvent = mouseEvent;
     }
 
-    public GMouseInputEvent(Event e) {
-        this(e.getTypeInt() == Event.ONCLICK, e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
+    public GMouseInputEvent(NativeEvent e, boolean dblClick) {
+        this(dblClick, e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
     }
 
-    public GMouseInputEvent(NativeEvent e) {
-        this(e.getType().equals("click"), e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
-    }
-
-    private GMouseInputEvent(boolean singleClick, boolean alt, boolean ctrl, boolean shift) {
+    private GMouseInputEvent(boolean dblClick, boolean alt, boolean ctrl, boolean shift) {
         String event = "";
         if (alt) {
             event += "alt ";
@@ -38,17 +35,18 @@ public class GMouseInputEvent extends GInputEvent {
         if (shift) {
             event += "shift ";
         }
-        this.mouseEvent = event + (singleClick ? CLK : DBLCLK);
-    }
-
-    public GMouseInputEvent(String mouseEvent, Map<String, GBindingMode> bindingModes) {
-        super(bindingModes);
-        this.mouseEvent = mouseEvent;
+        this.mouseEvent = event + (dblClick ? DBLCLK : CLK);
     }
 
     @Override
     public boolean equals(Object o) {
         return this == o || o instanceof GMouseInputEvent && mouseEvent.equals(((GMouseInputEvent) o).mouseEvent);
+    }
+
+    @Override
+    public boolean isEvent(Event event) {
+        boolean doubleChangeEvent = GMouseStroke.isDoubleChangeEvent(event);
+        return (GMouseStroke.isChangeEvent(event) || doubleChangeEvent) && equals(new GMouseInputEvent(event, doubleChangeEvent));
     }
 
     @Override

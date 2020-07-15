@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.tree.view;
 
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
@@ -17,7 +18,7 @@ public class GTreeTableTree {
     public HashMap<GGroupObject, List<GPropertyDraw>> groupProperties = new HashMap<>();
     private Map<GGroupObject, Set<GTreeTableNode>> groupNodes = new HashMap<>();
 
-    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<>();
+    public NativeHashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new NativeHashMap<>();
     public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> readOnly = new HashMap<>();
 
     public GTreeTableNode root;
@@ -260,19 +261,15 @@ public class GTreeTableTree {
         return values.get(property).get(key);
     }
 
-    public boolean isEditable(GGroupObject group, int column, GGroupObjectValue key) {
+    public boolean isReadOnly(GGroupObject group, int column, GGroupObjectValue key) {
         if (column >= 1) {
             GPropertyDraw property = getProperty(group, column);
             if (property != null && !property.isReadOnly()) {
                 Map<GGroupObjectValue, Object> propReadOnly = readOnly.get(property);
-                return propReadOnly == null || propReadOnly.get(key) == null;
+                return propReadOnly != null && propReadOnly.get(key) != null;
             }
         }
-        return false;
-    }
-
-    public void putValue(GPropertyDraw property, GGroupObjectValue key, Object value) {
-        values.get(property).put(key, value);
+        return true;
     }
 
     public GTreeTableNode getNodeByRecord(GTreeGridRecord record) {

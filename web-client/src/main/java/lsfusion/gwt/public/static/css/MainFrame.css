@@ -1,12 +1,12 @@
-body, textarea, button, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
+body, textarea, input, button, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
 .messageBox-messageContainer, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
-.filterDialogHeader, .dataGridCell-single, .gwt-ProgressBar-shell .gwt-ProgressBar-text,
+.filterDialogHeader, .gwt-ProgressBar-shell .gwt-ProgressBar-text,
 .pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text], .customFontPresenter,
 table.pvtTable, table.pvtTable tbody tr th, table.pvtTable thead tr th {
     font-size: 9pt;
 }
 
-body, textarea, select, button, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
+body, textarea, select, button, input, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
 .gwt-SuggestBox, .gwt-TextArea, .gwt-TextBox, .textBasedGridCellEditor, .leaflet-container {
     font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
 }
@@ -231,15 +231,9 @@ input[type=checkbox]:focus {
 }
 
 /* ------------ Cell Renderer related styles ------------ */
-.logicalRendererWrapper {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    justify-content: center;
-}
 
 .logicalRendererCheckBox {
-    margin: 0;
+    /*margin: 0;*/
     pointer-events: none;
 }
 
@@ -250,19 +244,31 @@ input[type=checkbox]:focus {
     cursor: default;
 }
 
-.dataPanelRendererGridPanel {
+.panelRendererValue, button {
+    background: var(--component-background-color);
     border: 1px solid var(--component-border-color);
-    position: relative;
+}
+
+.propertyPanelRendererValue {
     border-radius: var(--textfield-border-radius);
     overflow: hidden; /* to hide inner corners */
 }
 
-.dataPanelRendererGridPanelFocused {
+.actionPanelRendererValue, button {
+    border-radius: var(--button-border-radius);
+}
+
+.panelRendererValueFocused, button:focus {
+    background-color: var(--selection-color);
     border: 1px solid var(--focus-color);
 }
 
-.actionPanelRenderer {
-    display: block; /*убираем лишние пикселы снизу при нахождении в ячейке таблицы*/
+.panelRendererValue:hover:not(.panelRendererValueFocused), button:hover:not(focus) { /* we want focus to have higher priority than hover*/
+    border: 1px solid var(--component-hover-border-color);
+}
+
+.panelRendererValueBinding {
+    background-color: var(--button-active-background-color);
 }
 
 /* ------------ Caption panel ------------ */
@@ -747,6 +753,9 @@ input[type=checkbox]:focus {
 
 .requiredValueString {
     color: var(--required-value-string-color);
+
+    /* need this for notNullLine absolute positioning (see below) */
+    position: relative;
 }
 
 .notNullLine {

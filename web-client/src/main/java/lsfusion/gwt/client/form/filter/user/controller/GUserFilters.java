@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.filter.user.controller;
 
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
@@ -9,7 +10,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public abstract class GUserFilters {
         return logicsSupplier;
     }
 
-    private void showDialog(EditEvent keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey, boolean replace, boolean alwaysAddNew) {
+    private void showDialog(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey, boolean replace, boolean alwaysAddNew) {
         List<GPropertyFilter> conditions = replace ? new ArrayList<>() : new ArrayList<>(this.conditions);
         if(alwaysAddNew || conditions.isEmpty()) {
             conditions.add(getNewCondition(propertyDraw, columnKey));
@@ -130,10 +130,11 @@ public abstract class GUserFilters {
         updateToolbarButton();
     }
 
-    public void quickEditFilter(EditEvent keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+    public void quickEditFilter(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         showDialog(keyEvent, propertyDraw, columnKey, true, true);
     }
 
     public abstract void remoteApplyQuery();
     public abstract void filterHidden();
+    public abstract void checkCommitEditing();
 }

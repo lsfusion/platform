@@ -5,8 +5,8 @@ import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.view.NumberGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.NumberCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
 
@@ -17,8 +17,8 @@ public abstract class GIntegralType extends GFormatType<NumberFormat> {
     public final static String UNBREAKABLE_SPACE = "\u00a0";
     
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new NumberGridCellRenderer(property);
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new NumberCellRenderer(property);
     }
 
     protected abstract int getPrecision();

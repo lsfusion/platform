@@ -136,7 +136,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean notSelectAll;
     public String tableName;
     public String eventID;
-    public boolean editOnSingleClick;
+    public Boolean editOnSingleClick;
     public boolean hide;
 
     public String creationScript;
@@ -422,7 +422,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         pool.writeObject(outStream, valueAlignment);
         
-        outStream.writeBoolean(editOnSingleClick);
+        pool.writeObject(outStream, editOnSingleClick);
         outStream.writeBoolean(hide);
 
         outStream.writeInt(ID);
@@ -466,7 +466,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         valueAlignment = pool.readObject(inStream);
 
-        editOnSingleClick = inStream.readBoolean();
+        editOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);

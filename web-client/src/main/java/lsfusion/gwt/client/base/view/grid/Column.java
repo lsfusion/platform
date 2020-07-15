@@ -15,83 +15,22 @@
  */
 package lsfusion.gwt.client.base.view.grid;
 
-import com.google.gwt.user.client.ui.HasAlignment;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.base.view.grid.cell.HasCell;
+import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.grid.cell.Context;
 
-/**
- * A representation of a column in a table.
- * 
- * @param <T> the row type
- * @param <C> the column type
- */
-public abstract class Column<T, C> implements HasCell<T, C>, HasAlignment {
+public abstract class Column<T, C> {
 
-  /**
-   * The {@link Cell} responsible for rendering items in the column.
-   */
-  private final Cell<C> cell;
-
-  private HorizontalAlignmentConstant hAlign = null;
-  private VerticalAlignmentConstant vAlign = null;
-
-  /**
-   * Construct a new Column with a given {@link Cell}.
-   * 
-   * @param cell the Cell used by this Column
-   */
-  public Column(Cell<C> cell) {
-    this.cell = cell;
+  public Column() {
   }
 
-  /**
-   * Returns the {@link Cell} responsible for rendering items in the column.
-   * 
-   * @return a Cell
-   */
-  @Override
-  public Cell<C> getCell() {
-    return cell;
-  }
-
-  @Override
-  public HorizontalAlignmentConstant getHorizontalAlignment() {
-    return hAlign;
-  }
-  
-  /**
-   * Returns the column value from within the underlying data object.
-   */
-  @Override
   public abstract C getValue(T object);
 
-  @Override
-  public VerticalAlignmentConstant getVerticalAlignment() {
-    return vAlign;
-  }
+  public abstract boolean isFocusable();
 
-  /**
-   * {@inheritDoc}
-   * 
-   * <p>
-   * The new horizontal alignment will apply the next time the table is
-   * rendered.
-   * </p>
-   */
-  @Override
-  public void setHorizontalAlignment(HorizontalAlignmentConstant align) {
-    this.hAlign = align;
-  }
+  public abstract void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent);
 
-  /**
-   * {@inheritDoc}
-   * 
-   * <p>
-   * The new vertical alignment will apply the next time the table is rendered.
-   * </p>
-   */
-  @Override
-  public void setVerticalAlignment(VerticalAlignmentConstant align) {
-    this.vAlign = align;
-  }
+  public abstract void renderDom(Context context, Element cellElement, C value);
+
+  public abstract void updateDom(Context context, Element cellElement, C value);
 }

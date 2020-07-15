@@ -1,111 +1,64 @@
 package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Window;
-import lsfusion.gwt.client.GForm;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
-import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GKeyStroke;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
+import lsfusion.gwt.client.view.MainFrame;
 
 import static java.lang.Math.min;
 
-public class ModalForm extends ResizableModalWindow {
+public class ModalForm extends FormContainer<ResizableModalWindow> {
 
-    private final EditEvent initFilterEvent;
-    private final GFormController form;
-
-    public ModalForm(FormsController formsController, GForm gForm, boolean isDialog, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
-        super(hiddenHandler);
-
-        this.initFilterEvent = initFilterEvent;
-
-        form = new GFormController(formsController, gForm, true, isDialog) {
-            @Override
-            public void onFormHidden(int closeDelay) {
-                super.onFormHidden(closeDelay);
-                ModalForm.this.hide();
-                unregisterForm();
-            }
-
-            @Override
-            public void setFormCaption(String caption, String tooltip) {
-                setCaption(caption, tooltip);
-            }
-
-            @Override
-            protected void onInitialFormChangesReceived() {
-                super.onInitialFormChangesReceived();
-                Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                    @Override
-                    public void execute() {
-                        initialFormChangesReceived();
-                    }
-                });
-            }
-        };
-
-        setContentWidget(form);
-
-        //сразу добавляем в DOM, чтобы можно было посчитать естественную ширину элементов
-        attach();
-    }
-
-    public void setCaption(String caption, String tooltip) {
-        setCaption(caption);
-        setTooltip(tooltip);
-    }
-
-    public GFormController getForm() {
-        return form;
+    public ModalForm(DefaultFormsController formsController) {
+        super(formsController);
     }
 
     @Override
-    protected void onLoad() {
-        if (initialOnLoad) {
-            Dimension size = form.getMaxPreferredSize();
-            if (size.width > 0) {
-                int wndWidth = Window.getClientWidth();
-                size.width = min(size.width + 20, wndWidth - 20);
-                form.setWidth(size.width + "px");
+    protected ResizableModalWindow initContentWidget() {
+        return new ResizableModalWindow() {
+            @Override
+            protected void onShow() {
+                initMaxPreferredSize(); // we need after attach to have correct sizes
+
+                super.onShow();
             }
-            if (size.height > 0) {
-                int wndHeight = Window.getClientHeight();
-                size.height = min(size.height, wndHeight - 100);
-                form.setHeight(size.height + "px");
-            }
-        }
-        super.onLoad();
+        };
     }
 
-    private void initialFormChangesReceived() {
-        if (initFilterEvent != null && initFilterEvent instanceof NativeEditEvent) {
-            NativeEvent event = ((NativeEditEvent) initFilterEvent).getNativeEvent();
-            if (GKeyStroke.isPossibleStartFilteringEvent(event) && !GKeyStroke.isSpaceKeyEvent(event)) {
-                form.getInitialFilterProperty(new ErrorHandlingCallback<NumberResult>() {
-                    @Override
-                    public void success(NumberResult result) {
-                        Integer initialFilterPropertyID = (Integer) result.value;
-
-                        if (initialFilterPropertyID != null) {
-                            form.quickFilter(initFilterEvent, initialFilterPropertyID);
-                        }
-                    }
-                });
-            }
-        }
+    @Override
+    protected void setContent(Widget widget) {
+        contentWidget.setContentWidget(widget);
     }
 
-    public static ModalForm showForm(FormsController formsController, GForm form, boolean isDialog, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
-        ModalForm modalForm = new ModalForm(formsController, form, isDialog, initFilterEvent, hiddenHandler);
-        modalForm.justCenter();
-        return modalForm;
+    private FormContainer prevForm;
+
+    @Override
+    public void show() {
+        prevForm = MainFrame.getAssertCurrentForm();
+        if(prevForm != null) // if there were no currentForm
+            prevForm.onBlur(false);
+
+        contentWidget.show();
+
+        onFocus(true);
+    }
+
+    @Override
+    public void hide() {
+        onBlur(true);
+
+        contentWidget.hide();
+
+        if(prevForm != null)
+            prevForm.onFocus(false);
+    }
+
+    public void setCaption(String caption, String tooltip) {
+        contentWidget.setCaption(caption);
+        contentWidget.setTooltip(tooltip);
     }
 }

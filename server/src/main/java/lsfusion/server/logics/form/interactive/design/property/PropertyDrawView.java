@@ -55,7 +55,7 @@ public class PropertyDrawView extends ComponentView {
 
     public PropertyDrawEntity<?> entity;
 
-    public boolean editOnSingleClick;
+    public Boolean editOnSingleClick;
     public boolean hide;
     public String regexp;
     public String regexpMessage;
@@ -268,7 +268,7 @@ public class PropertyDrawView extends ComponentView {
         
         pool.writeObject(outStream, getValueAlignment());
 
-        outStream.writeBoolean(editOnSingleClick);
+        pool.writeObject(outStream, editOnSingleClick);
         outStream.writeBoolean(hide);
 
         //entity часть
@@ -372,12 +372,12 @@ public class PropertyDrawView extends ComponentView {
 
         pool.writeString(outStream, entity.getMouseBinding());
 
-        Map<KeyStroke, String> keyBindings = entity.getKeyBindings();
+        ImMap<KeyStroke, String> keyBindings = entity.getKeyBindings();
         outStream.writeInt(keyBindings == null ? 0 : keyBindings.size());
         if (keyBindings != null) {
-            for (Map.Entry<KeyStroke, String> e : keyBindings.entrySet()) {
-                pool.writeObject(outStream, e.getKey());
-                pool.writeString(outStream, e.getValue());
+            for (int i=0,size=keyBindings.size();i<size;i++) {
+                pool.writeObject(outStream, keyBindings.getKey(i));
+                pool.writeString(outStream, keyBindings.getValue(i));
             }
         }
 
@@ -453,7 +453,7 @@ public class PropertyDrawView extends ComponentView {
 
         valueAlignment = pool.readObject(inStream);
 
-        editOnSingleClick = inStream.readBoolean();
+        editOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
 
         entity = pool.context.entity.getPropertyDraw(inStream.readInt());
@@ -527,7 +527,7 @@ public class PropertyDrawView extends ComponentView {
     public boolean hasEditObjectAction(ServerContext context) {
         return entity.getEventAction(EDIT_OBJECT, context.entity, context.securityPolicy) != null;
     }
-    
+
     public FlexAlignment getValueAlignment() {
         if (valueAlignment == null && isProperty()) {
             return getType().getValueAlignment();

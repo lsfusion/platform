@@ -59,7 +59,7 @@ public interface GTableView {
     default Element getFocusHolderElement() { return getThisWidget().getElement(); }; // protected
 
     // add / delete
-    int getKeyboardSelectedRow();
+    int getSelectedRow();
     void modifyGroupObject(GGroupObjectValue key, boolean add, int position);
 
     // toolbar features
@@ -71,10 +71,6 @@ public interface GTableView {
     LinkedHashMap<GPropertyDraw, Boolean> getUserOrders(List<GPropertyDraw> propertyDrawList);
     GGroupObjectUserPreferences getCurrentUserGridPreferences();
     GGroupObjectUserPreferences getGeneralGridPreferences();
-
-    // events
-    void beforeHiding();
-    void afterShowing();
 
     int getPageSize();
     boolean isGroup();

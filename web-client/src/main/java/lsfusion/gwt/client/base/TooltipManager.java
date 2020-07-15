@@ -2,9 +2,9 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 
@@ -98,9 +98,9 @@ public class TooltipManager {
         }
     }
 
-    class Tooltip extends DecoratedPopupPanel {
+    class Tooltip extends PopupDialogPanel {
         public Tooltip(String contents) {
-            super(true);
+            super();
             setWidget(new HTML(contents, false));
         }
     }

@@ -1,30 +1,27 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
+import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;
 
-    private EditEvent latestEditEvent;
-
     public GFormActionDispatcher(GFormController form) {
         this.form = form;
-    }
-
-    public void setLatestEditEvent(EditEvent latestEditEvent) {
-        this.latestEditEvent = latestEditEvent;
     }
 
     @Override
@@ -46,12 +43,9 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        form.openForm(action.form, action.modalityType, action.forbidDuplicate, latestEditEvent, new WindowHiddenHandler() {
-            @Override
-            public void onHidden() {
-                if (action.modalityType.isModal()) {
-                    continueDispatching();
-                }
+        form.openForm(action.form, action.modalityType, action.forbidDuplicate, getEditEvent(), () -> {
+            if (action.modalityType.isModal()) {
+                continueDispatching();
             }
         });
     }
@@ -120,5 +114,41 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(final GChangeColorThemeAction action) {
         MainFrame.changeColorTheme(action.colorTheme);
+    }
+
+    // editing (INPUT) functionality
+
+    protected Event editEvent;
+
+    private EditContext editContext;
+
+    public void executePropertyActionSID(Event event, String actionSID, ExecuteEditContext editContext) {
+        editEvent = event;
+
+        this.editContext = editContext;
+
+        form.executeEventAction(editContext.getProperty(), editContext.getColumnKey(), actionSID);
+    }
+
+    protected Event getEditEvent() {
+        return editEvent;
+    }
+
+    @Override
+    public Object execute(GRequestUserInputAction action) {
+
+        pauseDispatching();
+
+        // we should not drop at least editSetValue since GUpdateEditValueAction might use it
+        form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue, value -> {},
+                value -> continueDispatching(new GUserInputResult(value)),
+                () -> continueDispatching(GUserInputResult.canceled), editContext);
+
+        return null;
+    }
+
+    @Override
+    public void execute(GUpdateEditValueAction action) {
+        editContext.setValue(action.value);
     }
 }

@@ -56,13 +56,13 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
      * @param source the source of the handlers
      * @param nativeEvent the event to preview
      * @param display the {@link HasData} source of the event
-     * @param context the Cell {@link Cell.Context}
+     * @param context the Cell {@link Context}
      * @param value the value where the event occurred
      * @param isCellEditing indicates whether or not the cell is being edited
      * @return the {@link CellPreviewEvent} that was fired
      */
     public static <T> CellPreviewEvent<T> fire(HasCellPreviewHandlers<T> source,
-                                               NativeEvent nativeEvent, HasData<T> display, Cell.Context context, T value,
+                                               NativeEvent nativeEvent, HasData<T> display, Context context, T value,
                                                boolean isCellEditing) {
         CellPreviewEvent<T> event = new CellPreviewEvent<>(nativeEvent, display,
                 context, value, isCellEditing);
@@ -84,7 +84,7 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
         return TYPE;
     }
 
-    private final Cell.Context context;
+    private final Context context;
     private final HasData<T> display;
     private boolean isCanceled = false;
     private final boolean isCellEditing;
@@ -96,12 +96,12 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
      *
      * @param nativeEvent the event to preview
      * @param display the {@link HasData} source of the event
-     * @param context the Cell {@link Cell.Context}
+     * @param context the Cell {@link Context}
      * @param value the value where the event occurred
      * @param isCellEditing indicates whether or not the cell is being edited
      */
     protected CellPreviewEvent(NativeEvent nativeEvent, HasData<T> display,
-                               Cell.Context context, T value, boolean isCellEditing) {
+                               Context context, T value, boolean isCellEditing) {
         this.nativeEvent = nativeEvent;
         this.display = display;
         this.context = context;
@@ -128,11 +128,11 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
     }
 
     /**
-     * Get the cell {@link Cell.Context}.
+     * Get the cell {@link Context}.
      *
-     * @return the cell {@link Cell.Context}
+     * @return the cell {@link Context}
      */
-    public Cell.Context getContext() {
+    public Context getContext() {
         return context;
     }
 

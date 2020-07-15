@@ -1,7 +1,9 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -15,7 +17,6 @@ import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +41,23 @@ public abstract class GAbstractTableController implements GTableController {
         }
     }
 
+    @Override
+    public GFormController getForm() {
+        return formController;
+    }
+
     public GFormLayout getFormLayout() {
         return formController.formLayout;
+    }
+
+    protected DefaultFocusReceiver getDefaultFocusReceiver() {
+        return () -> {
+            boolean focused = focusFirstWidget();
+            if (focused) {
+                scrollToTop();
+            }
+            return focused;
+        };
     }
 
     public void addToToolbar(Widget tool) {
@@ -63,11 +79,16 @@ public abstract class GAbstractTableController implements GTableController {
                 changeFilter(new ArrayList<>(getConditions()));
             }
 
-            @Override
-            public void filterHidden() {
-                focusFirstWidget();
-            }
-        };
+                @Override
+                public void filterHidden() {
+                    focusFirstWidget();
+                }
+
+                @Override
+                public void checkCommitEditing() {
+                    formController.checkCommitEditing();
+                }
+            };
 
         addToToolbar(filter.getToolbarButton());
     }
@@ -86,7 +107,7 @@ public abstract class GAbstractTableController implements GTableController {
         return true;
     }
 
-    public void quickEditFilter(EditEvent editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+    public void quickEditFilter(Event editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         filter.quickEditFilter(editEvent, propertyDraw, columnKey);
     }
 
@@ -105,6 +126,7 @@ public abstract class GAbstractTableController implements GTableController {
     }
 
     protected abstract void changeFilter(List<GPropertyFilter> conditions);
+    // eventually is called either on form opening / form tab selection / filter dialog close
     public abstract boolean focusFirstWidget();
     public abstract GComponent getGridComponent();
 

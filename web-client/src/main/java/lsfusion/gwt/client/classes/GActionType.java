@@ -1,14 +1,15 @@
 package lsfusion.gwt.client.classes;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.view.ActionGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -24,8 +25,8 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new ActionGridCellRenderer(property);
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new ActionCellRenderer(property);
     }
 
     @Override
@@ -34,13 +35,15 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public int getFullWidthString(String widthString, GFont font, GWidthStringProcessor widthStringProcessor) {
-        return getFullWidthString(font, widthString, widthStringProcessor) + StyleDefaults.BUTTON_HORIZONTAL_PADDING * 2;
+    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
+        ImageDescription image = propertyDraw.getImage();
+        return image != null ? image.width : 0;
+        // in theory we should add propertyDraw.caption when it's a panel, but a property panel renderer doesn't do that for label, so don't see why it should be done for action
     }
 
     @Override
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        return "1234";
+        throw new UnsupportedOperationException();
     }
 
     @Override

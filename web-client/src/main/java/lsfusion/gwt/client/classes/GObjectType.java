@@ -1,16 +1,14 @@
 package lsfusion.gwt.client.classes;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.LongGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.NumberGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.controller.LongCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.view.NumberCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
 
@@ -22,23 +20,17 @@ public class GObjectType extends GType {
     public static final GObjectType instance = new GObjectType();
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new NumberGridCellRenderer(property);
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new NumberCellRenderer(property);
     }
 
     @Override
-    public int getFullWidthString(String widthString, GFont font, GWidthStringProcessor widthStringProcessor) {
-        return GDataType.getFullWidthString(font, widthString, widthStringProcessor);
+    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
+        return getFullWidthString("0000000", font);
     }
 
-    @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor) {
-        return getFullWidthString("0000000", font, widthStringProcessor);
-    }
-
-    @Override
-    public GridCellEditor createValueCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new LongGridCellEditor(editManager, editProperty);
+    public CellEditor createValueCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new LongCellEditor(editManager, editProperty);
     }
 
     @Override

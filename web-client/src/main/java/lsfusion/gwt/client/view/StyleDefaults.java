@@ -14,7 +14,8 @@ public class StyleDefaults {
     public static final int COMPONENT_HEIGHT = VALUE_HEIGHT + 2; // 2 for borders
     public static final String COMPONENT_HEIGHT_STRING = COMPONENT_HEIGHT + "px";
 
-    public static final int CELL_VERTICAL_PADDING = 2; // suppose buttons have the same padding. to have equal height
+    public static final int TEXT_MULTILINE_PADDING = 2; // since there are a lot of lines and their rendering takes a lot of space give some extra padding
+
     public static final int CELL_HORIZONTAL_PADDING = 3;
     public static final int BUTTON_HORIZONTAL_PADDING = 14;
 
@@ -27,7 +28,7 @@ public class StyleDefaults {
     public static int[] componentBackgroundRGB;
     
     public static int[] pivotGroupLevelDarkenStepRGB;
-    
+
     public static void reset() {
         selectedRowBackgroundColor = null;
         focusedCellBackgroundColor = null;
@@ -108,7 +109,6 @@ public class StyleDefaults {
         return pivotGroupLevelDarkenStepRGB;
     }
 
-    
     // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.
     // maybe getComputedStyle(document.documentElement).getPropertyValue() should be used instead where possible
     public static String getDefaultComponentBackground() {
@@ -139,6 +139,15 @@ public class StyleDefaults {
                 return "#bbbbbb";
             default:
                 return "#000000";
+        }
+    }
+
+    public static String getGridSeparatorBorderColor(GColorTheme theme) {
+        switch (theme) {
+            case DARK:
+                return "#5E6364";
+            default:
+                return "#E6E6E6";
         }
     }
 }

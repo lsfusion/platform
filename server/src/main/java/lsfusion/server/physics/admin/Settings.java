@@ -67,9 +67,9 @@ public class Settings implements Cloneable {
     private boolean enableApplySingleStored = true;
     private boolean enableApplySingleRemoveClasses = true;
 
-    private boolean editBooleanOnSingleClick = false;
+    private Boolean editBooleanOnSingleClick;
 
-    private boolean editActionOnSingleClick = false;
+    private Boolean editActionOnSingleClick = true;
 
     private int freeConnections = 12;
 
@@ -397,7 +397,7 @@ public class Settings implements Cloneable {
         this.simpleCheckCompare = simpleCheckCompare;
     }
 
-    public boolean getEditBooleanOnSingleClick() {
+    public Boolean getEditBooleanOnSingleClick() {
         return editBooleanOnSingleClick;
     }
 
@@ -405,7 +405,7 @@ public class Settings implements Cloneable {
         this.editBooleanOnSingleClick = editLogicalOnSingleClick;
     }
 
-    public boolean getEditActionOnSingleClick() {
+    public Boolean getEditActionOnSingleClick() {
         return editActionOnSingleClick;
     }
 

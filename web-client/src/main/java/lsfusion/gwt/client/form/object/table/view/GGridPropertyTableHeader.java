@@ -9,6 +9,8 @@ import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
+import java.util.function.Consumer;
+
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -37,8 +39,6 @@ public class GGridPropertyTableHeader extends Header<String> {
     private int headerHeight;
 
     public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip) {
-        super(DBLCLICK, MOUSEDOWN, MOUSEMOVE, MOUSEOVER, MOUSEOUT);
-
         this.caption = caption;
         this.table = table;
         this.toolTip = toolTip;
@@ -134,57 +134,21 @@ public class GGridPropertyTableHeader extends Header<String> {
     private final static int DEFAULT_HEADER_HEIGHT = 34;
 
     public static Element renderTD(Element th, int height, Boolean sortDir, String caption) {
-        th = wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
-
         int setHeight = height > 0 ? height : DEFAULT_HEADER_HEIGHT;
         GPropertyTableBuilder.setRowHeight(th, setHeight);
 
-        // since it's a header we want to align it to the center (vertically and horizontally)
-        th = wrapCenter(th); // we have to do it after setting height (because that's the point of that centering)
-        // we don't want that container to be larger than the upper one
-        th.getStyle().setProperty("maxHeight", setHeight + "px");
-
-        if(sortDir != null)
-            th = wrapSort(th, sortDir);
-
+        th = GwtClientUtils.wrapCenteredImg(th, true, setHeight, getSortImgProcesspr(sortDir));
         th.addClassName("dataGridHeaderCell-caption"); // wrap normal to have multi-line headers
         renderCaption(th, caption);
 
         return th;
     }
 
-    //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
-    public static Element wrapDiv(Element th) {
-        Element wrappedTh = Document.get().createDivElement();
-        wrappedTh.addClassName("dataGridHeaderCell-div");
-        th.appendChild(wrappedTh);
-
-        return wrappedTh;
-    }
-
-    public static Element wrapCenter(Element th) {
-        th.addClassName("dataGridHeaderCell-wrapcenter"); // display flex : justify-content stretch, align-items
-
-        Element wrappedTh = Document.get().createDivElement();
-        th.appendChild(wrappedTh);
-
-        return wrappedTh;
-    }
-
-    public static Element wrapSort(Element th, Boolean sortDir) {
-        th.addClassName("dataGridHeaderCell-wrapsortdiv");
-
-        Element wrappedTh = Document.get().createDivElement();
-        wrappedTh.addClassName("dataGridHeaderCell-sortdiv");
-
-        ImageElement img = Document.get().createImageElement();
-        img.addClassName("dataGridHeaderCell-sortimg");
-        GwtClientUtils.setThemeImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
-        th.appendChild(img);
-
-        th.appendChild(wrappedTh);
-
-        return wrappedTh;
+    public static Consumer<ImageElement> getSortImgProcesspr(Boolean sortDir) {
+        return sortDir != null ? img -> {
+            img.addClassName("dataGridHeaderCell-sortimg");
+            GwtClientUtils.setThemeImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
+        } : null;
     }
 
     public static void changeDirection(ImageElement img, boolean sortDir) {

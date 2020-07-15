@@ -2,13 +2,13 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.view.ImageGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.ImageCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class GImageType extends GFileType {
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new ImageGridCellRenderer(property);
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new ImageCellRenderer(property);
     }
     
     public String extension;

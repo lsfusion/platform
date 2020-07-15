@@ -3,9 +3,9 @@ package lsfusion.gwt.client.classes.data;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GZDateTimeDTO;
-import lsfusion.gwt.client.form.property.cell.classes.controller.ZDateTimeGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.ZDateTimeCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 
 import java.text.ParseException;
 
@@ -15,8 +15,8 @@ public class GZDateTimeType extends GDateTimeType {
     public static GZDateTimeType instance = new GZDateTimeType();
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new ZDateTimeGridCellEditor(editManager, editProperty);
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new ZDateTimeCellEditor(editManager, editProperty);
     }
 
     @Override

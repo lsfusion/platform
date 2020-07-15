@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.util.HashMap;
@@ -66,9 +67,14 @@ public class GPropertyPanelController {
                             renderersPanel.add(GwtClientUtils.createHorizontalStrut(4));
                         }
                         
-                        renderer = property.createPanelRenderer(form, columnKey);
-                        renderer.setReadOnly(property.isReadOnly());
-                        renderersPanel.addFill(renderer.getComponent());
+                        PanelRenderer newRenderer = property.createPanelRenderer(form, columnKey);
+                        newRenderer.setReadOnly(property.isReadOnly());
+                        Widget component = newRenderer.getComponent();
+                        renderersPanel.addFill(component);
+
+                        form.addPropertyBindings(property, newRenderer::onBinding, component);
+
+                        renderer = newRenderer;
                     }
                     if(renderer != null) {
                         newRenderers.put(columnKey, renderer);
@@ -84,7 +90,7 @@ public class GPropertyPanelController {
             columnsUpdated = false;
 
             if (property.drawAsync && !renderers.isEmpty()) {
-                form.setAsyncView(renderers.get(columnKeys.get(0)));
+                form.setAsyncView((ActionPanelRenderer)renderers.get(columnKeys.get(0)));
             }
         }
 
@@ -94,7 +100,7 @@ public class GPropertyPanelController {
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
-        renderer.setValue(values.get(columnKey));
+        renderer.updateValue(values.get(columnKey));
 
         if (readOnly != null) {
             renderer.setReadOnly(readOnly.get(columnKey) != null);

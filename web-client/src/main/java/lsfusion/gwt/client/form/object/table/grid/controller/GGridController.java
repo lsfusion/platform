@@ -97,13 +97,7 @@ public class GGridController extends GAbstractTableController {
 
             this.userPreferences = userPreferences;
 
-            getFormLayout().addBaseComponent(groupObject.grid, this.gridView, () -> {
-                Scheduler.get().scheduleDeferred(() -> {
-                    table.focus();
-                    scrollToTop();
-                });
-                return true;
-            });
+            getFormLayout().addBaseComponent(groupObject.grid, this.gridView, getDefaultFocusReceiver());
 
             configureToolbar();
 
@@ -292,7 +286,7 @@ public class GGridController extends GAbstractTableController {
         forceUpdateTableButton.addClickHandler(event -> {
                     formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE, null);
                 });
-        forceUpdateTableButton.addStyleName("actionPanelRenderer");
+        forceUpdateTableButton.addStyleName("actionPanelRendererValue");
 
         addToToolbar(forceUpdateTableButton);
     }
@@ -521,18 +515,6 @@ public class GGridController extends GAbstractTableController {
         panel.setVisible(true);
     }
 
-    public void beforeHidingGrid() {
-        if (isList()) {
-            table.beforeHiding();
-        }
-    }
-
-    public void afterShowingGrid() {
-        if (isList()) {
-            table.afterShowing();
-        }
-    }
-
     public void afterAppliedChanges() {
         if (isList()) {
             table.afterAppliedChanges();
@@ -586,8 +568,8 @@ public class GGridController extends GAbstractTableController {
         return isList() && table.containsProperty(property);
     }
 
-    public int getKeyboardSelectedRow() {
-        return table.getKeyboardSelectedRow();
+    public int getSelectedRow() {
+        return table.getSelectedRow();
     }
 
     public boolean isPropertyInPanel(GPropertyDraw property) {
@@ -608,12 +590,9 @@ public class GGridController extends GAbstractTableController {
     }
 
     public boolean focusFirstWidget() {
-        if (isList()) {
-            GTableView table = this.table;
-            if (GwtClientUtils.isShowing(table.getThisWidget())) {
-                table.focus();
-                return true;
-            }
+        if (table != null && GwtClientUtils.isShowing(table.getThisWidget())) {
+            table.focus();
+            return true;
         }
 
         return panel.focusFirstWidget();
@@ -644,8 +623,8 @@ public class GGridController extends GAbstractTableController {
     public void focusProperty(GPropertyDraw property) {
         if(property.grid) {
             GTableView table = this.table;
+            table.focus();
             table.focusProperty(property);
-            table.focus();            
         } else {
             panel.focusProperty(property);
         }

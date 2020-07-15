@@ -1,11 +1,15 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.DialogModalBox;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.ResizableFocusPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
@@ -17,12 +21,12 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalSeparator;
 import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public class GFilterView extends ResizableFocusPanel implements GFilterConditionView.UIHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -30,7 +34,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     private static final String APPLY = "filtapply.png";
     private static final String CANCEL = "filtcancel.png";
 
-    private DialogBox filterDialog;
+    private DialogModalBox filterDialog;
 
     private ResizableVerticalPanel filterContainer;
 
@@ -86,25 +90,31 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         FlowPanel controlPanel = new FlowPanel();
         filterContainer.add(controlPanel);
 
-        sinkEvents(Event.ONKEYDOWN);
+        addDomHandler(event -> handleKeyEvent(event.getNativeEvent()), KeyDownEvent.getType());
     }
 
-    @Override
-    public void onBrowserEvent(Event event) {
-        if (event.getKeyCode() == KeyCodes.KEY_ESCAPE) {
-            GwtClientUtils.stopPropagation(event);
-            allRemovedPressed();
-        } else {
-            super.onBrowserEvent(event);
-        }
+    private void handleKeyEvent(NativeEvent nativeEvent) {
+        assert nativeEvent.getType().equals(BrowserEvents.KEYDOWN);
+        int keyCode = nativeEvent.getKeyCode();
+        if(keyCode == KeyCodes.KEY_ESCAPE)
+            processBinding(nativeEvent, this::allRemovedPressed);
+        else if(keyCode == KeyCodes.KEY_ENTER)
+            processBinding(nativeEvent, this::applyFilter);
     }
 
-    public void showDialog(List<GPropertyFilter> conditions, GTableController logicsSupplier, EditEvent keyEvent, GPropertyDraw propertyDraw) {
+    // similar to GFormController.processBinding
+    private void processBinding(NativeEvent event, Runnable action) {
+        controller.checkCommitEditing();
+        action.run();
+        stopPropagation(event);
+    }
+
+    public void showDialog(List<GPropertyFilter> conditions, GTableController logicsSupplier, Event keyEvent, GPropertyDraw propertyDraw) {
         if(!conditions.isEmpty()) {
             for (GPropertyFilter condition : conditions) {
                 addCondition(condition, logicsSupplier);
             }
-            filterDialog = new DialogBox(false, true, new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
+            filterDialog = new DialogModalBox(new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
             filterDialog.setGlassEnabled(true);
             filterDialog.setWidget(this);
             filterDialog.center();
@@ -210,7 +220,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         hideDialog();
     }
 
-    public void startEditing(EditEvent keyEvent, GPropertyDraw propertyDraw) {
+    public void startEditing(Event keyEvent, GPropertyDraw propertyDraw) {
         if (conditionViews.size() > 0) {
             GFilterConditionView view = conditionViews.values().iterator().next();
             view.setSelectedPropertyDraw(propertyDraw);

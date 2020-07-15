@@ -15,8 +15,10 @@ package lsfusion.gwt.client.navigator.window.view;
  * the License.
  */
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -34,6 +36,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.annotations.IsSafeHtml;
 import com.google.gwt.safehtml.shared.annotations.SuppressIsSafeHtmlCastCheck;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -112,8 +115,12 @@ public class TabLayoutPanel extends ResizeComposite implements HasWidgets,
             setWidget(child);
             setStyleName(TAB_STYLE);
             inner.setClassName(TAB_INNER_STYLE);
+//
+//            getElement().setTabIndex(-1);
+//            child.getElement().setTabIndex(-1);
 
             getElement().addClassName(CommonResources.getInlineBlockStyle());
+//            setAnimationDuration(1000);
         }
 
         public HandlerRegistration addClickHandler(ClickHandler handler) {
@@ -218,6 +225,7 @@ public class TabLayoutPanel extends ResizeComposite implements HasWidgets,
     private final TabbedDeckLayoutPanel deckPanel = new TabbedDeckLayoutPanel();
     private final FlowPanel tabBar = new FlowPanel();
     private final ArrayList<Tab> tabs = new ArrayList<>();
+    private final ArrayList<Element> focusedElements = new ArrayList<>();
     private int selectedIndex = -1;
 
     /**
@@ -270,13 +278,6 @@ public class TabLayoutPanel extends ResizeComposite implements HasWidgets,
      */
     public void add(IsWidget w) {
         add(asWidgetOrNull(w));
-    }
-
-    /**
-     * Convenience overload to allow {@link IsWidget} to be used directly.
-     */
-    public void add(IsWidget w, IsWidget tab) {
-        add(asWidgetOrNull(w), asWidgetOrNull(tab));
     }
 
     /**
@@ -457,22 +458,8 @@ public class TabLayoutPanel extends ResizeComposite implements HasWidgets,
     /**
      * Convenience overload to allow {@link IsWidget} to be used directly.
      */
-    public void insert(IsWidget child, IsWidget tab, int beforeIndex) {
-        insert(asWidgetOrNull(child), asWidgetOrNull(tab), beforeIndex);
-    }
-
-    /**
-     * Convenience overload to allow {@link IsWidget} to be used directly.
-     */
     public void insert(IsWidget child, @IsSafeHtml String text, boolean asHtml, int beforeIndex) {
         insert(asWidgetOrNull(child), text, asHtml, beforeIndex);
-    }
-
-    /**
-     * Convenience overload to allow {@link IsWidget} to be used directly.
-     */
-    public void insert(IsWidget child, String text, int beforeIndex) {
-        insert(asWidgetOrNull(child), text, beforeIndex);
     }
 
     /**
@@ -567,6 +554,7 @@ public class TabLayoutPanel extends ResizeComposite implements HasWidgets,
         child.removeStyleName(CONTENT_STYLE);
 
         Tab tab = tabs.remove(index);
+        focusedElements.remove(index);
         tab.getWidget().removeFromParent();
 
         if (index == selectedIndex) {
@@ -626,31 +614,25 @@ public class TabLayoutPanel extends ResizeComposite implements HasWidgets,
 
         // Update the tabs being selected and unselected.
         if (selectedIndex != -1) {
-            tabs.get(selectedIndex).setSelected(false);
+            Tab tab = tabs.get(selectedIndex);
+            tab.setSelected(false);
+            focusedElements.set(selectedIndex, GwtClientUtils.getFocusedChild(deckPanel.getWidget(selectedIndex).getElement()));
         }
 
         deckPanel.showWidget(index);
         tabs.get(index).setSelected(true);
         selectedIndex = index;
 
+        Element focusedElement = focusedElements.get(index);
+        if(focusedElement != null) {
+            Scheduler.get().scheduleFinally(() -> focusedElement.focus());
+        }
+
+
         // Fire the selection event.
         if (fireEvents) {
             SelectionEvent.fire(this, index);
         }
-    }
-
-    /**
-     * Convenience overload to allow {@link IsWidget} to be used directly.
-     */
-    public void selectTab(IsWidget child) {
-        selectTab(asWidgetOrNull(child));
-    }
-
-    /**
-     * Convenience overload to allow {@link IsWidget} to be used directly.
-     */
-    public void selectTab(IsWidget child, boolean fireEvents) {
-        selectTab(asWidgetOrNull(child), fireEvents);
     }
 
     /**
@@ -660,16 +642,6 @@ public class TabLayoutPanel extends ResizeComposite implements HasWidgets,
      */
     public void selectTab(Widget child) {
         selectTab(getWidgetIndex(child));
-    }
-
-    /**
-     * Programmatically selects the specified tab.
-     *
-     * @param child the child whose tab is to be selected
-     * @param fireEvents true to fire events, false not to
-     */
-    public void selectTab(Widget child, boolean fireEvents) {
-        selectTab(getWidgetIndex(child), fireEvents);
     }
 
     /**
@@ -750,6 +722,7 @@ public class TabLayoutPanel extends ResizeComposite implements HasWidgets,
 
         deckPanel.insertProtected(child, beforeIndex);
         tabs.add(beforeIndex, tab);
+        focusedElements.add(beforeIndex, null);
 
         tabBar.insert(tab, beforeIndex);
         tab.addClickHandler(new ClickHandler() {

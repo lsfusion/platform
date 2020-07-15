@@ -64,6 +64,10 @@ public class GComponent implements Serializable {
     }
 
     public boolean isVerticallyStretched() {
+        return isStretched(container.isLinearVertical(), container.isLinearHorizontal());
+    }
+
+    public boolean isStretched(boolean linearVertical, boolean linearHorizontal) {
         if (container != null) {
             if (container.isScroll() || container.isTabbed() || container.isSplit()) {
                 return true;
@@ -72,24 +76,13 @@ public class GComponent implements Serializable {
             }
 
             assert container.isLinear();
-            return container.isLinearVertical() && getFlex() > 0 || container.isLinearHorizontal() && getAlignment() == GFlexAlignment.STRETCH;
-
+            return linearVertical && getFlex() > 0 || linearHorizontal && getAlignment() == GFlexAlignment.STRETCH;
         }
         return false;
     }
 
     public boolean isHorizontallyStretched() {
-        if (container != null) {
-            if (container.isScroll() || container.isTabbed() || container.isSplit()) {
-                return true;
-            } else if (container.isColumns()) {
-                return false;
-            }
-
-            assert container.isLinear();
-            return container.isLinearHorizontal() && getFlex() > 0 || container.isLinearVertical() && getAlignment() == GFlexAlignment.STRETCH;
-        }
-        return false;
+        return isStretched(container.isLinearHorizontal(), container.isLinearVertical());
     }
 
     public boolean hasMargins() {

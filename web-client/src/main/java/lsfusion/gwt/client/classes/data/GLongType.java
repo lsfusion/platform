@@ -2,9 +2,9 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.LongGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.LongCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 
 import java.text.ParseException;
 
@@ -12,8 +12,8 @@ public class GLongType extends GIntegralType {
     public static GLongType instance = new GLongType();
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new LongGridCellEditor(editManager, editProperty);
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new LongCellEditor(editManager, editProperty);
     }
 
     @Override

@@ -15,7 +15,4 @@ public interface TabBar {
     boolean selectTab(int index);
 
     void setTabText(int index, String caption);
-
-    HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> beforeSelectionHandler);
-    HandlerRegistration addSelectionHandler(SelectionHandler<Integer> selectionHandler);
 }

@@ -6,6 +6,7 @@ import lsfusion.base.Pair;
 // this class is needed to make throwable serializable and of specific class
 public class RemoteInternalException extends RemoteServerException {
     
+    public String javaStack; // for backward deserialization
     private final String lsfStack;
 
     public RemoteInternalException(String message, String lsfStack) {
@@ -24,9 +25,12 @@ public class RemoteInternalException extends RemoteServerException {
     }
     
     public static Pair<String, String> getExStacks(Throwable e) {
-        return new Pair<>(ExceptionUtils.getStackTrace(e), getLsfStack(e));
+        return new Pair<>(getJavaStack(e), getLsfStack(e));
     }
     
+    public static String getJavaStack(Throwable e) {
+        return e instanceof RemoteInternalException && ((RemoteInternalException) e).javaStack != null ? ((RemoteInternalException) e).javaStack : ExceptionUtils.getStackTrace(e);
+    }
     public static String getLsfStack(Throwable e) {
         return e instanceof RemoteInternalException ? ((RemoteInternalException) e).lsfStack : null;
     }

@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.http.client.*;
 import com.google.gwt.i18n.client.Dictionary;
@@ -17,6 +14,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
@@ -214,8 +212,13 @@ public class GwtClientUtils {
     }
 
     public static void stopPropagation(NativeEvent event) {
+        stopPropagation(event, false);
+    }
+
+    public static void stopPropagation(NativeEvent event, boolean propagateToNative) {
         event.stopPropagation();
-        event.preventDefault();
+        if(!propagateToNative)
+            event.preventDefault();
     }
 
     public static void stopPropagation(DomEvent event) {
@@ -342,17 +345,6 @@ public class GwtClientUtils {
         style.setPaddingBottom(paddingBottom, Style.Unit.PX);
         style.setPaddingLeft(paddingLeft, Style.Unit.PX);
         style.setPaddingRight(paddingRight, Style.Unit.PX);
-    }
-
-    public static void scheduleOnResize(final Widget widget) {
-        if (widget instanceof RequiresResize) {
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    ((RequiresResize) widget).onResize();
-                }
-            });
-        }
     }
 
     public static void showPopupInWindow(PopupPanel popup, int mouseX, int mouseY) {
@@ -706,5 +698,144 @@ public class GwtClientUtils {
     
     public static String getCurrentLanguage() {
         return getCurrentLocaleName().substring(0, 2);
+    }
+
+    public static native Element getFocusedElement() /*-{
+        return $doc.activeElement;
+    }-*/;
+
+    public static String getParentForm(Element element) {
+        BodyElement body = Document.get().getBody();
+        while (element != body) {
+            String attr = element.getAttribute("lsfusion-form");
+            if(attr != null && !attr.isEmpty())
+                return attr;
+            element = element.getParentElement().cast();
+        }
+        return null;
+    }
+
+    public static Element getFocusedChild(Element containerElement) {
+        Element focusedElement = getFocusedElement();
+        if(containerElement.isOrHasChild(focusedElement))
+            return focusedElement;
+        return null;
+    }
+
+    public static boolean isTD(Element element) {
+        return element.getTagName().toLowerCase().equals("td");
+    }
+
+
+    public static <T> T findInList(List<T> list, Predicate<T> predicate) {
+        for(T element : list)
+            if(predicate.test(element))
+                return element;
+        return null;
+    }
+
+    public static Element wrapCenteredImg(Element th, boolean multiLine, int setHeight, Consumer<ImageElement> imgProcessor) {
+        th = wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
+
+        // since it's a header we want to align it to the center (vertically and horizontally)
+        th = wrapCenter(th); // we have to do it after setting height (because that's the point of that centering)
+        // left works strange, plus, images are also stretched, so will leave it with extra container
+//        setAlignedFlexCenter(th, multiLine ? "stretch" : "center", multiLine ? "left" : "center"); // in theory should correspond default alignments in TextBasedCellRenderer
+
+        // we don't want that container to be larger than the upper one
+        setMaxHeight(th, setHeight, 0);
+
+        if(imgProcessor != null)
+            th = wrapImg(th, imgProcessor);
+//            th = wrapAlignedFlexImg(th, imgProcessor);
+
+        th.addClassName("wrap-caption");
+        return th;
+    }
+
+    public static void setMaxHeight(Element th, int setHeight, int paddings) {
+        th.getStyle().setProperty("maxHeight", (setHeight - 2 * paddings) + "px");
+    }
+    public static void clearMaxHeight(Element th) {
+        th.getStyle().clearProperty("maxHeight");
+    }
+
+    // optimization to avoid one more div
+    // !!! ASSERT THAT CONTAINER SHOULD BE MODIFIABLE
+    public static void setAlignedFlexCenter(Element th, String vertAlignment, String horzAlignment) {
+        th.addClassName("wrap-center");
+
+        if(!vertAlignment.equals("center"))
+            th.getStyle().setProperty("alignItems", vertAlignment);
+        if(!horzAlignment.equals("center"))
+            th.getStyle().setProperty("justifyContent", horzAlignment);
+    }
+    public static void clearAlignedFlexCenter(Element th) {
+        th.removeClassName("wrap-center");
+    }
+    // optimization
+    public static boolean isAlignedFlexModifiableDiv(Element th) {
+        return th.hasClassName("wrap-center");
+    }
+
+    //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
+    public static Element wrapDiv(Element th) {
+        Element wrappedTh = Document.get().createDivElement();
+        wrappedTh.addClassName("wrap-div");
+        th.appendChild(wrappedTh);
+
+        return wrappedTh;
+    }
+
+    public static Element wrapCenter(Element th) {
+        th.addClassName("wrap-center"); // display flex : justify-content, align-items : center
+
+        Element wrappedTh = Document.get().createDivElement();
+        th.appendChild(wrappedTh);
+
+        return wrappedTh;
+    }
+
+    public static Element wrapImg(Element th, Consumer<ImageElement> imgProcessor) {
+        assert !isAlignedFlexModifiableDiv(th);
+        th.addClassName("wrap-wrapimgdiv");
+
+        Element wrappedTh = Document.get().createDivElement();
+        wrappedTh.addClassName("wrap-imgdiv");
+
+        ImageElement img = Document.get().createImageElement();
+        img.addClassName("wrap-img-margins");
+        img.addClassName("wrap-img");
+        imgProcessor.accept(img);
+        th.appendChild(img);
+
+        th.appendChild(wrappedTh);
+
+        return wrappedTh;
+    }
+
+    public static Element wrapAlignedFlexImg(Element th, Consumer<ImageElement> imgProcessor) {
+        assert isAlignedFlexModifiableDiv(th);
+
+        Element wrappedTh = Document.get().createDivElement();
+
+        ImageElement img = Document.get().createImageElement();
+        img.addClassName("wrap-img-margins");
+        imgProcessor.accept(img);
+        th.appendChild(img);
+
+        th.appendChild(wrappedTh);
+
+        return wrappedTh;
+    }
+
+    public static boolean nullEquals(Object obj1, Object obj2) {
+        if (obj1 == null)
+            return obj2 == null;
+        return obj1.equals(obj2);
+    }
+
+    public static <T> T nvl(T value1, T value2) {
+        return value1 == null ? value2 : value1;
     }
 }

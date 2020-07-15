@@ -3,14 +3,12 @@ package lsfusion.gwt.client.view;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -21,7 +19,6 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingBlocker;
@@ -39,7 +36,9 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
+import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
@@ -77,8 +76,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static List<ColorThemeChangeListener> colorThemeChangeListeners = new ArrayList<>(); 
     
     public static GColorPreferences colorPreferences;
-
-    private final String tabSID = GwtSharedUtils.randomString(25);
 
     private LoadingManager loadingManager;
 
@@ -140,8 +137,40 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         private T link;
     }
 
+    private static Element lastBlurredElement;
+    // Event.addNativePreviewHandler(this::previewNativeEvent); doesn't work since only mouse events are propagated see DOM.previewEvent(evt) usages (only mouse and keyboard events are previewed);
+    // this solution is not pretty clean since not all events are previewed, but for now, works pretty good
+    public static void setLastBlurredElement(Element lastBlurredElement) {
+        MainFrame.lastBlurredElement = lastBlurredElement;
+    }
+    public static Element getLastBlurredElement() {
+        return lastBlurredElement;
+    }
+
+    // it's odd, but dblclk works even when the first click was on different target
+    // for example double clicking on focused property, causes first mousedown/click on that property, after that its handler dialog is shown
+    // the second click is handled by dialog, and double click is also triggered for that dialog (that shouldn't happen given to the browser dblclick specification), causing it to be hidden
+    // so this way we fix that browser bug
+    private static Element beforeLastClickedTarget;
+    private static Element lastClickedTarget;
+    private static Event lastClickedEvent;
+    public static boolean previewClickEvent(Element target, Event event) {
+        if (GMouseStroke.isClickEvent(event))
+            if (event != lastClickedEvent) { // checking lastClickedEvent since it can be propagated (or not)
+                lastClickedEvent = event;
+                beforeLastClickedTarget = lastClickedTarget;
+                lastClickedTarget = target;
+            }
+        if(GMouseStroke.isDblClickEvent(event)) {
+            if(beforeLastClickedTarget != null && lastClickedTarget != null && target == lastClickedTarget && beforeLastClickedTarget != lastClickedTarget)
+                return false;
+        }
+        return true;
+    }
+
     public void initializeFrame() {
         currentForm = null;
+
         // we need to read settings first to have loadingManager set (for syncDispatch)
         navigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
             @Override
@@ -203,16 +232,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                     }
                 });
             }
-
-            @Override
-            public void setCurrentForm(GFormController form) {
-                MainFrame.this.setCurrentForm(form);
-            }
-
-            @Override
-            public void dropCurrentForm(GFormController form) {
-                MainFrame.this.dropCurrentForm(form);
-            }
         };
 
         formsControllerLinker.link = formsController;
@@ -265,7 +284,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                             setShouldRepeatPingRequest(true);
                             super.success(result);
                             for (Integer idNotification : result.notificationList) {
-                                GFormController form = currentForm;
+                                FormContainer<?> currentForm = MainFrame.getCurrentForm();
+                                GFormController form = currentForm != null ? currentForm.getForm() : null;
                                 if (form != null)
                                     try {
                                         form.executeNotificationAction(idNotification);
@@ -345,15 +365,28 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
-    public static GFormController currentForm;
+    private static FormContainer<?> currentForm;
+    private static boolean modalPopup;
 
-    public void setCurrentForm(GFormController currentForm) {
-        this.currentForm = currentForm;
+    public static void setCurrentForm(FormContainer currentForm) {
+        MainFrame.currentForm = currentForm;
     }
 
-    public void dropCurrentForm(GFormController form) {
-        if(currentForm != null && currentForm.equals(form))
-            currentForm = null;
+    public static void setModalPopup(boolean modalPopup) {
+        MainFrame.modalPopup = modalPopup;
+    }
+
+    public static FormContainer getCurrentForm() {
+        if(!modalPopup)
+            return currentForm;
+        return null;
+    }
+    public static FormContainer getAssertCurrentForm() {
+        assert !modalPopup;
+        return currentForm;
+    }
+    public static boolean isModalPopup() {
+        return modalPopup;
     }
 
     private void initializeWindows(final DefaultFormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
@@ -380,7 +413,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 allWindows.addAll(commonWindows.keySet());
 
                 windowsController.initializeWindows(allWindows, formsWindow);
-                formsController.restoreFullScreen();
+                formsController.initRoot();
 
                 navigatorController.update();
 

@@ -2,9 +2,9 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.IntegerGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.IntegerCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 
 import java.text.ParseException;
 
@@ -12,8 +12,8 @@ public class GIntegerType extends GIntegralType {
     public static GIntegerType instance = new GIntegerType();
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new IntegerGridCellEditor(editManager, editProperty);
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new IntegerCellEditor(editManager, editProperty);
     }
 
     @Override

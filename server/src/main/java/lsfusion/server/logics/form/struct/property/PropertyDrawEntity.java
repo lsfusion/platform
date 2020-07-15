@@ -381,21 +381,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
     
     public boolean hasKeyBinding(String actionId) {
-        Map keyBindings = getKeyBindings();
+        ImMap<KeyStroke, String> keyBindings = getKeyBindings();
         return keyBindings != null && keyBindings.containsValue(actionId);
     }
 
-    public Map<KeyStroke, String> getKeyBindings() {
+    public ImMap<KeyStroke, String> getKeyBindings() {
         ImMap<KeyStroke, String> propertyKeyBindings = getEventProperty().getKeyBindings();
-        if (propertyKeyBindings.isEmpty()) {
-            return keyBindings;
-        }
-
-        Map<KeyStroke, String> result = propertyKeyBindings.toJavaMap();
-        if (keyBindings != null) {
-            result.putAll(keyBindings);
-        }
-        return result;
+        if(keyBindings != null)
+            propertyKeyBindings = propertyKeyBindings.merge(MapFact.fromJavaMap(keyBindings), MapFact.override());
+        return propertyKeyBindings;
     }
 
     public String getMouseBinding() {

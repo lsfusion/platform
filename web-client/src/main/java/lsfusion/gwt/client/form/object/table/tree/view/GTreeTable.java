@@ -1,22 +1,21 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
 import com.allen_sauer.gwt.log.client.Log;
-import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.KeyboardRowChangedEvent;
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
+import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
@@ -28,12 +27,10 @@ import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.cell.view.GridEditableCell;
 
 import java.util.*;
 
-import static java.util.Collections.singleton;
+import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -51,7 +48,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private Set<GTreeTableNode> expandedNodes;
 
-    private TreeTableKeyboardSelectionHandler keyboardSelectionHandler;
+    private TreeTableSelectionHandler treeSelectionHandler;
 
     private GTreeGroupController treeGroupController;
     
@@ -73,17 +70,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         hierarchicalWidth = treeGroup.calculateSize();
 
-        keyboardSelectionHandler = new TreeTableKeyboardSelectionHandler(this);
-        setKeyboardSelectionHandler(keyboardSelectionHandler);
+        treeSelectionHandler = new TreeTableSelectionHandler(this);
+        setSelectionHandler(treeSelectionHandler);
 
-        addKeyboardRowChangedHandler(new KeyboardRowChangedEvent.Handler() {
-            @Override
-            public void onKeyboardRowChanged(KeyboardRowChangedEvent event) {
-                final GTreeGridRecord kbSelectedRecord = getKeyboardSelectedRowValue();
-                if (kbSelectedRecord != null && !kbSelectedRecord.equals(selectedRecord)) {
-                    setCurrentRecord(kbSelectedRecord);
-                    form.changeGroupObjectLater(kbSelectedRecord.getGroup(), kbSelectedRecord.getKey());
-                }
+        setRowChangedHandler(() -> {
+            final GTreeGridRecord kbSelectedRecord = getSelectedRowValue();
+            if (kbSelectedRecord != null && !kbSelectedRecord.equals(selectedRecord)) {
+                setCurrentRecord(kbSelectedRecord);
+                form.changeGroupObjectLater(kbSelectedRecord.getGroup(), kbSelectedRecord.getKey());
             }
         });
 
@@ -145,39 +139,218 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         updatePropertyValues(property, values, updateKeys);
     }
 
-    private abstract class TreeGridColumn extends Column<GTreeGridRecord, Object> {
-        public TreeGridColumn(Cell<Object> cell) {
-            super(cell);
+    private interface TreeGridColumn  {
+        GPropertyDraw getProperty();
+    }
+
+    private final static String ICON_LEAF = "tree_leaf.png";
+    private final static String ICON_OPEN = "tree_open.png";
+    private final static String ICON_CLOSED = "tree_closed.png";
+    private final static String ICON_PASSBY = "tree_dots_passby.png";
+    private final static String ICON_EMPTY = "tree_empty.png";
+    private final static String ICON_BRANCH = "tree_dots_branch.png";
+
+    private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
+
+    public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
+//        GPropertyTableBuilder.setLineHeight(jsElement, rowHeight);
+        for (int i = 0; i <= treeValue.getLevel(); i++) {
+            DivElement img = createIndentElement(cellElement);
+            updateIndentElement(img, treeValue, i);
+        }
+    }
+
+    private static DivElement createIndentElement(Element cellElement) {
+        DivElement div = cellElement.appendChild(Document.get().createDivElement());
+        div.getStyle().setFloat(Style.Float.LEFT);
+        div.getStyle().setHeight(100, Style.Unit.PCT);
+        div.getStyle().setWidth(16, Style.Unit.PX);
+
+        DivElement vert = Document.get().createDivElement();
+        vert.getStyle().setWidth(16, Style.Unit.PX);
+        vert.getStyle().setHeight(100, Style.Unit.PCT);
+
+        DivElement top = vert.appendChild(Document.get().createDivElement());
+        top.getStyle().setHeight(50, Style.Unit.PCT);
+
+        DivElement bottom = vert.appendChild(Document.get().createDivElement());
+        bottom.getStyle().setHeight(50, Style.Unit.PCT);
+        bottom.getStyle().setPosition(Style.Position.RELATIVE);
+
+        ImageElement img = bottom.appendChild(Document.get().createImageElement());
+        img.getStyle().setPosition(Style.Position.ABSOLUTE);
+        img.getStyle().setTop(-8, Style.Unit.PX);
+
+        return div.appendChild(vert);
+    }
+
+    private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
+        String indentIcon;
+        ImageElement img = element.getElementsByTagName("img").getItem(0).cast();
+        int nodeLevel = treeValue.getLevel();
+        if (indentLevel < nodeLevel - 1) {
+            indentIcon = treeValue.isLastInLevel(indentLevel) ? ICON_EMPTY : ICON_PASSBY;
+            img.removeAttribute(TREE_NODE_ATTRIBUTE);
+        } else if (indentLevel == nodeLevel - 1) {
+            indentIcon = ICON_BRANCH;
+            img.removeAttribute(TREE_NODE_ATTRIBUTE);
+        } else {
+            assert indentLevel == nodeLevel;
+            img.setAttribute(TREE_NODE_ATTRIBUTE, treeValue.getSID());
+            indentIcon = getNodeIcon(treeValue);
         }
 
-        public abstract GPropertyDraw getProperty();
+        if (ICON_PASSBY.equals(indentIcon)) {
+            changeDots(element, true, true);
+        } else if (ICON_BRANCH.equals(indentIcon)) {
+            if (treeValue.isLastInLevel(indentLevel)) {
+                changeDots(element, true, false); //end
+            } else {
+                changeDots(element, true, true); //branch
+            }
+        } else if (ICON_EMPTY.equals(indentIcon) || ICON_LEAF.equals(indentIcon) || ICON_CLOSED.equals(indentIcon)) {
+            changeDots(element, false, false);
+        } else if (ICON_OPEN.equals(indentIcon)) {
+            changeDots(element, false, treeValue.isOpenDotBottom());
+        }
+
+        if(ICON_CLOSED.equals(indentIcon)) {
+            img.removeClassName("expanded-image");
+            img.addClassName("collapsed-image");
+        } else if(ICON_OPEN.equals(indentIcon)) {
+            img.removeClassName("collapsed-image");
+            img.addClassName("expanded-image");
+        } else if(ICON_LEAF.equals(indentIcon)) {
+            img.addClassName("leaf-image");
+        } else if(ICON_BRANCH.equals(indentIcon)) {
+            img.addClassName("branch-image");
+        }
+
+        setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
+    }
+
+    private static void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
+        Element top = element.getFirstChild().cast();
+        Element bottom = element.getLastChild().cast();
+
+        if (dotTop && dotBottom) {
+            ensureDotsAndSetBackground(element);
+            element.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
+            clearBackground(top);
+            clearBackground(bottom);
+            return;
+        } else {
+            clearBackground(element);
+        }
+        if (dotTop) {
+            ensureDotsAndSetBackground(top);
+            top.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
+        } else {
+            clearBackground(top);
+        }
+
+        if (dotBottom) {
+            ensureDotsAndSetBackground(bottom);
+            bottom.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
+        } else {
+            clearBackground(bottom);
+        }
+    }
+
+    private static void ensureDotsAndSetBackground(Element element) {
+        element.addClassName("passby-image");
+        setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
+    }
+
+    private static void clearBackground(Element element) {
+        element.removeClassName("passby-image");
+        element.getStyle().clearBackgroundImage();
+    }
+
+    private static String getNodeIcon(GTreeColumnValue treeValue) {
+        if (treeValue.getOpen() == null) {
+            return ICON_LEAF;
+        } else if (treeValue.getOpen()) {
+            return ICON_OPEN;
+        } else {
+            return ICON_CLOSED;
+        }
     }
 
     // actually singleton
-    private class ExpandTreeColumn extends TreeGridColumn {
-        public ExpandTreeColumn() {
-            super(new GTreeGridControlCell(GTreeTable.this));
-        }
-
+    private class ExpandTreeColumn extends Column<GTreeGridRecord, Object> implements TreeGridColumn {
         @Override
         public Object getValue(GTreeGridRecord object) {
             return object.getTreeValue();
         }
 
         @Override
+        public boolean isFocusable() {
+            return true;
+        }
+
+        @Override
         public GPropertyDraw getProperty() {
             return null;
         }
+
+        @Override
+        public void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent) {
+            Event event = handler.event;
+            if (GMouseStroke.isChangeEvent(event)) {
+                String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
+                if (attrID != null) {
+                    changeTreeState(editContext, getValue((GTreeGridRecord) editContext.getRowValue()), event);
+                    handler.consume();
+                }
+            }
+        }
+
+        private void changeTreeState(Context context, Object value, NativeEvent event) {
+            GwtClientUtils.stopPropagation(event);
+
+            Boolean open = ((GTreeColumnValue) value).getOpen();
+            if (open != null) {
+                GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
+                if (!open) {
+                    expandNodeByRecord(record);
+                } else {
+                    collapseNodeByRecord(record);
+                }
+            }
+        }
+
+        @Override
+        public void renderDom(Context context, Element cellElement, Object value) {
+            GTreeTable.renderExpandDom(cellElement, (GTreeColumnValue) value);
+        }
+
+        @Override
+        public void updateDom(Context context, Element cellElement, Object value) {
+
+            GTreeColumnValue treeValue = (GTreeColumnValue) value;
+
+            while (cellElement.getChildCount() > treeValue.getLevel() + 1) {
+                cellElement.getLastChild().removeFromParent();
+            }
+
+            for (int i = 0; i <= treeValue.getLevel(); i++) {
+                DivElement img;
+                if (i >= cellElement.getChildCount()) {
+                    img = createIndentElement(cellElement);
+                } else {
+                    img = cellElement.getChild(i).getFirstChild().cast();
+                }
+
+                updateIndentElement(img, treeValue, i);
+            }
+        }
     }
 
-    private class GridColumn extends TreeGridColumn {
-
-        public final GPropertyDraw property;
+    private class GridColumn extends GridPropertyColumn implements TreeGridColumn {
 
         public GridColumn(GPropertyDraw property) {
-            super(new GridEditableCell(GTreeTable.this, true));
-
-            this.property = property;
+            super(property);
         }
 
         @Override
@@ -304,7 +477,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             updatePropertyReaders();
             setRowData(currentRecords);
 
-            keyboardSelectionHandler.dataUpdated();
+            treeSelectionHandler.dataUpdated();
 
             redraw();
 
@@ -325,7 +498,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 for (GTreeGridRecord record : currentRecords) {
                     if (record.getKey().equals(currentPath)) {
                         setCurrentRecord(record);
-                        setKeyboardSelectedRow(i, false);
+                        setSelectedRow(i);
                         return;
                     }
                     i++;
@@ -388,7 +561,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 header.setToolTip(property.getTooltipText(value));
                 needsHeaderRefresh = true;
             }
-            rowHeight = Math.max(rowHeight, property.getValueHeight(font));
+            rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
         }
         setCellHeight(rowHeight);
         if (needsHeaderRefresh) {
@@ -513,11 +686,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler() {
-        return keyboardSelectionHandler;
-    }
-
-    @Override
     public GAbstractTableController getGroupController() {
         return treeGroupController;
     }
@@ -546,29 +714,29 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public GPropertyDraw getProperty(Cell.Context context) {
+    public GPropertyDraw getProperty(Context context) {
         GTreeGridRecord rowValue = (GTreeGridRecord) context.getRowValue();
         return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), context.getColumn());
     }
 
     @Override
-    public GGroupObjectValue getSelectedColumn() {
+    public GGroupObjectValue getSelectedColumnKey() {
         return null;
     }
     @Override
-    public GGroupObjectValue getColumnKey(Cell.Context context) {
+    public GGroupObjectValue getColumnKey(Context context) {
         return GGroupObjectValue.EMPTY;
 //        return currentRecords.get(context.getIndex()).getKey();
     }
 
     @Override
-    public boolean isEditable(Cell.Context context) {
+    public boolean isReadOnly(Context context) {
         GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
-        return record != null && tree.isEditable(record.getGroup(), context.getColumn(), record.getKey());
+        return record == null || tree.isReadOnly(record.getGroup(), context.getColumn(), record.getKey());
     }
 
     @Override
-    public Object getValueAt(Cell.Context context) {
+    public Object getValueAt(Context context) {
         GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
         return record == null ? null : tree.getValue(record.getGroup(), context.getColumn(), record.getKey());
     }
@@ -577,19 +745,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public void pasteData(List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             GPropertyDraw property = getSelectedProperty();
-            GGroupObjectValue columnKey = getCurrentKey();
             if (property != null) {
-                form.pasteSingleValue(property, columnKey, table.get(0).get(0));
+                form.pasteSingleValue(property, getCurrentKey(), table.get(0).get(0));
             }
         }
     }
 
     @Override
-    protected void onBrowserEvent2(Event event) {
-        super.onBrowserEvent2(event);
+    protected void onBrowserEvent2(Element target, Event event) {
+        super.onBrowserEvent2(target, event);
 
         if (event.getTypeInt() == Event.ONDBLCLICK) {
-            if (treeGroupController.isExpandOnClick() && !isEditable(getCurrentCellContext()) && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {
+            if (treeGroupController.isExpandOnClick() && isReadOnly(getSelectedCellContext()) && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {
                 GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
                 if (node != null && node.isExpandable()) {
                     GwtClientUtils.stopPropagation(event);
@@ -604,27 +771,22 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
+    public void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
         treeGroupController.quickEditFilter(event, filterProperty, columnKey);
     }
 
     @Override
-    public void setValueAt(Cell.Context context, Object value) {
-        int row = context.getIndex();
-        int column = context.getColumn();
-
+    public void setValueAt(Context context, Object value) {
         GTreeGridRecord rowRecord = (GTreeGridRecord) context.getRowValue();
+        GPropertyDraw property = getProperty(context);
 
-        if (rowRecord != null) {
-            GPropertyDraw property = getProperty(context);
-            if (property != null) {
-                rowRecord.setValue(property, value);
-                tree.putValue(property, rowRecord.getKey(), value);
-            }
-        }
+//        if (rowRecord != null && property != null) {
+        rowRecord.setValue(property, value);
+        tree.values.get(property).put(rowRecord.getKey(), value);
+        assert getRowValue(context.getIndex()) == rowRecord;
+//        }
 
-        setRowData(row, Arrays.asList(rowRecord));
-        redrawColumns(singleton(getColumn(column)), false);
+//        redrawColumns(singleton(getColumn(context.getColumn())), false);
     }
 
     public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
@@ -638,7 +800,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
         if (open) {
             if (!node.isOpen()) {
-                keyboardSelectionHandler.nodeTryingToExpand = node;
+                treeSelectionHandler.nodeTryingToExpand = node;
                 fireExpandNode(node);
                 return true;
             }
@@ -649,10 +811,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return false;
     }
 
-    public class TreeTableKeyboardSelectionHandler extends GridPropertyTableKeyboardSelectionHandler<GTreeGridRecord> {
+    public class TreeTableSelectionHandler extends GridPropertyTableSelectionHandler<GTreeGridRecord> {
         public GTreeTableNode nodeTryingToExpand = null;
 
-        public TreeTableKeyboardSelectionHandler(DataGrid<GTreeGridRecord> table) {
+        public TreeTableSelectionHandler(DataGrid<GTreeGridRecord> table) {
             super(table);
         }
 
@@ -666,13 +828,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public boolean handleKeyEvent(CellPreviewEvent<GTreeGridRecord> event) {
-            NativeEvent nativeEvent = event.getNativeEvent();
+        public boolean handleKeyEvent(Event event) {
+            assert BrowserEvents.KEYDOWN.equals(event.getType());
 
-            assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
-
-            int keyCode = nativeEvent.getKeyCode();
-            if (!nativeEvent.getCtrlKey() && getKeyboardSelectedColumn() == 0) {
+            int keyCode = event.getKeyCode();
+            if (!event.getCtrlKey() && getSelectedColumn() == 0) {
                 if (keyCode == KeyCodes.KEY_RIGHT) {
                     if (keyboardNodeChangeState(true)) {
                         return true;

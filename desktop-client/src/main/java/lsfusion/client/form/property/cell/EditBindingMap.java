@@ -23,9 +23,9 @@ public class EditBindingMap {
         setMouseAction(ServerResponse.CHANGE);
     }
 
-    public String getEventSID(EventObject editEvent, EditEventFilter editEventFilter, boolean hasEditObjectAction) {
+    public String getEventSID(EventObject editEvent, EditEventFilter editEventFilter) {
         if (editEvent instanceof KeyEvent) {
-            if (hasEditObjectAction && KeyStrokes.isEditObjectEvent(editEvent)) {
+            if (KeyStrokes.isEditObjectEvent(editEvent)) {
                 return ServerResponse.EDIT_OBJECT;
             }
 
@@ -92,13 +92,13 @@ public class EditBindingMap {
 
         String actionSID = null;
         if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
+            actionSID = property.editBindingMap.getEventSID(e, eventFilter);
         }
 
         if (actionSID == null) {
             actionSID = overrideMap.getKeyPressAction(e);
             if (actionSID == null) {
-                actionSID = overrideMap.getEventSID(e, eventFilter, property.hasEditObjectAction);
+                actionSID = overrideMap.getEventSID(e, eventFilter);
             }
         }
         return actionSID;

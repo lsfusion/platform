@@ -6,11 +6,12 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
+import lsfusion.gwt.client.base.view.ResizableSystemModalWindow;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.classes.GObjectClass;
 
-public class GClassDialog extends ResizableModalWindow {
+public class GClassDialog extends ResizableSystemModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private final boolean concreate;
@@ -73,19 +74,8 @@ public class GClassDialog extends ResizableModalWindow {
             }
         });
 
-        btnCancel.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                chooseClass(null);
-            }
-        });
-
-        setWindowHiddenHandler(new WindowHiddenHandler() {
-            @Override
-            public void onHidden() {
-                classChosenHandler.onClassChosen(chosenClass);
-            }
-        });
+        btnCancel.addClickHandler(event -> chooseClass(null));
+        setWindowHiddenHandler(() -> classChosenHandler.onClassChosen(chosenClass));
     }
 
     private void okPressed() {
@@ -104,7 +94,7 @@ public class GClassDialog extends ResizableModalWindow {
 
     public static GClassDialog showDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, ClassChosenHandler classChosenHandler) {
         GClassDialog classDlg = new GClassDialog(baseClass, defaultClass, concreate, classChosenHandler);
-        classDlg.center();
+        classDlg.show();
         return classDlg;
     }
 }

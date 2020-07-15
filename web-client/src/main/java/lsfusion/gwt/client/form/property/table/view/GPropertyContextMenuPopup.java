@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.LinkedHashMap;
@@ -15,7 +16,7 @@ public class GPropertyContextMenuPopup {
         void onMenuItemSelected(String actionSID);
     }
 
-    public void show(GPropertyDraw property, int x, int y, final ItemSelectionListener selectionListener) {
+    public static void show(GPropertyDraw property, int x, int y, final ItemSelectionListener selectionListener) {
         if (property == null) {
             return;
         }
@@ -25,7 +26,7 @@ public class GPropertyContextMenuPopup {
             return;
         }
 
-        final PopupPanel popup = new PopupPanel(true);
+        final PopupDialogPanel popup = new PopupDialogPanel();
 
         final MenuBar menuBar = new MenuBar(true);
         for (final Map.Entry<String, String> item : contextMenuItems.entrySet()) {
