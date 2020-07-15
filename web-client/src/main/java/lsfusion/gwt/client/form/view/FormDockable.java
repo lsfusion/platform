@@ -3,21 +3,14 @@ package lsfusion.gwt.client.form.view;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 
@@ -161,6 +154,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
             closeButton.setText(EscapeUtils.UNICODE_CROSS);
             closeButton.setStyleName("closeTabButton");
             closeButton.setSize(VALUE_HEIGHT - 2 + "px", VALUE_HEIGHT - 2 + "px");
+            closeButton.getElement().getStyle().setLineHeight(VALUE_HEIGHT - 4, Style.Unit.PX);
 
             FlexPanel labelWrapper = new FlexPanel();
             labelWrapper.getElement().addClassName("tabLayoutPanelTabTitleWrapper");

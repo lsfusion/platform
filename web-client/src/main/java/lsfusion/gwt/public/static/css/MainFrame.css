@@ -101,6 +101,10 @@ input[type=checkbox]:focus {
     width: 100%;
 }
 
+.formsTabBar .gwt-TabBarItem {
+    padding-right: 5px;
+}
+
 .tabLayoutPanelTabWidget {
     height: 100%;
 }

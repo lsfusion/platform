@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.view.FixFlexBasisComposite;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -15,10 +14,14 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
     protected TabDeck deck;
 
     public FlexTabbedPanel() {
-        this(null);
+        this(null, null);
     }
-    public FlexTabbedPanel(Widget extraTabWidget) {
+    public FlexTabbedPanel(String tabBarClass, Widget extraTabWidget) {
         FlexTabBar tabBar = new FlexTabBar(extraTabWidget);
+        if (tabBarClass != null) {
+            tabBar.addStyleName(tabBarClass);
+        }
+        
         TabbedDeckPanel deck = new TabbedDeckPanel();
 
         panel = new FlexPanel(true);

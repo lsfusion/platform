@@ -1,18 +1,14 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.ImageButton;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
@@ -52,7 +48,7 @@ public abstract class DefaultFormsController implements FormsController {
 
         formsContainer = new ResizableSimplePanel();
 
-        tabsPanel = new FlexTabbedPanel(fullScreenButton);
+        tabsPanel = new FlexTabbedPanel("formsTabBar", fullScreenButton);
 
         // unselected (but not removed)
         tabsPanel.setBeforeSelectionHandler(index -> {

@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
-import com.google.gwt.event.logical.shared.*;
+import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.DOM;
@@ -27,12 +27,20 @@ public class FlexTabBar extends Composite implements TabBar {
     private Widget selectedTab;
 
     public FlexTabBar(Widget extraTabWidget) {
-        initWidget(panel);
+        if (extraTabWidget == null) {
+            initWidget(panel);
+        } else {
+            FlexPanel tabBarContainer = new FlexPanel();
+            tabBarContainer.add(panel, GFlexAlignment.START, 1);
+            panel.getElement().getStyle().setProperty("flexShrink", "1");
+            tabBarContainer.add(extraTabWidget);
+            initWidget(tabBarContainer);
+        }
 
         sinkEvents(Event.ONMOUSEDOWN);
 
         setStyleName("gwt-TabBar");
-        getElement().getStyle().setProperty("flexWrap", "wrap");
+        panel.getElement().getStyle().setProperty("flexWrap", "wrap");
 
         Label first = new Label();
         Label rest = new Label();
@@ -48,8 +56,6 @@ public class FlexTabBar extends Composite implements TabBar {
 
         panel.add(first, GFlexAlignment.STRETCH, 0);
         panel.add(rest, GFlexAlignment.STRETCH, 1);
-        if(extraTabWidget != null)
-            panel.add(extraTabWidget, GFlexAlignment.START, 0);
     }
 
     private Consumer<Integer> beforeSelectionHandler;

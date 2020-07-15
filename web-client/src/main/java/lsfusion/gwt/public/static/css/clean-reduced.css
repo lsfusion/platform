@@ -907,16 +907,18 @@ button {
 }
 
 .gwt-TabBar {
-    padding-top: 5px;
+    padding-top: 2px;
 }
 .gwt-TabBar .gwt-TabBarFirst {
-    width: 5px;  /* first tab distance from the left */
+    width: 3px;  /* first tab distance from the left */
+    height: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .gwt-TabBar .gwt-TabBarRest {
+    height: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .gwt-TabBar .gwt-TabBarItem {
-    margin-left: 4px;
-    padding: 0 12px;
+    margin-left: 3px;
+    padding: 0 10px;
     cursor: pointer;
     cursor: hand;
     font-weight: normal;
