@@ -349,6 +349,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 return true;
             }
         };
+        binding.bindEditing = BindingMode.NO;
         binding.bindGroup = BindingMode.ONLY;
         return binding;
     }

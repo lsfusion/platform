@@ -44,7 +44,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     private void addEnterBinding(boolean shiftPressed) {
         form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
-                new GBindingEnv(-100, null, GBindingMode.ONLY, null, null),
+                new GBindingEnv(-100, null, GBindingMode.ONLY, GBindingMode.NO, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
                 event -> ((GGridPropertyTable) GPropertyTable.this).selectNextCellInColumn(!shiftPressed),
                 null,
                 groupObject);

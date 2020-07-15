@@ -37,10 +37,12 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     }
 
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine, boolean wordWrap) {
-        setPadding(element.getStyle(), multiLine);
+        Style style = element.getStyle();
+        setPadding(style, multiLine);
+        style.setWhiteSpace(multiLine ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
         setBasedTextFonts(property, element, renderContext);
         if(wordWrap)
-            element.getStyle().setProperty("wordBreak", "break-word"); // wordWrap (overflow-wrap) doesn't work as expected
+            style.setProperty("wordBreak", "break-word"); // wordWrap (overflow-wrap) doesn't work as expected
     }
 
     @Override
@@ -77,15 +79,10 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         if(multiLine) {
             style.setPaddingTop(TEXT_MULTILINE_PADDING, Style.Unit.PX);
             style.setPaddingBottom(TEXT_MULTILINE_PADDING, Style.Unit.PX);
-
-            style.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
         } else {
             // since we are aligning text with lineheight set vertical padding to 0
             style.setPaddingBottom(0, Style.Unit.PX);
             style.setPaddingTop(0, Style.Unit.PX);
-
-            // we want to keep spaces
-            style.setWhiteSpace(Style.WhiteSpace.PRE);
         }
 
         style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);

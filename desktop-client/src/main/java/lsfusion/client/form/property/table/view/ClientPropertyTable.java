@@ -94,7 +94,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
                 return true;
             }
         };
-        binding.bindEditing = BindingMode.ALL;
+        binding.bindEditing = BindingMode.NO;
         binding.bindGroup = BindingMode.ONLY;
         return binding;
     }
