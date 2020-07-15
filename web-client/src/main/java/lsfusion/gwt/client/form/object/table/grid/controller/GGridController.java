@@ -163,11 +163,11 @@ public class GGridController extends GAbstractTableController {
         updateSettingsButton();
     }
 
-    private GCountQuantityButton quantityButton;
-    private GCalculateSumButton sumButton;
     private GToolbarButton gridTableButton;
     private GToolbarButton pivotTableButton;
     private GToolbarButton settingsButton;
+    private GCountQuantityButton quantityButton;
+    private GCalculateSumButton sumButton;
     private GToolbarButton manualUpdateTableButton;
     private SimpleImageButton forceUpdateTableButton;
 
@@ -175,39 +175,6 @@ public class GGridController extends GAbstractTableController {
 
     private void configureToolbar() {
         assert isList();
-
-        if(groupObject.toolbar.showCountQuantity || groupObject.toolbar.showCalculateSum) {
-
-            if (groupObject.toolbar.showCountQuantity) {
-                quantityButton = new GCountQuantityButton() {
-                    public void addListener() {
-                        addClickHandler(event -> formController.countRecords(groupObject));
-                    }
-                };
-                addToToolbar(quantityButton);
-            }
-
-            if (groupObject.toolbar.showCalculateSum) {
-                sumButton = new GCalculateSumButton() {
-                    @Override
-                    public void addListener() {
-                        addClickHandler(event -> {
-                            GPropertyDraw property = getSelectedProperty();
-                            if (property != null) {
-                                if (property.baseType instanceof GIntegralType) {
-                                    formController.calculateSum(groupObject, property, table.getCurrentColumn());
-                                } else {
-                                    showSum(null, property);
-                                }
-                            }
-                        });
-                    }
-                };
-                addToToolbar(sumButton);
-            }
-
-            addToolbarSeparator();
-        }
 
         gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
             public void addListener() {
@@ -256,6 +223,39 @@ public class GGridController extends GAbstractTableController {
                     }
                 };
                 addToToolbar(settingsButton);
+            }
+
+            addToolbarSeparator();
+        }
+
+        if(groupObject.toolbar.showCountQuantity || groupObject.toolbar.showCalculateSum) {
+
+            if (groupObject.toolbar.showCountQuantity) {
+                quantityButton = new GCountQuantityButton() {
+                    public void addListener() {
+                        addClickHandler(event -> formController.countRecords(groupObject));
+                    }
+                };
+                addToToolbar(quantityButton);
+            }
+
+            if (groupObject.toolbar.showCalculateSum) {
+                sumButton = new GCalculateSumButton() {
+                    @Override
+                    public void addListener() {
+                        addClickHandler(event -> {
+                            GPropertyDraw property = getSelectedProperty();
+                            if (property != null) {
+                                if (property.baseType instanceof GIntegralType) {
+                                    formController.calculateSum(groupObject, property, table.getCurrentColumn());
+                                } else {
+                                    showSum(null, property);
+                                }
+                            }
+                        });
+                    }
+                };
+                addToToolbar(sumButton);
             }
 
             addToolbarSeparator();

@@ -115,47 +115,6 @@ public class GridController extends AbstractTableController {
     }
 
     private void configureToolbar() {
-        boolean showCalculateSum = groupObject.toolbar.showCalculateSum && table instanceof GridTable;
-        if(groupObject.toolbar.showCountRows || showCalculateSum) {
-
-            if (groupObject.toolbar.showCountRows) {
-                addToToolbar(new CountQuantityButton() {
-                    public void addListener() {
-                        addActionListener(e -> RmiQueue.runAction(() -> {
-                            try {
-                                showPopupMenu(formController.countRecords(getGroupObject().getID()));
-                            } catch (Exception ex) {
-                                throw Throwables.propagate(ex);
-                            }
-                        }));
-                    }
-                });
-            }
-
-            if (showCalculateSum) {
-                addToToolbar(new CalculateSumButton() {
-                    public void addListener() {
-                        addActionListener(e -> RmiQueue.runAction(() -> {
-                            try {
-                                ClientPropertyDraw property = table.getCurrentProperty();
-                                String caption = property.getPropertyCaption();
-                                if (property.baseType instanceof ClientIntegralClass) {
-                                    ClientGroupObjectValue columnKey = ((GridTable) table).getTableModel().getColumnKey(Math.max(((GridTable) table).getSelectedColumn(), 0));
-                                    Object sum = formController.calculateSum(property.getID(), columnKey.serialize());
-                                    showPopupMenu(caption, sum);
-                                } else {
-                                    showPopupMenu(caption, null);
-                                }
-                            } catch (Exception ex) {
-                                throw Throwables.propagate(ex);
-                            }
-                        }));
-                    }
-                });
-            }
-            addToolbarSeparator();
-        }
-
         if (groupObject.toolbar.showGroupReport && table instanceof GridTable) {
             addToToolbar(new GroupingButton((GridTable) table) {
                 @Override
@@ -213,6 +172,47 @@ public class GridController extends AbstractTableController {
                 addToToolbar(userPreferencesButton);
             }
 
+            addToolbarSeparator();
+        }
+
+        boolean showCalculateSum = groupObject.toolbar.showCalculateSum && table instanceof GridTable;
+        if(groupObject.toolbar.showCountRows || showCalculateSum) {
+
+            if (groupObject.toolbar.showCountRows) {
+                addToToolbar(new CountQuantityButton() {
+                    public void addListener() {
+                        addActionListener(e -> RmiQueue.runAction(() -> {
+                            try {
+                                showPopupMenu(formController.countRecords(getGroupObject().getID()));
+                            } catch (Exception ex) {
+                                throw Throwables.propagate(ex);
+                            }
+                        }));
+                    }
+                });
+            }
+
+            if (showCalculateSum) {
+                addToToolbar(new CalculateSumButton() {
+                    public void addListener() {
+                        addActionListener(e -> RmiQueue.runAction(() -> {
+                            try {
+                                ClientPropertyDraw property = table.getCurrentProperty();
+                                String caption = property.getPropertyCaption();
+                                if (property.baseType instanceof ClientIntegralClass) {
+                                    ClientGroupObjectValue columnKey = ((GridTable) table).getTableModel().getColumnKey(Math.max(((GridTable) table).getSelectedColumn(), 0));
+                                    Object sum = formController.calculateSum(property.getID(), columnKey.serialize());
+                                    showPopupMenu(caption, sum);
+                                } else {
+                                    showPopupMenu(caption, null);
+                                }
+                            } catch (Exception ex) {
+                                throw Throwables.propagate(ex);
+                            }
+                        }));
+                    }
+                });
+            }
             addToolbarSeparator();
         }
 
