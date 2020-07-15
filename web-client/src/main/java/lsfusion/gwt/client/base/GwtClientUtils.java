@@ -722,8 +722,9 @@ public class GwtClientUtils {
         return null;
     }
 
-    public static boolean isTD(Element element) {
-        return element.getTagName().toLowerCase().equals("td");
+    public static boolean isTDorTH(Element element) {
+        String tagName = element.getTagName().toLowerCase();
+        return tagName.equals("td") || tagName.equals("th");
     }
 
 

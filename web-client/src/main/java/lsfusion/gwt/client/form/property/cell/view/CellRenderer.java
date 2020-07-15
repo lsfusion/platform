@@ -36,6 +36,17 @@ public abstract class CellRenderer<T> {
         return "center";
     }
 
+    private static String getFlexAlign(Style.TextAlign textAlign) {
+        switch (textAlign) {
+            case LEFT:
+                return "flex-start"; // left/start somewhy doesn't work with text
+            case RIGHT:
+                return "flex-end"; // rigt/end somewhy doesn't work with text
+            default:
+                return textAlign.getCssName();
+        }
+    }
+
     // should be consistent with getWidthPadding and getHeightPadding
     // and with TextBasedCellEditor.renderDOM
     public void renderStatic(Element element, RenderContext renderContext) {
@@ -47,10 +58,11 @@ public abstract class CellRenderer<T> {
 
         Integer staticHeight = renderContext.getStaticHeight();
         // is simple text renderer (SINGLE LINE (!)) && has static height (otherwise when div is expanded line-height will not work)
+        // maybe later it makes sense to add optimization for ActionOrPropertyValue to look at the upper container if it's has static height
         if(isSimpleText() && staticHeight != null) // optimization
             renderSimpleStatic(element, textAlign, vertAlignment, staticHeight);
         else {
-            String horzAlignment = textAlign.getCssName();
+            String horzAlignment = getFlexAlign(textAlign);
             element = renderFlexStatic(element, horzAlignment, vertAlignment, staticHeight);
         }
 
@@ -59,7 +71,7 @@ public abstract class CellRenderer<T> {
 
     private Element renderFlexStatic(Element element, String horzAlignment, String vertAlignment, Integer staticHeight) {
         int paddings = 0;
-        if(GwtClientUtils.isTD(element)) { // we need to wrap into div, at list because we cannot set display:flex to div
+        if(GwtClientUtils.isTDorTH(element)) { // we need to wrap into div, at list because we cannot set display:flex to div
             element = GwtClientUtils.wrapDiv(element);
             if(staticHeight != null) // we need to remove paddings when setting maximum height (maybe in future margins might be used, and that will not be needed)
                 paddings = getHeightPadding() * 2;
@@ -98,7 +110,7 @@ public abstract class CellRenderer<T> {
         element.getStyle().clearTextAlign();
     }
     private boolean clearRenderFlexStatic(Element element, Integer staticHeight) {
-        if(!GwtClientUtils.isTD(element)) {
+        if(!GwtClientUtils.isTDorTH(element)) {
             GwtClientUtils.clearAlignedFlexCenter(element);
             element.getStyle().clearProperty("alignItems");
             element.getStyle().clearProperty("justifyContent");
@@ -112,7 +124,7 @@ public abstract class CellRenderer<T> {
     }
 
     public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
-        if(!(isSimpleText() && updateContext.isStaticHeight()) && GwtClientUtils.isTD(element))
+        if(!(isSimpleText() && updateContext.isStaticHeight()) && GwtClientUtils.isTDorTH(element))
             element = element.getFirstChildElement();
 
         renderDynamicContent(element, value, updateContext);
