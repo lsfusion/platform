@@ -711,8 +711,11 @@ callWithJQuery ($) ->
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
-            colspan = rowHeadersColumns + (if colAttrs.length == 0 or hideColAxisHeadersColumn then 0 else 1) + (if arrowColumnIsNeeded() then 1 else 0)
+            colspan = rowHeadersColumns + (if colAttrs.length == 0 or hideColAxisHeadersColumn then 0 else 1) 
             if colspan > 0
+                if arrowColumnIsNeeded()
+                    arrowTh = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", true, undefined, []
+                    tr.appendChild arrowTh
                 th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, [], {colspan: colspan}
                 tr.appendChild th
             return tr

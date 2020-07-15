@@ -1084,10 +1084,14 @@
         return results;
       };
       buildColTotalsHeader = function(rowHeadersColumns, colAttrs) {
-        var colspan, th, tr;
+        var arrowTh, colspan, th, tr;
         tr = createElement("tr");
-        colspan = rowHeadersColumns + (colAttrs.length === 0 || hideColAxisHeadersColumn ? 0 : 1) + (arrowColumnIsNeeded() ? 1 : 0);
+        colspan = rowHeadersColumns + (colAttrs.length === 0 || hideColAxisHeadersColumn ? 0 : 1);
         if (colspan > 0) {
+          if (arrowColumnIsNeeded()) {
+            arrowTh = createRowAttrHeaderTH([], void 0, "pvtTotalLabel colTotal", "", true, void 0, []);
+            tr.appendChild(arrowTh);
+          }
           th = createRowAttrHeaderTH([], void 0, "pvtTotalLabel colTotal", "", false, void 0, [], {
             colspan: colspan
           });

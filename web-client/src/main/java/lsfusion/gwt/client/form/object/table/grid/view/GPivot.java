@@ -1009,8 +1009,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
         GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
-            int level = getRowLevel(rowKeyValues.length() - 1);
-            renderArrow(th, getTreeColumnValue(level, isExpanded, true, isLastChildList));
+            if (rowKeyValues.length() > 0) {
+                int level = getRowLevel(rowKeyValues.length() - 1);
+                renderArrow(th, getTreeColumnValue(level, isExpanded, true, isLastChildList));
+            }
         } else {
             renderAttrCell(th, value, attrName);
         }
