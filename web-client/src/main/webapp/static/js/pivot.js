@@ -1873,6 +1873,9 @@
             return _this.find(scope).each(function() {
               var x;
               x = $(this).data("value");
+              if (!x) {
+                x = 0;
+              }
               if ((x != null) && isFinite(x)) {
                 return f(x, $(this));
               }

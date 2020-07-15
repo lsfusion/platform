@@ -1219,6 +1219,8 @@ callWithJQuery ($) ->
             forEachCell = (f) =>
                 @find(scope).each ->
                     x = $(this).data("value")
+                    if !x
+                        x = 0
                     f(x, $(this)) if x? and isFinite(x)
 
             values = []
