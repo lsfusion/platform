@@ -2,7 +2,10 @@ package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
@@ -30,7 +33,10 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
@@ -1555,16 +1561,24 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public static void setBackgroundColor(Element element, String color) {
+        setBackgroundColor(element, color, false);
+    }
+
+    public static void setBackgroundColor(Element element, String color, boolean themeConvert) {
         if (color != null) {
-            element.getStyle().setBackgroundColor(getDisplayColor(color));
+            element.getStyle().setBackgroundColor(themeConvert ? getDisplayColor(color) : color);
         } else {
             element.getStyle().clearBackgroundColor();
         }
     }
 
     public static void setForegroundColor(Element element, String color) {
+        setForegroundColor(element, color, false);
+    }
+
+    public static void setForegroundColor(Element element, String color, boolean themeConvert) {
         if (color != null) {
-            element.getStyle().setColor(getDisplayColor(color));
+            element.getStyle().setColor(themeConvert ? getDisplayColor(color) : color);
         } else {
             element.getStyle().clearColor();
         }

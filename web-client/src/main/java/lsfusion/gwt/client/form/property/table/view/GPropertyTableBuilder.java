@@ -115,10 +115,10 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
         td.setPropertyString(BKCOLOR, backgroundColor);
-        GFormController.setBackgroundColor(td, backgroundColor);
+        GFormController.setBackgroundColor(td, backgroundColor, true);
 
         String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
-        GFormController.setForegroundColor(td, foregroundColor);
+        GFormController.setForegroundColor(td, foregroundColor, true);
     }
 
     public static void renderTD(Element td, int height) {
