@@ -11,6 +11,12 @@ public class PopupDialogPanel extends PopupPanel {
 
     public PopupDialogPanel() {
         super(true, false);
+
+//        addCloseHandler(event -> {
+//            MainFrame.setModalPopup(false);
+//            if(focusedElement != null)
+//                focusedElement.focus();
+//        });
     }
 
     private Element focusedElement;
@@ -24,8 +30,8 @@ public class PopupDialogPanel extends PopupPanel {
     }
 
     @Override
-    public void hide() {
-        super.hide();
+    public void hide(boolean autoHide) {
+        super.hide(autoHide);
 
         MainFrame.setModalPopup(false);
         if(focusedElement != null)

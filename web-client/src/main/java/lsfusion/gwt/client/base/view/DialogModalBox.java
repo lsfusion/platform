@@ -14,6 +14,14 @@ public class DialogModalBox extends DialogBox {
 
     public DialogModalBox(Caption captionWidget) {
         super(false, true, captionWidget);
+//
+//        addCloseHandler(event -> {
+//            MainFrame.setModalPopup(false);
+//            if(focusedElement != null) {
+//                focusedElement.focus();
+//                focusedElement = null; // just in case because sometimes hide is called without show (and the same DialogModalBox is used several time)
+//            }
+//        });
     }
 
     private Element focusedElement;
@@ -27,8 +35,8 @@ public class DialogModalBox extends DialogBox {
     }
 
     @Override
-    public void hide() {
-        super.hide();
+    public void hide(boolean autoHide) {
+        super.hide(autoHide);
 
         MainFrame.setModalPopup(false);
         if(focusedElement != null) {
