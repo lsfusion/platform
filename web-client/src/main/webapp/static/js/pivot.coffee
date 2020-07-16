@@ -1115,6 +1115,13 @@ callWithJQuery ($) ->
                         i++
                     initialRender = false
 
+                columnAttr = subopts.rendererOptions.localeStrings.columnAttr
+                colIndex = subopts.cols.indexOf(columnAttr)
+                rowIndex = subopts.rows.indexOf(columnAttr)
+
+                subopts.rendererOptions.hideRowsTotalsCol = colIndex >= 0 and opts.splitCols[0] >= colIndex
+                subopts.rendererOptions.hideColsTotalsRow = rowIndex >= 0 and opts.splitRows[0] >= rowIndex
+                    
                 subopts.aggregatorName = aggregator.val()
                 subopts.vals = vals
                 subopts.aggregator = opts.aggregators[aggregator.val()](vals)

@@ -1667,7 +1667,7 @@
         })(this);
         refreshDelayed = (function(_this) {
           return function() {
-            var exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, subopts, unusedAttrsContainer, vals;
+            var colIndex, columnAttr, exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, rowIndex, subopts, unusedAttrsContainer, vals;
             refreshPaxis(true);
             refreshPaxis(false);
             _this.find(".pvtAxisContainer").sortable({
@@ -1741,6 +1741,11 @@
               });
               initialRender = false;
             }
+            columnAttr = subopts.rendererOptions.localeStrings.columnAttr;
+            colIndex = subopts.cols.indexOf(columnAttr);
+            rowIndex = subopts.rows.indexOf(columnAttr);
+            subopts.rendererOptions.hideRowsTotalsCol = colIndex >= 0 && opts.splitCols[0] >= colIndex;
+            subopts.rendererOptions.hideColsTotalsRow = rowIndex >= 0 && opts.splitRows[0] >= rowIndex;
             subopts.aggregatorName = aggregator.val();
             subopts.vals = vals;
             subopts.aggregator = opts.aggregators[aggregator.val()](vals);

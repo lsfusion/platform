@@ -188,6 +188,9 @@ callWithJQuery ($) ->
         rowArrowsLevelPadding = 10
         
         hideColAxisHeadersColumn = opts.hideColAxisHeadersColumn ? false
+        hideColsTotalRow = opts.hideColsTotalsRow ? false
+        hideRowsTotalsCol = opts.hideRowsTotalsCol ? false
+        
         emptyTopAttrTH = null
         
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
@@ -697,17 +700,18 @@ callWithJQuery ($) ->
 
                     tr.appendChild td
 
-                    
-                # buildRowTotal
-                totalAggregator = rowTotals[rh.flatKey]
-                val = totalAggregator.value()
-                td = createValueTD val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
-                    "data-value": val
-                    "data-row": "row#{rh.row}"
-                    "data-rowcol": "col#{rh.col}"
-                    "data-rownode": rh.node,
-                    getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
-                tr.appendChild td
+        
+                if not hideRowsTotalsCol            
+                    # buildRowTotal
+                    totalAggregator = rowTotals[rh.flatKey]
+                    val = totalAggregator.value()
+                    td = createValueTD val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
+                        "data-value": val
+                        "data-row": "row#{rh.row}"
+                        "data-rowcol": "col#{rh.col}"
+                        "data-rownode": rh.node,
+                        getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
+                    tr.appendChild td
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
@@ -744,7 +748,6 @@ callWithJQuery ($) ->
                 {"data-value": val},
                 getTableEventHandlers val, [], [], rowAttrs, colAttrs, opts
             tr.appendChild td
-            tbody.appendChild tr
 
         collapseColAxisHeaders = (axisHeaders, col, opts) ->
             for i in [col..axisHeaders.ah.length-2]
@@ -1099,10 +1102,12 @@ callWithJQuery ($) ->
                         buildColHeader colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts, colsData 
                         overallSpan += colKeyHeaders[chKey].th.colSpan
 
-                buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length, colsData
+                if not hideRowsTotalsCol        
+                    buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length, colsData
                 rowAttrHeadersCount = rowGroups.length
                 if rowAttrHeadersCount > colAttrs.length
-                    emptyTopAttrTH = createElement "th", "pvtEmptyHeader", {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length}
+                    colspan = overallSpan + (if hideRowsTotalsCol then 0 else 1)
+                    emptyTopAttrTH = createElement "th", "pvtEmptyHeader", {colspan: colspan, rowspan: rowAttrHeadersCount - colAttrs.length}
                     rowAxisHeaders.ah[0].tr.appendChild emptyTopAttrTH
 
             bodyDiv = createElement "div", "bodydiv"
@@ -1119,7 +1124,8 @@ callWithJQuery ($) ->
             bodyTable.appendChild tbody
             
             if rowAttrs.length isnt 0
-                buildRowTotalsHeader rowAxisHeaders.ah[0].tr, rowGroups.length, colsData if colAttrs.length is 0
+                if not hideRowsTotalsCol
+                    buildRowTotalsHeader rowAxisHeaders.ah[0].tr, rowGroups.length, colsData if colAttrs.length is 0
                 if rowKeyHeaders?
                     node = counter: 0
                     childrenCnt = rowKeyHeaders.children.length
@@ -1128,9 +1134,13 @@ callWithJQuery ($) ->
                         buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, [i == childrenCnt - 1], opts 
 
             buildValues tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts
-            tr = buildColTotalsHeader longestGroupLength(rowGroups), colAttrs
-            buildColTotals tr, colAttrHeaders, rowAttrs, colAttrs, opts if colAttrs.length > 0
-            buildGrandTotal tbody, tr, rowAttrs, colAttrs, opts
+            if not hideColsTotalRow
+                tr = buildColTotalsHeader longestGroupLength(rowGroups), colAttrs
+                buildColTotals tr, colAttrHeaders, rowAttrs, colAttrs, opts if colAttrs.length > 0
+                if not hideRowsTotalsCol
+                    buildGrandTotal tbody, tr, rowAttrs, colAttrs, opts
+                tbody.appendChild tr
+
 
             collapseColAxis colAxisHeaders, opts.colSubtotalDisplay.collapseAt, colAttrs, opts.colSubtotalDisplay
             collapseRowAxis rowAxisHeaders, opts.rowSubtotalDisplay.collapseAt, rowAttrs, opts.rowSubtotalDisplay
