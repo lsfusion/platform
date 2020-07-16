@@ -25,6 +25,7 @@ fromDate '{system.events.from.date.exception}' (Exception d)= DATE(date(d));
 erTrace '{system.events.er.trace.exception}'= DATA TEXT (Exception);
 lsfStackTrace '{system.events.lsf.stack.trace.exception}'= DATA TEXT (Exception);
 type '{system.events.type.exception}' = DATA STRING[250] (Exception);
+javaStackTrace '{system.events.er.trace.exception}' (Exception e) = CONCAT '\n', message(e), erTrace(e); 
 
 client '{system.events.client}' = DATA STRING[100] (ClientException);
 login '{system.events.login}' = DATA STRING[100] (ClientException);
@@ -342,7 +343,7 @@ FORM  exceptions '{system.events.form.exceptions}'
 
     OBJECTS e=Exception LAST
     PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, date, reqId PANEL, count PANEL, abandoned PANEL
-    PROPERTIES(e) READONLY PANEL erTrace, lsfStackTrace
+    PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace
 ;
 
 DESIGN exceptions {
@@ -354,7 +355,7 @@ DESIGN exceptions {
                 type = CONTAINERH;
                 fill = 1;
 
-                MOVE PROPERTY(erTrace(e)) {
+                MOVE PROPERTY(javaStackTrace(e)) {
                     fill = 0.5;
                     valueSize = ( -1, 200);
                     panelCaptionAbove = TRUE;
