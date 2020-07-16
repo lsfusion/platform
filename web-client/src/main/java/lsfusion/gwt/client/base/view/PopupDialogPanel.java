@@ -12,11 +12,11 @@ public class PopupDialogPanel extends PopupPanel {
     public PopupDialogPanel() {
         super(true, false);
 
-//        addCloseHandler(event -> {
-//            MainFrame.setModalPopup(false);
-//            if(focusedElement != null)
-//                focusedElement.focus();
-//        });
+        addCloseHandler(event -> {
+            MainFrame.setModalPopup(false);
+            if(focusedElement != null)
+                focusedElement.focus();
+        });
     }
 
     private Element focusedElement;
@@ -27,14 +27,5 @@ public class PopupDialogPanel extends PopupPanel {
         MainFrame.setModalPopup(true);
 
         super.show();
-    }
-
-    @Override
-    public void hide(boolean autoHide) {
-        super.hide(autoHide);
-
-        MainFrame.setModalPopup(false);
-        if(focusedElement != null)
-            focusedElement.focus();
     }
 }

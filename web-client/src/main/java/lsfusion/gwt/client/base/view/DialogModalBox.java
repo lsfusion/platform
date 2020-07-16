@@ -9,19 +9,19 @@ import lsfusion.gwt.client.view.MainFrame;
 public class DialogModalBox extends DialogBox {
 
     public DialogModalBox() {
-        super(false, true);
+        this(new CaptionImpl());
     }
 
     public DialogModalBox(Caption captionWidget) {
         super(false, true, captionWidget);
-//
-//        addCloseHandler(event -> {
-//            MainFrame.setModalPopup(false);
-//            if(focusedElement != null) {
-//                focusedElement.focus();
-//                focusedElement = null; // just in case because sometimes hide is called without show (and the same DialogModalBox is used several time)
-//            }
-//        });
+
+        addCloseHandler(event -> {
+            MainFrame.setModalPopup(false);
+            if(focusedElement != null) {
+                focusedElement.focus();
+                focusedElement = null; // just in case because sometimes hide is called without show (and the same DialogModalBox is used several time)
+            }
+        });
     }
 
     private Element focusedElement;
@@ -32,16 +32,5 @@ public class DialogModalBox extends DialogBox {
         MainFrame.setModalPopup(true);
 
         super.show();
-    }
-
-    @Override
-    public void hide(boolean autoHide) {
-        super.hide(autoHide);
-
-        MainFrame.setModalPopup(false);
-        if(focusedElement != null) {
-            focusedElement.focus();
-            focusedElement = null; // just in case because sometimes hide is called without show (and the same DialogModalBox is used several time)
-        }
     }
 }

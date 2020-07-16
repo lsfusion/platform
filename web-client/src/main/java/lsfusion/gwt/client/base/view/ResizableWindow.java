@@ -90,7 +90,7 @@ public class ResizableWindow extends Composite {
         headerPanel.add(headerWidget);
         headerPanel.setTabIndex(-1);
 
-        TooltipManager.registerWidget(this, new TooltipManager.TooltipHelper() {
+        TooltipManager.registerWidget(headerPanel, new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip() {
                 return tooltip;
