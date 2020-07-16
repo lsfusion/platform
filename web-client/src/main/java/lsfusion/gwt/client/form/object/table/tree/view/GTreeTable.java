@@ -15,6 +15,9 @@ import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Context;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GBindingEnv;
+import lsfusion.gwt.client.form.event.GBindingMode;
+import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -99,6 +102,19 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         };
 
         getElement().setPropertyObject("groupObject", groupObject);
+
+        if(treeGroupController.isExpandOnClick())
+            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK), new GBindingEnv(null, null, GBindingMode.ONLY, null, null),
+                    event -> {
+                        GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
+                        if (node != null && node.isExpandable()) {
+                            if (!node.isOpen()) {
+                                fireExpandNode(node);
+                            } else {
+                                fireCollapseNode(node);
+                            }
+                        }
+                    }, this, groupObject);
     }
 
     private static GGroupObject lastGroupObject(GTreeGroup treeGroup) {
@@ -299,10 +315,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         public void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent) {
             Event event = handler.event;
-            if (GMouseStroke.isChangeEvent(event)) {
+            boolean changeEvent = GMouseStroke.isChangeEvent(event);
+            if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
                 String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
                 if (attrID != null) {
-                    changeTreeState(editContext, getValue((GTreeGridRecord) editContext.getRowValue()), event);
+                    if(changeEvent)
+                        changeTreeState(editContext, getValue((GTreeGridRecord) editContext.getRowValue()), event);
                     handler.consume();
                 }
             }
@@ -749,25 +767,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             GPropertyDraw property = getSelectedProperty();
             if (property != null) {
                 form.pasteSingleValue(property, getCurrentKey(), table.get(0).get(0));
-            }
-        }
-    }
-
-    @Override
-    protected void onBrowserEvent2(Element target, Event event) {
-        super.onBrowserEvent2(target, event);
-
-        if (event.getTypeInt() == Event.ONDBLCLICK) {
-            if (treeGroupController.isExpandOnClick() && isReadOnly(getSelectedCellContext()) && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {
-                GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
-                if (node != null && node.isExpandable()) {
-                    GwtClientUtils.stopPropagation(event);
-                    if (!node.isOpen()) {
-                        fireExpandNode(node);
-                    } else {
-                        fireCollapseNode(node);
-                    }
-                }
             }
         }
     }
