@@ -1161,7 +1161,7 @@
             th = ref3[l];
             replaceClass(th, classExpanded, classCollapsed);
           }
-          renderRowAxisHeader(ah.arrowTh, "", ah.text, true, false);
+          renderRowAxisHeader(ah.arrowTh, "", ah.values[0], true, false);
           ah.clickStatus = clickStatusCollapsed;
           results.push(ah.onClick = expandAxis);
         }
@@ -1192,7 +1192,7 @@
             th = ref1[k];
             replaceClass(th, classCollapsed, classExpanded);
           }
-          renderRowAxisHeader(ah.arrowTh, "", ah.text, true, true);
+          renderRowAxisHeader(ah.arrowTh, "", ah.values[0], true, true);
           ah.clickStatus = clickStatusExpanded;
           return ah.onClick = collapseRowAxis;
         }

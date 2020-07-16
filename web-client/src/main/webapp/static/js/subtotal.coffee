@@ -760,7 +760,7 @@ callWithJQuery ($) ->
                 ah = axisHeaders.ah[i]
                 for th in ah.ths
                     replaceClass th, classExpanded, classCollapsed
-                renderRowAxisHeader ah.arrowTh, "", ah.text, true, false      
+                renderRowAxisHeader ah.arrowTh, "", ah.values[0], true, false      
                 ah.clickStatus = clickStatusCollapsed
                 ah.onClick = expandAxis
 
@@ -782,7 +782,7 @@ callWithJQuery ($) ->
             else if ah.expandedCount is ah.expandables
                 for th in ah.ths
                     replaceClass th, classCollapsed, classExpanded
-                renderRowAxisHeader ah.arrowTh, "", ah.text, true, true
+                renderRowAxisHeader ah.arrowTh, "", ah.values[0], true, true
                 ah.clickStatus = clickStatusExpanded
                 ah.onClick = collapseRowAxis
 
