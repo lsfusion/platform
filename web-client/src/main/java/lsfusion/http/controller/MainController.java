@@ -10,6 +10,7 @@ import lsfusion.http.authentication.LSFAuthenticationFailureHandler;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.authentication.LSFClientRegistrationRepository;
 import lsfusion.http.provider.logics.LogicsProvider;
+import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.logics.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -49,8 +50,12 @@ public class MainController {
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
 
-        clientRegistrationRepository.forEach(registration -> oauth2AuthenticationUrls.put(registration.getClientName(), authorizationRequestBaseUri + registration.getRegistrationId()));
-        model.addAttribute("urls", oauth2AuthenticationUrls);
+        try {
+            clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(), authorizationRequestBaseUri + registration.getRegistrationId()));
+            model.addAttribute("urls", oauth2AuthenticationUrls);
+        } catch (AuthenticationException e){
+            request.getSession(true).setAttribute("OAUTH_EXCEPTION", e);
+        }
 
         model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
         if (checkVersionError.result != null) {

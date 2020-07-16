@@ -9,6 +9,7 @@ import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.authentication.TrustedAuthentication;
 import lsfusion.interop.logics.LogicsSessionObject;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
@@ -27,31 +28,48 @@ import java.util.Locale;
 
 import static lsfusion.http.authentication.LSFRemoteAuthenticationProvider.getUserLocale;
 
-public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
+public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter implements InitializingBean {
     private static final String authSecretKey = "authSecret";
 
     @Autowired
-    private LogicsProvider logicsProvider;
+    private LogicsProvider logicsProvider1;
 
     @Autowired
-    private ServletContext servletContext;
+    private ServletContext servletContext1;
+
+    @Autowired
+    private LSFClientRegistrationRepository clientRegistrations1;
+
+    private static ServletContext servletContext;
+    private static LogicsProvider logicsProvider;
+    private static LSFClientRegistrationRepository clientRegistrations;
+
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+        OAuth2ToLSFTokenFilter.servletContext = servletContext1;
+        OAuth2ToLSFTokenFilter.logicsProvider = logicsProvider1;
+        OAuth2ToLSFTokenFilter.clientRegistrations = clientRegistrations1;
+    }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        convertToken(logicsProvider, request, response, SecurityContextHolder.getContext().getAuthentication(), servletContext);
+        convertToken(request, response, SecurityContextHolder.getContext().getAuthentication());
         filterChain.doFilter(request, response);
     }
 
-    public static Authentication convertToken(LogicsProvider logicsProvider, HttpServletRequest request, HttpServletResponse response,
-                                              Authentication authentication, ServletContext servletContext) throws IOException {
+    public static Authentication convertToken(HttpServletRequest request, HttpServletResponse response,
+                                              Authentication authentication) throws IOException {
 
         if (!(authentication instanceof OAuth2AuthenticationToken)) {
             return authentication;
         }
+        String userNameAttributeName = clientRegistrations.
+                findByRegistrationId(((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId())
+                .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
         OAuth2User principal = (OAuth2User) authentication.getPrincipal();
-        String username = principal.getAttribute("email");
+        String username = String.valueOf((Object) principal.getAttribute(userNameAttributeName));
         LSFAuthenticationToken lsfAuthentication;
         String authSecret = servletContext.getInitParameter(authSecretKey);
         try {

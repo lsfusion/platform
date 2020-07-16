@@ -185,6 +185,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
+    public String getClientsIds() throws RemoteException {
+        return securityManager.getClientsIds();
+    }
+
+    @Override
     public long generateID() throws RemoteException {
         return dbManager.generateID();
     }

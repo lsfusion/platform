@@ -55,10 +55,18 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
 
     @Override
     public OAuth2Credentials getOauth2ClientCredentials(String client, String authSecret) throws RemoteException {
-        logRemoteMethodStartCall("getClientCredentials");
-        OAuth2Credentials clientCredentials = target.getOauth2ClientCredentials(client, authSecret);
-        logRemoteMethodStartCall("getClientCredentials");
-        return clientCredentials;
+        logRemoteMethodStartCall("getOauth2Client");
+        OAuth2Credentials oauth2Credentials = target.getOauth2ClientCredentials(client, authSecret);
+        logRemoteMethodStartCall("getOauth2Client");
+        return oauth2Credentials;
+    }
+
+    @Override
+    public String getClientsIds() throws RemoteException {
+        logRemoteMethodStartCall("getClientIds");
+        String clientsIds = target.getClientsIds();
+        logRemoteMethodStartCall("getClientIds");
+        return clientsIds;
     }
 
     public long generateID() throws RemoteException {

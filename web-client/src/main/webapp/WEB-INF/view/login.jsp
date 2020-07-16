@@ -11,6 +11,7 @@
         <link rel="shortcut icon" href="${logicsIcon}" />
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     </head>
     <body onload="document.loginForm.username.focus();">
 
@@ -54,13 +55,26 @@
                                 </c:if>
                             </fieldset>
                         </form>
-                        <br>
-                        <c:forEach var="url" items="${urls}">
-                            <div class="href-center">
-                                <a href="${url.value}" class="loginBtn-oauth2"> Login with ${url.key}</a>
-                                <br>
+                    </div>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>
+                    <div class="text-center">
+                        <c:if test="${empty OAUTH_EXCEPTION}">
+                            <c:forEach var="url" items="${urls}">
+                                <a href="${url.value}" class="text-center fa fa-${url.key}"></a>
+                            </c:forEach>
+                        </c:if>
+
+                        <c:if test="${not empty OAUTH_EXCEPTION}">
+                            <div class="text-center oauth-error-block round full-width-box">
+                                <%= ServerMessages.getString(request, "oauth2.authorization.unavailable") %><br/>
+                                <%= ServerMessages.getString(request, "login.caused") %>
+                                : ${sessionScope["OAUTH_EXCEPTION"].message}
                             </div>
-                        </c:forEach>
+                            <c:remove var="OAUTH_EXCEPTION" scope="session"/>
+                        </c:if>
                     </div>
                 </td>
             </tr>

@@ -65,8 +65,19 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP userDNSuffixLDAP;
 
     public LP webClientSecret;
+
+    //OAuth2
     public LP oauth2ClientId;
     public LP oauth2ClientSecret;
+    public LP oauth2ClientAuthenticationMethod;
+    public LP oauth2Scope;
+    public LP oauth2AuthorizationUri;
+    public LP oauth2TokenUri;
+    public LP oauth2JwkSetUri;
+    public LP oauth2UserInfoUri;
+    public LP oauth2UserNameAttributeName;
+    public LP oauth2ClientName;
+    public LP oauth2Clients;
 
     public LP useBusyDialog;
     public LP useRequestTimeout;
@@ -163,9 +174,19 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         baseDNLDAP = findProperty("baseDNLDAP[]");
         userDNSuffixLDAP = findProperty("userDNSuffixLDAP[]");
 
-        webClientSecret = findProperty("webClientSecret[]");
+        webClientSecret = findProperty("dataWebClientSecretKey[]");
+
         oauth2ClientId = findProperty("clientId[STRING]");
         oauth2ClientSecret = findProperty("clientSecret[STRING]");
+        oauth2ClientAuthenticationMethod = findProperty("clientAuthenticationMethod[STRING]");
+        oauth2Scope = findProperty("scope[STRING]");
+        oauth2AuthorizationUri = findProperty("authorizationUri[STRING]");
+        oauth2TokenUri = findProperty("tokenUri[STRING]");
+        oauth2JwkSetUri = findProperty("jwkSetUri[STRING]");
+        oauth2UserInfoUri = findProperty("userInfoUri[STRING]");
+        oauth2UserNameAttributeName = findProperty("userNameAttributeName[STRING]");
+        oauth2ClientName = findProperty("clientName[STRING]");
+        oauth2Clients = findProperty("clients[]");
 
         useBusyDialog = findProperty("useBusyDialog[]");
         useRequestTimeout = findProperty("useRequestTimeout[]");

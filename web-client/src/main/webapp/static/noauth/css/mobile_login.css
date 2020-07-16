@@ -112,13 +112,23 @@ form p em {
     margin: 40px auto;
 }
 
+.oauth-error-block {
+    font-size: 2em;
+    color: #2b2a29;
+    background-color: #2dc1f7;
+    border: 1px solid #0489ba;
+    padding: 8px;
+    text-align: center;
+    width: 100%;
+    margin: 10px auto;
+}
+
 details summary::-webkit-details-marker {
     color: #75AEEA;
 }
 
-.href-center {
-    margin: 1em;
+.text-center {
     text-align: center;
-    font-weight: bold;
-    text-transform: uppercase;
+    font-size: 4em;
+    margin: 0em 1em;
 }

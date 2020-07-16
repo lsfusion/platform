@@ -232,16 +232,32 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    public String getClientsIds() {
+        try (DataSession session = createSession()) {
+            return (String) authenticationLM.oauth2Clients.read(session);
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public OAuth2Credentials getOauth2ClientCredentials(String client, String authSecret) {
         String webClientAuthSecret = getWebClientSecret();
         if (webClientAuthSecret != null && webClientAuthSecret.equals(authSecret) && client != null) {
-            try (DataSession session = createSession()){
-                String clientId = (String) authenticationLM.oauth2ClientId
-                        .read(session, new DataObject(client, StringClass.get(client.length())));
-                String clientSecret = (String) authenticationLM.oauth2ClientSecret
-                        .read(session, new DataObject(client, StringClass.get(client.length())));
-                return new OAuth2Credentials(clientId, clientSecret);
-            } catch (Exception e) {
+            OAuth2Credentials.Builder builder = new OAuth2Credentials.Builder();
+            try (DataSession session = createSession()) {
+                builder.setRegistrationId(client);
+                builder.setClientAuthenticationMethod((String) authenticationLM.oauth2ClientAuthenticationMethod.read(session, new DataObject(client, StringClass.get(client.length()))));
+                builder.setScope((String) authenticationLM.oauth2Scope.read(session, new DataObject(client, StringClass.get(client.length()))));
+                builder.setAuthorizationUri((String) authenticationLM.oauth2AuthorizationUri.read(session, new DataObject(client, StringClass.get(client.length()))));
+                builder.setTokenUri((String) authenticationLM.oauth2TokenUri.read(session, new DataObject(client, StringClass.get(client.length()))));
+                builder.setJwkSetUri((String) authenticationLM.oauth2JwkSetUri.read(session, new DataObject(client, StringClass.get(client.length()))));
+                builder.setUserInfoUri((String) authenticationLM.oauth2UserInfoUri.read(session, new DataObject(client, StringClass.get(client.length()))));
+                builder.setUserNameAttributeName((String) authenticationLM.oauth2UserNameAttributeName.read(session, new DataObject(client, StringClass.get(client.length()))));
+                builder.setClientName((String) authenticationLM.oauth2ClientName.read(session, new DataObject(client, StringClass.get(client.length()))));
+                builder.setClientId((String) authenticationLM.oauth2ClientId.read(session, new DataObject(client, StringClass.get(client.length()))));
+                builder.setClientSecret((String) authenticationLM.oauth2ClientSecret.read(session, new DataObject(client, StringClass.get(client.length()))));
+                return builder.build();
+            } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
             }
         }
@@ -280,8 +296,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 }
             } else {
                 String webClientAuthSecret = ((TrustedAuthentication) authentication).getAuthSecret();
+                if ((webClientAuthSecret == null || !webClientAuthSecret.equals(getWebClientSecret()))) {
+                    throw new AuthenticationException();
+                }
                 userObject = readUser(authentication.getUserName(), session);
-                if ((webClientAuthSecret != null && webClientAuthSecret.equals(getWebClientSecret())) && userObject == null) {
+                if (userObject == null) {
                     String pwd = BaseUtils.generatePassword(20, false, true);
                     userObject = addUser(authentication.getUserName(), pwd, session);
                     apply(session, stack);

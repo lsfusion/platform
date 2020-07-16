@@ -105,44 +105,77 @@ CLASS OAuth2;
 id = DATA STRING (OAuth2);
 dataClientId = DATA STRING (OAuth2);
 dataClientSecret = DATA STRING (OAuth2);
+dataClientAuthenticationMethod = DATA STRING (OAuth2); //
+dataScope = DATA STRING (OAuth2);
+dataAuthorizationUri = DATA STRING (OAuth2);
+dataTokenUri = DATA STRING (OAuth2);
+dataJwkSetUri = DATA STRING (OAuth2); //
+dataUserInfoUri = DATA STRING (OAuth2);
+dataUserNameAttributeName = DATA STRING (OAuth2);
+dataClientName = DATA STRING (OAuth2);
 
+clients() = GROUP CONCAT id(OAuth2 oa) IF oa IS OAuth2 , ' ';
 auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
 
 clientId(STRING str) = dataClientId(auth(str));
 clientSecret(STRING str) = dataClientSecret(auth(str));
+clientAuthenticationMethod(STRING str) = dataClientAuthenticationMethod(auth(str));
+scope(STRING str) = dataScope(auth(str));
+authorizationUri(STRING str) = dataAuthorizationUri(auth(str));
+tokenUri(STRING str) = dataTokenUri(auth(str));
+jwkSetUri(STRING str) = dataJwkSetUri(auth(str));
+userInfoUri(STRING str) = dataUserInfoUri(auth(str));
+userNameAttributeName(STRING str) = dataUserNameAttributeName(auth(str));
+clientName(STRING str) = dataClientName(auth(str));
 
-writeGitDefaultCredentials (OAuth2 oa){
-        id(oa) <- 'Github';
-        dataClientId(oa) <- '9d1729e039d1eb38748f';
-        dataClientSecret(oa) <- '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
-}
-
-writeGoogleDefaultCredentials (OAuth2 oa){
-        id(oa) <- 'Google';
-        dataClientId(oa) <- '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
-        dataClientSecret(oa) <- 'Fa-bg6EpM71UXSa9rxvYiNQq';
-}
-
-dataWebClientSecretKey = DATA STRING ();
-webClientSecret () = dataWebClientSecretKey();
-
-writeWebClientDefaultCredentials (){
-        dataWebClientSecretKey() <- 'secretKey';
-}
+dataWebClientSecretKey = DATA STRING (); 
 
 writeDefaultCredentials() {
-    IF NOT clientId('Github') THEN {
+    IF NOT clientId('github') THEN {
         NEW oa = OAuth2{
-            writeGitDefaultCredentials(oa);
+            id(oa) <- 'github';
+            dataClientId(oa) <- '9d1729e039d1eb38748f';
+            dataClientSecret(oa) <- '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
+            dataClientAuthenticationMethod(oa) <- 'basic';
+            dataScope(oa) <- 'read:user';
+            dataAuthorizationUri(oa) <- 'https://github.com/login/oauth/authorize';
+            dataTokenUri(oa) <- 'https://github.com/login/oauth/access_token';
+            dataUserInfoUri(oa) <- 'https://api.github.com/user';
+            dataUserNameAttributeName(oa) <- 'id';
+            dataClientName(oa) <- 'GitHub';
         }
     }
-    IF NOT clientId('Google') THEN {
+    IF NOT clientId('google') THEN {
         NEW oa = OAuth2{
-            writeGoogleDefaultCredentials(oa);
+            id(oa) <- 'google';
+            dataClientId(oa) <- '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
+            dataClientSecret(oa) <- 'Fa-bg6EpM71UXSa9rxvYiNQq';
+            dataClientAuthenticationMethod(oa) <- 'basic';
+            dataScope(oa) <- 'openid profile email';
+            dataAuthorizationUri(oa) <- 'https://accounts.google.com/o/oauth2/v2/auth';
+            dataTokenUri(oa) <- 'https://www.googleapis.com/oauth2/v4/token';
+            dataJwkSetUri(oa) <- 'https://www.googleapis.com/oauth2/v3/certs';
+            dataUserInfoUri(oa) <- 'https://www.googleapis.com/oauth2/v3/userinfo';
+            dataUserNameAttributeName(oa) <- 'sub';
+            dataClientName(oa) <- 'Google';
         }
     }
-    IF NOT webClientSecret() THEN {
-            writeWebClientDefaultCredentials();
+    IF NOT clientId('facebook') THEN {
+        NEW oa = OAuth2{
+            id(oa) <- 'facebook';
+            dataClientId(oa) <- 'test';
+            dataClientSecret(oa) <- 'test';
+            dataClientAuthenticationMethod(oa) <- 'post';
+            dataScope(oa) <- 'public_profile email';
+            dataAuthorizationUri(oa) <- 'https://www.facebook.com/v2.8/dialog/oauth';
+            dataTokenUri(oa) <- 'https://graph.facebook.com/v2.8/oauth/access_token';
+            dataUserInfoUri(oa) <- 'https://graph.facebook.com/me?fields=id,name,email';
+            dataUserNameAttributeName(oa) <- 'id';
+            dataClientName(oa) <- 'Facebook';
+        }
+    }
+    IF NOT dataWebClientSecretKey() THEN {
+            dataWebClientSecretKey() <- 'secretKey';
     }
     APPLY;
 }
@@ -361,7 +394,15 @@ FORM customUsers '{authentication.users}'
     PROPERTIES(auth)  NEW, DELETE,
                       id,
                       dataClientId,
-                      dataClientSecret
+                      dataClientSecret,
+                      dataClientAuthenticationMethod,
+                      dataScope,
+                      dataAuthorizationUri,
+                      dataTokenUri,
+                      dataJwkSetUri,
+                      dataUserInfoUri,
+                      dataUserNameAttributeName,
+                      dataClientName
     PROPERTIES () dataWebClientSecretKey
 ;
 
