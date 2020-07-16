@@ -330,10 +330,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     @Override
     public void runGroupReport() {
-        exportToExcel(config, getDrawElement());
+        exportToExcel(getDrawElement());
     }
 
-    public native void exportToExcel(WrapperObject config, Element element)
+    public native void exportToExcel(Element element)
         /*-{
             var instance = this;
             var pvtTable = element.getElementsByClassName("subtotalouterdiv")[0];
@@ -347,6 +347,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
             //set column width
             var worksheet = workbook.getWorksheet(1);
+
+            //pin header
+            var totalRowLevels = instance.@GPivot::getTotalRowLevels(*)()
+            worksheet.views = [{state: 'frozen', ySplit: totalRowLevels}];
+            worksheet.pageSetup.printTitlesRow = '1:' + totalRowLevels;
+
             for (var i = 0; i < worksheet.columns.length; i += 1) {
                 var dataMax = 0;
                 var column = worksheet.columns[i];
@@ -960,7 +966,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
-        int totalRowLevels = config.getArrayString("splitRows").length();
+        int totalRowLevels = getTotalRowLevels();
         int totalColLevels = config.getArrayString("cols").length();
         String cellBackground = null;
 
@@ -1182,7 +1188,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void updateTableToExcelAttributes(Element pvtTable) {
-        boolean excludeFirstColumn = config.getArrayInteger("splitRows").length() > 1;
+        boolean excludeFirstColumn = getTotalRowLevels() > 1;
 
         //set row height, outlineLevel, exclude first column
         NodeList<Element> trs = getElements(pvtTable, "tr");
@@ -1217,6 +1223,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         for (int i = 0; i < pvtEmptyHeaders.getLength(); i++) {
             setTableToExcelColorAttributes(pvtEmptyHeaders.getItem(i), null);
         }
+
+        NodeList<Element> rowTotals = getElements(pvtTable, ".rowTotal, .pvtGrandTotal");
+        for (int i = 0; i < rowTotals.getLength(); i++) {
+            rowTotals.getItem(i).setAttribute("data-a-h", "right");
+        }
+
     }
 
     private double getTableToExcelMaxRowHeight(Element element) {
@@ -1823,6 +1835,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
         config = overrideSortCols(config, sortCols);
         return sortCol;
+    }
+
+    private int getTotalRowLevels() {
+        return config.getArrayString("splitRows").length();
     }
 
     private native void unwrapThis(Element currentElement) /*-{
