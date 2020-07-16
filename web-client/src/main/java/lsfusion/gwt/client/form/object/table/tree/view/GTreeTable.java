@@ -208,9 +208,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             } else {
                 changeDots(element, true, true); //branch
             }
-        } else if (ICON_EMPTY.equals(indentIcon) || ICON_LEAF.equals(indentIcon) || ICON_CLOSED.equals(indentIcon)) {
+        } else if (ICON_EMPTY.equals(indentIcon) || ICON_LEAF.equals(indentIcon)) {
             changeDots(element, false, false);
-        } else if (ICON_OPEN.equals(indentIcon)) {
+        } else if (ICON_CLOSED.equals(indentIcon)) {
+            changeDots(element, false, treeValue.isClosedDotBottom());
+        }else if (ICON_OPEN.equals(indentIcon)) {
             changeDots(element, false, treeValue.isOpenDotBottom());
         }
 

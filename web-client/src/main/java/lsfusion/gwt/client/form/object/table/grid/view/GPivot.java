@@ -1010,7 +1010,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         if (isArrow) {
             if (rowKeyValues.length() > 0) {
                 int level = getRowLevel(rowKeyValues.length() - 1);
-                renderArrow(th, getTreeColumnValue(level, isExpanded, true, isLastChildList));
+                renderArrow(th, getTreeColumnValue(level, isExpanded, true, false, isLastChildList));
             }
         } else {
             renderAttrCell(th, value, attrName);
@@ -1019,10 +1019,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         setValueCellBackground(th, rowKeyValues.length(), -1, false);
     }
 
-    private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, JsArrayBoolean isLastChildList) {
+    private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, boolean closedDotBottom, JsArrayBoolean isLastChildList) {
         GTreeColumnValue treeColumnValue = new GTreeColumnValue(level, "level" + level);
         treeColumnValue.setOpen(isExpanded);
         treeColumnValue.setOpenDotBottom(openDotBottom);
+        treeColumnValue.setClosedDotBottom(closedDotBottom);
 
         HashMap<Integer, Boolean> lastInLevelMap = new HashMap<>();
         if(isLastChildList != null) {
@@ -1067,7 +1068,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
-            renderArrow(jsElement, getTreeColumnValue(0, isExpanded, false, null));
+            renderArrow(jsElement, getTreeColumnValue(0, isExpanded, false, false, null));
         } else {
             isSubtotal = isSubtotal || colKeyValues.length() == 0; // just in case, because in theory when there are no col keys it should be a total
 
@@ -1115,7 +1116,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             for(int i = 0; i <= level; i++) {
                 isLastChildList.push(true);
             }
-            renderArrow(jsElement, getTreeColumnValue(level, isExpanded, openDotBottom, isLastChildList));
+            renderArrow(jsElement, getTreeColumnValue(level, isExpanded, openDotBottom, true, isLastChildList));
         } else {
             SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), attrName);
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
