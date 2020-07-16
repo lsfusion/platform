@@ -59,8 +59,8 @@ select:focus {
 }
 
 input, textarea {
-    /*background-color: var(--component-background-color);*/
-    /*color: var(--text-color);*/
+    background-color: var(--component-background-color);
+    color: var(--text-color);
     /*border-radius: var(--textfield-border-radius);;*/
 
     border-width: 0;
