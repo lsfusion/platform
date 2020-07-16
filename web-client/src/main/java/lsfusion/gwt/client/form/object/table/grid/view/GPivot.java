@@ -337,9 +337,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         /*-{
             var instance = this;
             var pvtTable = element.getElementsByClassName("subtotalouterdiv")[0];
-
-            instance.@GPivot::updateTableToExcelPvtEmptyHeader(*)(pvtTable);
-
             instance.@GPivot::updateTableToExcelAttributes(*)(pvtTable);
 
             var workbook = $wnd.TableToExcel.tableToBook(pvtTable, {
@@ -684,11 +681,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private void updateTableCellsBackground() {
         Element tableHeader = getHeaderTableScroller();
         if (tableHeader != null) {
-            NodeList<Element> tds = getElements(tableHeader, "td, th");
+            NodeList<Element> tds = getElements(tableHeader, ".pvtAxisLabel, .pvtColLabel, .pvtRowLabel, .pvtColLabelFiller, .pvtEmptyHeader");
             for (int i = 0; i < tds.getLength(); i++) {
-                setTableToExcelAttributes(tds.getItem(i), true, false);
+                setTableToExcelColorAttributes(tds.getItem(i), null);
             }
-            updateTableToExcelPvtEmptyHeader(tableHeader);
         }
 
         Element tableDataScroller = getTableDataScroller();
@@ -997,7 +993,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         if (cellBackground != null) {
             td.getStyle().setBackgroundColor(cellBackground);
         }
-        td.setAttribute("data-fill-color", rgbToArgb(cellBackground != null ? cellBackground : getComponentBackground(colorTheme))); //for tableToExcel.js
 
         if (!refresh) {
             if (rowLevel >= 0) {
@@ -1007,7 +1002,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 td.setAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY, String.valueOf(columnLevel));
             }
         }
-        setTableToExcelAttributes(td, false, false);
+        setTableToExcelColorAttributes(td, rgbToArgb(cellBackground != null ? cellBackground : getComponentBackground(colorTheme)));
     }
 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
@@ -1070,7 +1065,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
-        boolean center = false;
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             renderArrow(jsElement, getTreeColumnValue(0, isExpanded, false, null));
@@ -1093,7 +1087,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
                 GGridPropertyTableHeader.renderTD(jsElement, 0, sortDir, fromObject(value).toString());
-                center = true;
+                setTableToExcelCenterAlignment(jsElement);
             } else {
                 if (isLastCol && sortDir != null) { // last column may have a sortDir
                     jsElement = GwtClientUtils.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
@@ -1109,7 +1103,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 jsElement.setTitle(fromObject(value).toString());
             }
         }
-        setTableToExcelAttributes(jsElement, true, center);
+        setTableToExcelColorAttributes(jsElement, null);
     }
     
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
@@ -1133,21 +1127,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 jsElement.setTitle(valueString);
             }
         }
-        setTableToExcelAttributes(jsElement, true, true);
-    }
-
-    private double getTableToExcelRowHeight(Element element) {
-        String dataHeight = element.getAttribute("data-height");
-        double rowHeight = 0;
-        if(dataHeight.isEmpty()) {
-            NodeList<Node> children = element.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                rowHeight = Math.max(rowHeight, getTableToExcelRowHeight((Element) children.getItem(i)));
-            }
-        } else {
-            rowHeight = Double.parseDouble(dataHeight);
-        }
-        return rowHeight;
+        setTableToExcelCenterAlignment(jsElement);
+        setTableToExcelColorAttributes(jsElement, null);
     }
 
     public static void setTableToExcelRowHeight(Element element, Integer rowHeight) {
@@ -1170,10 +1151,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
         }
 
-        //default values from mainframe.css
-        element.setAttribute("data-f-name", property.font != null && property.font.family != null ? property.font.family : defaultFontFamily);
-        element.setAttribute("data-f-sz", String.valueOf(property.font != null && property.font.size > 0 ? property.font.size : defaultFontSize));
+
         if(property.font != null) {
+            if(property.font.family != null) {
+                element.setAttribute("data-f-name", property.font.family);
+            }
+            if(property.font.size > 0) {
+                element.setAttribute("data-f-sz", String.valueOf(property.font.size));
+            }
             if(property.font.italic) {
                 element.setAttribute("data-f-italic", "true");
             }
@@ -1183,30 +1168,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
-    private void setTableToExcelAttributes(Element element, boolean header, boolean center) {
-        while(element != null && !element.getNodeName().toLowerCase().matches("th|td")) {
-            element = element.getParentElement();
-        }
-        if(element != null) {
-            element.setAttribute("data-b-a-s", "thin"); //border
-            element.setAttribute("data-b-a-c", rgbToArgb(getGridSeparatorBorderColor(colorTheme))); //border color
-            element.setAttribute("data-f-color", rgbToArgb(getTextColor(colorTheme))); //font color
-            if (header) {
-                element.setAttribute("data-fill-color", rgbToArgb(getPanelBackground(colorTheme))); //background color
-            }
-            if (center) {
-                element.setAttribute("data-a-h", "center"); //horizontal alignment
-                element.setAttribute("data-a-v", "middle"); //vertical alignment
-            }
-        }
+    private void setTableToExcelCenterAlignment(Element element) {
+        element.setAttribute("data-a-h", "center"); //horizontal alignment
+        element.setAttribute("data-a-v", "middle"); //vertical alignment
     }
 
-    private void updateTableToExcelPvtEmptyHeader(Element pvtTable) {
-        NodeList<Element> tds = getElements(pvtTable, ".pvtEmptyHeader");
-        for (int i = 0; i < tds.getLength(); i++) {
-            Element td = tds.getItem(i);
-            td.setAttribute("data-fill-color", rgbToArgb(getPanelBackground(colorTheme)));
-        }
+    private void setTableToExcelColorAttributes(Element element, String backgroundColor) {
+        element.setAttribute("data-b-a-s", "thin"); //border
+        element.setAttribute("data-b-a-c", rgbToArgb(getGridSeparatorBorderColor(colorTheme))); //border color
+        element.setAttribute("data-f-color", rgbToArgb(getTextColor(colorTheme))); //font color
+        element.setAttribute("data-fill-color", backgroundColor != null ? backgroundColor : rgbToArgb(getPanelBackground(colorTheme)));
     }
 
     private void updateTableToExcelAttributes(Element pvtTable) {
@@ -1216,7 +1187,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         NodeList<Element> trs = getElements(pvtTable, "tr");
         for (int i = 0; i < trs.getLength(); i++) {
             Element tr = trs.getItem(i);
-            tr.setAttribute("data-height", String.valueOf(getTableToExcelRowHeight(tr)));
+            tr.setAttribute("data-height", String.valueOf(getTableToExcelMaxRowHeight(tr)));
             String rowLevel = nullEmpty(getAttributeRecursive(tr, CELL_ROW_LEVEL_ATTRIBUTE_KEY));
             if(rowLevel != null) {
                 tr.setAttribute("data-outline-level", String.valueOf(Integer.parseInt(rowLevel) - 1));
@@ -1229,26 +1200,44 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
         }
 
-        NodeList<Element> headers = getElements(pvtTable, ".pvtAxisLabel, .pvtColLabel");
-        for (int i = 0; i < headers.getLength(); i++) {
-            Element header = headers.getItem(i);
-            header.setAttribute("data-f-name", defaultFontFamily);
-            header.setAttribute("data-f-sz", String.valueOf(defaultFontSize));
+        //set horizontal and vertical alignment; font: family, size, italic, bold; border; border color; font color, background color
+        NodeList<Element> elements = getElements(pvtTable, ".pvtAxisLabel, .pvtColLabel, .pvtRowLabel, .pvtColLabelFiller, .pvtVal");
+        for (int i = 0; i < elements.getLength(); i++) {
+            Element th = elements.getItem(i);
+            updateAttribute(th, "data-f-name", defaultFontFamily);
+            updateAttribute(th, "data-f-sz", String.valueOf(defaultFontSize));
+            for(String attribute : new String[]{"data-a-h", "data-a-v", "data-f-italic", "data-f-bold",
+                    "data-b-a-s", "data-b-a-c", "data-f-color", "data-fill-color"}) {
+                updateAttribute(th, attribute, null);
+            }
         }
 
-        //set alignment, font family, size, italic, bold
-        NodeList<Element> ths = getElements(pvtTable, "th");
-        for (int i = 0; i < ths.getLength(); i++) {
-            Element th = ths.getItem(i);
-            for(String attribute : new String[]{"data-a-h", "data-f-name", "data-f-sz", "data-f-italic", "data-f-bold"}) {
-                updateAttribute(th, attribute);
-            }
+        NodeList<Element> pvtEmptyHeaders = getElements(pvtTable, ".pvtEmptyHeader");
+        for (int i = 0; i < pvtEmptyHeaders.getLength(); i++) {
+            setTableToExcelColorAttributes(pvtEmptyHeaders.getItem(i), null);
         }
     }
 
-    private void updateAttribute(Element element, String attribute) {
-        String value = getAttributeRecursive(element, attribute);
-        if(!value.isEmpty()) {
+    private double getTableToExcelMaxRowHeight(Element element) {
+        String dataHeight = element.getAttribute("data-height");
+        double rowHeight = 0;
+        if(dataHeight.isEmpty()) {
+            NodeList<Node> children = element.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                rowHeight = Math.max(rowHeight, getTableToExcelMaxRowHeight((Element) children.getItem(i)));
+            }
+        } else {
+            rowHeight = Double.parseDouble(dataHeight);
+        }
+        return rowHeight;
+    }
+
+    private void updateAttribute(Element element, String attribute, String defaultValue) {
+        String value = nullEmpty(getAttributeRecursive(element, attribute));
+        if(value == null) {
+            value = defaultValue;
+        }
+        if(value != null) {
             element.setAttribute(attribute, value);
         }
     }
