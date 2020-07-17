@@ -68,7 +68,7 @@
                         </c:if>
 
                         <c:if test="${not empty OAUTH_EXCEPTION}">
-                            <div class="text-center oauth-error-block round full-width-box">
+                            <div class="oauth-error-block round full-width-box">
                                 <%= ServerMessages.getString(request, "oauth2.authorization.unavailable") %><br/>
                                 <%= ServerMessages.getString(request, "login.caused") %>
                                 : ${sessionScope["OAUTH_EXCEPTION"].message}

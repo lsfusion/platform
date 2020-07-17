@@ -163,7 +163,7 @@ form#login-form {
 }
 
 .oauth-error-block {
-    font-size: 0.75em;
+    font-size: 0.4em;
     color: #2b2a29;
     background-color: #2dc1f7;
     border: 1px solid #0489ba;

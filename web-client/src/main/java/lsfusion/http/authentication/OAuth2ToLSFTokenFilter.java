@@ -7,9 +7,8 @@ import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.authentication.TrustedAuthentication;
+import lsfusion.interop.connection.authentication.OAuth2Authentication;
 import lsfusion.interop.logics.LogicsSessionObject;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
@@ -28,41 +27,30 @@ import java.util.Locale;
 
 import static lsfusion.http.authentication.LSFRemoteAuthenticationProvider.getUserLocale;
 
-public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter implements InitializingBean {
-    private static final String authSecretKey = "authSecret";
+public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
+    public static final String AUTH_SECRET_KEY = "authSecret";
 
     @Autowired
-    private LogicsProvider logicsProvider1;
+    private LogicsProvider logicsProvider;
 
     @Autowired
-    private ServletContext servletContext1;
+    private ServletContext servletContext;
 
     @Autowired
-    private LSFClientRegistrationRepository clientRegistrations1;
-
-    private static ServletContext servletContext;
-    private static LogicsProvider logicsProvider;
-    private static LSFClientRegistrationRepository clientRegistrations;
-
-    @Override
-    public void afterPropertiesSet() throws ServletException {
-        OAuth2ToLSFTokenFilter.servletContext = servletContext1;
-        OAuth2ToLSFTokenFilter.logicsProvider = logicsProvider1;
-        OAuth2ToLSFTokenFilter.clientRegistrations = clientRegistrations1;
-    }
+    private LSFClientRegistrationRepository clientRegistrations;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        convertToken(request, response, SecurityContextHolder.getContext().getAuthentication());
+        convertToken(logicsProvider, request, response, SecurityContextHolder.getContext().getAuthentication(), servletContext, clientRegistrations);
         filterChain.doFilter(request, response);
     }
 
-    public static Authentication convertToken(HttpServletRequest request, HttpServletResponse response,
-                                              Authentication authentication) throws IOException {
+    public static Authentication convertToken(LogicsProvider logicsProvider, HttpServletRequest request, HttpServletResponse response,
+                                              Authentication authentication, ServletContext servletContext, LSFClientRegistrationRepository clientRegistrations) throws IOException {
 
-        if (!(authentication instanceof OAuth2AuthenticationToken)) {
+        if (!(authentication instanceof OAuth2AuthenticationToken) || clientRegistrations == null) {
             return authentication;
         }
         String userNameAttributeName = clientRegistrations.
@@ -71,11 +59,11 @@ public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter implements Init
         OAuth2User principal = (OAuth2User) authentication.getPrincipal();
         String username = String.valueOf((Object) principal.getAttribute(userNameAttributeName));
         LSFAuthenticationToken lsfAuthentication;
-        String authSecret = servletContext.getInitParameter(authSecretKey);
+        String authSecret = servletContext.getInitParameter(AUTH_SECRET_KEY);
         try {
             Pair<AuthenticationToken, Locale> authLocale = logicsProvider.runRequest(request, (LogicsSessionObject sessionObject) -> {
                 try {
-                    AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new TrustedAuthentication(username, authSecret));
+                    AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new OAuth2Authentication(username, authSecret, principal.getAttributes()));
                     return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
                 } catch (LockedException le) {
                     throw new org.springframework.security.authentication.LockedException(le.getMessage());

@@ -103,79 +103,68 @@ userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
 // OAuth and Web-client authentication
 CLASS OAuth2;
 id = DATA STRING (OAuth2);
-dataClientId = DATA STRING (OAuth2);
-dataClientSecret = DATA STRING (OAuth2);
-dataClientAuthenticationMethod = DATA STRING (OAuth2); //
-dataScope = DATA STRING (OAuth2);
-dataAuthorizationUri = DATA STRING (OAuth2);
-dataTokenUri = DATA STRING (OAuth2);
-dataJwkSetUri = DATA STRING (OAuth2); //
-dataUserInfoUri = DATA STRING (OAuth2);
-dataUserNameAttributeName = DATA STRING (OAuth2);
-dataClientName = DATA STRING (OAuth2);
+clientId = DATA STRING (OAuth2);
+clientSecret = DATA STRING (OAuth2);
+clientAuthenticationMethod = DATA STRING (OAuth2);
+scope = DATA STRING (OAuth2);
+authorizationUri = DATA STRING (OAuth2);
+tokenUri = DATA STRING (OAuth2);
+jwkSetUri = DATA STRING (OAuth2);
+userInfoUri = DATA STRING (OAuth2);
+userNameAttributeName = DATA STRING (OAuth2);
+clientName = DATA STRING (OAuth2);
 
-clients() = GROUP CONCAT id(OAuth2 oa) IF oa IS OAuth2 , ' ';
 auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
+clientId(STRING str) = clientId(auth(str));
 
-clientId(STRING str) = dataClientId(auth(str));
-clientSecret(STRING str) = dataClientSecret(auth(str));
-clientAuthenticationMethod(STRING str) = dataClientAuthenticationMethod(auth(str));
-scope(STRING str) = dataScope(auth(str));
-authorizationUri(STRING str) = dataAuthorizationUri(auth(str));
-tokenUri(STRING str) = dataTokenUri(auth(str));
-jwkSetUri(STRING str) = dataJwkSetUri(auth(str));
-userInfoUri(STRING str) = dataUserInfoUri(auth(str));
-userNameAttributeName(STRING str) = dataUserNameAttributeName(auth(str));
-clientName(STRING str) = dataClientName(auth(str));
-
-dataWebClientSecretKey = DATA STRING (); 
+webClientSecretKey = DATA STRING (); 
 
 writeDefaultCredentials() {
     IF NOT clientId('github') THEN {
         NEW oa = OAuth2{
             id(oa) <- 'github';
-            dataClientId(oa) <- '9d1729e039d1eb38748f';
-            dataClientSecret(oa) <- '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
-            dataClientAuthenticationMethod(oa) <- 'basic';
-            dataScope(oa) <- 'read:user';
-            dataAuthorizationUri(oa) <- 'https://github.com/login/oauth/authorize';
-            dataTokenUri(oa) <- 'https://github.com/login/oauth/access_token';
-            dataUserInfoUri(oa) <- 'https://api.github.com/user';
-            dataUserNameAttributeName(oa) <- 'id';
-            dataClientName(oa) <- 'GitHub';
+            clientId(oa) <- '9d1729e039d1eb38748f';
+            clientSecret(oa) <- '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
+            clientAuthenticationMethod(oa) <- 'basic';
+            scope(oa) <- 'read:user';
+            authorizationUri(oa) <- 'https://github.com/login/oauth/authorize';
+            tokenUri(oa) <- 'https://github.com/login/oauth/access_token';
+            userInfoUri(oa) <- 'https://api.github.com/user';
+            userNameAttributeName(oa) <- 'node_id';
+            clientName(oa) <- 'GitHub';
         }
     }
     IF NOT clientId('google') THEN {
         NEW oa = OAuth2{
             id(oa) <- 'google';
-            dataClientId(oa) <- '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
-            dataClientSecret(oa) <- 'Fa-bg6EpM71UXSa9rxvYiNQq';
-            dataClientAuthenticationMethod(oa) <- 'basic';
-            dataScope(oa) <- 'openid profile email';
-            dataAuthorizationUri(oa) <- 'https://accounts.google.com/o/oauth2/v2/auth';
-            dataTokenUri(oa) <- 'https://www.googleapis.com/oauth2/v4/token';
-            dataJwkSetUri(oa) <- 'https://www.googleapis.com/oauth2/v3/certs';
-            dataUserInfoUri(oa) <- 'https://www.googleapis.com/oauth2/v3/userinfo';
-            dataUserNameAttributeName(oa) <- 'sub';
-            dataClientName(oa) <- 'Google';
+            clientId(oa) <- '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
+            clientSecret(oa) <- 'Fa-bg6EpM71UXSa9rxvYiNQq';
+            clientAuthenticationMethod(oa) <- 'basic';
+            scope(oa) <- 'openid profile email';
+            authorizationUri(oa) <- 'https://accounts.google.com/o/oauth2/v2/auth';
+            tokenUri(oa) <- 'https://www.googleapis.com/oauth2/v4/token';
+            jwkSetUri(oa) <- 'https://www.googleapis.com/oauth2/v3/certs';
+            userInfoUri(oa) <- 'https://www.googleapis.com/oauth2/v3/userinfo';
+            userNameAttributeName(oa) <- 'sub';
+            clientName(oa) <- 'Google';
         }
     }
     IF NOT clientId('facebook') THEN {
         NEW oa = OAuth2{
             id(oa) <- 'facebook';
-            dataClientId(oa) <- 'test';
-            dataClientSecret(oa) <- 'test';
-            dataClientAuthenticationMethod(oa) <- 'post';
-            dataScope(oa) <- 'public_profile email';
-            dataAuthorizationUri(oa) <- 'https://www.facebook.com/v2.8/dialog/oauth';
-            dataTokenUri(oa) <- 'https://graph.facebook.com/v2.8/oauth/access_token';
-            dataUserInfoUri(oa) <- 'https://graph.facebook.com/me?fields=id,name,email';
-            dataUserNameAttributeName(oa) <- 'id';
-            dataClientName(oa) <- 'Facebook';
+            clientId(oa) <- 'test';
+            clientSecret(oa) <- 'test';
+            clientAuthenticationMethod(oa) <- 'post';
+            scope(oa) <- 'public_profile email';
+            authorizationUri(oa) <- 'https://www.facebook.com/v2.8/dialog/oauth';
+            tokenUri(oa) <- 'https://graph.facebook.com/v2.8/oauth/access_token';
+            userInfoUri(oa) <- 'https://graph.facebook.com/me?fields=id,name,email';
+            userNameAttributeName(oa) <- 'id';
+            clientName(oa) <- 'Facebook';
         }
     }
-    IF NOT dataWebClientSecretKey() THEN {
-            dataWebClientSecretKey() <- 'secretKey';
+    IF NOT webClientSecretKey() THEN {
+            webClientSecretKey() <- 'secretKey';
     }
     APPLY;
 }
@@ -393,17 +382,17 @@ FORM customUsers '{authentication.users}'
     OBJECTS auth = OAuth2 
     PROPERTIES(auth)  NEW, DELETE,
                       id,
-                      dataClientId,
-                      dataClientSecret,
-                      dataClientAuthenticationMethod,
-                      dataScope,
-                      dataAuthorizationUri,
-                      dataTokenUri,
-                      dataJwkSetUri,
-                      dataUserInfoUri,
-                      dataUserNameAttributeName,
-                      dataClientName
-    PROPERTIES () dataWebClientSecretKey
+                      clientId,
+                      clientSecret,
+                      clientAuthenticationMethod,
+                      scope,
+                      authorizationUri,
+                      tokenUri,
+                      jwkSetUri,
+                      userInfoUri,
+                      userNameAttributeName,
+                      clientName
+    PROPERTIES () webClientSecretKey
 ;
 
 DESIGN customUsers {
@@ -450,7 +439,7 @@ DESIGN customUsers {
             }
             NEW WEBAUTH {
                 caption = 'WEB-AUTH';
-                MOVE PROPERTY(dataWebClientSecretKey());
+                MOVE PROPERTY(webClientSecretKey());
             }
         }
     }

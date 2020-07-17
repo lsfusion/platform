@@ -180,13 +180,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public OAuth2Credentials getOauth2ClientCredentials(String client, String authSecret) throws RemoteException {
-        return securityManager.getOauth2ClientCredentials(client, authSecret);
-    }
-
-    @Override
-    public String getClientsIds() throws RemoteException {
-        return securityManager.getClientsIds();
+    public List<OAuth2Credentials> getOauth2ClientCredentials(String authSecret) throws RemoteException {
+        return securityManager.getOauth2ClientCredentials(authSecret);
     }
 
     @Override

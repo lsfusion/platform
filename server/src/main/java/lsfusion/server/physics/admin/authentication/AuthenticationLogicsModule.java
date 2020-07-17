@@ -67,6 +67,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP webClientSecret;
 
     //OAuth2
+    public LP oauth2id;
     public LP oauth2ClientId;
     public LP oauth2ClientSecret;
     public LP oauth2ClientAuthenticationMethod;
@@ -77,7 +78,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP oauth2UserInfoUri;
     public LP oauth2UserNameAttributeName;
     public LP oauth2ClientName;
-    public LP oauth2Clients;
 
     public LP useBusyDialog;
     public LP useRequestTimeout;
@@ -174,19 +174,19 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         baseDNLDAP = findProperty("baseDNLDAP[]");
         userDNSuffixLDAP = findProperty("userDNSuffixLDAP[]");
 
-        webClientSecret = findProperty("dataWebClientSecretKey[]");
+        webClientSecret = findProperty("webClientSecretKey[]");
 
-        oauth2ClientId = findProperty("clientId[STRING]");
-        oauth2ClientSecret = findProperty("clientSecret[STRING]");
-        oauth2ClientAuthenticationMethod = findProperty("clientAuthenticationMethod[STRING]");
-        oauth2Scope = findProperty("scope[STRING]");
-        oauth2AuthorizationUri = findProperty("authorizationUri[STRING]");
-        oauth2TokenUri = findProperty("tokenUri[STRING]");
-        oauth2JwkSetUri = findProperty("jwkSetUri[STRING]");
-        oauth2UserInfoUri = findProperty("userInfoUri[STRING]");
-        oauth2UserNameAttributeName = findProperty("userNameAttributeName[STRING]");
-        oauth2ClientName = findProperty("clientName[STRING]");
-        oauth2Clients = findProperty("clients[]");
+        oauth2id = findProperty("id[OAuth2]");
+        oauth2ClientId = findProperty("clientId[OAuth2]");
+        oauth2ClientSecret = findProperty("clientSecret[OAuth2]");
+        oauth2ClientAuthenticationMethod = findProperty("clientAuthenticationMethod[OAuth2]");
+        oauth2Scope = findProperty("scope[OAuth2]");
+        oauth2AuthorizationUri = findProperty("authorizationUri[OAuth2]");
+        oauth2TokenUri = findProperty("tokenUri[OAuth2]");
+        oauth2JwkSetUri = findProperty("jwkSetUri[OAuth2]");
+        oauth2UserInfoUri = findProperty("userInfoUri[OAuth2]");
+        oauth2UserNameAttributeName = findProperty("userNameAttributeName[OAuth2]");
+        oauth2ClientName = findProperty("clientName[OAuth2]");
 
         useBusyDialog = findProperty("useBusyDialog[]");
         useRequestTimeout = findProperty("useRequestTimeout[]");

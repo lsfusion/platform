@@ -9,6 +9,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.base.exception.AuthenticationException;
@@ -54,6 +55,8 @@ import javax.naming.CommunicationException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static lsfusion.base.ApiResourceBundle.getString;
 
 public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;
@@ -232,36 +235,51 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public String getClientsIds() {
-        try (DataSession session = createSession()) {
-            return (String) authenticationLM.oauth2Clients.read(session);
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public OAuth2Credentials getOauth2ClientCredentials(String client, String authSecret) {
+    public List<OAuth2Credentials> getOauth2ClientCredentials(String authSecret) {
         String webClientAuthSecret = getWebClientSecret();
-        if (webClientAuthSecret != null && webClientAuthSecret.equals(authSecret) && client != null) {
-            OAuth2Credentials.Builder builder = new OAuth2Credentials.Builder();
+        List<OAuth2Credentials> credentials = new ArrayList<>();
+
+        if (webClientAuthSecret != null && webClientAuthSecret.equals(authSecret)) {
             try (DataSession session = createSession()) {
-                builder.setRegistrationId(client);
-                builder.setClientAuthenticationMethod((String) authenticationLM.oauth2ClientAuthenticationMethod.read(session, new DataObject(client, StringClass.get(client.length()))));
-                builder.setScope((String) authenticationLM.oauth2Scope.read(session, new DataObject(client, StringClass.get(client.length()))));
-                builder.setAuthorizationUri((String) authenticationLM.oauth2AuthorizationUri.read(session, new DataObject(client, StringClass.get(client.length()))));
-                builder.setTokenUri((String) authenticationLM.oauth2TokenUri.read(session, new DataObject(client, StringClass.get(client.length()))));
-                builder.setJwkSetUri((String) authenticationLM.oauth2JwkSetUri.read(session, new DataObject(client, StringClass.get(client.length()))));
-                builder.setUserInfoUri((String) authenticationLM.oauth2UserInfoUri.read(session, new DataObject(client, StringClass.get(client.length()))));
-                builder.setUserNameAttributeName((String) authenticationLM.oauth2UserNameAttributeName.read(session, new DataObject(client, StringClass.get(client.length()))));
-                builder.setClientName((String) authenticationLM.oauth2ClientName.read(session, new DataObject(client, StringClass.get(client.length()))));
-                builder.setClientId((String) authenticationLM.oauth2ClientId.read(session, new DataObject(client, StringClass.get(client.length()))));
-                builder.setClientSecret((String) authenticationLM.oauth2ClientSecret.read(session, new DataObject(client, StringClass.get(client.length()))));
-                return builder.build();
+                KeyExpr oauth2 = new KeyExpr("oauth2");
+                ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("key", oauth2);
+                QueryBuilder<Object, String> query = new QueryBuilder<>(keys);
+                query.addProperty("id", authenticationLM.oauth2id.getExpr(oauth2));
+                query.addProperty("clientId", authenticationLM.oauth2ClientId.getExpr(oauth2));
+                query.addProperty("clientSecret", authenticationLM.oauth2ClientSecret.getExpr(oauth2));
+                query.addProperty("clientAuthenticationMethod", authenticationLM.oauth2ClientAuthenticationMethod.getExpr(oauth2));
+                query.addProperty("scope", authenticationLM.oauth2Scope.getExpr(oauth2));
+                query.addProperty("authorizationUri", authenticationLM.oauth2AuthorizationUri.getExpr(oauth2));
+                query.addProperty("tokenUri", authenticationLM.oauth2TokenUri.getExpr(oauth2));
+                query.addProperty("jwkSetUri", authenticationLM.oauth2JwkSetUri.getExpr(oauth2));
+                query.addProperty("userInfoUri", authenticationLM.oauth2UserInfoUri.getExpr(oauth2));
+                query.addProperty("userNameAttributeName", authenticationLM.oauth2UserNameAttributeName.getExpr(oauth2));
+                query.addProperty("clientName", authenticationLM.oauth2ClientName.getExpr(oauth2));
+                query.and(authenticationLM.oauth2id.getExpr(oauth2).getWhere());
+                ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> resultMap = query.execute(session);
+
+                for (ImMap<String, Object> value : resultMap.values()) {
+                    credentials.add(new OAuth2Credentials(
+                            (String) value.get("clientAuthenticationMethod"),
+                            (String) value.get("id"),
+                            (String) value.get("scope"),
+                            (String) value.get("authorizationUri"),
+                            (String) value.get("tokenUri"),
+                            (String) value.get("jwkSetUri"),
+                            (String) value.get("userInfoUri"),
+                            (String) value.get("userNameAttributeName"),
+                            (String) value.get("clientName"),
+                            (String) value.get("clientSecret"),
+                            (String) value.get("clientId")
+                    ));
+                }
+                return credentials;
             } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
             }
+        } else {
+            throw new AuthenticationException(getString("exceptions.incorrect.web.client.auth.token"));
         }
-        return null;
     }
 
     public AuthenticationToken authenticateUser(Authentication authentication, ExecutionStack stack) {
@@ -295,14 +313,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     throw new LoginException();
                 }
             } else {
-                String webClientAuthSecret = ((TrustedAuthentication) authentication).getAuthSecret();
+                String webClientAuthSecret = ((OAuth2Authentication) authentication).getAuthSecret();
                 if ((webClientAuthSecret == null || !webClientAuthSecret.equals(getWebClientSecret()))) {
-                    throw new AuthenticationException();
+                    throw new AuthenticationException(getString("exceptions.incorrect.web.client.auth.token"));
                 }
                 userObject = readUser(authentication.getUserName(), session);
                 if (userObject == null) {
                     String pwd = BaseUtils.generatePassword(20, false, true);
                     userObject = addUser(authentication.getUserName(), pwd, session);
+                    setUserParameters(userObject, ((OAuth2Authentication) authentication).getFirstName(),
+                            ((OAuth2Authentication) authentication).getLastName(), ((OAuth2Authentication) authentication).getEmail(),
+                            null, session);
                     apply(session, stack);
                 }
             }

@@ -24,8 +24,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     // authentication
     AuthenticationToken authenticateUser(Authentication authentication) throws RemoteException;
-    OAuth2Credentials getOauth2ClientCredentials(String client, String authSecret) throws RemoteException;
-    String getClientsIds() throws RemoteException;
+    List<OAuth2Credentials> getOauth2ClientCredentials(String authSecret) throws RemoteException;
 
     // stateful interfaces
     RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException;
