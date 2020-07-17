@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -14,7 +15,6 @@ import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.ReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.text.ParseException;
 
@@ -69,10 +69,17 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         String type = event.getType();
         if (GKeyStroke.isCharInputKeyEvent(event) || GKeyStroke.isCharDeleteKeyEvent(event) ||
                 GKeyStroke.isCharNavigateKeyEvent(event) || GMouseStroke.isEvent(event)) {
-            if(GKeyStroke.isCharInputKeyEvent(event) && !checkInputValidity(parent, String.valueOf((char) event.getCharCode())))
-                handler.consume(); // this thing is needed to disable inputting incorrect symbols
-            else
-                handler.consume(true);
+            boolean isCorrect = true;
+
+            String stringToAdd = null;
+            if(GKeyStroke.isCharAddKeyEvent(event))
+                stringToAdd = String.valueOf((char) event.getCharCode());
+            else if(GKeyStroke.isPasteFromClipboardEvent(event))
+                stringToAdd = CopyPasteUtils.getEventClipboardData(event);
+            if(stringToAdd != null && !checkInputValidity(parent, stringToAdd))
+                isCorrect = false; // this thing is needed to disable inputting incorrect symbols
+
+            handler.consume(isCorrect);
         } else if (KEYDOWN.equals(type)) {
             int keyCode = event.getKeyCode();
             if (keyCode == KeyCodes.KEY_ENTER) {
@@ -144,6 +151,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
     @Override
     public void render(Element cellParent, RenderContext renderContext) {
         Element inputElement = createInputElement();
+        // without setting boxSized class textarea and input behaviour is pretty odd when text is very large or inside td (position of textarea / input is really unpredictable)
+        inputElement.addClassName("boxSized");
 
         Style.TextAlign textAlign = property.getTextAlignStyle();
         if(textAlign != null)

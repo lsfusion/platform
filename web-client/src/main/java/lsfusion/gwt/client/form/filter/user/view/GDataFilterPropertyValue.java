@@ -25,7 +25,8 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    protected void onPaste(String objValue) {
+    protected void onPaste(Object objValue, String stringValue) {
+        afterCommit.accept(objValue);
     }
 
     // it's a hacky hack, however when filter will become docked it will go away

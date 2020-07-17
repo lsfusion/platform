@@ -5,7 +5,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
@@ -108,7 +107,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    protected void onPaste(String objValue) {
-        form.pasteSingleValue(property, columnKey, objValue);
+    protected void onPaste(Object objValue, String stringValue) {
+        form.pasteSingleValue(property, columnKey, stringValue);
     }
 }

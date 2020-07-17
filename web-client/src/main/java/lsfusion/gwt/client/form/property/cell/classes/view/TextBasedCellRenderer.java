@@ -2,8 +2,8 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -115,11 +115,44 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         }
     }
 
-    protected abstract void setInnerText(Element element, String innerText);
 
     public abstract String format(T value);
 
-    protected String getRequiredStringValue() {
-        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : "<div class=\"notNullLine\"></div>";
+    protected void setInnerText(Element element, String innerText) {
+        if (innerText == null) {
+            if (property.isEditableNotNull()) {
+                setInnerHTML(element, getRequiredStringValue(element));
+                element.addClassName("requiredValueString");
+            } else {
+                setInnerContent(element, getNullStringValue(element));
+                element.removeClassName("requiredValueString");
+            }
+        } else {
+            setInnerContent(element, getNotNullStringValue(innerText, element));
+            element.removeClassName("requiredValueString");
+        }
+    }
+
+    protected String getRequiredStringValue(Element element) {
+        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : "<div class=\"notNullLine\">" + EscapeUtils.UNICODE_NBSP + "</div>";
+    }
+
+    protected String getNullStringValue(Element element) {
+        return EscapeUtils.UNICODE_NBSP;
+    }
+
+    protected String getNotNullStringValue(String innerText, Element element) {
+        assert !innerText.isEmpty();
+        return innerText;
+    }
+
+    protected void setInnerContent(Element element, String innerText) {
+        assert !innerText.isEmpty(); // important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection)
+        element.setInnerText(innerText);
+    }
+
+    protected void setInnerHTML(Element element, String innerHTML) {
+        // assert that innerHTML has text inside, important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection)
+        element.setInnerHTML(innerHTML);
     }
 }

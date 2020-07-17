@@ -14,7 +14,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
-import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.text.ParseException;
 
@@ -127,6 +126,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     protected void onFocus(EventHandler handler) {
+        DataGrid.sinkPasteEvent(getFocusElement());
         borderWidget.addStyleName("panelRendererValueFocused");
     }
 
@@ -170,7 +170,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         };
     }
 
-    protected abstract void onPaste(String objValue);
+    protected abstract void onPaste(Object objValue, String stringValue);
 
     public void pasteValue(final String value) {
         Scheduler.get().scheduleDeferred(() -> {
@@ -180,7 +180,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
             } catch (ParseException ignored) {}
             updateValue(objValue);
 
-            onPaste(value);
+            onPaste(objValue, value);
         });
     }
 

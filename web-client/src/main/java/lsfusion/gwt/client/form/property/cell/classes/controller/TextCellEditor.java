@@ -18,11 +18,7 @@ public class TextCellEditor extends TextBasedCellEditor {
 
     @Override
     public Element createInputElement() {
-        TextAreaElement inputElement = Document.get().createTextAreaElement();
-        // without setting boxSized class textarea behaviour is pretty odd when text is very large or inside td (position of textarea is really unpredictable)
-        // maybe for regular input it also makes sense, but so far it's not evident
-        inputElement.addClassName("boxSized");
-        return inputElement;
+        return Document.get().createTextAreaElement();
     }
 
     @Override

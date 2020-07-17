@@ -184,14 +184,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         getElement().setPropertyObject("groupObject", groupObject);
     }
 
-    // to give public access
-    public Widget getWidget() {
-        return super.getWidget();
-    }
-    public Element getTableDataFocusElement() {
-        return super.getTableDataFocusElement();
-    }
-
     protected int getFirstSeenRow(int tableTop, int start) {
         for (int i = start; i < getRowCount(); i++) {
             TableRowElement rowElement = getChildElement(i);

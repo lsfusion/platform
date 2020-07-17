@@ -292,6 +292,12 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
         widget.sinkEvents(Event.ONPASTE);
     }
+    // the problem that onpaste ('paste') event is not triggered when there is no "selection" inside element (or no other contenteditable element)
+    // also it's important that focusElement should have text, thats why EscapeUtils.UNICODE_NBSP is used in a lot of places
+    public static void sinkPasteEvent(Element focusElement) {
+        CopyPasteUtils.setEmptySelection(focusElement);
+    }
+
     public static void initSinkMouseEvents(Widget widget) {
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserMouseEvents());
     }
@@ -519,7 +525,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
         TableSectionElement targetTableSection = null;
 
-        if (target == getTableDataFocusElement()) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
+        if (target == getTableDataFocusElement() || target == getTableElement()) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
+            // usually all events has target getTableDataFocusElement, but ONPASTE when focus is on grid somewhy has target tableElement
             if (checkSinkKeyEvents(event)) {
                 targetTableSection = tbody;
 
@@ -1051,6 +1058,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
     protected void onFocus() {
         isFocused = true;
+        DataGrid.sinkPasteEvent(getTableDataFocusElement());
 
         updateSelectedRowStyles();
     }
@@ -1061,11 +1069,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         updateSelectedRowStyles();
     }
 
-    protected Element getTableDataFocusElement() {
+    public Element getTableDataFocusElement() {
         if(!noScrollers)
             return tableDataScroller.getElement();
         else
-            return tableData.getElement();
+            return tableData.tableElement;
     }
 
     /**

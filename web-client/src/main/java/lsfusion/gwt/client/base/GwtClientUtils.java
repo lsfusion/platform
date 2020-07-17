@@ -836,6 +836,14 @@ public class GwtClientUtils {
         return obj1.equals(obj2);
     }
 
+    public static Element getElement(Node node) {
+        if(node == null)
+            return null;
+        if(Element.is(node))
+            return Element.as(node);
+        return node.getParentElement();
+    }
+
     public static <T> T nvl(T value1, T value2) {
         return value1 == null ? value2 : value1;
     }

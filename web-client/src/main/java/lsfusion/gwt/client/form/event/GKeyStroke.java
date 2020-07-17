@@ -201,11 +201,10 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isPasteFromClipboardEvent(Event event) {
-        // it's hard to tell why but Event.ONPASTE is not triggered for ActionOrPropertyValue
-        // however that way paste for DataGrid is called twice (but we'll ignore that for now)
-        return (KEYDOWN.equals(event.getType()) &&
-                ((event.getKeyCode() == KEY_V && event.getCtrlKey()) ||
-                (event.getKeyCode() == KEY_INSERT && event.getShiftKey())))
-                || event.getTypeInt() == Event.ONPASTE;
+//        return (KEYDOWN.equals(event.getType()) &&
+//                ((event.getKeyCode() == KEY_V && event.getCtrlKey()) ||
+//                (event.getKeyCode() == KEY_INSERT && event.getShiftKey())))
+//                || event.getTypeInt() == Event.ONPASTE;
+        return event.getTypeInt() == Event.ONPASTE;
     }
 }
