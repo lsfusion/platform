@@ -148,7 +148,7 @@ parcelRequire = function(e, r, t, n) {
                             var a;
                             switch (e) {
                                 case "n":
-                                    a = Number(r);
+                                    a = Number(r.replace(" ", ""));
                                     break;
                                 case "d":
                                     var n = new Date(r);

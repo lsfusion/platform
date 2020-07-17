@@ -11,7 +11,10 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.classes.GObjectType;
+import lsfusion.gwt.client.classes.data.GDateType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
+import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
@@ -1141,7 +1144,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
         }
 
-
         if(property.font != null) {
             if(property.font.family != null) {
                 element.setAttribute("data-f-name", property.font.family);
@@ -1156,6 +1158,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 element.setAttribute("data-f-bold", "true");
             }
         }
+
+        //data type
+        String type;
+        if(property.baseType instanceof GObjectType || property.baseType instanceof GIntegralType) {
+            type = "n";
+        } else if(property.baseType instanceof GLogicalType) {
+            type = "b";
+        } else if(property.baseType instanceof GDateType) {
+            type = "d";
+        } else {
+            type = "s";
+        }
+        element.setAttribute("data-t", type);
     }
 
     private void setTableToExcelCenterAlignment(Element element) {
