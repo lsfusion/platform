@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 
 import java.util.HashMap;
 
@@ -109,6 +110,29 @@ public class GFontMetrics {
 //    }
 //
     private static final HashMap<GFontWidthString, FontMeasure> calculatedMeasures = new HashMap<>();
+    private static final HashMap<GFont, HashMap<Integer, Integer>> calculatedCharWidth = new HashMap<>();
+
+    public static int getCharWidthString(GFont font, int pixelWidth) {
+        HashMap<Integer, Integer> widthMap = calculatedCharWidth.getOrDefault(font, new HashMap<>());
+        Integer charWidth = widthMap.get(pixelWidth);
+        if(charWidth != null) {
+            return charWidth;
+        } else {
+            charWidth = 0;
+            int delta = 1;
+
+            while (delta >= 1) {
+                while (getCalcMeasure(new GFontWidthString(font, GwtSharedUtils.replicate('0', charWidth + delta * 2))).width < pixelWidth) {
+                    delta = delta * 2;
+                }
+                charWidth += delta;
+                delta = delta == 1 ? 0 : 1;
+            }
+            widthMap.put(pixelWidth, charWidth);
+            calculatedCharWidth.put(font, widthMap);
+            return charWidth;
+        }
+    }
 
     private static FontMeasure getCalcMeasure(GFontWidthString font) {
         FontMeasure measure = calculatedMeasures.get(font);

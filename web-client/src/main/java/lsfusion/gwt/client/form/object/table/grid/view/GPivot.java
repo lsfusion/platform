@@ -14,6 +14,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -336,10 +337,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public native void exportToExcel(Element element)
         /*-{
             var instance = this;
-            var pvtTable = element.getElementsByClassName("subtotalouterdiv")[0];
-            instance.@GPivot::updateTableToExcelAttributes(*)(pvtTable);
+            var rootDiv = element.getElementsByClassName("subtotalouterdiv")[0];
+            instance.@GPivot::updateTableToExcelAttributes(*)(rootDiv);
 
-            var workbook = $wnd.TableToExcel.tableToBook(pvtTable, {
+            var workbook = $wnd.TableToExcel.tableToBook(rootDiv, {
                 sheet: {
                     name: "lsfReport"
                 }
@@ -352,20 +353,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             var totalRowLevels = instance.@GPivot::getTotalRowLevels(*)()
             worksheet.views = [{state: 'frozen', ySplit: totalRowLevels}];
             worksheet.pageSetup.printTitlesRow = '1:' + totalRowLevels;
-
-            for (var i = 0; i < worksheet.columns.length; i += 1) {
-                var dataMax = 0;
-                var column = worksheet.columns[i];
-                for (var j = 1; j < column.values.length; j += 1) {
-                    var columnValue = column.values[j];
-                    if(columnValue != null) {
-                        if (columnValue.length > dataMax) {
-                            dataMax = columnValue.length;
-                        }
-                    }
-                }
-                column.width = (dataMax < 10 ? 10 : dataMax) * 1.2; //1.2 is magic coefficient to better fit width
-            }
 
             worksheet.properties.outlineProperties = {summaryBelow: false};
 
@@ -655,23 +642,23 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private native void refreshArrowImages(JavaScriptObject pivotElement) /*-{
         var instance = this
-        var outerDiv = $wnd.$(pivotElement).find(".subtotalouterdiv").get(0);
+        var rootDiv = $wnd.$(pivotElement).find(".subtotalouterdiv").get(0);
 
         changeImages = function (className, expanded) {
-            var imgs = outerDiv.getElementsByClassName(className)
+            var imgs = rootDiv.getElementsByClassName(className)
             Array.prototype.forEach.call(imgs, function(img) {
                 instance.@GPivot::rerenderArrow(*)(img, expanded)
             });
         }
 
         changeDots = function (className, branch) {
-            var imgs = outerDiv.getElementsByClassName(className)
+            var imgs = rootDiv.getElementsByClassName(className)
             Array.prototype.forEach.call(imgs, function(img) {
                 instance.@GPivot::rerenderDots(*)(img, branch)
             });
         }
 
-        if (outerDiv !== undefined) {
+        if (rootDiv !== undefined) {
             changeImages("leaf-image", null)
             changeImages("expanded-image", true)
             changeImages("collapsed-image", false)
@@ -1183,11 +1170,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         element.setAttribute("data-fill-color", backgroundColor != null ? backgroundColor : rgbToArgb(getPanelBackground(colorTheme)));
     }
 
-    private void updateTableToExcelAttributes(Element pvtTable) {
+    private void updateTableToExcelAttributes(Element rootDiv) {
         boolean excludeFirstColumn = getTotalRowLevels() > 1;
 
         //set row height, outlineLevel, exclude first column
-        NodeList<Element> trs = getElements(pvtTable, "tr");
+        NodeList<Element> trs = getElements(rootDiv, "tr");
         for (int i = 0; i < trs.getLength(); i++) {
             Element tr = trs.getItem(i);
             tr.setAttribute("data-height", String.valueOf(getTableToExcelMaxRowHeight(tr)));
@@ -1204,7 +1191,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
 
         //set horizontal and vertical alignment; font: family, size, italic, bold; border; border color; font color, background color
-        NodeList<Element> elements = getElements(pvtTable, ".pvtAxisLabel, .pvtColLabel, .pvtRowLabel, .pvtColLabelFiller, .pvtVal");
+        NodeList<Element> elements = getElements(rootDiv, ".pvtAxisLabel, .pvtColLabel, .pvtRowLabel, .pvtColLabelFiller, .pvtVal");
         for (int i = 0; i < elements.getLength(); i++) {
             Element th = elements.getItem(i);
             updateAttribute(th, "data-f-name", defaultFontFamily);
@@ -1215,12 +1202,31 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
         }
 
-        NodeList<Element> pvtEmptyHeaders = getElements(pvtTable, ".pvtEmptyHeader");
+        //set column width
+        Element headerTable = getHeaderTableElement();
+        int headerWidth = headerTable.getOffsetWidth();
+        int sumWidth = 0;
+        List<Integer> columnsWidth = new ArrayList<>();
+        NodeList<Element> cols = getElements(headerTable, "col");
+        for (int j = excludeFirstColumn ? 1 : 0; j < cols.getLength(); j++) {
+            //Calibri 11 is default font for excel sheet
+            int width = Integer.parseInt(cols.getItem(j).getStyle().getWidth().replace("px", ""));
+            sumWidth += width;
+            columnsWidth.add(GFontMetrics.getCharWidthString(new GFont("Calibri", 11, false, false) , width));
+        }
+        double coef = sumWidth >= headerWidth ? 1 : (double) headerWidth / sumWidth;
+        StringBuilder colWidth = new StringBuilder();
+        for(Integer w : columnsWidth) {
+            colWidth.append((colWidth.length() == 0) ? "" : ",").append(w * coef);
+        }
+        rootDiv.setAttribute("data-cols-width", colWidth.toString());
+
+        NodeList<Element> pvtEmptyHeaders = getElements(rootDiv, ".pvtEmptyHeader");
         for (int i = 0; i < pvtEmptyHeaders.getLength(); i++) {
             setTableToExcelColorAttributes(pvtEmptyHeaders.getItem(i), null);
         }
 
-        NodeList<Element> rowTotals = getElements(pvtTable, ".rowTotal, .pvtGrandTotal");
+        NodeList<Element> rowTotals = getElements(rootDiv, ".rowTotal, .pvtGrandTotal");
         for (int i = 0; i < rowTotals.getLength(); i++) {
             rowTotals.getItem(i).setAttribute("data-a-h", "right");
         }
