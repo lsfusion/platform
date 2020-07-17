@@ -962,7 +962,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             renderValue(jsElement, value);
         }
 
-        setValueCellBackground(jsElement, rowKeys.length(), columnKeys.length(), false);
+        setValueCellBackground(jsElement, getRowLevel(rowKeys.length()), columnKeys.length(), false);
     }
 
     public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
@@ -970,30 +970,26 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         int totalColLevels = config.getArrayString("cols").length();
         String cellBackground = null;
 
-        int depth = 0;
-        if (rowLevel == 0 || columnLevel == 0) {
-            if (totalRowLevels == 0) {
-                cellBackground = getComponentBackground(colorTheme);
-            } else {
-                depth = Math.max(totalRowLevels + totalColLevels - 1, 1);
-            }
+        if (totalRowLevels == 0 && (rowLevel == 0 || columnLevel == 0)) {
+            cellBackground = getComponentBackground(colorTheme);
         } else {
-            if (rowLevel > 0 && rowLevel < totalRowLevels) {
+            int depth = 0;
+            if (rowLevel >= 0 && rowLevel < totalRowLevels) {
                 depth += totalRowLevels - rowLevel;
             }
-            if (columnLevel > 0 && columnLevel < totalColLevels) {
+            if (columnLevel >= 0 && columnLevel < totalColLevels) {
                 depth += totalColLevels - columnLevel;
             }
-        }
 
-        if (depth > 0) {
-            int[] baseRGB = StyleDefaults.getComponentBackgroundRGB();
-            int[] darkenStepRGB = StyleDefaults.getPivotGroupLevelDarkenStepRGB();
-            cellBackground = toColorString(
-                    baseRGB[0] + darkenStepRGB[0] * depth,
-                    baseRGB[1] + darkenStepRGB[1] * depth,
-                    baseRGB[2] + darkenStepRGB[2] * depth
-            );
+            if (depth > 0) {
+                int[] baseRGB = StyleDefaults.getComponentBackgroundRGB();
+                int[] darkenStepRGB = StyleDefaults.getPivotGroupLevelDarkenStepRGB();
+                cellBackground = toColorString(
+                        Math.min(Math.max(baseRGB[0] + darkenStepRGB[0] * depth, 0), 255),
+                        Math.min(Math.max(baseRGB[1] + darkenStepRGB[1] * depth, 1), 255),
+                        Math.min(Math.max(baseRGB[2] + darkenStepRGB[2] * depth, 2), 255)
+                );
+            }
         }
 
         if (cellBackground != null) {
@@ -1022,7 +1018,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             renderAttrCell(th, value, attrName);
         }
 
-        setValueCellBackground(th, rowKeyValues.length(), -1, false);
+        setValueCellBackground(th, getRowLevel(rowKeyValues.length()), -1, false);
     }
 
     private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, boolean closedDotBottom, JsArrayBoolean isLastChildList) {
