@@ -168,9 +168,6 @@ public class GKeyStroke implements Serializable {
         return false;
     }
 
-    public static boolean isCharInputKeyEvent(Event event) {
-        return isCharAddKeyEvent(event) || isPasteFromClipboardEvent(event);
-    }
     public static boolean isCharAddKeyEvent(NativeEvent event) {
         if(KEYPRESS.equals(event.getType()) && isPlainKeyEvent(event)) {
             int keyCode = event.getKeyCode();

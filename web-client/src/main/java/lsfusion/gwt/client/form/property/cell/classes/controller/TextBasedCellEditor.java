@@ -67,8 +67,8 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         Event event = handler.event;
 
         String type = event.getType();
-        if (GKeyStroke.isCharInputKeyEvent(event) || GKeyStroke.isCharDeleteKeyEvent(event) ||
-                GKeyStroke.isCharNavigateKeyEvent(event) || GMouseStroke.isEvent(event)) {
+        if (GKeyStroke.isCharAddKeyEvent(event) || GKeyStroke.isCharDeleteKeyEvent(event) ||
+                GKeyStroke.isCharNavigateKeyEvent(event) || GMouseStroke.isEvent(event) || GKeyStroke.isPasteFromClipboardEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
             boolean isCorrect = true;
 
             String stringToAdd = null;

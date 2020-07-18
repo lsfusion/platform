@@ -23,15 +23,20 @@ public class GMouseStroke {
     }
 
     public static boolean isDownEvent(Event event) {
-        return MOUSEDOWN.equals(event.getType());
+        return MOUSEDOWN.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_LEFT;
     }
     public static boolean isClickEvent(Event event) {
-        return BrowserEvents.CLICK.equals(event.getType());
+        return BrowserEvents.CLICK.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_LEFT;
     }
     public static boolean isDblClickEvent(Event event) {
-        return DBLCLICK.equals(event.getType());
+        return DBLCLICK.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_LEFT;
     }
     public static boolean isEvent(Event event) {
         return isDownEvent(event) || isClickEvent(event) || isDblClickEvent(event);
+    }
+
+    // technically CONTEXTMENU is not mouse event, but PASTE is not key event either, so we'll leave it here
+    public static boolean isContextMenuEvent(Event event) {
+        return BrowserEvents.CONTEXTMENU.equals(event.getType());
     }
 }

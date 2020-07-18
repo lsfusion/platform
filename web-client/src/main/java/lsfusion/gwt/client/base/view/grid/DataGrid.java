@@ -290,7 +290,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
     public static void initSinkEvents(Widget widget) {
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserEvents());
 
-        widget.sinkEvents(Event.ONPASTE);
+        widget.sinkEvents(Event.ONPASTE | Event.ONCONTEXTMENU);
     }
     // the problem that onpaste ('paste') event is not triggered when there is no "selection" inside element (or no other contenteditable element)
     // also it's important that focusElement should have text, thats why EscapeUtils.UNICODE_NBSP is used in a lot of places
@@ -317,10 +317,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         String eventType = event.getType();
         return getBrowserFocusEvents().contains(eventType) ||
                 getBrowserMouseEvents().contains(eventType) ||
-                checkSinkKeyEvents(event);
+                checkSinkGlobalEvents(event);
     }
-    public static boolean checkSinkKeyEvents(Event event) {
-        return getBrowserKeyEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE;
+    public static boolean checkSinkGlobalEvents(Event event) {
+        return getBrowserKeyEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE || event.getType().equals(BrowserEvents.CONTEXTMENU);
     }
 
     public GridStyle getStyle() {
@@ -527,7 +527,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
         if (target == getTableDataFocusElement() || target == getTableElement()) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
             // usually all events has target getTableDataFocusElement, but ONPASTE when focus is on grid somewhy has target tableElement
-            if (checkSinkKeyEvents(event)) {
+            if (checkSinkGlobalEvents(event)) {
                 targetTableSection = tbody;
 
                 row = getSelectedRow();
@@ -1892,11 +1892,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
 
         public void onCellBefore(EventHandler handler, Context context, Supplier<Boolean> isEditOnSingleClick) {
             Event event = handler.event;
-            boolean mouseChangeEvent = GMouseStroke.isChangeEvent(event);
-            if (mouseChangeEvent ||
-//                    BrowserEvents.FOCUS.equals(eventType) ||
-                    (BrowserEvents.MOUSEDOWN.equals(event.getType()) && event.getButton() == Event.BUTTON_RIGHT)) {
-
+            if (GMouseStroke.isChangeEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
                 int col = context.getColumn();
                 int row = context.getIndex();
                 if ((display.getSelectedColumn() != col) || (display.getSelectedRow() != row)) {
