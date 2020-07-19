@@ -24,13 +24,11 @@ public abstract class Column<T, C> {
   public Column() {
   }
 
-  public abstract C getValue(T object);
-
   public abstract boolean isFocusable();
 
   public abstract void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent);
 
-  public abstract void renderDom(Context context, Element cellElement, C value);
+  public abstract void renderAndUpdateDom(Context context, Element cellElement);
 
-  public abstract void updateDom(Context context, Element cellElement, C value);
+  public abstract void updateDom(Context context, Element cellElement);
 }

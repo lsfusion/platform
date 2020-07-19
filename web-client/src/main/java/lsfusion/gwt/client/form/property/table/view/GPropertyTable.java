@@ -50,10 +50,6 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
                 groupObject);
     }
 
-    public GPropertyDraw getProperty(Column column) {
-        return getProperty(new Context(getSelectedRow(), getColumnIndex(column), getSelectedRowValue()));
-    }
-
     public abstract boolean isReadOnly(Context context);
 
     public abstract GPropertyDraw getSelectedProperty();
@@ -133,19 +129,19 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
                     @Override
                     public boolean isFocusable() {
-                        return GPropertyTable.this.isFocusable(editContext.getColumn());
+                        return GPropertyTable.this.isFocusable(editContext);
                     }
 
                     @Override
                     public void trySetFocus() {
-                        if(changeSelectedColumn(editContext.getColumn()))
+                        if(changeSelectedColumn(editContext.getColumnIndex()))
                             getFocusElement().focus();
                     }
 
                     @Override
                     public Object forceSetFocus() {
                         int selectedColumn = getSelectedColumn();
-                        setSelectedColumn(editContext.getColumn());
+                        setSelectedColumn(editContext.getColumnIndex());
                         return selectedColumn;
                     }
 

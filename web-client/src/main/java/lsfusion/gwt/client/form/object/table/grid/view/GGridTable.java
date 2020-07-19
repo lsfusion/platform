@@ -5,7 +5,6 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
@@ -568,6 +567,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return (GridColumn) getColumn(column);
     }
 
+    public GridColumn getGridColumn(Context context) {
+        return (GridColumn) context.getColumn();
+    }
+    public GridDataRecord getGridRow(Context context) {
+        return (GridDataRecord) context.getRow();
+    }
+
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
         GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, null, null);
@@ -629,7 +635,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         GridDataRecord selectedRecord = getSelectedRowValue();
         int column = getPropertyIndex(property, columnKey);
         if (selectedRecord != null && column != -1 && column < getColumnCount()) {
-            return getColumn(column).getValue(selectedRecord);
+            return getGridColumn(column).getValue(selectedRecord);
         }
 
         return null;
@@ -755,7 +761,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public GPropertyDraw getProperty(Context context) {
-        return getProperty(context.getColumn());
+        return getGridColumn(context).property;
     }
 
     @Override
@@ -824,7 +830,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public GGroupObjectValue getColumnKey(Context context) {
-        return getColumnKey(context.getColumn());
+        return getGridColumn(context).columnKey;
     }
 
     public GGroupObjectValue getColumnKey(int column) {
@@ -835,16 +841,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public boolean isReadOnly(Context context) {
         GPropertyDraw property = getProperty(context);
         if (property != null && !property.isReadOnly()) {
-            GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
-            GridColumn column = (GridColumn) getColumn(context.getColumn());
+            GridDataRecord rowRecord = getGridRow(context);
+            GridColumn column = getGridColumn(context);
             return column == null || rowRecord == null || rowRecord.isReadonly(column.columnID);
         }
         return true;
     }
 
     public Object getValueAt(Context context) {
-        Column column = getColumn(context.getColumn());
-        Object rowValue = context.getRowValue();
+        GridColumn column = getGridColumn(context);
+        GridDataRecord rowValue = getGridRow(context);
         if (column == null || rowValue == null) {
             return null;
         }
@@ -852,7 +858,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
     
     public Object getValueAt(int row, int col) {
-        Column column = getColumn(col);
+        GridColumn column = getGridColumn(col);
         GridDataRecord rowValue = getRowValue(row);
         if (column == null || rowValue == null) {
             return null;
@@ -984,14 +990,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void setValueAt(Context context, Object value) {
-        GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
-        GridColumn column = (GridColumn) getColumn(context.getColumn());
+        GridDataRecord rowRecord = getGridRow(context);
+        GridColumn column = getGridColumn(context);
 
-//        if (column != null && rowRecord != null) {
         column.setValue(rowRecord, value);
         values.get(column.property).put(rowRecord.getKey(), value);
-        assert getRowValue(context.getIndex()) == rowRecord;
-//        }
     }
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {
@@ -1207,14 +1210,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private class GridColumn extends GridPropertyColumn {
         private final int columnID;
 
+        public final GPropertyDraw property;
         public final GGroupObjectValue columnKey;
 
         public GridColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
-            super(property);
-
             this.columnID = nextColumnID++;
 
+            this.property = property;
             this.columnKey = columnKey;
+        }
+
+        @Override
+        public boolean isFocusable() {
+            return GGridTable.this.isFocusable(property);
         }
 
         public void setValue(GridDataRecord record, Object value) {
@@ -1222,6 +1230,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
         public Object getValue(GridDataRecord record) {
             return record.getValue(columnID);
+        }
+
+        @Override
+        protected Object getValue(GPropertyDraw property, GridDataRecord record) {
+            assert this.property == property;
+            return getValue(record);
         }
     }
 

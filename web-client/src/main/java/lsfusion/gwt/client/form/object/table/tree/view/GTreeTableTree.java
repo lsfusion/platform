@@ -10,7 +10,6 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.*;
-import java.util.function.Function;
 
 public class GTreeTableTree {
     private GForm form;
@@ -183,16 +182,16 @@ public class GTreeTableTree {
 
     private int nodeCounter;
 
-    public ArrayList<GTreeGridRecord> getUpdatedRecords(int columnCount, Function<Integer, GPropertyDraw> columnProperty) {
+    public ArrayList<GTreeGridRecord> getUpdatedRecords(int columnCount) {
         nodeCounter = 0;
         ArrayList<GTreeGridRecord> result = new ArrayList<>();
         if (!hasOnlyExpandingNodeAsChild(root)) {
-            result.addAll(getNodeChildrenRecords(columnCount, columnProperty, root, 0, null));
+            result.addAll(getNodeChildrenRecords(columnCount, root, 0, null));
         }
         return result;
     }
 
-    private List<GTreeGridRecord> getNodeChildrenRecords(int columnCount, Function<Integer, GPropertyDraw> columnProperty, GTreeTableNode node, int level, GTreeColumnValue parentValue) {
+    private List<GTreeGridRecord> getNodeChildrenRecords(int columnCount, GTreeTableNode node, int level, GTreeColumnValue parentValue) {
         List<GTreeGridRecord> result = new ArrayList<>();
         for (GTreeTableNode child : node.getChildren()) {
             HashMap<GPropertyDraw, Object> valueMap = new HashMap<>();
@@ -200,7 +199,7 @@ public class GTreeTableTree {
                 GPropertyDraw property = getProperty(child.getGroup(), i);
                 if (property != null) {
                     Object value = values.get(property).get(child.getKey());
-                    valueMap.put(columnProperty.apply(i), value);
+                    valueMap.put(property, value);
                 }
             }
             GTreeGridRecord record = new GTreeGridRecord(child.getGroup(), child.getKey(), valueMap);
@@ -214,7 +213,7 @@ public class GTreeTableTree {
             record.setTreeValue(treeValue);
             result.add(record);
             if (child.isOpen()) {
-                result.addAll(getNodeChildrenRecords(columnCount, columnProperty, child, level + 1, treeValue));
+                result.addAll(getNodeChildrenRecords(columnCount, child, level + 1, treeValue));
             }
         }
         return result;

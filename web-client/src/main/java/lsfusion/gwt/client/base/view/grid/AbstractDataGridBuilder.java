@@ -135,16 +135,16 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
 
-    protected final <C> void renderCell(TableCellElement td, Context context, Column<T, C> column, T rowValue) {
+    protected final <C> void renderCell(TableCellElement td, Context context, Column<T, C> column) {
         td.setPropertyObject(COLUMN_ATTRIBUTE, column);
-        column.renderDom(context, td, column.getValue(rowValue));
+        column.renderAndUpdateDom(context, td);
     }
 
     public final Column<T, ?> getColumn(Element elem) {
         return (Column<T, ?>) elem.getPropertyObject(COLUMN_ATTRIBUTE);
     }
 
-    protected final <C> void updateCell(TableCellElement cellParent, Context context, Column<T, C> column, T rowValue) {
-        column.updateDom(context, cellParent, column.getValue(rowValue));
+    protected final <C> void updateCell(TableCellElement cellParent, Context context, Column<T, C> column) {
+        column.updateDom(context, cellParent);
     }
 }

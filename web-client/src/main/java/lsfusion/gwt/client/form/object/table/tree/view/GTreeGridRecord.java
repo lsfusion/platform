@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
+import com.google.gwt.core.client.GWT;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
@@ -20,11 +21,11 @@ public class GTreeGridRecord extends GridDataRecord {
         }
     }
 
-    public void setTreeValue(Object value) {
+    public void setTreeValue(GTreeColumnValue value) {
         setAttribute("treeColumn", value);
     }
-    public Object getTreeValue() {
-        return getAttribute("treeColumn");
+    public GTreeColumnValue getTreeValue() {
+        return (GTreeColumnValue) getAttribute("treeColumn");
     }
     public void setValue(GPropertyDraw property, Object value) {
         setAttribute(property.ID, value);

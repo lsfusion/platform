@@ -1,52 +1,39 @@
 package lsfusion.gwt.client.base.view.grid.cell;
 
+import lsfusion.gwt.client.base.view.grid.Column;
+
 /**
  * Contains information about the context of the Cell.
  */
 public class Context {
 
-    private final int column;
-    private final int index;
-    private final Object rowValue;
+    private final int columnIndex;
+    private final int rowIndex;
 
-    /**
-     * Create a new {@link Context}.
-     *
-     * @param index    the absolute index of the value
-     * @param column   the column index of the cell, or 0
-     * @param rowValue the unique key that represents the row value
-     */
-    public Context(int index, int column, Object rowValue) {
-        this.index = index;
+    private final Column column;
+    private final Object row;
+
+    public Context(int rowIndex, int columnIndex, Column column, Object row) {
+        this.rowIndex = rowIndex;
+        this.columnIndex = columnIndex;
         this.column = column;
-        this.rowValue = rowValue;
+        this.row = row;
+        assert column != null && row != null;
     }
 
-    /**
-     * Get the column index of the cell. If the view only contains a single
-     * column, this method returns 0.
-     *
-     * @return the column index of the cell
-     */
-    public int getColumn() {
+    public int getColumnIndex() {
+        return columnIndex;
+    }
+
+    public int getRowIndex() {
+        return rowIndex;
+    }
+
+    public Column getColumn() {
         return column;
     }
 
-    /**
-     * Get the absolute index of the value.
-     *
-     * @return the index
-     */
-    public int getIndex() {
-        return index;
-    }
-
-    /**
-     * Get the key that uniquely identifies the row object.
-     *
-     * @return the unique key
-     */
-    public Object getRowValue() {
-        return rowValue;
+    public Object getRow() {
+        return row;
     }
 }

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.view;
 
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.HashMap;
@@ -11,10 +12,10 @@ public class GridDataRecord {
     private String rowBackground;
     private String rowForeground;
 
-    private HashMap<Object, Object> values;
-    private HashMap<Integer, Boolean> readOnlys;
-    private HashMap<Integer, String> backgrounds;
-    private HashMap<Integer, String> foregrounds;
+    private NativeHashMap<Object, Object> values;
+    private NativeHashMap<Integer, Boolean> readOnlys;
+    private NativeHashMap<Integer, String> backgrounds;
+    private NativeHashMap<Integer, String> foregrounds;
 
     public GridDataRecord(GGroupObjectValue key) {
         this(-1, key);
@@ -97,30 +98,30 @@ public class GridDataRecord {
         return key;
     }
 
-    private HashMap<Object, Object> createValues() {
+    private NativeHashMap<Object, Object> createValues() {
         if (values == null) {
-            values = new HashMap<>();
+            values = new NativeHashMap<>();
         }
         return values;
     }
 
-    private HashMap<Integer, String> createBackgrounds() {
+    private NativeHashMap<Integer, String> createBackgrounds() {
         if (backgrounds == null) {
-            backgrounds = new HashMap<>();
+            backgrounds = new NativeHashMap<>();
         }
         return backgrounds;
     }
 
-    private HashMap<Integer, String> createForegrounds() {
+    private NativeHashMap<Integer, String> createForegrounds() {
         if (foregrounds == null) {
-            foregrounds = new HashMap<>();
+            foregrounds = new NativeHashMap<>();
         }
         return foregrounds;
     }
 
-    private HashMap<Integer, Boolean> createReadOnlys() {
+    private NativeHashMap<Integer, Boolean> createReadOnlys() {
         if (readOnlys == null) {
-            readOnlys = new HashMap<>();
+            readOnlys = new NativeHashMap<>();
         }
         return readOnlys;
     }

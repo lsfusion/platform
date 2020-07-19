@@ -66,7 +66,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
             renderTD(td, cellHeight, false);
 
-            renderCell(td, new Context(rowIndex, columnIndex, rowValue), column, rowValue);
+            renderCell(td, new Context(rowIndex, columnIndex, column, rowValue), column);
 
             updateTD(rowIndex, rowValue, td, columnIndex);
         }
@@ -104,7 +104,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private void updateCellImpl(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
         Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-        updateCell(td, new Context(rowIndex, columnIndex, rowValue), column, rowValue);
+        updateCell(td, new Context(rowIndex, columnIndex, column, rowValue), column);
 
         updateTD(rowIndex, rowValue, td, columnIndex);
     }

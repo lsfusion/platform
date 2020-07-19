@@ -40,7 +40,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 // we need resizesimplepanel for "scroller" padding in headers (we don't know if there gonna be vertival scroller)
-public abstract class DataGrid<T> extends ResizableSimplePanel implements HasData<T>, Focusable, ColorThemeChangeListener {
+public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusable, ColorThemeChangeListener {
 
     private static GridStyle DEFAULT_STYLE;
 
@@ -383,19 +383,13 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
      *
      * @return the data size
      */
-    @Override
     public int getRowCount() {
         return getCurrentState().getRowCount();
     }
 
-    @Override
     public T getRowValue(int row) {
         checkRowBounds(row);
         return getCurrentState().getRowValue(row);
-    }
-
-    public final void setRowValue(int row, T rowValue) {
-        setRowData(row, Arrays.asList(rowValue));
     }
 
     /**
@@ -406,30 +400,14 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
      * @param values
      */
     public final void setRowData(List<? extends T> values) {
-        setRowData(0, values, true);
-    }
-
-    @Override
-    public void setRowData(int start, List<? extends T> values) {
-        setRowData(start, values, false);
-    }
-
-    private void setRowData(int start, List<? extends T> values, boolean all) {
-        assert start >= 0;
-
-        int end = start + values.size();
-
-        if (!all && end == start) {
-            //0-range update
-            return;
-        }
+        int end = values.size();
 
         State<T> pending = ensurePendingState();
 
         // Insert the new values into the data array.
         int currentCnt = pending.rowData.size();
-        for (int i = start; i < end; i++) {
-            T value = values.get(i - start);
+        for (int i = 0; i < end; i++) {
+            T value = values.get(i);
             if (i < currentCnt) {
                 pending.rowData.set(i, value);
             } else {
@@ -437,18 +415,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
             }
         }
 
-        if (all) {
-            assert start == 0;
-
-            int removeCnt = currentCnt - values.size();
-            for (int i = 1; i <= removeCnt; ++i) {
-                pending.rowData.remove(currentCnt - i);
-            }
-            redraw();
-        } else {
-            // Redraw the range that has been replaced.
-            pending.redrawRows(start, end);
+        int removeCnt = currentCnt - values.size();
+        for (int i = 1; i <= removeCnt; ++i) {
+            pending.rowData.remove(currentCnt - i);
         }
+        redraw();
     }
 
     /**
@@ -573,7 +544,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
                 footer.onBrowserEvent(footerParent, event);
         } else {
             if (column != null) {
-                Context context = new Context(row, getColumnIndex(column), getRowValue(row));
+                Context context = new Context(row, getColumnIndex(column), column, getRowValue(row));
 
                 EventHandler handler = new EventHandler(event);
 
@@ -629,20 +600,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
      * @param header      the associated {@link Header}
      */
     public void insertColumn(int beforeIndex, Column<T, ?> col, Header<?> header) {
-        insertColumn(beforeIndex, col, header, null);
-    }
+        Header<?> footer = null;
 
-    /**
-     * Inserts a column into the table at the specified index with an associated
-     * header and footer.
-     *
-     * @param beforeIndex the index to insert the column
-     * @param col         the column to be added
-     * @param header      the associated {@link Header}
-     * @param footer      the associated footer (as a {@link Header} object)
-     * @throws IndexOutOfBoundsException if the index is out of range
-     */
-    public void insertColumn(int beforeIndex, Column<T, ?> col, Header<?> header, Header<?> footer) {
         if (noHeaders && header != null) {
             throw new UnsupportedOperationException("the table isn't allowed to have header");
         }
@@ -869,7 +828,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         return getColumn(column).isFocusable();
     }
     public boolean isFocusable(Context context) {
-        return isFocusable(context.getColumn());
+        return context.getColumn().isFocusable();
     }
     public boolean isEditOnSingleClick(Context context) {
         return !isFocusable(context);
@@ -1893,8 +1852,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements HasDat
         public void onCellBefore(EventHandler handler, Context context, Supplier<Boolean> isEditOnSingleClick) {
             Event event = handler.event;
             if (GMouseStroke.isChangeEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
-                int col = context.getColumn();
-                int row = context.getIndex();
+                int col = context.getColumnIndex();
+                int row = context.getRowIndex();
                 if ((display.getSelectedColumn() != col) || (display.getSelectedRow() != row)) {
 
                     changeColumn(col);

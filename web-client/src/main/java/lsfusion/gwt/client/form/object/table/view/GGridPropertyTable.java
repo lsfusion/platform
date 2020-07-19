@@ -121,7 +121,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public Context getSelectedCellContext(int column) {
-        return new Context(getSelectedRow(), column, getSelectedRowValue());
+        return new Context(getSelectedRow(), column, getColumn(column), getSelectedRowValue());
     }
 
     protected boolean isAutoSize() {
@@ -388,17 +388,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 () -> CopyPasteUtils.putIntoClipboard(parent), () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
     }
 
+    protected boolean isFocusable(GPropertyDraw property) {
+        return property.focusable == null || property.focusable;
+    }
+
     protected abstract class GridPropertyColumn extends Column<T, Object> {
-        public final GPropertyDraw property;
 
-        @Override
-        public boolean isFocusable() {
-            return property.focusable == null || property.focusable;
-        }
-
-        public GridPropertyColumn(GPropertyDraw property) {
-            this.property = property;
-        }
+        protected abstract Object getValue(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent) {
@@ -406,16 +402,23 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         @Override
-        public void renderDom(Context context, Element cellElement, Object value) {
-            form.render(property, cellElement, getRenderContext());
+        public void renderAndUpdateDom(Context context, Element cellElement) {
+            renderDom(context, cellElement);
 
-            updateDom(context, cellElement, value);
+            updateDom(context, cellElement);
+        }
+
+        public void renderDom(Context context, Element cellElement) {
+            GPropertyDraw property = getProperty(context);
+            if(property != null) // in tree there can be no property in groups other than last
+                form.render(property, cellElement, getRenderContext());
         }
 
         @Override
-        public void updateDom(Context context, Element cellElement, Object value) {
-            form.update(property, cellElement, value, getUpdateContext());
+        public void updateDom(Context context, Element cellElement) {
+            GPropertyDraw property = getProperty(context);
+            if (property != null) // in tree there can be no property in groups other than last
+                form.update(property, cellElement, getValue(property, (T) context.getRow()), getUpdateContext());
         }
     }
-
 }

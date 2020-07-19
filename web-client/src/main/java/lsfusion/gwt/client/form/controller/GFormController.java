@@ -714,9 +714,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
         Event event = handler.event;
+        GPropertyDraw editProperty = editContext.getProperty();
+        if(editProperty == null)  // in tree there can be no property in groups other than last
+            return;
+
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(editContext.getProperty(), event.getClientX(), event.getClientY(), actionSID -> {
+            GPropertyContextMenuPopup.show(editProperty, event.getClientX(), event.getClientY(), actionSID -> {
                 actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
             });
         } else {
@@ -726,7 +730,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     editContext.trySetFocus(); // we want element to be focused on key binding (if it's possible)
                 actionSID = CHANGE;
             } else {
-                actionSID = editContext.getProperty().getEventSID(event);
+                actionSID = editProperty.getEventSID(event);
                 if(actionSID == null)
                     return;
             }
@@ -735,7 +739,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     editContext.isReadOnly())
                 return;
 
-            GPropertyDraw property = editContext.getProperty();
+            GPropertyDraw property = editProperty;
             if(!property.hasChangeAction) // important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
                 return;
 
