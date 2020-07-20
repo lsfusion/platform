@@ -1102,13 +1102,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
-            Boolean openDotBottom = !attrName.equals(COLUMN);
-            int level = attrName.equals(COLUMN) ? 0 : getRowLevel(indexOf(config.getArrayString("rows"), attrName));
+            Boolean isColumn = attrName.equals(COLUMN);
+            int level = isColumn ? 0 : getRowLevel(indexOf(config.getArrayString("rows"), attrName));
             JsArrayBoolean isLastChildList = JsArrayBoolean.createArray().cast();
             for(int i = 0; i <= level; i++) {
                 isLastChildList.push(true);
             }
-            renderArrow(jsElement, getTreeColumnValue(level, isExpanded, openDotBottom, true, isLastChildList));
+            renderArrow(jsElement, getTreeColumnValue(level, isExpanded, !isColumn, !isColumn, isLastChildList));
         } else {
             SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), attrName);
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
