@@ -105,7 +105,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 //        add(new ResizableSimplePanel(this.pageSizeWidget)); // we need to attach pageSize widget to make it work
     }
 
-    private Widget drawWidget;
+    private final Widget drawWidget;
     protected Element getDrawElement() {
         return drawWidget.getElement();
     }

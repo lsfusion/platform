@@ -685,6 +685,7 @@ callWithJQuery ($) ->
             valueHeight: null
             componentHeightString: null
             cellHorizontalPadding: null
+            attach : null
             getDisplayColor: null
 
         localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings, columnAttr: inputOpts.columnAttributeName)
@@ -1121,7 +1122,7 @@ callWithJQuery ($) ->
 
                 subopts.rendererOptions.hideRowsTotalsCol = colIndex >= 0 and opts.splitCols[0] >= colIndex
                 subopts.rendererOptions.hideColsTotalsRow = rowIndex >= 0 and opts.splitRows[0] >= rowIndex
-                    
+
                 subopts.aggregatorName = aggregator.val()
                 subopts.vals = vals
                 subopts.aggregator = opts.aggregators[aggregator.val()](vals)
@@ -1168,7 +1169,11 @@ callWithJQuery ($) ->
                 
                 opts.sortCols = pivotUIOptions.sortCols
                 subopts.sortCols = opts.sortCols
-                
+
+                #plotly needs explicit sizes, and we have to do it during refresh, since draw element may not added to the dom yet
+                drawSize = opts.attach()
+                subopts.rendererOptions.plotly = $.extend {}, subopts.rendererOptions.plotly, drawSize
+
                 pivotScrollDiv.pivot(materializedInput,subopts,locale)
 
                 opts.afterRefresh() if opts.afterRefresh?

@@ -1237,6 +1237,7 @@
         valueHeight: null,
         componentHeightString: null,
         cellHorizontalPadding: null,
+        attach: null,
         getDisplayColor: null
       };
       localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings, {
@@ -1667,7 +1668,7 @@
         })(this);
         refreshDelayed = (function(_this) {
           return function() {
-            var colIndex, columnAttr, exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, rowIndex, subopts, unusedAttrsContainer, vals;
+            var colIndex, columnAttr, drawSize, exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, rowIndex, subopts, unusedAttrsContainer, vals;
             refreshPaxis(true);
             refreshPaxis(false);
             _this.find(".pvtAxisContainer").sortable({
@@ -1804,6 +1805,8 @@
             }
             opts.sortCols = pivotUIOptions.sortCols;
             subopts.sortCols = opts.sortCols;
+            drawSize = opts.attach();
+            subopts.rendererOptions.plotly = $.extend({}, subopts.rendererOptions.plotly, drawSize);
             pivotScrollDiv.pivot(materializedInput, subopts, locale);
             if (opts.afterRefresh != null) {
               opts.afterRefresh();

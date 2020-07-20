@@ -452,7 +452,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             hideColAxisHeadersColumn: hide
         });
     }-*/;
-    
+
     private native WrapperObject reduceRows(WrapperObject config, JsArrayString rows, int length)/*-{
         rows = rows.slice(0, length);
         return Object.assign({}, config, {
@@ -519,13 +519,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void afterRefresh() {
         checkPadding(true); // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
-        resizePlotlyChart();
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
 
-    private void setRendererElements(Element element) {
+    private void setRendererElement(Element element) {
         rendererElement = element;
+    }
+
+    public Element getRendererElement() {
+        return rendererElement;
     }
 
     protected void updateRendererState(boolean set) {
@@ -540,7 +543,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private Element getHeaderTableScroller() {
         return getElement(rendererElement, ".headerdiv");
     }
-
+    private Element getPivotRendererElement() {
+        return getElement(rendererElement, ".pvtRendererScrollDiv");
+    }
     private Element getPlotlyChartElement() {
         return getElement(rendererElement, "div.js-plotly-plot");
     }
@@ -604,6 +609,22 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             afterRefresh: function () {
                 instance.@GPivot::afterRefresh(*)();
             },
+            attach: function () { // we need to add element to dom before rendering to know offsetWidth and offsetHeight for plotly
+                // plus that way we avoid blinking on rerendering the whole pivotUI
+                var element = instance.@GPivot::getDrawElement()();
+                var pivotUIElement = instance.@GPivot::getRendererElement()();
+                var existingPivotUIElement = null;
+                if(element.hasChildNodes())
+                    existingPivotUIElement = element.childNodes[0];
+                if(pivotUIElement !== existingPivotUIElement) {
+                    if(existingPivotUIElement != null)
+                        element.removeChild(existingPivotUIElement);
+                    element.appendChild(pivotUIElement);
+                }
+
+                var pivotElement = instance.@GPivot::getPivotRendererElement()();
+                return { width : pivotElement.offsetWidth, height : pivotElement.offsetHeight }
+            },
             getDisplayColor: function (rgb) {
                 return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(III)(rgb[0], rgb[1], rgb[2]);
             }
@@ -624,16 +645,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         // moving pagesize controller inside
         $wnd.$(d).find(".pvtRendererFooter").append(pageSizeElement);
 
-        this.@GPivot::setRendererElements(*)(d);
+        this.@GPivot::setRendererElement(*)(d);
 
         // it's tricky in pivotUI, first refresh is with timeout 10ms, and that's why there is a blink, when pivotUI is painted with empty Renderer
-        // to fix this will add it to the visible DOM, in 15 ms (after everything is painted)
-        setChild = function () {
-            if (element.hasChildNodes())
-                element.removeChild(element.childNodes[0]);
-            element.appendChild(d);
-        };
-        setTimeout(setChild, 15);
+        // to fix this will add it to the visible DOM in special attach method (which is called just before rendering pivot)
+        // also that way we can calculate actual size which is needed for plotly
     }-*/;
 
     @Override
@@ -1595,6 +1611,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     public void onResize() {
         checkPadding(false);
         resizePlotlyChart();
+
         super.onResize();
     }
 
@@ -1615,9 +1632,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     public native void resizePlotlyChart() /*-{
-        var plotlyElement = this.@GPivot::getPlotlyChartElement(*)();
+        var plotlyElement = this.@GPivot::getPlotlyChartElement()();
         if (plotlyElement) {
-            $wnd.Plotly.relayout(plotlyElement, '');
+            var pivotElement = this.@GPivot::getPivotRendererElement()();
+            var update = $wnd.createPlainObject(); // we need to create object not from gwt, since it uses different constructor for { ... } and in plotly library there is .constructor == Object check for update object
+            update["width"] = pivotElement.offsetWidth;
+            update["height"] = pivotElement.offsetHeight;
+
+            $wnd.Plotly.relayout(plotlyElement, update);
         }
     }-*/;
 
