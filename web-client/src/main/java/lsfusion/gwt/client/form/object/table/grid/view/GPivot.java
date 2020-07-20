@@ -1195,7 +1195,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             tr.setAttribute("data-height", String.valueOf(getTableToExcelMaxRowHeight(tr)));
             String rowLevel = nullEmpty(getAttributeRecursive(tr, CELL_ROW_LEVEL_ATTRIBUTE_KEY));
             if(rowLevel != null) {
-                tr.setAttribute("data-outline-level", String.valueOf(Integer.parseInt(rowLevel) - 1));
+                tr.setAttribute("data-outline-level", String.valueOf(Integer.parseInt(rowLevel)));
             }
             if(excludeFirstColumn) {
                 Element firstTH = getElement(tr, "th");
