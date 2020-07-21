@@ -16,6 +16,9 @@ callWithJQuery ($, Plotly) ->
         axis_grid_color: null
         axis_line_color: null
         axis_zeroline_color: null
+        
+    chartMargin = 26
+    chartMarginWithText = 50
 
     getCSSPropertyValue = (propertyName) ->
         if computedStyle == null
@@ -56,7 +59,7 @@ callWithJQuery ($, Plotly) ->
         attrsString = ''
         for attr in attrs
             if attr != opts.localeStrings.columnAttr
-                attrsString += '-' if attrsString != ''
+                attrsString += ' - ' if attrsString != ''
                 attrsString += attr
         return attrsString
 
@@ -96,9 +99,9 @@ callWithJQuery ($, Plotly) ->
                         if transpose ^ reverse then traceKey else datumKey
                     ).value())
                     values.push(if isFinite(val) then val else null)
-                    labels.push(datumKey.join('-') || ' ')
+                    labels.push(datumKey.join(' - ') || ' ')
 
-                trace = {name: traceKey.join('-') || fullAggName}
+                trace = {name: traceKey.join(' - ') || fullAggName}
                 if traceOptions.type == "pie"
                     trace.values = values
                     trace.labels = if labels.length > 1 then labels else [fullAggName]
@@ -107,21 +110,14 @@ callWithJQuery ($, Plotly) ->
                     trace.y = if transpose then labels else values
                 return $.extend(trace, traceOptions)
 
-            if transpose ^ reverse
+            if transpose ^ reverse ^ traceOptions.type == "pie"
                 hAxisTitle = getJoinedAttrsNames(pivotData.rowAttrs, opts)
-                groupByTitle = getJoinedAttrsNames(pivotData.colAttrs, opts)
+                legendTitle = getJoinedAttrsNames(pivotData.colAttrs, opts)
             else
                 hAxisTitle = getJoinedAttrsNames(pivotData.colAttrs, opts)
-                groupByTitle = getJoinedAttrsNames(pivotData.rowAttrs, opts)
-            titleText = if hAxisTitle != "" then "#{hAxisTitle}" else ""
-            titleText += " #{opts.localeStrings.vs} " if groupByTitle != "" and hAxisTitle != ""
-            titleText += "#{groupByTitle}" if groupByTitle != ""
+                legendTitle = getJoinedAttrsNames(pivotData.rowAttrs, opts)
 
             layout =
-                title: 
-                    text: titleText
-                    font:
-                        size: 12
                 hovermode: 'closest'
                 autosize: true
                 paper_bgcolor: getPaperBGColor()
@@ -129,13 +125,22 @@ callWithJQuery ($, Plotly) ->
                 font: {
                     color: getFontColor()
                 }
+                legend:
+                    title:
+                        text: legendTitle
+                        font:
+                            size: 12
 
             if traceOptions.type == 'pie'
+                layout.title =
+                        text: hAxisTitle
+                        font:
+                            size: 12
                 layout.margin =
-                    l: 30
-                    r: 30
-                    t: if titleText != "" then 40 else 30
-                    b: 30
+                    l: chartMargin
+                    r: chartMargin
+                    t: if hAxisTitle != "" then chartMarginWithText else chartMargin
+                    b: chartMargin
                 columns = Math.ceil(Math.sqrt(data.length))
                 rows = Math.ceil(data.length / columns)
                 layout.grid = {columns, rows}
@@ -150,19 +155,19 @@ callWithJQuery ($, Plotly) ->
             else
                 layout.xaxis =
                     title: 
-                        text: if transpose then fullAggName else null
+                        text: if transpose then fullAggName else hAxisTitle
                         font:
                             size: 12
                     automargin: true
                     gridcolor: getAxisGridColor()
                     linecolor: getAxisLineColor()
                     zerolinecolor: getAxisZeroLineColor()
-                if transpose
+                if transpose or hAxisTitle != ""
                     layout.xaxis.title.standoff = 10;
                 
                 layout.yaxis =
                     title:
-                        text: if transpose then null else fullAggName
+                        text: if transpose then hAxisTitle else fullAggName
                         font:
                             size: 12
                     automargin: true
@@ -171,10 +176,10 @@ callWithJQuery ($, Plotly) ->
                     zerolinecolor: getAxisZeroLineColor()
                     
                 layout.margin =
-                    l: 50
-                    r: 30
-                    t: if titleText != "" then 40 else 30
-                    b: if transpose then 50 else 30
+                    l: if not transpose or hAxisTitle != '' then chartMarginWithText else chartMargin 
+                    r: chartMargin
+                    t: chartMargin
+                    b: if transpose or hAxisTitle != "" then chartMarginWithText else chartMargin
             result = $("<div>").appendTo $("body")
             Plotly.newPlot(result[0], data, $.extend(layout, layoutOptions, opts.plotly), opts.plotlyConfig)
             return result.detach()
@@ -201,33 +206,25 @@ callWithJQuery ($, Plotly) ->
             for colKey in colKeys
                 v = pivotData.getAggregator(rowKey, colKey).value()
                 if v?
-                    data.x.push(colKey.join('-'))
-                    data.y.push(rowKey.join('-'))
+                    data.x.push(colKey.join(' - '))
+                    data.y.push(rowKey.join(' - '))
                     data.text.push(v)
 
         colAttrsString = getJoinedAttrsNames(pivotData.colAttrs, opts)
         rowAttrsString = getJoinedAttrsNames(pivotData.rowAttrs, opts)
-        titleText = if rowAttrsString != "" then "#{rowAttrsString}" else ""
-        titleText += " #{opts.localeStrings.vs} " if colAttrsString != "" and rowAttrsString != ""
-        titleText += "#{colAttrsString}" if colAttrsString != ""
                 
         layout = {
-            title:
-                text: titleText
-                font:
-                    size: 12
             margin:
-                l: 50
-                r: 30
-                t: if titleText != "" then 40 else 30
-                b: if colAttrsString != '' then 50 else 30
+                l: if rowAttrsString == '' then chartMargin
+                r: chartMargin
+                t: chartMargin
+                b: if colAttrsString == '' then chartMargin
             hovermode: 'closest',
             xaxis:
                 title:
                     text: colAttrsString
                     font:
                         size: 12
-                    standoff: 10
                 automargin: true
             yaxis:
                 title:
@@ -242,6 +239,8 @@ callWithJQuery ($, Plotly) ->
                 color: getFontColor()
             }
         }
+        if colAttrsString != '' 
+            layout.xaxis.title.standoff = 10
 
         renderArea = $("<div>", style: "display:none;").appendTo $("body")
         result = $("<div>").appendTo renderArea
