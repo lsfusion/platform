@@ -38,6 +38,7 @@ import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import static java.lang.Integer.decode;
@@ -354,8 +355,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
             //pin header
             var totalRowLevels = instance.@GPivot::getTotalRowLevels(*)()
-            worksheet.views = [{state: 'frozen', ySplit: totalRowLevels}];
-            worksheet.pageSetup.printTitlesRow = '1:' + totalRowLevels;
+            if(totalRowLevels > 0) {
+                worksheet.views = [{state: 'frozen', ySplit: totalRowLevels}];
+                worksheet.pageSetup.printTitlesRow = '1:' + totalRowLevels;
+            }
 
             worksheet.properties.outlineProperties = {summaryBelow: false};
 
@@ -1054,7 +1057,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GPropertyDraw property = columnMap.get(columnName).property;
-        GPivot.setTableToExcelPropertyAttributes(th, property);
+        GPivot.setTableToExcelPropertyAttributes(th, value, property);
         property.getCellRenderer().render(th, value, new RenderContext() {
             @Override
             public Integer getStaticHeight() {
@@ -1144,7 +1147,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         element.setAttribute("data-height", String.valueOf(rowHeight * 0.75)); //convert pixels to points
     }
 
-    public static void setTableToExcelPropertyAttributes(Element element, GPropertyDraw property) {
+    public static void setTableToExcelPropertyAttributes(Element element, JavaScriptObject value, GPropertyDraw property) {
         Style.TextAlign textAlignStyle = property.getTextAlignStyle();
         if (textAlignStyle != null) {
             switch (textAlignStyle) {
@@ -1175,10 +1178,31 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
         }
 
-        //data type
+        //data type and format
         String type;
         if(property.baseType instanceof GObjectType || property.baseType instanceof GIntegralType) {
             type = "n";
+            Object propertyFormat = property.getFormat();
+            if(propertyFormat instanceof NumberFormat) {
+                String pattern;
+                if(value != null) {
+                    BigDecimal numericValue = new BigDecimal(NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())).replace(",", ".").replace(" ", ""));
+                    int fractDigits = 0;
+                    while (numericValue.longValue() - numericValue.doubleValue() != 0) {
+                        numericValue = numericValue.multiply(BigDecimal.TEN);
+                        fractDigits++;
+                    }
+                    if (fractDigits > 0) {
+                        pattern = "#,##0." + replicate('0', fractDigits);
+                    } else {
+                        pattern = "#,##0";
+                    }
+                } else {
+                    pattern = ";;;@";
+                }
+                element.setAttribute("data-num-fmt", pattern);
+
+            }
         } else if(property.baseType instanceof GLogicalType) {
             type = "b";
         } else if(property.baseType instanceof GDateType) {
@@ -1187,6 +1211,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             type = "s";
         }
         element.setAttribute("data-t", type);
+    }
+
+    private static String replicate(char character, int length) {
+        char[] chars = new char[length];
+        Arrays.fill(chars, character);
+        return new String(chars);
     }
 
     private void setTableToExcelCenterAlignment(Element element) {
