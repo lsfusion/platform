@@ -529,7 +529,7 @@ callWithJQuery ($) ->
                     ah.tr = tr
                     groupLen = rowGroups[curGroup].length   
                     if groupLen < longestRowGroupLength
-                        tr.appendChild createElement "th", null, {colspan: longestRowGroupLength - groupLen}       
+                        tr.appendChild createElement "th", "pvtEmptyHeader", {colspan: longestRowGroupLength - groupLen}
                 else if row == 0 and longestRowGroupLength > 0
                     tr.appendChild createElement "th", "pvtEmptyHeader", {colspan: longestRowGroupLength + (if arrowColumnIsNeeded() then 1 else 0), rowspan: rowsNumber - rowGroupsNumber}
 
