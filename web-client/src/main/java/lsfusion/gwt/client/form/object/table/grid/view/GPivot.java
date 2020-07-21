@@ -1180,13 +1180,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
         //data type and format
         String type;
+        String dataValue = null;
         if(property.baseType instanceof GObjectType || property.baseType instanceof GIntegralType) {
             type = "n";
             Object propertyFormat = property.getFormat();
             if(propertyFormat instanceof NumberFormat) {
                 String pattern;
                 if(value != null) {
-                    BigDecimal numericValue = new BigDecimal(NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())).replace(",", ".").replace(" ", ""));
+                    dataValue = NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())).replace(",", ".").replace(" ", "");
+                    BigDecimal numericValue = new BigDecimal(dataValue);
                     int fractDigits = 0;
                     while (numericValue.longValue() - numericValue.doubleValue() != 0) {
                         numericValue = numericValue.multiply(BigDecimal.TEN);
@@ -1205,12 +1207,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
         } else if(property.baseType instanceof GLogicalType) {
             type = "b";
+            dataValue = String.valueOf(value != null);
         } else if(property.baseType instanceof GDateType) {
             type = "d";
         } else {
             type = "s";
         }
         element.setAttribute("data-t", type);
+        if(dataValue != null) {
+            element.setAttribute("data-v", dataValue);
+        }
     }
 
     private static String replicate(char character, int length) {
