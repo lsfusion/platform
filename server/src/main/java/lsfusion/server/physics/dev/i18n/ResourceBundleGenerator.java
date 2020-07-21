@@ -13,16 +13,16 @@ public class ResourceBundleGenerator {
     private final Set<String> alreadyAdded;
 
     private static final String russianAlphabet = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
-    private static final String[] translitaration = {"a", "b", "v", "g", "d", "e", "e", "zh", "z", "i", "i", "k", "l", "m", 
-        "n", "o", "p", "r", "s", "t", "u", "f", "kh", "ts", "ch", "sh", "shch", "ie", "y", "", "e", "iu", "ia"};
-    
+    private static final String[] translitaration = {"a", "b", "v", "g", "d", "e", "e", "zh", "z", "i", "i", "k", "l", "m",
+            "n", "o", "p", "r", "s", "t", "u", "f", "kh", "ts", "ch", "sh", "shch", "ie", "y", "", "e", "iu", "ia"};
+
     private static final Map<Character, String> transliterationMap = new HashMap<>();
     static {
         for (int i = 0; i < russianAlphabet.length(); ++i) {
-            transliterationMap.put(russianAlphabet.charAt(i), translitaration[i]);            
+            transliterationMap.put(russianAlphabet.charAt(i), translitaration[i]);
         }
     }
-    
+
     public ResourceBundleGenerator(String filename) {
         bundleFile = new File(System.getProperty("java.io.tmpdir") + "/" + filename + ".properties");
         FileWriter writer;
@@ -34,7 +34,7 @@ public class ResourceBundleGenerator {
         }
         alreadyAdded = new HashSet<>();
     }
-    
+
     synchronized public void appendEntry(String s) {
         if (!alreadyAdded.contains(s)) {
             try {
@@ -47,27 +47,23 @@ public class ResourceBundleGenerator {
             }
         }
     }
-    
+
     private String createBundleEntry(String s) {
         String key = createBundleKey(s);
         return key + " = " + s;
     }
-    
+
     private String createBundleKey(String value) {
         StringBuilder builder = new StringBuilder();
         boolean isStart = true;
         for (int i = 0; i < value.length(); ++i) {
             char ch = Character.toLowerCase(value.charAt(i));
-            if (ch >= 'a' && ch <= 'z' || ch == '_') {
+            if (ch >= 'a' && ch <= 'z' || ch == '_' || Character.isDigit(ch) && builder.length() > 0) {
                 builder.append(ch);
                 isStart = false;
             } else if (Character.UnicodeBlock.of(ch).equals(Character.UnicodeBlock.CYRILLIC)) {
                 builder.append(transliterationMap.get(ch));
                 isStart = false;
-            } else if (Character.isDigit(ch)) {
-                if (!isStart) {
-                    builder.append(ch);
-                } 
             } else if (!isStart) {
                 isStart = true;
                 builder.append('_');
