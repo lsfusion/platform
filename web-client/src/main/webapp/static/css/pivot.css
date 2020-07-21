@@ -223,10 +223,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     padding: 2px;
 }
 
-.paxis li div.pvtAttr {
-    background-color: var(--selection-color);
-}
-
 .pvtRowsTable {
     border-spacing: 0;
     /*to stretch last empty paxis*/
