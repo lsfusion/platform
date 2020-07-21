@@ -1814,16 +1814,14 @@
             _this.data("pivotUIOptions", pivotUIOptions);
             if (opts.autoSortUnusedAttrs) {
               unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");
-              $(unusedAttrsContainer).children("li").sort(function(a, b) {
+              return $(unusedAttrsContainer).children("li").sort(function(a, b) {
                 return naturalSort($(a).text(), $(b).text());
               }).appendTo(unusedAttrsContainer);
             }
-            return pivotTable.css("opacity", "");
           };
         })(this);
         refresh = (function(_this) {
           return function() {
-            pivotTable.css("opacity", 0.5);
             return setTimeout(refreshDelayed, 10);
           };
         })(this);

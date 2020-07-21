@@ -17,6 +17,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
 import java.util.*;
@@ -224,7 +225,30 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected void updatePageSizeState(boolean hit) {
         getPageSizeWidget().setVisible(hit);
     }
-    protected abstract void updateRendererState(boolean set);
+    protected abstract Element getRendererAreaElement();
+
+    private long lastRendererDropped = 0;
+    protected void updateRendererState(boolean set) {
+        Runnable setFilter = () -> {
+            com.google.gwt.dom.client.Element element = getRendererAreaElement();
+            if (set)
+                element.getStyle().setProperty("filter", "opacity(0.5)");
+            else
+                element.getStyle().setProperty("filter", "opacity(1)");
+        };
+
+        if(set) {
+            long wasRendererDropped = lastRendererDropped;
+            Scheduler.get().scheduleFixedDelay(() -> {
+                if(wasRendererDropped == lastRendererDropped) // since set and drop has different timeouts
+                    setFilter.run();
+                return false;
+            }, (int) MainFrame.busyDialogTimeout);
+        } else {
+            lastRendererDropped++;
+            setFilter.run();
+        }
+    }
 
     @Override
     public void update(Boolean updateState) {

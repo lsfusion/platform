@@ -1187,10 +1187,12 @@ callWithJQuery ($) ->
                         .sort((a, b) => naturalSort($(a).text(), $(b).text()))
                         .appendTo unusedAttrsContainer
 
-                pivotTable.css("opacity", "") # may affect z-index
+            # we'll assume that GPivot will itself manage pivotTable state relevance
+#                pivotTable.css("opacity", "") # may affect z-index
 
             refresh = =>
-                pivotTable.css("opacity", 0.5)
+                # we'll assume that GPivot will itself manage pivotTable state relevance
+#                pivotTable.css("opacity", 0.5)
                 setTimeout refreshDelayed, 10
 
             #the very first refresh will actually display the table

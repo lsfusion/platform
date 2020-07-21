@@ -534,8 +534,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return rendererElement;
     }
 
-    protected void updateRendererState(boolean set) {
-        updateRendererElementState(rendererElement, set);
+    @Override
+    protected Element getRendererAreaElement() {
+        return getPivotRendererAreaElement();
     }
     private Element getTableDataScroller() {
         return getElement(rendererElement, ".scrolldiv");
@@ -546,16 +547,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private Element getHeaderTableScroller() {
         return getElement(rendererElement, ".headerdiv");
     }
+    private Element getPivotRendererAreaElement() {
+        return getElement(rendererElement, ".pvtRendererArea");
+    }
     private Element getPivotRendererElement() {
         return getElement(rendererElement, ".pvtRendererScrollDiv");
     }
     private Element getPlotlyChartElement() {
         return getElement(rendererElement, "div.js-plotly-plot");
     }
-
-   private native void updateRendererElementState(com.google.gwt.dom.client.Element element, boolean set) /*-{
-        return $wnd.$(element).find(".pvtRendererArea").css('filter', set ? 'opacity(0.5)' : 'opacity(1)');
-    }-*/;
 
     private native NodeList<Element> getElements(com.google.gwt.dom.client.Element element, String selector) /*-{
         return element.querySelectorAll(selector);

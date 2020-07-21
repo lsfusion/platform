@@ -40,12 +40,8 @@ public abstract class GSimpleStateTableView extends GStateTableView {
     protected abstract void render(Element element, com.google.gwt.dom.client.Element recordElement, JsArray<JavaScriptObject> list);
 
     @Override
-    protected void updateRendererState(boolean set) {
-        com.google.gwt.dom.client.Element element = getElement();
-        if(set)
-            element.getStyle().setProperty("opacity", "0.5");
-        else
-            element.getStyle().setProperty("opacity", "");
+    protected Element getRendererAreaElement() {
+        return getElement();
     }
 
     // we need key / value view since pivot
