@@ -829,7 +829,7 @@
             ah.tr = tr;
             groupLen = rowGroups[curGroup].length;
             if (groupLen < longestRowGroupLength) {
-              tr.appendChild(createElement("th", null, {
+              tr.appendChild(createElement("th", "pvtEmptyHeader", {
                 colspan: longestRowGroupLength - groupLen
               }));
             }
