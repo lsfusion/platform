@@ -1208,8 +1208,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         } else if(property.baseType instanceof GLogicalType) {
             type = "b";
             dataValue = String.valueOf(value != null);
-        } else if(property.baseType instanceof GDateType) {
-            type = "d";
         } else {
             type = "s";
         }
