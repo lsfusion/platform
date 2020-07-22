@@ -23,7 +23,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import static lsfusion.http.authentication.LSFRemoteAuthenticationProvider.getUserLocale;
 
@@ -53,17 +55,19 @@ public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
         if (!(authentication instanceof OAuth2AuthenticationToken) || clientRegistrations == null) {
             return authentication;
         }
+        String authorizedClientRegistrationId = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
         String userNameAttributeName = clientRegistrations.
-                findByRegistrationId(((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId())
+                findByRegistrationId(authorizedClientRegistrationId)
                 .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
         OAuth2User principal = (OAuth2User) authentication.getPrincipal();
-        String username = String.valueOf((Object) principal.getAttribute(userNameAttributeName));
+        String username = authorizedClientRegistrationId + ":" + principal.getAttribute(userNameAttributeName);
         LSFAuthenticationToken lsfAuthentication;
         String authSecret = servletContext.getInitParameter(AUTH_SECRET_KEY);
         try {
             Pair<AuthenticationToken, Locale> authLocale = logicsProvider.runRequest(request, (LogicsSessionObject sessionObject) -> {
                 try {
-                    AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new OAuth2Authentication(username, authSecret, principal.getAttributes()));
+                    Map<String, Object> userInfo = new HashMap<>(principal.getAttributes());
+                    AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new OAuth2Authentication(username, authSecret, userInfo));
                     return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
                 } catch (LockedException le) {
                     throw new org.springframework.security.authentication.LockedException(le.getMessage());

@@ -21,11 +21,8 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static lsfusion.base.ApiResourceBundle.getString;
-
 public class LSFClientRegistrationRepository extends LogicsRequestHandler implements ClientRegistrationRepository, Iterable<ClientRegistration> {
     private Map<String, ClientRegistration> registrations;
-    private static boolean REGISTRATIONS_SETTED = false;
 
     @Autowired
     private ServletContext servletContext;
@@ -33,23 +30,16 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
     public LSFClientRegistrationRepository() {
     }
 
-    private synchronized void setRegistrations() {
-        if (!REGISTRATIONS_SETTED) {
-            List<ClientRegistration> clientRegistrations = getRegistrationsFromServer();
-            if (clientRegistrations.size() != 0) {
-                this.registrations = createRegistrationsMap(clientRegistrations);
-            }
-            REGISTRATIONS_SETTED = true;
-        }
-    }
-
     @Override
     public synchronized ClientRegistration findByRegistrationId(String registrationId) {
         Assert.hasText(registrationId, "registrationId cannot be empty");
-        return this.registrations.get(registrationId);
+        return getRegistrations().get(registrationId);
     }
 
-    private List<ClientRegistration> getRegistrationsFromServer() {
+    private Map<String, ClientRegistration> getRegistrations() {
+        if (registrations != null) {
+            return registrations;
+        }
         HttpServletRequest request = LSFRemoteAuthenticationProvider.getHttpServletRequest();
         List<OAuth2Credentials> clientCredentials;
         List<ClientRegistration> clientRegistrations = new ArrayList<>();
@@ -64,21 +54,23 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
             throw Throwables.propagate(e);
         }
         for (OAuth2Credentials clientCredential : clientCredentials) {
-            clientRegistrations.add(ClientRegistration.withRegistrationId(clientCredential.getRegistrationId())
-                    .clientAuthenticationMethod(new ClientAuthenticationMethod(clientCredential.getClientAuthenticationMethod()))
-                    .scope(clientCredential.getScope().split(" "))
-                    .authorizationUri(clientCredential.getAuthorizationUri())
-                    .tokenUri(clientCredential.getTokenUri())
-                    .jwkSetUri(clientCredential.getJwkSetUri())
-                    .userInfoUri(clientCredential.getUserInfoUri())
-                    .userNameAttributeName(clientCredential.getUserNameAttributeName())
-                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                    .clientName(clientCredential.getClientName())
-                    .clientId(clientCredential.getClientId())
-                    .clientSecret(clientCredential.getClientSecret())
-                    .redirectUriTemplate(clientCredential.getRedirectUrl()).build());
+            if (clientCredential.getClientId() != null && clientCredential.getClientSecret() != null) {
+                clientRegistrations.add(ClientRegistration.withRegistrationId(clientCredential.getRegistrationId())
+                        .clientAuthenticationMethod(new ClientAuthenticationMethod(clientCredential.getClientAuthenticationMethod()))
+                        .scope(clientCredential.getScope().split(" "))
+                        .authorizationUri(clientCredential.getAuthorizationUri())
+                        .tokenUri(clientCredential.getTokenUri())
+                        .jwkSetUri(clientCredential.getJwkSetUri())
+                        .userInfoUri(clientCredential.getUserInfoUri())
+                        .userNameAttributeName(clientCredential.getUserNameAttributeName())
+                        .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                        .clientName(clientCredential.getClientName())
+                        .clientId(clientCredential.getClientId())
+                        .clientSecret(clientCredential.getClientSecret())
+                        .redirectUriTemplate(clientCredential.getRedirectUrl()).build());
+            }
         }
-        return clientRegistrations;
+        return this.registrations = createRegistrationsMap(clientRegistrations);
     }
 
     private Map<String, ClientRegistration> createRegistrationsMap(List<ClientRegistration> registrations) {
@@ -96,9 +88,8 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
     @Override
     @NonNull
     public Iterator<ClientRegistration> iterator() throws AuthenticationException {
-        setRegistrations();
-        if (registrations == null || registrations.size() == 0){
-            throw new AuthenticationException(getString("exceptions.no.one.oauth2.client.in.database"));
+        if (getRegistrations() == null || getRegistrations().size() == 0){
+            return Collections.<String, ClientRegistration>emptyMap().values().iterator();
         }
         return this.registrations.values().iterator();
     }

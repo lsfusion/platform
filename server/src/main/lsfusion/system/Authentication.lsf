@@ -123,8 +123,6 @@ writeDefaultCredentials() {
     IF NOT clientId('github') THEN {
         NEW oa = OAuth2{
             id(oa) <- 'github';
-            clientId(oa) <- '9d1729e039d1eb38748f';
-            clientSecret(oa) <- '5ff48f27bfc6fd55f87ac316af80577f3b01e0f5';
             clientAuthenticationMethod(oa) <- 'basic';
             scope(oa) <- 'read:user';
             authorizationUri(oa) <- 'https://github.com/login/oauth/authorize';
@@ -137,8 +135,6 @@ writeDefaultCredentials() {
     IF NOT clientId('google') THEN {
         NEW oa = OAuth2{
             id(oa) <- 'google';
-            clientId(oa) <- '1053069724273-jtnnhba9ah13iqs5jlc366j519ln2su5.apps.googleusercontent.com';
-            clientSecret(oa) <- 'Fa-bg6EpM71UXSa9rxvYiNQq';
             clientAuthenticationMethod(oa) <- 'basic';
             scope(oa) <- 'openid profile email';
             authorizationUri(oa) <- 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -152,8 +148,6 @@ writeDefaultCredentials() {
     IF NOT clientId('facebook') THEN {
         NEW oa = OAuth2{
             id(oa) <- 'facebook';
-            clientId(oa) <- 'test';
-            clientSecret(oa) <- 'test';
             clientAuthenticationMethod(oa) <- 'post';
             scope(oa) <- 'public_profile email';
             authorizationUri(oa) <- 'https://www.facebook.com/v2.8/dialog/oauth';
@@ -161,6 +155,18 @@ writeDefaultCredentials() {
             userInfoUri(oa) <- 'https://graph.facebook.com/me?fields=id,name,email';
             userNameAttributeName(oa) <- 'id';
             clientName(oa) <- 'Facebook';
+        }
+    }
+    IF NOT clientId('yandex') THEN {
+        NEW oa = OAuth2{
+            id(oa) <- 'yandex';
+            clientAuthenticationMethod(oa) <- 'basic';
+            scope(oa) <- 'login:info login:email';
+            authorizationUri(oa) <- 'https://oauth.yandex.ru/authorize';
+            tokenUri(oa) <- 'https://oauth.yandex.ru/token';
+            userInfoUri(oa) <- 'https://login.yandex.ru/info';
+            userNameAttributeName(oa) <- 'id';
+            clientName(oa) <- 'Yandex';
         }
     }
     IF NOT webClientSecretKey() THEN {

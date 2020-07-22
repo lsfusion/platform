@@ -193,3 +193,7 @@ details summary::-webkit-details-marker {
     font-size: 2em;
     margin: 0em 1em;
 }
+
+.fa-yandex:before {
+    content: "\f19e";
+}
