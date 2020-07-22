@@ -12,7 +12,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Context;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
@@ -116,12 +116,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return font;
     }
 
-    public Context getSelectedCellContext() {
+    public Cell getSelectedCellContext() {
         return getSelectedCellContext(getSelectedColumn());
     }
 
-    public Context getSelectedCellContext(int column) {
-        return new Context(getSelectedRow(), column, getColumn(column), getSelectedRowValue());
+    public Cell getSelectedCellContext(int column) {
+        return new Cell(getSelectedRow(), column, getColumn(column), getSelectedRowValue());
     }
 
     protected boolean isAutoSize() {
@@ -380,11 +380,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
-    public <C> void onBrowserEvent(Context context, EventHandler handler, Column<T, C> column, Element parent) {
+    public <C> void onBrowserEvent(Cell cell, EventHandler handler, Column<T, C> column, Element parent) {
         form.onPropertyBrowserEvent(handler, parent, getTableDataFocusElement(),
-                () -> selectionHandler.onCellBefore(handler, context, () -> isEditOnSingleClick(context)),
-                () -> column.onEditEvent(handler, false, context, parent),
-                () -> selectionHandler.onCellAfter(handler, context),
+                () -> selectionHandler.onCellBefore(handler, cell, () -> isEditOnSingleClick(cell)),
+                () -> column.onEditEvent(handler, false, cell, parent),
+                () -> selectionHandler.onCellAfter(handler, cell),
                 () -> CopyPasteUtils.putIntoClipboard(parent), () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
     }
 
@@ -397,28 +397,28 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         protected abstract Object getValue(GPropertyDraw property, T record);
 
         @Override
-        public void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent) {
-            GGridPropertyTable.this.onEditEvent(handler, isBinding, editContext, editCellParent);
+        public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
+            GGridPropertyTable.this.onEditEvent(handler, isBinding, editCell, editCellParent);
         }
 
         @Override
-        public void renderAndUpdateDom(Context context, Element cellElement) {
-            renderDom(context, cellElement);
+        public void renderAndUpdateDom(Cell cell, Element cellElement) {
+            renderDom(cell, cellElement);
 
-            updateDom(context, cellElement);
+            updateDom(cell, cellElement);
         }
 
-        public void renderDom(Context context, Element cellElement) {
-            GPropertyDraw property = getProperty(context);
+        public void renderDom(Cell cell, Element cellElement) {
+            GPropertyDraw property = getProperty(cell);
             if(property != null) // in tree there can be no property in groups other than last
                 form.render(property, cellElement, getRenderContext());
         }
 
         @Override
-        public void updateDom(Context context, Element cellElement) {
-            GPropertyDraw property = getProperty(context);
+        public void updateDom(Cell cell, Element cellElement) {
+            GPropertyDraw property = getProperty(cell);
             if (property != null) // in tree there can be no property in groups other than last
-                form.update(property, cellElement, getValue(property, (T) context.getRow()), getUpdateContext());
+                form.update(property, cellElement, getValue(property, (T) cell.getRow()), getUpdateContext());
         }
     }
 }

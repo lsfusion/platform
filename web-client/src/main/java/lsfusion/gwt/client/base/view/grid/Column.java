@@ -17,7 +17,7 @@ package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.grid.cell.Context;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 public abstract class Column<T, C> {
 
@@ -26,9 +26,9 @@ public abstract class Column<T, C> {
 
   public abstract boolean isFocusable();
 
-  public abstract void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent);
+  public abstract void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent);
 
-  public abstract void renderAndUpdateDom(Context context, Element cellElement);
+  public abstract void renderAndUpdateDom(Cell cell, Element cellElement);
 
-  public abstract void updateDom(Context context, Element cellElement);
+  public abstract void updateDom(Cell cell, Element cellElement);
 }

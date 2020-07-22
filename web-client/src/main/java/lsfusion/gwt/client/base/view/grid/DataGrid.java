@@ -23,7 +23,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.view.*;
-import lsfusion.gwt.client.base.view.grid.cell.Context;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -544,16 +544,16 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                 footer.onBrowserEvent(footerParent, event);
         } else {
             if (column != null) {
-                Context context = new Context(row, getColumnIndex(column), column, getRowValue(row));
+                Cell cell = new Cell(row, getColumnIndex(column), column, getRowValue(row));
 
                 EventHandler handler = new EventHandler(event);
 
-                onBrowserEvent(context, handler, column, columnParent);
+                onBrowserEvent(cell, handler, column, columnParent);
             }
         }
     }
 
-    public abstract <C> void onBrowserEvent(Context context, EventHandler handler, Column<T, C> column, Element parent);
+    public abstract <C> void onBrowserEvent(Cell cell, EventHandler handler, Column<T, C> column, Element parent);
 
     protected void checkRowBounds(int row) {
         if (!isRowWithinBounds(row)) {
@@ -827,11 +827,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     public boolean isFocusable(int column) {
         return getColumn(column).isFocusable();
     }
-    public boolean isFocusable(Context context) {
-        return context.getColumn().isFocusable();
+    public boolean isFocusable(Cell cell) {
+        return cell.getColumn().isFocusable();
     }
-    public boolean isEditOnSingleClick(Context context) {
-        return !isFocusable(context);
+    public boolean isEditOnSingleClick(Cell cell) {
+        return !isFocusable(cell);
     }
 
     public void setSelectedRow(int row) {
@@ -1849,11 +1849,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             this.display = display;
         }
 
-        public void onCellBefore(EventHandler handler, Context context, Supplier<Boolean> isEditOnSingleClick) {
+        public void onCellBefore(EventHandler handler, Cell cell, Supplier<Boolean> isEditOnSingleClick) {
             Event event = handler.event;
             if (GMouseStroke.isChangeEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
-                int col = context.getColumnIndex();
-                int row = context.getRowIndex();
+                int col = cell.getColumnIndex();
+                int row = cell.getRowIndex();
                 if ((display.getSelectedColumn() != col) || (display.getSelectedRow() != row)) {
 
                     changeColumn(col);
@@ -1868,7 +1868,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             }
         }
 
-        public void onCellAfter(EventHandler handler, Context context) {
+        public void onCellAfter(EventHandler handler, Cell cell) {
             Event event = handler.event;
             String eventType = event.getType();
             if (BrowserEvents.KEYDOWN.equals(eventType) && handleKeyEvent(event))

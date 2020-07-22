@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.table.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -22,7 +21,7 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
-import lsfusion.gwt.client.base.view.grid.cell.Context;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> {
 
@@ -50,26 +49,26 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
                 groupObject);
     }
 
-    public abstract boolean isReadOnly(Context context);
+    public abstract boolean isReadOnly(Cell cell);
 
     public abstract GPropertyDraw getSelectedProperty();
     public abstract GGroupObjectValue getSelectedColumnKey();
 
-    public abstract GPropertyDraw getProperty(Context editContext);
+    public abstract GPropertyDraw getProperty(Cell editCell);
 
     @Override
-    public boolean isEditOnSingleClick(Context context) {
-        GPropertyDraw property = getProperty(context);
+    public boolean isEditOnSingleClick(Cell cell) {
+        GPropertyDraw property = getProperty(cell);
         if(property != null && property.editOnSingleClick != null)
             return property.editOnSingleClick;
-        return super.isEditOnSingleClick(context);
+        return super.isEditOnSingleClick(cell);
     }
 
-    public abstract GGroupObjectValue getColumnKey(Context editContext);
+    public abstract GGroupObjectValue getColumnKey(Cell editCell);
 
-    public abstract void setValueAt(Context context, Object value);
+    public abstract void setValueAt(Cell cell, Object value);
 
-    public abstract Object getValueAt(Context context);
+    public abstract Object getValueAt(Cell cell);
 
     public abstract void pasteData(List<List<String>> table);
 
@@ -79,7 +78,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 //        CopyPasteUtils.setEmptySelection(getSelectedElement());
 //    }
 
-    public void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent) {
+    public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
         form.executePropertyEventAction(handler, isBinding,
                 new ExecuteEditContext() {
                     @Override
@@ -94,7 +93,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
                     @Override
                     public GPropertyDraw getProperty() {
-                        return GPropertyTable.this.getProperty(editContext);
+                        return GPropertyTable.this.getProperty(editCell);
                     }
 
                     @Override
@@ -104,22 +103,22 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
                     @Override
                     public Object getValue() {
-                        return getValueAt(editContext);
+                        return getValueAt(editCell);
                     }
 
                     @Override
                     public void setValue(Object value) {
-                        setValueAt(editContext, value);
+                        setValueAt(editCell, value);
                     }
 
                     @Override
                     public GGroupObjectValue getColumnKey() {
-                        return GPropertyTable.this.getColumnKey(editContext);
+                        return GPropertyTable.this.getColumnKey(editCell);
                     }
 
                     @Override
                     public boolean isReadOnly() {
-                        return GPropertyTable.this.isReadOnly(editContext);
+                        return GPropertyTable.this.isReadOnly(editCell);
                     }
 
                     @Override
@@ -129,19 +128,19 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
                     @Override
                     public boolean isFocusable() {
-                        return GPropertyTable.this.isFocusable(editContext);
+                        return GPropertyTable.this.isFocusable(editCell);
                     }
 
                     @Override
                     public void trySetFocus() {
-                        if(changeSelectedColumn(editContext.getColumnIndex()))
+                        if(changeSelectedColumn(editCell.getColumnIndex()))
                             getFocusElement().focus();
                     }
 
                     @Override
                     public Object forceSetFocus() {
                         int selectedColumn = getSelectedColumn();
-                        setSelectedColumn(editContext.getColumnIndex());
+                        setSelectedColumn(editCell.getColumnIndex());
                         return selectedColumn;
                     }
 

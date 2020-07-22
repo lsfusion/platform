@@ -5,7 +5,7 @@ import lsfusion.gwt.client.base.view.grid.Column;
 /**
  * Contains information about the context of the Cell.
  */
-public class Context {
+public class Cell {
 
     private final int columnIndex;
     private final int rowIndex;
@@ -13,7 +13,7 @@ public class Context {
     private final Column column;
     private final Object row;
 
-    public Context(int rowIndex, int columnIndex, Column column, Object row) {
+    public Cell(int rowIndex, int columnIndex, Column column, Object row) {
         this.rowIndex = rowIndex;
         this.columnIndex = columnIndex;
         this.column = column;

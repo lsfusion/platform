@@ -5,7 +5,7 @@ import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
-import lsfusion.gwt.client.base.view.grid.cell.Context;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 
@@ -66,7 +66,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
             renderTD(td, cellHeight, false);
 
-            renderCell(td, new Context(rowIndex, columnIndex, column, rowValue), column);
+            renderCell(td, new Cell(rowIndex, columnIndex, column, rowValue), column);
 
             updateTD(rowIndex, rowValue, td, columnIndex);
         }
@@ -104,7 +104,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private void updateCellImpl(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
         Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-        updateCell(td, new Context(rowIndex, columnIndex, column, rowValue), column);
+        updateCell(td, new Cell(rowIndex, columnIndex, column, rowValue), column);
 
         updateTD(rowIndex, rowValue, td, columnIndex);
     }

@@ -13,7 +13,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.cell.Context;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GBindingMode;
@@ -298,8 +298,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     // actually singleton
     private class ExpandTreeColumn extends Column<GTreeGridRecord, Object> implements TreeGridColumn {
 
-        private GTreeColumnValue getTreeValue(Context context) {
-            return getTreeGridRow(context).getTreeValue();
+        private GTreeColumnValue getTreeValue(Cell cell) {
+            return getTreeGridRow(cell).getTreeValue();
         }
 
         @Override
@@ -313,25 +313,25 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void onEditEvent(EventHandler handler, boolean isBinding, Context editContext, Element editCellParent) {
+        public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
             Event event = handler.event;
             boolean changeEvent = GMouseStroke.isChangeEvent(event);
             if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
                 String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
                 if (attrID != null) {
                     if(changeEvent)
-                        changeTreeState(editContext, getTreeValue(editContext), event);
+                        changeTreeState(editCell, getTreeValue(editCell), event);
                     handler.consume();
                 }
             }
         }
 
-        private void changeTreeState(Context context, Object value, NativeEvent event) {
+        private void changeTreeState(Cell cell, Object value, NativeEvent event) {
             GwtClientUtils.stopPropagation(event);
 
             Boolean open = ((GTreeColumnValue) value).getOpen();
             if (open != null) {
-                GTreeGridRecord record = getTreeGridRow(context);
+                GTreeGridRecord record = getTreeGridRow(cell);
                 if (!open) {
                     expandNodeByRecord(record);
                 } else {
@@ -341,14 +341,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void renderAndUpdateDom(Context context, Element cellElement) {
-            GTreeTable.renderExpandDom(cellElement, getTreeValue(context));
+        public void renderAndUpdateDom(Cell cell, Element cellElement) {
+            GTreeTable.renderExpandDom(cellElement, getTreeValue(cell));
         }
 
         @Override
-        public void updateDom(Context context, Element cellElement) {
+        public void updateDom(Cell cell, Element cellElement) {
 
-            GTreeColumnValue treeValue = getTreeValue(context);
+            GTreeColumnValue treeValue = getTreeValue(cell);
 
             while (cellElement.getChildCount() > treeValue.getLevel() + 1) {
                 cellElement.getLastChild().removeFromParent();
@@ -389,15 +389,15 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 
         @Override
-        public void renderDom(Context context, Element cellElement) {
-            super.renderDom(context, cellElement);
+        public void renderDom(Cell cell, Element cellElement) {
+            super.renderDom(cell, cellElement);
 
-            cellElement.setPropertyObject(PDRAW_ATTRIBUTE, getProperty(context));
+            cellElement.setPropertyObject(PDRAW_ATTRIBUTE, getProperty(cell));
         }
 
         @Override
-        public void updateDom(Context context, Element cellElement) {
-            GPropertyDraw newProperty = getProperty(context);
+        public void updateDom(Cell cell, Element cellElement) {
+            GPropertyDraw newProperty = getProperty(cell);
             GPropertyDraw oldProperty = ((GPropertyDraw)cellElement.getPropertyObject(PDRAW_ATTRIBUTE));
             // if property changed - rerender
             if(!GwtClientUtils.nullEquals(oldProperty, newProperty) && !form.isEditing()) { // we don't want to clear editing (it will be rerendered anyway, however not sure if this check is needed)
@@ -406,10 +406,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                     cellElement.setPropertyObject(PDRAW_ATTRIBUTE, null);
                 }
 
-                renderDom(context, cellElement);
+                renderDom(cell, cellElement);
             }
 
-            super.updateDom(context, cellElement);
+            super.updateDom(cell, cellElement);
         }
 
         @Override
@@ -490,8 +490,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
 
-    public GTreeGridRecord getTreeGridRow(Context editContext) {
-        return (GTreeGridRecord) editContext.getRow();
+    public GTreeGridRecord getTreeGridRow(Cell editCell) {
+        return (GTreeGridRecord) editCell.getRow();
     }
     protected TreeGridColumn getTreeGridColumn(int i) {
         return (TreeGridColumn) getColumn(i);
@@ -772,9 +772,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public GPropertyDraw getProperty(Context context) {
-        GTreeGridRecord rowValue = getTreeGridRow(context);
-        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), context.getColumnIndex());
+    public GPropertyDraw getProperty(Cell cell) {
+        GTreeGridRecord rowValue = getTreeGridRow(cell);
+        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), cell.getColumnIndex());
     }
 
     @Override
@@ -782,21 +782,21 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return null;
     }
     @Override
-    public GGroupObjectValue getColumnKey(Context context) {
+    public GGroupObjectValue getColumnKey(Cell cell) {
         return GGroupObjectValue.EMPTY;
 //        return currentRecords.get(context.getIndex()).getKey();
     }
 
     @Override
-    public boolean isReadOnly(Context context) {
-        GTreeGridRecord record = getTreeGridRow(context);
-        return record == null || tree.isReadOnly(record.getGroup(), context.getColumnIndex(), record.getKey());
+    public boolean isReadOnly(Cell cell) {
+        GTreeGridRecord record = getTreeGridRow(cell);
+        return record == null || tree.isReadOnly(record.getGroup(), cell.getColumnIndex(), record.getKey());
     }
 
     @Override
-    public Object getValueAt(Context context) {
-        GTreeGridRecord record = getTreeGridRow(context);
-        return record == null ? null : tree.getValue(record.getGroup(), context.getColumnIndex(), record.getKey());
+    public Object getValueAt(Cell cell) {
+        GTreeGridRecord record = getTreeGridRow(cell);
+        return record == null ? null : tree.getValue(record.getGroup(), cell.getColumnIndex(), record.getKey());
     }
 
     @Override
@@ -815,9 +815,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public void setValueAt(Context context, Object value) {
-        GTreeGridRecord rowRecord = getTreeGridRow(context);
-        GPropertyDraw property = getProperty(context);
+    public void setValueAt(Cell cell, Object value) {
+        GTreeGridRecord rowRecord = getTreeGridRow(cell);
+        GPropertyDraw property = getProperty(cell);
         // assert property is not null since we want get here if property is null
 
         rowRecord.setValue(property, value);

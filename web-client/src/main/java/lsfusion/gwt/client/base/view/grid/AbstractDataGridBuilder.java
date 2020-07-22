@@ -16,7 +16,7 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.view.grid.cell.Context;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 import java.util.List;
 
@@ -135,16 +135,16 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
 
-    protected final <C> void renderCell(TableCellElement td, Context context, Column<T, C> column) {
+    protected final <C> void renderCell(TableCellElement td, Cell cell, Column<T, C> column) {
         td.setPropertyObject(COLUMN_ATTRIBUTE, column);
-        column.renderAndUpdateDom(context, td);
+        column.renderAndUpdateDom(cell, td);
     }
 
     public final Column<T, ?> getColumn(Element elem) {
         return (Column<T, ?>) elem.getPropertyObject(COLUMN_ATTRIBUTE);
     }
 
-    protected final <C> void updateCell(TableCellElement cellParent, Context context, Column<T, C> column) {
-        column.updateDom(context, cellParent);
+    protected final <C> void updateCell(TableCellElement cellParent, Cell cell, Column<T, C> column) {
+        column.updateDom(cell, cellParent);
     }
 }
