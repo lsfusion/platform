@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
@@ -262,7 +261,7 @@ public class GGridController extends GAbstractTableController {
         }
 
         if(groupObject.toolbar.showPrintGroupXls) {
-            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
+            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExport()) {
                 public void addListener() {
                     addClickHandler(event -> table.runGroupReport());
                 }

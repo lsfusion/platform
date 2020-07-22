@@ -27,7 +27,7 @@ public interface ClientMessages extends Messages {
     String formRendererNotDefined();
     String formRendererRequired();
 
-    String formGridExportToXlsx();
+    String formGridExport();
 
     String formGridTableView();
     String formGridPivotView();

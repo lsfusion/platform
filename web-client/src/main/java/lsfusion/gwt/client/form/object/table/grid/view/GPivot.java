@@ -12,7 +12,6 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectType;
-import lsfusion.gwt.client.classes.data.GDateType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -335,8 +334,21 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     @Override
     public void runGroupReport() {
-        exportToExcel(getDrawElement());
+        Element plot = getPlotlyChartElement();
+        if (plot != null) {
+            exportToImage(plot);
+        } else {
+            exportToExcel(getDrawElement());
+        }
     }
+    
+    public native void exportToImage(Element element) /*-{
+        $wnd.Plotly.downloadImage(element, this.@GPivot::getToImageButtonOptions(*)());
+    }-*/;
+    
+    public native JavaScriptObject getToImageButtonOptions() /*-{
+        return {format: 'jpeg', filename: 'lsfPlot'};
+    }-*/;
 
     public native void exportToExcel(Element element)
         /*-{
@@ -606,6 +618,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             componentHeightString:@lsfusion.gwt.client.view.StyleDefaults::COMPONENT_HEIGHT_STRING,
             cellHorizontalPadding:@lsfusion.gwt.client.view.StyleDefaults::CELL_HORIZONTAL_PADDING,
             columnAttributeName:@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN,
+            toImageButtonOptions: instance.@GPivot::getToImageButtonOptions(*)(),
             onRefresh: function (config) {
                 instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
             },

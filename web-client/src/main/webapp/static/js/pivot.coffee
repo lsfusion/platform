@@ -695,10 +695,15 @@ callWithJQuery ($) ->
                 locale
             }
             localeStrings: localeStrings
+            
+        plotlyDefaults = 
+            rendererOptions:
+                plotlyConfig:
+                    toImageButtonOptions: inputOpts.toImageButtonOptions
 
         existingOpts = @data "pivotUIOptions"
         if not existingOpts? or overwrite
-            opts = $.extend(true, {}, localeDefaults, $.extend({}, defaults, inputOpts))
+            opts = $.extend(true, {}, localeDefaults, $.extend({}, defaults, plotlyDefaults, inputOpts))
         else
             opts = existingOpts
 
