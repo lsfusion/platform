@@ -1852,38 +1852,24 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void colAttrHeaderDblClickAction(JsArrayString columnKeys, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
-        SortCol sortCol = modifySortCols(columnKeys, ctrlKey, shiftKey);
-        if (shiftKey) {
-            unwrapThis(th);
-        } else {
-            if(!ctrlKey) {
-                unwrapOthers(rendererElement, th);
-            }
-            if(sortCol != null) {
-                changeSortDirImage(th, !sortCol.getDirection());
-            } else {
-                th.removeAllChildren();
-                renderColAttrCell(th, fromObject(columnKeys.get(columnKeys.length() - 1)), columnKeys, isSubtotal, false, false);
-            }
+        modifySortCols(columnKeys, ctrlKey, shiftKey);
+        if (!shiftKey && !ctrlKey) {
+            unwrapOthers(rendererElement, th);
         }
+        th.removeAllChildren();
+        renderColAttrCell(th, fromObject(columnKeys.get(columnKeys.length() - 1)), columnKeys, isSubtotal, false, false);
+
         updateView(true, null);
     }
 
     private void rowAxisHeaderDblClickAction(String attrName, Element th, String columnCaption, boolean ctrlKey, boolean shiftKey) {
         SortCol sortCol = modifySortCols(attrName, ctrlKey, shiftKey);
-        if (shiftKey) {
-            unwrapThis(th);
-        } else {
-            if(!ctrlKey) {
-                unwrapOthers(rendererElement, th);
-            }
-            if(sortCol != null) {
-                changeSortDirImage(th, !sortCol.getDirection());
-            } else {
-                th.removeAllChildren();
-                GGridPropertyTableHeader.renderTD(th, rowHeight, true, columnCaption);
-            }
+        if (!shiftKey && !ctrlKey) {
+            unwrapOthers(rendererElement, th);
         }
+        th.removeAllChildren();
+        GGridPropertyTableHeader.renderTD(th, rowHeight, shiftKey ? null : sortCol == null || !sortCol.getDirection(), columnCaption);
+
         updateView(true, null);
     }
 
@@ -1895,7 +1881,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
         SortCol sortCol = findSortCol(sortCols, keys);
         if (shiftKey) {
-            remove(sortCols, sortCol);
+            if(sortCol != null) {
+                remove(sortCols, sortCol);
+            }
         } else if(ctrlKey) {
             if (sortCol == null) {
                 sortCols.push(createSortCol(keys, true));
@@ -1916,12 +1904,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return config.getArrayString("splitRows").length();
     }
 
-    private native void unwrapThis(Element currentElement) /*-{
-        $wnd.$(currentElement).find(".dataGridHeaderCell-sortimg").each(function () {
-            this.remove();
-        })
-    }-*/;
-
     private native void unwrapOthers(Element element, Element currentElement) /*-{
         $wnd.$(element).find(".dataGridHeaderCell-sortimg").each(function () {
             if(!@GPivot::isDescendant(*)(currentElement, this)) {
@@ -1940,13 +1922,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
         return false;
     }-*/;
-
-    private native void changeSortDirImage(Element element, boolean sortDir) /*-{
-        $wnd.$(element).find(".dataGridHeaderCell-sortimg").each(function () {
-            @GGridPropertyTableHeader::changeDirection(*)(this, sortDir);
-        })
-    }-*/;
-
 
     private boolean isSortColumn(boolean isSubtotal, JsArrayString colKeyValues) {
         return isSubtotal || colKeyValues.length() == config.getArrayString("cols").length();
