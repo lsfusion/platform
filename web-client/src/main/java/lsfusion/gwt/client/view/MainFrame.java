@@ -68,6 +68,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static boolean forbidDuplicateForms;
     public static boolean busyDialog;
     public static long busyDialogTimeout;
+    public static long updateRendererStateSetTimeout = 100;
     public static boolean showNotDefinedStrings;
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;

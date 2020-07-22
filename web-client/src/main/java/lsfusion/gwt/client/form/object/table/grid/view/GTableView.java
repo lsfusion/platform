@@ -72,9 +72,5 @@ public interface GTableView {
     GGroupObjectUserPreferences getCurrentUserGridPreferences();
     GGroupObjectUserPreferences getGeneralGridPreferences();
 
-    int getPageSize();
-    boolean isGroup();
-    GListViewType getViewType();
-    
     void afterAppliedChanges(); // after apply changed
 }

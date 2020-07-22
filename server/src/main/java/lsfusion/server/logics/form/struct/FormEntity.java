@@ -22,7 +22,6 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -59,8 +58,6 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -195,20 +192,34 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return fixedOrders.getListMap();
     }
 
-    private NFOrderSet<List<PropertyDrawEntity>> pivotColumns = NFFact.orderSet();
-    private NFOrderSet<List<PropertyDrawEntity>> pivotRows = NFFact.orderSet();
+    private NFOrderSet<ImList<PropertyDrawEntity>> pivotColumns = NFFact.orderSet();
+    private NFOrderSet<ImList<PropertyDrawEntity>> pivotRows = NFFact.orderSet();
     private NFOrderSet<PropertyDrawEntity> pivotMeasures = NFFact.orderSet();
 
-    public ImList<List<PropertyDrawEntity>> getPivotColumnsList() {
+    public ImList<ImList<PropertyDrawEntity>> getPivotColumnsList() {
         return pivotColumns.getList();
     }
 
-    public ImList<List<PropertyDrawEntity>> getPivotRowsList() {
+    public ImList<ImList<PropertyDrawEntity>> getPivotRowsList() {
         return pivotRows.getList();
     }
 
     public ImList<PropertyDrawEntity> getPivotMeasuresList() {
         return pivotMeasures.getList();
+    }
+
+    @IdentityLazy
+    public ImMap<GroupObjectEntity, ImSet<PropertyDrawEntity>> getPivotGroupProps() {
+        MSet<PropertyDrawEntity> mGroupProps = SetFact.mSet();
+        for(ImList<PropertyDrawEntity> pivotRow : getPivotRowsList())
+            mGroupProps.addAll(pivotRow.toOrderSet().getSet());
+        for(ImList<PropertyDrawEntity> pivotColumn : getPivotColumnsList())
+            mGroupProps.addAll(pivotColumn.toOrderSet().getSet());
+        return mGroupProps.immutable().group(key -> key.getToDraw(this));
+    }
+    @IdentityLazy
+    public ImMap<GroupObjectEntity, ImSet<PropertyDrawEntity>> getPivotMeasureProps() {
+        return getPivotMeasuresList().toOrderSet().getSet().group(key -> key.getToDraw(this));
     }
 
     public ModalityType modalityType = ModalityType.DOCKED;
@@ -1279,22 +1290,26 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void addPivotColumn(PropertyDrawEntity column, Version version) {
-        pivotColumns.add(Collections.singletonList(column), version);
+        pivotColumns.add(ListFact.singleton(column), version);
     }
 
     public void addPivotColumns(List<List<PropertyDrawEntity>> columns, Version version) {
         for(List<PropertyDrawEntity> column : columns) {
-            pivotColumns.add(column, version);
+            ImList<PropertyDrawEntity> columnList = ListFact.fromJavaList(column);
+            pivotColumns.add(columnList, version);
+            addPivotColumnView(columnList, version);
         }
     }
 
     public void addPivotRow(PropertyDrawEntity row, Version version) {
-        pivotRows.add(Collections.singletonList(row), version);
+        pivotRows.add(ListFact.singleton(row), version);
     }
 
     public void addPivotRows(List<List<PropertyDrawEntity>> rows, Version version) {
         for(List<PropertyDrawEntity> row : rows) {
-            pivotRows.add(row, version);
+            ImList<PropertyDrawEntity> rowList = ListFact.fromJavaList(row);
+            pivotRows.add(rowList, version);
+            addPivotRowView(rowList, version);
         }
     }
 
@@ -1305,7 +1320,24 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public void addPivotMeasures(List<PropertyDrawEntity> measures, Version version) {
         for(PropertyDrawEntity measure : measures) {
             pivotMeasures.add(measure, version);
+            addPivotMeasureView(measure, version);
         }
+    }
+
+    private void addPivotColumnView(ImList<PropertyDrawEntity> column, Version version) {
+        FormView richDesign = getNFRichDesign(version);
+        if(richDesign !=null)
+            richDesign.addPivotColumn(column, version);
+    }
+    private void addPivotRowView(ImList<PropertyDrawEntity> column, Version version) {
+        FormView richDesign = getNFRichDesign(version);
+        if(richDesign !=null)
+            richDesign.addPivotRow(column, version);
+    }
+    private void addPivotMeasureView(PropertyDrawEntity column, Version version) {
+        FormView richDesign = getNFRichDesign(version);
+        if(richDesign !=null)
+            richDesign.addPivotMeasure(column, version);
     }
 
     public void setNeedVerticalScroll(boolean scroll) {

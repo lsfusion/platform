@@ -175,11 +175,11 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public ClassViewType viewType = ClassViewType.DEFAULT;
     public ListViewType listViewType = ListViewType.DEFAULT;
     public PivotOptions pivotOptions;
-    public Integer pageSize;
 
-    public int getDefaultPageSize() {
-        return pageSize != null ? pageSize : Settings.get().getPageSizeDefaultValue();
-    }
+    // for now will use async init since pivot is analytics and don't need for example focuses and can afford extra round trip
+    public boolean asyncInit = true; // so far supported only for pivot
+
+    public Integer pageSize;
 
     public PropertyObjectEntity<?> propertyBackground;
     public PropertyObjectEntity<?> propertyForeground;

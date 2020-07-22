@@ -1138,7 +1138,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
                     if(!useGroupMode) { // we are not sure
                         int readSize = getPageSize();
-                        keys = SEEK_HOME.executeOrders(sql, env, modifier, baseClass, readSize, true, reallyChanged);
+                        if(readSize >= 0) // readSize -1 means that we're waiting for actual groups / pagesize
+                            keys = SEEK_HOME.executeOrders(sql, env, modifier, baseClass, readSize, true, reallyChanged);
                         if(keys.size() == readSize)
                             useGroupMode = true;
                     }

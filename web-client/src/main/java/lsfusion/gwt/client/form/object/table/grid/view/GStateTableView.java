@@ -132,8 +132,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         dataUpdated = true;
     }
 
+    // should correspond FormInstance.constructor - changePageSize method
     private int pageSize = 1000;
-    @Override
     public int getPageSize() {
         return pageSize;
     }
@@ -208,7 +208,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
     private boolean updateState;
 
-    protected void updateView(boolean dataUpdated, Boolean updateState) {
+    public void updateView(boolean dataUpdated, Boolean updateState) {
         if(updateState != null)
             this.updateState = updateState;
 
@@ -243,7 +243,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 if(wasRendererDropped == lastRendererDropped) // since set and drop has different timeouts
                     setFilter.run();
                 return false;
-            }, (int) MainFrame.busyDialogTimeout);
+            }, (int) MainFrame.updateRendererStateSetTimeout);
         } else {
             lastRendererDropped++;
             setFilter.run();

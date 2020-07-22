@@ -51,10 +51,6 @@ public class GGridController extends GAbstractTableController {
         return groupObject != null ? groupObject.pivotOptions : null;
     }
 
-    public GGridController(GFormController iformController) {
-        this(iformController, null, null);
-    }
-
     public GGridController(GFormController iformController, GGroupObject igroupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, igroupObject == null ? null : igroupObject.toolbar, isList(igroupObject));
         groupObject = igroupObject;
@@ -101,9 +97,11 @@ public class GGridController extends GAbstractTableController {
             configureToolbar();
 
             setUpdateMode(false);
-            switch (groupObject.listViewType) {
+            switch (groupObject.listViewType) { // we don't have to do changeListViewType, since it's a first start and it should be set on server
                 case PIVOT:
                     setPivotTableView();
+                    if(!groupObject.asyncInit)
+                        ((GPivot)table).setDefaultChangesApplied();
                     break;
                 case MAP:
                     setMapTableView();
@@ -136,10 +134,6 @@ public class GGridController extends GAbstractTableController {
         mapTableButton.showBackground(true);
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
-    }
-    private void changeMode(Runnable updateView) {
-        updateView.run();
-        table.setSetRequestIndex(formController.changeMode(groupObject, table.isGroup(), table.getPageSize(), table.getViewType()));
     }
 
     private boolean manual;
@@ -178,7 +172,8 @@ public class GGridController extends GAbstractTableController {
         gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
             public void addListener() {
                 addClickHandler(event -> {
-                    changeMode(() -> setGridTableView());
+                    setGridTableView();
+                    table.setSetRequestIndex(formController.changeListViewType(groupObject, -2, GListViewType.GRID));
                 });
             }
         };
@@ -187,7 +182,8 @@ public class GGridController extends GAbstractTableController {
         pivotTableButton = new GToolbarButton("pivot.png", messages.formGridPivotView()) {
             public void addListener() {
                 addClickHandler(event -> {
-                    changeMode(() -> setPivotTableView());
+                    setPivotTableView();
+                    table.setSetRequestIndex(formController.changeListViewType(groupObject, -1, GListViewType.PIVOT)); // we need to make a call to get columns to init default config
                 });
             }
         };
@@ -197,7 +193,8 @@ public class GGridController extends GAbstractTableController {
             mapTableButton = new GToolbarButton("map.png", messages.formGridMapView()) {
                 public void addListener() {
                     addClickHandler(event -> {
-                        changeMode(() -> setMapTableView());
+                        setMapTableView();
+                        table.setSetRequestIndex(formController.changeListViewType(groupObject, ((GMap)table).getPageSize(), GListViewType.MAP));
                     });
                 }
             };
@@ -612,8 +609,8 @@ public class GGridController extends GAbstractTableController {
         formController.changeFilter(groupObject, conditions);
     }
 
-    public void changeGroupMode(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, GPropertyGroupType aggrType) {
-        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, null, GListViewType.PIVOT);
+    public void changeGroups(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, Integer pageSize, GPropertyGroupType aggrType) {
+        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, pageSize, false, null, GListViewType.PIVOT);
     }
     public void changePageSize(int pageSize) {
         formController.changeMode(groupObject, false, null, null, 0, null, pageSize, false, null, null);

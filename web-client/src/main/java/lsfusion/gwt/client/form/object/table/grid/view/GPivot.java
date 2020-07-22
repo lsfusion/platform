@@ -82,15 +82,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
-    public boolean isGroup() {
-        return true;
-    }
-
-    @Override
-    public GListViewType getViewType() {
-        return GListViewType.PIVOT;
-    }
-
     // we need key / value view since pivot
     private JsArray<JsArrayMixed> getData(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings, boolean full) {
         JsArray<JsArrayMixed> array = JavaScriptObject.createArray().cast();
@@ -228,7 +219,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     public static final String COLUMN = ClientMessages.Instance.get().pivotColumnAttribute();
 
-    public boolean firstUpdateView = true;
+    private Boolean firstUpdateView = false; // true - default changes applied, false - not yet
+    public void setDefaultChangesApplied() {
+        firstUpdateView = true;
+    }
+
     @Override
     protected void updateView() {
         columnMap = new NativeHashMap<>();
@@ -237,10 +232,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
         boolean convertDataToStrings = false; // so far we'll not use renderer formatters and we'll rely on native toString (if we decide to do it we'll have to track renderer type and rerender everything if this type changes that can may lead to some blinking)
         JsArray<JsArrayMixed> data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings, true); // convertToObjects()
-        if(firstUpdateView) {
+
+        if(firstUpdateView != null) // we need to read data first, to know property captions
             initDefaultConfig(grid);
-            firstUpdateView = false;
-        }
+
         config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
         config = overrideCallbacks(config, getCallbacks());
         
@@ -528,8 +523,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             columnKeys.add(aggrColumn.columnKey);
         }
 
-        updateRendererState(true); // will wait until server will answer us if we need to change something
-        grid.changeGroupMode(properties, columnKeys, aggrProps, getGroupType(aggregatorName.toUpperCase()));
+        if(firstUpdateView == null || !firstUpdateView) { // we don't need to update server groups, since they should be already set
+            updateRendererState(true); // will wait until server will answer us if we need to change something
+            grid.changeGroups(properties, columnKeys, aggrProps, firstUpdateView != null ? getPageSize() : null, getGroupType(aggregatorName.toUpperCase())); // we need to do "changeListViewType" if it's firstUpdateView
+            firstUpdateView = null;
+        }
     }
 
     private void afterRefresh() {

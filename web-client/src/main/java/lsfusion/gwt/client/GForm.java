@@ -139,6 +139,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
         return getPivotProperties(group, pivotRows);
     }
 
+    // copy of GroupObjectEntity method
     public List<List<GPropertyDraw>> getPivotProperties(GGroupObject group, List<List<GPropertyDraw>> properties) {
         List<List<GPropertyDraw>> result = new ArrayList<>();
         for (List<GPropertyDraw> propertyEntry : properties) {

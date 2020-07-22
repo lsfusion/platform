@@ -30,6 +30,8 @@ public class GGroupObject implements Serializable {
     public GListViewType listViewType;
     public GPivotOptions pivotOptions;
 
+    public boolean asyncInit;
+
     public boolean isRecursive;
     public GTreeGroup parent;
     public List<GGroupObject> upTreeGroups = new ArrayList<>();

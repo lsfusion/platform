@@ -513,10 +513,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
         groupObject.filter = convertOrCast(clientGroupObject.filter);
+
         groupObject.viewType = GClassViewType.valueOf(clientGroupObject.viewType.name());
         groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());
-
         groupObject.pivotOptions = convertOrCast(clientGroupObject.pivotOptions);
+
+        groupObject.asyncInit = clientGroupObject.asyncInit;
 
         groupObject.isRecursive = clientGroupObject.isRecursive;
         groupObject.isMap = clientGroupObject.isMap;

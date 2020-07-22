@@ -133,8 +133,4 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         }
         return map;        
     }
-
-    public boolean isGroup() {
-        return false;
-    }
 }

@@ -97,6 +97,7 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
@@ -229,12 +230,53 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         groups = entity.getGroupsList().mapOrderSetValues(instanceFactory::getInstance);
         ImOrderSet<GroupObjectInstance> groupObjects = getOrderGroups();
+
+        ImMap<GroupObjectEntity, ImSet<PropertyDrawEntity>> groupPivotProps = null;
+        ImMap<GroupObjectEntity, ImSet<PropertyDrawEntity>> groupMeasureProps = null;
         for (int i = 0, size = groupObjects.size(); i < size; i++) {
             GroupObjectInstance groupObject = groupObjects.get(i);
+            GroupObjectEntity groupEntity = groupObject.entity;
+
             groupObject.order = i;
             groupObject.setClassListener(classListener);
             if(groupObject.pageSize == null)
-                groupObject.pageSize = entity.hasNoProperties(groupObject.entity) ? (entity.usedAsGroupColumn(groupObject.entity) ? 0 : 1) : Settings.get().getPageSizeDefaultValue();
+                groupObject.pageSize = entity.hasNoProperties(groupEntity) ? (entity.usedAsGroupColumn(groupEntity) ? 0 : 1) : Settings.get().getPageSizeDefaultValue();
+
+            if(groupObject.viewType.isList()) {
+                // should correspond RemoteForm.changeMode in general
+                ListViewType listViewType = groupEntity.listViewType;
+
+                if(listViewType != ListViewType.GRID) {
+                    if (listViewType == ListViewType.PIVOT) {
+                        if(groupEntity.asyncInit) // will wait for first changeGroupMode
+                            groupObject.setPageSize(-1);
+                        else {
+                            // should correspond RemoteForm.changeMode method (block with changeGroupMode)
+                            if (groupPivotProps == null) {
+                                groupPivotProps = entity.getPivotGroupProps();
+                                groupMeasureProps = entity.getPivotMeasureProps();
+                            }
+                            Function<PropertyDrawEntity, GroupColumn> propToColumn = prop -> new GroupColumn(instanceFactory.getInstance(prop), MapFact.EMPTY());
+
+                            ImSet<GroupColumn> pivotColumns = SetFact.EMPTY();
+                            ImSet<PropertyDrawEntity> pivotProps = groupPivotProps.get(groupEntity);
+                            if (pivotProps != null)
+                                pivotColumns = pivotProps.mapSetValues(propToColumn);
+
+                            ImSet<GroupColumn> measureColumns = SetFact.EMPTY();
+                            ImSet<PropertyDrawEntity> measureProps = groupMeasureProps.get(groupEntity);
+                            if (measureProps != null)
+                                measureColumns = measureProps.mapSetValues(propToColumn);
+
+                            groupObject.changeGroupMode(GroupMode.create(pivotColumns, measureColumns, groupEntity.pivotOptions.getAggregation(), instanceFactory));
+                            groupObject.setPageSize(1000); // GStateTableView.pageSize
+                        }
+                    } else
+                        changePageSize(groupObject, 1000); // GStateTableView.pageSize
+                }
+
+                changeListViewType(groupObject, listViewType);
+            }
         }
 
         for (TreeGroupEntity treeGroup : entity.getTreeGroupsIt()) {
@@ -297,9 +339,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     }
                 }
             }
-
-            if(groupObject.viewType.isList())
-                changeListViewType(groupObject, ListViewType.GRID);
         }
 
         for (int i = 0, size = mapObjects.size(); i < size; i++) {

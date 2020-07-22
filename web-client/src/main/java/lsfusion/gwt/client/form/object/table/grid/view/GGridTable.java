@@ -89,21 +89,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return autoSize;
     }
 
-    @Override
-    public int getPageSize() {
-        return -1;
-    }
-
-    @Override
-    public GListViewType getViewType() {
-        return GListViewType.GRID;
-    }
-
-    @Override
-    public boolean isGroup() {
-        return false;
-    }
-
     public GGridTable(GFormController iform, GGridController igroupController, GGridUserPreferences[] iuserPreferences, boolean autoSize) {
         super(iform, igroupController.groupObject, null);
 

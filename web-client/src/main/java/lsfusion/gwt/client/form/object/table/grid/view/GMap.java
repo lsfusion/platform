@@ -79,11 +79,6 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         }
     }
 
-    @Override
-    public GListViewType getViewType() {
-        return GListViewType.MAP;
-    }
-
     protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {
         changeProperty("latitude", lat, object);
         changeProperty("longitude", lng, object);
