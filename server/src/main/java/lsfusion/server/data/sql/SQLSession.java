@@ -1174,6 +1174,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             try {
                 needPrivate();
 
+                registerChange(table.getName(), owner, -1, TableChange.ADD);
+
                 WeakReference<TableOwner> value = new WeakReference<>(owner);
                 if(isExplainTemporaryTablesEnabled())
                     fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());

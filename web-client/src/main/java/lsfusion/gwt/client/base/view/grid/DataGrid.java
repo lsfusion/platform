@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -465,29 +466,13 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         else if (BrowserEvents.BLUR.equals(eventType))
             onBlur(event);
 
-//        else if (BrowserEvents.KEYDOWN.equals(eventType)) {
-//            // A key event indicates that we already have focus.
-//            isFocused = true;
-//        } else if (BrowserEvents.MOUSEDOWN.equals(eventType)
-//                && CellBasedWidgetImpl.get().isFocusable(Element.as(target))) {
-//            // If a natively focusable element was just clicked, then we must have
-//            // focus.
-//            isFocused = true;
-//        }
-
-        // Let subclasses handle the event now.
-        onBrowserEvent2(target, event);
-    }
-
-    @SuppressWarnings("deprecation")
-    protected <C> void onBrowserEvent2(Element target, Event event) {
         // Find the cell where the event occurred.
         TableSectionElement tbody = getTableBodyElement();
         TableSectionElement tfoot = getTableFootElement();
         TableSectionElement thead = getTableHeadElement();
 
         int row = -1;
-        Column<T, C> column = null;
+        Column column = null;
         Element columnParent = null;
 
         Header header = null;
@@ -1233,8 +1218,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     private void preAfterUpdateTableData(State<T> pendingState, int rowToShow, int colToShow) {
         if(!noScrollers) {
-            preAfterUpdateScrollHorizontal(pendingState, colToShow);
-            preAfterUpdateScrollVertical(pendingState, rowToShow);
+            if(GwtClientUtils.isShowing(this)) { // need this check, since grid can be already hidden (for example when SHOW DOCKED is executed), and in that case get*Width return 0, which leads for example to updateTablePaddings (removing scroll) and thus unnecessary blinking when the grid becomes visible again
+                preAfterUpdateScrollHorizontal(pendingState, colToShow);
+                preAfterUpdateScrollVertical(pendingState, rowToShow);
+            } else
+                assert tableDataScroller.getClientWidth() == 0 && tableDataScroller.getOffsetWidth() == 0;
         }
     }
 
@@ -1312,8 +1300,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     boolean hasVerticalScroll = false;
     private void afterUpdateTableData(State<T> pendingState) {
         if(!noScrollers) {
-            afterUpdateScrollHorizontal(pendingState);
-            afterUpdateScrollVertical(pendingState);
+            if(GwtClientUtils.isShowing(this)) { // see comment in preAfterUpdateTableData
+                afterUpdateScrollHorizontal(pendingState);
+                afterUpdateScrollVertical(pendingState);
+            }
         }
     }
 
