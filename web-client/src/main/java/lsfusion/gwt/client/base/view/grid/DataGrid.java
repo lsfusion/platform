@@ -503,7 +503,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                 if(row < 0)
                     row = tableBuilder.getRowValueIndex(cur);
                 if (column == null) {
-                    column = (Column<T, C>) tableBuilder.getColumn(cur);
+                    column = tableBuilder.getColumn(cur);
                     if(column != null)
                         columnParent = cur;
                 }
