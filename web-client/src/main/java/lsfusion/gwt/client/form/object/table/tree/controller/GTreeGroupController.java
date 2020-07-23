@@ -135,9 +135,11 @@ public class GTreeGroupController extends GAbstractTableController {
 
         treeView.setVisible(isTreeVisible);
 
-        if (toolbarView != null) {
+        if (toolbarView != null)
             toolbarView.setVisible(isTreeVisible);
-        }
+
+        for (GGroupObject groupObject : treeGroup.groups)
+            formController.setFiltersVisible(groupObject, isTreeVisible);
 
         panel.update();
 

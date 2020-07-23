@@ -125,6 +125,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final Map<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
     private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
 
+    private final Map<GGroupObject, List<Widget>> filterViews = new HashMap<>();
+
     private final LinkedHashMap<Long, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
     private final NativeHashMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeHashMap<>();
     private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<>();
@@ -295,6 +297,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
         formLayout.addBaseComponent(filterGroup, filterWidget, null);
+
+        // need this to hide / show regular filters when group object is not visible
+        if (filterGroup.groupObject != null)
+            filterViews.computeIfAbsent(filterGroup.groupObject, k -> new ArrayList<>()).add(filterWidget);
+    }
+
+    public void setFiltersVisible(GGroupObject groupObject, boolean visible) {
+        List<Widget> groupFilters = filterViews.get(groupObject);
+        if (groupFilters != null)
+            for (Widget filterView : groupFilters)
+                filterView.setVisible(visible);
     }
 
     private void setRegularFilter(GRegularFilterGroup filterGroup, int index) {
