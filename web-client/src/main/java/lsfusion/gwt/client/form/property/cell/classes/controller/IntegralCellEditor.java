@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -30,13 +29,6 @@ public class IntegralCellEditor extends TextBasedCellEditor {
             return format.format((Number) value);
         }
         return "";
-    }
-
-    @Override
-    public Element createInputElement() {
-        Element element = super.createInputElement();
-        element.setAttribute("type", "number");
-        return element;
     }
 
     @Override
