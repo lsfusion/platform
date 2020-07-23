@@ -9,7 +9,6 @@ import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.authentication.OAuth2Credentials;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -177,11 +176,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public AuthenticationToken authenticateUser(Authentication authentication) throws RemoteException {
         return securityManager.authenticateUser(authentication, getStack());
-    }
-
-    @Override
-    public List<OAuth2Credentials> getOauth2ClientCredentials(String authSecret) throws RemoteException {
-        return securityManager.getOauth2ClientCredentials(authSecret);
     }
 
     @Override

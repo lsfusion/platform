@@ -235,53 +235,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public List<OAuth2Credentials> getOauth2ClientCredentials(String authSecret) {
-        String webClientAuthSecret = getWebClientSecret();
-        List<OAuth2Credentials> credentials = new ArrayList<>();
-
-        if (webClientAuthSecret != null && webClientAuthSecret.equals(authSecret)) {
-            try (DataSession session = createSession()) {
-                KeyExpr oauth2 = new KeyExpr("oauth2");
-                ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("key", oauth2);
-                QueryBuilder<Object, String> query = new QueryBuilder<>(keys);
-                query.addProperty("id", authenticationLM.oauth2id.getExpr(oauth2));
-                query.addProperty("clientId", authenticationLM.oauth2ClientId.getExpr(oauth2));
-                query.addProperty("clientSecret", authenticationLM.oauth2ClientSecret.getExpr(oauth2));
-                query.addProperty("clientAuthenticationMethod", authenticationLM.oauth2ClientAuthenticationMethod.getExpr(oauth2));
-                query.addProperty("scope", authenticationLM.oauth2Scope.getExpr(oauth2));
-                query.addProperty("authorizationUri", authenticationLM.oauth2AuthorizationUri.getExpr(oauth2));
-                query.addProperty("tokenUri", authenticationLM.oauth2TokenUri.getExpr(oauth2));
-                query.addProperty("jwkSetUri", authenticationLM.oauth2JwkSetUri.getExpr(oauth2));
-                query.addProperty("userInfoUri", authenticationLM.oauth2UserInfoUri.getExpr(oauth2));
-                query.addProperty("userNameAttributeName", authenticationLM.oauth2UserNameAttributeName.getExpr(oauth2));
-                query.addProperty("clientName", authenticationLM.oauth2ClientName.getExpr(oauth2));
-                query.and(authenticationLM.oauth2id.getExpr(oauth2).getWhere());
-                ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> resultMap = query.execute(session);
-
-                for (ImMap<String, Object> value : resultMap.values()) {
-                    credentials.add(new OAuth2Credentials(
-                            (String) value.get("clientAuthenticationMethod"),
-                            (String) value.get("id"),
-                            (String) value.get("scope"),
-                            (String) value.get("authorizationUri"),
-                            (String) value.get("tokenUri"),
-                            (String) value.get("jwkSetUri"),
-                            (String) value.get("userInfoUri"),
-                            (String) value.get("userNameAttributeName"),
-                            (String) value.get("clientName"),
-                            (String) value.get("clientSecret"),
-                            (String) value.get("clientId")
-                    ));
-                }
-                return credentials;
-            } catch (SQLException | SQLHandledException e) {
-                throw Throwables.propagate(e);
-            }
-        } else {
-            throw new AuthenticationException(getString("exceptions.incorrect.web.client.auth.token"));
-        }
-    }
-
     public AuthenticationToken authenticateUser(Authentication authentication, ExecutionStack stack) {
         try (DataSession session = createSession()) {
             DataObject userObject;

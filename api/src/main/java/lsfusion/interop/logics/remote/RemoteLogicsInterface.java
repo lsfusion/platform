@@ -4,7 +4,6 @@ import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.authentication.OAuth2Credentials;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
@@ -24,7 +23,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     // authentication
     AuthenticationToken authenticateUser(Authentication authentication) throws RemoteException;
-    List<OAuth2Credentials> getOauth2ClientCredentials(String authSecret) throws RemoteException;
 
     // stateful interfaces
     RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException;

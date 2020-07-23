@@ -5,7 +5,6 @@ import lsfusion.client.session.remote.proxy.RemoteSessionProxy;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.authentication.OAuth2Credentials;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -51,14 +50,6 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
         AuthenticationToken result = target.authenticateUser(authentication);
         logRemoteMethodEndCall("authenticateUser", result);
         return result;
-    }
-
-    @Override
-    public List<OAuth2Credentials> getOauth2ClientCredentials(String authSecret) throws RemoteException {
-        logRemoteMethodStartCall("getOauth2Client");
-        List<OAuth2Credentials> oauth2Credentials = target.getOauth2ClientCredentials(authSecret);
-        logRemoteMethodStartCall("getOauth2Client");
-        return oauth2Credentials;
     }
 
     public long generateID() throws RemoteException {
