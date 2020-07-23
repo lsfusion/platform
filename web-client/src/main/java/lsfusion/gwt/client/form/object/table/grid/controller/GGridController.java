@@ -102,6 +102,7 @@ public class GGridController extends GAbstractTableController {
             switch (groupObject.listViewType) { // we don't have to do changeListViewType, since it's a first start and it should be set on server
                 case PIVOT:
                     setPivotTableView();
+                    ((GPivot)table).initDefaultSettings(this);
                     if(!groupObject.asyncInit)
                         ((GPivot)table).setDefaultChangesApplied();
                     break;
@@ -113,6 +114,7 @@ public class GGridController extends GAbstractTableController {
                     setGridTableView();
             }
             table.setSetRequestIndex(-1);
+            updateSettingsButton();
         }
     }
     
@@ -136,6 +138,11 @@ public class GGridController extends GAbstractTableController {
         mapTableButton.showBackground(true);
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
+    }
+    private void changeMode(Runnable updateView,  int pageSize, GListViewType viewType) {
+        updateView.run();
+        table.setSetRequestIndex(formController.changeListViewType(groupObject, pageSize, viewType));
+        updateSettingsButton();
     }
 
     private boolean manual;
@@ -174,8 +181,7 @@ public class GGridController extends GAbstractTableController {
         gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
             public void addListener() {
                 addClickHandler(event -> {
-                    setGridTableView();
-                    table.setSetRequestIndex(formController.changeListViewType(groupObject, -2, GListViewType.GRID));
+                    changeMode(() -> setGridTableView(), -2, GListViewType.GRID);
                 });
             }
         };
@@ -184,8 +190,7 @@ public class GGridController extends GAbstractTableController {
         pivotTableButton = new GToolbarButton("pivot.png", messages.formGridPivotView()) {
             public void addListener() {
                 addClickHandler(event -> {
-                    setPivotTableView();
-                    table.setSetRequestIndex(formController.changeListViewType(groupObject, -1, GListViewType.PIVOT)); // we need to make a call to get columns to init default config
+                    changeMode(() -> setPivotTableView(), -1, GListViewType.PIVOT); // we need to make a call to get columns to init default config
                 });
             }
         };
@@ -195,8 +200,7 @@ public class GGridController extends GAbstractTableController {
             mapTableButton = new GToolbarButton("map.png", messages.formGridMapView()) {
                 public void addListener() {
                     addClickHandler(event -> {
-                        setMapTableView();
-                        table.setSetRequestIndex(formController.changeListViewType(groupObject, ((GMap)table).getPageSize(), GListViewType.MAP));
+                        changeMode(() -> setMapTableView(), ((GMap)table).getPageSize(), GListViewType.MAP);
                     });
                 }
             };
