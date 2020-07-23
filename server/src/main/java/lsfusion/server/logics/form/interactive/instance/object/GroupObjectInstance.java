@@ -1137,10 +1137,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                         useGroupMode = false;
 
                     if(!useGroupMode) { // we are not sure
-                        int readSize = getPageSize();
-                        if(readSize >= 0) // readSize -1 means that we're waiting for actual groups / pagesize
-                            keys = SEEK_HOME.executeOrders(sql, env, modifier, baseClass, readSize, true, reallyChanged);
-                        if(keys.size() == readSize)
+                        int pageSize = getPageSize();
+                        if(pageSize >= 0) // pageSize -1 means that we're waiting for actual groups / pagesize
+                            keys = SEEK_HOME.executeOrders(sql, env, modifier, baseClass, pageSize, true, reallyChanged);
+                        if(keys.size() == pageSize)
                             useGroupMode = true;
                     }
 
@@ -1152,43 +1152,47 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 } else {
                     this.groupMode = null;
 
-                    SeekOrderObjects orderSeeks;
-                    if(seeks == SEEK_NULL)
-                        orderSeeks = SEEK_HOME;
-                    else
-                        orderSeeks = (SeekOrderObjects)seeks;
+                    int pageSize = getPageSize();
+                    if(pageSize >= 0) { // pageSize -1 means that we're waiting for actual groups / pagesize
+                        SeekOrderObjects orderSeeks;
+                        if (seeks == SEEK_NULL)
+                            orderSeeks = SEEK_HOME;
+                        else
+                            orderSeeks = (SeekOrderObjects) seeks;
 
-                    if (!orders.starts(orderSeeks.values.keys())) // если не "хватает" спереди ключей, дочитываем
-                        orderSeeks = orderSeeks.readValues(sql, env, modifier, baseClass, reallyChanged);
+                        if (!orders.starts(orderSeeks.values.keys())) // если не "хватает" спереди ключей, дочитываем
+                            orderSeeks = orderSeeks.readValues(sql, env, modifier, baseClass, reallyChanged);
 
-                    if (direction == DIRECTION_CENTER) { // оптимизируем если HOME\END, то читаем одним запросом
-                        if (orderSeeks.values.isEmpty()) {
-                            if (orderSeeks.end) { // END
-                                direction = DIRECTION_UP;
-                                downKeys = false;
-                            } else { // HOME
-                                direction = DIRECTION_DOWN;
-                                upKeys = false;
+                        if (direction == DIRECTION_CENTER) { // оптимизируем если HOME\END, то читаем одним запросом
+                            if (orderSeeks.values.isEmpty()) {
+                                if (orderSeeks.end) { // END
+                                    direction = DIRECTION_UP;
+                                    downKeys = false;
+                                } else { // HOME
+                                    direction = DIRECTION_DOWN;
+                                    upKeys = false;
+                                }
                             }
+                        } else {
+                            downKeys = true;
+                            upKeys = true;
+                            assert !orderSeeks.values.isEmpty();
                         }
-                    } else {
-                        downKeys = true;
-                        upKeys = true;
-                        assert !orderSeeks.values.isEmpty();
-                    }
 
-                    int readSize = getPageSize() * 3 / (direction == DIRECTION_CENTER ? 2 : 1);
+                        int readSize = pageSize * 3 / (direction == DIRECTION_CENTER ? 2 : 1);
 
-                    if (direction == DIRECTION_UP || direction == DIRECTION_CENTER) { // сначала Up
-                        keys = keys.addOrderExcl(orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, false, reallyChanged).reverseOrder());
-                        upKeys = (keys.size() == readSize);
-                        activeRow = keys.size() - 1;
-                    }
-                    if (direction == DIRECTION_DOWN || direction == DIRECTION_CENTER) { // затем Down
-                        ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> executeList = orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true, reallyChanged);
-                        if (executeList.size() > 0 && !(orderSeeks.end && activeRow > 0)) activeRow = keys.size(); // не выбираем если идет seekDown и уже выбран ряд - это то что надо
-                        keys = keys.addOrderExcl(executeList);
-                        downKeys = (executeList.size() == readSize);
+                        if (direction == DIRECTION_UP || direction == DIRECTION_CENTER) { // сначала Up
+                            keys = keys.addOrderExcl(orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, false, reallyChanged).reverseOrder());
+                            upKeys = (keys.size() == readSize);
+                            activeRow = keys.size() - 1;
+                        }
+                        if (direction == DIRECTION_DOWN || direction == DIRECTION_CENTER) { // затем Down
+                            ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> executeList = orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true, reallyChanged);
+                            if (executeList.size() > 0 && !(orderSeeks.end && activeRow > 0))
+                                activeRow = keys.size(); // не выбираем если идет seekDown и уже выбран ряд - это то что надо
+                            keys = keys.addOrderExcl(executeList);
+                            downKeys = (executeList.size() == readSize);
+                        }
                     }
                 }
             }

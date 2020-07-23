@@ -8,6 +8,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -32,6 +33,7 @@ import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 
@@ -759,6 +761,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public Object getSelectedValue(GPropertyDraw property) {
         GTreeGridRecord record = getSelectedRecord();
         return record == null ? null : record.getValue(property);
+    }
+
+    public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getSelectedColumns(GGroupObject selectedGroupObject) {
+        return tree.getProperties(selectedGroupObject).stream().map(property ->
+            getSelectedColumn(property, GGroupObjectValue.EMPTY)
+        ).collect(Collectors.toList());
     }
 
     @Override

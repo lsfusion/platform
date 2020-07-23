@@ -2,9 +2,11 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.util.*;
 
@@ -64,6 +66,7 @@ public interface GTableView {
 
     // toolbar features
     void runGroupReport();
+    List<Pair<Column, String>> getSelectedColumns(); // for filter to get all columns with keys and captions
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey); // for filter to set default value
 
     boolean hasUserPreferences();

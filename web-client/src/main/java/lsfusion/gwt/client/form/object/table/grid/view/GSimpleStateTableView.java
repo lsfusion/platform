@@ -2,14 +2,9 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayNumber;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.DivWidget;
-import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
@@ -17,6 +12,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.io.Serializable;
 import java.util.*;

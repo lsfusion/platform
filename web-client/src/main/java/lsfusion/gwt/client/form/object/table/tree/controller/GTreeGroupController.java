@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.object.table.tree.controller;
 import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
-import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -18,11 +18,11 @@ import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.property.*;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
 public class GTreeGroupController extends GAbstractTableController {
 
@@ -264,6 +264,11 @@ public class GTreeGroupController extends GAbstractTableController {
     @Override
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         return tree.getSelectedValue(property);
+    }
+
+    @Override
+    public List<Pair<Column, String>> getSelectedColumns() {
+        return tree.getSelectedColumns(getSelectedGroupObject());
     }
 
     public boolean focusFirstWidget() {

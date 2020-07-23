@@ -18,12 +18,12 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.filter.user.GCompare;
-import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValue;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.GPivotOptions;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -33,6 +33,7 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
+import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -147,7 +148,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             List<Map<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(baseOrder);
 
             for (GGroupObjectValue columnKey : propColumnKeys) {
-                String caption = getPropertyCaption(propCaptions, property, columnKey);
+                String caption = GGridPropertyTable.getPropertyCaption(propCaptions, property, columnKey);
 
                 columnMap.put(caption, new Column(property, columnKey));
 
@@ -206,15 +207,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private void pushValue(JsArrayMixed rowValues, Map<GGroupObjectValue, Object> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer) {
         Object value = propValues.get(fullKey);
         rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value) : value) : null);
-    }
-
-    private String getPropertyCaption(Map<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
-        String caption;
-        if (propCaptions != null)
-            caption = property.getDynamicCaption(propCaptions.get(columnKey));
-        else
-            caption = property.getCaptionOrEmpty();
-        return caption;
     }
 
     public static final String COLUMN = ClientMessages.Instance.get().pivotColumnAttribute();
@@ -1787,15 +1779,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         List<GPropertyFilter> filters = new ArrayList<>();
         for (int i = 0; i < elements.length(); i++) {
             Column column = columnMap.get(elements.get(i));
-            if (column != null) {
-                GPropertyFilter filter = new GPropertyFilter();
-                filter.property = column.property;
-                GDataFilterValue filterValue = new GDataFilterValue();
-                filterValue.value = values.get(i);
-                filter.value = filterValue;
-                filter.compare = GCompare.EQUALS;
-                filters.add(filter);
-            }
+            if (column != null)
+                filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, values.get(i), GCompare.EQUALS));
         }
         return filters;
     }

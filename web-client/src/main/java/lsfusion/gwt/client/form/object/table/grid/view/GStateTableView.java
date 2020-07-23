@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.DivWidget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
@@ -16,7 +17,9 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
@@ -43,16 +46,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<Map<GGroupObjectValue, Object>> values = new ArrayList<>();
     protected List<List<Map<GGroupObjectValue, Object>>> lastAggrs = new ArrayList<>();
     protected List<Map<GGroupObjectValue, Object>> readOnlys = new ArrayList<>();
-
-    protected static class Column {
-        public final GPropertyDraw property;
-        public final GGroupObjectValue columnKey;
-
-        public Column(GPropertyDraw property, GGroupObjectValue columnKey) {
-            this.property = property;
-            this.columnKey = columnKey;
-        }
-    }
 
     public final native JsArrayMixed clone(JsArrayMixed array) /*-{
         n = array.length;
@@ -351,6 +344,19 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         return null;
+    }
+
+    @Override
+    public List<Pair<Column, String>> getSelectedColumns() {
+        List<Pair<Column, String>> result = new ArrayList<>();
+        for(int i=0,size=properties.size();i<size;i++) {
+            GPropertyDraw property = properties.get(i);
+            Map<GGroupObjectValue, Object> propertyCaptions = captions.get(i);
+            List<GGroupObjectValue> columns = columnKeys.get(i);
+            for (GGroupObjectValue column : columns)
+                result.add(GGridPropertyTable.getSelectedColumn(propertyCaptions, property, column));
+        }
+        return result;
     }
 
     @Override

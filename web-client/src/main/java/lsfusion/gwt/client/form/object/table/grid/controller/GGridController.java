@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.SimpleImageButton;
@@ -24,6 +25,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 import lsfusion.gwt.client.form.object.table.grid.view.*;
 import lsfusion.gwt.client.form.object.table.view.GridPanel;
 import lsfusion.gwt.client.form.property.*;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.util.*;
 
@@ -475,6 +477,11 @@ public class GGridController extends GAbstractTableController {
     @Override
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         return table.getSelectedValue(property, columnKey);
+    }
+
+    @Override
+    public List<Pair<Column, String>> getSelectedColumns() {
+        return table.getSelectedColumns();
     }
 
     private void removeProperty(GPropertyDraw property) {

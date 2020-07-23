@@ -58,7 +58,7 @@ public abstract class GUserFilters {
         if(alwaysAddNew || conditions.isEmpty()) {
             conditions.add(getNewCondition(propertyDraw, columnKey));
         }
-        new GFilterView(this).showDialog(conditions, logicsSupplier, keyEvent, propertyDraw);
+        new GFilterView(this).showDialog(conditions, logicsSupplier, keyEvent, propertyDraw, columnKey);
     }
 
     private void updateToolbarButton() {
@@ -74,50 +74,30 @@ public abstract class GUserFilters {
     public GPropertyFilter getNewCondition(GPropertyDraw property, GGroupObjectValue columnKey) {
         GPropertyDraw filterProperty = property;
         GGroupObjectValue filterColumnKey = columnKey;
+        Object filterValue = null;
 
         if(filterProperty == null) {
             filterProperty = logicsSupplier.getSelectedProperty();
-            if(filterProperty != null)
+            if(filterProperty != null) {
                 filterColumnKey = logicsSupplier.getSelectedColumn();
+                filterValue = logicsSupplier.getSelectedValue(filterProperty, filterColumnKey);
+            }
         }
-        if (filterProperty == null) {
-            //не добавляем, если нет ни одного свойства
+        if (filterProperty == null)
             return null;
-        }
 
-        GPropertyFilter filter = new GPropertyFilter();
-        filter.property = filterProperty;
-        filter.columnKey = filterColumnKey;
-        GDataFilterValue filterValue = new GDataFilterValue();
-        filterValue.value = (Serializable) logicsSupplier.getSelectedValue(filterProperty, filterColumnKey);
-        filter.value = filterValue;
-        filter.groupObject = logicsSupplier.getSelectedGroupObject();
-        filter.compare = filter.getDefaultCompare();
-        return filter;
+        return new GPropertyFilter(logicsSupplier.getSelectedGroupObject(), filterProperty, filterColumnKey, filterValue, filterProperty.getDefaultCompare());
     }
 
     public void applyFilters(List<GPropertyFilter> filters, boolean replace) {
         if(replace) {
             conditions = filters;
         } else {
-            for (GPropertyFilter filter : filters) {
-                GPropertyFilter condition = findConditionByProperty(filter.property);
-                if (condition != null) {
-                    conditions.remove(condition);
-                }
-                conditions.add(filter);
-            }
+            for (GPropertyFilter filter : filters)
+                if (!conditions.contains(filter))
+                    conditions.add(filter);
         }
         applyQuery();
-    }
-
-    private GPropertyFilter findConditionByProperty(GPropertyDraw property) {
-        for(GPropertyFilter condition : conditions) {
-            if(condition.property.equals(property)) {
-                return condition;
-            }
-        }
-        return null;
     }
 
     public void allRemovedPressed() {

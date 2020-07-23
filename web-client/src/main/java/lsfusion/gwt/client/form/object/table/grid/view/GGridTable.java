@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -304,7 +305,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
 
             int rowHeight = 0;
-            int headerHeight = getHeaderHeight();
 
             int currentIndex = 0;
             NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<>();
@@ -327,25 +327,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             }
                         }
 
-                        //дублирование логики изменения captions для оптимизации
-                        String columnCaption;
-                        Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
-                        columnCaption = getUserCaption(property);
-                        if (columnCaption == null) {
-                            Object propCaption = null;
-                            if (propCaptions == null || (propCaption = propCaptions.get(columnKey)) != null) {
-                                if (propCaptions != null) {
-                                    columnCaption = property.getDynamicCaption(propCaption);
-                                } else {
-                                    columnCaption = property.getCaptionOrEmpty();
-                                }
-                            }
-                        }
-
-                        GGridPropertyTableHeader header = getGridHeader(currentIndex);
-                        header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
-                        header.setToolTip(property.getTooltipText(columnCaption));
-                        header.setHeaderHeight(headerHeight);
+                        // we do update captions and columns together for optimization purposes
+                        updatePropertyHeader(columnKey, property, currentIndex);
 
                         property.setUserPattern(getUserPattern(property));
 
@@ -427,17 +410,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         if (captionsUpdated) {
             for (int i = 0, size = getColumnCount(); i < size; ++i) {
                 GridColumn gridColumn = getGridColumn(i);
-                GPropertyDraw property = gridColumn.property;
-
-                String columnCaption;
-                Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
-                if (propCaptions != null) {
-                    columnCaption = property.getDynamicCaption(propCaptions.get(gridColumn.columnKey));
-                } else {
-                    columnCaption = property.getCaptionOrEmpty();
-                }
-
-                getGridHeader(i).setCaption(columnCaption, property.notNull, property.hasChangeAction);
+                updatePropertyHeader(gridColumn.columnKey, gridColumn.property, i);
             }
             refreshHeaders();
             captionsUpdated = false;
@@ -618,12 +591,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         GridDataRecord selectedRecord = getSelectedRowValue();
-        int column = getPropertyIndex(property, columnKey);
-        if (selectedRecord != null && column != -1 && column < getColumnCount()) {
-            return getGridColumn(column).getValue(selectedRecord);
-        }
+        if (selectedRecord != null)
+            return getGridColumn(getPropertyIndex(property, columnKey)).getValue(selectedRecord);
 
         return null;
+    }
+
+    @Override
+    public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getSelectedColumns() {
+        List<Pair<lsfusion.gwt.client.form.view.Column, String>> result = new ArrayList<>();
+        for(GPropertyDraw property : properties)
+            for(GGroupObjectValue columnKey : columnKeys.get(property))
+                result.add(getSelectedColumn(property, columnKey));
+        return result;
     }
 
     public void setCurrentKey(GGroupObjectValue currentKey) {

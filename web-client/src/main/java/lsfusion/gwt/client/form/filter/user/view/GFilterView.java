@@ -19,6 +19,7 @@ import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -109,7 +110,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         stopPropagation(event);
     }
 
-    public void showDialog(List<GPropertyFilter> conditions, GTableController logicsSupplier, Event keyEvent, GPropertyDraw propertyDraw) {
+    public void showDialog(List<GPropertyFilter> conditions, GTableController logicsSupplier, Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         if(!conditions.isEmpty()) {
             for (GPropertyFilter condition : conditions) {
                 addCondition(condition, logicsSupplier);
@@ -120,7 +121,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
             filterDialog.center();
             focusOnValue();
             if(keyEvent != null) {
-                startEditing(keyEvent, propertyDraw);
+                startEditing(keyEvent, propertyDraw, columnKey);
             }
         }
     }
@@ -220,10 +221,10 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         hideDialog();
     }
 
-    public void startEditing(Event keyEvent, GPropertyDraw propertyDraw) {
+    public void startEditing(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         if (conditionViews.size() > 0) {
             GFilterConditionView view = conditionViews.values().iterator().next();
-            view.setSelectedPropertyDraw(propertyDraw);
+            view.setSelectedPropertyDraw(propertyDraw, columnKey);
             view.startEditing(keyEvent);
         }
     }

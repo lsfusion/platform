@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.design;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;

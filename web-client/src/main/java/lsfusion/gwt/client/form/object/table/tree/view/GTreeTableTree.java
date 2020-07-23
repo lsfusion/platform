@@ -241,6 +241,9 @@ public class GTreeTableTree {
         return result;
     }
 
+    public List<GPropertyDraw> getProperties(GGroupObject group) {
+        return groupProperties.get(group);
+    }
     public GPropertyDraw getProperty(GGroupObject group, int column) {
         column = column - 1;
 

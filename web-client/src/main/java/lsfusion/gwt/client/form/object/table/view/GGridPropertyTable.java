@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
@@ -42,6 +43,15 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellForegroundValues = new HashMap<>();
     protected Map<GGroupObjectValue, Object> rowBackgroundValues = new HashMap<>();
     protected Map<GGroupObjectValue, Object> rowForegroundValues = new HashMap<>();
+
+    public static String getPropertyCaption(Map<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
+        String caption;
+        if (propCaptions != null)
+            caption = property.getDynamicCaption(propCaptions.get(columnKey));
+        else
+            caption = property.getCaptionOrEmpty();
+        return caption;
+    }
 
     protected GGridPropertyTableHeader getGridHeader(int i) {
         return (GGridPropertyTableHeader) getHeader(i);
@@ -362,6 +372,37 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             prefs[i] = pref;
         }
         updateLayoutWidthColumns();
+    }
+
+    protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
+        String columnCaption = getPropertyCaption(property, columnKey);
+        GGridPropertyTableHeader header = getGridHeader(index);
+        header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
+        header.setToolTip(property.getTooltipText(columnCaption));
+        header.setHeaderHeight(getHeaderHeight());
+    }
+
+    public Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(property, columnKey));
+    }
+    public static Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(Map<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
+        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(propCaptions, property, columnKey));
+    }
+
+    protected String getPropertyCaption(GPropertyDraw property, GGroupObjectValue columnKey) {
+        String userCaption = getUserCaption(property);
+        if (userCaption != null)
+            return userCaption;
+
+        return getPropertyCaption(propertyCaptions.get(property), property, columnKey);
+    }
+
+    protected int getHeaderHeight() {
+        return 0;
+    }
+
+    protected String getUserCaption(GPropertyDraw propertyDraw) {
+        return null;
     }
 
     protected boolean isColumnFlex(int i) {

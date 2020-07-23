@@ -84,6 +84,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean noSort;
     public GCompare defaultCompare;
 
+    public GCompare getDefaultCompare() {
+        return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+    }
+
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
     public boolean showChangeKey;
 

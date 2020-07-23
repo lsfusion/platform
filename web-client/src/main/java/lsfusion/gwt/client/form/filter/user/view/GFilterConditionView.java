@@ -9,14 +9,14 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CheckBox;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
-import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GFontMetrics;
-import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.filter.user.*;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,21 +50,18 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
         propertyView = new GFilterConditionListBox();
         propertyView.addStyleName("customFontPresenter");
-        for (GPropertyDraw property : logicsSupplier.getGroupObjectProperties()) {
-            propertyView.add(property, property.getNotEmptyCaption());
-        }
-        propertyView.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                condition.property = (GPropertyDraw) propertyView.getSelectedItem();
-                condition.columnKey = null;
-                filterChanged();
-            }
+        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns())
+            propertyView.add(column.first, column.second);
+        propertyView.addChangeHandler(event -> {
+            Column selectedItem = (Column)propertyView.getSelectedItem();
+            condition.property = selectedItem.property;
+            condition.columnKey = selectedItem.columnKey;
+            filterChanged();
         });
         add(propertyView);
 
         if (condition.property != null) {
-            setSelectedPropertyDraw(condition.property);
+            setSelectedPropertyDraw(condition.property, condition.columnKey);
         }
 
         negationView = new CheckBox(messages.formFilterConditionViewNot());
@@ -171,7 +168,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             valueView.propertyChanged(condition);
         }
         compareView.setItems(condition.property.baseType.getFilterCompares());
-        compareView.setSelectedItem(condition.getDefaultCompare());
+        compareView.setSelectedItem(condition.property.getDefaultCompare());
         condition.compare = (GCompare) compareView.getSelectedItem();
 
         handler.conditionChanged();
@@ -186,10 +183,9 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         junctionView.setEnabled(enabled);
     }
 
-    public void setSelectedPropertyDraw(GPropertyDraw propertyDraw) {
-        if (propertyDraw != null) {
-            propertyView.setSelectedItem(propertyDraw);
-        }
+    public void setSelectedPropertyDraw(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+        if (propertyDraw != null)
+            propertyView.setSelectedItem(new Column(propertyDraw, columnKey));
     }
 
     @Override
