@@ -549,6 +549,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private Element getHeaderTableScroller() {
         return getElement(rendererElement, ".headerdiv");
     }
+    private Element getBodyTableScroller() {
+        return getElement(rendererElement, ".bodydiv");
+    }
     private Element getPivotRendererAreaElement() {
         return getElement(rendererElement, ".pvtRendererArea");
     }
@@ -1239,18 +1242,23 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void updateTableToExcelAttributes(Element rootDiv) {
-        boolean excludeFirstColumn = getTotalRowLevels() > 1;
+        int totalRowLevels = getTotalRowLevels();
+        boolean excludeFirstColumn = totalRowLevels > 1;
 
-        //set row height, outlineLevel, exclude first column
+        //set row height
         NodeList<Element> trs = getElements(rootDiv, "tr");
         for (int i = 0; i < trs.getLength(); i++) {
             Element tr = trs.getItem(i);
             tr.setAttribute("data-height", String.valueOf(getTableToExcelMaxRowHeight(tr)));
-            String rowLevel = nullEmpty(getAttributeRecursive(tr, CELL_ROW_LEVEL_ATTRIBUTE_KEY));
-            if(rowLevel != null) {
-                tr.setAttribute("data-outline-level", String.valueOf(Integer.parseInt(rowLevel)));
-            }
-            if(excludeFirstColumn) {
+        }
+
+        //set outlineLevel
+        if (excludeFirstColumn) {
+            NodeList<Element> bodyTrs = getElements(getBodyTableScroller(), "tr");
+            for (int i = 0; i < bodyTrs.getLength(); i++) {
+                Element tr = bodyTrs.getItem(i);
+                String rowLevel = nullEmpty(getAttributeRecursive(tr, CELL_ROW_LEVEL_ATTRIBUTE_KEY));
+                tr.setAttribute("data-outline-level", String.valueOf((rowLevel != null ? Integer.parseInt(rowLevel) : totalRowLevels) - 1));
                 Element firstTH = getElement(tr, "th");
                 if (firstTH != null) {
                     firstTH.setAttribute("data-exclude", "true");
