@@ -57,12 +57,16 @@ public class ResourceBundleGenerator {
         StringBuilder builder = new StringBuilder();
         boolean isStart = true;
         for (int i = 0; i < value.length(); ++i) {
-            char ch = Character.toLowerCase(value.charAt(i));
-            if (ch >= 'a' && ch <= 'z' || ch == '_' || Character.isDigit(ch) && builder.length() > 0) {
+            char ch = value.charAt(i);
+            if (ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z'|| ch == '_' || Character.isDigit(ch) && builder.length() > 0) {
                 builder.append(ch);
                 isStart = false;
             } else if (Character.UnicodeBlock.of(ch).equals(Character.UnicodeBlock.CYRILLIC)) {
-                builder.append(transliterationMap.get(ch));
+                String tranliterated = transliterationMap.get(Character.toLowerCase(ch));
+                if (Character.isUpperCase(ch)) {
+                    tranliterated = tranliterated.toUpperCase();
+                }
+                builder.append(tranliterated);
                 isStart = false;
             } else if (!isStart) {
                 isStart = true;
