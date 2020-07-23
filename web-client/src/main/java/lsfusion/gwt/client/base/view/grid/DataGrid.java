@@ -267,6 +267,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             eventTypes.add(BrowserEvents.MOUSEUP);
             eventTypes.add(BrowserEvents.MOUSEOVER);
             eventTypes.add(BrowserEvents.MOUSEOUT);
+            eventTypes.add(BrowserEvents.MOUSEMOVE);
             browserMouseEvents = eventTypes;
         }
         return browserMouseEvents;
