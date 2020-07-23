@@ -18,7 +18,7 @@ body, html {
 /* ------------ Scrollbars ------------ */
 body {
     /*firefox*/
-    scrollbar-color: var(--scrollbar-color) transparent;
+    scrollbar-color: var(--scrollbar-color) var(--component-background-color);
     scrollbar-width: thin;
     /*ie*/
     scrollbar-face-color: var(--scrollbar-color);
