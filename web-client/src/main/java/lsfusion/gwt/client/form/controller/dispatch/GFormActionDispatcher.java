@@ -150,5 +150,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GUpdateEditValueAction action) {
         editContext.setValue(action.value);
+
+        form.update(editContext.getProperty(), editContext.getRenderElement(), action.value, editContext.getUpdateContext());
     }
 }
