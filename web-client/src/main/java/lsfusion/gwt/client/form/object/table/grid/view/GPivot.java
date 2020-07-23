@@ -245,11 +245,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         render(getDrawElement(), getPageSizeWidget().getElement(), data, config, jsArray, GwtClientUtils.getCurrentLanguage()); // we need to updateRendererState after it is painted
     }
 
+    public void initDefaultSettings(GGridController gridController) {
+        GPivotOptions pivotOptions = gridController.getPivotOptions();
+        settings = pivotOptions == null || pivotOptions.isShowSettings();
+    }
+
     private void initDefaultConfig(GGridController gridController) {
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
         String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
-        settings = pivotOptions == null || pivotOptions.isShowSettings();
 
         Map<GPropertyDraw, String> columnCaptionMap = new HashMap<>();
         columnMap.foreachEntry((key, value) -> columnCaptionMap.putIfAbsent(value.property, key));
