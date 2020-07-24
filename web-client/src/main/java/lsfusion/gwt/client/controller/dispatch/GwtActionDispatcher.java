@@ -9,6 +9,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.log.GLog;
@@ -115,16 +116,22 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     public void continueDispatching() {
-        continueDispatching(null);
+        continueDispatching(null, null);
     }
 
-    public void continueDispatching(Object currentActionResult) {
-        if (currentActionResults != null && currentActionIndex >= 0) {
-            currentActionResults[currentActionIndex] = currentActionResult;
+    public void continueDispatching(Object currentActionResult, Result<Object> result) {
+        assert dispatchingPaused;
+        if (currentResponse == null) { // means that we continueDispatching before exiting to dispatchResponse cycle (for example LogicalCellRenderer commits editing immediately)
+            // in this case we have to return result as no pauseDispatching happened
+            dispatchingPaused = false;
+            if(result != null)
+                result.set(currentActionResult);
+        } else {
+            if (currentActionResults != null && currentActionIndex >= 0) {
+                currentActionResults[currentActionIndex] = currentActionResult;
+            }
+            dispatchResponse(currentResponse);
         }
-        if(currentResponse == null)
-            GExceptionManager.throwStackedException("CURRENT RESPONSE IS NULL");
-        dispatchResponse(currentResponse);
     }
 
     @Override
@@ -153,8 +160,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public int execute(GConfirmAction action) {
-        return 0;
+    public Object execute(GConfirmAction action) {
+        return null;
     }
 
     @Override
@@ -246,15 +253,16 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
         sendRequest(request, action.body != null ? bytesToArrayBuffer(action.body) : null);
 
+        Result<Object> result = new Result<>();
         request.setOnReadyStateChange(xhr -> {
             if(xhr.getReadyState() == XMLHttpRequest.DONE) {
                 ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();
                 byte[] bytes = arrayBufferToBytes(arrayBuffer);
                 Map<String, List<String>> responseHeaders = getResponseHeaders(xhr.getAllResponseHeaders());
-                continueDispatching(new GExternalHttpResponse(xhr.getResponseHeader("Content-Type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()));
+                continueDispatching(new GExternalHttpResponse(xhr.getResponseHeader("Content-Type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()), result);
             }
         });
-        return null;
+        return result.result;
     }
 
     private native void sendRequest(XMLHttpRequest request, ArrayBuffer body) /*-{

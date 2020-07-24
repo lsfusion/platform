@@ -154,12 +154,11 @@ public class GExceptionManager {
 
         SerializableThrowable throwable = new SerializableThrowable("", System.currentTimeMillis() + " " + message);
         throwable.setStackTrace(new Exception().getStackTrace());
-        current++;
         if(current >= stacks.length) {
             current = 0;
             rounded = true;
         }
-        stacks[current] = throwable;
+        stacks[current++] = throwable;
     }
 
     public static RuntimeException propagate(Throwable t) {
@@ -180,8 +179,8 @@ public class GExceptionManager {
         if(!MainFrame.devMode)
             return null;
         
-        SerializableThrowable[] result = new SerializableThrowable[rounded ? stacks.length : current + 1];
-        int f = current + 1;
+        SerializableThrowable[] result = new SerializableThrowable[rounded ? stacks.length : current];
+        int f = rounded ? current + 1 : 0;
         for(int i=0;i<result.length;i++) {
             if(f >= stacks.length)
                 f = 0;

@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.controller.dispatch;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.classes.GObjectClass;
@@ -10,7 +11,6 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -53,26 +53,28 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public Object execute(GChooseClassAction action) {
         pauseDispatching();
+        Result<Object> result = new Result<>();
         form.showClassDialog(action.baseClass, action.defaultClass, action.concreate, new ClassChosenHandler() {
             @Override
             public void onClassChosen(GObjectClass chosenClass) {
-                continueDispatching(chosenClass == null ? null : chosenClass.ID);
+                continueDispatching(chosenClass == null ? null : chosenClass.ID, result);
             }
         });
-        return null;
+        return result.result;
     }
 
     @Override
-    public int execute(GConfirmAction action) {
+    public Object execute(GConfirmAction action) {
         pauseDispatching();
+
+        Result<Object> result = new Result<>();
         form.blockingConfirm(action.caption, action.message, action.cancel, action.timeout, action.initialValue, new DialogBoxHelper.CloseCallback() {
             @Override
             public void closed(DialogBoxHelper.OptionType chosenOption) {
-                continueDispatching(chosenOption.asInteger());
+                continueDispatching(chosenOption.asInteger(), result);
             }
         });
-
-        return 0;
+        return result.result;
     }
 
     @Override
@@ -140,11 +142,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         pauseDispatching();
 
         // we should not drop at least editSetValue since GUpdateEditValueAction might use it
+        Result<Object> result = new Result<>();
         form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue, value -> {},
-                value -> continueDispatching(new GUserInputResult(value)),
-                () -> continueDispatching(GUserInputResult.canceled), editContext);
-
-        return null;
+                value -> continueDispatching(new GUserInputResult(value), result),
+                () -> continueDispatching(GUserInputResult.canceled, result), editContext);
+        return result.result;
     }
 
     @Override
