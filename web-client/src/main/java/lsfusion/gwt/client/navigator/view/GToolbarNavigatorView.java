@@ -7,8 +7,8 @@ import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.base.view.AppImageButton;
 import lsfusion.gwt.client.base.view.ImageButton;
+import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
@@ -58,7 +58,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        final ImageButton button = new AppImageButton(element.image, element.caption, verticalTextAlign, !vertical);
+        final ImageButton button = new NavigatorImageButton(element.image, element.caption, verticalTextAlign, !vertical);
         Style buttonStyle = button.getElement().getStyle();
         buttonStyle.setPaddingTop(5, Style.Unit.PX);
         buttonStyle.setPaddingBottom(5, Style.Unit.PX);

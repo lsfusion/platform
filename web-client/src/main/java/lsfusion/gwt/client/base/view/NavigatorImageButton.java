@@ -4,14 +4,14 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
 
-public class AppImageButton extends ImageButton {
+public class NavigatorImageButton extends ImageButton {
     private ImageHolder imageHolder;
     
-    public AppImageButton(ImageHolder imageHolder, String caption) {
+    public NavigatorImageButton(ImageHolder imageHolder, String caption) {
         this(imageHolder, caption, false, true);
     }
 
-    public AppImageButton(ImageHolder imageHolder, String caption, boolean vertical, boolean alignCenter) {
+    public NavigatorImageButton(ImageHolder imageHolder, String caption, boolean vertical, boolean alignCenter) {
         super(caption, null, vertical, alignCenter);
         this.imageHolder = imageHolder;
         setCurrentThemeImage();
