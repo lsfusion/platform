@@ -13,6 +13,7 @@ import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.link.*;
 import lsfusion.server.logics.classes.data.time.*;
+import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.ByteArrayOutputStream;
@@ -144,6 +145,7 @@ public class TypeSerializer {
         }
         if (type == DataType.DYNAMICFORMATLINK) return DynamicFormatLinkClass.get(inStream.readBoolean());
         if (type == DataType.PDFLINK) return PDFLinkClass.get(inStream.readBoolean());
+        if (type == DataType.JDBC) return new JDBCTable.JDBCDataClass(inStream.readInt(), inStream.readUTF());
 
         throw new IOException();
     }

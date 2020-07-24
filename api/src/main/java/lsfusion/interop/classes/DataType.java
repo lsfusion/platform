@@ -44,4 +44,5 @@ public class DataType {
     public final static byte TXT = 41;
     public final static byte TXTLINK = 42;
     public final static byte ZDATETIME = 43;
+    public final static byte JDBC = 44;
 }
