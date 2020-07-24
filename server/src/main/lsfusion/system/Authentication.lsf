@@ -244,6 +244,25 @@ getCurrentUserLocale() {
         EXPORT JSON FROM language(user), country(user); 
 } @@api;
 
+login(STRING str) = login(customUser(str));
+registerUser(JSONFILE user) {
+    IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
+        NEW cu = CustomUser{ 
+            IF login(login) THEN {
+                EXPORT JSON FROM '\{error: {registration.not.successful.login.exist}\}';
+            } ELSE {
+                login(cu) <- login;
+                sha256Password(cu) <- password;
+                firstName(cu) <- firstName;
+                lastName(cu) <- lastName;
+                email(cu) <- email;
+                APPLY;
+                EXPORT JSON FROM '\{ok: {registration.successful}\}';
+            }
+        } 
+    }
+} @@api @@noauth;
+
 timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimezone(), serverTimezone();
 twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart(), serverTwoDigitYearStart();
 

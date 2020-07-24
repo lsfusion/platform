@@ -48,7 +48,7 @@ p, a, form input, .errorblock {
     font-size: 0.75em;
 }
 
-form p input[type="text"], form p input[type="password"] {
+form p input[type="text"], form p input[type="password"], form p input[type="email"] {
     font-size: 1em;
 }
 
@@ -102,14 +102,14 @@ form label {
     margin: 0 0 0.3125em 0;
 }
 
-form input[type="text"], input[type="password"], textarea {
+form input[type="text"], input[type="password"], input[type="email"], textarea {
     border: 1px solid #d9dbdd;
     padding: 1em 0.625em;
     outline: none;
 }
 
-form input[type="text"]:hover, input[type="password"]:hover, textarea:hover,
-form input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+form input[type="text"]:hover, input[type="password"]:hover, input[type="email"]:hover, textarea:hover,
+form input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus, textarea:focus {
     border: 1px solid #bbbdbe;
 }
 
@@ -117,9 +117,8 @@ form input[type="submit"] {
     border: none;
     cursor: pointer;
     padding: 0.833em;
-
+    width: 100%;
     background-position: right center;
-    padding-right: 3em;
     background-repeat: no-repeat;
     font-weight: bold;
     text-transform: uppercase;
@@ -147,9 +146,25 @@ form#login-form {
     margin: 0 auto;
 }
 
+form#registration-form {
+    width: 18.75em;
+    margin: 0 auto;
+}
+
+form#forgot-password-form {
+    width: 18.75em;
+    margin: 0 auto;
+}
+
+form#new-password-form {
+    width: 18.75em;
+    margin: 0 auto;
+}
+
 .desktop-link {
-    padding-top: 0.833em;
-    float: right;
+    font-size: medium;
+    /*padding-top: 0.833em;*/
+    /*float: right;*/
 }
 
 .errorblock {
@@ -177,17 +192,6 @@ details summary::-webkit-details-marker {
     color: #75AEEA;
 }
 
-.loginBtn-oauth2 {
-    width: 13em;
-    display: inline-block;
-    background-color: #2069b4;
-    color: white;
-    padding: 0.2em;
-    text-decoration: none;
-    border-radius: 0.2em;
-    margin: 0.2em;
-}
-
 .text-center {
     text-align: center;
     font-size: 2em;
@@ -196,4 +200,27 @@ details summary::-webkit-details-marker {
 
 .fa-yandex:before {
     content: "\f19e";
+}
+
+.registration {
+    float: left;
+    text-decoration: underline;
+}
+
+.forgot-password {
+    float: right;
+    text-decoration: underline;
+}
+
+.reg-block {
+    margin-left: auto;
+    margin-right: auto;
+    width: 18em;
+    padding: 1em 1em 1em 1em;
+}
+
+.main-page-link {
+    text-transform: uppercase;
+    font-size: small;
+    text-decoration: underline;
 }

@@ -136,3 +136,26 @@ details summary::-webkit-details-marker {
 .fa-yandex:before {
     content: "\f19e";
 }
+
+.reg-block {
+    margin-left: auto;
+    margin-right: auto;
+    width: 55em;
+    padding: 3em 1em 3em 1em;
+}
+
+.registration {
+    float: left;
+    text-decoration: underline;
+}
+
+.forgot-password {
+    float: right;
+    text-decoration: underline;
+}
+
+.main-page-link {
+    text-transform: uppercase;
+    font-size: smaller;
+    text-decoration: underline;
+}

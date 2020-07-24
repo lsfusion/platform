@@ -17,6 +17,15 @@
 
         <table class="content-table">
             <tr></tr>
+            <tr valign="bottom">
+                <td>
+                    <div class="text-center">
+                        <div class="text-center">
+                            <div class="desktop-link">${jnlpUrls}</div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
             <tr>
                 <td>
                     <div id="content">
@@ -44,8 +53,7 @@
                                     <label for="password"><%= ServerMessages.getString(request, "password") %></label>
                                     <input type="password" id="password" name="password" class="round full-width-box"/>
                                 </p>
-                                <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="<%= ServerMessages.getString(request, "log.in") %>"/>
-                                <div class="desktop-link">${jnlpUrls}</div>
+                                <input name="submit" type="submit" class="button round blue" value="<%= ServerMessages.getString(request, "log.in") %>"/>
                                 <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
                                     <div class="errorblock round full-width-box">
                                         <%= ServerMessages.getString(request, "login.unsuccessful") %><br/>
@@ -55,6 +63,11 @@
                                 </c:if>
                             </fieldset>
                         </form>
+                        <div class="reg-block">
+                            <br>
+                                <a class="registration" href="${registrationPage}"><%= ServerMessages.getString(request, "registration") %></a>
+                                <a class="forgot-password" href="${forgotPasswordPage}"><%= ServerMessages.getString(request, "password.forgot") %></a>
+                        </div>
                     </div>
                 </td>
             </tr>

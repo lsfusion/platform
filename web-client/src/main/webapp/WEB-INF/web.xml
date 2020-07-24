@@ -109,6 +109,9 @@
         <servlet-name>LSFWeb</servlet-name>
         <url-pattern>/login</url-pattern>
         <url-pattern>/main</url-pattern>
+        <url-pattern>/registration</url-pattern>
+        <url-pattern>/forgot-password</url-pattern>
+        <url-pattern>/new-password</url-pattern>
     </servlet-mapping>
 
 
