@@ -78,7 +78,7 @@ table.pvtTable thead tr th {
     background-color: var(--background-color);
 }
 
-table.pvtTable thead tr th:last-of-type:not(.colshow),
+table.pvtTable thead tr th:last-of-type,
 table.pvtTable tbody tr td:last-of-type{
     /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
     border-right: 1px solid var(--grid-separator-border-color);
