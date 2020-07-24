@@ -66,8 +66,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static LogicsDispatchAsync logicsDispatchAsync;
     public static NavigatorDispatchAsync navigatorDispatchAsync;
 
-    public static boolean mobile;
-
     // settings    
     public static boolean devMode;
     public static boolean showDetailedInfo;
@@ -445,9 +443,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         String exportName = Window.Location.getParameter("exportName");
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
-        mobile = screenWidth <= StyleDefaults.maxMobileWidth;
         logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
-        logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, mobile)), new ErrorHandlingCallback<StringResult>() {
+        logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, screenWidth <= StyleDefaults.maxMobileWidth)), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
                 navigatorDispatchAsync = new NavigatorDispatchAsync(result.get());

@@ -40,29 +40,27 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
 
     @Override
     public void startEditing(Event event, Element parent, Object oldValue) {
-        Object value = getInputObject(oldValue);
+        String text = renderToString(oldValue);
         InputElement inputElement = getInputElement(parent);
         boolean selectAll = true;
         if (GKeyStroke.isCharDeleteKeyEvent(event)) {
-            value = "";
+            text = "";
             selectAll = false;
         } else if (GKeyStroke.isCharAddKeyEvent(event)) {
             String input = String.valueOf((char) event.getCharCode());
-            value = checkInputValidity(parent, input) ? input : "";
+            text = checkInputValidity(parent, input) ? input : "";
             selectAll = false;
         }
-        //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
+        inputElement.setValue(text);
         inputElement.focus();
-        setValue(inputElement, value);
 
         if (selectAll) {
-            inputElement.select();
+            textBoxImpl.setSelectionRange(inputElement, 0, text.length());
+        } else {
+            //перемещаем курсор в конец текста
+            textBoxImpl.setSelectionRange(inputElement, text.length(), 0);
         }
     }
-
-    private native void setValue(Element element, Object value) /*-{
-        element.value = value;
-    }-*/;
 
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
@@ -114,7 +112,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         InputElement input = getInputElement(parent);
         int cursorPosition = textBoxImpl.getCursorPos(input);
         int selectionLength = textBoxImpl.getSelectionLength(input);
-        String currentValue = getCurrentText(parent);
+        String currentValue = input.getValue();
         String firstPart = currentValue == null ? "" : currentValue.substring(0, cursorPosition);
         String secondPart = currentValue == null ? "" : currentValue.substring(cursorPosition + selectionLength);
         
@@ -130,7 +128,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
         }
     }
 
-    protected Object getInputObject(Object value) {
+    protected String renderToString(Object value) {
         return value == null ? "" : value.toString();
     }
 
