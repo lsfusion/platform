@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.form.filter.user.controller;
 
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.view.GFilterView;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -11,7 +11,6 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +29,8 @@ public abstract class GUserFilters {
 
         toolbarButton = new GToolbarButton(FILTER) {
             @Override
-            public void addListener() {
-                addClickHandler(event -> showDialog(null, null, null, false, false));
+            public ClickHandler getClickHandler() {
+                return event -> showDialog(null, null, null, false, false);
             }
         };
         updateToolbarButton();

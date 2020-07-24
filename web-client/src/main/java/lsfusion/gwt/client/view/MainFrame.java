@@ -3,7 +3,10 @@ package lsfusion.gwt.client.view;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -28,7 +31,7 @@ import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
-import lsfusion.gwt.client.navigator.ConnectionInfo;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.CreateNavigatorAction;
@@ -39,6 +42,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
@@ -147,6 +151,15 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static Element getLastBlurredElement() {
         return lastBlurredElement;
     }
+    public static boolean focusLastBlurredElement(EventHandler focusEventHandler, Element focusEventElement) {
+        // in theory we also have to check if focused element still visible, isShowing in GwtClientUtils but now it's assumed that it is always visible
+        if(lastBlurredElement != null && lastBlurredElement != focusEventElement) { // return focus back where it was
+            focusEventHandler.consume();
+            lastBlurredElement.focus();
+            return true;
+        }
+        return false;
+    } 
 
     // it's odd, but dblclk works even when the first click was on different target
     // for example double clicking on focused property, causes first mousedown/click on that property, after that its handler dialog is shown

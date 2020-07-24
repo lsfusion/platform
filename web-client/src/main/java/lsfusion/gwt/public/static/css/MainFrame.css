@@ -705,8 +705,11 @@ input[type=checkbox]:focus {
 
 .toolbarButton {
     display: block;
-    border: none;
     background: transparent;
+}
+
+.toolbarButtonNoBorder {
+    border: none;
 }
 
 .toolbarButton:hover {

@@ -139,13 +139,8 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
         GToolbarButton deleteButton = new GToolbarButton(DELETE, messages.formQueriesFilterRemoveCondition()) {
             @Override
-            public void addListener() {
-                addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        handler.conditionRemoved(condition);
-                    }
-                });
+            public ClickHandler getClickHandler() {
+                return event -> handler.conditionRemoved(condition);
             }
         };
         deleteButton.addStyleName("filterDialogButton");

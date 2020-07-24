@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
@@ -7,7 +8,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
-import lsfusion.gwt.client.base.view.SimpleImageButton;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -171,7 +171,7 @@ public class GGridController extends GAbstractTableController {
     private GCountQuantityButton quantityButton;
     private GCalculateSumButton sumButton;
     private GToolbarButton manualUpdateTableButton;
-    private SimpleImageButton forceUpdateTableButton;
+    private GToolbarButton forceUpdateTableButton;
 
     private GToolbarButton mapTableButton;
 
@@ -179,29 +179,32 @@ public class GGridController extends GAbstractTableController {
         assert isList();
 
         gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
-            public void addListener() {
-                addClickHandler(event -> {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> {
                     changeMode(() -> setGridTableView(), -2, GListViewType.GRID);
-                });
+                };
             }
         };
         addToToolbar(gridTableButton);
 
         pivotTableButton = new GToolbarButton("pivot.png", messages.formGridPivotView()) {
-            public void addListener() {
-                addClickHandler(event -> {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> {
                     changeMode(() -> setPivotTableView(), -1, GListViewType.PIVOT); // we need to make a call to get columns to init default config
-                });
+                };
             }
         };
         addToToolbar(pivotTableButton);
 
         if(groupObject.isMap) {
             mapTableButton = new GToolbarButton("map.png", messages.formGridMapView()) {
-                public void addListener() {
-                    addClickHandler(event -> {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> {
                         changeMode(() -> setMapTableView(), ((GMap)table).getPageSize(), GListViewType.MAP);
-                    });
+                    };
                 }
             };
             addToToolbar(mapTableButton);
@@ -218,10 +221,10 @@ public class GGridController extends GAbstractTableController {
             if (groupObject.toolbar.showGridSettings) {
                 settingsButton = new GToolbarButton("userPreferences.png", messages.formGridPreferences()) {
                     @Override
-                    public void addListener() {
-                        addClickHandler(event -> {
+                    public ClickHandler getClickHandler() {
+                        return event -> {
                             changeSettings();
-                        });
+                        };
                     }
                 };
                 addToToolbar(settingsButton);
@@ -234,8 +237,9 @@ public class GGridController extends GAbstractTableController {
 
             if (groupObject.toolbar.showCountQuantity) {
                 quantityButton = new GCountQuantityButton() {
-                    public void addListener() {
-                        addClickHandler(event -> formController.countRecords(groupObject));
+                    @Override
+                    public ClickHandler getClickHandler() {
+                        return event -> formController.countRecords(groupObject);
                     }
                 };
                 addToToolbar(quantityButton);
@@ -244,8 +248,8 @@ public class GGridController extends GAbstractTableController {
             if (groupObject.toolbar.showCalculateSum) {
                 sumButton = new GCalculateSumButton() {
                     @Override
-                    public void addListener() {
-                        addClickHandler(event -> {
+                    public ClickHandler getClickHandler() {
+                        return event -> {
                             GPropertyDraw property = getSelectedProperty();
                             if (property != null) {
                                 if (property.baseType instanceof GIntegralType) {
@@ -254,7 +258,7 @@ public class GGridController extends GAbstractTableController {
                                     showSum(null, property);
                                 }
                             }
-                        });
+                        };
                     }
                 };
                 addToToolbar(sumButton);
@@ -265,8 +269,9 @@ public class GGridController extends GAbstractTableController {
 
         if(groupObject.toolbar.showPrintGroupXls) {
             addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExport()) {
-                public void addListener() {
-                    addClickHandler(event -> table.runGroupReport());
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> table.runGroupReport();
                 }
             });
 
@@ -275,19 +280,24 @@ public class GGridController extends GAbstractTableController {
 
 
         manualUpdateTableButton = new GToolbarButton("update.png", messages.formGridManualUpdate()) {
-            public void addListener() {
-                addClickHandler(event -> {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> {
                     setUpdateMode(!manual);
                     formController.changeMode(groupObject, false, null, null, 0, null, null, false, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO, null);
-                });
+                };
             }
         };
         addToToolbar(manualUpdateTableButton);
 
-        forceUpdateTableButton = new SimpleImageButton(messages.formGridUpdate(), "ok.png");
-        forceUpdateTableButton.addClickHandler(event -> {
+        forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), "ok.png", messages.formGridUpdate(), false) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> {
                     formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE, null);
-                });
+                };
+            }
+        };
         forceUpdateTableButton.addStyleName("actionPanelRendererValue");
 
         addToToolbar(forceUpdateTableButton);

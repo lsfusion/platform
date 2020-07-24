@@ -1139,9 +1139,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public boolean previewClickEvent(Element target, Event event) {
         return MainFrame.previewClickEvent(target, event);
     }
-    public Element getLastBlurredElement() {
-        return MainFrame.getLastBlurredElement();
-    }
 
     protected void onFormHidden(int closeDelay) {
         FormDispatchAsync closeDispatcher = dispatcher;

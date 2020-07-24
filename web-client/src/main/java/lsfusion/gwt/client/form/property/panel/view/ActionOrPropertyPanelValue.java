@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -8,6 +7,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
@@ -93,14 +93,9 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     protected void onFocus(EventHandler handler) {
-        if(!isFocusable() && !forceSetFocus) { // prevent focusing
-            Element lastBlurredElement = form.getLastBlurredElement();
-            // in theory we also have to check if focused element still visible, isShowing in GwtClientUtils but now it's assumed that it is always visible
-            if(lastBlurredElement != null && lastBlurredElement != getElement()) { // return focus back where it was
-                handler.consume();
-                lastBlurredElement.focus();
-                return;
-            }
+        // prevent focusing
+        if (!isFocusable() && !forceSetFocus && MainFrame.focusLastBlurredElement(handler, getElement())) {
+            return;
         }
 
         super.onFocus(handler);
