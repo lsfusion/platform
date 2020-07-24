@@ -1,3 +1,19 @@
+## 2.4 (2020-07-24)
+##### Fixed bugs:
+ - Unable to send email if address contains apostrophe [#375](https://github.com/lsfusion/platform/issues/375)
+ - Incorrect time in web-client after changing timezone [#343](https://github.com/lsfusion/platform/issues/343)
+ - Client messages are not saved in / pushed to the caller thread when using NEWTHREAD [#168](https://github.com/lsfusion/platform/issues/168)
+ - Server doesn't start in debug (Linux Mint, OpenJDK11) [#328](https://github.com/lsfusion/platform/issues/328)
+ - Escape symbols in constraint message [#322](https://github.com/lsfusion/platform/issues/322)
+ - Bug with UnsupportedOperation when p IS DATE is not removed during query compilation [#314](https://github.com/lsfusion/platform/issues/314)
+ - NPE / Incorrect operation when using CHECKED BY and there is GROUP BY inside [#310](https://github.com/lsfusion/platform/issues/310)
+ - MESSAGE option in CONSTRAINT doesn't work right with PREV / CHANGED operators [#309](https://github.com/lsfusion/platform/issues/309)
+ - Low performance when using IMPORT FIELDS and there are a lot of fields [#306](https://github.com/lsfusion/platform/issues/306)
+ - Redirect after authentication looses query in http request [#273](https://github.com/lsfusion/platform/issues/273)
+ - Bad performance when join that needs predicate push down is in a union join  [#231](https://github.com/lsfusion/platform/issues/231)
+ - Wrong context menu popup position in web-client [#228](https://github.com/lsfusion/platform/issues/228)
+ - NPE after disabling hints in isReallyChanged [#227](https://github.com/lsfusion/platform/issues/227)
+## ----- PREVIOUS RELEASES --------
 ## 2.3 (2020-01-16)
 ##### Fixed bugs:
  - Path to image for navigator element is not relative to 'images' folder [#211](https://github.com/lsfusion/platform/issues/211)
@@ -7,7 +23,6 @@
  - SQL exception when LAST is used with two always NULL unions [#201](https://github.com/lsfusion/platform/issues/201)
  - SHOW READONLY does not work for properties / actions showing (only for changing) [#198](https://github.com/lsfusion/platform/issues/198)
  - EXTERNAL HTTP request failes when response is empty (204) [#197](https://github.com/lsfusion/platform/issues/197)
-## ----- PREVIOUS RELEASES --------
 ## 2.2 (2019-11-21)
 ##### Implemented enhancements:
  - Form loses focus [#191](https://github.com/lsfusion/platform/issues/191)
