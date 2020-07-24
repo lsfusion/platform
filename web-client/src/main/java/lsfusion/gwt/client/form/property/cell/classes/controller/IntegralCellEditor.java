@@ -1,9 +1,11 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.text.ParseException;
 
@@ -23,12 +25,22 @@ public class IntegralCellEditor extends TextBasedCellEditor {
     }
 
     @Override
-    protected String renderToString(Object value) {
+    protected Object getInputObject(Object value) {
         if (value != null) {
             assert value instanceof Number;
-            return format.format((Number) value);
+            return value;
         }
         return "";
+    }
+
+    @Override
+    public Element createInputElement() {
+        Element element = super.createInputElement();
+        if(MainFrame.mobile) {
+            element.setAttribute("type", "number");
+            element.setAttribute("step", "0.01");
+        }
+        return element;
     }
 
     @Override
