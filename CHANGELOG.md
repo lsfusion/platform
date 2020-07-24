@@ -1,3 +1,32 @@
+## 3.1 (2020-07-24)
+##### Implemented enhancements:
+ - Implement forceShutdown for a connection (user) [#338](https://github.com/lsfusion/platform/issues/338)
+ - Need action to generate UUID [#356](https://github.com/lsfusion/platform/issues/356)
+ - Implement materialized properties recalculation for specific objects [#154](https://github.com/lsfusion/platform/issues/154)
+##### Fixed bugs:
+ - Bug when client exception is raised during dispatching response [#410](https://github.com/lsfusion/platform/issues/410)
+ - Unable to send email if address contains apostrophe [#375](https://github.com/lsfusion/platform/issues/375)
+ - Incorrect time in web-client after changing timezone [#343](https://github.com/lsfusion/platform/issues/343)
+ - Make pagesize for groups without properties (usually group-to-columns) 0 by default [#366](https://github.com/lsfusion/platform/issues/366)
+ - lsfusion.base.Words.toString without type shouldn't add extra space in the end [#336](https://github.com/lsfusion/platform/issues/336)
+ - Client messages are not saved in / pushed to the caller thread when using NEWTHREAD [#168](https://github.com/lsfusion/platform/issues/168)
+ - Server doesn't start in debug (Linux Mint, OpenJDK11) [#328](https://github.com/lsfusion/platform/issues/328)
+ - Escape symbols in constraint message [#322](https://github.com/lsfusion/platform/issues/322)
+ - RECALCULATE doesn't work when context parameter is used not in WHERE clause [#287](https://github.com/lsfusion/platform/issues/287)
+ - Bug with UnsupportedOperation when p IS DATE is not removed during query compilation [#314](https://github.com/lsfusion/platform/issues/314)
+ - NPE / Incorrect operation when using CHECKED BY and there is GROUP BY inside [#310](https://github.com/lsfusion/platform/issues/310)
+ - MESSAGE option in CONSTRAINT doesn't work right with PREV / CHANGED operators [#309](https://github.com/lsfusion/platform/issues/309)
+ - Low performance when using IMPORT FIELDS and there are a lot of fields [#306](https://github.com/lsfusion/platform/issues/306)
+ - When there is an exception during login there is no redirect to login page [#298](https://github.com/lsfusion/platform/issues/298)
+ - Redirect after authentication looses query in http request [#273](https://github.com/lsfusion/platform/issues/273)
+ - Bad performance when join that needs predicate push down is in a union join  [#231](https://github.com/lsfusion/platform/issues/231)
+ - Wrong context menu popup position in web-client [#228](https://github.com/lsfusion/platform/issues/228)
+ - NPE after disabling hints in isReallyChanged [#227](https://github.com/lsfusion/platform/issues/227)
+ - RECALCULATE operator with WHERE isn't working properly [#226](https://github.com/lsfusion/platform/issues/226)
+ - Bug with too many threads on group change [#222](https://github.com/lsfusion/platform/issues/222)
+ - OK should be shown only when form manages session or in dialog mode [#200](https://github.com/lsfusion/platform/issues/200)
+ - Unable to shutdown specific connection [#221](https://github.com/lsfusion/platform/issues/221)
+## ----- PREVIOUS RELEASES --------
 ## 3.0 (2020-01-16)
 ##### Implemented enhancements:
  - Create an action for finding forms by name [#203](https://github.com/lsfusion/platform/issues/203)
@@ -57,4 +86,3 @@
  - Unable to send mail with empty text [#149](https://github.com/lsfusion/platform/issues/149)
  - Unable to copy text from message box in web-client [#146](https://github.com/lsfusion/platform/issues/146)
  - Export to XML should respect the order of properties and groups on the form [#145](https://github.com/lsfusion/platform/issues/145)
-## ----- PREVIOUS RELEASES --------
