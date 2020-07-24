@@ -255,6 +255,12 @@ public class GwtClientUtils {
         return separator;
     }
 
+    public static String createTooltipHorizontalSeparator() {
+        Widget separator = createHorizontalSeparator();
+        separator.addStyleName("tooltipHorizontalSeparator");
+        return separator.toString();
+    }
+
     public static String getUserAgent() {
         return Window.Navigator.getUserAgent().toLowerCase();
     }

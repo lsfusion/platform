@@ -17,7 +17,8 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
-import lsfusion.gwt.client.form.event.*;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -35,6 +36,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
     public int ID;
@@ -264,32 +267,32 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             "<html><b>%s</b><br>%s";
 
     public static String getDetailedToolTipFormat() {
-        return  "<hr>" +
+        return  createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipCanonicalName() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipTable() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipObjects() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipSignature() + ":</b> %s (%s)<br>" +
                 "<b>" + getMessages().propertyTooltipScript() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
-                "<hr>" +
+                createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
                 "</html>";
     }  
     
     public static String getDetailedActionToolTipFormat() {
-        return  "<hr>" +
+        return  createTooltipHorizontalSeparator() +
                 "<b>sID:</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipObjects() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
-                "<hr>" +
+                createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
                 "</html>";
     }
     
     public static String getChangeKeyToolTipFormat() {
-        return "<hr><b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
+        return createTooltipHorizontalSeparator() + "<b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
     }
             
     public String getTooltipText(String caption) {

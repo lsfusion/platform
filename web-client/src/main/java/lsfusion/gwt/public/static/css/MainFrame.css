@@ -798,6 +798,10 @@ input[type=checkbox]:focus {
     border-bottom: 1px solid var(--panel-border-color);
 }
 
+.tooltipHorizontalSeparator {
+    margin: 5px 0 1px 0;
+}
+
 .js-plotly-plot {
     width: 100%;
     height: 100%;

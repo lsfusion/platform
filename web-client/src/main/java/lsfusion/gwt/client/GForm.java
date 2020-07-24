@@ -16,6 +16,8 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.io.Serializable;
 import java.util.*;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
+
 public class GForm implements Serializable, GWidthStringProcessor {
     public String sessionID;
 
@@ -176,7 +178,8 @@ public class GForm implements Serializable, GWidthStringProcessor {
     public String getTooltip(String caption) {
         return MainFrame.showDetailedInfo ?
                 GwtSharedUtils.stringFormat("<html><body>" +
-                        "<b>%s</b><br/><hr>" +
+                        "<b>%s</b><br/>" + 
+                        createTooltipHorizontalSeparator() +
                         "<b>sID:</b> %s<br/>" +
                         "<b>" + ClientMessages.Instance.get().tooltipPath() + ":</b> %s<br/>" +
                         "</body></html>", caption, canonicalName, creationPath) :
