@@ -29,7 +29,7 @@ public abstract class GIntegralType extends GFormatType<NumberFormat> {
         return Math.min(lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7)), 10);
     }
 
-    protected Double parseToDouble(String s, String pattern) throws ParseException {
+    protected Double parseToDouble(String s) throws ParseException {
         assert s != null;
         try {
             String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
@@ -38,10 +38,16 @@ public abstract class GIntegralType extends GFormatType<NumberFormat> {
             }
             String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
             s = GwtClientUtils.replaceSeparators(s, decimalSeparator, groupingSeparator);
-            return getFormat(pattern).parse(s);
+            return NumberFormat.getDecimalFormat().parse(s);
         } catch (NumberFormatException e) {
             throw new ParseException("string " + s + "can not be converted to double", 0);
         }
+    }
+
+    public String formatDouble(Double value) {
+        assert value != null;
+        String s = NumberFormat.getDecimalFormat().format(value);
+        return GwtClientUtils.replaceCommaSeparator(s.replace(UNBREAKABLE_SPACE, ""));
     }
 
     @Override

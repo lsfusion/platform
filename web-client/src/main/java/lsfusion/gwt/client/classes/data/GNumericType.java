@@ -63,7 +63,7 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public Object parseString(String s, String pattern) throws ParseException {
-        Double toDouble = parseToDouble(s, pattern); // сперва проверим, конвертится ли строка в число вообще
+        Double toDouble = parseToDouble(s); // сперва проверим, конвертится ли строка в число вообще
 
         String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator(); // а затем посчитаем цифры
 
@@ -82,7 +82,7 @@ public class GNumericType extends GDoubleType {
             throwParseException(s);
         }
         
-        return BigDecimal.valueOf(toDouble);
+        return toDouble;
     }
     
     private void throwParseException(String s) throws ParseException {
