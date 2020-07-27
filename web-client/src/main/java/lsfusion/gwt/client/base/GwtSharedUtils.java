@@ -77,7 +77,13 @@ public class GwtSharedUtils {
     }
 
     public static DateTimeFormat getDefaultDateFormat() {
-        return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
+        String currentLocale = LocaleInfo.getCurrentLocale().getLocaleName();
+        //in gwt 2.9.0 default DATE_SHORT format for "ru" locale is dd.MM.y
+        if(currentLocale.equals("ru")) {
+            return DateTimeFormat.getFormat("dd.MM.yy");
+        } else {
+            return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
+        }
     }
 
     public static DateTimeFormat getDefaultTimeFormat() {
