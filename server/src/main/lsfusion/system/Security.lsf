@@ -361,6 +361,8 @@ onStarted() + {
         in(CustomUser u, userRoleSID('readonly')) <- TRUE WHERE GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);      
         in(CustomUser u, userRoleSID('default')) <- TRUE;
         in(CustomUser u, userRoleSID('admin')) <- TRUE WHERE login(u) == 'admin';
+        
+        in(CustomUser u, mainRole(u)) <- TRUE WHERE mainRole(u); //write main role to additional roles
                   
         showDetailedInfo(UserRole ur) <- TRUE WHERE order(ur, policy('allowConfiguration'));
         
