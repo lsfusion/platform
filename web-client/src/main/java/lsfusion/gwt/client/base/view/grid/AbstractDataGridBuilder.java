@@ -50,23 +50,26 @@ public abstract class AbstractDataGridBuilder<T> {
         this.cellTable = cellTable;
     }
 
-    public void update(TableSectionElement tbodyElement, List<T> values, int minRenderedRow, int renderedRowCount, boolean rerenderRows) {
+    public void update(TableSectionElement tbodyElement, List<T> values, boolean rerenderRows, int[] columnsToRedraw) {
         //assertion that updateRanges is sorted
 
+        int newRowCount = values.size();
         int rowCount = tbodyElement.getChildCount();
-        if (rowCount > renderedRowCount) {
-            for (int i = rowCount - 1; i >= renderedRowCount; --i) {
+        assert columnsToRedraw == null || newRowCount == rowCount;
+
+        if (rowCount > newRowCount) {
+            for (int i = rowCount - 1; i >= newRowCount; --i) {
                 tbodyElement.deleteRow(i);
             }
-            rowCount = renderedRowCount;
+            rowCount = newRowCount;
         }
 
         if (rerenderRows) {
             //rebuild rows if columns have been changed
             if (rowCount > 0) {
                 TableRowElement tr = tbodyElement.getFirstChild().cast();
-                rebuildRow(minRenderedRow, values.get(minRenderedRow), tr);
-                for (int i = minRenderedRow + 1; i < minRenderedRow + rowCount; ++i) {
+                rebuildRow(0, values.get(0), tr);
+                for (int i = 1; i < rowCount; ++i) {
                     tr = tr.getNextSibling().cast();
                     rebuildRow(i, values.get(i), tr);
                 }
@@ -76,16 +79,16 @@ public abstract class AbstractDataGridBuilder<T> {
                 //update changed rows
                 NodeList<TableRowElement> rows = tbodyElement.getRows();
                 TableRowElement tr = rows.getItem(0);
-                updateRow(minRenderedRow, values.get(minRenderedRow), null, tr);
-                for (int i = minRenderedRow + 1; i < minRenderedRow + rowCount; ++i) {
+                updateRow(0, values.get(0), columnsToRedraw, tr);
+                for (int i = 1; i < rowCount; ++i) {
                     tr = tr.getNextSibling().cast();
-                    updateRow(i, values.get(i), null, tr);
+                    updateRow(i, values.get(i), columnsToRedraw, tr);
                 }
             }
         }
 
         //build new rows
-        for (int i = minRenderedRow + rowCount; i < minRenderedRow + renderedRowCount; ++i) {
+        for (int i = rowCount; i < newRowCount; ++i) {
             buildRow(tbodyElement, i, values.get(i));
         }
     }

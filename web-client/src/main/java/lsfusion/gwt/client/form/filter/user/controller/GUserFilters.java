@@ -78,7 +78,7 @@ public abstract class GUserFilters {
         if(filterProperty == null) {
             filterProperty = logicsSupplier.getSelectedProperty();
             if(filterProperty != null) {
-                filterColumnKey = logicsSupplier.getSelectedColumn();
+                filterColumnKey = logicsSupplier.getSelectedColumnKey();
                 filterValue = logicsSupplier.getSelectedValue(filterProperty, filterColumnKey);
             }
         }

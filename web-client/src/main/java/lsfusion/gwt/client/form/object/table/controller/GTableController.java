@@ -30,7 +30,7 @@ public interface GTableController {
     List<GObject> getObjects();
     List<GPropertyDraw> getPropertyDraws();
     GPropertyDraw getSelectedProperty();
-    GGroupObjectValue getSelectedColumn();
+    GGroupObjectValue getSelectedColumnKey();
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
     List<Pair<Column, String>> getSelectedColumns();
 

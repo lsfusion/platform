@@ -36,7 +36,24 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_PREFERRED_HEIGHT = 70; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_MAX_PREFERRED_HEIGHT = 140;
-    
+
+    protected ArrayList<T> rows = new ArrayList<>();
+
+    // we have to keep it until updateDataImpl to have rows order
+    // plus what's more important we shouldn't change selectedRow, before update'in rows, otherwise we'll have inconsistent selectedRow - rows state
+    protected GGroupObjectValue currentKey;
+
+    public void setCurrentKey(GGroupObjectValue currentKey) {
+        this.currentKey = currentKey;
+
+        this.currentRowUpdated = true;
+    }
+
+    @Override
+    protected ArrayList<T> getRows() {
+        return rows;
+    }
+
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<>();
 
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
@@ -56,10 +73,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected GGridPropertyTableHeader getGridHeader(int i) {
         return (GGridPropertyTableHeader) getHeader(i);
     }
-
-    protected boolean needToRestoreScrollPosition = true;
-    protected GGroupObjectValue oldKey = null;
-    protected int oldRowScrollTop;
 
     public GGridSortableHeaderManager sortableHeaderManager;
     
@@ -126,11 +139,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return font;
     }
 
-    public Cell getSelectedCellContext() {
-        return getSelectedCellContext(getSelectedColumn());
+    public Cell getSelectedCell() {
+        return getSelectedCell(getSelectedColumn());
     }
 
-    public Cell getSelectedCellContext(int column) {
+    public Cell getSelectedCell(int column) {
         return new Cell(getSelectedRow(), column, getColumn(column), getSelectedRowValue());
     }
 
@@ -146,8 +159,31 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public Dimension getMaxPreferredSize() {
         return new Dimension(
                 max(isAutoSize() ? 0 : DEFAULT_PREFERRED_WIDTH, preferredWidth + nativeScrollbarWidth + 17),
-                max(isAutoSize() ? 0 : DEFAULT_MAX_PREFERRED_HEIGHT, getRowCount() * getRowHeight() + 30 + nativeScrollbarHeight)
+                max(isAutoSize() ? 0 : DEFAULT_MAX_PREFERRED_HEIGHT, getRowCount() * tableBuilder.getCellHeight() + 1 + 30 + nativeScrollbarHeight)
         );
+    }
+
+    protected abstract GGroupObjectValue getSelectedKey();
+
+    // there is a contract if there are keys there should be current object
+    // but for example modifyFormChangesWithChangeCurrentObjectAsyncs removes object change (+ when there are no keys nothing is also send)
+    // so we'll put current (last) key to ensure that selected row will match rows collection
+    protected void checkUpdateCurrentRow() {
+        // assert rowUpdated AND ! it's important to do this before update rows to have relevant selectedKey
+        if(!currentRowUpdated)
+            setCurrentKey(getSelectedKey());
+    }
+
+    private boolean currentRowUpdated = false;
+    public void updateCurrentRow() {
+        if (currentRowUpdated) {
+            setSelectedRow(currentKey != null ? getRowByKeyOptimistic(currentKey) : -1);
+
+            currentKey = null;
+            currentRowUpdated = false;
+        }
+
+        assert getSelectedRow() < getRowCount();
     }
 
     @Override
@@ -158,7 +194,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     @Override
     protected void onFocus() {
         super.onFocus();
-        changeBorder("var(--focus-color)");
     }
 
     @Override
@@ -166,15 +201,18 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         form.previewBlurEvent(event);
 
         super.onBlur(event);
-        changeBorder("var(--component-border-color)");
-    }
-
-    public void changeBorder(String color) {
-        getElement().getStyle().setBorderColor(color);
     }
 
     public GPropertyDraw getSelectedProperty() {
-        return getProperty(getSelectedCellContext());
+        if(getSelectedRow() >= 0)
+            return getProperty(getSelectedCell());
+        return null;
+    }
+
+    public GGroupObjectValue getSelectedColumnKey() {
+        if(getSelectedRow() >= 0)
+            return getColumnKey(getSelectedCell());
+        return null;
     }
 
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
@@ -199,7 +237,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void headerClicked(GGridPropertyTableHeader header, boolean ctrlDown, boolean shiftDown) {
         sortableHeaderManager.headerClicked(getHeaderIndex(header), ctrlDown, shiftDown);
-        refreshHeaders();
+        updateHeadersDOM(false);
     }
 
     public Boolean getSortDirection(GGridPropertyTableHeader header) {
@@ -214,7 +252,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         //do nothing by default
     }
 
-    public abstract GGroupObjectValue getCurrentKey();
     public abstract GGroupObject getGroupObject();
 
     public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
@@ -222,39 +259,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
     public abstract String getCellForeground(GridDataRecord rowValue, int row, int column);
 
-    public void storeScrollPosition() {
-        int selectedRow = getSelectedRow();
-        GridDataRecord selectedRecord = getSelectedRowValue();
-        if (selectedRecord != null) {
-            oldKey = selectedRecord.getKey();
-            TableRowElement childElement = getChildElement(selectedRow);
-            if (childElement != null) {
-                oldRowScrollTop = childElement.getOffsetTop() - tableDataScroller.getVerticalScrollPosition();
-            }
-        }
-    }
-
     public void runGroupReport() {
         form.runGroupReport(groupObject.ID);
-    }
-
-    public void afterAppliedChanges() {
-        if (needToRestoreScrollPosition && oldKey != null && oldRowScrollTop != -1) {
-            int currentInd = getSelectedRow();
-            GGroupObjectValue currentKey = getCurrentKey();
-            if (currentKey != null && currentKey.equals(oldKey) && isRowWithinBounds(currentInd)) {
-                TableRowElement childElement = getChildElement(currentInd);
-                if (childElement != null) {
-                    int newVerticalScrollPosition = max(0, childElement.getOffsetTop() - oldRowScrollTop);
-
-                    setDesiredVerticalScrollPosition(newVerticalScrollPosition);
-
-                    oldKey = null;
-                    oldRowScrollTop = -1;
-                    needToRestoreScrollPosition = false;
-                }
-            }
-        }
     }
 
     public void selectNextRow(boolean down) {
@@ -286,7 +292,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
-    // в общем то для "групп в колонки" разделено (чтобы когда были группы в колонки - все не расширялись(
     private void updateLayoutWidthColumns() {
         List<Column> flexColumns = new ArrayList<>();
         List<Double> flexValues = new ArrayList<>();
@@ -337,14 +342,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         for (int i = 0; i < prefs.length; i++)
             setUserWidth(i, (int) Math.round(prefs[i]));
         updateLayoutWidthColumns();
-        onResize();
-    }
 
-    private int getViewportWidth() {
-        return tableDataScroller.getClientWidth();
-    }
-    public int getViewportHeight() {
-        return tableDataScroller.getClientHeight();
+        widthsChanged();
+        onResize();
     }
 
     protected abstract void setUserWidth(GPropertyDraw property, Integer value);

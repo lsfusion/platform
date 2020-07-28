@@ -30,11 +30,11 @@ import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.*;
 import java.util.function.Supplier;
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
@@ -56,24 +56,9 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     public static int nativeScrollbarHeight = AbstractNativeScrollbar.getNativeScrollbarHeight();
 
     /**
-     * The current state of the presenter reflected in the view.
-     */
-    private State<T> state;
-
-    /**
-     * The pending state of the presenter to be pushed to the view.
-     */
-    private State<T> pendingState;
-
-    /**
      * A boolean indicating that we are in the process of resolving state.
      */
     protected boolean isResolvingState;
-
-    /**
-     * A boolean indicating that the widget is refreshing, so all events should be ignored.
-     */
-    private boolean isRefreshing;
 
     /**
      * The command used to resolve the pending state.
@@ -88,18 +73,19 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     private HeaderBuilder<T> footerBuilder;
     private final List<Header<?>> footers = new ArrayList<>();
 
-    /**
-     * Indicates that at least one column handles selection.
-     */
     private HeaderBuilder<T> headerBuilder;
     private final List<Header<?>> headers = new ArrayList<>();
 
-    /**
-     * Indicates that either the headers or footers are dirty, and both should be
-     * refreshed the next time the table is redrawn.
-     */
+    // pending dom updates
+    // all that flags should dropped on finishResolving, and scheduleUpdateDOM should be called
     private boolean columnsChanged;
     private boolean headersChanged;
+    private boolean widthsChanged;
+    private boolean dataChanged;
+    private ArrayList<Column> dataColumnsChanged = new ArrayList<>(); // ordered set, null - rows changed
+    private boolean selectedRowChanged;
+    private boolean selectedColumnChanged;
+    private boolean focusedChanged;
 
     protected GPropertyTableBuilder<T> tableBuilder;
 
@@ -120,13 +106,20 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         this.selectionHandler = selectionHandler;
     }
 
-    private int renderedRowCount = 0;
-
     //focused cell indices local to table (aka real indices in rendered portion of the data)
-    int oldLocalSelectedRow = -1;
-    int oldLocalSelectedCol = -1;
+    int renderedSelectedRow = -1;
+    int renderedSelectedCol = -1;
+    Object renderedSelectedKey = null; // needed for saving scroll position when keys are update
 
-    private int rowHeight = StyleDefaults.VALUE_HEIGHT;
+    protected abstract Object getSelectedKey();
+    protected int getRowByKeyOptimistic(Object key) {
+        Object selectedKey = getSelectedKey();
+        if(selectedKey != null && selectedKey.equals(key)) // optimization the most common case
+            return getSelectedRow();
+
+        return getRowByKey(key);
+    }
+    protected abstract int getRowByKey(Object key);
 
     private int pageIncrement = 30;
 
@@ -152,8 +145,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         this.noHeaders = noHeaders;
         this.noFooters = noFooters;
         this.noScrollers = noScrollers;
-
-        this.state = new State<>();
 
         this.style = style;
 
@@ -219,6 +210,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             } else {
                 removeOuterGridBorders(headerPanel);
             }
+            tableDataScroller.addScrollHandler(event -> checkSelectedRowVisible());
 
             setFillWidget(headerPanel);
         }
@@ -329,19 +321,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         return style;
     }
 
-    public void setRowHeight(int rowHeight) {
-        this.rowHeight = rowHeight;
-        ensurePendingState();
-    }
-
-    public int getRowHeight() {
-        return rowHeight;
-    }
-
-    public int getPageIncrement() {
-        return pageIncrement;
-    }
-
     public void setPageIncrement(int pageIncrement) {
         this.pageIncrement = Math.max(1, pageIncrement);
     }
@@ -386,55 +365,19 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
      * @return the data size
      */
     public int getRowCount() {
-        return getCurrentState().getRowCount();
+        return getRows().size();
     }
 
     public T getRowValue(int row) {
-        checkRowBounds(row);
-        return getCurrentState().getRowValue(row);
+        return getRows().get(row);
     }
 
-    /**
-     * <p>
-     * Set the complete list of values to display on one page.
-     * </p>
-     *
-     * @param values
-     */
-    public final void setRowData(List<? extends T> values) {
-        int end = values.size();
+    protected abstract ArrayList<T> getRows();
 
-        State<T> pending = ensurePendingState();
-
-        // Insert the new values into the data array.
-        int currentCnt = pending.rowData.size();
-        for (int i = 0; i < end; i++) {
-            T value = values.get(i);
-            if (i < currentCnt) {
-                pending.rowData.set(i, value);
-            } else {
-                pending.rowData.add(value);
-            }
-        }
-
-        int removeCnt = currentCnt - values.size();
-        for (int i = 1; i <= removeCnt; ++i) {
-            pending.rowData.remove(currentCnt - i);
-        }
-        redraw();
-    }
-
-    /**
-     * Handle browser events. Subclasses should override
-     * {@link #onBrowserEvent2(Element, Event)} if they want to extend browser event
-     * handling.
-     *
-     * @see #onBrowserEvent2(Element, Event)
-     */
     @Override
     public final void onBrowserEvent(Event event) {
         // Ignore spurious events (such as onblur) while we refresh the table.
-        if (isRefreshing) {
+        if (isResolvingState) {
             return;
         }
 
@@ -541,12 +484,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     public abstract <C> void onBrowserEvent(Cell cell, EventHandler handler, Column<T, C> column, Element parent);
 
-    protected void checkRowBounds(int row) {
-        if (!isRowWithinBounds(row)) {
-            throw new IndexOutOfBoundsException("Row index: " + row + ", Row size: " + getRowCount());
-        }
-    }
-
     /**
      * Checks that the row is within bounds of the view.
      *
@@ -555,16 +492,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
      */
     protected boolean isRowWithinBounds(int row) {
         return row >= 0 && row < getRowCount();
-    }
-
-    /**
-     * Checks that the row is currently rendered in the table
-     *
-     * @param row row index to check
-     * @return true if row is rendered, false if not
-     */
-    protected boolean isRowRendered(int row) {
-        return row >= 0 && row < renderedRowCount;
     }
 
     /**
@@ -606,11 +533,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         // Increment the keyboard selected column.
         int selectedColumn = getSelectedColumn();
-        if (beforeIndex <= selectedColumn) {
-            ensurePendingState().selectedColumn = min(selectedColumn + 1, columns.size() - 1);
-        }
-
-        refreshColumnsAndRedraw();
+        if(selectedColumn == -1)
+            setSelectedColumn(0);
+        else if (beforeIndex <= selectedColumn)
+            setSelectedColumn(selectedColumn + 1);
     }
 
     public void moveColumn(int oldIndex, int newIndex) {
@@ -621,11 +547,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
 
         int selectedColumn = getSelectedColumn();
-        if (oldIndex == selectedColumn) {
-            ensurePendingState().selectedColumn = newIndex;
-        } else if (oldIndex < selectedColumn && selectedColumn > 0) {
-            ensurePendingState().selectedColumn--;
-        }
+        if (oldIndex == selectedColumn)
+            setSelectedColumn(newIndex);
+        else if (oldIndex < selectedColumn && selectedColumn > 0)
+            setSelectedColumn(selectedColumn - 1);
 
         Column<T, ?> column = columns.remove(oldIndex);
         Header<?> header = headers.remove(oldIndex);
@@ -634,9 +559,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         columns.add(newIndex, column);
         headers.add(newIndex, header);
         footers.add(newIndex, footer);
-
-        // Redraw the table asynchronously.
-        refreshColumnsAndRedraw();
     }
 
     /**
@@ -667,14 +589,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
         int selectedColumn = getSelectedColumn();
         // Decrement the keyboard selected column.
-        if (index <= selectedColumn && selectedColumn > 0) {
-            ensurePendingState().selectedColumn = selectedColumn - 1;
-        }
-
-        // Redraw the table asynchronously.
-        refreshColumnsAndRedraw();
-
-        // We don't unsink events because other handlers or user code may have sunk them intentionally.
+        if (index <= selectedColumn)
+            setSelectedColumn(selectedColumn - 1);
     }
 
     /**
@@ -713,12 +629,47 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     public void setTableBuilder(GPropertyTableBuilder<T> tableBuilder) {
         this.tableBuilder = tableBuilder;
-        redraw();
     }
 
-    public void refreshColumnsAndRedraw() {
-        columnsChanged = true;
-        redraw();
+    public void columnsChanged() {
+        columnsChanged = true; // in fact leads to all other changes (widths, data, headers)
+        scheduleUpdateDOM();
+    }
+    public void widthsChanged() {
+        widthsChanged = true;
+        scheduleUpdateDOM();
+    }
+    public void rowsChanged() {
+        dataChanged(null);
+    }
+    private boolean areRowsChanged() {
+        return dataChanged && dataColumnsChanged == null;
+    }
+    public void dataChanged(ArrayList<? extends Column> updatedColumns) {
+        if(updatedColumns == null) // rows changed
+            dataColumnsChanged = null;
+        else if(dataColumnsChanged != null)
+            GwtClientUtils.addOrderedSets(dataColumnsChanged, updatedColumns);
+        dataChanged = true;
+
+        scheduleUpdateDOM();
+    }
+    public void headersChanged() {
+        headersChanged = true;
+        scheduleUpdateDOM();
+    }
+
+    public void selectedRowChanged() {
+        selectedRowChanged = true;
+        scheduleUpdateDOM();
+    }
+    public void selectedColumnChanged() {
+        selectedColumnChanged = true;
+        scheduleUpdateDOM();
+    }
+    public void focusedChanged() {
+        focusedChanged = true;
+        scheduleUpdateDOM();
     }
 
     /**
@@ -753,7 +704,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
      * @return the currently selected column, or -1 if none selected
      */
     public int getSelectedColumn() {
-        return getCurrentState().getSelectedColumn();
+        return selectedColumn;
     }
 
     protected TableRowElement getChildElement(int row) {
@@ -762,7 +713,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     public void setColumnWidth(Column<T, ?> column, String width) {
         columnWidths.put(column, width);
-        updateColumnWidthImpl(column, width);
     }
 
     // when row or column are changed by keypress in grid (KEYUP, PAGEUP, etc), no focus is lost
@@ -796,9 +746,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         else if (row >= rowCount)
             row = rowCount - 1;
 
-        setSelectedRow(row);
-
-        rowChangedHandler.run();
+        if(setSelectedRow(row))
+            rowChangedHandler.run();
     }
 
     public void setSelectedColumn(int column) {
@@ -807,7 +756,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         if (getSelectedColumn() == column)
             return;
 
-        ensurePendingState().setSelectedColumn(column);
+        this.selectedColumn = column;
+        selectedColumnChanged();
     }
 
     public boolean isFocusable(int column) {
@@ -820,16 +770,16 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         return !isFocusable(cell);
     }
 
-    public void setSelectedRow(int row) {
+    public boolean setSelectedRow(int row) {
         if (getSelectedRow() == row)
-            return;
+            return false;
 
-        ensurePendingState().setSelectedRow(row);
+        assert row >= -1 && row < getRowCount();
+        this.selectedRow = row;
+        selectedRowChanged();
+        return true;
     }
 
-    protected void setDesiredVerticalScrollPosition(int newVerticalScrollPosition) {
-        ensurePendingState().desiredVerticalScrollPosition = newVerticalScrollPosition;
-    }
 
     /**
      * Set the minimum width of the tables in this widget. If the widget become
@@ -944,18 +894,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         tableData.getElement().getStyle().setWidth(value, unit);
     }
 
-    /**
-     * Get a row element given the index of the row value.
-     *
-     * @param row the absolute row value index
-     * @return the row element, or null if not found
-     */
     private TableRowElement getRowElementNoFlush(int row) {
-        if (!isRowRendered(row)) {
+        NodeList<TableRowElement> rows = getTableBodyElement().getRows();
+        if (!(row >= 0 && row < rows.getLength()))
             return null;
-        }
-
-        return getTableBodyElement().getRows().getItem(row);
+        return rows.getItem(row);
     }
 
     protected Element getSelectedElement() {
@@ -1002,16 +945,23 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     protected abstract boolean previewClickEvent(Element target, Event event);
 
     protected void onFocus() {
-        isFocused = true;
         DataGrid.sinkPasteEvent(getTableDataFocusElement());
 
-        updateSelectedRowStyles();
+        if(isFocused)
+            return;
+        isFocused = true;
+        focusedChanged();
     }
 
     protected void onBlur(Event event) {
+        if(!isFocused)
+            return;
         isFocused = false;
+        focusedChanged();
+    }
 
-        updateSelectedRowStyles();
+    public void changeBorder(String color) {
+        getElement().getStyle().setBorderColor(color);
     }
 
     public Element getTableDataFocusElement() {
@@ -1033,36 +983,20 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
     }
 
-    /**
-     * Update the width of all instances of the specified column. A column
-     * instance may appear multiple times in the table.
-     *
-     * @param column the column to update
-     * @param width  the width of the column, or null to clear the width
-     */
-    private void updateColumnWidthImpl(Column<T, ?> column, String width) {
-        int columnCount = getColumnCount();
-        for (int i = 0; i < columnCount; i++) {
-            if (columns.get(i) == column) {
-                setColumnWidthImpl(i, width);
-            }
-        }
+    private void updateColumnWidthImpl(int column, String width) {
+        updateColumnWidthImpl(tableData, column, width);
+        if (!noHeaders)
+            updateColumnWidthImpl(tableHeader, column, width);
+        if (!noFooters)
+            updateColumnWidthImpl(tableFooter, column, width);
     }
 
-    private void setColumnWidthImpl(int column, String width) {
-        if (width == null) {
-            tableData.ensureTableColElement(column).getStyle().clearWidth();
-            if(!noHeaders)
-                tableHeader.ensureTableColElement(column).getStyle().clearWidth();
-            if(!noFooters)
-                tableFooter.ensureTableColElement(column).getStyle().clearWidth();
-        } else {
-            tableData.ensureTableColElement(column).getStyle().setProperty("width", width);
-            if(!noHeaders)
-                tableHeader.ensureTableColElement(column).getStyle().setProperty("width", width);
-            if(!noFooters)
-                tableFooter.ensureTableColElement(column).getStyle().setProperty("width", width);
-        }
+    private void updateColumnWidthImpl(TableWrapperWidget tableData, int column, String width) {
+        Style colElementStyle = tableData.ensureTableColElement(column).getStyle();
+        if (width == null)
+            colElementStyle.clearWidth();
+        else
+            colElementStyle.setProperty("width", width);
     }
 
     /**
@@ -1078,7 +1012,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
      * @return the currently selected row, or -1 if none selected
      */
     public int getSelectedRow() {
-        return getCurrentState().getSelectedRow();
+        return selectedRow;
     }
 
     /**
@@ -1100,163 +1034,143 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         return getRowCount() == 0;
     }
 
-    /**
-     * Redraw the list with the current data.
-     */
-    public void redraw() {
-        ensurePendingState().redrawAllRows();
-        ensurePendingState().redrawAllColumns();
-    }
-
-    public void redrawColumns(Set<? extends Column> updatedColumns) {
-        redrawColumns(updatedColumns, true);
-    }
-
-    public void redrawColumns(Set<? extends Column> updatedColumns, boolean redrawAllRows) {
-        ensurePendingState().redrawColumns(updatedColumns);
-        if (redrawAllRows) {
-            pendingState.redrawAllRows();
-        }
-    }
-
-    /**
-     * Mark the headers as dirty and redraw the table.
-     */
-    public void refreshHeaders() {
-        if (pendingState != null) {
-            //already pending some redraw, so render headers there...
-            headersChanged = true;
-        } else {
-            //just update headers
-            updateHeadersImpl(false);
-        }
-    }
-
-    /**
-     * Get the current state of the presenter.
-     *
-     * @return the pending state if one exists, otherwise the state
-     */
-    private State<T> getCurrentState() {
-        return pendingState == null ? state : pendingState;
-    }
-
-    /**
-     * Ensure that a pending {@link DefaultState} exists and return it.
-     *
-     * @return the pending state
-     */
-    private State<T> ensurePendingState() {
+    protected void startResolving() {
         if (isResolvingState) {
-            throw new IllegalStateException("It's not allowed to change current state, when resolving pending state");
-        }
-
-        // Create the pending state if needed.
-        if (pendingState == null) {
-            pendingState = new State<>(state);
-            PendingStateCommand.schedule(this);
-        }
-
-        return pendingState;
-    }
-
-    protected void resolvePendingStateBeforeUpdate() {
-        if (isResolvingState || pendingState == null) {
             return;
         }
 
         isResolvingState = true;
     }
 
-    protected void resolvePendingStateUpdate() {
-        if (!isResolvingState) {
-            return;
-        }
-        if (columnsChanged) {
-            refreshColumnWidths();
-        }
+    protected void updateDOM() {
+        if (columnsChanged || widthsChanged)
+            updateWidthsDOM(columnsChanged); // updating colgroup (column widths)
 
-        if (columnsChanged || headersChanged) {
-            updateHeadersImpl(columnsChanged);
-        }
+        if (columnsChanged || headersChanged)
+            updateHeadersDOM(columnsChanged); // updating column headers table
 
-        isRefreshing = true;
+        if (columnsChanged || dataChanged)
+            updateDataDOM(columnsChanged, dataColumnsChanged); // updating data (rows + column values)
 
-        updateTableData(pendingState);
+        if (columnsChanged || selectedRowChanged || selectedColumnChanged || dataChanged) // dataChanged because background is data (and updated during data update)
+            updateSelectedRowBackgroundDOM(); // updating selection background
 
-        isRefreshing = false;
+        if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged)
+            updateFocusedCellDOM(); // updating focus cell border
+
+        if(focusedChanged) // updating focus grid border
+            changeBorder(isFocused ? "var(--focus-color)" : "var(--component-border-color)");
     }
 
-    protected void preResolvePendingStateAfterUpdate() {
-        int rowToShow = pendingState.selectedRowSet ? pendingState.selectedRow : -1;
-        int colToShow = pendingState.selectedColumnSet ? pendingState.selectedColumn : -1;
-
-        //force browser-flush
-        preAfterUpdateTableData(pendingState, rowToShow, colToShow);
-    }
-
-    protected void resolvePendingStateAfterUpdate() {
-        if (!isResolvingState) {
-            return;
-        }
-
-        isRefreshing = true;
-
-        afterUpdateTableData(pendingState);
-
-        isRefreshing = false;
-
+    private void finishResolving() {
         headersChanged = false;
         columnsChanged = false;
+        widthsChanged = false;
+        dataChanged = false;
+        dataColumnsChanged = new ArrayList<>();
+        selectedRowChanged = false;
+        selectedColumnChanged = false;
+        focusedChanged = false;
 
-        updateSelectedRowStyles();
+        renderedSelectedKey = getSelectedKey();
+        renderedSelectedRow = getSelectedRow();
+        renderedSelectedCol = getSelectedColumn();
 
-        state = pendingState;
-        pendingState = null;
         isResolvingState = false;
     }
 
-    private void preAfterUpdateTableData(State<T> pendingState, int rowToShow, int colToShow) {
-        if(!noScrollers) {
-            if(GwtClientUtils.isShowing(this)) { // need this check, since grid can be already hidden (for example when SHOW DOCKED is executed), and in that case get*Width return 0, which leads for example to updateTablePaddings (removing scroll) and thus unnecessary blinking when the grid becomes visible again
-                preAfterUpdateScrollHorizontal(pendingState, colToShow);
-                preAfterUpdateScrollVertical(pendingState, rowToShow);
-            } else
-                assert tableDataScroller.getClientWidth() == 0 && tableDataScroller.getOffsetWidth() == 0;
+    private int getLastVisibleRow(int tableBottom, int start) {
+        for (int i = start; i >= 0; i--) {
+            TableRowElement rowElement = getChildElement(i);
+            int rowBottom = rowElement.getOffsetTop() + rowElement.getClientHeight();
+            if (rowBottom <= tableBottom) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    private int getFirstVisibleRow(int tableTop, int start) {
+        for (int i = start; i < getRowCount(); i++) {
+            TableRowElement rowElement = getChildElement(i);
+            int rowTop = rowElement.getOffsetTop();
+            if (rowTop >= tableTop) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    public void checkSelectedRowVisible() {
+        int selectedRow = getSelectedRow();
+        if (selectedRow >= 0) {
+            int scrollHeight = tableDataScroller.getClientHeight();
+            int scrollTop = tableDataScroller.getVerticalScrollPosition();
+
+            TableRowElement rowElement = getChildElement(selectedRow);
+            int rowTop = rowElement.getOffsetTop();
+            int rowBottom = rowTop + rowElement.getClientHeight();
+
+            int newRow = -1;
+            if (rowBottom > scrollTop + scrollHeight + 1) { // 1 for border
+                newRow = getLastVisibleRow(scrollTop + scrollHeight, selectedRow);
+            }
+            if (rowTop < scrollTop) {
+                newRow = getFirstVisibleRow(scrollTop, selectedRow);
+            }
+            if (newRow != -1) {
+                changeSelectedRow(newRow);
+            }
         }
     }
 
-    private void preAfterUpdateScrollHorizontal(State<T> pendingState, int colToShow) {
-        int colCount = getColumnCount();
+    private void beforeUpdateDOMScroll(SetPendingScrollState pendingState) {
+        beforeUpdateDOMScrollVertical(pendingState);
+    }
 
-        int scrollWidth = tableDataScroller.getClientWidth();
-        boolean hasVerticalScroll = scrollWidth != tableDataScroller.getOffsetWidth();
+    private void beforeUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
+        if (areRowsChanged() && renderedSelectedRow >= 0) // rows changed and there was some selection
+            pendingState.renderedSelectedScrollTop = getChildElement(renderedSelectedRow).getOffsetTop() - tableDataScroller.getVerticalScrollPosition();
+    }
+
+    //force browser-flush
+    private void preAfterUpdateDOMScroll(SetPendingScrollState pendingState) {
+        preAfterUpdateDOMScrollHorizontal(pendingState);
+        preAfterUpdateDOMScrollVertical(pendingState);
+    }
+
+    private void preAfterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
+
+        int viewportWidth = getViewportWidth();
+        boolean hasVerticalScroll = viewportWidth != tableDataScroller.getOffsetWidth();
+        if(hasVerticalScroll != this.hasVerticalScroll)
+            pendingState.hasVertical = hasVerticalScroll;
+
         int currentScrollLeft = tableDataScroller.getHorizontalScrollPosition();
 
         //scroll column to visible if needed
         int scrollLeft = currentScrollLeft;
-        if (colToShow >=0 && colToShow < colCount && renderedRowCount > 0) {
+        int colToShow;
+        if (selectedColumnChanged && (colToShow = getSelectedColumn()) >=0 && getRowCount() > 0) {
             TableRowElement tr = tableData.tableElement.getRows().getItem(0);
             TableCellElement td = tr.getCells().getItem(colToShow);
 
             int columnLeft = td.getOffsetLeft();
             int columnRight = columnLeft + td.getOffsetWidth();
-            if (columnRight >= scrollLeft + scrollWidth) {
-                scrollLeft = columnRight - scrollWidth;
-            }
-
-            if (columnLeft < scrollLeft) {
+            if (columnRight >= scrollLeft + viewportWidth) // not completely visible from right
+                scrollLeft = columnRight - viewportWidth;
+            if (columnLeft < scrollLeft) // not completely visible from left
                 scrollLeft = columnLeft;
-            }
         }
 
-        pendingState.pendingScrollLeft = scrollLeft;
-        pendingState.pendingCurrentScrollLeft = currentScrollLeft;
-        pendingState.pendingHasVerticalScroll = hasVerticalScroll;
+        if(currentScrollLeft != scrollLeft)
+            pendingState.left = scrollLeft;
+
+//        updateScrollHorizontal(pendingState);
     }
 
-    private void preAfterUpdateScrollVertical(State<T> pendingState, int rowToShow) {
-        int rowCount = pendingState.rowData.size();
+    private void preAfterUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
+        int rowCount = getRowCount();
 
         int tableHeight = 0;
         if (rowCount > 0) {
@@ -1264,111 +1178,105 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             tableHeight = lastRowElement.getOffsetTop() + lastRowElement.getClientHeight();
         }
 
-        int scrollHeight = tableDataScroller.getClientHeight();
+        int viewportHeight = tableDataScroller.getClientHeight();
         int currentScrollTop = tableDataScroller.getVerticalScrollPosition();
-        int scrollTop = pendingState.desiredVerticalScrollPosition;
 
-        if (tableHeight <= scrollHeight) {
-            scrollTop = 0;
-        } else {
-            if (scrollTop < 0) {
-                scrollTop = currentScrollTop;
-            }
-            if (scrollTop > tableHeight - scrollHeight) {
-                scrollTop = tableHeight - scrollHeight;
-            }
+        int scrollTop = currentScrollTop;
+
+        // we're trying to keep viewport the same after rerendering
+        int rerenderedSelectedRow;
+        if(pendingState.renderedSelectedScrollTop != null && (rerenderedSelectedRow = getRowByKeyOptimistic(renderedSelectedKey)) >= 0) {
+            scrollTop = getChildElement(rerenderedSelectedRow).getOffsetTop() - pendingState.renderedSelectedScrollTop;
+
+            if(scrollTop < 0) // upper than top
+                scrollTop = 0;
+            if (scrollTop > tableHeight - viewportHeight) // lower than bottom (it seems it can be if renderedSelectedScrollTop is strongly negative)
+                scrollTop = tableHeight - viewportHeight;
         }
 
         //scroll row to visible if needed
-        if (rowToShow >= 0 && rowToShow < rowCount) {
+        int rowToShow;
+        if (selectedRowChanged && (rowToShow = getSelectedRow()) >= 0) {
             TableRowElement rowElement = getChildElement(rowToShow);
             int rowTop = rowElement.getOffsetTop();
             int rowBottom = rowTop + rowElement.getClientHeight();
-            if (rowBottom >= scrollTop + scrollHeight) {
-                scrollTop = rowBottom - scrollHeight;
-            }
-
-            if (rowTop < scrollTop) {
-                scrollTop = rowTop;
-            }
+            if (rowBottom >= scrollTop + viewportHeight) // not completely visible from bottom
+                scrollTop = rowBottom - viewportHeight;
+            if (rowTop <= scrollTop) // not completely visible from top
+                scrollTop = rowTop - 1; // 1 for border
         }
 
-        pendingState.pendingScrollTop = scrollTop;
-        pendingState.pendingCurrentScrollTop = currentScrollTop;
+        if(scrollTop != currentScrollTop)
+            pendingState.top = scrollTop;
+
+//        updateScrollVertical(pendingState);
+    }
+
+    protected int getViewportWidth() {
+        return tableDataScroller.getClientWidth();
+    }
+    public int getViewportHeight() {
+        return tableDataScroller.getClientHeight();
     }
 
     boolean hasVerticalScroll = false;
-    private void afterUpdateTableData(State<T> pendingState) {
+    private void afterUpdateDOMScroll(SetPendingScrollState pendingState) {
+        afterUpdateDOMScrollHorizontal(pendingState);
+        afterUpdateDOMScrollVertical(pendingState);
+    }
+
+    private void afterUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
+        if (pendingState.top != null) {
+            tableDataScroller.setVerticalScrollPosition(pendingState.top);
+        }
+    }
+
+    private void afterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
+        if(pendingState.hasVertical != null) {
+            hasVerticalScroll = pendingState.hasVertical;
+            updateTableMargins();
+        }
+
+        if (pendingState.left != null) {
+            tableDataScroller.setHorizontalScrollPosition(pendingState.left);
+        }
+    }
+
+    private void updateDataDOM(boolean columnsChanged, ArrayList<Column> dataColumnsChanged) {
+        int[] columnsToRedraw = null;
+        if(!columnsChanged && dataColumnsChanged != null) { // if only columns has changed
+            int size = dataColumnsChanged.size();
+            columnsToRedraw = new int[size];
+            for (int i = 0 ; i < size; i++)
+                columnsToRedraw[i] = getColumnIndex(dataColumnsChanged.get(i));
+        }
+
+        tableBuilder.update(tableData.getSection(), getRows(), columnsChanged, columnsToRedraw);
+
         if(!noScrollers) {
-            if(GwtClientUtils.isShowing(this)) { // see comment in preAfterUpdateTableData
-                afterUpdateScrollHorizontal(pendingState);
-                afterUpdateScrollVertical(pendingState);
+            if (getRowCount() == 0) {
+                tableDataScroller.setWidget(emptyTableWidgetContainer);
+            } else {
+                tableDataScroller.setWidget(tableData);
             }
         }
     }
 
-    private void afterUpdateScrollVertical(State<T> pendingState) {
-        if (pendingState.pendingScrollTop != pendingState.pendingCurrentScrollTop) {
-            tableDataScroller.setVerticalScrollPosition(pendingState.pendingScrollTop);
-        }
-    }
-
-    private void afterUpdateScrollHorizontal(State<T> pendingState) {
-        if(!noScrollers) {
-            boolean newHasVerticalScroll = pendingState.pendingHasVerticalScroll;
-            if(hasVerticalScroll != newHasVerticalScroll) {
-                hasVerticalScroll = newHasVerticalScroll;
-                updateTableMargins();
-            }
-        }
-
-        if (pendingState.pendingScrollLeft != pendingState.pendingCurrentScrollLeft) {
-            tableDataScroller.setHorizontalScrollPosition(pendingState.pendingScrollLeft);
-        }
-    }
-
-    private void updateTableData(State<T> pendingState) {
-        int pendingNewRowCnt = pendingState.getRowCount();
-        if (pendingState.needRedraw() || columnsChanged || renderedRowCount != pendingNewRowCnt) {
-            tableBuilder.update(tableData.getSection(), pendingState.rowData, 0, pendingNewRowCnt, columnsChanged);
-
-            renderedRowCount = pendingNewRowCnt;
-            if(!noScrollers) {
-                if (renderedRowCount == 0) {
-                    tableDataScroller.setWidget(emptyTableWidgetContainer);
-                } else {
-                    tableDataScroller.setWidget(tableData);
-                }
-            }
-        }
-    }
-
-    private void updateSelectedRowStyles() {
-        int newLocalSelectedRow = getSelectedRow();
-        int newLocalSelectedCol = getSelectedColumn();
-
-        updateSelectedRow(newLocalSelectedRow, newLocalSelectedCol);
-
-        if (drawFocusedCellBorder())
-            updateFocusedCell(newLocalSelectedRow, newLocalSelectedCol);
-
-        oldLocalSelectedRow = newLocalSelectedRow;
-        oldLocalSelectedCol = newLocalSelectedCol;
-    }
-
-    private void updateSelectedRow(int newLocalSelectedRow, int newLocalSelectedCol) {
+    private void updateSelectedRowBackgroundDOM() {
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
         int rowCount = rows.getLength();
 
+        int newLocalSelectedRow = getSelectedRow();
+
         // CLEAR PREVIOUS STATE
-        if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow < rowCount &&
-                oldLocalSelectedRow != newLocalSelectedRow) {
-            updateSelectedRowCellsBackground(oldLocalSelectedRow, rows, false, -1);
+        if (renderedSelectedRow >= 0 && renderedSelectedRow < rowCount &&
+                renderedSelectedRow != newLocalSelectedRow) {
+            updateSelectedRowCellsBackground(renderedSelectedRow, rows, false, -1);
         }
 
         // SET NEW STATE
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rowCount) {
-            updateSelectedRowCellsBackground(newLocalSelectedRow, rows, true, this.isFocused ? newLocalSelectedCol : -1);
+            updateSelectedRowCellsBackground(newLocalSelectedRow, rows, true, this.isFocused ? getSelectedColumn() : -1);
         }
     }
 
@@ -1396,16 +1304,19 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
     }
 
-    private void updateFocusedCell(int newLocalSelectedRow, int newLocalSelectedCol) {
+    private void updateFocusedCellDOM() {
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
         NodeList<TableRowElement> headerRows = noHeaders ? null : tableHeader.tableElement.getTHead().getRows(); // we need headerRows for upper border
+
+        int newLocalSelectedRow = getSelectedRow();
+        int newLocalSelectedCol = getSelectedColumn();
 
         int columnCount = getColumnCount();
         // CLEAR PREVIOUS STATE
         // if old row index is out of bounds only by 1, than we still need to clean top cell, which is in bounds (for vertical direction there is no such problem since we set outer border, and not inner, for horz it's not possible because of header)
-        if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow <= rows.getLength() && oldLocalSelectedCol >= 0 && oldLocalSelectedCol < columnCount &&
-                (oldLocalSelectedRow != newLocalSelectedRow || oldLocalSelectedCol != newLocalSelectedCol)) {
-            setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, rows, headerRows, false);
+        if (renderedSelectedRow >= 0 && renderedSelectedRow <= rows.getLength() && renderedSelectedCol >= 0 && renderedSelectedCol < columnCount &&
+                (renderedSelectedRow != newLocalSelectedRow || renderedSelectedCol != newLocalSelectedCol)) {
+            setFocusedCellStyles(renderedSelectedRow, renderedSelectedCol, rows, headerRows, false);
         }
 
         // SET NEW STATE
@@ -1477,260 +1388,113 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
     }
 
-    protected boolean drawFocusedCellBorder() {
-        return true;
-    }
-
-    private void updateHeadersImpl(boolean columnsChanged) {
+    public void updateHeadersDOM(boolean columnsChanged) {
         if (!noHeaders)
             headerBuilder.update(columnsChanged);
         if (!noFooters)
             footerBuilder.update(columnsChanged);
     }
 
-    private void refreshColumnWidths() {
+    // mechanism is slightly different - removing redundant columns, resetting others, however there is no that big difference from other updates so will leave it this way
+    private void updateWidthsDOM(boolean columnsChanged) {
         int columnCount = getColumnCount();
-        for (int i = 0; i < columnCount; i++) {
-            setColumnWidthImpl(i, getColumnWidth(columns.get(i)));
-        }
 
-        // Hide unused col elements in the colgroup.
+        if(columnsChanged)
+            removeUnusedColumnWidthsImpl(columnCount);
+        for (int i = 0; i < columnCount; i++)
+            updateColumnWidthImpl(i, getColumnWidth(columns.get(i)));
+    }
+
+    private void removeUnusedColumnWidthsImpl(int columnCount) {
+        tableData.removeUnusedColumns(columnCount);
         if(!noHeaders)
-            tableHeader.hideUnusedColumns(columnCount);
-        tableData.hideUnusedColumns(columnCount);
+            tableHeader.removeUnusedColumns(columnCount);
         if(!noFooters)
-            tableFooter.hideUnusedColumns(columnCount);
+            tableFooter.removeUnusedColumns(columnCount);
     }
 
     @Override
     public void colorThemeChanged() {
-        refreshColumnsAndRedraw();
+        columnsChanged();
     }
 
-    /**
-     * Represents the pending state of the presenter.
-     *
-     * @param <T> the data type of the presenter
-     */
-    private static class State<T> {
-        protected final List<T> rowData;
-        protected int selectedRow = 0;
-        protected int selectedColumn = 0;
+    protected int selectedRow = -1;
+    protected int selectedColumn = -1;
 
-        private int desiredVerticalScrollPosition = -1;
+    private static class SetPendingScrollState {
+        private Integer renderedSelectedScrollTop; // from selected till upper border
 
-        private boolean selectedRowSet = false;
-        private boolean selectedColumnSet = false;
-
-        /**
-         * The list of ranges that has to be redrawn.
-         */
-        private List<Range> rangesToRedraw = null;
-        private Set<Column> columnsToRedraw = null;
-        private boolean redrawAllColumns = false;
-
-        //values, used for delayed updating
-        int pendingScrollTop;
-        int pendingScrollLeft;
-        int pendingCurrentScrollTop;
-        int pendingCurrentScrollLeft;
-        boolean pendingHasVerticalScroll;
-
-        public State() {
-            this(new ArrayList<T>());
-        }
-
-        public State(ArrayList<T> rowData) {
-            this.rowData = rowData;
-        }
-
-        public State(State<T> state) {
-            this(new ArrayList<>(state.rowData));
-            this.selectedRow = state.getSelectedRow();
-            this.selectedColumn = state.getSelectedColumn();
-        }
-
-        public int getSelectedRow() {
-            return selectedRow;
-        }
-
-        public void setSelectedRow(int selectedRow) {
-            this.selectedRow = selectedRow;
-            this.selectedRowSet = true;
-        }
-
-        public int getSelectedColumn() {
-            return selectedColumn;
-        }
-
-        public void setSelectedColumn(int selectedColumn) {
-            this.selectedColumn = selectedColumn;
-            this.selectedColumnSet = true;
-        }
-
-        public int getRowCount() {
-            return rowData.size();
-        }
-
-        public T getRowValue(int index) {
-            return rowData.get(index);
-        }
-
-        private List<Range> createRangesToRedraw() {
-            if (rangesToRedraw == null) {
-                rangesToRedraw = new ArrayList<>();
-            }
-            return rangesToRedraw;
-        }
-
-        private Set<Column> createColumnsToRedraw() {
-            if (columnsToRedraw == null) {
-                columnsToRedraw = new HashSet<>();
-            }
-            return columnsToRedraw;
-        }
-
-        /**
-         * Update the range data to be redraw.
-         *
-         * @param start the start index
-         * @param end   the end index (excluded)
-         */
-        public void redrawRows(int start, int end) {
-            // merge ranges on insertion
-
-            if (createRangesToRedraw().size() == 0) {
-                rangesToRedraw.add(new Range(start, end));
-                return;
-            }
-
-            int rangeCnt = rangesToRedraw.size();
-
-            int startIndex;
-            for (startIndex = 0; startIndex < rangeCnt; ++startIndex) {
-                Range prevRange = rangesToRedraw.get(startIndex);
-                if (prevRange.start > start) {
-                    break;
-                }
-            }
-
-            if (startIndex > 0) {
-                //range previous range
-
-                //prevRange.start < start because of cycle break condition
-                Range prevRange = rangesToRedraw.get(startIndex - 1);
-                if (prevRange.end >= end) {
-                    //fully included to the bigger range
-                    return;
-                }
-
-                if (prevRange.end >= start) {
-                    //merge prevRange with this one
-                    rangeCnt--;
-                    startIndex--;
-                    rangesToRedraw.remove(startIndex);
-                    start = prevRange.start;
-                }
-            }
-
-            //merge following ranges
-            if (startIndex < rangeCnt) {
-                Range nextRange = rangesToRedraw.get(startIndex);
-                while (nextRange.start <= end) {
-                    rangeCnt--;
-                    rangesToRedraw.remove(startIndex);
-                    if (nextRange.end > end) {
-                        //extend current range and break if merged range is farther
-                        end = nextRange.end;
-                        break;
-                    }
-
-                    if (startIndex == rangeCnt) {
-                        break;
-                    }
-
-                    nextRange = rangesToRedraw.get(startIndex);
-                }
-            }
-
-            rangesToRedraw.add(startIndex, new Range(start, end));
-        }
-
-        public void redrawAllRows() {
-            createRangesToRedraw().clear();
-            redrawRows(0, rowData.size());
-        }
-
-        public boolean needRedraw() {
-            return rangesToRedraw != null && (redrawAllColumns || columnsToRedraw != null);
-        }
-
-        public void redrawColumns(Set<? extends Column> updatedColumns) {
-            if (!redrawAllColumns) {
-                createColumnsToRedraw().addAll(updatedColumns);
-            }
-        }
-
-        public void redrawAllColumns() {
-            redrawAllColumns = true;
-            columnsToRedraw = null;
-        }
-
-        public int[] getColumnsToRedraw(DataGrid thisGrid) {
-            if (redrawAllColumns) {
-                return null;
-            }
-
-            int[] columnsToRedrawIndices = null;
-            if (columnsToRedraw != null) {
-                columnsToRedrawIndices = new int[columnsToRedraw.size()];
-                int i = 0;
-                for (Column column : columnsToRedraw) {
-                    columnsToRedrawIndices[i++] = thisGrid.getColumnIndex(column);
-                }
-            }
-            return columnsToRedrawIndices;
-        }
+        private Integer top;
+        private Integer left;
+        private Boolean hasVertical;
     }
 
-    private static PendingStateCommand pendingStateCommandStatic;
+    // all this pending is needed for two reasons :
+    // 1) update dom once if there are several changes before event loop
+    // 2) first do dom changes, then do getOffset* routing thus avoiding unnecessary layouting flushes
+    private static UpdateDOMCommand updateDOMCommandStatic;
 
-    private static class PendingStateCommand implements Scheduler.ScheduledCommand {
+    private static class UpdateDOMCommand implements Scheduler.ScheduledCommand {
         private final ArrayList<DataGrid> grids = new ArrayList<>();
-
-        private PendingStateCommand(DataGrid grid) {
-            grids.add(grid);
-        }
 
         @Override
         public void execute() {
-            for (DataGrid grid : grids) {
-                grid.resolvePendingStateBeforeUpdate();
+            for (DataGrid grid : grids)
+                grid.startResolving();
+
+            int size = grids.size();
+            boolean[] showing = new boolean[size];
+            SetPendingScrollState[] pendingStates = new SetPendingScrollState[size];
+            for (int i = 0; i < size; i++) {
+                DataGrid grid = grids.get(i);
+                if(!grid.noScrollers && GwtClientUtils.isShowing(grid)) { // need this check, since grid can be already hidden (for example when SHOW DOCKED is executed), and in that case get*Width return 0, which leads for example to updateTablePaddings (removing scroll) and thus unnecessary blinking when the grid becomes visible again
+                    showing[i] = true;
+                    pendingStates[i] = new SetPendingScrollState();
+                }
             }
-            for (DataGrid grid : grids) {
-                grid.resolvePendingStateUpdate();
-            }
-            for (DataGrid grid : grids) {
-                grid.preResolvePendingStateAfterUpdate();
-            }
-            for (DataGrid grid : grids) {
-                grid.resolvePendingStateAfterUpdate();
-            }
-            pendingStateCommandStatic = null;
+
+            for (int i = 0; i < size; i++)
+                if(showing[i])
+                    grids.get(i).beforeUpdateDOMScroll(pendingStates[i]);
+
+            for (DataGrid grid : grids)
+                grid.updateDOM();
+
+            // not sure what for there is a separation of reading scroll position from it's setting
+            for (int i = 0; i < size; i++)
+                if(showing[i])
+                    grids.get(i).preAfterUpdateDOMScroll(pendingStates[i]);
+
+            for (int i = 0; i < size; i++)
+                if(showing[i])
+                    grids.get(i).afterUpdateDOMScroll(pendingStates[i]);
+
+            for (DataGrid grid : grids)
+                grid.finishResolving();
+
+            updateDOMCommandStatic = null;
         }
 
         public static void schedule(DataGrid grid) {
-            if (pendingStateCommandStatic == null) {
-                pendingStateCommandStatic = new PendingStateCommand(grid);
-                Scheduler.get().scheduleFinally(pendingStateCommandStatic);
-            } else {
-                pendingStateCommandStatic.add(grid);
-            }
+            if (updateDOMCommandStatic == null) {
+                updateDOMCommandStatic = new UpdateDOMCommand();
+                updateDOMCommandStatic.add(grid);
+                Scheduler.get().scheduleFinally(updateDOMCommandStatic);
+            } else
+                updateDOMCommandStatic.add(grid);
         }
 
         private void add(DataGrid grid) {
-            grids.add(grid);
+            if(!grids.contains(grid))
+                grids.add(grid);
         }
+    }
+
+    private void scheduleUpdateDOM() {
+        if (isResolvingState)
+            throw new IllegalStateException("It's not allowed to change current state, when resolving pending state");
+
+        UpdateDOMCommand.schedule(this);
     }
 
     private abstract static class TableWrapperWidget extends Widget {
@@ -1774,7 +1538,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
          *
          * @param start the first unused column index
          */
-        void hideUnusedColumns(int start) {
+        void removeUnusedColumns(int start) {
             // Remove all col elements that appear after the last column.
             int colCount = colgroupElement.getChildCount();
             for (int i = start; i < colCount; i++) {
@@ -1828,8 +1592,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     @Override
     public void onResize() {
-        if(!isResolvingState) // hack, because in preAfterUpdateTableData there is browser event flush, which causes scheduleDeferred flush => HeaderPanel.forceLayout => onResize and IllegalStateException, everything is really twisted here, so will just suppress ensurePendingState
-            ensurePendingState();
+        if(!isResolvingState) // hack, because in preUpdateScroll there is browser event flush, which causes scheduleDeferred flush => HeaderPanel.forceLayout => onResize and IllegalStateException, everything is really twisted here, so will just suppress ensurePendingState
+            scheduleUpdateDOM();
         super.onResize();
     }
 
@@ -1903,43 +1667,42 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         }
 
         public boolean nextColumn(boolean forward) {
-            if (display.renderedRowCount > 0) {
-                int rowCount = display.getRowCount();
-                int columnCount = display.getColumnCount();
+            int rowCount = display.getRowCount();
+            if(rowCount == 0) // not sure if it's needed
+                return false;
+            int columnCount = display.getColumnCount();
 
-                int rowIndex = display.getSelectedRow();
-                int columnIndex = display.getSelectedColumn();
+            int rowIndex = display.getSelectedRow();
+            int columnIndex = display.getSelectedColumn();
 
-                while(true) {
-                    if (forward) {
-                        if (columnIndex == columnCount - 1) {
-                            if (rowIndex != rowCount - 1) {
-                                columnIndex = 0;
-                                rowIndex++;
-                            } else
-                                break;
-                        } else {
-                            columnIndex++;
-                        }
+            while(true) {
+                if (forward) {
+                    if (columnIndex == columnCount - 1) {
+                        if (rowIndex != rowCount - 1) {
+                            columnIndex = 0;
+                            rowIndex++;
+                        } else
+                            break;
                     } else {
-                        if (columnIndex == 0) {
-                            if (rowIndex != 0) {
-                                columnIndex = columnCount - 1;
-                                rowIndex--;
-                            } else
-                                break;
-                        } else {
-                            columnIndex--;
-                        }
+                        columnIndex++;
                     }
-
-                    if(changeColumn(columnIndex))
-                        break;
+                } else {
+                    if (columnIndex == 0) {
+                        if (rowIndex != 0) {
+                            columnIndex = columnCount - 1;
+                            rowIndex--;
+                        } else
+                            break;
+                    } else {
+                        columnIndex--;
+                    }
                 }
 
-                return changeRow(rowIndex);
+                if(changeColumn(columnIndex))
+                    break;
             }
-            return false;
+
+            return changeRow(rowIndex);
         }
     }
 }

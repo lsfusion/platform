@@ -47,7 +47,7 @@ public interface GTableView {
 
     // columns
     GPropertyDraw getCurrentProperty(); // calculate sum / filtering default value
-    GGroupObjectValue getCurrentColumn(); // calculate sum / filtering default value
+    GGroupObjectValue getCurrentColumnKey(); // calculate sum / filtering default value
 
     boolean isNoColumns(); // hide if there're no columns after update
     long getSetRequestIndex(); // we need to understand that view was already updated, to avoid unnecessary effects (for example making grid invisible)
@@ -74,6 +74,4 @@ public interface GTableView {
     LinkedHashMap<GPropertyDraw, Boolean> getUserOrders(List<GPropertyDraw> propertyDrawList);
     GGroupObjectUserPreferences getCurrentUserGridPreferences();
     GGroupObjectUserPreferences getGeneralGridPreferences();
-
-    void afterAppliedChanges(); // after apply changed
 }
