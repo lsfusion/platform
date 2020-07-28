@@ -182,7 +182,7 @@ public class GTreeTableTree {
 
     private int nodeCounter;
 
-    public ArrayList<GTreeGridRecord> getUpdatedRecords(int columnCount) {
+    public ArrayList<GTreeGridRecord> updateRows(int columnCount) {
         nodeCounter = 0;
         ArrayList<GTreeGridRecord> result = new ArrayList<>();
         if (!hasOnlyExpandingNodeAsChild(root)) {

@@ -321,7 +321,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public GGroupObjectValue getCurrentColumn() {
+    public GGroupObjectValue getCurrentColumnKey() {
         if(!properties.isEmpty())
             return columnKeys.get(0).get(0);
         return null;
@@ -382,11 +382,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public GGroupObjectUserPreferences getGeneralGridPreferences() {
         return null;
-    }
-
-    @Override
-    public void afterAppliedChanges() {
-
     }
 
     protected void changeGroupObject(GGroupObjectValue value) {

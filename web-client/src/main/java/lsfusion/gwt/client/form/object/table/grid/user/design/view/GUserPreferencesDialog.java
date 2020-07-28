@@ -265,7 +265,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
         grid.setUserPageSize(userPageSize);
 
         grid.setUserHeaderHeight(getUserHeaderHeight());
-        grid.refreshColumnsAndRedraw();
+        grid.columnsChanged();
 
         grid.setHasUserPreferences(true);
 
@@ -365,7 +365,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
                 grid.setUserPageSize(userPageSize);
         
                 grid.setUserHeaderHeight(getUserHeaderHeight());
-                grid.refreshColumnsAndRedraw();
+                grid.columnsChanged();
                 
                 grid.saveCurrentPreferences(confirmDialog.forAll, createChangeCallback(true));
             }
@@ -440,7 +440,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
                 grid.font = font;
                 grid.columnsPreferencesChanged();
                 grid.setUserHeaderHeight(getUserHeaderHeight());
-                grid.refreshColumnsAndRedraw();
+                grid.columnsChanged();
                 preferencesChanged();
                 String caption = save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting();
                 String message = save ? messages.formGridPreferencesSaveSuccess() : messages.formGridPreferencesResetSuccess();
@@ -458,7 +458,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
                 refreshValues(font);
                 grid.font = font;
                 grid.columnsPreferencesChanged();
-                grid.refreshColumnsAndRedraw();
+                grid.columnsChanged();
                 focusPanel.setFocus(true);
                 super.failure(caught);
             }

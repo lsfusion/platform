@@ -253,7 +253,7 @@ public class GGridController extends GAbstractTableController {
                             GPropertyDraw property = getSelectedProperty();
                             if (property != null) {
                                 if (property.baseType instanceof GIntegralType) {
-                                    formController.calculateSum(groupObject, property, table.getCurrentColumn());
+                                    formController.calculateSum(groupObject, property, table.getCurrentColumnKey());
                                 } else {
                                     showSum(null, property);
                                 }
@@ -322,16 +322,12 @@ public class GGridController extends GAbstractTableController {
 
         if (isList()) {
             ArrayList<GGroupObjectValue> keys = fc.gridObjects.get(groupObject);
-            GTableView table = this.table;
-            
-            if (keys != null) {
+            if (keys != null)
                 table.setKeys(keys);
-            }
 
             GGroupObjectValue currentKey = fc.objects.get(groupObject);
-            if (currentKey != null) {
+            if (currentKey != null)
                 table.setCurrentKey(currentKey);
-            }
         }
 
         // first proceed property with its values, then extra values
@@ -484,8 +480,8 @@ public class GGridController extends GAbstractTableController {
         return table.getCurrentProperty();
     }
     @Override
-    public GGroupObjectValue getSelectedColumn() {
-        return table.getCurrentColumn();
+    public GGroupObjectValue getSelectedColumnKey() {
+        return table.getCurrentColumnKey();
     }
 
     @Override
@@ -531,12 +527,6 @@ public class GGridController extends GAbstractTableController {
 
         panel.update();
         panel.setVisible(true);
-    }
-
-    public void afterAppliedChanges() {
-        if (isList()) {
-            table.afterAppliedChanges();
-        }
     }
 
     @Override

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
-import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
@@ -43,13 +42,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private boolean dataUpdated;
     private boolean columnsUpdated;
 
-    private GGroupObjectValue pathToSet;
-
-    private ArrayList<GTreeGridRecord> currentRecords;
-
     private GTreeTableTree tree;
-
-    private GTreeGridRecord selectedRecord;
 
     private Set<GTreeTableNode> expandedNodes;
 
@@ -80,10 +73,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         setRowChangedHandler(() -> {
             final GTreeGridRecord kbSelectedRecord = getSelectedRowValue();
-            if (kbSelectedRecord != null && !kbSelectedRecord.equals(selectedRecord)) {
-                setCurrentRecord(kbSelectedRecord);
+            if (kbSelectedRecord != null)
                 form.changeGroupObjectLater(kbSelectedRecord.getGroup(), kbSelectedRecord.getKey());
-            }
         });
 
         sortableHeaderManager = new GGridSortableHeaderManager<GPropertyDraw>(this, true) {
@@ -108,7 +99,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if(treeGroupController.isExpandOnClick())
             form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK), new GBindingEnv(100, null, GBindingMode.ONLY, null, null),
                     event -> {
-                        GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
+                        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
                         if (node != null && node.isExpandable()) {
                             if (!node.isOpen()) {
                                 fireExpandNode(node);
@@ -422,8 +413,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, HashMap<GGroupObjectValue, Boolean> expandable) {
         tree.setKeys(group, keys, parents, expandable);
+
         dataUpdated = true;
-        needToRestoreScrollPosition = true;
     }
 
     public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
@@ -523,47 +514,52 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public void update() {
-        storeScrollPosition();
+        updateColumns();
 
-        if(columnsUpdated) {
-            updateLayoutWidth();
-            columnsUpdated = false;
-        }
+        updateData();
+    }
 
+    public void updateData() {
         if (dataUpdated) {
             restoreVisualState();
 
-            currentRecords = tree.getUpdatedRecords(getColumnCount());
-            updatePropertyReaders();
-            setRowData(currentRecords);
+            checkUpdateCurrentRow();
 
+            checkSelectedRowVisible();
+
+            rows = tree.updateRows(getColumnCount());
+            updatePropertyReaders();
             treeSelectionHandler.dataUpdated();
 
-            redraw();
+            rowsChanged();
 
             dataUpdated = false;
         }
 
-        updateHeader();
-
-        updateCurrentRecord();
+        updateCurrentRow();
     }
 
-    public void updateCurrentRecord() {
-        if (pathToSet != null) {
-            GGroupObjectValue currentPath = pathToSet;
-            pathToSet = null;
-            if (currentRecords != null) {
-                int i = 0;
-                for (GTreeGridRecord record : currentRecords) {
-                    if (record.getKey().equals(currentPath)) {
-                        setCurrentRecord(record);
-                        setSelectedRow(i);
-                        return;
-                    }
-                    i++;
+    public void updateColumns() {
+        if(columnsUpdated) {
+            int rowHeight = 0;
+            for (int i = 1, size = getColumnCount(); i < size; i++) {
+                GPropertyDraw property = getColumnPropertyDraw(i);
+                Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
+                if (captions != null) { // asserting that there is only one value columnKeys is EMPTY
+                    String value = GwtSharedUtils.nullTrim(captions.values().iterator().next());
+                    GGridPropertyTableHeader header = getGridHeader(i);
+                    header.setCaption(value, false, false);
+                    header.setToolTip(property.getTooltipText(value));
                 }
+                rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
             }
+            setCellHeight(rowHeight);
+
+            updateLayoutWidth();
+
+            columnsChanged();
+
+            columnsUpdated = false;
         }
     }
 
@@ -576,7 +572,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     protected void updatePropertyReaders() {
         if (rowBackgroundValues.size() != 0 || rowForegroundValues.size() != 0 || cellBackgroundValues.size() != 0 || cellForegroundValues.size() != 0) { // optimization
-            for (GTreeGridRecord record : currentRecords) {
+            for (GTreeGridRecord record : rows) {
                 GGroupObjectValue key = record.getKey();
 
                 Object rBackground = rowBackgroundValues.get(key);
@@ -608,33 +604,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
-    protected void updateHeader() {
-        boolean needsHeaderRefresh = false;
-        int rowHeight = 0;
-        for (int i = 1, size = getColumnCount(); i < size; i++) {
-            GPropertyDraw property = getColumnPropertyDraw(i);
-            Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
-            if (captions != null) {
-                String value = GwtSharedUtils.nullTrim(captions.values().iterator().next());
-                GGridPropertyTableHeader header = getGridHeader(i);
-                header.setCaption(value, false, false);
-                header.setToolTip(property.getTooltipText(value));
-                needsHeaderRefresh = true;
-            }
-            rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
-        }
-        setCellHeight(rowHeight);
-        if (needsHeaderRefresh) {
-            refreshHeaders();
-        }
-    }
-
     public void expandNodeByRecord(GTreeGridRecord record) {
         fireExpandNode(tree.getNodeByRecord(record));
     }
 
     public void fireExpandNodeRecursive(boolean current) {
-        GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
+        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
         if (node != null) {
             saveVisualState();
             addExpandedNodes(current ? node : tree.root);
@@ -662,7 +637,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public void fireCollapseNodeRecursive(boolean current) {
-        GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
+        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
         if (node != null) {
             saveVisualState();
             removeExpandedNodes(current ? node : tree.root);
@@ -679,6 +654,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public boolean isCurrentPathExpanded() {
         GTreeTableNode node;
+        GTreeGridRecord selectedRecord = getSelectedRowValue();
         return selectedRecord != null && (node = tree.getNodeByRecord(selectedRecord)) != null && node.isOpen();
     }
 
@@ -723,21 +699,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
-    private void setCurrentRecord(GTreeGridRecord record) {
-        Log.debug("Setting current record to: " + record);
-        this.selectedRecord = record;
-    }
-
-    public void setCurrentPath(GGroupObjectValue currentPath) {
-        Log.debug("Setting current path to: " + currentPath);
-        this.pathToSet = currentPath;
-    }
-
-    public GTreeGridRecord getSelectedRecord() {
-        return selectedRecord;
-    }
-
-    public GGroupObjectValue getCurrentKey() {
+    public GGroupObjectValue getSelectedKey() {
+        GTreeGridRecord selectedRecord = getSelectedRowValue();
         return selectedRecord == null ? GGroupObjectValue.EMPTY : selectedRecord.getKey();
     }
 
@@ -759,7 +722,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public Object getSelectedValue(GPropertyDraw property) {
-        GTreeGridRecord record = getSelectedRecord();
+        GTreeGridRecord record = getSelectedRowValue();
         return record == null ? null : record.getValue(property);
     }
 
@@ -812,7 +775,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             GPropertyDraw property = getSelectedProperty();
             if (property != null) {
-                form.pasteSingleValue(property, getCurrentKey(), table.get(0).get(0));
+                form.pasteSingleValue(property, getSelectedKey(), table.get(0).get(0));
             }
         }
     }
@@ -837,7 +800,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public boolean keyboardNodeChangeState(boolean open) {
-        GTreeTableNode node = tree.getNodeByRecord(selectedRecord);
+        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
         if (node == null || !node.isExpandable()) {
             return false;
         }

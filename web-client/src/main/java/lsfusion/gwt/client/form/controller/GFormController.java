@@ -495,9 +495,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         activateElements(fc);
 
         onResize();
-
-        // в конце скроллим все таблицы к текущим ключам
-        afterAppliedChanges();
     }
 
     private void activateElements(GFormChanges fc) {
@@ -506,15 +503,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         for(GPropertyDraw propertyDraw : fc.activateProps)
             focusProperty(propertyDraw);            
-    }
-
-    private void afterAppliedChanges() {
-        for (GGridController controller : controllers.values()) {
-            controller.afterAppliedChanges();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.afterAppliedChanges();
-        }
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(final int currentDispatchingRequestIndex, GFormChanges fc) {
@@ -547,15 +535,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(final long currentDispatchingRequestIndex, final GFormChanges fc) {
-        pendingChangeCurrentObjectsRequests.foreachEntry(new Function2<GGroupObject, Long>() {
-            @Override
-            public void apply(GGroupObject group, Long requestIndex) {
-                if (requestIndex <= currentDispatchingRequestIndex) {
-                    pendingChangeCurrentObjectsRequests.remove(group);
-                } else {
-                    fc.objects.remove(group);
-                }
-            }
+        pendingChangeCurrentObjectsRequests.foreachEntry((group, requestIndex) -> {
+            if (requestIndex <= currentDispatchingRequestIndex)
+                pendingChangeCurrentObjectsRequests.remove(group);
+            else
+                fc.objects.remove(group);
         });
     }
 

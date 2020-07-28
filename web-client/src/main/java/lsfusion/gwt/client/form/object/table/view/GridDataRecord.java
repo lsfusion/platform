@@ -131,17 +131,4 @@ public class GridDataRecord {
         setRowBackground(newRowBackground);
         setRowForeground(newRowForeground);
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof GridDataRecord && key.equals(((GridDataRecord) obj).key);
-    }
-
-    @Override
-    public String toString() {
-        return "GridDataRecord{" +
-                "key=" + key +
-                ", values=" + values +
-                '}';
-    }
 }

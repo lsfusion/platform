@@ -80,16 +80,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         if (columnsToRedraw == null) {
             if (columnCount > 0) {
-                //td.nextSibling is faster than cells[index]
+                //td.nextSibling is a lot faster than cells[index]
                 //http://jsperf.com/nextsibling-vs-childnodes
                 TableCellElement td = tr.getFirstChild().cast();
-                updateCellImpl(rowIndex, rowValue, td, 0);
-
-                int columnIndex = 1;
-                while (columnIndex < columnCount) {
-                    td = td.getNextSibling().cast();
+                int columnIndex = 0;
+                while (true) {
                     updateCellImpl(rowIndex, rowValue, td, columnIndex);
-                    ++columnIndex;
+                    if(++columnIndex >= columnCount)
+                        break;
+                    td = td.getNextSibling().cast();
                 }
             }
         } else {

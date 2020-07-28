@@ -17,6 +17,7 @@ import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
@@ -72,7 +73,17 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract void pasteData(List<List<String>> table);
 
-//    @Override
+    @Override
+    protected int getRowByKey(Object key) {
+        ArrayList<T> rows = getRows();
+        for (int i = 0; i < rows.size(); i++) {
+            if(rows.get(i).getKey().equals(key))
+                return i;
+        }
+        return -1;
+    }
+
+    //    @Override
 //    protected void onFocus() {
 //        super.onFocus();
 //        CopyPasteUtils.setEmptySelection(getSelectedElement());
@@ -176,9 +187,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     protected abstract GFont getFont();
 
     protected void setCellHeight(int cellHeight) {
-        setRowHeight(cellHeight + 1); //1px for border
-        if(tableBuilder.setCellHeight(cellHeight))
-            refreshColumnsAndRedraw();
+        tableBuilder.setCellHeight(cellHeight);
     }
 
     @Override

@@ -101,14 +101,10 @@ public class GTreeGroupController extends GAbstractTableController {
             }
 
             if (fc.objects.containsKey(group)) {
-                tree.setCurrentPath(fc.objects.get(group));
+                tree.setCurrentKey(fc.objects.get(group));
             }
         }
         update();
-    }
-
-    public void afterAppliedChanges() {
-        tree.afterAppliedChanges();
     }
 
     private void removeProperty(GGroupObject group, GPropertyDraw property) {
@@ -223,7 +219,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public GGroupObjectValue getCurrentKey() {
-        return tree.getCurrentKey();
+        return tree.getSelectedKey();
     }
 
     @Override
@@ -233,7 +229,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public GGroupObject getSelectedGroupObject() {
-        GTreeGridRecord record = tree.getSelectedRecord();
+        GTreeGridRecord record = tree.getSelectedRowValue();
         return record != null
                 ? record.getGroup()
                 : treeGroup.groups.get(0);
@@ -259,7 +255,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public GGroupObjectValue getSelectedColumn() {
+    public GGroupObjectValue getSelectedColumnKey() {
         return null; // пока не поддерживаются группы в колонки
     }
 

@@ -850,6 +850,17 @@ public class GwtClientUtils {
         return node.getParentElement();
     }
 
+    // adding two exclusive orderered sets
+    public static <K> void addOrderedSets(ArrayList<K> listTo, ArrayList<? extends K> listFrom) {
+        if(listTo.isEmpty()) { // optimization
+            listTo.addAll(listFrom);
+            return;
+        }
+        for(K element : listFrom)
+            if(!listTo.contains(element))
+                listTo.add(element);
+    }
+
     public static <T> T nvl(T value1, T value2) {
         return value1 == null ? value2 : value1;
     }

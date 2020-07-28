@@ -1,19 +1,17 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
-import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
-import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -63,8 +61,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private boolean captionsUpdated = false;
     private boolean dataUpdated = false;
 
-    private final ArrayList<GridDataRecord> currentRecords = new ArrayList<>();
-    private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
 
     private GGridController groupObjectController;
@@ -113,13 +109,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         setRowChangedHandler(() -> {
             final GridDataRecord selectedRecord = getSelectedRowValue();
-            if (selectedRecord != null && !selectedRecord.getKey().equals(currentKey)) {
-                assert !form.isEditing();
-//                    if(form.isEditing())
-//                        form.commitEditingTable();
-                setCurrentKey(selectedRecord.getKey());
+            if (selectedRecord != null)
                 form.changeGroupObjectLater(groupObject, selectedRecord.getKey());
-            }
         });
 
         sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
@@ -142,55 +133,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
         };
 
-        tableDataScroller.addScrollHandler(event -> {
-            int selectedRow = getSelectedRow();
-            GridDataRecord selectedRecord = getSelectedRowValue();
-            if (selectedRecord != null) {
-                int scrollHeight = tableDataScroller.getClientHeight();
-                int scrollTop = tableDataScroller.getVerticalScrollPosition();
-
-                TableRowElement rowElement = getChildElement(selectedRow);
-                int rowTop = rowElement.getOffsetTop();
-                int rowBottom = rowTop + rowElement.getClientHeight();
-
-                int newRow = -1;
-                if (rowBottom > scrollTop + scrollHeight + 1) { // поправка на 1 пиксель при скроллировании вверх - компенсация погрешности, возникающей при setScrollTop() / getScrollTop()
-                    newRow = getLastSeenRow(scrollTop + scrollHeight, selectedRow);
-                }
-                if (rowTop < scrollTop) {
-                    newRow = getFirstSeenRow(scrollTop, selectedRow);
-                }
-                if (newRow != -1) {
-                    changeSelectedRow(newRow);
-                }
-            }
-        });
-
         getElement().setPropertyObject("groupObject", groupObject);
     }
 
-    protected int getFirstSeenRow(int tableTop, int start) {
-        for (int i = start; i < getRowCount(); i++) {
-            TableRowElement rowElement = getChildElement(i);
-            int rowTop = rowElement.getOffsetTop();
-            if (rowTop >= tableTop) {
-                return i;
-            }
-        }
-        return 0;
+    @Override
+    public GGroupObjectValue getCurrentKey() {
+        return getSelectedKey();
     }
-    
-    protected int getLastSeenRow(int tableBottom, int start) {
-        for (int i = start; i >= 0; i--) {
-            TableRowElement rowElement = getChildElement(i);
-            int rowBottom = rowElement.getOffsetTop() + rowElement.getClientHeight();
-            if (rowBottom <= tableBottom) {
-                return i;
-            }
-        }
-        return 0;
-    }
-    
+
     public void update(Boolean updateState) {
         updateModify(false);
         if(updateState != null)
@@ -198,13 +148,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     private void updateModify(boolean modifyGroupObject) {
-        storeScrollPosition();
+        updateColumns();
 
-        updateColumnsImpl();
+        updateCaptions();
 
-        updateCaptionsImpl();
-
-        updateRowsImpl(modifyGroupObject);
+        updateRows(modifyGroupObject);
         
         if (modifyGroupObject) {
             // обновим данные в колонках. при асинхронном удалении ряда можем не получить подтверждения от сервера - придётся вернуть строку
@@ -217,62 +165,61 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         updateDataImpl();
     }
 
-    private void updateRowsImpl(boolean modifyGroupObject) {
+    private void updateRows(boolean modifyGroupObject) {
         if (rowsUpdated) {
-            int currentSize = currentRecords.size();
-            int newSize = rowKeys.size();
+            checkUpdateCurrentRow();
 
-            if (currentSize > newSize) {
-                if (modifyGroupObject) {
-                    ArrayList<GridDataRecord> oldRecords = new ArrayList<>(currentRecords);
-                    for (GridDataRecord record : oldRecords) {
-                        if (!rowKeys.contains(record.getKey())) {
-                            currentRecords.remove(record);
-                        }
-                    }
-                } else {
-                    for (int i = currentSize - 1; i >= newSize; --i) {
-                        currentRecords.remove(i);
-                    }
-                }
-            } else if (currentSize < newSize) {
-                for (int i = currentSize; i < newSize; ++i) {
-                    GGroupObjectValue rowKey = rowKeys.get(i);
+            updateGridRows(modifyGroupObject);
 
-                    GridDataRecord record = new GridDataRecord(i, rowKey);
-                    record.setRowBackground(rowBackgroundValues.get(rowKey));
-                    record.setRowForeground(rowForegroundValues.get(rowKey));
-
-                    currentRecords.add(record);
-                }
-            }
-
-            for (int i = 0; i < min(newSize, currentSize); ++i) {
-                GGroupObjectValue rowKey = rowKeys.get(i);
-
-                GridDataRecord record = currentRecords.get(i);
-                record.reinit(rowKey, rowBackgroundValues.get(rowKey), rowForegroundValues.get(rowKey));
-            }
-
-            if (currentSize != newSize) {
-                setRowData(currentRecords);
-            } else {
-                redraw();
-            }
-
-            updateCurrentRecord();
+            rowsChanged();
 
             rowsUpdated = false;
         }
+
+        updateCurrentRow();
     }
 
-    private void updateCurrentRecord() {
-        if (currentKey != null && rowKeys.contains(currentKey)) {
-            setSelectedRow(rowKeys.indexOf(currentKey));
+    // incremental records update
+    private void updateGridRows(boolean modifyGroupObject) {
+        if(rows == null)
+            rows = new ArrayList<>();
+        int currentSize = rows.size();
+        int newSize = rowKeys.size();
+
+        if (currentSize > newSize) {
+            if (modifyGroupObject) {
+                ArrayList<GridDataRecord> oldRecords = new ArrayList<>(rows);
+                for (GridDataRecord record : oldRecords) {
+                    if (!rowKeys.contains(record.getKey())) {
+                        rows.remove(record);
+                    }
+                }
+            } else {
+                for (int i = currentSize - 1; i >= newSize; --i) {
+                    rows.remove(i);
+                }
+            }
+        } else if (currentSize < newSize) {
+            for (int i = currentSize; i < newSize; ++i) {
+                GGroupObjectValue rowKey = rowKeys.get(i);
+
+                GridDataRecord record = new GridDataRecord(i, rowKey);
+                record.setRowBackground(rowBackgroundValues.get(rowKey));
+                record.setRowForeground(rowForegroundValues.get(rowKey));
+
+                rows.add(record);
+            }
+        }
+
+        for (int i = 0; i < min(newSize, currentSize); ++i) {
+            GGroupObjectValue rowKey = rowKeys.get(i);
+
+            GridDataRecord record = rows.get(i);
+            record.reinit(rowKey, rowBackgroundValues.get(rowKey), rowForegroundValues.get(rowKey));
         }
     }
 
-    private void updateColumnsImpl() {
+    private void updateColumns() {
         if (columnsUpdated) {
             List<GPropertyDraw> orderedVisibleProperties = getOrderedVisibleProperties(properties);
 
@@ -281,6 +228,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             List<List<GPropertyDraw>> columnGroups = new ArrayList<>();
             List<List<GGroupObjectValue>> columnGroupsColumnKeys = new ArrayList<>();
 
+            int rowHeight = 0;
             for (GPropertyDraw property : orderedVisibleProperties) {
                 if (property.columnsName != null && property.columnGroupObjects != null) {
                     List<GPropertyDraw> columnGroup;
@@ -302,9 +250,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     columnGroupsColumnKeys.add(columnKeys.get(property));
                     columnGroups.add(Collections.singletonList(property));
                 }
+                rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
             }
-
-            int rowHeight = 0;
+            setCellHeight(rowHeight);
 
             int currentIndex = 0;
             NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<>();
@@ -334,24 +282,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                         putToColumnsMap(newColumnsMap, property, columnKey, column);
 
-                        rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
-
                         currentIndex++;
                     }
                 }
             }
-
-            setCellHeight(rowHeight);
-
             // removing old columns
             columnsMap.foreachValue(columnsCollection -> columnsCollection.foreachValue(column -> {
                 removeGridColumn(column);
             }));
             columnsMap = newColumnsMap;
 
-            updateLayoutWidth(); // have to do after columnsmap update, because it is used inside
+            updateLayoutWidth();
 
-            refreshHeaders();
+            columnsChanged();
 
             columnsUpdated = false;
             captionsUpdated = false;
@@ -406,13 +349,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return result;
     }
 
-    public void updateCaptionsImpl() {
+    public void updateCaptions() {
         if (captionsUpdated) {
             for (int i = 0, size = getColumnCount(); i < size; ++i) {
                 GridColumn gridColumn = getGridColumn(i);
                 updatePropertyHeader(gridColumn.columnKey, gridColumn.property, i);
             }
-            refreshHeaders();
+            headersChanged();
             captionsUpdated = false;
         }
     }
@@ -421,7 +364,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         columnsUpdated = true;
         dataUpdated = true;
 
-        updateColumnsImpl();
+        updateColumns();
         updateDataImpl();
 //
 //        final ArrayList<GFontWidthString> fonts = new ArrayList<>();
@@ -480,41 +423,41 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private void updateDataImpl() {
         if (dataUpdated) {
-            final Set<Column> updatedColumns = new HashSet<>();
-            for (final GridDataRecord record : currentRecords) {
+            boolean firstRow = true;
+            ArrayList<GridColumn> updatedColumns = new ArrayList<>();
+            for (final GridDataRecord record : rows) {
                 final GGroupObjectValue rowKey = record.getKey();
-                updatedProperties.foreachKey(new Function<GPropertyDraw>() {
-                    @Override
-                    public void apply(GPropertyDraw property) {
-                        NativeHashMap<GGroupObjectValue, Object> propValues = values.get(property);
-                        Map<GGroupObjectValue, Object> propReadOnly = readOnlyValues.get(property);
-                        Map<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
-                        Map<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
-                        for (GGroupObjectValue columnKey : columnKeys.get(property)) {
-                            NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
-                            GridColumn column = propertyColumns == null ? null : propertyColumns.get(columnKey);
-                            // column == null, когда свойство скрыто через showif
-                            if (column != null) {
+                final boolean fFirstRow = firstRow;
+                updatedProperties.foreachKey(property -> {
+                    NativeHashMap<GGroupObjectValue, Object> propValues = values.get(property);
+                    Map<GGroupObjectValue, Object> propReadOnly = readOnlyValues.get(property);
+                    Map<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
+                    Map<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
+                    for (GGroupObjectValue columnKey : columnKeys.get(property)) {
+                        NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
+                        GridColumn column = propertyColumns == null ? null : propertyColumns.get(columnKey);
+                        // column == null, can be null if hidden with showif
+                        if (column != null) {
+                            if(fFirstRow)
                                 updatedColumns.add(column);
+                            GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKey);
 
-                                GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKey);
+                            Object value = propValues.get(fullKey);
+                            Object readOnly = propReadOnly == null ? null : propReadOnly.get(fullKey);
+                            Object background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
+                            Object foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
 
-                                Object value = propValues.get(fullKey);
-                                Object readOnly = propReadOnly == null ? null : propReadOnly.get(fullKey);
-                                Object background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
-                                Object foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
-
-                                column.setValue(record, value);
-                                record.setReadOnly(column.columnID, readOnly);
-                                record.setBackground(column.columnID, background == null ? property.background : background);
-                                record.setForeground(column.columnID, foreground == null ? property.foreground : foreground);
-                            }
+                            column.setValue(record, value);
+                            record.setReadOnly(column.columnID, readOnly);
+                            record.setBackground(column.columnID, background == null ? property.background : background);
+                            record.setForeground(column.columnID, foreground == null ? property.foreground : foreground);
                         }
                     }
                 });
+                firstRow = false;
             }
 
-            redrawColumns(updatedColumns);
+            dataChanged(updatedColumns);
 
             updatedProperties.clear();
             dataUpdated = false;
@@ -560,8 +503,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return true;
     }
 
-    public GGroupObjectValue getCurrentKey() {
-        return currentKey;
+    public GGroupObjectValue getSelectedKey() {
+        GridDataRecord selectedRowValue = getSelectedRowValue();
+        return selectedRowValue != null ? selectedRowValue.getKey() : null;
     }
 
     @Override
@@ -581,7 +525,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return property;
     }
 
-    public GGroupObjectValue getCurrentColumn() {
+    public GGroupObjectValue getCurrentColumnKey() {
         GGroupObjectValue property = getSelectedColumnKey();
         if (property == null && getColumnCount() > 0) {
             property = getColumnKey(0);
@@ -604,11 +548,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             for(GGroupObjectValue columnKey : columnKeys.get(property))
                 result.add(getSelectedColumn(property, columnKey));
         return result;
-    }
-
-    public void setCurrentKey(GGroupObjectValue currentKey) {
-        Log.debug("Setting current object to: " + currentKey);
-        this.currentKey = currentKey;
     }
 
     public void updateState(boolean updateState) {
@@ -635,8 +574,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                 form.addPropertyBindings(property, event -> {
                     int column = getPropertyIndex(property, null);
-                    if(column >= 0)
-                        onEditEvent(new EventHandler(event), true, getSelectedCellContext(column), getSelectedElement(column));
+                    if(column >= 0 && getSelectedRow() >= 0)
+                        onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
                 }, GGridTable.this);
 
                 this.columnKeys.put(property, columnKeys);
@@ -667,7 +606,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public void setKeys(ArrayList<GGroupObjectValue> keys) {
         this.rowKeys = keys;
 
-        needToRestoreScrollPosition = true;
         rowsUpdated = true;
     }
 
@@ -750,26 +688,30 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void modifyGroupObject(GGroupObjectValue rowKey, boolean add, int position) {
+        boolean currentKeyChanged = false;
+        GGroupObjectValue currentKey = null;
         if (add) {
             if (position >= 0 && position <= rowKeys.size()) {
                 rowKeys.add(position, rowKey);
             } else {
                 rowKeys.add(rowKey);
             }
-            setCurrentKey(rowKey);
+            currentKey = rowKey;
+            currentKeyChanged = true;
         } else {
-            if (currentKey.equals(rowKey) && rowKeys.size() > 0) {
-                if (rowKeys.size() == 1) {
-                    setCurrentKey(null);
-                } else {
+            if (GwtClientUtils.nullEquals(getSelectedKey(), rowKey) && rowKeys.size() > 0) {
+                if (rowKeys.size() > 1) {
                     int index = rowKeys.indexOf(rowKey);
                     index = index == rowKeys.size() - 1 ? index - 1 : index + 1;
-                    setCurrentKey(rowKeys.get(index));
+                    currentKey = rowKeys.get(index);
                 }
+                currentKeyChanged = true;
             }
             rowKeys.remove(rowKey);
         }
         setKeys(rowKeys);
+        if(currentKeyChanged)
+            setCurrentKey(currentKey);
 
         updateModify(true);
     }
@@ -787,10 +729,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
         key.put(property, ind == -1 ? GGroupObjectValue.EMPTY : getColumnKey(ind));
         return key;
-    }
-
-    public GGroupObjectValue getSelectedColumnKey() {
-        return getColumnKey(getSelectedCellContext());
     }
 
     @Override
@@ -875,7 +813,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 }
             });
         } else if (!table.get(0).isEmpty()) {
-            GGroupObjectValue fullKey = new GGroupObjectValueBuilder(getCurrentKey(), getColumnKey(selectedColumn)).toGroupObjectValue();
+            GGroupObjectValue fullKey = new GGroupObjectValueBuilder(getSelectedKey(), getColumnKey(selectedColumn)).toGroupObjectValue();
             form.pasteSingleValue(getProperty(selectedColumn), fullKey, table.get(0).get(0));
         }
     }
