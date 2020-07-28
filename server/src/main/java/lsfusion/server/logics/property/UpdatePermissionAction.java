@@ -48,4 +48,9 @@ public class UpdatePermissionAction extends InternalAction {
             }
         }
     }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
+    }
 }
