@@ -46,8 +46,8 @@ toDateDDMMYY = FORMULA STRING[8] 'to_char(($1),\'DD.MM.YY\')';
 toDateDDMMYYYY = FORMULA STRING[10] 'to_char(($1),\'DD.MM.YYYY\')';
 
 sum(DATE date, INTEGER days) = [ FORMULA DATE PG '(($1)+($2))', MS 'DATEADD(dd, $2, $1)'](date AS DATE, days AS INTEGER);
-sumMonth (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 month\'))', MS 'DATEADD(mm, $2, $1)';
-sumYear (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 year\'))', MS 'DATEADD(yy, $2, $1)';
+sumMonth (date, months) = FORMULA DATE PG 'CAST((CAST(($1) AS date) + ($2)*(interval \'1 month\')) AS date)', MS 'DATEADD(mm, $2, $1)';
+sumYear (date, months) = FORMULA DATE PG 'CAST((CAST(($1) AS date) + ($2)*(interval \'1 year\')) AS date)', MS 'DATEADD(yy, $2, $1)';
 
 iterate(DATE dt, DATE from, DATE to) = RECURSION dt==from AND from IS DATE AND to IS DATE STEP dt==sum($dt, 1) AND dt<=to CYCLES IMPOSSIBLE;
 
