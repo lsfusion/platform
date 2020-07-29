@@ -1254,11 +1254,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         int totalRowLevels = getTotalRowLevels();
         boolean excludeFirstColumn = totalRowLevels > 1;
 
-        //set row height
+        //set row height and exclude first column
         NodeList<Element> trs = getElements(rootDiv, "tr");
         for (int i = 0; i < trs.getLength(); i++) {
             Element tr = trs.getItem(i);
             tr.setAttribute("data-height", String.valueOf(getTableToExcelMaxRowHeight(tr)));
+            if(excludeFirstColumn) {
+                Element firstTH = getElement(tr, "th");
+                if (firstTH != null) {
+                    firstTH.setAttribute("data-exclude", "true");
+                }
+            }
         }
 
         //set outlineLevel
@@ -1268,10 +1274,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 Element tr = bodyTrs.getItem(i);
                 String rowLevel = nullEmpty(getAttributeRecursive(tr, CELL_ROW_LEVEL_ATTRIBUTE_KEY));
                 tr.setAttribute("data-outline-level", String.valueOf((rowLevel != null ? Integer.parseInt(rowLevel) : totalRowLevels) - 1));
-                Element firstTH = getElement(tr, "th");
-                if (firstTH != null) {
-                    firstTH.setAttribute("data-exclude", "true");
-                }
             }
         }
 
