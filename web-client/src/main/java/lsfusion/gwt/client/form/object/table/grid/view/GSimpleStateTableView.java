@@ -59,7 +59,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         for (int i = 0; i < properties.size(); i++) {
             GPropertyDraw property = properties.get(i);
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
-            Map<GGroupObjectValue, Object> propValues = values.get(i);
+            NativeHashMap<GGroupObjectValue, Object> propValues = values.get(i);
 
             for (int j = 0; j < propColumnKeys.size(); j++) {
                 GGroupObjectValue columnKey = propColumnKeys.get(j);

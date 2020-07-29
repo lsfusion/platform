@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -21,22 +22,22 @@ public interface GTableView {
     void setKeys(ArrayList<GGroupObjectValue> keys);
 
     // columns
-    void updateProperty(GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values); // add or update
+    void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values); // add or update
     void removeProperty(GPropertyDraw property);
     boolean changePropertyOrders(LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet); // assert alreadySet is true if there is no ordering in view
 
     // EXTRA SETTERS
     // keys
-    void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values);
-    void updateRowForegroundValues(Map<GGroupObjectValue, Object> values);
+    void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values);
+    void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values);
     
     // columns
-    void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values);
-    void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values);
-    void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values);
-    void updateShowIfValues(GPropertyDraw property, Map<GGroupObjectValue, Object> values);
-    void updateReadOnlyValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values);
-    void updateLastValues(GPropertyDraw property, int index, Map<GGroupObjectValue, Object> values);
+    void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
+    void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateReadOnlyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, Object> values);
 
     // event - FINISH SETTER
     void update(Boolean updateState);

@@ -705,11 +705,8 @@ input[type=checkbox]:focus {
 
 .toolbarButton {
     display: block;
-    background: transparent;
-}
-
-.toolbarButtonNoBorder {
     border: none;
+    background: transparent;
 }
 
 .toolbarButton:hover {
@@ -796,10 +793,6 @@ input[type=checkbox]:focus {
 .horizontalSeparator {
     width: 100%;
     border-bottom: 1px solid var(--panel-border-color);
-}
-
-.tooltipHorizontalSeparator {
-    margin: 5px 0 1px 0;
 }
 
 .js-plotly-plot {

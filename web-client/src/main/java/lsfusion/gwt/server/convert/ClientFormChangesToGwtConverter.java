@@ -19,6 +19,7 @@ import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.provider.form.FormSessionObject;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -87,36 +88,54 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         }
 
         dto.expandablesGroupIds = new int[changes.expandables.size()];
-        dto.expandables = new HashMap[changes.expandables.size()];
+        dto.expandableKeys = new GGroupObjectValue[changes.expandables.size()][];
+        dto.expandableValues = new Boolean[changes.expandables.size()][];
         i = 0;
         for (Map.Entry<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>> entry : changes.expandables.entrySet()) {
-            HashMap<GGroupObjectValue, Boolean> expandables = new HashMap<>();
-            for (Map.Entry<ClientGroupObjectValue, Boolean> expandable : entry.getValue().entrySet()) {
+            Map<ClientGroupObjectValue, java.lang.Boolean> values = entry.getValue();
+
+            int j = 0;
+            GGroupObjectValue[] expandableKeys = new GGroupObjectValue[values.size()];
+            Boolean[] expandableValues = new Boolean[values.size()];
+            for (Map.Entry<ClientGroupObjectValue, Boolean> expandable : values.entrySet()) {
                 GGroupObjectValue groupObjectValue = convertOrCast(expandable.getKey());
-                expandables.put(groupObjectValue, expandable.getValue());
+                expandableKeys[j] = groupObjectValue;
+                expandableValues[j] = expandable.getValue();
+                j++;
             }
             dto.expandablesGroupIds[i] = entry.getKey().ID;
-            dto.expandables[i++] = expandables;
+            dto.expandableKeys[i] = expandableKeys;
+            dto.expandableValues[i] = expandableValues;
+            i++;
         }
 
         dto.properties = new GPropertyReaderDTO[changes.properties.size()];
-        dto.propertiesValues = new HashMap[changes.properties.size()];
+        dto.propertiesValueKeys = new GGroupObjectValue[changes.properties.size()][];
+        dto.propertiesValueValues = new Serializable[changes.properties.size()][];
         i = 0;
         for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> entry : changes.properties.entrySet()) {
-            HashMap<GGroupObjectValue, Object> propValues = new HashMap<>();
             ClientPropertyReader reader = entry.getKey();
-            for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
+            Map<ClientGroupObjectValue, Object> values = entry.getValue();
+
+            int j = 0;
+            GGroupObjectValue[] propValueKeys = new GGroupObjectValue[values.size()];
+            Serializable[] propValueValues = new Serializable[values.size()];
+            for (Map.Entry<ClientGroupObjectValue, Object> clientValues : values.entrySet()) {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
                 Object propValue = convertOrCast(clientValues.getValue());
                 if (propValue instanceof FileData || propValue instanceof RawFileData) {
                     propValue = convertFileValue(reader, propValue, sessionObject);
                 }
-                propValues.put(groupObjectValue, propValue);
+                propValueKeys[j] = groupObjectValue;
+                propValueValues[j] = (Serializable) propValue;
+                j++;
             }
 
             dto.properties[i] = new GPropertyReaderDTO(reader.getID(), reader.getType(), reader instanceof ClientPropertyDraw.LastReader ? ((ClientPropertyDraw.LastReader) reader).index : -1);
-            dto.propertiesValues[i++] = propValues;
+            dto.propertiesValueKeys[i] = propValueKeys;
+            dto.propertiesValueValues[i] = propValueValues;
+            i++;
         }
 
         dto.dropPropertiesIds = new int[changes.dropProperties.size()];

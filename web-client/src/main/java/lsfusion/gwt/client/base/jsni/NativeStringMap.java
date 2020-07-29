@@ -4,90 +4,46 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+public class NativeStringMap<V> {
 
-public class NativeStringMap<K, V> implements Map<K, V> {
-    public interface NativeMapKeyConverter<T> {
-        String getKeyString(T key);
-    }
+    private JavaScriptObject map;
 
-    private final NativeMapKeyConverter<K> keyConverter;
-
-    private int size = 0;
-    private JavaScriptObject keyMap;
-    private JavaScriptObject valueMap;
-
-    public NativeStringMap(NativeMapKeyConverter<K> keyConverter) {
-        this.keyConverter = keyConverter;
+    public NativeStringMap() {
         init();
     }
 
-    @Override
     public void clear() {
         init();
     }
 
     private void init() {
-        size = 0;
-        keyMap = JavaScriptObject.createObject();
-        valueMap = JavaScriptObject.createObject();
+        map = JavaScriptObject.createObject();
     }
 
-    @Override
-    public Set<Map.Entry<K, V>> entrySet() {
-        throw new UnsupportedOperationException("NativeStringMap.entrySet isn't supported");
+    public boolean containsKey(String key) {
+        return jsContainsKey(key, map);
     }
 
-    @Override
-    public Set<K> keySet() {
-        throw new UnsupportedOperationException("NativeStringMap.keySet isn't supported");
+    public V get(String key) {
+        return jsGet(key);
     }
 
-    @Override
-    public Collection<V> values() {
-        throw new UnsupportedOperationException("NativeStringMap.values isn't supported");
+    public V put(String key, V value) {
+        return jsPut(key, value);
     }
 
-    @Override
-    public boolean containsKey(Object key) {
-        return jsContainsKey(convertKey((K) key), keyMap);
+    public void putAll(NativeStringMap<? extends V> m) {
+        m.foreachEntry(this::put);
     }
 
-    @Override
-    public boolean containsValue(final Object val) {
-        return jsContainsValue(val, valueMap);
+    public V remove(String key) {
+        return jsRemove(key);
     }
 
-    @Override
-    public V get(Object key) {
-        return jsGet(convertKey((K) key));
-    }
-
-    public V put(K key, V value) {
-        String sKey = convertKey(key);
-        return jsPut(sKey, key, value);
-    }
-
-    @Override
-    public void putAll(Map<? extends K, ? extends V> m) {
-        for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
-            put(entry.getKey(), entry.getValue());
-        }
-    }
-
-    @Override
-    public V remove(Object key) {
-        return jsRemove(convertKey((K) key));
-    }
-
-    @Override
     public boolean isEmpty() {
         return size() == 0;
     }
 
-    @Override
     public int size() {
         return jsSize();
     }
@@ -95,32 +51,25 @@ public class NativeStringMap<K, V> implements Map<K, V> {
     public String toString() {
         final JsArrayString ts = JsArray.createArray().cast();
         ts.push("{");
-        foreachEntry(new Function2<K, V>() {
-            @Override
-            public void apply(K key, V value) {
-                ts.push(",");
-                ts.push(key == null ? null : key.toString());
-                ts.push("=");
-                ts.push(value == null ? null : value.toString());
-            }
+        foreachEntry((key, value) -> {
+            ts.push(",");
+            ts.push(key == null ? null : key);
+            ts.push("=");
+            ts.push(value == null ? null : value.toString());
         });
         ts.push("}");
         return ts.join();
     }
 
-    private String convertKey(K key) {
-        return keyConverter.getKeyString(key);
-    }
-
-    public void foreachKey(Function<K> f) {
-        foreach(keyMap, f);
+    public void foreachKey(Function<String> f) {
+        jsForeachKey(f);
     }
 
     public void foreachValue(Function<V> f) {
-        foreach(valueMap, f);
+        foreach(map, f);
     }
 
-    public void foreachEntry(Function2<K, V> f) {
+    public void foreachEntry(Function2<String, V> f) {
         jsForeachEntry(f);
     }
 
@@ -146,29 +95,25 @@ public class NativeStringMap<K, V> implements Map<K, V> {
 
     // Prepend ':' to avoid conflicts with built-in Object properties.
     public native V jsGet(String key) /*-{
-        return this.@lsfusion.gwt.client.base.jsni.NativeStringMap::valueMap[':' + key];
+        return this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map[':' + key];
     }-*/;
 
     // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native V jsPut(String sKey, K key, V value) /*-{
+    private native V jsPut(String sKey, V value) /*-{
         sKey = ':' + sKey;
 
-        var keyMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::keyMap;
-        var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::valueMap;
+        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
 
-        var previous = valueMap[sKey];
-
-        keyMap[sKey] = key;
-        valueMap[sKey] = value;
-
+        var previous = map[sKey];
+        map[sKey] = value;
         return previous;
     }-*/;
 
     // only count keys with ':' prefix
     public native int jsSize() /*-{
-        var value = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::keyMap;
+        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
         var count = 0;
-        for(var key in value) {
+        for(var key in map) {
             if (sKey.charCodeAt(0) == 58) ++count;
         }
         return count;
@@ -178,32 +123,40 @@ public class NativeStringMap<K, V> implements Map<K, V> {
     private native V jsRemove(String sKey) /*-{
         sKey = ':' + sKey;
 
-        var keyMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::keyMap;
-        var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::valueMap;
+        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
 
-        var previous = valueMap[sKey];
-        delete valueMap[sKey];
-        delete keyMap[sKey];
+        var previous = map[sKey];
+        delete map[sKey];
 
         return previous;
     }-*/;
 
     // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native boolean jsContainsKey(String key, JavaScriptObject keyMap) /*-{
-        return (':' + key) in keyMap;
+    private native boolean jsContainsKey(String key, JavaScriptObject map) /*-{
+        return (':' + key) in map;
     }-*/;
 
     // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native boolean jsContainsValue(Object value, JavaScriptObject valueMap) /*-{
-        for (var sKey in valueMap) {
+    private native boolean jsContainsValue(Object value, JavaScriptObject map) /*-{
+        for (var sKey in map) {
             if (sKey.charCodeAt(0) == 58) {
-                var entryValue = valueMap[sKey];
+                var entryValue = map[sKey];
                 if (this.@lsfusion.gwt.client.base.jsni.NativeStringMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(value, entryValue)) {
                     return true;
                 }
             }
         }
         return false;
+    }-*/;
+
+    // only iterate keys with ':' prefix
+    private native void jsForeachKey(Function f) /*-{
+        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
+        for (var sKey in map) {
+            if (sKey.charCodeAt(0) == 58) {
+                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(Llsfusion/gwt/client/base/jsni/Function;Ljava/lang/Object;)(f, sKey.substr(1));
+            }
+        }
     }-*/;
 
     // only iterate keys with ':' prefix
@@ -217,12 +170,11 @@ public class NativeStringMap<K, V> implements Map<K, V> {
 
     // only iterate keys with ':' prefix
     private native void jsForeachEntry(Function2 f) /*-{
-        var keyMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::keyMap;
-        var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::valueMap;
-        for (var sKey in keyMap) {
+        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
+        for (var sKey in map) {
             if (sKey.charCodeAt(0) == 58) {
                 this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply2(Llsfusion/gwt/client/base/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
-                        (f, keyMap[sKey], valueMap[sKey]);
+                (f, sKey.substr(1), map[sKey]);
             }
         }
     }-*/;

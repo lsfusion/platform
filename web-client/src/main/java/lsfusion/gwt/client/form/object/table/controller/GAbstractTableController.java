@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -20,7 +21,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public abstract class GAbstractTableController implements GTableController {
     protected final GFormController formController;
@@ -125,13 +125,13 @@ public abstract class GAbstractTableController implements GTableController {
         filter.allRemovedPressed();
     }
 
-    protected abstract void changeFilter(List<GPropertyFilter> conditions);
+    protected abstract void changeFilter(ArrayList<GPropertyFilter> conditions);
     // eventually is called either on form opening / form tab selection / filter dialog close
     public abstract boolean focusFirstWidget();
     public abstract GComponent getGridComponent();
 
     @Override
-    public void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
     }
 
     // вызов focus() у getFocusHolderElement() грида по какой-то причине приводит к подскролливанию нашего скролла
