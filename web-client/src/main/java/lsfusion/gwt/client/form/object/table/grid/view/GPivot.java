@@ -180,9 +180,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
                 aggregator.setAggregator(caption, columnAggregator);
 
-                //if enabled pivotOnlySelectedColumn then only virtual count quantity or selected property from grid
-                if (property.baseType instanceof GIntegralType && 
-                        (!MainFrame.pivotOnlySelectedColumn || property.sID.equals("PROPERTY(count())") || property.equals(selectedProperty)))
+                if (property.baseType instanceof GIntegralType)
                     aggrCaptions.add(caption);
             }
         }
@@ -279,6 +277,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             String columnCaption = columnCaptionMap.get(property);
             if(columnCaption != null) {
                 measures.push(columnCaption);
+            }
+        }
+        if(MainFrame.pivotOnlySelectedColumn) {
+            for(GPropertyDraw property : properties) {
+                if (property.baseType instanceof GIntegralType && (property.sID.equals("PROPERTY(count())") || property.equals(selectedProperty))) {
+                    measures.push(columnCaptionMap.get(property));
+                }
             }
         }
         WrapperObject inclusions = JavaScriptObject.createObject().cast();
