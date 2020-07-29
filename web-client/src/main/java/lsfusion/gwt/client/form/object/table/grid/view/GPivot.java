@@ -2,7 +2,9 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.*;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.i18n.client.constants.NumberConstants;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import lsfusion.gwt.client.ClientMessages;
@@ -1197,7 +1199,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             if(propertyFormat instanceof NumberFormat) {
                 String pattern;
                 if(value != null) {
-                    dataValue = NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())).replace(",", ".").replace(" ", "");
+                    NumberConstants numberConstants = LocaleInfo.getCurrentLocale().getNumberConstants();
+                    dataValue = NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())).replace(
+                            numberConstants.decimalSeparator(), ".").replace(numberConstants.groupingSeparator(), "");
                     BigDecimal numericValue = new BigDecimal(dataValue);
                     int fractDigits = 0;
                     while (numericValue.longValue() - numericValue.doubleValue() != 0) {
