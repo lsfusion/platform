@@ -119,11 +119,13 @@ public class ExternalHTTPAction extends ExternalAction {
                     }
                 }
 
+                Integer timeout = (Integer) context.getBL().LM.timeoutHttp.read(context);
+
                 ExternalHttpResponse response;
                 if (clientAction) {
-                    response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, body, headers, cookies, cookieStore));
+                    response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, timeout, body, headers, cookies, cookieStore));
                 } else {
-                    response = ExternalHttpUtils.sendRequest(method, connectionString, body, headers, cookies, cookieStore);
+                    response = ExternalHttpUtils.sendRequest(method, connectionString, timeout, body, headers, cookies, cookieStore);
                 }
 
                 ContentType contentType = response.contentType != null ? ContentType.parse(response.contentType) : null;
