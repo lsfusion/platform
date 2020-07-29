@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
@@ -22,7 +23,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     private final FlexPanel panel;
 
-    private final HTML label;
+    private final Label label;
     
     private final boolean vertical;
 
@@ -34,8 +35,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
         panel = new Panel(vertical);
         panel.addStyleName("dataPanelRendererPanel");
 
-        label = new HTML();
-        label.addStyleName("customFontPresenter");
+        label = new Label();
+//        label.addStyleName("customFontPresenter");
         if (this.property.captionFont != null) {
             this.property.captionFont.apply(label.getElement().getStyle());
         }
@@ -71,7 +72,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     protected void setLabelText(String text) {
-        label.setHTML(SafeHtmlUtils.fromString(text));
+        label.setText(text);
         if (!vertical) {
             label.getElement().getStyle().setMarginRight(text.isEmpty() ? 0 : 4, Style.Unit.PX);
         }
