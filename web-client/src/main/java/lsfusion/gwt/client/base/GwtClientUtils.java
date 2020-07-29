@@ -695,13 +695,13 @@ public class GwtClientUtils {
         return value.replace('.', ',');
     }
 
-    public static String smartParse(String value) {
+    public static Double smartParse(String value) {
         String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
         if (UNBREAKABLE_SPACE.equals(groupingSeparator)) {
             value = value.replace(" ", UNBREAKABLE_SPACE);
         }
         String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
-        return replaceSeparators(value, decimalSeparator, groupingSeparator);
+        return NumberFormat.getDecimalFormat().parse(replaceSeparators(value, decimalSeparator, groupingSeparator));
     }
 
     public static String plainFormat(Double value) {

@@ -31,7 +31,7 @@ public abstract class GIntegralType extends GFormatType<NumberFormat> {
     protected Double parseToDouble(String s) throws ParseException {
         assert s != null;
         try {
-            return NumberFormat.getDecimalFormat().parse(GwtClientUtils.smartParse(s));
+            return GwtClientUtils.smartParse(s);
         } catch (NumberFormatException e) {
             throw new ParseException("string " + s + "can not be converted to double", 0);
         }
