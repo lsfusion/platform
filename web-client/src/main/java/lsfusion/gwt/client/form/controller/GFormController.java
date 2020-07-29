@@ -30,6 +30,7 @@ import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.jsni.Function2;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
@@ -118,18 +119,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private final boolean isDialog;
 
-    private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<>();
+    private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects = new NativeSIDMap<>();
 
-    private final Map<GGroupObject, List<GPropertyFilter>> currentFilters = new HashMap<>();
+    private final NativeSIDMap<GGroupObject, ArrayList<GPropertyFilter>> currentFilters = new NativeSIDMap<>();
 
-    private final Map<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
-    private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
+    private final LinkedHashMap<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
+    private final LinkedHashMap<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
 
-    private final Map<GGroupObject, List<Widget>> filterViews = new HashMap<>();
+    private final NativeSIDMap<GGroupObject, ArrayList<Widget>> filterViews = new NativeSIDMap<>();
 
     private final LinkedHashMap<Long, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
-    private final NativeHashMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeHashMap<>();
-    private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<>();
+    private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
+    private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>();
 
     private boolean hasColumnGroupObjects;
 
@@ -473,7 +474,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GFormChanges fc = GFormChanges.remap(form, changesDTO);
 
         if (hasColumnGroupObjects) // optimization
-            currentGridObjects.putAll(fc.gridObjects);
+            fc.gridObjects.foreachEntry((key, value) -> currentGridObjects.put(key, value));
 
         modifyFormChangesWithModifyObjectAsyncs(changesDTO.requestIndex, fc);
 
@@ -556,10 +557,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                             removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
 
                             if(isPropertyShown(property) && !fc.dropProperties.contains(property)) {
-                                HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
+                                NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
                                 if (propertyValues == null) {
                                     // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
-                                    propertyValues = new HashMap<>();
+                                    propertyValues = new NativeHashMap<>();
                                     fc.properties.put(property, propertyValues);
                                     fc.updateProperties.add(property);
                                 }
@@ -574,20 +575,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
 
-        pendingChangePropertyRequests.foreachEntry(new Function2<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>() {
-            @Override
-            public void apply(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Change> values) {
-                final HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
-                if (propertyValues != null) {
-                    values.foreachEntry(new Function2<GGroupObjectValue, Change>() {
-                        @Override
-                        public void apply(GGroupObjectValue group, Change change) {
-                            if (change.canUseNewValueForRendering) {
-                                propertyValues.put(group, change.newValue);
-                            }
-                        }
-                    });
-                }
+        pendingChangePropertyRequests.foreachEntry((property, values) -> {
+            final NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
+            if (propertyValues != null) {
+                values.foreachEntry((group, change) -> {
+                    if (change.canUseNewValueForRendering) {
+                        propertyValues.put(group, change.newValue);
+                    }
+                });
             }
         });
     }
@@ -940,20 +935,20 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new ServerResponseCallback());
     }
 
-    public void changeFilter(GGroupObject groupObject, List<GPropertyFilter> conditions) {
+    public void changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
         currentFilters.put(groupObject, conditions);
         applyCurrentFilters();
     }
 
-    public void changeFilter(GTreeGroup treeGroup, List<GPropertyFilter> conditions) {
-        Map<GGroupObject, List<GPropertyFilter>> filters = GwtSharedUtils.groupList(new GwtSharedUtils.Group<GGroupObject, GPropertyFilter>() {
+    public void changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
+        Map<GGroupObject, ArrayList<GPropertyFilter>> filters = GwtSharedUtils.groupList(new GwtSharedUtils.Group<GGroupObject, GPropertyFilter>() {
             public GGroupObject group(GPropertyFilter key) {
                 return key.groupObject;
             }
         }, conditions);
 
         for (GGroupObject group : treeGroup.groups) {
-            List<GPropertyFilter> groupFilters = filters.get(group);
+            ArrayList<GPropertyFilter> groupFilters = filters.get(group);
             if (groupFilters == null) {
                 groupFilters = new ArrayList<>();
             }
@@ -966,11 +961,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private void applyCurrentFilters() {
         ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
 
-        for (List<GPropertyFilter> groupFilters : currentFilters.values()) {
+        currentFilters.foreachValue(groupFilters -> {
             for (GPropertyFilter filter : groupFilters) {
                 filters.add(filter.getFilterDTO());
             }
-        }
+        });
 
         dispatcher.execute(new SetUserFilters(filters), new ServerResponseCallback());
     }

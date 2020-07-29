@@ -503,8 +503,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GGroupObject convertGroupObject(ClientGroupObject clientGroupObject) {
         GGroupObject groupObject = cacheInstance(clientGroupObject, new GGroupObject());
 
-        groupObject.ID = clientGroupObject.ID;
-        groupObject.sID = clientGroupObject.getSID();
+        int clientID = clientGroupObject.ID;
+        groupObject.ID = clientID;
+        String clientSID = clientGroupObject.getSID();
+        groupObject.sID = clientSID != null ? clientSID : "obj" + clientID;
 
         for (ClientObject clientObject : clientGroupObject.objects) {
             GObject object = convertOrCast(clientObject);

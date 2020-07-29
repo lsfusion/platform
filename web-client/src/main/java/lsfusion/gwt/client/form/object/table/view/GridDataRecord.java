@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.view;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.HashMap;
@@ -12,10 +13,10 @@ public class GridDataRecord {
     private String rowBackground;
     private String rowForeground;
 
-    private NativeHashMap<Object, Object> values;
-    private NativeHashMap<Integer, Boolean> readOnlys;
-    private NativeHashMap<Integer, String> backgrounds;
-    private NativeHashMap<Integer, String> foregrounds;
+    private NativeStringMap<Object> values;
+    private NativeStringMap<Boolean> readOnlys;
+    private NativeStringMap<String> backgrounds;
+    private NativeStringMap<String> foregrounds;
 
     public GridDataRecord(GGroupObjectValue key) {
         this(-1, key);
@@ -26,7 +27,7 @@ public class GridDataRecord {
         this.key = key;
     }
 
-    public void setAttribute(Object key, Object value) {
+    public void setAttribute(String key, Object value) {
         if (value != null) {
             createValues().put(key, value);
         } else if (values != null) {
@@ -34,19 +35,19 @@ public class GridDataRecord {
         }
     }
 
-    public Object getAttribute(Object key) {
+    public Object getAttribute(String key) {
         return values == null ? null : values.get(key);
     }
 
-    public void setValue(int column, Object value) {
+    public void setValue(String column, Object value) {
         setAttribute(column, value);
     }
 
-    public Object getValue(int column) {
+    public Object getValue(String column) {
         return getAttribute(column);
     }
 
-    public void setBackground(int column, Object color) {
+    public void setBackground(String column, Object color) {
         if (color != null) {
             createBackgrounds().put(column, color.toString());
         } else if (backgrounds != null) {
@@ -54,13 +55,13 @@ public class GridDataRecord {
         }
     }
 
-    public String getBackground(int column) {
+    public String getBackground(String column) {
         return rowBackground != null
                ? rowBackground
                : backgrounds == null ? null : backgrounds.get(column);
     }
 
-    public void setForeground(int column, Object color) {
+    public void setForeground(String column, Object color) {
         if (color != null) {
             createForegrounds().put(column, color.toString());
         } else if (foregrounds != null) {
@@ -68,13 +69,13 @@ public class GridDataRecord {
         }
     }
 
-    public String getForeground(int column) {
+    public String getForeground(String column) {
         return rowForeground != null
                ? rowForeground
                : foregrounds == null ? null : foregrounds.get(column);
     }
 
-    public void setReadOnly(int column, Object readOnly) {
+    public void setReadOnly(String column, Object readOnly) {
         if (readOnly != null) {
             createReadOnlys().put(column, Boolean.TRUE);
         } else if (readOnlys != null) {
@@ -82,7 +83,7 @@ public class GridDataRecord {
         }
     }
 
-    public boolean isReadonly(int column) {
+    public boolean isReadonly(String column) {
         return readOnlys != null && readOnlys.get(column) != null;
     }
 
@@ -98,30 +99,30 @@ public class GridDataRecord {
         return key;
     }
 
-    private NativeHashMap<Object, Object> createValues() {
+    private NativeStringMap<Object> createValues() {
         if (values == null) {
-            values = new NativeHashMap<>();
+            values = new NativeStringMap<>();
         }
         return values;
     }
 
-    private NativeHashMap<Integer, String> createBackgrounds() {
+    private NativeStringMap<String> createBackgrounds() {
         if (backgrounds == null) {
-            backgrounds = new NativeHashMap<>();
+            backgrounds = new NativeStringMap<>();
         }
         return backgrounds;
     }
 
-    private NativeHashMap<Integer, String> createForegrounds() {
+    private NativeStringMap<String> createForegrounds() {
         if (foregrounds == null) {
-            foregrounds = new NativeHashMap<>();
+            foregrounds = new NativeStringMap<>();
         }
         return foregrounds;
     }
 
-    private NativeHashMap<Integer, Boolean> createReadOnlys() {
+    private NativeStringMap<Boolean> createReadOnlys() {
         if (readOnlys == null) {
-            readOnlys = new NativeHashMap<>();
+            readOnlys = new NativeStringMap<>();
         }
         return readOnlys;
     }

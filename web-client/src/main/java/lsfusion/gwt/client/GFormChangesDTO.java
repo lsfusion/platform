@@ -21,10 +21,12 @@ public class GFormChangesDTO implements Serializable {
     public ArrayList<GGroupObjectValue>[] parentObjects;
 
     public int[] expandablesGroupIds;
-    public HashMap<GGroupObjectValue, Boolean>[] expandables;
+    public GGroupObjectValue[][] expandableKeys;
+    public Boolean[][] expandableValues;
 
     public GPropertyReaderDTO[] properties;
-    public HashMap<GGroupObjectValue, Object>[] propertiesValues;
+    public GGroupObjectValue[][] propertiesValueKeys;
+    public Serializable[][] propertiesValueValues;
 
     public int[] dropPropertiesIds;
 

@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.panel.controller;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -10,9 +11,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
@@ -24,25 +23,26 @@ public class GPropertyPanelController {
 
     private final GFormController form;
 
-    public Map<GGroupObjectValue, PanelRenderer> renderers;
+    public NativeHashMap<GGroupObjectValue, PanelRenderer> renderers;
 
     public FlexPanel renderersPanel;
 
     private final Supplier<Object> rowBackground;
     private final Supplier<Object> rowForeground;
 
-    private List<GGroupObjectValue> columnKeys;
-    private Map<GGroupObjectValue, Object> values;
-    private Map<GGroupObjectValue, Object> captions;
-    private Map<GGroupObjectValue, Object> showIfs;
-    private Map<GGroupObjectValue, Object> readOnly;
-    private Map<GGroupObjectValue, Object> cellBackgroundValues;
-    private Map<GGroupObjectValue, Object> cellForegroundValues;
+    private ArrayList<GGroupObjectValue> columnKeys;
+    // it doesn't make sense to make this maps Native since they come from server and are built anyway
+    private NativeHashMap<GGroupObjectValue, Object> values;
+    private NativeHashMap<GGroupObjectValue, Object> captions;
+    private NativeHashMap<GGroupObjectValue, Object> showIfs;
+    private NativeHashMap<GGroupObjectValue, Object> readOnly;
+    private NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues;
+    private NativeHashMap<GGroupObjectValue, Object> cellForegroundValues;
 
     public GPropertyPanelController(GPropertyDraw property, GFormController form, Supplier<Object> rowBackground, Supplier<Object> rowForeground) {
         this.property = property;
         this.form = form;
-        renderers = new HashMap<>();
+        renderers = new NativeHashMap<>();
 
         this.rowBackground = rowBackground;
         this.rowForeground = rowForeground;
@@ -58,7 +58,7 @@ public class GPropertyPanelController {
         if (columnsUpdated) {
 
             //adding new renderers
-            Map<GGroupObjectValue, PanelRenderer> newRenderers = new HashMap<>();
+            NativeHashMap<GGroupObjectValue, PanelRenderer> newRenderers = new NativeHashMap<>();
             for (GGroupObjectValue columnKey : columnKeys) {
                 if (showIfs == null || showIfs.get(columnKey) != null) {
                     PanelRenderer renderer = renderers.remove(columnKey);
@@ -83,8 +83,7 @@ public class GPropertyPanelController {
             }
 
             // removing old renderers
-            for (PanelRenderer renderer : renderers.values())
-                renderersPanel.remove(renderer.getComponent());
+            renderers.foreachValue(renderer -> renderersPanel.remove(renderer.getComponent()));
             renderers = newRenderers;
 
             columnsUpdated = false;
@@ -94,9 +93,7 @@ public class GPropertyPanelController {
             }
         }
 
-        for (Map.Entry<GGroupObjectValue, PanelRenderer> e : renderers.entrySet()) {
-            updateRenderer(e.getKey(), e.getValue());
-        }
+        renderers.foreachEntry(this::updateRenderer);
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
@@ -128,7 +125,7 @@ public class GPropertyPanelController {
             return false;
         }
 
-        PanelRenderer toFocus = columnKeys == null ? renderers.values().iterator().next() : renderers.get(columnKeys.get(0));
+        PanelRenderer toFocus = columnKeys == null ? renderers.firstValue() : renderers.get(columnKeys.get(0));
         if (isShowing(toFocus.getComponent())) {
             toFocus.focus();
             return true;
@@ -136,7 +133,7 @@ public class GPropertyPanelController {
         return false;
     }
 
-    public void setPropertyValues(Map<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
+    public void setPropertyValues(NativeHashMap<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
         if (updateKeys) {
             values.putAll(valueMap);
         } else {
@@ -144,33 +141,33 @@ public class GPropertyPanelController {
         }
     }
 
-    public void setPropertyCaptions(Map<GGroupObjectValue,Object> captions) {
+    public void setPropertyCaptions(NativeHashMap<GGroupObjectValue, Object> captions) {
         this.captions = captions;
     }
 
-    public void setReadOnlyValues(Map<GGroupObjectValue,Object> readOnly) {
+    public void setReadOnlyValues(NativeHashMap<GGroupObjectValue, Object> readOnly) {
         this.readOnly = readOnly;
     }
 
-    public void setShowIfs(Map<GGroupObjectValue,Object> showIfs) {
+    public void setShowIfs(NativeHashMap<GGroupObjectValue, Object> showIfs) {
         if (!GwtSharedUtils.nullEquals(this.showIfs, showIfs)) {
             this.showIfs = showIfs;
             columnsUpdated = true;
         }
     }
 
-    public void setColumnKeys(List<GGroupObjectValue> columnKeys) {
+    public void setColumnKeys(ArrayList<GGroupObjectValue> columnKeys) {
         if (!GwtSharedUtils.nullEquals(this.columnKeys, columnKeys)) {
             this.columnKeys = columnKeys;
             columnsUpdated = true;
         }
     }
 
-    public void setCellBackgroundValues(Map<GGroupObjectValue, Object> cellBackgroundValues) {
+    public void setCellBackgroundValues(NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues) {
         this.cellBackgroundValues = cellBackgroundValues;
     }
 
-    public void setCellForegroundValues(Map<GGroupObjectValue, Object> cellForegroundValues) {
+    public void setCellForegroundValues(NativeHashMap<GGroupObjectValue, Object> cellForegroundValues) {
         this.cellForegroundValues = cellForegroundValues;
     }
 }

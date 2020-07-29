@@ -6,6 +6,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.GClass;
@@ -35,7 +36,6 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 
@@ -182,7 +182,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GPropertyDraw(){}
 
-    public void update(GTableController controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GTableController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
         throw new UnsupportedOperationException();
     }
 
@@ -339,7 +339,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             }
         }
         return image;
-    } 
+    }
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
 
     public boolean isReadOnly() {
         return editType == GPropertyEditType.READONLY;

@@ -11,6 +11,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectType;
@@ -86,7 +87,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     // we need key / value view since pivot
-    private JsArray<JsArrayMixed> getData(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings, boolean full) {
+    private JsArray<JsArrayMixed> getData(NativeStringMap<Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings, boolean full) {
         JsArray<JsArrayMixed> array = JavaScriptObject.createArray().cast();
 
         array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
@@ -114,8 +115,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         JsArrayMixed rowValues = JavaScriptObject.createArray().cast();
         for (int i = 0; i < properties.size(); i++) {
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
-            Map<GGroupObjectValue, Object> propValues = values.get(i);
-            List<Map<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(i);
+            NativeHashMap<GGroupObjectValue, Object> propValues = values.get(i);
+            List<NativeHashMap<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(i);
 
             CellRenderer renderer = null;
             if(convertDataToStrings)
@@ -125,7 +126,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
                 pushValue(rowValues, propValues, fullKey, renderer);
-                for (Map<GGroupObjectValue, Object> propLastAggr : propLastAggrs) {
+                for (NativeHashMap<GGroupObjectValue, Object> propLastAggr : propLastAggrs) {
                     pushValue(rowValues, propLastAggr, fullKey, renderer);
                 }
             }
@@ -133,7 +134,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return rowValues;
     }
 
-    private JsArrayMixed getCaptions(Map<String, Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions) {
+    private JsArrayMixed getCaptions(NativeStringMap<Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions) {
         // we need correct formulas order
         List<GPropertyDraw> orderedProperties = new ArrayList<>();
         fillPropertiesOrder(properties, orderedProperties, new HashSet<>());
@@ -146,8 +147,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
             int baseOrder = properties.indexOf(property);
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(baseOrder);
-            Map<GGroupObjectValue, Object> propCaptions = captions.get(baseOrder);
-            List<Map<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(baseOrder);
+            NativeHashMap<GGroupObjectValue, Object> propCaptions = captions.get(baseOrder);
+            List<NativeHashMap<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(baseOrder);
 
             for (GGroupObjectValue columnKey : propColumnKeys) {
                 String caption = GGridPropertyTable.getPropertyCaption(propCaptions, property, columnKey);
@@ -206,7 +207,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return null;
     }
 
-    private void pushValue(JsArrayMixed rowValues, Map<GGroupObjectValue, Object> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer) {
+    private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, Object> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer) {
         Object value = propValues.get(fullKey);
         rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value) : value) : null);
     }
@@ -220,7 +221,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     @Override
     protected void updateView() {
-        columnMap = new NativeHashMap<>();
+        columnMap = new NativeStringMap<>();
         aggrCaptions = new ArrayList<>();
         Aggregator aggregator = Aggregator.create();
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
@@ -370,7 +371,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             $wnd.TableToExcel.save(workbook, "lsfReport.xlsx");
         }-*/;
 
-    private NativeHashMap<String, Column> columnMap;
+    private NativeStringMap<Column> columnMap;
     private List<String> aggrCaptions;
     private WrapperObject config;
     private boolean settings = true;

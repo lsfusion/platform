@@ -5,7 +5,10 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.shared.DateTimeFormatInfo;
+import lsfusion.gwt.client.base.jsni.HasSID;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 
 import java.util.*;
 
@@ -109,8 +112,9 @@ public class GwtSharedUtils {
         return getDefaultDateFormat().format(date);
     }
 
-    public static <B, K1 extends B, K2 extends B, V> Map<B, V> override(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
-        HashMap<B, V> result = new HashMap<B, V>(map1);
+    public static <B, K1 extends B, K2 extends B, V> NativeHashMap<B, V> override(NativeHashMap<K1, ? extends V> map1, NativeHashMap<K2, ? extends V> map2) {
+        NativeHashMap<B, V> result = new NativeHashMap<B, V>();
+        result.putAll(map1);
         result.putAll(map2);
         return result;
     }
@@ -149,7 +153,15 @@ public class GwtSharedUtils {
             return value.toString().trim();
     }
 
-    public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
+    public static <MK, K, V> void putUpdate(NativeHashMap<MK, NativeHashMap<K, V>> keyValues, MK key, NativeHashMap<K, V> values, boolean update) {
+        if (update) {
+            keyValues.put(key, GwtSharedUtils.<K, K, K ,V>override(keyValues.get(key), values));
+        } else {
+            keyValues.put(key, values);
+        }
+    }
+
+    public static <MK extends HasSID, K, V> void putUpdate(NativeSIDMap<MK, NativeHashMap<K, V>> keyValues, MK key, NativeHashMap<K, V> values, boolean update) {
         if (update) {
             keyValues.put(key, GwtSharedUtils.<K, K, K ,V>override(keyValues.get(key), values));
         } else {
@@ -183,14 +195,58 @@ public class GwtSharedUtils {
         rowMap.put(column, value);
     }
 
-    public static <R, C, V> V getFromDoubleMap(Map<R, ? extends Map<C, V>> doubleMap, R row, C column) {
-        Map<C, V> rowMap = doubleMap.get(row);
+    public static <R, C, V> V getFromDoubleMap(NativeHashMap<R, ? extends NativeHashMap<C, V>> doubleMap, R row, C column) {
+        NativeHashMap<C, V> rowMap = doubleMap.get(row);
         return rowMap == null ? null : rowMap.get(column);
     }
 
-    public static <R, C, V> V removeFromDoubleMap(Map<R, ? extends Map<C, V>> doubleMap, R row, C column) {
+    public static <R, C, V> V removeFromDoubleMap(NativeHashMap<R, ? extends NativeHashMap<C, V>> doubleMap, R row, C column) {
         V result = null;
-        Map<C, V> rowMap = doubleMap.get(row);
+        NativeHashMap<C, V> rowMap = doubleMap.get(row);
+        if (rowMap != null) {
+            result = rowMap.remove(column);
+        }
+        return result;
+    }
+
+    public static <R extends HasSID, C, V> void putToDoubleNativeMap(NativeSIDMap<R, NativeHashMap<C, V>> doubleMap, R row, C column, V value) {
+        NativeHashMap<C, V> rowMap = doubleMap.get(row);
+        if (rowMap == null) {
+            doubleMap.put(row, rowMap = new NativeHashMap<>());
+        }
+        rowMap.put(column, value);
+    }
+
+    public static <R extends HasSID, C, V> V getFromDoubleMap(NativeSIDMap<R, ? extends NativeHashMap<C, V>> doubleMap, R row, C column) {
+        NativeHashMap<C, V> rowMap = doubleMap.get(row);
+        return rowMap == null ? null : rowMap.get(column);
+    }
+
+    public static <R extends HasSID, C, V> V removeFromDoubleMap(NativeSIDMap<R, ? extends NativeHashMap<C, V>> doubleMap, R row, C column) {
+        V result = null;
+        NativeHashMap<C, V> rowMap = doubleMap.get(row);
+        if (rowMap != null) {
+            result = rowMap.remove(column);
+        }
+        return result;
+    }
+
+    public static <C, V> void putToDoubleNativeMap(NativeStringMap<NativeHashMap<C, V>> doubleMap, String row, C column, V value) {
+        NativeHashMap<C, V> rowMap = doubleMap.get(row);
+        if (rowMap == null) {
+            doubleMap.put(row, rowMap = new NativeHashMap<>());
+        }
+        rowMap.put(column, value);
+    }
+
+    public static <C, V> V getFromDoubleMap(NativeStringMap<? extends NativeHashMap<C, V>> doubleMap, String row, C column) {
+        NativeHashMap<C, V> rowMap = doubleMap.get(row);
+        return rowMap == null ? null : rowMap.get(column);
+    }
+
+    public static <C, V> V removeFromDoubleMap(NativeStringMap<? extends NativeHashMap<C, V>> doubleMap, String row, C column) {
+        V result = null;
+        NativeHashMap<C, V> rowMap = doubleMap.get(row);
         if (rowMap != null) {
             result = rowMap.remove(column);
         }
@@ -221,12 +277,12 @@ public class GwtSharedUtils {
         return result;
     }
 
-    public static <G, K> Map<G, List<K>> groupList(Group<G, K> getter, List<K> keys) {
-        Map<G, List<K>> result = new HashMap<>();
+    public static <G, K> Map<G, ArrayList<K>> groupList(Group<G, K> getter, ArrayList<K> keys) {
+        Map<G, ArrayList<K>> result = new HashMap<>();
         for (K key : keys) {
             G group = getter.group(key);
             if(group!=null) {
-                List<K> groupList = result.get(group);
+                ArrayList<K> groupList = result.get(group);
                 if (groupList == null) {
                     groupList = new ArrayList<>();
                     result.put(group, groupList);

@@ -2,12 +2,13 @@ package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
@@ -25,9 +26,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
@@ -54,14 +53,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return rows;
     }
 
-    protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> propertyCaptions = new NativeSIDMap<>();
 
-    protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
-    protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellForegroundValues = new HashMap<>();
-    protected Map<GGroupObjectValue, Object> rowBackgroundValues = new HashMap<>();
-    protected Map<GGroupObjectValue, Object> rowForegroundValues = new HashMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellBackgroundValues = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellForegroundValues = new NativeSIDMap<>();
+    protected NativeHashMap<GGroupObjectValue, Object> rowBackgroundValues = new NativeHashMap<>();
+    protected NativeHashMap<GGroupObjectValue, Object> rowForegroundValues = new NativeHashMap<>();
 
-    public static String getPropertyCaption(Map<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
+    public static String getPropertyCaption(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
         String caption;
         if (propCaptions != null)
             caption = property.getDynamicCaption(propCaptions.get(columnKey));
@@ -215,23 +214,23 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return null;
     }
 
-    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         cellBackgroundValues.put(propertyDraw, values);
     }
 
-    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         cellForegroundValues.put(propertyDraw, values);
     }
 
-    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         rowBackgroundValues = values;
     }
 
-    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         rowForegroundValues = values;
     }
 
-    public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         propertyCaptions.put(propertyDraw, values);
     }
 
@@ -385,7 +384,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
         return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(property, columnKey));
     }
-    public static Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(Map<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
+    public static Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
         return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(propCaptions, property, columnKey));
     }
 

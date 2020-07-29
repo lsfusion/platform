@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -129,7 +130,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         columnsUpdated = true;
     }
 
-    public void updateProperty(GGroupObject group, GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values) {
+    public void updateProperty(GGroupObject group, GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
         dataUpdated = true;
 
         if(!updateKeys) {
@@ -411,51 +412,51 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
-    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, HashMap<GGroupObjectValue, Boolean> expandable) {
+    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Boolean> expandable) {
         tree.setKeys(group, keys, parents, expandable);
 
         dataUpdated = true;
     }
 
-    public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
+    public void updatePropertyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propValues, boolean updateKeys) {
         if (propValues != null) {
             dataUpdated = true;
             tree.setPropertyValues(property, propValues, updateKeys);
         }
     }
 
-    public void updateReadOnlyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> readOnlyValues) {
+    public void updateReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> readOnlyValues) {
         if (readOnlyValues != null) {
             tree.setReadOnlyValues(property, readOnlyValues);
         }
     }
 
     @Override
-    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateCellBackgroundValues(propertyDraw, values);
         dataUpdated = true;
     }
 
     @Override
-    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateCellForegroundValues(propertyDraw, values);
         dataUpdated = true;
     }
 
     @Override
-    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateRowBackgroundValues(values);
         dataUpdated = true;
     }
 
     @Override
-    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateRowForegroundValues(values);
         dataUpdated = true;
     }
 
     private Integer hierarchicalUserWidth = null;
-    private final NativeHashMap<GPropertyDraw, Integer> userWidths = new NativeHashMap<>();
+    private final NativeSIDMap<GPropertyDraw, Integer> userWidths = new NativeSIDMap<>();
     @Override
     protected void setUserWidth(GPropertyDraw property, Integer value) {
         userWidths.put(property, value);
@@ -544,9 +545,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             int rowHeight = 0;
             for (int i = 1, size = getColumnCount(); i < size; i++) {
                 GPropertyDraw property = getColumnPropertyDraw(i);
-                Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
+                NativeHashMap<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
                 if (captions != null) { // asserting that there is only one value columnKeys is EMPTY
-                    String value = GwtSharedUtils.nullTrim(captions.values().iterator().next());
+                    String value = GwtSharedUtils.nullTrim(captions.firstValue());
                     GGridPropertyTableHeader header = getGridHeader(i);
                     header.setCaption(value, false, false);
                     header.setToolTip(property.getTooltipText(value));
@@ -571,7 +572,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     protected void updatePropertyReaders() {
-        if (rowBackgroundValues.size() != 0 || rowForegroundValues.size() != 0 || cellBackgroundValues.size() != 0 || cellForegroundValues.size() != 0) { // optimization
+        if (!rowBackgroundValues.isEmpty() || !rowForegroundValues.isEmpty() || !cellBackgroundValues.isEmpty() || !cellForegroundValues.isEmpty()) { // optimization
             for (GTreeGridRecord record : rows) {
                 GGroupObjectValue key = record.getKey();
 
@@ -583,7 +584,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
                     Object background = rBackground;
                     if (background == null) {
-                        Map<GGroupObjectValue, Object> propBackgrounds = cellBackgroundValues.get(readerProperty);
+                        NativeHashMap<GGroupObjectValue, Object> propBackgrounds = cellBackgroundValues.get(readerProperty);
                         if (propBackgrounds != null) {
                             background = propBackgrounds.get(key);
                         }
@@ -591,14 +592,15 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
                     Object foreground = rForeground;
                     if (foreground == null) {
-                        Map<GGroupObjectValue, Object> propForegrounds = cellForegroundValues.get(readerProperty);
+                        NativeHashMap<GGroupObjectValue, Object> propForegrounds = cellForegroundValues.get(readerProperty);
                         if (propForegrounds != null) {
                             foreground = propForegrounds.get(key);
                         }
                     }
 
-                    record.setBackground(i, background == null ? readerProperty.background : background);
-                    record.setForeground(i, foreground == null ? readerProperty.foreground : foreground);
+                    String columnSID = getColumnSID(i);
+                    record.setBackground(columnSID, background == null ? readerProperty.background : background);
+                    record.setForeground(columnSID, foreground == null ? readerProperty.foreground : foreground);
                 }
             }
         }
@@ -734,12 +736,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     public String getCellBackground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getBackground(column);
+        return rowValue.getBackground(getColumnSID(column));
+    }
+
+    private String getColumnSID(int column) {
+        return "" + column;
     }
 
     @Override
     public String getCellForeground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getForeground(column);
+        return rowValue.getForeground(getColumnSID(column));
     }
 
     @Override

@@ -6,6 +6,8 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GIntegralType;
@@ -313,7 +315,7 @@ public class GGridController extends GAbstractTableController {
         sumButton.showPopup(sum, property);
     }
 
-    public void processFormChanges(long requestIndex, GFormChanges fc, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects) {
+    public void processFormChanges(long requestIndex, GFormChanges fc, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
         for (GPropertyDraw property : fc.dropProperties) {
             if (property.groupObject == groupObject) {
                 removeProperty(property);
@@ -331,22 +333,22 @@ public class GGridController extends GAbstractTableController {
         }
 
         // first proceed property with its values, then extra values
-        for (Map.Entry<GPropertyReader, HashMap<GGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
-            if (readProperty.getKey() instanceof GPropertyDraw) {
-                GPropertyDraw property = (GPropertyDraw) readProperty.getKey();
+        fc.properties.foreachEntry((key, value) -> {
+            if (key instanceof GPropertyDraw) {
+                GPropertyDraw property = (GPropertyDraw) key;
                 if (property.groupObject == groupObject) // filling keys
-                    updateProperty(property, getColumnKeys(property, currentGridObjects), fc.updateProperties.contains(property), readProperty.getValue());
+                    updateProperty(property, getColumnKeys(property, currentGridObjects), fc.updateProperties.contains(property), value);
             }
-        }
+        });
 
-        for (Map.Entry<GPropertyReader, HashMap<GGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
-            if (!(readProperty.getKey() instanceof GPropertyDraw)) {
-                GPropertyReader propertyReader = readProperty.getKey();
+        fc.properties.foreachEntry((key, value) -> {
+            if (!(key instanceof GPropertyDraw)) {
+                GPropertyReader propertyReader = key;
                 if (formController.getGroupObject(propertyReader.getGroupObjectID()) == groupObject) {
-                    propertyReader.update(this, readProperty.getValue(), propertyReader instanceof GPropertyDraw && fc.updateProperties.contains(propertyReader));
+                    propertyReader.update(this, value, propertyReader instanceof GPropertyDraw && fc.updateProperties.contains(propertyReader));
                 }
             }
-        }
+        });
 
         Boolean updateState = null;
         if(isList())
@@ -355,12 +357,12 @@ public class GGridController extends GAbstractTableController {
         update(requestIndex, updateState);
     }
 
-    public List<GGroupObjectValue> getColumnKeys(GPropertyDraw property, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects) {
-        List<GGroupObjectValue> columnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+    public ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
+        ArrayList<GGroupObjectValue> columnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
         if (property.columnGroupObjects != null) {
-            LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<>();
+            LinkedHashMap<GGroupObject, ArrayList<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<>();
             for (GGroupObject columnGroupObject : property.columnGroupObjects) {
-                List<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
+                ArrayList<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
                 if (columnGroupKeys != null) {
                     groupColumnKeys.put(columnGroupObject, columnGroupKeys);
                 }
@@ -372,7 +374,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateCellBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateCellBackgroundValues(property, values);
@@ -382,7 +384,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateCellForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateCellForegroundValues(property, values);
@@ -392,7 +394,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updatePropertyCaptions(GCaptionReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updatePropertyCaptions(property, values);
@@ -402,7 +404,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateShowIfValues(GShowIfReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateShowIfValues(property, values);
@@ -412,7 +414,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateReadOnlyValues(GReadOnlyReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateReadOnlyValues(property, values);
@@ -422,31 +424,31 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateLastValues(GLastReader reader, Map<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
+    public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
         assert property.grid;
         if(property.grid)
             table.updateLastValues(property, reader.index, values);
     }
 
     @Override
-    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         if (isList()) {
             table.updateRowBackgroundValues(values);
         } else {
             if (values != null && !values.isEmpty()) {
-                panel.updateRowBackgroundValue(values.values().iterator().next());
+                panel.updateRowBackgroundValue(values.firstValue());
             }
         }
     }
 
     @Override
-    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         if (isList()) {
             table.updateRowForegroundValues(values);
         } else {
             if (values != null && !values.isEmpty()) {
-                panel.updateRowForegroundValue(values.values().iterator().next());
+                panel.updateRowForegroundValue(values.firstValue());
             }
         }
     }
@@ -502,7 +504,7 @@ public class GGridController extends GAbstractTableController {
         }
     }
     
-    private void updateProperty(GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values) {
+    private void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
         if (property.grid) {
             table.updateProperty(property, columnKeys, updateKeys, values);
         } else {
@@ -617,7 +619,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    protected void changeFilter(List<GPropertyFilter> conditions) {
+    protected void changeFilter(ArrayList<GPropertyFilter> conditions) {
         formController.changeFilter(groupObject, conditions);
     }
 

@@ -21,17 +21,18 @@ public class GTreeGridRecord extends GridDataRecord {
         }
     }
 
+    private final String treeColumn = "treeColumn";
     public void setTreeValue(GTreeColumnValue value) {
-        setAttribute("treeColumn", value);
+        setAttribute(treeColumn, value);
     }
     public GTreeColumnValue getTreeValue() {
-        return (GTreeColumnValue) getAttribute("treeColumn");
+        return (GTreeColumnValue) getAttribute(treeColumn);
     }
     public void setValue(GPropertyDraw property, Object value) {
-        setAttribute(property.ID, value);
+        setAttribute(property.sID, value);
     }
     public Object getValue(GPropertyDraw property) {
-        return getAttribute(property.ID);
+        return getAttribute(property.sID);
     }
 
     public GGroupObject getGroup() {

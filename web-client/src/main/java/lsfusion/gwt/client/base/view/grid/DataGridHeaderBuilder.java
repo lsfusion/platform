@@ -53,8 +53,6 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
 
     protected final HeaderDelegate delegate;
 
-    private final NativeHashMap<String, Header<?>> idToHeaderMap = new NativeHashMap<>();
-
     /**
      * Create a new DefaultHeaderBuilder for the header of footer section.
      *

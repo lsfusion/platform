@@ -10,6 +10,8 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -44,17 +46,17 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private ArrayList<GPropertyDraw> properties = new ArrayList<>();
     // map for fast incremental update, essentially needed for working with group-to-columns (columnKeys)
-    private NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap = new NativeHashMap<>();
+    private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap = new NativeSIDMap<>();
 
     private ArrayList<GGroupObjectValue> rowKeys = new ArrayList<>();
 
-    private NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> values = new NativeHashMap<>();
-    protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> showIfs = new HashMap<>();
-    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> readOnlyValues = new HashMap<>();
+    private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> values = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> showIfs = new NativeSIDMap<>();
+    private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> readOnlyValues = new NativeSIDMap<>();
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private NativeHashMap<GPropertyDraw, Boolean> updatedProperties = new NativeHashMap<>();
-    private NativeHashMap<GPropertyDraw, List<GGroupObjectValue>> columnKeys = new NativeHashMap<>();
+    private NativeSIDMap<GPropertyDraw, Boolean> updatedProperties = new NativeSIDMap<>();
+    private NativeSIDMap<GPropertyDraw, ArrayList<GGroupObjectValue>> columnKeys = new NativeSIDMap<>();
 
     private boolean rowsUpdated = false;
     private boolean columnsUpdated = false;
@@ -224,7 +226,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             List<GPropertyDraw> orderedVisibleProperties = getOrderedVisibleProperties(properties);
 
             //разбиваем на группы свойств, которые будут идти чередуясь для каждого ключа из групп в колонках ("шахматка")
-            NativeHashMap<String, NativeHashMap<List<GGroupObject>, Integer>> columnGroupsIndices = new NativeHashMap<>();
+            NativeStringMap<NativeHashMap<List<GGroupObject>, Integer>> columnGroupsIndices = new NativeStringMap<>();
             List<List<GPropertyDraw>> columnGroups = new ArrayList<>();
             List<List<GGroupObjectValue>> columnGroupsColumnKeys = new ArrayList<>();
 
@@ -255,11 +257,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             setCellHeight(rowHeight);
 
             int currentIndex = 0;
-            NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<>();
+            NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeSIDMap<>();
             for (int i = 0; i < columnGroups.size(); i++) {
                 for (GGroupObjectValue columnKey : columnGroupsColumnKeys.get(i)) {
                     for (GPropertyDraw property : columnGroups.get(i)) {
-                        Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
+                        NativeHashMap<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
                         if (propShowIfs != null && propShowIfs.get(columnKey) == null) // property is hidden
                             continue;
 
@@ -396,7 +398,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return groupObject.grid.font;
     }
 
-    public static void putToColumnsMap(NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column, GridColumn value) {
+    public static void putToColumnsMap(NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column, GridColumn value) {
         NativeHashMap<GGroupObjectValue, GridColumn> rowMap = columnsMap.get(row);
         if (rowMap == null) {
             columnsMap.put(row, rowMap = new NativeHashMap<>());
@@ -404,7 +406,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         rowMap.put(column, value);
     }
 
-    public static GridColumn getFromColumnsMap(NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column) {
+    public static GridColumn getFromColumnsMap(NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column) {
         NativeHashMap<GGroupObjectValue, GridColumn> rowMap = columnsMap.get(row);
         if (rowMap != null) {
             return rowMap.get(column);
@@ -412,7 +414,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return null;
     }
 
-    public static GridColumn removeFromColumnsMap(NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column) {
+    public static GridColumn removeFromColumnsMap(NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column) {
         GridColumn result = null;
         NativeHashMap<GGroupObjectValue, GridColumn> rowMap = columnsMap.get(row);
         if (rowMap != null) {
@@ -430,9 +432,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 final boolean fFirstRow = firstRow;
                 updatedProperties.foreachKey(property -> {
                     NativeHashMap<GGroupObjectValue, Object> propValues = values.get(property);
-                    Map<GGroupObjectValue, Object> propReadOnly = readOnlyValues.get(property);
-                    Map<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
-                    Map<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
+                    NativeHashMap<GGroupObjectValue, Object> propReadOnly = readOnlyValues.get(property);
+                    NativeHashMap<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
+                    NativeHashMap<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
                     for (GGroupObjectValue columnKey : columnKeys.get(property)) {
                         NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
                         GridColumn column = propertyColumns == null ? null : propertyColumns.get(columnKey);
@@ -448,9 +450,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             Object foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
 
                             column.setValue(record, value);
-                            record.setReadOnly(column.columnID, readOnly);
-                            record.setBackground(column.columnID, background == null ? property.background : background);
-                            record.setForeground(column.columnID, foreground == null ? property.foreground : foreground);
+                            record.setReadOnly(column.columnSID, readOnly);
+                            record.setBackground(column.columnSID, background == null ? property.background : background);
+                            record.setForeground(column.columnSID, foreground == null ? property.foreground : foreground);
                         }
                     }
                 });
@@ -566,7 +568,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         columnsUpdated = true;
     }
 
-    public void updateProperty(final GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values) {
+    public void updateProperty(final GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
         if(!updateKeys) {
             if (!properties.contains(property)) {
                 int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
@@ -582,7 +584,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                 columnsUpdated = true;
             } else {
-                List<GGroupObjectValue> oldValues = this.columnKeys.get(property);
+                ArrayList<GGroupObjectValue> oldValues = this.columnKeys.get(property);
                 if (!columnKeys.equals(oldValues)) {
                     this.columnKeys.put(property, columnKeys);
                     columnsUpdated = true;
@@ -610,51 +612,51 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         super.updatePropertyCaptions(propertyDraw, values);
         captionsUpdated = true;
     }
 
-    public void updateShowIfValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
-        Map<GGroupObjectValue, Object> oldValues = showIfs.get(propertyDraw);
+    public void updateShowIfValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        NativeHashMap<GGroupObjectValue, Object> oldValues = showIfs.get(propertyDraw);
         if (!nullEquals(oldValues, values)) {
             showIfs.put(propertyDraw, values);
             columnsUpdated = true;
         }
     }
 
-    public void updateReadOnlyValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateReadOnlyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         readOnlyValues.put(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
 
     @Override
-    public void updateLastValues(GPropertyDraw property, int index, Map<GGroupObjectValue, Object> values) {
+    public void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, Object> values) {
     }
 
     @Override
-    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateCellBackgroundValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
 
     @Override
-    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateCellForegroundValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
 
     @Override
-    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateRowBackgroundValues(values);
         rowsUpdated = true;
     }
 
     @Override
-    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateRowForegroundValues(values);
         rowsUpdated = true;
     }
@@ -669,12 +671,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public String getCellBackground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getBackground(((GridColumn) getColumn(column)).columnID);
+        return rowValue.getBackground(((GridColumn) getColumn(column)).columnSID);
     }
 
     @Override
     public String getCellForeground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getForeground(((GridColumn) getColumn(column)).columnID);
+        return rowValue.getForeground(((GridColumn) getColumn(column)).columnSID);
     }
 
     public int getPropertyIndex(GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -746,7 +748,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         if (property != null && !property.isReadOnly()) {
             GridDataRecord rowRecord = getGridRow(cell);
             GridColumn column = getGridColumn(cell);
-            return column == null || rowRecord == null || rowRecord.isReadonly(column.columnID);
+            return column == null || rowRecord == null || rowRecord.isReadonly(column.columnSID);
         }
         return true;
     }
@@ -1111,13 +1113,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     private class GridColumn extends GridPropertyColumn {
-        private final int columnID;
+        private final String columnSID;
 
         public final GPropertyDraw property;
         public final GGroupObjectValue columnKey;
 
         public GridColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
-            this.columnID = nextColumnID++;
+            this.columnSID = "" + (nextColumnID++);
 
             this.property = property;
             this.columnKey = columnKey;
@@ -1129,10 +1131,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         public void setValue(GridDataRecord record, Object value) {
-            record.setValue(columnID, value);
+            record.setValue(columnSID, value);
         }
         public Object getValue(GridDataRecord record) {
-            return record.getValue(columnID);
+            return record.getValue(columnSID);
         }
 
         @Override
