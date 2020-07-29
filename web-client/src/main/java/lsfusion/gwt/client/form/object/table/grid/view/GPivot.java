@@ -66,8 +66,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private final static String defaultFontFamily = "Segoe UI";
     private final static int defaultFontSize = 9;
 
-    public GPivot(GFormController formController, GGridController gridController) {
+    private GPropertyDraw selectedProperty;
+    
+    public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty) {
         super(formController, gridController);
+        this.selectedProperty = selectedProperty;
 
         setStyleName(getDrawElement(), "pivotTable");
 
@@ -275,6 +278,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             String columnCaption = columnCaptionMap.get(property);
             if(columnCaption != null) {
                 measures.push(columnCaption);
+            }
+        }
+        if(measures.length() == 0 && MainFrame.pivotOnlySelectedColumn) {
+            for(GPropertyDraw property : properties) {
+                if (property.baseType instanceof GIntegralType && (property.sID.equals("PROPERTY(count())") || property.equals(selectedProperty))) {
+                    measures.push(columnCaptionMap.get(property));
+                }
             }
         }
         WrapperObject inclusions = JavaScriptObject.createObject().cast();

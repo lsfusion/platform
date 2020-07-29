@@ -33,6 +33,6 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
         
         return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout,
                 clientSettings.devMode, clientSettings.showDetailedInfo, clientSettings.forbidDuplicateForms, 
-                clientSettings.showNotDefinedStrings, colorTheme, colorPreferences);
+                clientSettings.showNotDefinedStrings, clientSettings.pivotOnlySelectedColumn, colorTheme, colorPreferences);
     }
 }
