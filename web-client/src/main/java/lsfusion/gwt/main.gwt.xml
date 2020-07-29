@@ -18,8 +18,8 @@
     <!-- Declaration of supported locales and removal of the "default" locale  
          http://www.gwtproject.org/doc/latest/DevGuideI18nLocale.html#LocaleDefault 
      -->
-    <extend-property name="locale" values="ru,en"/>
-    <set-property name="locale" value="ru,en"/>
+    <extend-property name="locale" values="ru,en,be,uk"/>
+    <set-property name="locale" value="ru,en,be,uk"/>
     <set-property-fallback name="locale" value="en"/>
     
     <set-configuration-property name="locale.cookie" value="LSFUSION_LOCALE"/>
