@@ -18,12 +18,15 @@ sidMainRole (CustomUser user) = sid(mainRole(user));
 
 currentUserMainRoleName () = nameMainRole(currentUser());
 
+overIn = ABSTRACT BOOLEAN (User, UserRole);
+overIn(User user, UserRole role) += mainRole(user) == role; 
+
 // Roles
 TABLE customUserRole (CustomUser, UserRole);
 in '{security.in}' = DATA BOOLEAN (CustomUser, UserRole);
 
 TABLE userUserRole (User, UserRole);
-has '{security.in}' (User user, UserRole role) = mainRole(user) = role OR in(user, role) MATERIALIZED;
+has '{security.in}' (User user, UserRole role) = in(user, role) OR overIn(user, role) MATERIALIZED;
 
 rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 
@@ -31,7 +34,7 @@ CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE '{security.this.role.is.assigned.to.user}';
     
 WHEN SETCHANGED (User u IS User) DO {
-    mainRole(u) <- userRoleSID('admin') IF login(u) == 'admin'; 
+    in(u, userRoleSID('admin')) <- TRUE WHERE login(u) == 'admin';        
     in(u, userRoleSID('default')) <- TRUE;        
 }
 
@@ -44,8 +47,6 @@ FORM userRolesDialog '{security.user.roles}'
 ;
 
 EXTEND FORM customUser
-    PROPERTIES(u) nameMainRole BEFORE email(u)
-
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
     PROPERTIES(u,ur) in
@@ -55,15 +56,10 @@ DESIGN customUser {
     details {
         NEW roles {
             caption = '{security.user.roles}';
-            MOVE PROPERTY(nameMainRole(u));
             MOVE BOX(ur);
         }
     }
 }
-
-EXTEND FORM customUsers
-    PROPERTIES(u) READONLY nameMainRole BEFORE name(u)
-;
 
 // Copy user role
 copy ABSTRACT LIST (UserRole, UserRole);
@@ -361,8 +357,6 @@ onStarted() + {
         in(CustomUser u, userRoleSID('readonly')) <- TRUE WHERE GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);      
         in(CustomUser u, userRoleSID('default')) <- TRUE;
         in(CustomUser u, userRoleSID('admin')) <- TRUE WHERE login(u) == 'admin';
-        
-        in(CustomUser u, mainRole(u)) <- TRUE WHERE mainRole(u); //write main role to additional roles
                   
         showDetailedInfo(UserRole ur) <- TRUE WHERE order(ur, policy('allowConfiguration'));
         
@@ -414,7 +408,7 @@ FORM securityPolicy '{security.form.policy}'
     
     // Users
     OBJECTS u = CustomUser
-    PROPERTIES(u) READONLY name, login, nameMainRole
+    PROPERTIES(u) READONLY name, login
     PROPERTIES(u) dataForbidDuplicateForms
     FILTERS has(u, ur)
 ;
