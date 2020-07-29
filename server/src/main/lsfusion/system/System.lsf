@@ -16,6 +16,7 @@ TABLE customObjectClass (CustomObjectClass);
 objectClass = NATIVE CustomObjectClass (Object);
 
 random = NATIVE DOUBLE ();
+randomUUID = FORMULA STRING[100] 'md5(random()::text || clock_timestamp()::text)::cstring';
 //watch = NATIVE (); 
 
 stat '{system.stat.class}' = DATA INTEGER (CustomObjectClass);

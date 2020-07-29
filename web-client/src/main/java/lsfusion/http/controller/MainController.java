@@ -90,41 +90,26 @@ public class MainController {
 
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
     public String registration(ModelMap model, HttpServletRequest request) {
-        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
-        model.addAttribute("title", getTitle(serverSettings));
-        model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
-        model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
-        model.addAttribute("loginPage", "/login");
+        addStandardModelAttributes(model, request);
         return "registration";
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public String registerUser(HttpServletRequest request, @RequestParam String username, @RequestParam String password,
-                               @RequestParam String firstName, @RequestParam String lastName, @RequestParam String email) {
+    public String processRegistration(HttpServletRequest request, @RequestParam String username, @RequestParam String password,
+                          @RequestParam String firstName, @RequestParam String lastName, @RequestParam String email) {
         JSONArray user = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("login", username);
-        jsonObject.put("password", BaseUtils.calculateBase64Hash("SHA-256", password.trim(), "sdkvswhw34839h"));
+        jsonObject.put("password", password);
         jsonObject.put("firstName", firstName);
         jsonObject.put("lastName", lastName);
         jsonObject.put("email", email);
         user.put(jsonObject);
-        FileData fileData = new FileData(new RawFileData(user.toString().getBytes(StandardCharsets.UTF_8)), "json");
-        try {
-            ExternalResponse externalResponse = logicsProvider.runRequest(request, new LogicsRunnable<ExternalResponse>() {
-                @Override
-                public ExternalResponse run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
-                            "Authentication.registerUser[JSONFILE]", new ExternalRequest(new Object[]{fileData}));
-                }
-            });
-            JSONObject jsonResponse = new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
-            if (jsonResponse.has("error")) {
-                request.getSession(true).setAttribute("OAUTH_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
-                return "redirect:/registration";
-            }
-        } catch (IOException | AppServerNotAvailableDispatchException e) {
-            throw Throwables.propagate(e);
+
+        JSONObject jsonResponse = jsonResponse(user, request, "registerUser");
+        if (jsonResponse.has("error")) {
+            request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
+            return "redirect:/registration";
         }
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
         usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetails(request));
@@ -135,20 +120,86 @@ public class MainController {
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.GET)
     public String forgotPassword(ModelMap model, HttpServletRequest request) {
-        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
-        model.addAttribute("title", getTitle(serverSettings));
-        model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
-        model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
+        addStandardModelAttributes(model, request);
         return "forgot-password";
     }
 
-    @RequestMapping(value = "/new-password", method = RequestMethod.GET)
-    public String newPassword(ModelMap model, HttpServletRequest request) {
+    @RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
+    public String processForgotPassword(@RequestParam String usernameOrEmail, HttpServletRequest request) {
+        String url = "http://" + request.getLocalAddr() + ":" + request.getServerPort() + "/changePassword?token=";
+        JSONArray jsonArray = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userNameOrEmail", usernameOrEmail);
+        jsonObject.put("url", url);
+        jsonArray.put(jsonObject);
+
+        JSONObject jsonResponse = jsonResponse(jsonArray, request, "resetPassword");
+        if (jsonResponse.has("error")) {
+            request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
+            return "redirect:/forgot-password";
+        } else if (jsonResponse.has("success")) {
+            request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("success"));
+        }
+        return "redirect:/login";
+    }
+
+    @RequestMapping(value = "/changePassword", method = RequestMethod.GET)
+    public String changePassword(ModelMap model, HttpServletRequest request, @RequestParam String token) {
+        JSONArray jsonArray = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", token);
+        jsonArray.put(jsonObject);
+
+        JSONObject jsonResponse = jsonResponse(jsonArray, request, "checkToken");
+        if (jsonResponse.has("error")) {
+            request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("error"));
+        } else if (jsonResponse.has("success")){
+            addStandardModelAttributes(model, request);
+            return "changePassword";
+        }
+        return "redirect:/login";
+    }
+
+    @RequestMapping(value = "/changePassword", method = RequestMethod.POST)
+    public String processChangePassword(HttpServletRequest request, @RequestParam String newPassword,
+                                        @RequestParam String token) {
+        JSONArray user = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("newPassword", newPassword);
+        jsonObject.put("token", token);
+        user.put(jsonObject);
+
+        JSONObject jsonResponse = jsonResponse(user, request, "changePassword");
+        if (jsonResponse.has("error")) {
+            request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("error"));
+        } else if (jsonResponse.has("success")){
+            request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("success"));
+        }
+        return "redirect:/login";
+    }
+
+    private JSONObject jsonResponse(JSONArray jsonArray, HttpServletRequest request, String method){
+        FileData fileData = new FileData(new RawFileData(jsonArray.toString().getBytes(StandardCharsets.UTF_8)), "json");
+        try {
+            ExternalResponse externalResponse = logicsProvider.runRequest(request, new LogicsRunnable<ExternalResponse>() {
+                @Override
+                public ExternalResponse run(LogicsSessionObject sessionObject) throws RemoteException {
+                    return sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
+                            "Authentication." + method + "[JSONFILE]", new ExternalRequest(new Object[]{fileData}));
+                }
+            });
+            return new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
+        } catch (IOException | AppServerNotAvailableDispatchException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private void addStandardModelAttributes(ModelMap model, HttpServletRequest request) {
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
-        return "new-password";
+        model.addAttribute("loginPage", "/login");
     }
 
     private ServerSettings getAndCheckServerSettings(HttpServletRequest request, Result<String> rCheck, boolean noCache) {

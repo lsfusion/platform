@@ -61,6 +61,12 @@
                                     </div>
                                     <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
                                 </c:if>
+                                <c:if test="${not empty LAST_MESSAGE}">
+                                    <div class="errorblock round full-width-box">
+                                            ${sessionScope["LAST_MESSAGE"]}
+                                    </div>
+                                    <c:remove var="LAST_MESSAGE" scope="session"/>
+                                </c:if>
                             </fieldset>
                         </form>
                         <div class="reg-block">

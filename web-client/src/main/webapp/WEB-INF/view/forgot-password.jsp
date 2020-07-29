@@ -12,7 +12,7 @@
     <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
     <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
 </head>
-<body onload="document.forgotPassword.username.focus();">
+<body onload="document.forgotPassword.usernameOrEmail.focus();">
 
 <table class="content-table">
     <tr></tr>
@@ -24,6 +24,7 @@
                 </div>
                 <form id="forgot-password-form"
                       name="forgotPassword"
+                      action="forgot-password"
                       method="POST">
                     <fieldset>
                         <div class="text-center">
@@ -33,17 +34,23 @@
                             </p>
                         </div>
                         <p>
-                            <label for="username"><%= ServerMessages.getString(request, "login.or.email") %>
+                            <label for="usernameOrEmail"><%= ServerMessages.getString(request, "login.or.email") %>
                             </label>
-                            <input type="text" id="username" name="username" class="round full-width-box"/>
+                            <input type="text" id="usernameOrEmail" name="usernameOrEmail" class="round full-width-box"/>
                         </p>
                         <input name="submit" type="submit" class="button round blue"
                                value="<%= ServerMessages.getString(request, "password.reset") %>"/>
+                        <c:if test="${not empty RESET_PASSWORD_EXCEPTION}">
+                            <div class="errorblock round full-width-box">
+                                    ${sessionScope["RESET_PASSWORD_EXCEPTION"]}
+                            </div>
+                            <c:remove var="RESET_PASSWORD_EXCEPTION" scope="session"/>
+                        </c:if>
                     </fieldset>
                 </form>
                 <br>
                 <div class="text-center">
-                    <a href="/login">На главную</a>
+                    <a class="main-page-link" href="${loginPage}"><%= ServerMessages.getString(request, "main.page") %></a>
                 </div>
             </div>
         </td>

@@ -53,7 +53,7 @@
                                 <p>
                                     <label for="password"><%= ServerMessages.getString(request, "password") %>
                                     </label>
-                                    <input type="password" id="password" name="password" class="round full-width-box" required="required" onkeyup='check();'/>
+                                    <input type="password" id="password" name="password" class="round full-width-box" required onkeyup='check();'/>
                                 </p>
                                 <p>
                                     <label for="repeatPassword"><%= ServerMessages.getString(request, "password.repeat") %>
@@ -77,12 +77,12 @@
                                     <input type="email" id="email" name="email" class="round full-width-box" required="required"/>
                                 </p>
                                 <input name="submit" type="submit" class="button round blue" id="submit" disabled value="<%= ServerMessages.getString(request, "registration") %>"/>
-                                <c:if test="${not empty OAUTH_EXCEPTION}">
+                                <c:if test="${not empty REGISTRATION_EXCEPTION}">
                                     <div class="errorblock round full-width-box">
                                         <%= ServerMessages.getString(request, "registration.not.successful") %><br/>
-                                        <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["OAUTH_EXCEPTION"].message}
+                                        <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["REGISTRATION_EXCEPTION"].message}
                                     </div>
-                                    <c:remove var="OAUTH_EXCEPTION" scope="session"/>
+                                    <c:remove var="REGISTRATION_EXCEPTION" scope="session"/>
                                 </c:if>
                             </fieldset>
                         </form>

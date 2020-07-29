@@ -111,7 +111,7 @@
         <url-pattern>/main</url-pattern>
         <url-pattern>/registration</url-pattern>
         <url-pattern>/forgot-password</url-pattern>
-        <url-pattern>/new-password</url-pattern>
+        <url-pattern>/changePassword</url-pattern>
     </servlet-mapping>
 
 
