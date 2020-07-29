@@ -33,6 +33,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ContentType;
@@ -86,18 +87,19 @@ public class ExternalHTTPAction extends ExternalAction {
                 ImMap<String, String> headers = headersProperty != null ? readPropertyValues(context.getEnv(), headersProperty) : MapFact.EMPTY();
                 ImMap<String, String> cookies = cookiesProperty != null ? readPropertyValues(context.getEnv(), cookiesProperty) : MapFact.EMPTY();
                 CookieStore cookieStore = new BasicCookieStore();
-                HttpResponse response = readHTTP(context, connectionString, bodyUrl, rNotUsedParams.result, headers, cookies, cookieStore);
+                Integer timeout = (Integer) context.getBL().LM.timeoutHttp.read(context);
+                HttpResponse response = readHTTP(context, connectionString, timeout, bodyUrl, rNotUsedParams.result, headers, cookies, cookieStore);
                 HttpEntity responseEntity = response.getEntity();
 
                 ContentType contentType = ContentType.get(responseEntity);
                 ImList<Object> requestParams = responseEntity != null ? ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType) : ListFact.EMPTY();
                 fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
-                
+
                 if(headersToProperty != null) {
                     Map<String, List<String>> responseHeaders = getResponseHeaders(response);
                     String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
                     String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
-                    
+
                     writePropertyValues(context.getSession(), headersToProperty, headerNames, headerValues);
                 }
                 if(cookiesToProperty != null) {
@@ -151,7 +153,7 @@ public class ExternalHTTPAction extends ExternalAction {
         return responseCookies;
     }
 
-    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, String bodyUrl, ImOrderSet<PropertyInterface> bodyParams, ImMap<String, String> headers, ImMap<String, String> cookies, CookieStore cookieStore) throws IOException {
+    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, Integer timeout, String bodyUrl, ImOrderSet<PropertyInterface> bodyParams, ImMap<String, String> headers, ImMap<String, String> cookies, CookieStore cookieStore) throws IOException {
         Object[] paramList = new Object[bodyParams.size()];
         for (int i=0,size=bodyParams.size();i<size;i++)
             paramList[i] = format(context, bodyParams.get(i), null); // пока в body ничего не кодируем (так как content-type'ы другие)
@@ -186,8 +188,17 @@ public class ExternalHTTPAction extends ExternalAction {
             BasicClientCookie cookie = parseRawCookie(cookies.getKey(i), cookies.getValue(i));
             cookieStore.addCookie(cookie);
         }
-        
-        return HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties().build().execute(httpRequest);
+
+        HttpClientBuilder requestBuilder = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties();
+
+        if(timeout != null) {
+            RequestConfig.Builder configBuilder = RequestConfig.custom();
+            configBuilder.setConnectTimeout(timeout);
+            configBuilder.setConnectionRequestTimeout(timeout);
+            requestBuilder.setDefaultRequestConfig(configBuilder.build());
+        }
+
+        return requestBuilder.build().execute(httpRequest);
     }
 
     private BasicClientCookie parseRawCookie(String cookieName, String rawCookie) {
