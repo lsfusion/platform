@@ -76,6 +76,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static long busyDialogTimeout;
     public static long updateRendererStateSetTimeout = 100;
     public static boolean showNotDefinedStrings;
+    public static boolean pivotOnlySelectedColumn;
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;
     
@@ -198,6 +199,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 showDetailedInfo = result.showDetailedInfo;
                 forbidDuplicateForms = result.forbidDuplicateForms;
                 showNotDefinedStrings = result.showNotDefinedStrings;
+                pivotOnlySelectedColumn = result.pivotOnlySelectedColumn;
                 changeColorTheme(result.colorTheme);
                 colorPreferences = result.colorPreferences;
             }
