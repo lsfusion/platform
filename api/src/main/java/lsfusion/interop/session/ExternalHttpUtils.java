@@ -1,12 +1,12 @@
 package lsfusion.interop.session;
 
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.file.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -19,7 +19,8 @@ import java.util.*;
 
 public class ExternalHttpUtils {
 
-    public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, byte[] body, Map<String, String> headers, Map<String, String> cookies, CookieStore cookieStore) throws IOException {
+    public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, Integer timeout, byte[] body,
+                                                   Map<String, String> headers, Map<String, String> cookies, CookieStore cookieStore) throws IOException {
         HttpUriRequest httpRequest;
         switch (method) {
             case GET:
@@ -48,7 +49,16 @@ public class ExternalHttpUtils {
             cookieStore.addCookie(cookie);
         }
 
-        HttpResponse response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties().build().execute(httpRequest);
+        HttpClientBuilder requestBuilder = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties();
+
+        if(timeout != null) {
+            RequestConfig.Builder configBuilder = RequestConfig.custom();
+            configBuilder.setConnectTimeout(timeout);
+            configBuilder.setConnectionRequestTimeout(timeout);
+            requestBuilder.setDefaultRequestConfig(configBuilder.build());
+        }
+
+        HttpResponse response = requestBuilder.build().execute(httpRequest);
         HttpEntity responseEntity = response.getEntity();
         ContentType responseContentType = ContentType.get(responseEntity);
         byte[] responseBytes = responseEntity != null ? IOUtils.readBytesFromStream(responseEntity.getContent()) : null;
