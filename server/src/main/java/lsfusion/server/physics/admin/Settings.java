@@ -2576,4 +2576,14 @@ public class Settings implements Cloneable {
     public void setShowNotDefinedStrings(boolean showNotDefinedStrings) {
         this.showNotDefinedStrings = showNotDefinedStrings;
     }
+
+    private boolean pivotOnlySelectedColumn = false;
+
+    public boolean isPivotOnlySelectedColumn() {
+        return pivotOnlySelectedColumn;
+    }
+
+    public void setPivotOnlySelectedColumn(boolean pivotOnlySelectedColumn) {
+        this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
+    }
 }

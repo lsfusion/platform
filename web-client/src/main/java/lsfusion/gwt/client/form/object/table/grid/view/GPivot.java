@@ -65,8 +65,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private final static String defaultFontFamily = "Segoe UI";
     private final static int defaultFontSize = 9;
 
-    public GPivot(GFormController formController, GGridController gridController) {
+    private GPropertyDraw selectedProperty;
+    
+    public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty) {
         super(formController, gridController);
+        this.selectedProperty = selectedProperty;
 
         setStyleName(getDrawElement(), "pivotTable");
 
@@ -177,7 +180,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
                 aggregator.setAggregator(caption, columnAggregator);
 
-                if (property.baseType instanceof GIntegralType)
+                //if enabled pivotOnlySelectedColumn then only virtual count quantity or selected property from grid
+                if (property.baseType instanceof GIntegralType && 
+                        (!MainFrame.pivotOnlySelectedColumn || property.sID.equals("PROPERTY(count())") || property.equals(selectedProperty)))
                     aggrCaptions.add(caption);
             }
         }
