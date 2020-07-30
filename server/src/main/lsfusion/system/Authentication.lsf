@@ -1,6 +1,6 @@
 MODULE Authentication;
 
-REQUIRE System;
+REQUIRE System, Time;
 
 // ------------------------- Computers ---------------------- //
 
@@ -88,7 +88,7 @@ setSHA256Password(CustomUser customUser, STRING str)  {
     sha256Password(customUser) <- calculatedHash();
 }
 passwordResetToken = DATA STRING[100] (CustomUser);
-currUser(passResetToken) = GROUP AGGR CustomUser customUser BY passwordResetToken(customUser);
+expiryDate = DATA DATETIME (CustomUser);
 
 // tokens
 currentAuthToken = NATIVE TEXT();    
@@ -227,13 +227,14 @@ resetPassword(JSONFILE input) {
             token() <- randomUUID();
             body() <- CONCAT '', body(), '<a href="', url, token(), '"> {password.reset} - ', login(cu), '</a> <br>';
             passwordResetToken(cu) <- token();
+            expiryDate(cu) <- currentDateTime();
             user() <- cu;
         }
         IF user() THEN {
             APPLY;
             IF NOT canceled() THEN {
                 EMAIL 
-                    SUBJECT 'password reset'
+                    SUBJECT '{password.reset.email.subject} '
                     TO email(user())
                     BODY body();
                 EXPORT JSON FROM '\{success: {password.reset.email.sent}\}';  
@@ -246,7 +247,11 @@ resetPassword(JSONFILE input) {
 
 checkToken(JSONFILE input) {
     IMPORT FROM input FIELDS STRING[100] token DO {
-        IF currUser(token) THEN {
+        LOCAL user = CustomUser();
+        FOR passwordResetToken(CustomUser cu) == token DO {
+            user() <- cu;
+        }
+        IF user() AND expiryDate(user()) <= currentDateTime() THEN {
             EXPORT JSON FROM '\{success: success\}';
         } ELSE {
             EXPORT JSON FROM '\{error: {password.reset.token.invalid}\}';
@@ -256,11 +261,14 @@ checkToken(JSONFILE input) {
 
 changePassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING[100] token, STRING[100] newPassword DO {
-    LOCAL user = CustomUser();
-    user() <- currUser(token);
+        LOCAL user = CustomUser();
+        FOR passwordResetToken(CustomUser cu) == token DO {
+            user() <- cu;
+        }
         IF user() THEN {
             setSHA256Password(user(), newPassword);
             passwordResetToken(user()) <- NULL;
+            expiryDate(user()) <- NULL;
             APPLY;
         }
         IF NOT canceled() THEN {
@@ -270,6 +278,17 @@ changePassword(JSONFILE input) {
         }
     }
 } @@api @@noauth;
+
+clearPassResetToken ABSTRACT LIST ( ) ;
+clearPassResetToken () + { 
+	NEWSESSION {
+	    FOR expiryDate(CustomUser cu) <= subtractSeconds(currentDateTime(), 3600) DO {
+	        expiryDate(cu) <- NULL;
+	        passwordResetToken(cu) <- NULL;
+	    }
+        APPLY;
+	}
+}
 
 // lock
 isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
