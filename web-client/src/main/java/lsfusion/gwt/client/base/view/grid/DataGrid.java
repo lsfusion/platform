@@ -1705,4 +1705,21 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             return changeRow(rowIndex);
         }
     }
+
+    private boolean wasUnloaded;
+
+    @Override
+    protected void onUnload() {
+        wasUnloaded = true;
+        super.onUnload();
+    }
+
+    @Override
+    protected void onLoad() {
+        super.onLoad();
+        // when grid is unloaded and then loaded (when moving from one container to another in maximize / minimize tabspanel, not sure if there are other cases)
+        // scroll position changes to 0 (without any event, but that doesn't matter), and we want to keep the selected row, so we mark it as changed, and in afterUpdateDOM method it is ensured that selected cell is visible
+        if(wasUnloaded)
+            selectedRowChanged();
+    }
 }

@@ -34,11 +34,6 @@ public class GwtClientUtils {
         }
     }
 
-    public static void setAsRootPane(Widget widget) {
-        RootPanel.get().clear();
-        RootPanel.get().add(widget);
-    }
-
     public static String getPageUrlPreservingParameters(String pageUrl) {
         return getWebAppBaseURL() + pageUrl + Window.Location.getQueryString();
     }
