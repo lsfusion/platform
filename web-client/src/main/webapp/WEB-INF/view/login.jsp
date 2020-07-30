@@ -56,10 +56,16 @@
                                 <input name="submit" type="submit" class="button round blue" value="<%= ServerMessages.getString(request, "log.in") %>"/>
                                 <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
                                     <div class="errorblock round full-width-box">
-                                        <%= ServerMessages.getString(request, "login.unsuccessful") %><br/>
+                                        <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION_HEADER}">
+                                            <%= ServerMessages.getString(request, "oauth2.authorization.unavailable") %><br/>
+                                        </c:if>
+                                        <c:if test="${empty SPRING_SECURITY_LAST_EXCEPTION_HEADER}">
+                                            <%= ServerMessages.getString(request, "login.unsuccessful") %><br/>
+                                        </c:if>
                                         <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["SPRING_SECURITY_LAST_EXCEPTION"].message}
                                     </div>
                                     <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
+                                    <c:remove var="SPRING_SECURITY_LAST_EXCEPTION_HEADER" scope="session"/>
                                 </c:if>
                                 <c:if test="${not empty LAST_MESSAGE}">
                                     <div class="errorblock round full-width-box">
@@ -80,19 +86,10 @@
             <tr valign="top">
                 <td>
                     <div class="text-center">
-                        <c:if test="${empty OAUTH_EXCEPTION}">
+                        <c:if test="${empty SPRING_SECURITY_LAST_EXCEPTION}">
                             <c:forEach var="url" items="${urls}">
                                 <a href="${url.value}" class="text-center fa fa-${url.key}"></a>
                             </c:forEach>
-                        </c:if>
-
-                        <c:if test="${not empty OAUTH_EXCEPTION}">
-                            <div class="oauth-error-block round full-width-box">
-                                <%= ServerMessages.getString(request, "oauth2.authorization.unavailable") %><br/>
-                                <%= ServerMessages.getString(request, "login.caused") %>
-                                : ${sessionScope["OAUTH_EXCEPTION"].message}
-                            </div>
-                            <c:remove var="OAUTH_EXCEPTION" scope="session"/>
                         </c:if>
                     </div>
                 </td>

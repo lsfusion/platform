@@ -76,7 +76,8 @@ public class MainController {
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(), authorizationRequestBaseUri + registration.getRegistrationId()));
             model.addAttribute("urls", oauth2AuthenticationUrls);
         } catch (AuthenticationException e){
-            request.getSession(true).setAttribute("OAUTH_EXCEPTION", e);
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION_HEADER", "oauthException");
         }
 
         model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
@@ -106,7 +107,7 @@ public class MainController {
         jsonObject.put("email", email);
         user.put(jsonObject);
 
-        JSONObject jsonResponse = jsonResponse(user, request, "registerUser");
+        JSONObject jsonResponse = sendRequest(user, request, "registerUser");
         if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
             return "redirect:/registration";
@@ -126,14 +127,14 @@ public class MainController {
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
     public String processForgotPassword(@RequestParam String usernameOrEmail, HttpServletRequest request) {
-        String url = "http://" + request.getLocalAddr() + ":" + request.getServerPort() + "/changePassword?token=";
+        String url = "http://" + request.getLocalAddr() + ":" + request.getServerPort() + "/change-password?token=";
         JSONArray jsonArray = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("userNameOrEmail", usernameOrEmail);
         jsonObject.put("url", url);
         jsonArray.put(jsonObject);
 
-        JSONObject jsonResponse = jsonResponse(jsonArray, request, "resetPassword");
+        JSONObject jsonResponse = sendRequest(jsonArray, request, "resetPassword");
         if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
             return "redirect:/forgot-password";
@@ -143,24 +144,24 @@ public class MainController {
         return "redirect:/login";
     }
 
-    @RequestMapping(value = "/changePassword", method = RequestMethod.GET)
+    @RequestMapping(value = "/change-password", method = RequestMethod.GET)
     public String changePassword(ModelMap model, HttpServletRequest request, @RequestParam String token) {
         JSONArray jsonArray = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("token", token);
         jsonArray.put(jsonObject);
 
-        JSONObject jsonResponse = jsonResponse(jsonArray, request, "checkToken");
+        JSONObject jsonResponse = sendRequest(jsonArray, request, "checkToken");
         if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("error"));
         } else if (jsonResponse.has("success")){
             addStandardModelAttributes(model, request);
-            return "changePassword";
+            return "change-password";
         }
         return "redirect:/login";
     }
 
-    @RequestMapping(value = "/changePassword", method = RequestMethod.POST)
+    @RequestMapping(value = "/change-password", method = RequestMethod.POST)
     public String processChangePassword(HttpServletRequest request, @RequestParam String newPassword,
                                         @RequestParam String token) {
         JSONArray user = new JSONArray();
@@ -169,7 +170,7 @@ public class MainController {
         jsonObject.put("token", token);
         user.put(jsonObject);
 
-        JSONObject jsonResponse = jsonResponse(user, request, "changePassword");
+        JSONObject jsonResponse = sendRequest(user, request, "changePassword");
         if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("error"));
         } else if (jsonResponse.has("success")){
@@ -178,7 +179,7 @@ public class MainController {
         return "redirect:/login";
     }
 
-    private JSONObject jsonResponse(JSONArray jsonArray, HttpServletRequest request, String method){
+    private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
         FileData fileData = new FileData(new RawFileData(jsonArray.toString().getBytes(StandardCharsets.UTF_8)), "json");
         try {
             ExternalResponse externalResponse = logicsProvider.runRequest(request, new LogicsRunnable<ExternalResponse>() {

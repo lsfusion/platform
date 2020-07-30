@@ -45,22 +45,22 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
     }
 
     private Map<String, ClientRegistration> getRegistrations() {
-        if (registrations != null) {
-            return registrations;
+        if (registrations == null) {
+            HttpServletRequest request = LSFRemoteAuthenticationProvider.getHttpServletRequest();
+            List<ClientRegistration> clientRegistrations;
+            try {
+                clientRegistrations = runRequest(request, new LogicsRunnable<List<ClientRegistration>>() {
+                    @Override
+                    public List<ClientRegistration> run(LogicsSessionObject sessionObject) throws RemoteException {
+                        return getOauth2ClientCredentials(sessionObject.remoteLogics, request);
+                    }
+                });
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+            registrations = createRegistrationsMap(clientRegistrations);
         }
-        HttpServletRequest request = LSFRemoteAuthenticationProvider.getHttpServletRequest();
-        List<ClientRegistration> clientRegistrations;
-        try {
-            clientRegistrations = runRequest(request, new LogicsRunnable<List<ClientRegistration>>() {
-                @Override
-                public List<ClientRegistration> run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return getOauth2ClientCredentials(sessionObject.remoteLogics, request);
-                }
-            });
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
-        return this.registrations = createRegistrationsMap(clientRegistrations);
+        return registrations;
     }
 
     private Map<String, ClientRegistration> createRegistrationsMap(List<ClientRegistration> registrations) {
@@ -114,6 +114,6 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
         if (registrations == null || registrations.size() == 0){
             return Collections.<String, ClientRegistration>emptyMap().values().iterator();
         }
-        return this.registrations.values().iterator();
+        return registrations.values().iterator();
     }
 }

@@ -37,7 +37,7 @@
                     </div>
                     <form id="new-password-form"
                           name="setNewPassword"
-                          action="changePassword"
+                          action="change-password"
                           method="POST">
                         <fieldset>
                             <div class="text-center">
