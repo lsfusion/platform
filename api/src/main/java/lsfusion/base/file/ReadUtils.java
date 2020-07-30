@@ -3,6 +3,7 @@ package lsfusion.base.file;
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.SystemUtils;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
@@ -52,7 +53,7 @@ public abstract class ReadUtils {
                 case "http":
                 case "https":
                     copyHTTPToFile(filePath, localFile);
-                    extension = BaseUtils.getFileExtension(filePath.path);
+                    extension = readFileExtension(filePath.type + "://" + filePath.path);
                     break;
                 case "ftp":
                     copyFTPToFile(filePath.path, localFile);
@@ -97,6 +98,15 @@ public abstract class ReadUtils {
             if (localFile != null && !localFile.delete()) 
                 localFile.deleteOnExit();
         }
+    }
+
+    private static String readFileExtension(String urlString) throws IOException {
+        String fileExtension = null;
+        String contentType = new URL(urlString).openConnection().getHeaderField("Content-Type");
+        if(contentType != null) {
+            fileExtension = MIMETypeUtils.fileExtensionForMIMEType(contentType);
+        }
+        return fileExtension != null ? fileExtension : BaseUtils.getFileExtension(urlString);
     }
 
     public static String showReadFileDialog(String path) {

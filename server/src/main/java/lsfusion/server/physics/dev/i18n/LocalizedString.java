@@ -38,8 +38,8 @@ public final class LocalizedString {
     private final boolean needToBeLocalized;
     
     private boolean isFormatted;
-    private Object[] params;
-    private static Object[] NOPARAMS = new Object[]{};
+    private final Object[] params;
+    private static final Object[] NOPARAMS = new Object[]{};
     
     private LocalizedString(String source) {
         if (canBeOptimized(source)) {
@@ -87,7 +87,7 @@ public final class LocalizedString {
         String result = localizer.localize(source, locale);
         if (isFormatted) {
             // Необходимо преобразовать строку, чтобы ее можно было передать в MessageFormat
-            // Для этого мы заменяем одиночные кавычки двойными (этим мы лишаемся функциональности, позволяющей экранировать скобки кавычками)
+            // Для этого мы заменяем одиночные кавычки двумя кавычками (этим мы лишаемся функциональности, позволяющей экранировать скобки кавычками)
             // Затем экранируем кавычками все фигурные строки, которые не выглядят как {5} (число в фигурных скобках)
             result = result.replace("'", "''").replace("{", "'{'").replace("}", "'}'").replaceAll("'\\{'(\\d+)'\\}'", "{$1}");
             return MessageFormat.format(result, params);
@@ -228,7 +228,7 @@ public final class LocalizedString {
         return Instancer.instance.createFormatted(source, ListFact.toList(params));
     }
     
-    private static boolean canBeOptimized(String s) {
+    public static boolean canBeOptimized(String s) {
         for (int i = 0; i < s.length(); ++i) {
             char ch = s.charAt(i);
             if (ch == OPEN_CH || ch == CLOSE_CH) {

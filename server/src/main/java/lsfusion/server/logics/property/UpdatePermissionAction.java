@@ -34,18 +34,25 @@ public class UpdatePermissionAction extends InternalAction {
 
         Long userRole = (Long) context.getKeyValue(userRoleInterface).getValue();
         String actionOrProperty = (String) context.getKeyValue(canonicalNameActionOrPropertyInterface).getValue();
-        String permission = (String) context.getKeyValue(staticNamePermissionInterface).getValue();
-        String type = (String) context.getKeyValue(typeInterface).getValue();
-        SecurityManager securityManager = context.getLogicsInstance().getSecurityManager();
-        RoleSecurityPolicy sp = securityManager.cachedSecurityPolicies.get(userRole);
-        if (sp != null) {
-            ElementSecurityPolicy esp = type.equals("view") ? sp.propertyView : type.equals("change") ? sp.propertyChange : type.equals("editObjects") ? sp.propertyEditObjects : null;
-            if(esp != null) {
-                LAP property = context.getBL().findPropertyElseAction(actionOrProperty);
-                if(property != null) {
-                    esp.setPermission(property.getActionOrProperty(), securityManager.getPermissionValue(permission));
+        if(userRole != null && actionOrProperty != null) {
+            String permission = (String) context.getKeyValue(staticNamePermissionInterface).getValue();
+            String type = (String) context.getKeyValue(typeInterface).getValue();
+            SecurityManager securityManager = context.getLogicsInstance().getSecurityManager();
+            RoleSecurityPolicy sp = securityManager.cachedSecurityPolicies.get(userRole);
+            if (sp != null) {
+                ElementSecurityPolicy esp = type.equals("view") ? sp.propertyView : type.equals("change") ? sp.propertyChange : type.equals("editObjects") ? sp.propertyEditObjects : null;
+                if (esp != null) {
+                    LAP property = context.getBL().findPropertyElseAction(actionOrProperty);
+                    if (property != null) {
+                        esp.setPermission(property.getActionOrProperty(), securityManager.getPermissionValue(permission));
+                    }
                 }
             }
         }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }

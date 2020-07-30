@@ -685,18 +685,25 @@ callWithJQuery ($) ->
             valueHeight: null
             componentHeightString: null
             cellHorizontalPadding: null
+            attach : null
+            getDisplayColor: null
 
-        localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings)
+        localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings, columnAttr: inputOpts.columnAttributeName)
         localeDefaults =
             rendererOptions: {
                 localeStrings
                 locale
             }
             localeStrings: localeStrings
+            
+        plotlyDefaults = 
+            rendererOptions:
+                plotlyConfig:
+                    toImageButtonOptions: inputOpts.toImageButtonOptions
 
         existingOpts = @data "pivotUIOptions"
         if not existingOpts? or overwrite
-            opts = $.extend(true, {}, localeDefaults, $.extend({}, defaults, inputOpts))
+            opts = $.extend(true, {}, localeDefaults, $.extend({}, defaults, plotlyDefaults, inputOpts))
         else
             opts = existingOpts
 
@@ -721,7 +728,8 @@ callWithJQuery ($) ->
                 recordsProcessed++
 
             #start building the output
-            uiTable = $("<table>", "class": "pvtUi").attr("cellpadding", 5)
+            pvtUiContainer = $("<div>", "class": "pvtUiContainer")
+            uiTable = $("<table>", "class": "pvtUi").attr("cellpadding", 5).appendTo(pvtUiContainer)
 
             #renderer control
             rendererControl = $("<td>").addClass("pvtUiCell")
@@ -887,7 +895,8 @@ callWithJQuery ($) ->
                     attrElem.append(triangleLink)
 
                     attrElemText.addClass('pvtFilteredAttribute') if hasExcludedItem
-                    unusedDiv.append(listItem).append(valueList)
+                    unusedDiv.append(listItem)
+                    pvtUiContainer.append(valueList)
 
             tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable)
 
@@ -904,13 +913,6 @@ callWithJQuery ($) ->
                 value_a_to_z: {rowSymbol: "&darr;", colSymbol: "&rarr;", next: "value_z_to_a"}
                 value_z_to_a: {rowSymbol: "&uarr;", colSymbol: "&larr;", next: "key_a_to_z"}
 
-            rowOrderArrow = $("<a>", role: "button").addClass("pvtRowOrder")
-                .data("order", opts.rowOrder).html(ordering[opts.rowOrder].rowSymbol)
-                .bind "click", ->
-                    $(this).data("order", ordering[$(this).data("order")].next)
-                    $(this).html(ordering[$(this).data("order")].rowSymbol)
-                    refresh()
-
             colOrderArrow = $("<a>", role: "button").addClass("pvtColOrder")
                 .data("order", opts.colOrder).html(ordering[opts.colOrder].colSymbol)
                 .bind "click", ->
@@ -921,7 +923,6 @@ callWithJQuery ($) ->
             aggrSelector = $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1)
             $("<div>").appendTo(aggrSelector)
               .append(aggregator)
-              .append(rowOrderArrow)
               .append(colOrderArrow)
               .append($("<br>"))
 
@@ -976,7 +977,7 @@ callWithJQuery ($) ->
                 uiTable.prepend $("<tr>").append(rendererControl).append(unused)
 
             #render the UI in its default state
-            @html uiTable
+            @html pvtUiContainer
 
             #set up the UI initial state as requested by moving elements around
 
@@ -1086,6 +1087,7 @@ callWithJQuery ($) ->
                     splitPositions: opts.splitRows
                 subopts.rendererOptions.colSubtotalDisplay = 
                     splitPositions: opts.splitCols
+                subopts.rendererOptions.getDisplayColor = opts.getDisplayColor
 
                 subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length == 1
 
@@ -1119,11 +1121,18 @@ callWithJQuery ($) ->
                         i++
                     initialRender = false
 
+                columnAttr = subopts.rendererOptions.localeStrings.columnAttr
+                colIndex = subopts.cols.indexOf(columnAttr)
+                rowIndex = subopts.rows.indexOf(columnAttr)
+
+                subopts.rendererOptions.hideRowsTotalsCol = colIndex >= 0 and opts.splitCols[0] >= colIndex
+                subopts.rendererOptions.hideColsTotalsRow = rowIndex >= 0 and opts.splitRows[0] >= rowIndex
+
                 subopts.aggregatorName = aggregator.val()
                 subopts.vals = vals
                 subopts.aggregator = opts.aggregators[aggregator.val()](vals)
                 subopts.renderer = opts.renderers[renderer.val()]
-                subopts.rowOrder = rowOrderArrow.data("order")
+                subopts.rowOrder = "key_a_to_z"
                 subopts.colOrder = colOrderArrow.data("order")
                 #construct filter here
                 exclusions = {}
@@ -1165,24 +1174,30 @@ callWithJQuery ($) ->
                 
                 opts.sortCols = pivotUIOptions.sortCols
                 subopts.sortCols = opts.sortCols
-                
+
+                #plotly needs explicit sizes, and we have to do it during refresh, since draw element may not added to the dom yet
+                drawSize = opts.attach()
+                subopts.rendererOptions.plotly = $.extend {}, subopts.rendererOptions.plotly, drawSize
+
                 pivotScrollDiv.pivot(materializedInput,subopts,locale)
 
                 opts.afterRefresh() if opts.afterRefresh?
-
+                
                 @data "pivotUIOptions", pivotUIOptions
 
                 # if requested make sure unused columns are in alphabetical order
-                if opts.autoSortUnusedAttrs
+                if opts.autoSortUnusedAttrs 
                     unusedAttrsContainer = @find("td.pvtUnused.pvtAxisContainer")
                     $(unusedAttrsContainer).children("li")
                         .sort((a, b) => naturalSort($(a).text(), $(b).text()))
                         .appendTo unusedAttrsContainer
 
-                pivotTable.css("opacity", "") # may affect z-index
+            # we'll assume that GPivot will itself manage pivotTable state relevance
+#                pivotTable.css("opacity", "") # may affect z-index
 
             refresh = =>
-                pivotTable.css("opacity", 0.5)
+                # we'll assume that GPivot will itself manage pivotTable state relevance
+#                pivotTable.css("opacity", 0.5)
                 setTimeout refreshDelayed, 10
 
             #the very first refresh will actually display the table
@@ -1216,19 +1231,24 @@ callWithJQuery ($) ->
             min = Math.min(values...)
             max = Math.max(values...)
             return (x) ->
-                nonRed = 255 - Math.round 255*(x-min)/(max-min)
-                return "rgb(255,#{nonRed},#{nonRed})"
+                nonRed = if max == min then 0 else 255 - Math.round 255*(x-min)/(max-min)
+                return Array.from([255, nonRed, nonRed])
 
         heatmapper = (scope) =>
             forEachCell = (f) =>
                 @find(scope).each ->
                     x = $(this).data("value")
+                    if !x
+                        x = 0
                     f(x, $(this)) if x? and isFinite(x)
 
             values = []
             forEachCell (x) -> values.push x
             colorScale = colorScaleGenerator(values)
-            forEachCell (x, elem) -> elem.css "background-color", colorScale(x)
+            forEachCell (x, elem) -> 
+                heatColor = colorScale(x) 
+                elem.css "background-color", opts.getDisplayColor(heatColor)
+                elem[0].setAttribute("data-heat-color", "#{heatColor[0]},#{heatColor[1]},#{heatColor[2]}")
 
         switch scope
             when "heatmap"    then heatmapper ".pvtVal"

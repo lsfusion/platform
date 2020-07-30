@@ -1,13 +1,12 @@
 package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 
 import java.util.*;
 
-public abstract class WindowsController extends SplitLayoutPanel {
+public abstract class WindowsController extends CustomSplitLayoutPanel {
     private Map<GAbstractWindow, WindowElement> windowElementsMapping = new HashMap<>();
     private SplitWindowElement rootElement;
     private Widget rootView;

@@ -9,14 +9,6 @@ import java.time.LocalTime;
 
 public class DateTimeConverter {
 
-    public static LocalDate getLocalDate(Object value) {
-        if (value instanceof LocalDate) {
-            return (LocalDate) value;
-        } else {
-            return sqlDateToLocalDate((Date) value);
-        }
-    }
-
     public static LocalDate getWriteDate(Object value) {
         if (value instanceof LocalDate) {
             return (LocalDate) value;
@@ -25,27 +17,11 @@ public class DateTimeConverter {
         }
     }
 
-    public static LocalTime getLocalTime(Object value) {
-        if (value instanceof LocalTime) {
-            return (LocalTime) value;
-        } else {
-            return sqlTimeToLocalTime((Time) value);
-        }
-    }
-
     public static LocalTime getWriteTime(Object value) {
         if (value instanceof LocalTime) {
             return (LocalTime) value;
         } else {
             return sqlTimeToLocalTime((Time) value);
-        }
-    }
-
-    public static LocalDateTime getLocalDateTime(Object value) {
-        if (value instanceof LocalDateTime) {
-            return (LocalDateTime) value;
-        } else {
-            return sqlTimestampToLocalDateTime((Timestamp) value);
         }
     }
 

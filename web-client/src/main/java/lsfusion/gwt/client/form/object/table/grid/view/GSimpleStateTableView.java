@@ -2,14 +2,9 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayNumber;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.DivWidget;
-import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
@@ -17,6 +12,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.io.Serializable;
 import java.util.*;
@@ -40,12 +36,8 @@ public abstract class GSimpleStateTableView extends GStateTableView {
     protected abstract void render(Element element, com.google.gwt.dom.client.Element recordElement, JsArray<JavaScriptObject> list);
 
     @Override
-    protected void updateRendererState(boolean set) {
-        com.google.gwt.dom.client.Element element = getElement();
-        if(set)
-            element.getStyle().setProperty("opacity", "0.5");
-        else
-            element.getStyle().setProperty("opacity", "");
+    protected Element getRendererAreaElement() {
+        return getElement();
     }
 
     // we need key / value view since pivot
@@ -67,7 +59,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         for (int i = 0; i < properties.size(); i++) {
             GPropertyDraw property = properties.get(i);
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
-            Map<GGroupObjectValue, Object> propValues = values.get(i);
+            NativeHashMap<GGroupObjectValue, Object> propValues = values.get(i);
 
             for (int j = 0; j < propColumnKeys.size(); j++) {
                 GGroupObjectValue columnKey = propColumnKeys.get(j);
@@ -136,9 +128,5 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             map.put(toObject(getValue(object, keysFieldName)), object);
         }
         return map;        
-    }
-
-    public boolean isGroup() {
-        return false;
     }
 }

@@ -1,19 +1,13 @@
 package lsfusion.gwt.client.form.property.table.view;
 
 import com.google.gwt.dom.client.*;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
-
-import java.util.List;
-
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
@@ -25,7 +19,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private final String lastColumnStyle;
 
     private int cellHeight = 16;
-    private boolean updateCellHeight;
 
     public GPropertyTableBuilder(DataGrid table) {
         super(table);
@@ -38,15 +31,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         lastColumnStyle = " " + style.dataGridLastCell();
     }
 
-    @Override
-    public void update(TableSectionElement tbodyElement, List<T> values, int minRenderedRow, int renderedRowCount, boolean columnsChanged) {
-        super.update(tbodyElement, values, minRenderedRow, renderedRowCount, columnsChanged);
-        updateCellHeight = false;
+    public boolean setCellHeight(int cellHeight) {
+        boolean cellHeightChanged = this.cellHeight != cellHeight;
+        this.cellHeight = cellHeight;
+        return cellHeightChanged;
     }
 
-    public void setCellHeight(int cellHeight) {
-        updateCellHeight = true;
-        this.cellHeight = cellHeight;
+    public int getCellHeight() {
+        return cellHeight;
     }
 
     @Override
@@ -69,51 +61,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 tdClasses.append(lastColumnStyle);
             }
 
-            // Build the cell.
-            HasHorizontalAlignment.HorizontalAlignmentConstant hAlign = column.getHorizontalAlignment();
-            HasVerticalAlignment.VerticalAlignmentConstant vAlign = column.getVerticalAlignment();
-
             TableCellElement td = tr.insertCell(columnIndex);
             td.setClassName(tdClasses.toString());
-            if (hAlign != null) {
-                td.setAlign(hAlign.getTextAlignString());
-            }
-            if (vAlign != null) {
-                td.setVAlign(vAlign.getVerticalAlignString());
-            }
 
-            updateTD(rowIndex, rowValue, td, columnIndex, true);
+            renderTD(td, cellHeight, false);
 
-            // Add the inner div.
+            renderCell(td, new Cell(rowIndex, columnIndex, column, rowValue), column);
 
-            DivElement div = createCellInnerDiv();
-
-            // Render the cell into the div.
-            renderCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
-
-            td.appendChild(div);
-
-            if (cellTable instanceof GSinglePropertyTable) {
-                GPropertyDraw property = ((GSinglePropertyTable) cellTable).getProperty(column);
-                if (property.notNull) {
-                    DivElement changeEventSign = Document.get().createDivElement();
-                    changeEventSign.addClassName("rightBottomCornerTriangle");
-                    changeEventSign.addClassName("notNullCornerTriangle");
-                    td.appendChild(changeEventSign);
-                } else if (property.hasChangeAction) {
-                    DivElement changeEventSign = Document.get().createDivElement();
-                    changeEventSign.addClassName("rightBottomCornerTriangle");
-                    changeEventSign.addClassName("changeActionCornerTriangle");
-                    td.appendChild(changeEventSign);
-                }
-            }
+            updateTD(rowIndex, rowValue, td, columnIndex);
         }
-    }
-
-    protected DivElement createCellInnerDiv() {
-        DivElement div = Document.get().createDivElement();
-        div.getStyle().setHeight(cellHeight, Style.Unit.PX);
-        return div;
     }
 
     @Override
@@ -124,16 +80,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         if (columnsToRedraw == null) {
             if (columnCount > 0) {
-                //td.nextSibling is faster than cells[index]
+                //td.nextSibling is a lot faster than cells[index]
                 //http://jsperf.com/nextsibling-vs-childnodes
                 TableCellElement td = tr.getFirstChild().cast();
-                updateCellImpl(rowIndex, rowValue, td, 0);
-
-                int columnIndex = 1;
-                while (columnIndex < columnCount) {
-                    td = td.getNextSibling().cast();
+                int columnIndex = 0;
+                while (true) {
                     updateCellImpl(rowIndex, rowValue, td, columnIndex);
-                    ++columnIndex;
+                    if(++columnIndex >= columnCount)
+                        break;
+                    td = td.getNextSibling().cast();
                 }
             }
         } else {
@@ -148,51 +103,43 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private void updateCellImpl(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
         Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-        updateTD(rowIndex, rowValue, td, columnIndex, updateCellHeight);
+        updateCell(td, new Cell(rowIndex, columnIndex, column, rowValue), column);
 
-        DivElement div = td.getFirstChild().cast();
-
-        // Render the cell into the div.
-        updateCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
+        updateTD(rowIndex, rowValue, td, columnIndex);
     }
 
     // need this for mixing color
     public static String BKCOLOR = "lsfusion-bkcolor";
 
-    protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
-        if (updateCellHeight) {
-            renderTD(td, cellHeight);
-
-            Element divElement = td.getFirstChildElement();
-            if (divElement != null) {
-                divElement.getStyle().setHeight(cellHeight, Style.Unit.PX);
-            }
-        }
-
+    protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
-        if (backgroundColor != null) {
-            td.setAttribute(BKCOLOR, backgroundColor);
-            td.getStyle().setBackgroundColor(getDisplayColor(backgroundColor));
-        } else {
-            td.removeAttribute(BKCOLOR);
-            td.getStyle().clearBackgroundColor();
-        }
+        td.setPropertyString(BKCOLOR, backgroundColor);
+        GFormController.setBackgroundColor(td, backgroundColor, true);
 
         String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
-        if (foregroundColor != null) {
-            td.getStyle().setColor(getDisplayColor(foregroundColor));
-        } else {
-            td.getStyle().clearColor();
-        }
+        GFormController.setForegroundColor(td, foregroundColor, true);
     }
 
     public static void renderTD(Element td, int height) {
-        setRowHeight(td, height);
-        // setting line height to height it's the easiest way to align text to the center vertically, however it works only for single lines (which is ok for row data)
-        td.getStyle().setLineHeight(height, Style.Unit.PX);
+        renderTD(td, height, true);
     }
 
-    public static void setRowHeight(Element td, int height) {
+    public static void renderTD(Element td, int height, boolean tableToExcel) {
+        setRowHeight(td, height, tableToExcel);
+    }
+
+    // setting line height to height it's the easiest way to align text to the center vertically, however it works only for single lines (which is ok for row data)
+    public static void setLineHeight(Element td, int height) {
+        td.getStyle().setLineHeight(height, Style.Unit.PX);
+    }
+    public static void clearLineHeight(Element td) {
+        td.getStyle().clearLineHeight();
+    }
+
+    public static void setRowHeight(Element td, int height, boolean tableToExcel) {
+        if(tableToExcel) {
+            GPivot.setTableToExcelRowHeight(td, height);
+        }
         td.getStyle().setHeight(height, Style.Unit.PX);
     }
 

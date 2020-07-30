@@ -43,11 +43,4 @@ public interface HeaderBuilder<T> {
      */
     Header<?> getHeader(Element elem);
 
-    /**
-     * Check if an element contains a {@link Header}. This method should return
-     * false if and only if {@link #getHeader(Element)} would return null.
-     *
-     * @param elem the element of interest
-     */
-    boolean isHeader(Element elem);
 }

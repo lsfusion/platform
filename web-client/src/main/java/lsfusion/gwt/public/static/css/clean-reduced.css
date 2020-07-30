@@ -61,7 +61,10 @@ select:focus {
 input, textarea {
     background-color: var(--component-background-color);
     color: var(--text-color);
-    border-radius: var(--textfield-border-radius);;
+    /*border-radius: var(--textfield-border-radius);;*/
+
+    border-width: 0;
+    /*outline: 0;*/
 }
 
 /**
@@ -76,39 +79,31 @@ input, textarea {
     zoom: 1;
 }
 
-.gwt-Button, button {
-    margin: 0;
+button {
+    /*margin: 0;*/
     padding: 2px 14px;
-    text-decoration: none;
-    cursor: pointer;
-    font-size: small;
-    background: var(--component-background-color);
-    border: 1px solid var(--component-border-color);
-    color: var(--text-color);
-    border-radius: var(--button-border-radius);;
+    /*text-decoration: none;*/
+    /*font-size: small;*/
 }
+.gwt-Button, button {
+    cursor: pointer;
+    color: var(--text-color);
+}
+
 .gwt-Button:hover, button:hover {
     background-color: var(--button-hover-background-color);
-    border: 1px solid var(--component-hover-border-color);
 }
-.gwt-Button:focus, button:focus { /* should come after ':hover' */
-    background-color: var(--selection-color);
-    border: 1px solid var(--focus-color);
-    outline: none;
-}
-.gwt-Button:active, button:active { /* should come after ':hover' and ':focus' */ 
+
+.gwt-Button:active, button:active { /* should come after ':hover' and ':focus' */
     background-color: var(--button-active-background-color);
 }
-.gwt-Button[disabled], button[disabled] {
+.gwt-Button-disabled, button[disabled] {
     cursor: default;
     color: var(--disabled-text-color);
 }
-.gwt-Button[disabled]:hover, button[disabled]:hover {
+.gwt-Button-disabled:hover, button[disabled]:hover {
     border: 1px outset var(--button-disabled-hover-border-color);
     background: var(--background-color);
-}
-.activeButton {
-    background-color: var(--button-active-background-color);
 }
 
 .gwt-CheckBox {
@@ -912,16 +907,18 @@ input, textarea {
 }
 
 .gwt-TabBar {
-    padding-top: 5px;
+    padding-top: 2px;
 }
 .gwt-TabBar .gwt-TabBarFirst {
-    width: 5px;  /* first tab distance from the left */
+    width: 3px;  /* first tab distance from the left */
+    height: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .gwt-TabBar .gwt-TabBarRest {
+    height: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .gwt-TabBar .gwt-TabBarItem {
-    margin-left: 4px;
-    padding: 0 12px;
+    margin-left: 3px;
+    padding: 0 10px;
     cursor: pointer;
     cursor: hand;
     font-weight: normal;

@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
-import com.google.gwt.event.logical.shared.*;
+import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.DOM;
@@ -13,8 +13,10 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.view.StyleDefaults;
 
+import java.util.function.Consumer;
+
 /** based on from com.google.gwt.user.client.ui.TabBar */
-public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, TabBar {
+public class FlexTabBar extends Composite implements TabBar {
     private static final String STYLENAME_DEFAULT = "gwt-TabBarItem";
 
     public interface Tab extends HasAllKeyHandlers, HasClickHandlers {
@@ -24,13 +26,21 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
 
     private Widget selectedTab;
 
-    public FlexTabBar() {
-        initWidget(panel);
+    public FlexTabBar(Widget extraTabWidget) {
+        if (extraTabWidget == null) {
+            initWidget(panel);
+        } else {
+            FlexPanel tabBarContainer = new FlexPanel();
+            tabBarContainer.add(panel, GFlexAlignment.START, 1);
+            panel.getElement().getStyle().setProperty("flexShrink", "1");
+            tabBarContainer.add(extraTabWidget);
+            initWidget(tabBarContainer);
+        }
 
         sinkEvents(Event.ONMOUSEDOWN);
 
         setStyleName("gwt-TabBar");
-        getElement().getStyle().setProperty("flexWrap", "wrap");
+        panel.getElement().getStyle().setProperty("flexWrap", "wrap");
 
         Label first = new Label();
         Label rest = new Label();
@@ -48,14 +58,14 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
         panel.add(rest, GFlexAlignment.STRETCH, 1);
     }
 
-    @Override
-    public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> handler) {
-        return addHandler(handler, BeforeSelectionEvent.getType());
+    private Consumer<Integer> beforeSelectionHandler;
+    public void setBeforeSelectionHandler(Consumer<Integer> handler) {
+        this.beforeSelectionHandler = handler;
     }
 
-    @Override
-    public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
-        return addHandler(handler, SelectionEvent.getType());
+    private Consumer<Integer> selectionHandler;
+    public void setSelectionHandler(Consumer<Integer> handler) {
+        this.selectionHandler = handler;
     }
 
     public int getSelectedTab() {
@@ -96,26 +106,9 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
      *         is denied by the {@link BeforeSelectionHandler}.
      */
     public boolean selectTab(int index) {
-        return selectTab(index, true);
-    }
-
-    /**
-     * Programmatically selects the specified tab. Use index -1 to specify that no
-     * tab should be selected.
-     * @param index      the index of the tab to be selected
-     * @param fireEvents true to fire events, false not to
-     * @return <code>true</code> if successful, <code>false</code> if the change
-     *         is denied by the {@link BeforeSelectionHandler}.
-     */
-    public boolean selectTab(int index, boolean fireEvents) {
         checkTabIndex(index);
 
-        if (fireEvents) {
-            BeforeSelectionEvent<?> event = BeforeSelectionEvent.fire(this, index);
-            if (event != null && event.isCanceled()) {
-                return false;
-            }
-        }
+        beforeSelectionHandler.accept(index);
 
         // Check for -1.
         setSelectionStyle(selectedTab, false);
@@ -126,9 +119,9 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
 
         selectedTab = panel.getWidget(index + 1);
         setSelectionStyle(selectedTab, true);
-        if (fireEvents) {
-            SelectionEvent.fire(this, index);
-        }
+
+        selectionHandler.accept(index);
+
         return true;
     }
 

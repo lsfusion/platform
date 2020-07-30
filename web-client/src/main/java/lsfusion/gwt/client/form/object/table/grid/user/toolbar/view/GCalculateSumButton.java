@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -21,7 +22,7 @@ public abstract class GCalculateSumButton extends GToolbarButton {
     }
 
     public void showPopup(Number result, GPropertyDraw property) {
-        PopupPanel popup = new PopupPanel(true, false);
+        PopupDialogPanel popup = new PopupDialogPanel();
         popup.addStyleName("popup");
 
         ResizableHorizontalPanel panel = new ResizableHorizontalPanel();

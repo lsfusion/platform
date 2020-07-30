@@ -288,11 +288,10 @@
             <artifactId>tess4j</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!--need to print pdf files, already included in tess4j, really need only in desktop-client-->
+        <!--need to print pdf files-->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <scope>provided</scope>
         </dependency>
         <!--connection with fax-->
         <dependency>

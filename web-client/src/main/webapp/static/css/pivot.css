@@ -18,6 +18,11 @@
     width: 100%;
 }
 
+.pvtUiContainer {
+    height: 100%;
+    width: 100%;
+}
+
 .pvtUiCellVDiv {
     height: 100%;
     overflow: hidden auto;
@@ -67,6 +72,9 @@ table.pvtTable thead tr th {
 table.pvtTable tbody tr th,
 table.pvtTable thead tr th {
     color: var(--text-color);
+}
+
+table.pvtTable thead tr th {
     background-color: var(--background-color);
 }
 
@@ -215,10 +223,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     padding: 2px;
 }
 
-.paxis li div.pvtAttr {
-    background-color: var(--selection-color);
-}
-
 .pvtRowsTable {
     border-spacing: 0;
     /*to stretch last empty paxis*/
@@ -284,7 +288,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .pvtFilterBox {
-    z-index: auto;
+    cursor: default;
     width: 300px;
     border: 1px solid var(--component-border-color);
     background-color: var(--background-color);

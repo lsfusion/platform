@@ -1,19 +1,19 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 
 public class GPanelController {
 
     private final GFormController form;
 
-    private final Map<GPropertyDraw, GPropertyPanelController> propertyControllers = new HashMap<>();
+    private final NativeSIDMap<GPropertyDraw, GPropertyPanelController> propertyControllers = new NativeSIDMap<>();
 
     private Object rowBackground;
     private Object rowForeground;
@@ -26,7 +26,7 @@ public class GPanelController {
         return form.formLayout;
     }
 
-    public void updateProperty(GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values) {
+    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
         GPropertyPanelController propertyController = propertyControllers.get(property);
         if(!updateKeys) {
             if (propertyController == null) {
@@ -47,22 +47,18 @@ public class GPanelController {
     }
 
     public void update() {
-        for (GPropertyPanelController propController : propertyControllers.values()) {
-            propController.update();
-        }
+        propertyControllers.foreachValue(GPropertyPanelController::update);
     }
 
     public boolean isEmpty() {
-        return propertyControllers.size() == 0;
+        return propertyControllers.isEmpty();
     }
 
     private boolean visible = true;
     public void setVisible(boolean visible) {
         if (this.visible != visible) {
             this.visible = visible;
-            for (GPropertyPanelController propertyController : propertyControllers.values()) {
-                propertyController.getView().setVisible(visible);
-            }
+            propertyControllers.foreachValue(propertyController -> propertyController.getView().setVisible(visible));
         }
     }
 
@@ -78,23 +74,23 @@ public class GPanelController {
         rowForeground = color;
     }
 
-    public void updateCellBackgroundValues(GPropertyDraw property, Map<GGroupObjectValue, Object> cellBackgroundValues) {
+    public void updateCellBackgroundValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues) {
         propertyControllers.get(property).setCellBackgroundValues(cellBackgroundValues);
     }
 
-    public void updateCellForegroundValues(GPropertyDraw property, Map<GGroupObjectValue, Object> cellForegroundValues) {
+    public void updateCellForegroundValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> cellForegroundValues) {
         propertyControllers.get(property).setCellForegroundValues(cellForegroundValues);
     }
 
-    public void updatePropertyCaptions(GPropertyDraw property, Map<GGroupObjectValue, Object> propertyCaptions) {
+    public void updatePropertyCaptions(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propertyCaptions) {
         propertyControllers.get(property).setPropertyCaptions(propertyCaptions);
     }
 
-    public void updateShowIfValues(GPropertyDraw property, Map<GGroupObjectValue, Object> showIfs) {
+    public void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> showIfs) {
         propertyControllers.get(property).setShowIfs(showIfs);
     }
 
-    public void updateReadOnlyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> readOnlyValues) {
+    public void updateReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> readOnlyValues) {
         propertyControllers.get(property).setReadOnlyValues(readOnlyValues);
     }
 

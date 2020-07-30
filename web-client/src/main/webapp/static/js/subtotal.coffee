@@ -58,8 +58,8 @@ callWithJQuery ($) ->
 
                 v = (r,c) => @getAggregator(r,c).value()
                 switch @colOrder
-                    when "value_a_to_z" then @colKeys.sort (a,b) =>  naturalSort v([],a), v([],b)
-                    when "value_z_to_a" then @colKeys.sort (a,b) => -naturalSort v([],a), v([],b)
+                    when "value_a_to_z" then @colKeys.sort (a,b) =>  $.pivotUtilities.naturalSort v([],a), v([],b)
+                    when "value_z_to_a" then @colKeys.sort (a,b) => -$.pivotUtilities.naturalSort v([],a), v([],b)
                     else                     @colKeys.sort @arrSort(@colAttrs)
 
         rowAttrsSortPredicate: () =>
@@ -188,6 +188,9 @@ callWithJQuery ($) ->
         rowArrowsLevelPadding = 10
         
         hideColAxisHeadersColumn = opts.hideColAxisHeadersColumn ? false
+        hideColsTotalRow = opts.hideColsTotalsRow ? false
+        hideRowsTotalsCol = opts.hideRowsTotalsCol ? false
+        
         emptyTopAttrTH = null
         
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
@@ -526,9 +529,9 @@ callWithJQuery ($) ->
                     ah.tr = tr
                     groupLen = rowGroups[curGroup].length   
                     if groupLen < longestRowGroupLength
-                        tr.appendChild createElement "th", null, {colspan: longestRowGroupLength - groupLen}       
+                        tr.appendChild createElement "th", "pvtEmptyHeader", {colspan: longestRowGroupLength - groupLen}
                 else if row == 0 and longestRowGroupLength > 0
-                    tr.appendChild createElement "th", null, {colspan: longestRowGroupLength + (if arrowColumnIsNeeded() then 1 else 0), rowspan: rowsNumber - rowGroupsNumber}        
+                    tr.appendChild createElement "th", "pvtEmptyHeader", {colspan: longestRowGroupLength + (if arrowColumnIsNeeded() then 1 else 0), rowspan: rowsNumber - rowGroupsNumber}
 
                 if row + colAttrs.length >= rowsNumber
                     curCol = row - (rowsNumber - colAttrs.length)
@@ -537,7 +540,7 @@ callWithJQuery ($) ->
                     tr.appendChild ah.th if not hideColAxisHeadersColumn
                     ah.tr = tr
                 else if row == 0 and colAttrs.length > 0 and not hideColAxisHeadersColumn
-                    tr.appendChild createElement "th", null, {rowspan: rowsNumber - colAttrs.length}      
+                    tr.appendChild createElement "th", "pvtEmptyHeader", {rowspan: rowsNumber - colAttrs.length}
 
             return [colAxisHeaders, rowAxisHeaders, trs]
 
@@ -579,7 +582,7 @@ callWithJQuery ($) ->
                         h.onClick axisHeaders, h, opts.colSubtotalDisplay 
                 h.sTh = createColAttrHeaderTH h.key, true, "pvtColLabelFiller #{classColShow} col#{h.row} colcol#{h.col} #{classColExpanded}", "", undefined, colsData, 
                     "data-colnode": h.node
-                    "rowspan":  colAttrs.length-h.col
+                    "rowspan":  colAttrs.length - h.col - 1
                 replaceClass h.sTh, classColShow, classColHide if opts.colSubtotalDisplay.hideOnExpand
                 h[h.children[0]].tr.appendChild h.sTh
 
@@ -697,22 +700,26 @@ callWithJQuery ($) ->
 
                     tr.appendChild td
 
-                    
-                # buildRowTotal
-                totalAggregator = rowTotals[rh.flatKey]
-                val = totalAggregator.value()
-                td = createValueTD val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
-                    "data-value": val
-                    "data-row": "row#{rh.row}"
-                    "data-rowcol": "col#{rh.col}"
-                    "data-rownode": rh.node,
-                    getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
-                tr.appendChild td
+        
+                if not hideRowsTotalsCol            
+                    # buildRowTotal
+                    totalAggregator = rowTotals[rh.flatKey]
+                    val = totalAggregator.value()
+                    td = createValueTD val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
+                        "data-value": val
+                        "data-row": "row#{rh.row}"
+                        "data-rowcol": "col#{rh.col}"
+                        "data-rownode": rh.node,
+                        getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
+                    tr.appendChild td
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
-            colspan = rowHeadersColumns + (if colAttrs.length == 0 or hideColAxisHeadersColumn then 0 else 1) + (if arrowColumnIsNeeded() then 1 else 0)
+            colspan = rowHeadersColumns + (if colAttrs.length == 0 or hideColAxisHeadersColumn then 0 else 1) 
             if colspan > 0
+                if arrowColumnIsNeeded()
+                    arrowTh = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", true, undefined, []
+                    tr.appendChild arrowTh
                 th = createRowAttrHeaderTH [], undefined, "pvtTotalLabel colTotal", "", false, undefined, [], {colspan: colspan}
                 tr.appendChild th
             return tr
@@ -741,7 +748,6 @@ callWithJQuery ($) ->
                 {"data-value": val},
                 getTableEventHandlers val, [], [], rowAttrs, colAttrs, opts
             tr.appendChild td
-            tbody.appendChild tr
 
         collapseColAxisHeaders = (axisHeaders, col, opts) ->
             for i in [col..axisHeaders.ah.length-2]
@@ -757,7 +763,7 @@ callWithJQuery ($) ->
                 ah = axisHeaders.ah[i]
                 for th in ah.ths
                     replaceClass th, classExpanded, classCollapsed
-                renderRowAxisHeader ah.arrowTh, "", ah.text, true, false      
+                renderRowAxisHeader ah.arrowTh, "", ah.values[0], true, false      
                 ah.clickStatus = clickStatusCollapsed
                 ah.onClick = expandAxis
 
@@ -779,7 +785,7 @@ callWithJQuery ($) ->
             else if ah.expandedCount is ah.expandables
                 for th in ah.ths
                     replaceClass th, classCollapsed, classExpanded
-                renderRowAxisHeader ah.arrowTh, "", ah.text, true, true
+                renderRowAxisHeader ah.arrowTh, "", ah.values[0], true, true
                 ah.clickStatus = clickStatusExpanded
                 ah.onClick = collapseRowAxis
 
@@ -1096,10 +1102,12 @@ callWithJQuery ($) ->
                         buildColHeader colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts, colsData 
                         overallSpan += colKeyHeaders[chKey].th.colSpan
 
-                buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length, colsData
+                if not hideRowsTotalsCol        
+                    buildRowTotalsHeader colAxisHeaders.ah[0].tr, colAttrs.length, colsData
                 rowAttrHeadersCount = rowGroups.length
                 if rowAttrHeadersCount > colAttrs.length
-                    emptyTopAttrTH = createElement "th", null, {colspan: overallSpan + 1, rowspan: rowAttrHeadersCount - colAttrs.length}
+                    colspan = overallSpan + (if hideRowsTotalsCol then 0 else 1)
+                    emptyTopAttrTH = createElement "th", "pvtEmptyHeader", {colspan: colspan, rowspan: rowAttrHeadersCount - colAttrs.length}
                     rowAxisHeaders.ah[0].tr.appendChild emptyTopAttrTH
 
             bodyDiv = createElement "div", "bodydiv"
@@ -1116,7 +1124,8 @@ callWithJQuery ($) ->
             bodyTable.appendChild tbody
             
             if rowAttrs.length isnt 0
-                buildRowTotalsHeader rowAxisHeaders.ah[0].tr, rowGroups.length, colsData if colAttrs.length is 0
+                if not hideRowsTotalsCol
+                    buildRowTotalsHeader rowAxisHeaders.ah[0].tr, rowGroups.length, colsData if colAttrs.length is 0
                 if rowKeyHeaders?
                     node = counter: 0
                     childrenCnt = rowKeyHeaders.children.length
@@ -1125,23 +1134,26 @@ callWithJQuery ($) ->
                         buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, [i == childrenCnt - 1], opts 
 
             buildValues tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts
-            tr = buildColTotalsHeader longestGroupLength(rowGroups), colAttrs
-            buildColTotals tr, colAttrHeaders, rowAttrs, colAttrs, opts if colAttrs.length > 0
-            buildGrandTotal tbody, tr, rowAttrs, colAttrs, opts
+            if not hideColsTotalRow
+                tr = buildColTotalsHeader longestGroupLength(rowGroups), colAttrs
+                buildColTotals tr, colAttrHeaders, rowAttrs, colAttrs, opts if colAttrs.length > 0
+                if not hideRowsTotalsCol
+                    buildGrandTotal tbody, tr, rowAttrs, colAttrs, opts
+                tbody.appendChild tr
+
 
             collapseColAxis colAxisHeaders, opts.colSubtotalDisplay.collapseAt, colAttrs, opts.colSubtotalDisplay
             collapseRowAxis rowAxisHeaders, opts.rowSubtotalDisplay.collapseAt, rowAttrs, opts.rowSubtotalDisplay
 
-            headerTable.setAttribute "data-numrows", rowKeys.length
-            headerTable.setAttribute "data-numcols", colKeys.length
             headerTable.style.display = ""
             
-            bodyTable.setAttribute "data-numrows", rowKeys.length
-            bodyTable.setAttribute "data-numcols", colKeys.length
             bodyTable.style.display = ""
 
             headerTable.insertBefore createColGroup(colsData), headerTable.firstChild
             bodyTable.insertBefore createColGroup(colsData), bodyTable.firstChild
+
+            outerDiv.setAttribute "data-numrows", rowKeys.length
+            outerDiv.setAttribute "data-numcols", colKeys.length
             
             return outerDiv
 

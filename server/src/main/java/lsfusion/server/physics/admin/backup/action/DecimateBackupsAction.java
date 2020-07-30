@@ -22,8 +22,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getLocalDate;
-
 public class DecimateBackupsAction extends InternalAction {
 
     public DecimateBackupsAction(ScriptingLogicsModule LM) {
@@ -54,7 +52,7 @@ public class DecimateBackupsAction extends InternalAction {
             for (int i = 0; i < backupResult.size(); i++) {
                 DataObject backupObject = backupResult.getKey(i).getObject("Backup");
 
-                LocalDate dateBackup = getLocalDate(backupResult.getValue(i).get("dateBackup").getValue());
+                LocalDate dateBackup = (LocalDate) backupResult.getValue(i).get("dateBackup").getValue();
                 long delta = Duration.between(dateBackup.atStartOfDay(), LocalDateTime.now()).toDays();
                 boolean limit = maxQuantity != null && count >= maxQuantity;
                 boolean firstDay = dateBackup.getDayOfMonth() == 1 && saveFirstDay;

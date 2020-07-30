@@ -51,7 +51,7 @@ public abstract class ImportMatrixIterator extends ImportPlainIterator {
                 nameValue = (String) getPropValue(i, nameClass);
             } catch (ParseException ignored) {
             }
-            if(nameValue == null || nameValue.isEmpty()) {
+            if(nameValue == null || nameValue.isEmpty() || mFields.contains(nameValue)) {
                 if(isLastValue(i)) {
                     break;
                 } else {

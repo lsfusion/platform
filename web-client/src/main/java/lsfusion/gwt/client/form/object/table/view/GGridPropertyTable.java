@@ -1,60 +1,77 @@
 package lsfusion.gwt.client.form.object.table.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.view.CopyPasteUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.Math.max;
-import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.EditEventFilter;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_PREFERRED_HEIGHT = 70; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_MAX_PREFERRED_HEIGHT = 140;
-    
-    protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<>();
 
-    protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
-    protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellForegroundValues = new HashMap<>();
-    protected Map<GGroupObjectValue, Object> rowBackgroundValues = new HashMap<>();
-    protected Map<GGroupObjectValue, Object> rowForegroundValues = new HashMap<>();
+    protected ArrayList<T> rows = new ArrayList<>();
+
+    // we have to keep it until updateDataImpl to have rows order
+    // plus what's more important we shouldn't change selectedRow, before update'in rows, otherwise we'll have inconsistent selectedRow - rows state
+    protected GGroupObjectValue currentKey;
+
+    public void setCurrentKey(GGroupObjectValue currentKey) {
+        this.currentKey = currentKey;
+
+        this.currentRowUpdated = true;
+    }
+
+    @Override
+    protected ArrayList<T> getRows() {
+        return rows;
+    }
+
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> propertyCaptions = new NativeSIDMap<>();
+
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellBackgroundValues = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellForegroundValues = new NativeSIDMap<>();
+    protected NativeHashMap<GGroupObjectValue, Object> rowBackgroundValues = new NativeHashMap<>();
+    protected NativeHashMap<GGroupObjectValue, Object> rowForegroundValues = new NativeHashMap<>();
+
+    public static String getPropertyCaption(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
+        String caption;
+        if (propCaptions != null)
+            caption = property.getDynamicCaption(propCaptions.get(columnKey));
+        else
+            caption = property.getCaptionOrEmpty();
+        return caption;
+    }
 
     protected GGridPropertyTableHeader getGridHeader(int i) {
         return (GGridPropertyTableHeader) getHeader(i);
     }
-
-    protected boolean needToRestoreScrollPosition = true;
-    protected GGroupObjectValue oldKey = null;
-    protected int oldRowScrollTop;
 
     public GGridSortableHeaderManager sortableHeaderManager;
     
@@ -68,57 +85,65 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         this.font = font;
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
+
+        if(groupObject != null) {
+            // ADD FILTER
+            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2, true, false, false)),
+                    event -> getGroupController().addFilter());
+            // REPLACE FILTER
+            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2)),
+                    event -> getGroupController().replaceFilter());
+            // REMOVE FILTERS
+            GFormController.BindingExec removeFilters = event -> getGroupController().removeFilters();
+            addFilterBinding(new GKeyInputEvent(new GKeyStroke(GKeyStroke.KEY_F2, false, false, true)),
+                    removeFilters);
+            addFilterBinding(nativeEvent -> {
+                        if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
+                            GAbstractTableController goController = getGroupController();
+                            return goController.filter != null && goController.filter.hasConditions();
+                        }
+                        return false;
+                    }, removeFilters);
+            // AUTO FILTER
+            addFilterBinding(GKeyStroke::isPossibleStartFilteringEvent,
+                    event -> {
+                    if (useQuickSearchInsteadOfQuickFilter()) {
+                        quickSearch(event);
+                    } else {
+                        GPropertyDraw filterProperty = null;
+                        GGroupObjectValue filterColumnKey = null;
+                        GPropertyDraw currentProperty = getSelectedProperty();
+                        if(currentProperty != null && currentProperty.quickFilterProperty != null) {
+                            filterProperty = currentProperty.quickFilterProperty;
+                            if(currentProperty.columnGroupObjects != null && filterProperty.columnGroupObjects != null && currentProperty.columnGroupObjects.equals(filterProperty.columnGroupObjects)) {
+                                filterColumnKey = getSelectedColumnKey();
+                            }
+                        }
+
+                        quickFilter(event, filterProperty, filterColumnKey);
+                    }
+                });
+        }
+    }
+
+    private void addFilterBinding(GInputEvent event, GFormController.BindingExec pressed) {
+        addFilterBinding(event::isEvent, pressed);
+    }
+    private void addFilterBinding(GFormController.BindingCheck event, GFormController.BindingExec pressed) {
+        form.addBinding(event, new GBindingEnv(null, null, GBindingMode.ONLY, null, null), pressed, GGridPropertyTable.this, groupObject);
     }
 
     @Override
-    protected void onBrowserEvent2(Event event) {
-        if (GKeyStroke.isAddFilterEvent(event)) {
-            stopPropagation(event);
-            getGroupController().addFilter();
-        } else if (GKeyStroke.isRemoveAllFiltersEvent(event)) {
-            stopPropagation(event);
-            getGroupController().removeFilters();
-        } else if (GKeyStroke.isReplaceFilterEvent(event)) {
-            stopPropagation(event);
-            getGroupController().replaceFilter();
-        } else if (GKeyStroke.isPossibleStartFilteringEvent(event)) {
-            EditEventFilter editEventFilter = null;
-            GPropertyDraw currentProperty = getSelectedProperty();
-            if (currentProperty != null && currentProperty.changeType != null) {
-                editEventFilter = currentProperty.changeType.getEditEventFilter();
-            }
-
-            if ((editEventFilter != null && !editEventFilter.accept(event) && !form.isEditing()) || !isEditable(getCurrentCellContext())) {
-                stopPropagation(event);
-                if (useQuickSearchInsteadOfQuickFilter()) {
-                    quickSearch(event);
-                } else {
-                    GPropertyDraw filterProperty = null;
-                    GGroupObjectValue filterColumnKey = null;
-
-                    if(currentProperty != null && currentProperty.quickFilterProperty != null) {
-                        filterProperty = currentProperty.quickFilterProperty;
-                        if(currentProperty.columnGroupObjects != null && filterProperty.columnGroupObjects != null && currentProperty.columnGroupObjects.equals(filterProperty.columnGroupObjects)) {
-                            filterColumnKey = getSelectedColumn();
-                        }
-                    }
-
-                    quickFilter(new NativeEditEvent(event), filterProperty, filterColumnKey);
-                }
-            }
-        } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
-            GAbstractTableController goController = getGroupController();
-            if (goController.filter != null && goController.filter.hasConditions()) {
-                stopPropagation(event);
-                goController.removeFilters();
-                return;
-            }
-        }
-        super.onBrowserEvent2(event);
+    protected GFont getFont() {
+        return font;
     }
 
-    public Cell.Context getCurrentCellContext() {
-        return new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), getKeyboardSelectedRowValue());
+    public Cell getSelectedCell() {
+        return getSelectedCell(getSelectedColumn());
+    }
+
+    public Cell getSelectedCell(int column) {
+        return new Cell(getSelectedRow(), column, getColumn(column), getSelectedRowValue());
     }
 
     protected boolean isAutoSize() {
@@ -133,53 +158,85 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public Dimension getMaxPreferredSize() {
         return new Dimension(
                 max(isAutoSize() ? 0 : DEFAULT_PREFERRED_WIDTH, preferredWidth + nativeScrollbarWidth + 17),
-                max(isAutoSize() ? 0 : DEFAULT_MAX_PREFERRED_HEIGHT, getRowCount() * getRowHeight() + 30 + nativeScrollbarHeight)
+                max(isAutoSize() ? 0 : DEFAULT_MAX_PREFERRED_HEIGHT, getRowCount() * tableBuilder.getCellHeight() + 1 + 30 + nativeScrollbarHeight)
         );
+    }
+
+    protected abstract GGroupObjectValue getSelectedKey();
+
+    // there is a contract if there are keys there should be current object
+    // but for example modifyFormChangesWithChangeCurrentObjectAsyncs removes object change (+ when there are no keys nothing is also send)
+    // so we'll put current (last) key to ensure that selected row will match rows collection
+    protected void checkUpdateCurrentRow() {
+        // assert rowUpdated AND ! it's important to do this before update rows to have relevant selectedKey
+        if(!currentRowUpdated)
+            setCurrentKey(getSelectedKey());
+    }
+
+    private boolean currentRowUpdated = false;
+    public void updateCurrentRow() {
+        if (currentRowUpdated) {
+            setSelectedRow(currentKey != null ? getRowByKeyOptimistic(currentKey) : -1);
+
+            currentKey = null;
+            currentRowUpdated = false;
+        }
+
+        assert getSelectedRow() < getRowCount();
+    }
+
+    @Override
+    protected boolean previewClickEvent(Element target, Event event) {
+        return form.previewClickEvent(target, event);
     }
 
     @Override
     protected void onFocus() {
         super.onFocus();
-        changeBorder("var(--focus-color)");
     }
 
     @Override
-    protected void onBlur() {
-        super.onBlur();
-        changeBorder("var(--component-border-color)");
-    }
+    protected void onBlur(Event event) {
+        form.previewBlurEvent(event);
 
-    public void changeBorder(String color) {
-        getElement().getStyle().setBorderColor(color);
+        super.onBlur(event);
     }
 
     public GPropertyDraw getSelectedProperty() {
-        return getProperty(getCurrentCellContext());
+        if(getSelectedRow() >= 0)
+            return getProperty(getSelectedCell());
+        return null;
     }
 
-    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public GGroupObjectValue getSelectedColumnKey() {
+        if(getSelectedRow() >= 0)
+            return getColumnKey(getSelectedCell());
+        return null;
+    }
+
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         cellBackgroundValues.put(propertyDraw, values);
     }
 
-    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         cellForegroundValues.put(propertyDraw, values);
     }
 
-    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         rowBackgroundValues = values;
     }
 
-    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         rowForegroundValues = values;
     }
 
-    public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         propertyCaptions.put(propertyDraw, values);
     }
 
     public void headerClicked(GGridPropertyTableHeader header, boolean ctrlDown, boolean shiftDown) {
         sortableHeaderManager.headerClicked(getHeaderIndex(header), ctrlDown, shiftDown);
-        refreshHeaders();
+        updateHeadersDOM(false);
     }
 
     public Boolean getSortDirection(GGridPropertyTableHeader header) {
@@ -194,113 +251,46 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         //do nothing by default
     }
 
-    public abstract GGroupObjectValue getCurrentKey();
     public abstract GGroupObject getGroupObject();
-    public abstract GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler();
-    public abstract void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
+
+    public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
     public abstract GAbstractTableController getGroupController();
     public abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
     public abstract String getCellForeground(GridDataRecord rowValue, int row, int column);
 
-    public void beforeHiding() {
-        if (isShowing(this)) {
-            storeScrollPosition();
-            needToRestoreScrollPosition = true;
-        }
+    public void runGroupReport() {
+        form.runGroupReport(groupObject.ID);
     }
 
-    public void afterShowing() {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                afterAppliedChanges();
-            }
-        });
-    }
-
-    public void storeScrollPosition() {
-        int selectedRow = getKeyboardSelectedRow();
-        GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
-        if (selectedRecord != null) {
-            oldKey = selectedRecord.getKey();
-            TableRowElement childElement = getChildElement(selectedRow);
-            if (childElement != null) {
-                oldRowScrollTop = childElement.getOffsetTop() - tableDataScroller.getVerticalScrollPosition();
-            }
-        }
-    }
-
-    public void groupChange() {
-        editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.GROUP_CHANGE);
-    }
-
-    public void runGroupReport(boolean toExcel) {
-        form.runGroupReport(groupObject.ID, toExcel);
-    }
-
-    public void afterAppliedChanges() {
-        if (needToRestoreScrollPosition && oldKey != null && oldRowScrollTop != -1) {
-            int currentInd = getKeyboardSelectedRow();
-            GGroupObjectValue currentKey = getCurrentKey();
-            if (currentKey != null && currentKey.equals(oldKey) && isRowWithinBounds(currentInd)) {
-                TableRowElement childElement = getChildElement(currentInd);
-                if (childElement != null) {
-                    int newVerticalScrollPosition = max(0, childElement.getOffsetTop() - oldRowScrollTop);
-
-                    setDesiredVerticalScrollPosition(newVerticalScrollPosition);
-
-                    oldKey = null;
-                    oldRowScrollTop = -1;
-                    needToRestoreScrollPosition = false;
-                }
-            }
-        }
-    }
-
-
-    @Override
     public void selectNextRow(boolean down) {
-        getKeyboardSelectionHandler().selectNextRow(down);
+        selectionHandler.nextRow(down);
     }
 
-    @Override
     public void selectNextCellInColumn(boolean forward) {
-        getKeyboardSelectionHandler().selectNextCellInColumn(forward);
+        selectionHandler.nextColumn(forward);
     }
 
-    public static class GridPropertyTableKeyboardSelectionHandler<T extends GridDataRecord> extends DataGridKeyboardSelectionHandler<T> {
-        public GridPropertyTableKeyboardSelectionHandler(DataGrid<T> table) {
+    public static class GridPropertyTableSelectionHandler<T extends GridDataRecord> extends DataGridSelectionHandler<T> {
+        public GridPropertyTableSelectionHandler(DataGrid<T> table) {
             super(table);
         }
 
         @Override
-        public boolean handleKeyEvent(CellPreviewEvent<T> event) {
-            NativeEvent nativeEvent = event.getNativeEvent();
+        public boolean handleKeyEvent(Event event) {
+            assert BrowserEvents.KEYDOWN.equals(event.getType());
 
-            assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
-
-            int keyCode = nativeEvent.getKeyCode();
-            boolean ctrlPressed = nativeEvent.getCtrlKey();
-            if (keyCode == KeyCodes.KEY_HOME && !ctrlPressed) {
-                getDisplay().setKeyboardSelectedColumn(0);
+            int keyCode = event.getKeyCode();
+            if (keyCode == KeyCodes.KEY_HOME && !event.getCtrlKey()) {
+                for(int i=0;!changeColumn(i);i++);
                 return true;
-            } else if (keyCode == KeyCodes.KEY_END && !ctrlPressed) {
-                getDisplay().setKeyboardSelectedColumn(getDisplay().getColumnCount() - 1);
+            } else if (keyCode == KeyCodes.KEY_END && !event.getCtrlKey()) {
+                for(int i=display.getColumnCount()-1;!changeColumn(i);i--);
                 return true;
             }
             return super.handleKeyEvent(event);
         }
-
-        public void selectNextRow(boolean down) {
-            nextRow(down);
-        }
-
-        public void selectNextCellInColumn(boolean forward) {
-            nextColumn(forward);
-        }
     }
 
-    // в общем то для "групп в колонки" разделено (чтобы когда были группы в колонки - все не расширялись(
     private void updateLayoutWidthColumns() {
         List<Column> flexColumns = new ArrayList<>();
         List<Double> flexValues = new ArrayList<>();
@@ -351,14 +341,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         for (int i = 0; i < prefs.length; i++)
             setUserWidth(i, (int) Math.round(prefs[i]));
         updateLayoutWidthColumns();
-        onResize();
-    }
 
-    private int getViewportWidth() {
-        return tableDataScroller.getClientWidth();
-    }
-    public int getViewportHeight() {
-        return tableDataScroller.getClientHeight();
+        widthsChanged();
+        onResize();
     }
 
     protected abstract void setUserWidth(GPropertyDraw property, Integer value);
@@ -388,6 +373,37 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         updateLayoutWidthColumns();
     }
 
+    protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
+        String columnCaption = getPropertyCaption(property, columnKey);
+        GGridPropertyTableHeader header = getGridHeader(index);
+        header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
+        header.setToolTip(property.getTooltipText(columnCaption));
+        header.setHeaderHeight(getHeaderHeight());
+    }
+
+    public Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(property, columnKey));
+    }
+    public static Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
+        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(propCaptions, property, columnKey));
+    }
+
+    protected String getPropertyCaption(GPropertyDraw property, GGroupObjectValue columnKey) {
+        String userCaption = getUserCaption(property);
+        if (userCaption != null)
+            return userCaption;
+
+        return getPropertyCaption(propertyCaptions.get(property), property, columnKey);
+    }
+
+    protected int getHeaderHeight() {
+        return 0;
+    }
+
+    protected String getUserCaption(GPropertyDraw propertyDraw) {
+        return null;
+    }
+
     protected boolean isColumnFlex(int i) {
         return getColumnPropertyDraw(i).getFlex() > 0;
     }
@@ -401,7 +417,48 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
     
     protected int getColumnBaseWidth(int i) {
-        return getColumnPropertyDraw(i).getValueWidth(font);
+        return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
+    public <C> void onBrowserEvent(Cell cell, EventHandler handler, Column<T, C> column, Element parent) {
+        form.onPropertyBrowserEvent(handler, parent, getTableDataFocusElement(),
+                () -> selectionHandler.onCellBefore(handler, cell, () -> isEditOnSingleClick(cell)),
+                () -> column.onEditEvent(handler, false, cell, parent),
+                () -> selectionHandler.onCellAfter(handler, cell),
+                () -> CopyPasteUtils.putIntoClipboard(parent), () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
+    }
+
+    protected boolean isFocusable(GPropertyDraw property) {
+        return property.focusable == null || property.focusable;
+    }
+
+    protected abstract class GridPropertyColumn extends Column<T, Object> {
+
+        protected abstract Object getValue(GPropertyDraw property, T record);
+
+        @Override
+        public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editCellParent) {
+            GGridPropertyTable.this.onEditEvent(handler, isBinding, editCell, editCellParent);
+        }
+
+        @Override
+        public void renderAndUpdateDom(Cell cell, Element cellElement) {
+            renderDom(cell, cellElement);
+
+            updateDom(cell, cellElement);
+        }
+
+        public void renderDom(Cell cell, Element cellElement) {
+            GPropertyDraw property = getProperty(cell);
+            if(property != null) // in tree there can be no property in groups other than last
+                form.render(property, cellElement, getRenderContext());
+        }
+
+        @Override
+        public void updateDom(Cell cell, Element cellElement) {
+            GPropertyDraw property = getProperty(cell);
+            if (property != null) // in tree there can be no property in groups other than last
+                form.update(property, cellElement, getValue(property, (T) cell.getRow()), getUpdateContext());
+        }
+    }
 }

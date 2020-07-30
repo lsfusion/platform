@@ -8,84 +8,61 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.PopupPanel;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class ResizableModalWindow extends ResizableWindow {
+
     private ModalMask modalMask;
-    private WindowHiddenHandler hiddenHandler;
-    private HandlerRegistration nativePreviewHandlerReg;
-
-    public ResizableModalWindow(String caption) {
-        this((WindowHiddenHandler)null);
-        setCaption(caption);
-    }
-
-    public ResizableModalWindow(WindowHiddenHandler ihiddenHandler) {
-        this.hiddenHandler = ihiddenHandler;
-
-        addHandlers();
-    }
-
-    private void addHandlers() {
-        addCloseHandler(new CloseHandler<ResizableWindow>() {
-            @Override
-            public void onClose(CloseEvent<ResizableWindow> event) {
-                if (nativePreviewHandlerReg != null) { // как-то словили NPE
-                    nativePreviewHandlerReg.removeHandler();
-                    nativePreviewHandlerReg = null;
-                }
-
-                if (modalMask != null) {
-                    modalMask.hide();
-                    modalMask = null;
-                }
-
-                if (hiddenHandler != null) {
-                    hiddenHandler.onHidden();
-                }
-            }
-        });
-
-        nativePreviewHandlerReg = Event.addNativePreviewHandler(new Event.NativePreviewHandler() {
-            @Override
-            public void onPreviewNativeEvent(Event.NativePreviewEvent event) {
-                previewNativeEvent(event);
-            }
-        });
-    }
-
-    public void setWindowHiddenHandler(WindowHiddenHandler hiddenHandler) {
-        this.hiddenHandler = hiddenHandler;
-    }
+//    private HandlerRegistration nativePreviewHandlerReg;
 
     @Override
-    protected void attach() {
+    public void show() {
         if (modalMask == null) {
             modalMask = new ModalMask();
             modalMask.show();
         }
-        super.attach();
+
+//        breaks resize and not sure what it's for
+//        nativePreviewHandlerReg = Event.addNativePreviewHandler(this::previewNativeEvent);
+
+        super.show();
     }
 
-    private boolean eventTargetsPopup(NativeEvent event) {
-        EventTarget target = event.getEventTarget();
-        return Element.is(target) && getElement().isOrHasChild(Element.as(target));
-    }
+    @Override
+    public void hide() {
+        super.hide();
 
-    private void previewNativeEvent(Event.NativePreviewEvent event) {
-        // If the event has been canceled or consumed, ignore it
-        if (event.isCanceled() || event.isConsumed()) {
-            return;
-        }
+//        if (nativePreviewHandlerReg != null) { // как-то словили NPE
+//            nativePreviewHandlerReg.removeHandler();
+//            nativePreviewHandlerReg = null;
+//        }
 
-        // If the event targets the popup, consume it
-        Event nativeEvent = Event.as(event.getNativeEvent());
-        if (eventTargetsPopup(nativeEvent)) {
-            event.consume();
-        } else {
-            // Cancel the event if it doesn't target the modal popup.
-            event.cancel();
+        if (modalMask != null) {
+            modalMask.hide();
+            modalMask = null;
         }
     }
+
+//    private boolean eventTargetsPopup(NativeEvent event) {
+//        EventTarget target = event.getEventTarget();
+//        return Element.is(target) && getElement().isOrHasChild(Element.as(target));
+//    }
+//
+//    private void previewNativeEvent(Event.NativePreviewEvent event) {
+//        // If the event has been canceled or consumed, ignore it
+//        if (event.isCanceled() || event.isConsumed()) {
+//            return;
+//        }
+//
+//        // If the event targets the popup, consume it
+//        Event nativeEvent = Event.as(event.getNativeEvent());
+//        if (eventTargetsPopup(nativeEvent)) {
+//            event.consume();
+//        } else {
+//            // Cancel the event if it doesn't target the modal popup.
+//            event.cancel();
+//        }
+//    }
 
     private final static class ModalMask {
         private final PopupPanel popup;

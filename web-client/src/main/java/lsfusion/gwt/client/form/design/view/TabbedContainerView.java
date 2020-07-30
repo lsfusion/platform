@@ -11,7 +11,6 @@ import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import java.util.ArrayList;
 import java.util.Map;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.scheduleOnResize;
 import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {
@@ -47,9 +46,8 @@ public class TabbedContainerView extends GAbstractContainerView {
             currentChild = container.children.get(0);
         }
 
-        panel.addSelectionHandler(e -> {
-            onTabSelected(e.getSelectedItem(), formController, container);
-            scheduleOnResize(panel.asWidget());
+        panel.setSelectionHandler(index -> {
+            onTabSelected(index, formController, container);
         });
 
         view = initBorder(panel);

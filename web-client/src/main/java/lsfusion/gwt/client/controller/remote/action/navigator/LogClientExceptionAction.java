@@ -15,7 +15,7 @@ public class LogClientExceptionAction extends NavigatorAction<VoidResult> {
     }
 
     // result throwable class should exist on web-server
-    private static Throwable fromWebClientToWebServer(Throwable t) {
+    public static Throwable fromWebClientToWebServer(Throwable t) {
         if(t instanceof DispatchException) // because that exception came from server, it will definitely be able to go back to server
             return t;
         if(t instanceof NonFatalHandledException || t instanceof StackedException) // this exception are shared

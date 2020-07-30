@@ -38,6 +38,7 @@
     }
 
     .subtotalouterdiv .scrolldiv {
+        background-color: var(--component-background-color);
         position: relative;
         overflow: auto;
         height: 100%;

@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.design;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
@@ -8,11 +8,9 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
-import lsfusion.interop.form.property.PropertyReadType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.gwt.client.form.design.GContainerType.*;
 
@@ -146,12 +144,22 @@ public class GContainer extends GComponent {
         return type == COLUMNS;
     }
 
-    public final GPropertyReader captionReader = new GPropertyReader() {
+    private class GCaptionReader implements GPropertyReader {
+
+        public GCaptionReader() {
+            sID = "_CONTAINER_" + "CAPTION" + "_" + GContainer.this.sID;
+        }
+
         @Override
-        public void update(GTableController controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
-            assert values.keySet().iterator().next().isEmpty();
-            Object value = values.values().iterator().next();
+        public void update(GTableController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+            assert values.firstKey().isEmpty();
+            Object value = values.firstValue();
             controller.setContainerCaption(GContainer.this, value != null ? value.toString() : null);
+        }
+
+        @Override
+        public String getSID() {
+            return sID;
         }
 
         @Override
@@ -159,5 +167,5 @@ public class GContainer extends GComponent {
             return -1;
         }
     };
-
+    public final GPropertyReader captionReader = new GCaptionReader();
 }

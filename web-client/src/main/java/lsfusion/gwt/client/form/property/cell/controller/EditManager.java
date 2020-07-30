@@ -1,11 +1,12 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
+import java.util.function.Consumer;
+
 public interface EditManager {
-    void commitEditing(Object value);
+    default void commitEditing(Object value) {
+        commitEditing(value, false);
+    }
+    void commitEditing(Object value, boolean blurred);  // assert if blurred then editor rerender dom
 
     void cancelEditing();
-
-    void selectNextRow(boolean down);
-
-    void selectNextCellInColumn(boolean forward);
 }

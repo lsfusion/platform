@@ -52,10 +52,7 @@ import java.lang.Boolean;
 import java.lang.Number;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
@@ -1089,13 +1086,13 @@ public abstract class GroupingDialog extends JDialog {
                 } else if (value instanceof Number) {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "#,##0")).setCellValue(Double.parseDouble(value.toString()));
                 } else if (value instanceof LocalTime) {
-                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "H:mm:ss")).setCellValue(localTimeToSqlTime((LocalTime) value)); //in apache.poi 4.1: ((LocalTime) value).atDate(LocalDate.now())
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "H:mm:ss")).setCellValue(((LocalTime) value).atDate(LocalDate.now()));
                 } else if (value instanceof LocalDate) {
-                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(localDateToSqlDate((LocalDate) value));// in apache.poi 4.1: (LocalDate) value
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue((LocalDate) value);
                 } else if (value instanceof LocalDateTime) {
-                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(localDateTimeToSqlTimestamp((LocalDateTime) value));// in apache.poi 4.1: (LocalDate) value
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue((LocalDateTime) value);
                 } else if (value instanceof Instant) {
-                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(instantToSqlTimestamp((Instant) value));// in apache.poi 4.1: (LocalDate) value
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue(instantToSqlTimestamp((Instant) value));
                 } else if (value instanceof Boolean) {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, null)).setCellValue((Boolean) value);
                 } else if (value instanceof byte[]) { // здесь ожидается изображение

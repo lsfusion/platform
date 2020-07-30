@@ -48,18 +48,8 @@ public abstract class FormToolbarAction extends InternalAction {
         });
     }
 
-    protected Property getEnableIf() {
-        return null;
-    }
-
     protected LP getShowIf() {
         return null;
-    }
-
-    @Override
-    public PropertyMapImplement<?, ClassPropertyInterface> getWhereProperty(boolean recursive) {
-        Property enableIf = getEnableIf();
-        return enableIf == null ? super.getWhereProperty(recursive) : enableIf.getImplement();
     }
 
     public static LP createShowIfProperty(final Property showIfs[], boolean showIfNots[]) {

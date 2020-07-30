@@ -1,7 +1,10 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -15,11 +18,9 @@ import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public abstract class GAbstractTableController implements GTableController {
     protected final GFormController formController;
@@ -40,8 +41,23 @@ public abstract class GAbstractTableController implements GTableController {
         }
     }
 
+    @Override
+    public GFormController getForm() {
+        return formController;
+    }
+
     public GFormLayout getFormLayout() {
         return formController.formLayout;
+    }
+
+    protected DefaultFocusReceiver getDefaultFocusReceiver() {
+        return () -> {
+            boolean focused = focusFirstWidget();
+            if (focused) {
+                scrollToTop();
+            }
+            return focused;
+        };
     }
 
     public void addToToolbar(Widget tool) {
@@ -57,21 +73,24 @@ public abstract class GAbstractTableController implements GTableController {
     }
 
     public void addFilterButton() {
-        if (showFilter()) {
-            filter = new GUserFilters(this) {
-                @Override
-                public void remoteApplyQuery() {
-                    changeFilter(new ArrayList<>(getConditions()));
-                }
+        filter = new GUserFilters(this) {
+            @Override
+            public void remoteApplyQuery() {
+                changeFilter(new ArrayList<>(getConditions()));
+            }
 
                 @Override
                 public void filterHidden() {
                     focusFirstWidget();
                 }
+
+                @Override
+                public void checkCommitEditing() {
+                    formController.checkCommitEditing();
+                }
             };
 
-            addToToolbar(filter.getToolbarButton());
-        }
+        addToToolbar(filter.getToolbarButton());
     }
 
     @Override
@@ -88,7 +107,7 @@ public abstract class GAbstractTableController implements GTableController {
         return true;
     }
 
-    public void quickEditFilter(EditEvent editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+    public void quickEditFilter(Event editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         filter.quickEditFilter(editEvent, propertyDraw, columnKey);
     }
 
@@ -106,12 +125,13 @@ public abstract class GAbstractTableController implements GTableController {
         filter.allRemovedPressed();
     }
 
-    protected abstract void changeFilter(List<GPropertyFilter> conditions);
+    protected abstract void changeFilter(ArrayList<GPropertyFilter> conditions);
+    // eventually is called either on form opening / form tab selection / filter dialog close
     public abstract boolean focusFirstWidget();
     public abstract GComponent getGridComponent();
 
     @Override
-    public void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values) {
+    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
     }
 
     // вызов focus() у getFocusHolderElement() грида по какой-то причине приводит к подскролливанию нашего скролла

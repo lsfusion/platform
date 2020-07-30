@@ -1199,7 +1199,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, rowOrderArrow, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
+      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, plotlyDefaults, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, pvtUiContainer, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1236,9 +1236,13 @@
         sorters: {},
         valueHeight: null,
         componentHeightString: null,
-        cellHorizontalPadding: null
+        cellHorizontalPadding: null,
+        attach: null,
+        getDisplayColor: null
       };
-      localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings);
+      localeStrings = $.extend(true, {}, locales.en.localeStrings, locales[locale].localeStrings, {
+        columnAttr: inputOpts.columnAttributeName
+      });
       localeDefaults = {
         rendererOptions: {
           localeStrings: localeStrings,
@@ -1246,9 +1250,16 @@
         },
         localeStrings: localeStrings
       };
+      plotlyDefaults = {
+        rendererOptions: {
+          plotlyConfig: {
+            toImageButtonOptions: inputOpts.toImageButtonOptions
+          }
+        }
+      };
       existingOpts = this.data("pivotUIOptions");
       if ((existingOpts == null) || overwrite) {
-        opts = $.extend(true, {}, localeDefaults, $.extend({}, defaults, inputOpts));
+        opts = $.extend(true, {}, localeDefaults, $.extend({}, defaults, plotlyDefaults, inputOpts));
       } else {
         opts = existingOpts;
       }
@@ -1280,9 +1291,12 @@
           }
           return recordsProcessed++;
         });
+        pvtUiContainer = $("<div>", {
+          "class": "pvtUiContainer"
+        });
         uiTable = $("<table>", {
           "class": "pvtUi"
-        }).attr("cellpadding", 5);
+        }).attr("cellpadding", 5).appendTo(pvtUiContainer);
         rendererControl = $("<td>").addClass("pvtUiCell");
         rendererControlDiv = $("<div>").appendTo(rendererControl);
         renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControlDiv).css({
@@ -1498,7 +1512,8 @@
           if (hasExcludedItem) {
             attrElemText.addClass('pvtFilteredAttribute');
           }
-          return unusedDiv.append(listItem).append(valueList);
+          unusedDiv.append(listItem);
+          return pvtUiContainer.append(valueList);
         };
         for (i in shownInDragDrop) {
           if (!hasProp.call(shownInDragDrop, i)) continue;
@@ -1533,13 +1548,6 @@
             next: "key_a_to_z"
           }
         };
-        rowOrderArrow = $("<a>", {
-          role: "button"
-        }).addClass("pvtRowOrder").data("order", opts.rowOrder).html(ordering[opts.rowOrder].rowSymbol).bind("click", function() {
-          $(this).data("order", ordering[$(this).data("order")].next);
-          $(this).html(ordering[$(this).data("order")].rowSymbol);
-          return refresh();
-        });
         colOrderArrow = $("<a>", {
           role: "button"
         }).addClass("pvtColOrder").data("order", opts.colOrder).html(ordering[opts.colOrder].colSymbol).bind("click", function() {
@@ -1548,7 +1556,7 @@
           return refresh();
         });
         aggrSelector = $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1);
-        $("<div>").appendTo(aggrSelector).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
+        $("<div>").appendTo(aggrSelector).append(aggregator).append(colOrderArrow).append($("<br>"));
         pvtColumns = $("<td>").addClass('pvtHorizList pvtCols pvtUiCell');
         pvtColumnsDiv = $("<div>").addClass('pvtUiCellHDiv').appendTo(pvtColumns);
         tr1.append(pvtColumns);
@@ -1573,7 +1581,7 @@
         } else {
           uiTable.prepend($("<tr>").append(rendererControl).append(unused));
         }
-        this.html(uiTable);
+        this.html(pvtUiContainer);
         createPaxis = function(columns) {
           var paxis;
           if (columns) {
@@ -1667,7 +1675,7 @@
         })(this);
         refreshDelayed = (function(_this) {
           return function() {
-            var exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, subopts, unusedAttrsContainer, vals;
+            var colIndex, columnAttr, drawSize, exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, rowIndex, subopts, unusedAttrsContainer, vals;
             refreshPaxis(true);
             refreshPaxis(false);
             _this.find(".pvtAxisContainer").sortable({
@@ -1699,6 +1707,7 @@
             subopts.rendererOptions.colSubtotalDisplay = {
               splitPositions: opts.splitCols
             };
+            subopts.rendererOptions.getDisplayColor = opts.getDisplayColor;
             subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length === 1;
             numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
             vals = [];
@@ -1740,11 +1749,16 @@
               });
               initialRender = false;
             }
+            columnAttr = subopts.rendererOptions.localeStrings.columnAttr;
+            colIndex = subopts.cols.indexOf(columnAttr);
+            rowIndex = subopts.rows.indexOf(columnAttr);
+            subopts.rendererOptions.hideRowsTotalsCol = colIndex >= 0 && opts.splitCols[0] >= colIndex;
+            subopts.rendererOptions.hideColsTotalsRow = rowIndex >= 0 && opts.splitRows[0] >= rowIndex;
             subopts.aggregatorName = aggregator.val();
             subopts.vals = vals;
             subopts.aggregator = opts.aggregators[aggregator.val()](vals);
             subopts.renderer = opts.renderers[renderer.val()];
-            subopts.rowOrder = rowOrderArrow.data("order");
+            subopts.rowOrder = "key_a_to_z";
             subopts.colOrder = colOrderArrow.data("order");
             exclusions = {};
             _this.find('input.pvtFilter').not(':checked').each(function() {
@@ -1798,6 +1812,8 @@
             }
             opts.sortCols = pivotUIOptions.sortCols;
             subopts.sortCols = opts.sortCols;
+            drawSize = opts.attach();
+            subopts.rendererOptions.plotly = $.extend({}, subopts.rendererOptions.plotly, drawSize);
             pivotScrollDiv.pivot(materializedInput, subopts, locale);
             if (opts.afterRefresh != null) {
               opts.afterRefresh();
@@ -1805,16 +1821,14 @@
             _this.data("pivotUIOptions", pivotUIOptions);
             if (opts.autoSortUnusedAttrs) {
               unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");
-              $(unusedAttrsContainer).children("li").sort(function(a, b) {
+              return $(unusedAttrsContainer).children("li").sort(function(a, b) {
                 return naturalSort($(a).text(), $(b).text());
               }).appendTo(unusedAttrsContainer);
             }
-            return pivotTable.css("opacity", "");
           };
         })(this);
         refresh = (function(_this) {
           return function() {
-            pivotTable.css("opacity", 0.5);
             return setTimeout(refreshDelayed, 10);
           };
         })(this);
@@ -1860,8 +1874,8 @@
           max = Math.max.apply(Math, values);
           return function(x) {
             var nonRed;
-            nonRed = 255 - Math.round(255 * (x - min) / (max - min));
-            return "rgb(255," + nonRed + "," + nonRed + ")";
+            nonRed = max === min ? 0 : 255 - Math.round(255 * (x - min) / (max - min));
+            return Array.from([255, nonRed, nonRed]);
           };
         };
       }
@@ -1872,6 +1886,9 @@
             return _this.find(scope).each(function() {
               var x;
               x = $(this).data("value");
+              if (!x) {
+                x = 0;
+              }
               if ((x != null) && isFinite(x)) {
                 return f(x, $(this));
               }
@@ -1883,7 +1900,10 @@
           });
           colorScale = colorScaleGenerator(values);
           return forEachCell(function(x, elem) {
-            return elem.css("background-color", colorScale(x));
+            var heatColor;
+            heatColor = colorScale(x);
+            elem.css("background-color", opts.getDisplayColor(heatColor));
+            return elem[0].setAttribute("data-heat-color", heatColor[0] + "," + heatColor[1] + "," + heatColor[2]);
           });
         };
       })(this);

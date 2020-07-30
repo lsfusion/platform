@@ -13,7 +13,7 @@
   };
 
   callWithJQuery(function($, Plotly) {
-    var CSSProps, computedStyle, getAxisGridColor, getAxisLineColor, getAxisZeroLineColor, getCSSPropertyValue, getFontColor, getPaperBGColor, getPlotBGColor, makePlotlyChart, makePlotlyScatterChart;
+    var CSSProps, chartMargin, chartMarginWithText, computedStyle, getAxisGridColor, getAxisLineColor, getAxisZeroLineColor, getCSSPropertyValue, getFontColor, getJoinedAttrsNames, getPaperBGColor, getPlotBGColor, makePlotlyChart, makePlotlyScatterChart;
     computedStyle = null;
     CSSProps = {
       paper_bgcolor: null,
@@ -23,6 +23,8 @@
       axis_line_color: null,
       axis_zeroline_color: null
     };
+    chartMargin = 26;
+    chartMarginWithText = 50;
     getCSSPropertyValue = function(propertyName) {
       if (computedStyle === null) {
         computedStyle = getComputedStyle(document.documentElement);
@@ -65,6 +67,20 @@
       }
       return CSSProps.axis_zeroline_color;
     };
+    getJoinedAttrsNames = function(attrs, opts) {
+      var attr, attrsString, j, len;
+      attrsString = '';
+      for (j = 0, len = attrs.length; j < len; j++) {
+        attr = attrs[j];
+        if (attr !== opts.localeStrings.columnAttr) {
+          if (attrsString !== '') {
+            attrsString += ' - ';
+          }
+          attrsString += attr;
+        }
+      }
+      return attrsString;
+    };
     makePlotlyChart = function(reverse, traceOptions, layoutOptions, transpose) {
       if (traceOptions == null) {
         traceOptions = {};
@@ -76,7 +92,7 @@
         transpose = false;
       }
       return function(pivotData, opts) {
-        var colKeys, columns, d, data, datumKeys, defaults, fullAggName, groupByTitle, hAxisTitle, i, layout, result, rowKeys, rows, tKeys, titleText, traceKeys;
+        var colKeys, columns, d, data, datumKeys, defaults, fullAggName, hAxisTitle, i, layout, legendTitle, result, rowKeys, rows, tKeys, traceKeys;
         defaults = {
           localeStrings: {
             vs: "vs",
@@ -116,10 +132,10 @@
             datumKey = datumKeys[j];
             val = parseFloat(pivotData.getAggregator(transpose ^ reverse ? datumKey : traceKey, transpose ^ reverse ? traceKey : datumKey).value());
             values.push(isFinite(val) ? val : null);
-            labels.push(datumKey.join('-') || ' ');
+            labels.push(datumKey.join(' - ') || ' ');
           }
           trace = {
-            name: traceKey.join('-') || fullAggName
+            name: traceKey.join(' - ') || fullAggName
           };
           if (traceOptions.type === "pie") {
             trace.values = values;
@@ -130,31 +146,43 @@
           }
           return $.extend(trace, traceOptions);
         });
-        if (transpose ^ reverse) {
-          hAxisTitle = pivotData.rowAttrs.join("-");
-          groupByTitle = pivotData.colAttrs.join("-");
+        if (transpose ^ reverse ^ traceOptions.type === "pie") {
+          hAxisTitle = getJoinedAttrsNames(pivotData.rowAttrs, opts);
+          legendTitle = getJoinedAttrsNames(pivotData.colAttrs, opts);
         } else {
-          hAxisTitle = pivotData.colAttrs.join("-");
-          groupByTitle = pivotData.rowAttrs.join("-");
-        }
-        titleText = fullAggName;
-        if (hAxisTitle !== "") {
-          titleText += " " + opts.localeStrings.vs + " " + hAxisTitle;
-        }
-        if (groupByTitle !== "") {
-          titleText += " " + opts.localeStrings.by + " " + groupByTitle;
+          hAxisTitle = getJoinedAttrsNames(pivotData.colAttrs, opts);
+          legendTitle = getJoinedAttrsNames(pivotData.rowAttrs, opts);
         }
         layout = {
-          title: titleText,
           hovermode: 'closest',
           autosize: true,
           paper_bgcolor: getPaperBGColor(),
           plot_bgcolor: getPlotBGColor(),
           font: {
             color: getFontColor()
+          },
+          legend: {
+            title: {
+              text: legendTitle,
+              font: {
+                size: 12
+              }
+            }
           }
         };
         if (traceOptions.type === 'pie') {
+          layout.title = {
+            text: hAxisTitle,
+            font: {
+              size: 12
+            }
+          };
+          layout.margin = {
+            l: chartMargin,
+            r: chartMargin,
+            t: hAxisTitle !== "" ? chartMarginWithText : chartMargin,
+            b: chartMargin
+          };
           columns = Math.ceil(Math.sqrt(data.length));
           rows = Math.ceil(data.length / columns);
           layout.grid = {
@@ -176,18 +204,37 @@
           }
         } else {
           layout.xaxis = {
-            title: transpose ? fullAggName : null,
+            title: {
+              text: transpose ? fullAggName : hAxisTitle,
+              font: {
+                size: 12
+              }
+            },
             automargin: true,
             gridcolor: getAxisGridColor(),
             linecolor: getAxisLineColor(),
             zerolinecolor: getAxisZeroLineColor()
           };
+          if (transpose || hAxisTitle !== "") {
+            layout.xaxis.title.standoff = 10;
+          }
           layout.yaxis = {
-            title: transpose ? null : fullAggName,
+            title: {
+              text: transpose ? hAxisTitle : fullAggName,
+              font: {
+                size: 12
+              }
+            },
             automargin: true,
             gridcolor: getAxisGridColor(),
             linecolor: getAxisLineColor(),
             zerolinecolor: getAxisZeroLineColor()
+          };
+          layout.margin = {
+            l: !transpose || hAxisTitle !== '' ? chartMarginWithText : chartMargin,
+            r: chartMargin,
+            t: chartMargin,
+            b: transpose || hAxisTitle !== "" ? chartMarginWithText : chartMargin
           };
         }
         result = $("<div>").appendTo($("body"));
@@ -197,7 +244,7 @@
     };
     makePlotlyScatterChart = function() {
       return function(pivotData, opts) {
-        var colKey, colKeys, data, defaults, j, k, layout, len, len1, renderArea, result, rowKey, rowKeys, v;
+        var colAttrsString, colKey, colKeys, data, defaults, j, k, layout, len, len1, renderArea, result, rowAttrsString, rowKey, rowKeys, v;
         defaults = {
           localeStrings: {
             vs: "vs",
@@ -231,22 +278,39 @@
             colKey = colKeys[k];
             v = pivotData.getAggregator(rowKey, colKey).value();
             if (v != null) {
-              data.x.push(colKey.join('-'));
-              data.y.push(rowKey.join('-'));
+              data.x.push(colKey.join(' - '));
+              data.y.push(rowKey.join(' - '));
               data.text.push(v);
             }
           }
         }
+        colAttrsString = getJoinedAttrsNames(pivotData.colAttrs, opts);
+        rowAttrsString = getJoinedAttrsNames(pivotData.rowAttrs, opts);
         layout = {
-          title: pivotData.rowAttrs.join("-") + ' vs ' + pivotData.colAttrs.join("-"),
+          margin: {
+            l: rowAttrsString === '' ? chartMargin : void 0,
+            r: chartMargin,
+            t: chartMargin,
+            b: colAttrsString === '' ? chartMargin : void 0
+          },
           hovermode: 'closest',
           xaxis: {
-            title: pivotData.colAttrs.join('-'),
+            title: {
+              text: colAttrsString,
+              font: {
+                size: 12
+              }
+            },
             automargin: true
           },
           yaxis: {
-            title: pivotData.rowAttrs.join('-'),
-            automargin: true
+            title: {
+              text: rowAttrsString,
+              font: {
+                size: 12
+              },
+              automargin: true
+            }
           },
           autosize: true,
           paper_bgcolor: getPaperBGColor(),
@@ -255,6 +319,9 @@
             color: getFontColor()
           }
         };
+        if (colAttrsString !== '') {
+          layout.xaxis.title.standoff = 10;
+        }
         renderArea = $("<div>", {
           style: "display:none;"
         }).appendTo($("body"));
@@ -309,28 +376,30 @@
       CSSProps.axis_grid_color = null;
       CSSProps.axis_line_color = null;
       CSSProps.axis_zeroline_color = null;
-      relayout = function() {
-        var update;
-        update = {
-          paper_bgcolor: getPaperBGColor(),
-          plot_bgcolor: getPlotBGColor(),
-          font: {
-            color: getFontColor()
-          },
-          xaxis: {
-            gridcolor: getAxisGridColor(),
-            linecolor: getAxisLineColor(),
-            zerolinecolor: getAxisZeroLineColor()
-          },
-          yaxis: {
-            gridcolor: getAxisGridColor(),
-            linecolor: getAxisLineColor(),
-            zerolinecolor: getAxisZeroLineColor()
-          }
+      if (plot !== void 0) {
+        relayout = function() {
+          var update;
+          update = {
+            paper_bgcolor: getPaperBGColor(),
+            plot_bgcolor: getPlotBGColor(),
+            font: {
+              color: getFontColor()
+            },
+            xaxis: {
+              gridcolor: getAxisGridColor(),
+              linecolor: getAxisLineColor(),
+              zerolinecolor: getAxisZeroLineColor()
+            },
+            yaxis: {
+              gridcolor: getAxisGridColor(),
+              linecolor: getAxisLineColor(),
+              zerolinecolor: getAxisZeroLineColor()
+            }
+          };
+          return Plotly.relayout(plot, update);
         };
-        return Plotly.relayout(plot, update);
-      };
-      return setTimeout(relayout);
+        return setTimeout(relayout);
+      }
     };
   });
 

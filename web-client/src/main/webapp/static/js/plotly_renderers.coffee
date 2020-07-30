@@ -16,6 +16,9 @@ callWithJQuery ($, Plotly) ->
         axis_grid_color: null
         axis_line_color: null
         axis_zeroline_color: null
+        
+    chartMargin = 26
+    chartMarginWithText = 50
 
     getCSSPropertyValue = (propertyName) ->
         if computedStyle == null
@@ -52,6 +55,13 @@ callWithJQuery ($, Plotly) ->
             CSSProps.axis_zeroline_color = getCSSPropertyValue('--component-border-color')
         return CSSProps.axis_zeroline_color
 
+    getJoinedAttrsNames = (attrs, opts) ->
+        attrsString = ''
+        for attr in attrs
+            if attr != opts.localeStrings.columnAttr
+                attrsString += ' - ' if attrsString != ''
+                attrsString += attr
+        return attrsString
 
     makePlotlyChart = (reverse, traceOptions = {}, layoutOptions = {}, transpose = false) ->
         (pivotData, opts) ->
@@ -89,9 +99,9 @@ callWithJQuery ($, Plotly) ->
                         if transpose ^ reverse then traceKey else datumKey
                     ).value())
                     values.push(if isFinite(val) then val else null)
-                    labels.push(datumKey.join('-') || ' ')
+                    labels.push(datumKey.join(' - ') || ' ')
 
-                trace = {name: traceKey.join('-') || fullAggName}
+                trace = {name: traceKey.join(' - ') || fullAggName}
                 if traceOptions.type == "pie"
                     trace.values = values
                     trace.labels = if labels.length > 1 then labels else [fullAggName]
@@ -100,18 +110,14 @@ callWithJQuery ($, Plotly) ->
                     trace.y = if transpose then labels else values
                 return $.extend(trace, traceOptions)
 
-            if transpose ^ reverse
-                hAxisTitle = pivotData.rowAttrs.join("-")
-                groupByTitle = pivotData.colAttrs.join("-")
+            if transpose ^ reverse ^ traceOptions.type == "pie"
+                hAxisTitle = getJoinedAttrsNames(pivotData.rowAttrs, opts)
+                legendTitle = getJoinedAttrsNames(pivotData.colAttrs, opts)
             else
-                hAxisTitle = pivotData.colAttrs.join("-")
-                groupByTitle = pivotData.rowAttrs.join("-")
-            titleText = fullAggName
-            titleText += " #{opts.localeStrings.vs} #{hAxisTitle}" if hAxisTitle != ""
-            titleText += " #{opts.localeStrings.by} #{groupByTitle}" if groupByTitle != ""
+                hAxisTitle = getJoinedAttrsNames(pivotData.colAttrs, opts)
+                legendTitle = getJoinedAttrsNames(pivotData.rowAttrs, opts)
 
             layout =
-                title: titleText
                 hovermode: 'closest'
                 autosize: true
                 paper_bgcolor: getPaperBGColor()
@@ -119,8 +125,22 @@ callWithJQuery ($, Plotly) ->
                 font: {
                     color: getFontColor()
                 }
+                legend:
+                    title:
+                        text: legendTitle
+                        font:
+                            size: 12
 
             if traceOptions.type == 'pie'
+                layout.title =
+                        text: hAxisTitle
+                        font:
+                            size: 12
+                layout.margin =
+                    l: chartMargin
+                    r: chartMargin
+                    t: if hAxisTitle != "" then chartMarginWithText else chartMargin
+                    b: chartMargin
                 columns = Math.ceil(Math.sqrt(data.length))
                 rows = Math.ceil(data.length / columns)
                 layout.grid = {columns, rows}
@@ -134,19 +154,32 @@ callWithJQuery ($, Plotly) ->
                 layout.showlegend = false if data[0].labels.length == 1
             else
                 layout.xaxis =
-                    title: if transpose then fullAggName else null
+                    title: 
+                        text: if transpose then fullAggName else hAxisTitle
+                        font:
+                            size: 12
                     automargin: true
                     gridcolor: getAxisGridColor()
                     linecolor: getAxisLineColor()
                     zerolinecolor: getAxisZeroLineColor()
+                if transpose or hAxisTitle != ""
+                    layout.xaxis.title.standoff = 10;
+                
                 layout.yaxis =
-                    title: if transpose then null else fullAggName
+                    title:
+                        text: if transpose then hAxisTitle else fullAggName
+                        font:
+                            size: 12
                     automargin: true
                     gridcolor: getAxisGridColor()
                     linecolor: getAxisLineColor()
                     zerolinecolor: getAxisZeroLineColor()
-
-
+                    
+                layout.margin =
+                    l: if not transpose or hAxisTitle != '' then chartMarginWithText else chartMargin 
+                    r: chartMargin
+                    t: chartMargin
+                    b: if transpose or hAxisTitle != "" then chartMarginWithText else chartMargin
             result = $("<div>").appendTo $("body")
             Plotly.newPlot(result[0], data, $.extend(layout, layoutOptions, opts.plotly), opts.plotlyConfig)
             return result.detach()
@@ -173,15 +206,32 @@ callWithJQuery ($, Plotly) ->
             for colKey in colKeys
                 v = pivotData.getAggregator(rowKey, colKey).value()
                 if v?
-                    data.x.push(colKey.join('-'))
-                    data.y.push(rowKey.join('-'))
+                    data.x.push(colKey.join(' - '))
+                    data.y.push(rowKey.join(' - '))
                     data.text.push(v)
 
+        colAttrsString = getJoinedAttrsNames(pivotData.colAttrs, opts)
+        rowAttrsString = getJoinedAttrsNames(pivotData.rowAttrs, opts)
+                
         layout = {
-            title: pivotData.rowAttrs.join("-") + ' vs ' + pivotData.colAttrs.join("-")
+            margin:
+                l: if rowAttrsString == '' then chartMargin
+                r: chartMargin
+                t: chartMargin
+                b: if colAttrsString == '' then chartMargin
             hovermode: 'closest',
-            xaxis: {title: pivotData.colAttrs.join('-'), automargin: true},
-            yaxis: {title: pivotData.rowAttrs.join('-'), automargin: true},
+            xaxis:
+                title:
+                    text: colAttrsString
+                    font:
+                        size: 12
+                automargin: true
+            yaxis:
+                title:
+                    text: rowAttrsString
+                    font:
+                        size: 12
+                    automargin: true
             autosize: true
             paper_bgcolor: getPaperBGColor()
             plot_bgcolor: getPlotBGColor()
@@ -189,6 +239,8 @@ callWithJQuery ($, Plotly) ->
                 color: getFontColor()
             }
         }
+        if colAttrsString != '' 
+            layout.xaxis.title.standoff = 10
 
         renderArea = $("<div>", style: "display:none;").appendTo $("body")
         result = $("<div>").appendTo renderArea
@@ -221,22 +273,23 @@ callWithJQuery ($, Plotly) ->
         CSSProps.axis_line_color = null
         CSSProps.axis_zeroline_color = null
         
-        relayout = () ->
-            update =
-                paper_bgcolor: getPaperBGColor()
-                plot_bgcolor: getPlotBGColor()
-                font: {
-                    color: getFontColor()
-                }
-                xaxis:
-                    gridcolor: getAxisGridColor()
-                    linecolor: getAxisLineColor()
-                    zerolinecolor: getAxisZeroLineColor()
-                yaxis:
-                    gridcolor: getAxisGridColor()
-                    linecolor: getAxisLineColor()
-                    zerolinecolor: getAxisZeroLineColor()
-            Plotly.relayout(plot, update)
-            
-        # to defer the task. otherwise new <theme>.css is not applied yet and getComputedStyle() returns values from the previous one
-        setTimeout(relayout)  
+        if (plot != undefined)
+            relayout = () ->
+                update =
+                    paper_bgcolor: getPaperBGColor()
+                    plot_bgcolor: getPlotBGColor()
+                    font: {
+                        color: getFontColor()
+                    }
+                    xaxis:
+                        gridcolor: getAxisGridColor()
+                        linecolor: getAxisLineColor()
+                        zerolinecolor: getAxisZeroLineColor()
+                    yaxis:
+                        gridcolor: getAxisGridColor()
+                        linecolor: getAxisLineColor()
+                        zerolinecolor: getAxisZeroLineColor()
+                Plotly.relayout(plot, update)
+                
+            # to defer the task. otherwise new <theme>.css is not applied yet and getComputedStyle() returns values from the previous one
+            setTimeout(relayout)  

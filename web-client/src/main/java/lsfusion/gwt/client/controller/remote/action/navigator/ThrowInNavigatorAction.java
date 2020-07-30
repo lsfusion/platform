@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
 public class ThrowInNavigatorAction extends NavigatorRequestAction {
-    public Throwable throwable;
+    public Throwable throwable; // assert that throwable is already converted
     public int continueIndex;
 
     public ThrowInNavigatorAction() {}

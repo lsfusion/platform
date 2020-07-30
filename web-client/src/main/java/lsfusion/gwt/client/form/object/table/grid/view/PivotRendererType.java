@@ -80,12 +80,12 @@ public enum PivotRendererType {
         public String localize() {
             return get().pivotHorizontalStackedBarchartRenderer();
         }
-    },
-    TREEMAP {
-        @Override
-        public String localize() {
-            return get().pivotTreemapRenderer();
-        }
+//    },
+//    TREEMAP {
+//        @Override
+//        public String localize() {
+//            return get().pivotTreemapRenderer();
+//        }
     };
     
     
@@ -104,7 +104,7 @@ public enum PivotRendererType {
             case "Multiple Pie Chart": return MULTIPLE_PIECHART;
             case "Horizontal Bar Chart": return HORIZONTAL_BARCHART;
             case "Horizontal Stacked Bar Chart": return HORIZONTAL_STACKED_BARCHART;
-            case "Treemap": return TREEMAP;
+//            case "Treemap": return TREEMAP;
             default: {
                 assert false : "Unknown pivot renderer type";
                 return TABLE;

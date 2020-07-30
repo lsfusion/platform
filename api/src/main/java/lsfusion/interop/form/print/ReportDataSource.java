@@ -6,6 +6,7 @@ import net.sf.jasperreports.engine.JRRewindableDataSource;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -77,7 +78,11 @@ public class ReportDataSource implements JRRewindableDataSource {
             } else if (Time.class.getName().equals(jrField.getValueClassName())) {
                 value = localTimeToSqlTime((LocalTime) value);
             } else if (Timestamp.class.getName().equals(jrField.getValueClassName())) {
-                value = localDateTimeToSqlTimestamp((LocalDateTime) value);
+                if(value instanceof Instant) {
+                   value = instantToSqlTimestamp((Instant) value);
+                } else {
+                    value = localDateTimeToSqlTimestamp((LocalDateTime) value);
+                }
             }
         }
 

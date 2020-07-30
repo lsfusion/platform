@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class DefaultLocalizer extends AbstractLocalizer {
-    private Collection<String> resourceBundleNames; 
+    private final Collection<String> resourceBundleNames; 
     
     public DefaultLocalizer() {
         resourceBundleNames = new ArrayList<>();

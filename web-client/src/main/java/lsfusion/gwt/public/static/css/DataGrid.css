@@ -54,13 +54,17 @@
 
 /* it's hard to tell why, but setting overflow:hidden, prevents getting divs bigger than their parents */
 
-.dataGridHeaderCell-div {
+.wrap-caption {
+    overflow: hidden;
+}
+
+.wrap-div {
     /* width : 100% by default*/
     height : 100%;
 
     overflow: hidden;
 }
-.dataGridHeaderCell-wrapcenter {
+.wrap-center {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -68,28 +72,33 @@
     overflow: hidden;
 }
 
-.dataGridHeaderCell-caption {
-    white-space: normal;
-
-    overflow: hidden;
-}
-
-.dataGridHeaderCell-wrapsortdiv {
+.wrap-wrapimgdiv {
     display: flex;
 
     overflow: hidden;
 }
-.dataGridHeaderCell-sortdiv {
+.wrap-imgdiv {
     flex: 1 1 auto;
     align-self: stretch;
 }
 
-.dataGridHeaderCell-sortimg {
+.wrap-img {
     /*overflow: hidden;*/
-    margin: 1px 2px;
-
     flex: 0 0 auto;
     align-self: center;
+}
+
+.wrap-img-margins {
+    /*overflow: hidden;*/
+    margin: 1px 2px;
+}
+
+.dataGridHeaderCell-caption {
+    white-space: normal;
+}
+
+.dataGridHeaderCell-sortimg {
+    /*overflow: hidden;*/
 }
 
 .dataGridFirstHeaderCell {
@@ -163,53 +172,3 @@
 .dataGridTopOfFocusedCell {
     border-bottom: 1px solid var(--focus-color);
 }
-
-/* ----- GSinglePropertyTable ----- */
-.dataGridWidget-single {
-    background: var(--component-background-color);
-}
-
-.dataGridHeader-single {}
-.dataGridHeaderCell-single {}
-.dataGridFirstHeaderCell-single {}
-.dataGridLastHeaderCell-single {}
-
-.dataGridFooter-single {}
-.dataGridFooterCell-single {}
-.dataGridFirstFooterCell-single {}
-.dataGridLastFooterCell-single {}
-
-.dataGridRow-single {
-}
-
-.dataGridCell-single {
-    padding: 0;
-
-    overflow: hidden;
-    white-space: nowrap;
-    cursor: default;
-}
-
-.dataGridCell-single p {
-    margin: 0;
-}
-
-.dataGridCellInnerDiv-single {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-}
-
-.dataGridFirstCell-single {}
-.dataGridLastCell-single {}
-
-.dataGridKeyboardSelectedRow-single {}
-
-.dataGridKeyboardSelectedRowCell-single {}
-
-.dataGridFocusedCell-single {}
-.dataGridFocusedCellLastInRow-single {}
-.dataGridRightOfFocusedCell-single {}
-.dataGridTopOfFocusedCell-single {}

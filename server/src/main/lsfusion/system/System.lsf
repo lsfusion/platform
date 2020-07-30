@@ -39,6 +39,7 @@ cancel  { CANCEL; }
 
 statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
+timeoutHttp() = DATA LOCAL INTEGER ();
 
 headers = DATA LOCAL TEXT(TEXT);    
 cookies = DATA LOCAL TEXT(TEXT);    

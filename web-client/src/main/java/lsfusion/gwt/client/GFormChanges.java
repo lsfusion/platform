@@ -1,26 +1,26 @@
 package lsfusion.gwt.client;
 
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class GFormChanges {
-    public final HashMap<GGroupObject, GGroupObjectValue> objects = new HashMap<>();
-    public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new HashMap<>();
-    public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> parentObjects = new HashMap<>();
-    public final HashMap<GGroupObject, HashMap<GGroupObjectValue, Boolean>> expandables = new HashMap<>();
-    public final HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>> properties = new HashMap<>();
+    public final NativeSIDMap<GGroupObject, GGroupObjectValue> objects = new NativeSIDMap<>();
+    public final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new NativeSIDMap<>();
+    public final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> parentObjects = new NativeSIDMap<>();
+    public final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Boolean>> expandables = new NativeSIDMap<>();
+    public final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, Object>> properties = new NativeSIDMap<>();
     public final HashSet<GPropertyDraw> dropProperties = new HashSet<>();
 
-    public final HashMap<GGroupObject, Boolean> updateStateObjects = new HashMap<>();
+    public final NativeSIDMap<GGroupObject, Boolean> updateStateObjects = new NativeSIDMap<>();
 
     public final ArrayList<GComponent> activateTabs = new ArrayList<>();
     public final ArrayList<GPropertyDraw> activateProps = new ArrayList<>();
@@ -43,11 +43,11 @@ public class GFormChanges {
         }
 
         for (int i = 0; i < dto.expandablesGroupIds.length; i++) {
-            remapped.expandables.put(form.getGroupObject(dto.expandablesGroupIds[i]), dto.expandables[i]);
+            remapped.expandables.put(form.getGroupObject(dto.expandablesGroupIds[i]), remap(dto.expandableKeys[i], dto.expandableValues[i]));
         }
 
         for (int i = 0; i < dto.properties.length; i++) {
-            remapped.properties.put(remapPropertyReader(form, dto.properties[i]), dto.propertiesValues[i]);
+            remapped.properties.put(remapPropertyReader(form, dto.properties[i]), remap(dto.propertiesValueKeys[i], dto.propertiesValueValues[i]));
         }
 
         for (Integer propertyID : dto.dropPropertiesIds) {
@@ -67,6 +67,13 @@ public class GFormChanges {
         }
 
         return remapped;
+    }
+
+    private static <K,V> NativeHashMap<K, V> remap(K[] keys, V[] values) {
+        NativeHashMap<K, V> result = new NativeHashMap<>();
+        for(int i=0;i<keys.length;i++)
+            result.put(keys[i], values[i]);
+        return result;
     }
 
     private static GPropertyReader remapPropertyReader(GForm form, GPropertyReaderDTO readerDTO) {

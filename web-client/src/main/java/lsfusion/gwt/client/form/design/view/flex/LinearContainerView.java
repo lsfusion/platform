@@ -5,7 +5,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.BeforeSelectionTabHandler;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 
@@ -45,12 +44,9 @@ public class LinearContainerView extends GAbstractContainerView {
         }
 
         if(child.getFlex() > 0 && hasSeveralFlexes && view instanceof TabbedContainerView.Panel)
-            ((TabbedContainerView.Panel)view).addBeforeSelectionTabHandler(new BeforeSelectionTabHandler() {
-                @Override
-                public void onBeforeSelection(int tabIndex) {
-                    if(tabIndex > 0)
-                        panel.fixFlexBasis((TabbedContainerView.Panel)view);
-                }
+            ((TabbedContainerView.Panel)view).setBeforeSelectionHandler(tabIndex -> {
+                if(tabIndex > 0)
+                    panel.fixFlexBasis((TabbedContainerView.Panel)view);
             });
     }
 

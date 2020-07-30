@@ -4,13 +4,15 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
+import lsfusion.gwt.client.base.view.ResizableSystemModalWindow;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 @SuppressWarnings("GWTStyleCheck")
-public class ErrorDialog extends ResizableModalWindow {
+public class ErrorDialog extends ResizableSystemModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private FlexPanel mainPane;
     private Button closeButton;
@@ -77,24 +79,24 @@ public class ErrorDialog extends ResizableModalWindow {
 
         mainPane.setHeight("100%");
         FocusPanel focusPanel = new FocusPanel(mainPane);
-        focusPanel.addKeyDownHandler(new KeyDownHandler() {
-            @Override
-            public void onKeyDown(KeyDownEvent event) {
-                if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-                    hide();
-                }
+        focusPanel.addKeyDownHandler(event -> {
+            if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+                GwtClientUtils.stopPropagation(event);
+                hide();
             }
         });
         
         setContentWidget(focusPanel);
     }
 
-    public void showCenter() {
-        super.center();
+    @Override
+    public void show() {
+        super.show();
+
         closeButton.setFocus(true);
     }
 
     public static void show(String caption, String message, String javaStack, String lsfStack) {
-        new ErrorDialog(caption, message, javaStack, lsfStack).showCenter();
+        new ErrorDialog(caption, message, javaStack, lsfStack).show();
     }
 }

@@ -5,10 +5,18 @@ REQUIRE System, SystemEvents, Email, Utils;
 CLASS UserRole '{security.user.role}';
 TABLE userRole (UserRole);
 
+// Copy user role
+copy ABSTRACT LIST (UserRole, UserRole);
+
 name '{security.name.user.role}' = DATA ISTRING[100](UserRole) CHARWIDTH 20;
 
 sid '{security.sid.user.role}' = DATA STRING[30] (UserRole) CHARWIDTH 10;
 userRoleSID = GROUP AGGR UserRole userRole WHERE userRole IS UserRole BY sid (userRole);
+
+copy (UserRole from, UserRole to) + { 
+    name(to) <- CONCAT '', name(from), '_copy';
+    sid(to) <- CONCAT '', sid(from), '_copy'; 
+}
 
 // Main role
 mainRole = DATA UserRole (User);
@@ -18,12 +26,15 @@ sidMainRole (CustomUser user) = sid(mainRole(user));
 
 currentUserMainRoleName () = nameMainRole(currentUser());
 
+overIn = ABSTRACT BOOLEAN (User, UserRole);
+overIn(User user, UserRole role) += mainRole(user) == role; 
+
 // Roles
 TABLE customUserRole (CustomUser, UserRole);
 in '{security.in}' = DATA BOOLEAN (CustomUser, UserRole);
 
 TABLE userUserRole (User, UserRole);
-has '{security.in}' (User user, UserRole role) = mainRole(user) = role OR in(user, role) MATERIALIZED;
+has '{security.in}' (User user, UserRole role) = in(user, role) OR overIn(user, role) MATERIALIZED;
 
 rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 
@@ -31,7 +42,7 @@ CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE '{security.this.role.is.assigned.to.user}';
     
 WHEN SETCHANGED (User u IS User) DO {
-    mainRole(u) <- userRoleSID('admin') IF login(u) == 'admin'; 
+    in(u, userRoleSID('admin')) <- TRUE WHERE login(u) == 'admin';        
     in(u, userRoleSID('default')) <- TRUE;        
 }
 
@@ -44,8 +55,6 @@ FORM userRolesDialog '{security.user.roles}'
 ;
 
 EXTEND FORM customUser
-    PROPERTIES(u) nameMainRole BEFORE email(u)
-
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
     PROPERTIES(u,ur) in
@@ -55,18 +64,10 @@ DESIGN customUser {
     details {
         NEW roles {
             caption = '{security.user.roles}';
-            MOVE PROPERTY(nameMainRole(u));
             MOVE BOX(ur);
         }
     }
 }
-
-EXTEND FORM customUsers
-    PROPERTIES(u) READONLY nameMainRole BEFORE name(u)
-;
-
-// Copy user role
-copy ABSTRACT LIST (UserRole, UserRole);
 
 // Transaction timeout
 transactTimeout '{security.transact.timeout}' = DATA INTEGER (UserRole);
@@ -235,8 +236,11 @@ maximizeDefaultForms '{security.default.forms.maximize}' = DATA BOOLEAN (UserRol
 maximizeDefaultFormsCurrentUser() = GROUP MAX maximizeDefaultForms(UserRole ur) IF has(currentUser(), ur);
 maximizeForm  INTERNAL 'lsfusion.server.logics.form.interactive.action.MaximizeFormAction' ();
 
-copy (UserRole from, UserRole to) +{
+copy (UserRole from, UserRole to) + {
+    forbidDuplicateForms(to) <- forbidDuplicateForms(from);
+    showDetailedInfo(to) <- showDetailedInfo(from);
     defaultNumber(to, NavigatorElement navigatorElement) <- defaultNumber(from, navigatorElement);
+    maximizeDefaultForms(to) <- maximizeDefaultForms(from);
 }
 
 showDefaultForms()  { 
@@ -312,37 +316,56 @@ newPermissionPolicy = DATA BOOLEAN ();
 onStarted() + {
     //newPermissionPolicy() <- NULL;
     IF NOT newPermissionPolicy() THEN {
+    
+        // navigator elements
         dataPermission(UserRole ur, NavigatorElement e) <- Permission.forbid WHERE forbid(ur, e);
-        dataPermission(UserRole ur, NavigatorElement e) <- Permission.permit WHERE permit(ur, e);
-        dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(ur, p);
-        dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitView(ur, p);
-        permissionChange(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(ur, p);
-        permissionChange(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(ur, p);
-        dataPermission(userRoleSID('default'), NavigatorElement e) <- Permission.forbid WHERE forbid(e);
-        dataPermission(userRoleSID('default'), NavigatorElement e) <- Permission.permit WHERE permit(e);
-        dataPermissionView(userRoleSID('default'), PropertyGroup g) <- Permission.forbid WHERE dataForbidView(g);
-        dataPermissionView(userRoleSID('default'), PropertyGroup g) <- Permission.permit WHERE dataPermitView(g);
-        dataPermissionView(userRoleSID('default'), ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(p);
-        dataPermissionView(userRoleSID('default'), ActionOrProperty p) <- Permission.permit WHERE dataPermitView(p);
-        dataPermissionChange(userRoleSID('default'), PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(g);
-        dataPermissionChange(userRoleSID('default'), PropertyGroup g) <- Permission.permit WHERE dataPermitChange(g);
-        dataPermissionChange(userRoleSID('default'), ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(p);
-        dataPermissionChange(userRoleSID('default'), ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(p);
-        dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidView(ur, g);
-        dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitView(ur, g);
-        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(ur, g);
-        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitChange(ur, g);         
-        
+        dataPermission(UserRole ur, NavigatorElement e) <- Permission.permit WHERE permit(ur, e) AND NOT (e IS NavigatorFolder AND forbidAllForms(ur));
+
         dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.forbid WHERE forbidAllForms(ur);
         dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.permit WHERE permitAllForms(ur);
+
+        dataPermission(userRoleSID('default'), NavigatorElement e) <- Permission.forbid WHERE forbid(e);
+        dataPermission(userRoleSID('default'), NavigatorElement e) <- Permission.permit WHERE permit(e);
+
+        // properties
+        dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(ur, p);
+        dataPermissionView(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitView(ur, p);
+
+        dataPermissionView(userRoleSID('default'), ActionOrProperty p) <- Permission.forbid WHERE dataForbidView(p);
+        dataPermissionView(userRoleSID('default'), ActionOrProperty p) <- Permission.permit WHERE dataPermitView(p);
+
+        // change
+        dataPermissionChange(UserRole ur, ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(ur, p);
+        dataPermissionChange(UserRole ur, ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(ur, p);
+
+        dataPermissionChange(userRoleSID('default'), ActionOrProperty p) <- Permission.forbid WHERE dataForbidChange(p);
+        dataPermissionChange(userRoleSID('default'), ActionOrProperty p) <- Permission.permit WHERE dataPermitChange(p);
+
+        // property groups
+        dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidView(ur, g);
+        dataPermissionView(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitView(ur, g);
+
+        dataPermissionView(userRoleSID('default'), PropertyGroup g) <- Permission.forbid WHERE dataForbidView(g);
+        dataPermissionView(userRoleSID('default'), PropertyGroup g) <- Permission.permit WHERE dataPermitView(g);
+
+        // change
+        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(ur, g);
+        dataPermissionChange(UserRole ur, PropertyGroup g) <- Permission.permit WHERE dataPermitChange(ur, g);         
+
+        dataPermissionChange(userRoleSID('default'), PropertyGroup g) <- Permission.forbid WHERE dataForbidChange(g);
+        dataPermissionChange(userRoleSID('default'), PropertyGroup g) <- Permission.permit WHERE dataPermitChange(g);
+
+        // all
         dataPermissionView(UserRole ur, propertyGroup('System_root')) <- Permission.forbid WHERE forbidViewAllProperty(ur);
         dataPermissionView(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE permitViewAllProperty(ur);
+        
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.forbid WHERE forbidChangeAllProperty(ur);
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE permitChangeAllProperty(ur);
         
         in(CustomUser u, userRoleSID('readonly')) <- TRUE WHERE GROUP SUM order(UserRole ur, policy('readonly')) IF has(u, ur);      
         in(CustomUser u, userRoleSID('default')) <- TRUE;
-        in(CustomUser u, userRoleSID('admin')) <- TRUE WHERE login(u) == 'admin';          
+        in(CustomUser u, userRoleSID('admin')) <- TRUE WHERE login(u) == 'admin';
+                  
         showDetailedInfo(UserRole ur) <- TRUE WHERE order(ur, policy('allowConfiguration'));
         
         dataPermission(UserRole ur, navigatorElementCanonicalName('System.root')) <- Permission.permit WHERE order(ur, policy('allowAll'));        
@@ -393,7 +416,7 @@ FORM securityPolicy '{security.form.policy}'
     
     // Users
     OBJECTS u = CustomUser
-    PROPERTIES(u) READONLY name, login, nameMainRole
+    PROPERTIES(u) READONLY name, login
     PROPERTIES(u) dataForbidDuplicateForms
     FILTERS has(u, ur)
 ;

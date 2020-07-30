@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -47,7 +48,7 @@ public class JDBCTable {
         this.set = set;
     }
 
-    private static class JDBCDataClass extends DataClass<Object> {
+    public static class JDBCDataClass extends DataClass<Object> {
         private final int sqlType;
         private final String sqlName; // тут конечно стремновато, в разных СУБД могут разные имена, но чудес не бывает
         
@@ -64,8 +65,16 @@ public class JDBCTable {
             throw new UnsupportedOperationException();
        }
         public byte getTypeID() {
-            throw new UnsupportedOperationException();
+            return DataType.JDBC;
         }
+        @Override
+        public void serialize(DataOutputStream outStream) throws IOException {
+            super.serialize(outStream);
+
+            outStream.writeInt(sqlType);
+            outStream.writeUTF(sqlName);
+        }
+
         protected Class getReportJavaClass() {
             throw new UnsupportedOperationException();
         }

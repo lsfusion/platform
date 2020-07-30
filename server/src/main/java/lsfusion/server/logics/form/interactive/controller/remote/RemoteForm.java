@@ -331,7 +331,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.trace(String.format("changeMode: [ID: %1$d]", groupObject.getID()));
             }
 
-            if(setGroup) {
+            if(setGroup) { // should correspond FormInstance constructor
                 GroupMode setGroupMode = null;
                 if(propertyIDs != null) {
                     MExclSet<GroupColumn> mGroupProps = SetFact.mExclSet(propertyIDs.length);
@@ -350,7 +350,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
             
             if(pageSize != null)
-                groupObject.setPageSize(pageSize < 0 ? Settings.get().getPageSizeDefaultValue() : pageSize);
+                groupObject.setPageSize(pageSize < -1 ? Settings.get().getPageSizeDefaultValue() : pageSize); // when pageSize -1 assert setGroup
             
             if(forceRefresh)
                 groupObject.forceRefresh();

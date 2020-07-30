@@ -1,10 +1,12 @@
 package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.GClass;
@@ -16,19 +18,16 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
-import lsfusion.gwt.client.form.design.GWidthStringProcessor;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
-import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.view.FormatGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -37,7 +36,8 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
     public int ID;
@@ -72,14 +72,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public AddRemove addRemove;
     public boolean askConfirm;
     public String askConfirmMessage;
-    
+
     public boolean hasEditObjectAction;
     public boolean hasChangeAction;
 
     public GEditBindingMap editBindingMap;
 
     public ImageHolder imageHolder;
-    public boolean focusable;
+    public Boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
 
@@ -87,11 +87,28 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean noSort;
     public GCompare defaultCompare;
 
-    public GKeyInputEvent changeKey;
-    public Integer changeKeyPriority;
+    public GCompare getDefaultCompare() {
+        return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+    }
+
+    public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
     public boolean showChangeKey;
-    public GMouseInputEvent changeMouse;
-    public Integer changeMousePriority;
+
+    public boolean hasKeyBinding() {
+        for(GInputBindingEvent bindingEvent : bindingEvents)
+            if(bindingEvent.inputEvent instanceof GKeyInputEvent)
+                return true;
+        return false;
+    }
+    public String getKeyBindingText() {
+        assert hasKeyBinding();
+        String result = "";
+        for(GInputBindingEvent bindingEvent : bindingEvents)
+            if(bindingEvent.inputEvent instanceof GKeyInputEvent) {
+                result = (result.isEmpty() ? "" : result + ",") + ((GKeyInputEvent) bindingEvent.inputEvent).keyStroke;
+            }
+        return result;
+    }
 
     public boolean drawAsync;
 
@@ -123,12 +140,33 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean columnKeysVertical;
     
     public GFlexAlignment valueAlignment;
-    
+
+    public Boolean editOnSingleClick;
+
     public boolean hide;
 
-    private transient GridCellRenderer cellRenderer;
+    private transient CellRenderer cellRenderer;
     
     public boolean notNull;
+
+    // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
+    public String getEventSID(Event editEvent) {
+        String actionSID = null;
+        if (editBindingMap != null) { // property bindings
+            actionSID = editBindingMap.getEventSID(editEvent);
+        }
+        // not sure that it should be done like this since enter is used as a tab
+//        if (actionSID == null && baseType instanceof GActionType && GKeyStroke.isEnterKeyEvent(editEvent)) {
+//            return GEditBindingMap.CHANGE;
+//        }
+        if (actionSID == null) {
+            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter());
+        }
+        return actionSID;
+    }
+    public boolean isFilterChange(Event editEvent) {
+        return GEditBindingMap.isDefaultFilterChange(editEvent, baseType.getEditEventFilter());
+    }
 
     public static class AddRemove implements Serializable {
         public GObject object;
@@ -144,7 +182,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GPropertyDraw(){}
 
-    public void update(GTableController controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GTableController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
         throw new UnsupportedOperationException();
     }
 
@@ -152,28 +190,20 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return baseType.createPanelRenderer(form, this, columnKey);
     }
 
-    public GridCellRenderer getGridCellRenderer() {
+    public CellRenderer getCellRenderer() {
         if (cellRenderer == null) {
             cellRenderer = baseType.createGridCellRenderer(this);
         }
         return cellRenderer;
     }
 
-    public GridCellEditor createGridCellEditor(EditManager editManager) {
-        return baseType.createGridCellEditor(editManager, this);
-    }
-
-    public GridCellEditor createValueCellEdtor(EditManager editManager) {
-        return baseType.createValueCellEditor(editManager, this);
-    }
-
     public void setUserPattern(String pattern) {
         if(baseType instanceof GFormatType) {
             this.pattern = pattern != null ? pattern : defaultPattern;
 
-            GridCellRenderer renderer = getGridCellRenderer();
-            if (renderer instanceof FormatGridCellRenderer) {
-                ((FormatGridCellRenderer) renderer).updateFormat();
+            CellRenderer renderer = getCellRenderer();
+            if (renderer instanceof FormatCellRenderer) {
+                ((FormatCellRenderer) renderer).updateFormat();
             } else
                 assert false;
         }
@@ -212,7 +242,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             caption = this.caption;
         }
 
-        return showChangeKey && changeKey != null ? caption + " (" + changeKey + ")" : caption;
+        if(showChangeKey && hasKeyBinding())
+            caption += " (" + getKeyBindingText() + ")";
+        return caption;
     }
 
     public String getEditCaption() {
@@ -235,40 +267,40 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             "<html><b>%s</b><br>%s";
 
     public static String getDetailedToolTipFormat() {
-        return  "<hr>" +
+        return  createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipCanonicalName() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipTable() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipObjects() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipSignature() + ":</b> %s (%s)<br>" +
                 "<b>" + getMessages().propertyTooltipScript() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
-                "<hr>" +
+                createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
                 "</html>";
     }  
     
     public static String getDetailedActionToolTipFormat() {
-        return  "<hr>" +
+        return  createTooltipHorizontalSeparator() +
                 "<b>sID:</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipObjects() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
-                "<hr>" +
+                createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
                 "</html>";
     }
     
     public static String getChangeKeyToolTipFormat() {
-        return "<hr><b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
+        return createTooltipHorizontalSeparator() + "<b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
     }
             
     public String getTooltipText(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
-        String changeKeyText = changeKey == null ? "" : GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), changeKey.toString());
+        String keyBindingText = hasKeyBinding() ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), getKeyBindingText()) : "";
 
         if (!MainFrame.showDetailedInfo) {
-            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, changeKeyText);
+            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, keyBindingText);
         } else {
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
@@ -276,7 +308,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             
             if (baseType instanceof GActionType) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
-                        propCaption, changeKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
+                        propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String returnClass = this.returnClass.toString();
@@ -284,7 +316,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
                 
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedToolTipFormat(),
-                        propCaption, changeKeyText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,
+                        propCaption, keyBindingText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,
                         script, scriptPath, propertyFormName, scriptFormPath);
             }
         }
@@ -307,7 +339,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             }
         }
         return image;
-    } 
+    }
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
 
     public boolean isReadOnly() {
         return editType == GPropertyEditType.READONLY;
@@ -343,11 +380,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return null;
     }
 
-    public int getValueWidth(GFont parentFont) {
-        return getValueWidth(parentFont, null);
+    // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
+    public int getValueWidthWithPadding(GFont parentFont) {
+        return getValueWidth(parentFont) + getCellRenderer().getWidthPadding() * 2;
+    }
+    public int getValueHeightWithPadding(GFont parentFont) {
+        return getValueHeight(parentFont) + getCellRenderer().getHeightPadding() * 2;
     }
 
-    public int getValueWidth(GFont parentFont, GWidthStringProcessor widthStringProcessor) {
+    public int getValueWidth(GFont parentFont) {
         if (valueWidth != -1) {
             return valueWidth;
         }
@@ -358,9 +399,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(widthString == null && charWidth != 0)
             widthString = GwtSharedUtils.replicate('0', charWidth);
         if(widthString != null)
-            return baseType.getFullWidthString(widthString, font, widthStringProcessor);
+            return baseType.getFullWidthString(widthString, font);
 
-        return baseType.getDefaultWidth(font, this, widthStringProcessor);
+        return baseType.getDefaultWidth(font, this);
     }
 
     public Object getFormat() {
@@ -372,21 +413,19 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return valueHeight;
         }
 
-        // we don't set padding to cell or button, but count them to have visual padding
-        int insets = StyleDefaults.CELL_VERTICAL_PADDING * 2;
+        int lineHeight;
         GFont usedFont = font != null ? font : parentFont;
-        int lines = charHeight == 0 ? baseType.getDefaultCharHeight() : charHeight;
-        int height;
-        if ((usedFont != null && usedFont.size > 0) || lines > 1) {
-            int lineHeight = GFontMetrics.getSymbolHeight(font);
-            height = lineHeight * lines + insets;
-        } else {
-            height = StyleDefaults.VALUE_HEIGHT;
-        }
-        
+        if (usedFont != null && usedFont.size > 0)
+            lineHeight = GFontMetrics.getSymbolHeight(usedFont);
+        else
+            lineHeight = StyleDefaults.VALUE_HEIGHT;
+        int lines = charHeight > 0 ? charHeight : baseType.getDefaultCharHeight();
+
+        int height = lineHeight * lines;
+
         final ImageDescription image = getImage();
         if (image != null && image.height >= 0) {
-            height = Math.max(image.height + insets, height);
+            height = Math.max(image.height, height);
         }
         return height;
     }
@@ -407,7 +446,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 ", caption='" + caption + '\'' +
                 ", baseType=" + baseType +
                 ", changeType=" + changeType +
-                ", imagePath='" + imageHolder.getDefaultImage() + '\'' +
+                (imageHolder != null ? ", imagePath='" + imageHolder.getDefaultImage() + '\'' : "") +
                 ", focusable=" + focusable +
                 ", checkEquals=" + checkEquals +
                 ", editType=" + editType +

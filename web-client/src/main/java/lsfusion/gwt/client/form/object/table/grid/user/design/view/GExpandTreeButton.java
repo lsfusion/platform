@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.object.table.grid.user.design.view;
 
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -21,18 +20,15 @@ public class GExpandTreeButton extends GToolbarButton {
     }
 
     @Override
-    public void addListener() {
-        addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                if(expand) {
-                    treeGroupController.fireExpandNodeRecursive(current);
-                } else {
-                    treeGroupController.fireCollapseNodeRecursive(current);
-                }
-                update(treeGroupController);
+    public ClickHandler getClickHandler() {
+        return event -> {
+            if(expand) {
+                treeGroupController.fireExpandNodeRecursive(current);
+            } else {
+                treeGroupController.fireCollapseNodeRecursive(current);
             }
-        });
+            update(treeGroupController);
+        };
     }
 
     public void update(GTreeGroupController treeGroupController) {

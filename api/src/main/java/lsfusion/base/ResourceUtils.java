@@ -3,6 +3,7 @@ package lsfusion.base;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -17,7 +18,7 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ResourceUtils {
 
-    public static Collection<String> getResources(final List<Pattern> patterns) {
+    public static List<String> getResources(final List<Pattern> patterns) {
         final ArrayList<String> retval = new ArrayList<>();
         for (final String element : getClassPathElements()) {
             if (!isRedundantString(element)) {
@@ -28,7 +29,7 @@ public class ResourceUtils {
         return retval;
     }
     
-    public static Collection<String> getResources(final Pattern pattern) {
+    public static List<String> getResources(final Pattern pattern) {
         return getResources(Collections.singletonList(pattern));
     }
 
@@ -149,9 +150,17 @@ public class ResourceUtils {
             key.reset();
         }
     }
-    
+
     public static ImageIcon readImage(String imagePath) {
         URL resource = ResourceUtils.class.getResource("/images/" + imagePath);
         return resource != null ? new ImageIcon(resource) : null;
+    }
+
+    public static URL getResource(String path) {
+        return ResourceUtils.class.getResource(path);
+    }
+
+    public static InputStream getResourceAsStream(String path) {
+        return ResourceUtils.class.getResourceAsStream(path);
     }
 }  

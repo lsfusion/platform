@@ -1,30 +1,41 @@
 package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.ImageButton;
+import lsfusion.gwt.client.base.view.UnFocusableImageButton;
+import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT_STRING;
 
-public abstract class GToolbarButton extends ImageButton {
+public abstract class GToolbarButton extends UnFocusableImageButton {
     public GToolbarButton(String imagePath) {
         this(imagePath, "");
     }
 
-    public GToolbarButton(String caption, String imagePath, String tooltipText) {
+    public GToolbarButton(String imagePath, String tooltipText) {
+        this(null, imagePath, tooltipText, true);
+    }
+
+    public GToolbarButton(String caption, String imagePath, String tooltipText, boolean compact) {
         super(caption, imagePath);
-        
-        setSize(COMPONENT_HEIGHT_STRING, COMPONENT_HEIGHT_STRING);
 
         addStyleName("toolbarButton");
+        if (compact) {
+            setSize(COMPONENT_HEIGHT_STRING, COMPONENT_HEIGHT_STRING);
+            addStyleName("toolbarButtonNoBorder");
+        }
+        
         setTitle(tooltipText);
-        addListener();
+        
+        addClickHandler(getClickHandler());
+        
         setFocusable(false);
-
-    }
-    public GToolbarButton(String imagePath, String tooltipText) {
-        this(null, imagePath, tooltipText);
     }
 
-    public abstract void addListener();
+    public abstract ClickHandler getClickHandler();
 
     public void showBackground(boolean showBackground) {
         getElement().getStyle().setBackgroundColor(showBackground ? "var(--selection-color)" : "");

@@ -42,6 +42,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public ListViewType listViewType;
     public PivotOptions pivotOptions;
 
+    public boolean asyncInit;
+
     public ClientGrid grid;
     public ClientToolbar toolbar;
     public ClientFilter filter;
@@ -122,6 +124,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         viewType = pool.readObject(inStream);
         listViewType = pool.readObject(inStream);
         pivotOptions = pool.readObject(inStream);
+
+        asyncInit = pool.readBoolean(inStream);
 
         pool.deserializeCollection(objects, inStream);
 

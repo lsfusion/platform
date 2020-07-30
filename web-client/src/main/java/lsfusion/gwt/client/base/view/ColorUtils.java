@@ -31,6 +31,10 @@ public class ColorUtils {
         return "#" + toHexString(iR) + toHexString(iG) + toHexString(iB);
     }
 
+    public static String toColorString(int iA, int iR, int iG, int iB) {
+        return toHexString(iA) + toHexString(iR) + toHexString(iG) + toHexString(iB);
+    }
+
     public static String toColorString(int iColor) {
         return toColorString(getRed(iColor), getGreen(iColor), getBlue(iColor));
     }
@@ -61,17 +65,24 @@ public class ColorUtils {
     public static String getDisplayColor(String baseColor) {
         if (!colorTheme.isDefault() && baseColor != null) {
             int baseRGB = toRGB(baseColor);
+            return getDisplayColor(getRed(baseRGB), getGreen(baseRGB), getBlue(baseRGB));
+        }
+        return baseColor;
+    }
+
+    public static String getDisplayColor(int baseRed, int baseGreen, int baseBlue) {
+        if (!colorTheme.isDefault()) {
             int baseBackgroundColor = toRGB(StyleDefaults.getDefaultComponentBackground());
             int newBackgroundColor = toRGB(StyleDefaults.getComponentBackground(colorTheme));
             int customLimitColor = toRGB(StyleDefaults.getTextColor(colorTheme));
-            
+
             float[] hsb = RGBtoHSB(
-                    max(min(getRed(baseBackgroundColor) - getRed(baseRGB) + getRed(newBackgroundColor), getRed(customLimitColor)), 0),
-                    max(min(getGreen(baseBackgroundColor) - getGreen(baseRGB) + getGreen(newBackgroundColor), getGreen(customLimitColor)), 0),
-                    max(min(getBlue(baseBackgroundColor) - getBlue(baseRGB) + getBlue(newBackgroundColor), getBlue(customLimitColor)), 0));
+                    max(min(getRed(baseBackgroundColor) - baseRed + getRed(newBackgroundColor), getRed(customLimitColor)), 0),
+                    max(min(getGreen(baseBackgroundColor) - baseGreen + getGreen(newBackgroundColor), getGreen(customLimitColor)), 0),
+                    max(min(getBlue(baseBackgroundColor) - baseBlue + getBlue(newBackgroundColor), getBlue(customLimitColor)), 0));
             return toColorString(HSBtoRGB(Math.abs(0.5f + hsb[0]), hsb[1], hsb[2]));
         }
-        return baseColor;
+        return toColorString(baseRed, baseGreen, baseBlue);
     }
 
     // c/p of java.awt.Color's HSBtoRGB() 
@@ -155,5 +166,9 @@ public class ColorUtils {
         hsbvals[1] = saturation;
         hsbvals[2] = brightness;
         return hsbvals;
+    }
+
+    public static String rgbToArgb(String rgb) {
+        return rgb.replace("#", "FF");
     }
 }

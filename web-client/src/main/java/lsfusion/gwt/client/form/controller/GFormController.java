@@ -2,9 +2,13 @@ package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -26,13 +30,17 @@ import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.jsni.Function2;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectClass;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.controller.remote.action.form.*;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
@@ -68,9 +76,15 @@ import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupControlle
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
-import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.controller.*;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
+import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
+import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.form.view.FormDockable;
+import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
@@ -81,16 +95,16 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
-import static lsfusion.gwt.client.form.event.GKeyStroke.isPossibleEditKeyEvent;
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
+import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 
-public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
+public class GFormController extends ResizableSimplePanel implements ServerMessageProvider, EditManager {
     private static final int ASYNC_TIME_OUT = 50;
 
     private FormDispatchAsync dispatcher;
@@ -98,45 +112,43 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final GFormActionDispatcher actionDispatcher;
 
     private final FormsController formsController;
+    private final FormContainer formContainer;
 
     private final GForm form;
     public final GFormLayout formLayout;
 
-    private final boolean isModal;
     private final boolean isDialog;
 
-    private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<>();
+    private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects = new NativeSIDMap<>();
 
-    private final Map<GGroupObject, List<GPropertyFilter>> currentFilters = new HashMap<>();
+    private final NativeSIDMap<GGroupObject, ArrayList<GPropertyFilter>> currentFilters = new NativeSIDMap<>();
 
-    private final Map<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
-    private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
+    private final LinkedHashMap<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
+    private final LinkedHashMap<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
+
+    private final NativeSIDMap<GGroupObject, ArrayList<Widget>> filterViews = new NativeSIDMap<>();
 
     private final LinkedHashMap<Long, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
-    private final NativeHashMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeHashMap<>();
-    private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<>();
+    private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
+    private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>();
 
-    private boolean initialFormChangesReceived = false;
     private boolean hasColumnGroupObjects;
 
     private Timer asyncTimer;
-    private PanelRenderer asyncView;
+    private ActionPanelRenderer asyncView;
 
     private LoadingManager loadingManager = MainFrame.busyDialog ? new GBusyDialogDisplayer(this) : new LoadingBlocker(this);
-
-    private boolean blocked = false;
-    private boolean selected = true;
 
     public FormsController getFormsController() {
         return formsController;
     }
 
-    public GFormController(FormsController formsController, GForm gForm, final boolean isModal, boolean isDialog) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
+        this.formContainer = formContainer;
         this.form = gForm;
-        this.isModal = isModal;
         this.isDialog = isDialog;
 
         dispatcher = new FormDispatchAsync(this);
@@ -154,6 +166,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             getElement().setAttribute("lsfusion-form", form.sID);
         }
 
+        getElement().getStyle().setOverflow(Style.Overflow.AUTO);
         setFillWidget(formLayout);
 
         updateFormCaption();
@@ -167,20 +180,42 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (form.initialFormChanges != null) {
             applyRemoteChanges(form.initialFormChanges);
             form.initialFormChanges = null;
-        } else if (!initialFormChangesReceived) { // возможно уже получили в initializeDefaultOrders()
+        } else
             getRemoteChanges();
-        }
 
         initializeUserOrders();
 
         initializeAutoRefresh();
 
-        install(this);
+        DataGrid.initSinkMouseEvents(this);
     }
 
-    protected void unregisterForm() {
-        if(formsController != null)
-            formsController.unregisterForm(this);
+    @Override
+    public void onBrowserEvent(Event event) {
+        Element target = DataGrid.getTargetAndCheck(getElement(), event);
+        if(target == null)
+            return;
+        if(!previewClickEvent(target, event))
+            return;
+
+        super.onBrowserEvent(event);
+
+        if(GMouseStroke.isChangeEvent(event) || GMouseStroke.isDoubleChangeEvent(event))
+            handleMouseEvent(target, event);
+    }
+
+    // will handle key events in upper container which will be better from UX point of view
+    public static void initKeyEventHandler(Widget widget, Supplier<GFormController> currentForm) {
+        widget.addDomHandler(event -> {
+            GFormController form = currentForm.get();
+            if(form != null)
+                form.handleKeyEvent(event.getNativeEvent());
+        }, KeyDownEvent.getType());
+        widget.addDomHandler(event -> {
+            GFormController form = currentForm.get();
+            if(form != null)
+                form.handleKeyEvent(event.getNativeEvent());
+        }, KeyPressEvent.getType());
     }
 
     public GGridController getController(GGroupObject groupObject) {
@@ -222,18 +257,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         filterCheck.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
-        if (filter.key != null) {
-            addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
-                @Override
-                public void pressed(EventTarget eventTarget) {
-                    filterCheck.setValue(!filterCheck.getValue(), true);
-                }
-                @Override
-                public boolean showing() {
-                    return isShowing(filterCheck);
-                }
-            });
-        }
+        if (filter.key != null)
+            addBinding(new GKeyInputEvent(filter.key), (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
     }
 
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
@@ -248,20 +273,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
             final int filterIndex = i;
             filterBox.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
-            if (filter.key != null) {
-                addBinding(new GKeyInputEvent(filter.key, null), new GFormController.Binding(filterGroup.groupObject) {
-                    @Override
-                    public void pressed(EventTarget eventTarget) {
-                        filterBox.setSelectedIndex(filterIndex + 1);
-                        setRegularFilter(filterGroup, filterIndex);
-                    }
-                    @Override
-                    public boolean showing() {
-                        return isShowing(filterBox);
-                    }
-                });
-            }
-
+            if (filter.key != null)
+                addBinding(new GKeyInputEvent(filter.key), (event) -> {
+                    filterBox.setSelectedIndex(filterIndex + 1);
+                    setRegularFilter(filterGroup, filterIndex);
+                }, filterBox, filterGroup.groupObject);
         }
 
         filterBox.addChangeHandler(new ChangeHandler() {
@@ -282,6 +298,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
         formLayout.addBaseComponent(filterGroup, filterWidget, null);
+
+        // need this to hide / show regular filters when group object is not visible
+        if (filterGroup.groupObject != null)
+            filterViews.computeIfAbsent(filterGroup.groupObject, k -> new ArrayList<>()).add(filterWidget);
+    }
+
+    public void setFiltersVisible(GGroupObject groupObject, boolean visible) {
+        List<Widget> groupFilters = filterViews.get(groupObject);
+        if (groupFilters != null)
+            for (Widget filterView : groupFilters)
+                filterView.setVisible(visible);
     }
 
     private void setRegularFilter(GRegularFilterGroup filterGroup, int index) {
@@ -447,7 +474,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GFormChanges fc = GFormChanges.remap(form, changesDTO);
 
         if (hasColumnGroupObjects) // optimization
-            currentGridObjects.putAll(fc.gridObjects);
+            fc.gridObjects.foreachEntry((key, value) -> currentGridObjects.put(key, value));
 
         modifyFormChangesWithModifyObjectAsyncs(changesDTO.requestIndex, fc);
 
@@ -469,14 +496,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         activateElements(fc);
 
         onResize();
-
-        // в конце скроллим все таблицы к текущим ключам
-        afterAppliedChanges();
-
-        if (!initialFormChangesReceived) {
-            onInitialFormChangesReceived();
-            initialFormChangesReceived = true;
-        }
     }
 
     private void activateElements(GFormChanges fc) {
@@ -485,15 +504,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         for(GPropertyDraw propertyDraw : fc.activateProps)
             focusProperty(propertyDraw);            
-    }
-
-    private void afterAppliedChanges() {
-        for (GGridController controller : controllers.values()) {
-            controller.afterAppliedChanges();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.afterAppliedChanges();
-        }
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(final int currentDispatchingRequestIndex, GFormChanges fc) {
@@ -526,15 +536,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(final long currentDispatchingRequestIndex, final GFormChanges fc) {
-        pendingChangeCurrentObjectsRequests.foreachEntry(new Function2<GGroupObject, Long>() {
-            @Override
-            public void apply(GGroupObject group, Long requestIndex) {
-                if (requestIndex <= currentDispatchingRequestIndex) {
-                    pendingChangeCurrentObjectsRequests.remove(group);
-                } else {
-                    fc.objects.remove(group);
-                }
-            }
+        pendingChangeCurrentObjectsRequests.foreachEntry((group, requestIndex) -> {
+            if (requestIndex <= currentDispatchingRequestIndex)
+                pendingChangeCurrentObjectsRequests.remove(group);
+            else
+                fc.objects.remove(group);
         });
     }
 
@@ -551,10 +557,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                             removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
 
                             if(isPropertyShown(property) && !fc.dropProperties.contains(property)) {
-                                HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
+                                NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
                                 if (propertyValues == null) {
                                     // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
-                                    propertyValues = new HashMap<>();
+                                    propertyValues = new NativeHashMap<>();
                                     fc.properties.put(property, propertyValues);
                                     fc.updateProperties.add(property);
                                 }
@@ -569,20 +575,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
 
-        pendingChangePropertyRequests.foreachEntry(new Function2<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>() {
-            @Override
-            public void apply(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Change> values) {
-                final HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
-                if (propertyValues != null) {
-                    values.foreachEntry(new Function2<GGroupObjectValue, Change>() {
-                        @Override
-                        public void apply(GGroupObjectValue group, Change change) {
-                            if (change.canUseNewValueForRendering) {
-                                propertyValues.put(group, change.newValue);
-                            }
-                        }
-                    });
-                }
+        pendingChangePropertyRequests.foreachEntry((property, values) -> {
+            final NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
+            if (propertyValues != null) {
+                values.foreachEntry((group, change) -> {
+                    if (change.canUseNewValueForRendering) {
+                        propertyValues.put(group, change.newValue);
+                    }
+                });
             }
         });
     }
@@ -595,19 +595,24 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return false;
     }
 
-    public void openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
-        if (modalityType == GModalityType.DOCKED_MODAL) {
-            block();
-        }
+    public void openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, final WindowHiddenHandler handler) {
+        boolean isDockedModal = modalityType == GModalityType.DOCKED_MODAL;
+        if (isDockedModal)
+            ((FormDockable)formContainer).block();
 
-        Widget blockingWidget = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, () -> {
-            unblock();
+        FormContainer blockingForm = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, () -> {
+            if(isDockedModal) {
+                ((FormDockable)formContainer).unblock();
+
+                formsController.selectTab((FormDockable) formContainer);
+            } else if(modalityType == GModalityType.DOCKED)
+                formsController.ensureTabSelected();
+
             handler.onHidden();
         });
 
-        if (modalityType == GModalityType.DOCKED_MODAL) {
-            setBlockingWidget(blockingWidget);
-        }
+        if (isDockedModal)
+            ((FormDockable)formContainer).setBlockingForm((FormDockable) blockingForm);
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -694,13 +699,78 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ScrollToEnd(group.ID, toEnd), new ServerResponseCallback());
     }
 
-    public void executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<ServerResponseResult> callback) {
+    public void executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-        syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), callback);
+        syncDispatch(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
     }
 
-    public void executeEventAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID) {
-        dispatcher.execute(new ExecuteEventAction(property.ID, getFullCurrentKey(columnKey), actionSID), new ServerResponseCallback());
+    public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
+        Event event = handler.event;
+        GPropertyDraw editProperty = editContext.getProperty();
+        if(editProperty == null)  // in tree there can be no property in groups other than last
+            return;
+
+        if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
+            handler.consume();
+            GPropertyContextMenuPopup.show(editProperty, event.getClientX(), event.getClientY(), actionSID -> {
+                actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
+            });
+        } else {
+            String actionSID;
+            if(isBinding) {
+                if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
+                    editContext.trySetFocus(); // we want element to be focused on key binding (if it's possible)
+                actionSID = CHANGE;
+            } else {
+                actionSID = editProperty.getEventSID(event);
+                if(actionSID == null)
+                    return;
+            }
+
+            if ((GEditBindingMap.CHANGE.equals(actionSID) || GEditBindingMap.CHANGE_WYS.equals(actionSID) || GEditBindingMap.GROUP_CHANGE.equals(actionSID)) &&
+                    editContext.isReadOnly())
+                return;
+
+            GPropertyDraw property = editProperty;
+            if(!property.hasChangeAction) // important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
+                return;
+
+            handler.consume();
+
+            if (GEditBindingMap.CHANGE.equals(actionSID)) {
+                final boolean asyncModifyObject = isAsyncModifyObject(property);
+                if (asyncModifyObject || property.changeType != null) {
+                    if (property.askConfirm) {
+                        blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
+                            if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                                executeSimpleChange(asyncModifyObject, event, editContext);
+                            }
+                        });
+                    } else {
+                        executeSimpleChange(asyncModifyObject, event, editContext);
+                    }
+                    return;
+                }
+            }
+
+            actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
+        }
+    }
+
+    private void executeSimpleChange(boolean asyncModifyObject, Event event, ExecuteEditContext editContext) {
+        GPropertyDraw property = editContext.getProperty();
+        if (asyncModifyObject)
+            modifyObject(editContext.getProperty(), editContext.getColumnKey());
+        else {
+            edit(property.changeType, event, false, null, value -> {
+                Object oldValue = editContext.getValue();
+
+                if(property.canUseChangeValueForRendering()) // changing model, to rerender new value
+                    editContext.setValue(value);
+
+                changeProperty(property, editContext.getColumnKey(), (Serializable) value, oldValue);
+            }, value -> {}, () -> {}, editContext);
+        }
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
@@ -794,7 +864,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         final boolean add = property.addRemove.add;
 
         GGridController controller = getGroupObjectController(property.addRemove.object.groupObject);
-        final int position = controller.getKeyboardSelectedRow();
+        final int position = controller.getSelectedRow();
 
         if (add) {
             MainFrame.logicsDispatchAsync.execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
@@ -865,20 +935,20 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new ServerResponseCallback());
     }
 
-    public void changeFilter(GGroupObject groupObject, List<GPropertyFilter> conditions) {
+    public void changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
         currentFilters.put(groupObject, conditions);
         applyCurrentFilters();
     }
 
-    public void changeFilter(GTreeGroup treeGroup, List<GPropertyFilter> conditions) {
-        Map<GGroupObject, List<GPropertyFilter>> filters = GwtSharedUtils.groupList(new GwtSharedUtils.Group<GGroupObject, GPropertyFilter>() {
+    public void changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
+        Map<GGroupObject, ArrayList<GPropertyFilter>> filters = GwtSharedUtils.groupList(new GwtSharedUtils.Group<GGroupObject, GPropertyFilter>() {
             public GGroupObject group(GPropertyFilter key) {
                 return key.groupObject;
             }
         }, conditions);
 
         for (GGroupObject group : treeGroup.groups) {
-            List<GPropertyFilter> groupFilters = filters.get(group);
+            ArrayList<GPropertyFilter> groupFilters = filters.get(group);
             if (groupFilters == null) {
                 groupFilters = new ArrayList<>();
             }
@@ -891,32 +961,25 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private void applyCurrentFilters() {
         ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
 
-        for (List<GPropertyFilter> groupFilters : currentFilters.values()) {
+        currentFilters.foreachValue(groupFilters -> {
             for (GPropertyFilter filter : groupFilters) {
                 filters.add(filter.getFilterDTO());
             }
-        }
+        });
 
         dispatcher.execute(new SetUserFilters(filters), new ServerResponseCallback());
     }
 
-    public void quickFilter(EditEvent event, int initialFilterPropertyID) {
+    public void quickFilter(Event event, int initialFilterPropertyID) {
         GPropertyDraw propertyDraw = getProperty(initialFilterPropertyID);
         if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
-            selectProperty(initialFilterPropertyID);
+            focusProperty(propertyDraw);
             controllers.get(propertyDraw.groupObject).quickEditFilter(event, propertyDraw, null);
         }
     }
 
     public void getInitialFilterProperty(ErrorHandlingCallback<NumberResult> callback) {
         dispatcher.execute(new GetInitialFilterProperty(), callback);
-    }
-
-    public void selectProperty(int propertyDrawId) {
-        GPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
-        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
-            controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
-        }
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
@@ -964,7 +1027,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     // change group mode with force refresh
-    public long changeMode(final GGroupObject groupObject, boolean enableGroup, int pageSize, GListViewType viewType) {
+    public long changeListViewType(final GGroupObject groupObject, int pageSize, GListViewType viewType) {
+        boolean enableGroup = viewType == GListViewType.PIVOT;
         return changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null, viewType);
     }
     public long changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GListViewType viewType) {
@@ -993,8 +1057,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return new GFormUserPreferences(groupObjectGeneralPreferencesList, groupObjectUserPreferencesList);
     }
 
-    public void runGroupReport(Integer groupObjectID, final boolean toExcel) {
-        syncDispatch(new GroupReport(groupObjectID, toExcel, getUserPreferences()), new ErrorHandlingCallback<GroupReportResult>() {
+    public void runGroupReport(Integer groupObjectID) {
+        syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new ErrorHandlingCallback<GroupReportResult>() {
             @Override
             public void success(GroupReportResult result) {
                 GwtClientUtils.downloadFile(result.filename, "lsfReport", result.extension);
@@ -1031,7 +1095,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return form.propertyDraws;
     }
 
-    public void setAsyncView(PanelRenderer asyncView) {
+    public void setAsyncView(ActionPanelRenderer asyncView) {
         this.asyncView = asyncView;
     }
 
@@ -1044,24 +1108,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void onAsyncFinished() {
         if (asyncView != null) {
             asyncTimer.cancel();
-            asyncView.setDefaultIcon();
+            asyncView.setImage(null);
         }
     }
 
-    public void block() {
-        //do nothing by default
+    public void previewBlurEvent(Event event) {
+        MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
     }
-
-    public void setBlockingWidget(Widget blockingWidget) {
-        //do nothing by default
-    }
-
-    public void unblock() {
-        //do nothing by default
-    }
-
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
+    public boolean previewClickEvent(Element target, Event event) {
+        return MainFrame.previewClickEvent(target, event);
     }
 
     protected void onFormHidden(int closeDelay) {
@@ -1115,25 +1170,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return formLayout.getMaxPreferredSize();
     }
 
-    private GPropertyTable editingTable;
-
-    public void setCurrentEditingTable(GPropertyTable table) {
-        editingTable = table;
-        if (table == null) {
-            dispatcher.flushCompletedRequests();
-        }
-    }
-
-    public boolean isEditing() {
-        return editingTable != null;
-    }
-
-    public void commitEditingTable() {
-        editingTable.validateAndCommit();
-    }
-
     public boolean isModal() {
-        return isModal;
+        return formContainer instanceof ModalForm;
     }
 
     public boolean isDialog() {
@@ -1152,41 +1190,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         }
         return objects;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-
-        if (selected && blocked) { // чтобы автоматом не проставлять фокус под блокировку
-            return;
-        }
-
-        if (selected) {
-            scheduleFocusFirstWidget();
-            restoreGridScrollPositions();
-        } else {
-            // обходим баг Chrome со скроллингом
-            // http://code.google.com/p/chromium/issues/detail?id=36428
-            storeGridScrollPositions();
-        }
-    }
-
-    public void storeGridScrollPositions() {
-        for (GGridController controller : controllers.values()) {
-            controller.beforeHidingGrid();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.beforeHidingGrid();
-        }
-    }
-
-    public void restoreGridScrollPositions() {
-        for (GGridController controller : controllers.values()) {
-            controller.afterShowingGrid();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.afterShowingGrid();
-        }
     }
 
     @Override
@@ -1245,22 +1248,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    protected void onInitialFormChangesReceived() {
-        scheduleFocusFirstWidget();
-    }
-
-    public void scheduleFocusFirstWidget() {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                onResize();
-                getElement().getStyle().setOverflow(Style.Overflow.AUTO);
-                focusFirstWidget();
-            }
-        });
-    }
-
-    private void focusFirstWidget() {
+    public void focusFirstWidget() {
         if (formLayout.focusDefaultWidget()) {
             return;
         }
@@ -1288,26 +1276,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public abstract static class Binding {
-        public final GGroupObject groupObject;
-        public int priority;
-        public GBindingMode bindDialog;
-        public GBindingMode bindGroup;
-        public GBindingMode bindEditing;
-        public GBindingMode bindShowing;
-        Function<NativeEvent, Boolean> isSuitable;
+    public abstract static class Binding implements BindingExec {
+
+        public GGroupObject groupObject;
 
         public Binding(GGroupObject groupObject) {
-            this(groupObject, 0, null);
-        }
-
-        public Binding(GGroupObject groupObject, int priority, Function<NativeEvent, Boolean> isSuitable) {
             this.groupObject = groupObject;
-            this.priority = priority;
-            this.isSuitable = isSuitable;
         }
 
-        public abstract void pressed(EventTarget eventTarget);
         public abstract boolean showing();
 
         public boolean enabled() {
@@ -1315,59 +1291,42 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private final HashMap<GInputEvent, ArrayList<Binding>> bindings = new HashMap<>();
+    private final ArrayList<GBindingEvent> bindingEvents = new ArrayList<>();
+    private final ArrayList<Binding> bindings = new ArrayList<>();
 
-    public void install(Widget rootWidget) {
-        rootWidget.addDomHandler(new KeyDownHandler() {
-            @Override
-            public void onKeyDown(KeyDownEvent event) {
-                handleKeyEvent(event.getNativeEvent());
-            }
-        }, KeyDownEvent.getType());
-        rootWidget.addDomHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                handleMouseEvent(event.getNativeEvent());
-            }
-        }, ClickEvent.getType());
-        rootWidget.addDomHandler(new DoubleClickHandler() {
-            @Override
-            public void onDoubleClick(DoubleClickEvent event) {
-                handleMouseEvent(event.getNativeEvent());
-            }
-        }, DoubleClickEvent.getType());
+    public interface BindingCheck {
+        boolean check(Event event);
     }
-    
-    public void addPropertyBindings(GPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
-        if(propertyDraw.changeKey != null) {
-            Binding binding = bindingSupplier.get();
-            if(propertyDraw.changeKeyPriority != null)
-                binding.priority = propertyDraw.changeKeyPriority;
-            addBinding(propertyDraw.changeKey, binding);
-        }
-        if(propertyDraw.changeMouse != null) {
-            Binding binding = bindingSupplier.get();
-            if(propertyDraw.changeMousePriority != null)
-                binding.priority = propertyDraw.changeMousePriority;
-            addBinding(propertyDraw.changeMouse, binding);
-        }
+    public interface BindingExec {
+        void exec(Event event);
+    }
+    public void addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
+        for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
+            addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject);
     }
 
-    public void addBinding(GInputEvent event, Binding binding) {
-        assert event != null && binding != null;
+    public void addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
+    }
+    public void addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        addBinding(event::isEvent, env, pressed, component, groupObject);
+    }
+    public void addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
+            @Override
+            public boolean showing() {
+                return component != null ? isShowing(component) : true;
+            }
 
-        ArrayList<Binding> groupBindings = bindings.computeIfAbsent(event, k -> new ArrayList<>());
-        if(binding.priority == 0)
-            binding.priority = groupBindings.size();
-        if(binding.bindDialog == null)
-            binding.bindDialog = event.bindingModes != null ? event.bindingModes.getOrDefault("dialog", GBindingMode.AUTO) : GBindingMode.AUTO;
-        if(binding.bindGroup == null)
-            binding.bindGroup = event.bindingModes != null ? event.bindingModes.getOrDefault("group", GBindingMode.AUTO) : GBindingMode.AUTO;
-        if(binding.bindEditing == null)
-            binding.bindEditing = event.bindingModes != null ? event.bindingModes.getOrDefault("editing", GBindingMode.AUTO) : GBindingMode.AUTO;
-        if(binding.bindShowing == null)
-            binding.bindShowing = event.bindingModes != null ? event.bindingModes.getOrDefault("showing", GBindingMode.AUTO) : GBindingMode.AUTO;
-        groupBindings.add(binding);
+            @Override
+            public void exec(Event event) {
+                pressed.exec(event);
+            }
+        });
+    }
+    public void addBinding(GBindingEvent event, Binding action) {
+        bindingEvents.add(event);
+        bindings.add(action);
     }
     
     private GGroupObject getGroupObject(Element elementTarget) {
@@ -1384,33 +1343,41 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GGroupObject get();
     }
 
-    public boolean processBinding(GInputEvent ks, NativeEvent event, GGroupObjectSupplier groupObjectSupplier) {
-        ArrayList<Binding> keyBinding = bindings.get(ks);
-        if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
+    public boolean processBinding(Event event, GGroupObjectSupplier groupObjectSupplier) {
+        TreeMap<Integer, Binding> orderedBindings = new TreeMap<>(); // descending sorting by priority
 
-            TreeMap<Integer, Binding> orderedBindings = new TreeMap<>();
+        GGroupObject groupObject = groupObjectSupplier.get();
+        for (int i = 0, size = bindingEvents.size(); i < size; i++) {
+            GBindingEvent bindingEvent = bindingEvents.get(i);
+            if (bindingEvent.event.check(event)) {
+                Binding binding = bindings.get(i);
+                boolean equalGroup;
+                GBindingEnv bindingEnv = bindingEvent.env;
+                if(bindDialog(bindingEnv) &&
+                    bindGroup(bindingEnv, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
+                    bindEditing(bindingEnv) &&
+                    bindShowing(bindingEnv, binding.showing()))
+                orderedBindings.put(-(GwtClientUtils.nvl(bindingEnv.priority, i) + (equalGroup ? 100 : 0)), binding); // increasing priority for group object
+            }
+        }
 
-            // increasing priority for group object
-            GGroupObject groupObject = groupObjectSupplier.get();
-            for(Binding binding : keyBinding) // descending sorting by priority
-                if((binding.isSuitable == null || binding.isSuitable.apply(event)) && bindDialog(binding) && bindGroup(groupObject, binding) && bindEditing(binding, event) && bindShowing(binding))
-                    orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
-
-            for (Binding binding : orderedBindings.values()) {
-                if (binding.enabled()) {
-                    if (isEditing()) {
-                        commitEditingTable();
-                    }
-                    binding.pressed(event.getEventTarget());
-                    stopPropagation(event);
-                    return true;
-                }
+        for (Binding binding : orderedBindings.values()) {
+            if (binding.enabled()) {
+                checkCommitEditing();
+                binding.exec(event);
+                stopPropagation(event);
+                return true;
             }
         }
         return false;
     }
 
-    private boolean bindDialog(Binding binding) {
+    public void checkCommitEditing() {
+        if(cellEditor != null)
+            cellEditor.commitEditing(getEditElement());
+    }
+
+    private boolean bindDialog(GBindingEnv binding) {
         switch (binding.bindDialog) {
             case AUTO:
             case ALL:
@@ -1424,28 +1391,23 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private boolean bindGroup(GGroupObject groupObject, Binding binding) {
-        switch (binding.bindGroup) {
+    private boolean bindGroup(GBindingEnv bindingEvent, boolean equalGroup) {
+        switch (bindingEvent.bindGroup) {
             case AUTO:
             case ALL:
                 return true;
             case ONLY:
-                return equalGroup(groupObject, binding);
+                return equalGroup;
             case NO:
-                return !equalGroup(groupObject, binding);
+                return !equalGroup;
             default:
-                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindGroup);
+                throw new UnsupportedOperationException("Unsupported bindingMode");
         }
     }
 
-    private boolean equalGroup(GGroupObject groupObject, Binding binding) {
-        return groupObject != null && groupObject.equals(binding.groupObject);
-    }
-
-    private boolean bindEditing(Binding binding, NativeEvent event) {
+    private boolean bindEditing(GBindingEnv binding) {
         switch (binding.bindEditing) {
             case AUTO:
-                return !isEditing() || notTextCharEvent(event);
             case ALL:
                 return true;
             case ONLY:
@@ -1457,57 +1419,200 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private static List<Character> textChars = Arrays.asList(new Character[]{KeyCodes.KEY_DELETE, KeyCodes.KEY_BACKSPACE, KeyCodes.KEY_ENTER,
-            KeyCodes.KEY_UP, KeyCodes.KEY_DOWN, KeyCodes.KEY_LEFT, KeyCodes.KEY_RIGHT});
-    private boolean notTextCharEvent(NativeEvent event) {
-        char c = (char) event.getKeyCode();
-        return event.getCtrlKey() || (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c) && !textChars.contains(c));
-    }
-
-    private boolean bindShowing(Binding binding) {
+    private boolean bindShowing(GBindingEnv binding, boolean showing) {
         switch (binding.bindShowing) {
             case ALL:
                 return true;
             case AUTO:
             case ONLY:
-                return binding.showing();
+                return showing;
             case NO:
-                return !binding.showing();
+                return !showing;
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindShowing);
         }
     }
 
-
     private void handleKeyEvent(NativeEvent nativeEvent) {
-        assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
-
         final EventTarget target = nativeEvent.getEventTarget();
         if (!Element.is(target)) {
             return;
         }
+        processBinding((Event) nativeEvent, () -> getGroupObject(Element.as(target)));
+    }
 
-        if (isPossibleEditKeyEvent(nativeEvent)) {
-            GKeyStroke key = GKeyStroke.getKeyStroke(nativeEvent);
-            
-            processBinding(new GKeyInputEvent(key, null), nativeEvent, new GGroupObjectSupplier() {
-                public GGroupObject get() {
-                    return getGroupObject(Element.as(target));
-                }
-            });
+    private void handleMouseEvent(Element target, Event event) {
+        processBinding(event, () -> getGroupObject(target));
+    }
+
+    private CellEditor cellEditor;
+
+    public Element getEditElement() {
+        return editContext.getRenderElement();
+    }
+
+    private EditContext editContext;
+
+    private Consumer<Object> editBeforeCommit;
+    private Consumer<Object> editAfterCommit;
+    private Runnable editCancel;
+
+    private Element focusedElement;
+    private Object forceSetFocus;
+
+    public boolean isEditing() {
+        return editContext != null;
+    }
+
+    public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext) {
+        assert this.editContext == null;
+        CellEditor cellEditor = type.createGridCellEditor(this, editContext.getProperty());
+        if (cellEditor != null) {
+            editBeforeCommit = beforeCommit;
+            editAfterCommit = afterCommit;
+            editCancel = cancel;
+
+            this.editContext = editContext;
+
+            Element element = editContext.getRenderElement();
+            if (cellEditor instanceof ReplaceCellEditor) {
+                focusedElement = GwtClientUtils.getFocusedElement();
+                if(!editContext.isFocusable()) // assert that otherwise it's already has focus
+                    forceSetFocus = editContext.forceSetFocus();
+
+                RenderContext renderContext = editContext.getRenderContext();
+                editContext.getProperty().getCellRenderer().clearRender(element, renderContext); // dropping previous render
+                ((ReplaceCellEditor)cellEditor).render(element, renderContext); // rendering new one, filling inputElement
+            }
+
+            this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
+            cellEditor.startEditing(event, getEditElement(), hasOldValue ? oldValue : editContext.getValue());
+        } else
+            cancel.run();
+    }
+
+    @Override
+    public void commitEditing(Object value, boolean blurred) {
+        editBeforeCommit.accept(value);
+        editBeforeCommit = null;
+
+        finishEditing(blurred);
+
+        editAfterCommit.accept(value);
+        editAfterCommit = null;
+    }
+
+    @Override
+    public void cancelEditing() {
+        finishEditing(false);
+
+        editCancel.run();
+        editCancel = null;
+    }
+
+    private void finishEditing(boolean blurred) {
+        CellEditor cellEditor = this.cellEditor;
+        this.cellEditor = null;
+
+        EditContext editContext = this.editContext;
+        this.editContext = null;
+
+        Element renderElement = editContext.getRenderElement();
+        if(cellEditor instanceof ReplaceCellEditor) {
+            RenderContext renderContext = editContext.getRenderContext();
+            ((ReplaceCellEditor) cellEditor).clearRender(renderElement, renderContext);
+            editContext.getProperty().getCellRenderer().renderStatic(renderElement, renderContext);
+
+            if(forceSetFocus != null) {
+                editContext.restoreSetFocus(forceSetFocus);
+                forceSetFocus = null;
+            }
+
+            if(blurred) // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
+                MainFrame.setLastBlurredElement(editContext.getFocusElement());
+            else {
+                if (focusedElement != null)
+                    focusedElement.focus();
+            }
+        }
+
+        update(editContext.getProperty(), renderElement, editContext.getValue(), editContext.getUpdateContext());
+    }
+
+    public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
+        if(editContext != null && editContext.getRenderElement() == element) { // is edited
+            assert false;
+            return;
+        }
+
+        property.getCellRenderer().renderStatic(element, renderContext);
+    }
+    public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
+        if(editContext != null && editContext.getRenderElement() == element) // is edited
+            return;
+
+        property.getCellRenderer().renderDynamic(element, value, updateContext);
+    }
+
+    public static void setBackgroundColor(Element element, String color) {
+        setBackgroundColor(element, color, false);
+    }
+
+    public static void setBackgroundColor(Element element, String color, boolean themeConvert) {
+        if (color != null) {
+            element.getStyle().setBackgroundColor(themeConvert ? getDisplayColor(color) : color);
+        } else {
+            element.getStyle().clearBackgroundColor();
         }
     }
 
-    private void handleMouseEvent(NativeEvent nativeEvent) {
-        final EventTarget target = nativeEvent.getEventTarget();
-        if (!Element.is(target)) {
+    public static void setForegroundColor(Element element, String color) {
+        setForegroundColor(element, color, false);
+    }
+
+    public static void setForegroundColor(Element element, String color, boolean themeConvert) {
+        if (color != null) {
+            element.getStyle().setColor(themeConvert ? getDisplayColor(color) : color);
+        } else {
+            element.getStyle().clearColor();
+        }
+    }
+
+    public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Runnable onOuterEditBefore, Runnable onEdit, Runnable onOuterEditAfter, Runnable onCut, Runnable onPaste) {
+        boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
+        if(isPropertyEditing)
+            cellEditor.onBrowserEvent(getEditElement(), handler);
+
+        if(handler.consumed)
             return;
+
+        if(GMouseStroke.isChangeEvent(handler.event))
+            focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
+
+        onOuterEditBefore.run();
+
+        if(handler.consumed)
+            return;
+
+        if (!isPropertyEditing) { // if editor did not consume event, we don't want it to be handled by "renderer" since it doesn't exist
+            if (GKeyStroke.isCopyToClipboardEvent(handler.event)) {
+                onCut.run();
+            } else if (GKeyStroke.isPasteFromClipboardEvent(handler.event)) {
+                onPaste.run();
+            } else {
+                onEdit.run();
+            }
         }
 
-        processBinding(new GMouseInputEvent(nativeEvent), nativeEvent, new GGroupObjectSupplier() {
-            public GGroupObject get() {
-                return getGroupObject(Element.as(target));
-            }
-        });
+        if(handler.consumed)
+            return;
+
+        onOuterEditAfter.run();
+
+        if(handler.consumed)
+            return;
+
+        if(GMouseStroke.isDownEvent(handler.event))
+            handler.consume(); // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
     }
 }

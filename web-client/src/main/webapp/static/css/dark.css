@@ -4,13 +4,13 @@
     --scrollbar-color: #585C5E;
     --text-color: #bbbbbb; /* also hardcoded in StyleDefaults.java */
     --disabled-text-color: #6b6b6b;
-    --background-color: #3C3F41;
+    --background-color: #3C3F41; /* also hardcoded in StyleDefaults.java */
     --component-background-color: #45494A; /* also hardcoded in StyleDefaults.java */
     --split-border-color: var(--component-border-color);
     --dialog-border-color: var(--scrollbar-color);
     --component-border-color: #646464;
     --panel-border-color: #515151;
-    --grid-separator-border-color: #5E6364;
+    --grid-separator-border-color: #5E6364; /* also hardcoded in StyleDefaults.java */
     --dialog-outer-border-color: #696969;
     
     --caption-panel-legend-color: #7d7d7d;

@@ -24,12 +24,12 @@
 
     <properties>
         <project.scm.id>github.com</project.scm.id>
-        <next.beta.version>0</next.beta.version>
+        <next.beta.version>1</next.beta.version>
     </properties>
 
     <scm>
         <developerConnection>scm:git:https://github.com/lsfusion/platform.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>v4</tag>
     </scm>
 
     <build>

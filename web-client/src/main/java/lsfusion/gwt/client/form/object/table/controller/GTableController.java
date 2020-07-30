@@ -1,25 +1,28 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.property.*;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public interface GTableController {
-    void updateCellBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values);
-    void updateCellForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values);
-    void updatePropertyCaptions(GCaptionReader reader, Map<GGroupObjectValue, Object> values);
-    void updateShowIfValues(GShowIfReader reader, Map<GGroupObjectValue, Object> values);
-    void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values);
-    void updateReadOnlyValues(GReadOnlyReader reader, Map<GGroupObjectValue, Object> values);
-    void updateLastValues(GLastReader reader, Map<GGroupObjectValue, Object> values);
-    void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values);
-    void updateRowForegroundValues(Map<GGroupObjectValue, Object> values);
+    void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values);
+    void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values);
+    void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values);
 
     GGroupObjectValue getCurrentKey();
     GGroupObject getSelectedGroupObject();
@@ -27,8 +30,11 @@ public interface GTableController {
     List<GObject> getObjects();
     List<GPropertyDraw> getPropertyDraws();
     GPropertyDraw getSelectedProperty();
-    GGroupObjectValue getSelectedColumn();
+    GGroupObjectValue getSelectedColumnKey();
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
+    List<Pair<Column, String>> getSelectedColumns();
+
+    GFormController getForm();
 
     void setContainerCaption(GContainer container, String caption);
 

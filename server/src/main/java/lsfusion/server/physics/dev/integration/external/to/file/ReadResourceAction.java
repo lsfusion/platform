@@ -2,6 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
@@ -17,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class ReadResourceAction extends InternalAction {
     private final ClassPropertyInterface resourcePathInterface;
@@ -33,7 +36,19 @@ public class ReadResourceAction extends InternalAction {
 
             String resourcePath = (String) context.getKeyValue(resourcePathInterface).getValue();
 
-            InputStream stream = getClass().getResourceAsStream(resourcePath);
+            InputStream stream = null;
+            //same as in FormReportManager.findCustomReportFileName
+            if (resourcePath.startsWith("/")) {
+                //absolute path
+                stream = ResourceUtils.getResourceAsStream(resourcePath);
+            } else {
+                //relative path
+                Pattern pattern = Pattern.compile(".*/" + resourcePath.replace(".", "\\."));
+                List<String> allResources = ResourceUtils.getResources(pattern);
+                if(!allResources.isEmpty()) {
+                    stream = getClass().getResourceAsStream(allResources.get(0));
+                }
+            }
 
             findProperty("resourceFile[]").change(stream != null ? new FileData(new RawFileData(IOUtils.readBytesFromStream(stream)), BaseUtils.getFileExtension(resourcePath)) : null, context);
 

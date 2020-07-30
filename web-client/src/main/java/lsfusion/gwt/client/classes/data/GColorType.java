@@ -2,13 +2,12 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GWidthStringProcessor;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.controller.ColorGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.ColorGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.controller.ColorCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.view.ColorCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
 
@@ -16,17 +15,17 @@ public class GColorType extends GDataType {
     public static GColorType instance = new GColorType();
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new ColorGridCellEditor(editManager, editProperty);
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new ColorCellEditor(editManager, editProperty);
     }
 
     @Override
-    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new ColorGridCellRenderer();
+    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new ColorCellRenderer(property);
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor) {
+    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
         return 40;
     }
 

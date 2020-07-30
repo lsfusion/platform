@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object;
 
+import lsfusion.gwt.client.base.jsni.HasSID;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
@@ -16,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GGroupObject implements Serializable {
+public class GGroupObject implements Serializable, HasSID {
     public List<GObject> objects = new ArrayList<>();
 
     public GGrid grid;
@@ -29,6 +30,8 @@ public class GGroupObject implements Serializable {
     public GClassViewType viewType;
     public GListViewType listViewType;
     public GPivotOptions pivotOptions;
+
+    public boolean asyncInit;
 
     public boolean isRecursive;
     public GTreeGroup parent;
@@ -56,10 +59,7 @@ public class GGroupObject implements Serializable {
     }
 
     public String getSID() {
-        if (sID != null)
-            return sID;
-        else
-            return "obj" + ID;
+        return sID;
     }
 
     public boolean mayHaveChildren() {
@@ -86,7 +86,7 @@ public class GGroupObject implements Serializable {
         return parent != null && last;
     }
 
-    public static List<GGroupObjectValue> mergeGroupValues(LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys) {
+    public static ArrayList<GGroupObjectValue> mergeGroupValues(LinkedHashMap<GGroupObject, ArrayList<GGroupObjectValue>> groupColumnKeys) {
         if (groupColumnKeys.isEmpty()) {
             return GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
         } else if (groupColumnKeys.size() == 1) {
@@ -96,7 +96,7 @@ public class GGroupObject implements Serializable {
         //находим декартово произведение ключей колонок
         ArrayList<GGroupObjectValueBuilder> propColumnKeys = new ArrayList<>();
         propColumnKeys.add(new GGroupObjectValueBuilder());
-        for (Map.Entry<GGroupObject, List<GGroupObjectValue>> entry : groupColumnKeys.entrySet()) {
+        for (Map.Entry<GGroupObject, ArrayList<GGroupObjectValue>> entry : groupColumnKeys.entrySet()) {
             List<GGroupObjectValue> groupObjectKeys = entry.getValue();
 
             ArrayList<GGroupObjectValueBuilder> newPropColumnKeys = new ArrayList<>();

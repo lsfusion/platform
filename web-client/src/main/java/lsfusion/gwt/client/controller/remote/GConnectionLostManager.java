@@ -142,7 +142,7 @@ public class GConnectionLostManager {
         private boolean fatal;
 
         public GBlockDialog(boolean fatal, boolean showReconnect) {
-            super(false, true, false, false, false);
+            super(false, false, false);
             this.attempt = 0;
             setGlassEnabled(true);
             this.fatal = fatal;
@@ -226,7 +226,8 @@ public class GConnectionLostManager {
         public void hideDialog() {
             if (showButtonsTimer != null)
                 showButtonsTimer.cancel();
-            hide();
+            if(isShowing())
+                hide();
             blockDialog.makeMaskVisible(false);
         }
 

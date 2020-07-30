@@ -1,16 +1,20 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.view.*;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
+import lsfusion.gwt.client.base.view.ImageButton;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.UnFocusableImageButton;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.window.GModalityType;
-import lsfusion.gwt.client.navigator.window.view.TabLayoutPanel;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -18,34 +22,52 @@ import lsfusion.gwt.client.view.StyleDefaults;
 import java.util.ArrayList;
 import java.util.List;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
+
 public abstract class DefaultFormsController implements FormsController {
-    private final TabLayoutPanel tabsPanel;
-    private final List<String> formsList = new ArrayList<>();
-    private final List<GFormController> gFormControllersList = new ArrayList<>(); // have no idea why it is a list and not a field
+    private final FlexTabbedPanel tabsPanel;
+
+    private final List<FormDockable> forms = new ArrayList<>();
+    private final List<Integer> formFocusOrder = new ArrayList<>();
+    private int focusOrderCount;
+
     private final WindowsController windowsController;
-    private final ImageButton imageButton = new ImageButton();
-    private final ResizableSimplePanel resizableSimplePanel;
+    private final ResizableSimplePanel formsContainer;
+
+    private final ImageButton fullScreenButton;
     private Boolean fullScreenMode = null;
 
     public DefaultFormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
-        tabsPanel = new TabLayoutPanel(StyleDefaults.VALUE_HEIGHT + 1, Style.Unit.PX, updateViewButton()); // 1px for one side border
-        resizableSimplePanel = new ResizableSimplePanel();
-        tabsPanel.addSelectionHandler(event -> {
-            int selected = tabsPanel.getSelectedIndex();
-            ((FormDockable.ContentWidget) tabsPanel.getWidget(selected)).setSelected(true);
-            if(gFormControllersList.size() > selected) {
-                GFormController form = gFormControllersList.get(selected);
-                form.gainedFocus();
-                setCurrentForm(form);
+
+        fullScreenButton = new UnFocusableImageButton();
+        fullScreenButton.addStyleName("toolbarButton");
+        fullScreenButton.setSize(StyleDefaults.VALUE_HEIGHT_STRING, StyleDefaults.VALUE_HEIGHT_STRING);
+        fullScreenButton.addClickHandler(event -> {
+            setFullScreenMode(!this.fullScreenMode);
+        });
+
+        formsContainer = new ResizableSimplePanel();
+
+        tabsPanel = new FlexTabbedPanel("formsTabBar", fullScreenButton);
+
+        // unselected (but not removed)
+        tabsPanel.setBeforeSelectionHandler(index -> {
+            int selectedTab = tabsPanel.getSelectedTab();
+            if(selectedTab >= 0) {
+                forms.get(selectedTab).onBlur(isRemoving);
+                isRemoving = false;
             }
         });
-        tabsPanel.addBeforeSelectionHandler(event -> {
-            if (tabsPanel.getSelectedIndex() > -1) {
-                ((FormDockable.ContentWidget) tabsPanel.getWidget(tabsPanel.getSelectedIndex())).setSelected(false);
-            }
+        tabsPanel.setSelectionHandler(index -> {
+            forms.get(index).onFocus(isAdding);
+            formFocusOrder.set(index, focusOrderCount++);
+            isAdding = false;
         });
     }
+
+    private boolean isRemoving = false;
+    private boolean isAdding = false;
 
     public void storeFullScreen(){
         Storage storage = Storage.getLocalStorageIfSupported();
@@ -56,11 +78,11 @@ public abstract class DefaultFormsController implements FormsController {
         }
     }
 
-    public void updateButtonImage(){
+    public void updateFullScreenButton(){
         if (this.fullScreenMode){
-            imageButton.setModuleImagePath("minimize.png");
+            fullScreenButton.setModuleImagePath("minimize.png");
         } else {
-            imageButton.setModuleImagePath("maximize.png");
+            fullScreenButton.setModuleImagePath("maximize.png");
         }
     }
 
@@ -72,7 +94,7 @@ public abstract class DefaultFormsController implements FormsController {
                 normalizeTabsPanel();
             }
             this.fullScreenMode = fullScreenMode;
-            updateButtonImage();
+            updateFullScreenButton();
         }
     }
 
@@ -81,100 +103,110 @@ public abstract class DefaultFormsController implements FormsController {
         setFullScreenMode(storage != null && storage.getItem("full_screen") != null);
     }
 
-    public void maximizeTabsPanel(){
+    public void initRoot() {
+        GFormController.initKeyEventHandler(RootPanel.get(), () -> {
+            FormContainer currentForm = MainFrame.getCurrentForm();
+            if(currentForm != null)
+                return currentForm.getForm();
+            return null;
+        });
+
+        restoreFullScreen();
+    }
+    public void updateRoot(Widget widget) {
         RootLayoutPanel.get().clear();
-        RootLayoutPanel.get().add(tabsPanel);
+        RootLayoutPanel.get().add(widget);
+    }
+
+    public void maximizeTabsPanel(){
+        updateRoot(tabsPanel);
     }
 
     public void normalizeTabsPanel() {
-        RootLayoutPanel.get().clear();
-        resizableSimplePanel.setFillWidget(tabsPanel);
-        RootLayoutPanel.get().add(windowsController.getRootView());
+        formsContainer.setFillWidget(tabsPanel);
+        updateRoot(windowsController.getRootView());
     }
 
-    public Widget updateViewButton() {
-        imageButton.addStyleName("toolbarButton");
-        imageButton.setSize("20px", "20px");
-        imageButton.addClickHandler(event -> {
-            setFullScreenMode(!this.fullScreenMode);
-        });
-        return imageButton;
+    public Widget getView() {
+        return formsContainer;
     }
 
-    public  Widget getView() {
-        return resizableSimplePanel;
-    }
-
-    public Widget openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
-        if(forbidDuplicate && MainFrame.forbidDuplicateForms && formsList.contains(form.sID)) {
-            tabsPanel.selectTab(formsList.indexOf(form.sID));
+    public FormContainer openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
+        FormDockable duplForm;
+        if(forbidDuplicate && MainFrame.forbidDuplicateForms && (duplForm = findForm(form.sID)) != null) {
+            selectTab(duplForm);
             return null;
         }
-        if (modalityType.isModalWindow()) {
-            ModalForm modalForm = showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
-            registerForm(modalForm.getForm());
-            return null;
-        } else {
-            FormDockable dockable = addDockable(new FormDockable(form), form.sID);
-            dockable.initialize(this, form); // initialize should be after addDockable, otherwise offsetTop and other sizes are not recalculated in preAfterUpdateTableData, and it breaks scrolling (for example LAST option at form opening)
-            registerForm(dockable.getForm());
 
-            dockable.setHiddenHandler(() -> {
-                if (hiddenHandler != null) {
-                    hiddenHandler.onHidden();
-                }
-                removeDockable(dockable, form.sID);
-            });
-            return dockable.getContentWidget();
-        }
+        FormContainer formContainer = modalityType.isModalWindow() ? new ModalForm(this) : new FormDockable(this);
+
+        initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
+
+        formContainer.show();
+
+        return formContainer;
     }
 
-    public void selectTab(Widget widget) {
-        tabsPanel.selectTab(widget);
+    public void initForm(FormContainer<?> formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, Event initFilterEvent) {
+        formContainer.initForm(this, form, () -> {
+            formContainer.hide();
+
+            hiddenHandler.onHidden();
+        }, dialog, initFilterEvent);
+    }
+
+    public void selectTab(FormDockable dockable) {
+        tabsPanel.selectTab(forms.indexOf(dockable));
     }
 
     public void selectTab(String formCanonicalName) {
-        tabsPanel.selectTab(formsList.indexOf(formCanonicalName));
+        FormDockable form = findForm(formCanonicalName);
+        if(form != null)
+            selectTab(form);
     }
 
-    private ModalForm showModalForm(GForm form, GModalityType modality, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
-        assert modality.isModalWindow();
-
-        return ModalForm.showForm(this, form, modality.isDialog(), initFilterEvent, handler);
+    public FormDockable findForm(String formCanonicalName) {
+        return findInList(forms, dockable -> dockable.getForm().getForm().sID.equals(formCanonicalName));
     }
 
-    private FormDockable addDockable(FormDockable dockable, String formSID) {
-        formsList.add(formSID);
+    public void addDockable(FormDockable dockable) {
+        forms.add(dockable);
+        formFocusOrder.add(null);
+
         tabsPanel.add(dockable.getContentWidget(), dockable.getTabWidget());
-        tabsPanel.selectTab(dockable.getContentWidget());
-        return dockable;
+        assert !isAdding;
+        isAdding = true;
+        selectTab(dockable);
+        assert !isAdding;
     }
 
-    private void removeDockable(FormDockable dockable, String formSID) {
-        unregisterForm(dockable.getForm());
-        formsList.remove(formSID);
-        tabsPanel.remove(dockable.getContentWidget());
+    public void removeDockable(FormDockable dockable) {
+        int index = forms.indexOf(dockable);
+
+        assert !isRemoving;
+        isRemoving = true;
+        tabsPanel.remove(index);
+        assert !isRemoving;
+
+        forms.remove(index);
+        formFocusOrder.remove(index);
     }
 
-    public void registerForm(GFormController form) {
-        gFormControllersList.add(form);
-        setCurrentForm(form);
-    }
-
-    @Override
-    public void unregisterForm(GFormController form) {
-        if(form != null) {
-            gFormControllersList.remove(form);
-            dropCurrentForm(form);
+    public void ensureTabSelected() {
+        int size;
+        if(tabsPanel.getSelectedTab() < 0 && (size = forms.size()) > 0) {
+            FormDockable lastFocusedForm = null;
+            int maxOrder = 0;
+            int formOrder;
+            for(int i=0;i<size;i++) {
+                formOrder = formFocusOrder.get(i);
+                if (lastFocusedForm == null || formOrder > maxOrder) {
+                    lastFocusedForm = forms.get(i);
+                    maxOrder = formOrder;
+                }
+            }
+            selectTab(lastFocusedForm);
         }
     }
 
-    public abstract void setCurrentForm(GFormController form);
-    
-    public abstract void dropCurrentForm(GFormController form);
-
-    @Override
-    public void select(Widget tabContent) {
-        tabsPanel.selectTab(tabContent);
-    }
 }

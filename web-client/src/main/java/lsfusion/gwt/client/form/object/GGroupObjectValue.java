@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +9,12 @@ import java.util.Map;
 public class GGroupObjectValue implements Serializable {
     public static final GGroupObjectValue EMPTY = new GGroupObjectValue();
 
-    public static final List<GGroupObjectValue> SINGLE_EMPTY_KEY_LIST = Arrays.asList(EMPTY);
+    private static ArrayList<GGroupObjectValue> createEmptyList() {
+        ArrayList<GGroupObjectValue> result = new ArrayList<>();
+        result.add(EMPTY);
+        return result;
+    }
+    public static final ArrayList<GGroupObjectValue> SINGLE_EMPTY_KEY_LIST = createEmptyList();
 
     private int size = 0;
     private int keys[];

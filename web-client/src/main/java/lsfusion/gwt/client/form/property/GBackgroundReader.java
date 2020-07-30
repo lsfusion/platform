@@ -1,27 +1,18 @@
 package lsfusion.gwt.client.form.property;
 
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
-import java.util.Map;
-
-public class GBackgroundReader implements GPropertyReader {
-    public int readerID;
-    public int groupObjectID;
+public class GBackgroundReader extends GExtraPropertyReader {
 
     public GBackgroundReader(){}
 
     public GBackgroundReader(int readerID, int groupObjectID) {
-        this.readerID = readerID;
-        this.groupObjectID = groupObjectID;
+        super(readerID, groupObjectID, "BACKGROUND");
     }
 
-    public void update(GTableController controller, Map<GGroupObjectValue, Object> keys, boolean updateKeys) {
+    public void update(GTableController controller, NativeHashMap<GGroupObjectValue, Object> keys, boolean updateKeys) {
         controller.updateCellBackgroundValues(this, keys);
-    }
-
-    @Override
-    public int getGroupObjectID() {
-        return groupObjectID;
     }
 }

@@ -29,7 +29,7 @@ import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_FAMILY;
 import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_SIZE;
 
 @SuppressWarnings("GWTStyleCheck")
-public abstract class GUserPreferencesDialog extends ResizableModalWindow {
+public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
 
@@ -218,6 +218,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
             @Override
             public void onKeyDown(KeyDownEvent event) {
                 if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+                    GwtClientUtils.stopPropagation(event);
                     hide();
                 }
             }
@@ -234,7 +235,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
     }
 
     public void showDialog() {
-        center();
+        show();
         focusPanel.setFocus(true);
     }
 
@@ -264,7 +265,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
         grid.setUserPageSize(userPageSize);
 
         grid.setUserHeaderHeight(getUserHeaderHeight());
-        grid.refreshColumnsAndRedraw();
+        grid.columnsChanged();
 
         grid.setHasUserPreferences(true);
 
@@ -364,7 +365,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
                 grid.setUserPageSize(userPageSize);
         
                 grid.setUserHeaderHeight(getUserHeaderHeight());
-                grid.refreshColumnsAndRedraw();
+                grid.columnsChanged();
                 
                 grid.saveCurrentPreferences(confirmDialog.forAll, createChangeCallback(true));
             }
@@ -439,7 +440,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
                 grid.font = font;
                 grid.columnsPreferencesChanged();
                 grid.setUserHeaderHeight(getUserHeaderHeight());
-                grid.refreshColumnsAndRedraw();
+                grid.columnsChanged();
                 preferencesChanged();
                 String caption = save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting();
                 String message = save ? messages.formGridPreferencesSaveSuccess() : messages.formGridPreferencesResetSuccess();
@@ -457,6 +458,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
                 refreshValues(font);
                 grid.font = font;
                 grid.columnsPreferencesChanged();
+                grid.columnsChanged();
                 focusPanel.setFocus(true);
                 super.failure(caught);
             }

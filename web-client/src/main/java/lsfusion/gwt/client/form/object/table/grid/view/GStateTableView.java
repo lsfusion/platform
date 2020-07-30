@@ -2,17 +2,26 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.DivWidget;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.SimpleImageButton;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.view.Column;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
 import java.util.*;
@@ -34,20 +43,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     protected List<GPropertyDraw> properties = new ArrayList<>();
     protected List<List<GGroupObjectValue>> columnKeys = new ArrayList<>();
-    protected List<Map<GGroupObjectValue, Object>> captions = new ArrayList<>();
-    protected List<Map<GGroupObjectValue, Object>> values = new ArrayList<>();
-    protected List<List<Map<GGroupObjectValue, Object>>> lastAggrs = new ArrayList<>();
-    protected List<Map<GGroupObjectValue, Object>> readOnlys = new ArrayList<>();
-
-    protected static class Column {
-        public final GPropertyDraw property;
-        public final GGroupObjectValue columnKey;
-
-        public Column(GPropertyDraw property, GGroupObjectValue columnKey) {
-            this.property = property;
-            this.columnKey = columnKey;
-        }
-    }
+    protected List<NativeHashMap<GGroupObjectValue, Object>> captions = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, Object>> values = new ArrayList<>();
+    protected List<List<NativeHashMap<GGroupObjectValue, Object>>> lastAggrs = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, Object>> readOnlys = new ArrayList<>();
 
     public final native JsArrayMixed clone(JsArrayMixed array) /*-{
         n = array.length;
@@ -76,7 +75,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     public void initPageSizeWidget() {
         FlexPanel messageAndButton = new FlexPanel();
-        messageAndButton.addCentered(new Label(ClientMessages.Instance.get().formGridPageSizeHit(pageSize)));
+        Label messageLabel = new Label(ClientMessages.Instance.get().formGridPageSizeHit(pageSize));
+        messageLabel.getElement().getStyle().setPaddingRight(4, Style.Unit.PX);
+        messageAndButton.addCentered(messageLabel);
 
         SimpleImageButton showAllButton = new SimpleImageButton(ClientMessages.Instance.get().formGridPageSizeShowAll());
         showAllButton.addClickHandler(event -> {
@@ -87,6 +88,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
         FlexPanel centeredMessageAndButton = new FlexPanel(true);
         centeredMessageAndButton.addCentered(messageAndButton);
+        centeredMessageAndButton.getElement().getStyle().setPadding(2, Style.Unit.PX);
 
         this.pageSizeWidget = centeredMessageAndButton;
         this.pageSizeWidget.setVisible(false);
@@ -98,7 +100,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 //        add(new ResizableSimplePanel(this.pageSizeWidget)); // we need to attach pageSize widget to make it work
     }
 
-    private Widget drawWidget;
+    private final Widget drawWidget;
     protected Element getDrawElement() {
         return drawWidget.getElement();
     }
@@ -124,8 +126,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         dataUpdated = true;
     }
 
+    // should correspond FormInstance.constructor - changePageSize method
     private int pageSize = 1000;
-    @Override
     public int getPageSize() {
         return pageSize;
     }
@@ -142,7 +144,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public void updateProperty(GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, HashMap<GGroupObjectValue, Object> values) {
+    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
         int index = properties.indexOf(property);
         if(!updateKeys) {
             if(index < 0) {
@@ -154,7 +156,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.values.add(index, null);
                 this.readOnlys.add(index, null);
 
-                List<Map<GGroupObjectValue, Object>> list = new ArrayList<>();
+                List<NativeHashMap<GGroupObjectValue, Object>> list = new ArrayList<>();
                 for (int i = 0; i < property.lastReaders.size(); i++)
                     list.add(null);
                 lastAggrs.add(index, list);
@@ -168,14 +170,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public void updatePropertyCaptions(GPropertyDraw property, Map<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> values) {
         this.captions.set(properties.indexOf(property), values);
 
         dataUpdated = true;
     }
 
     @Override
-    public void updateLastValues(GPropertyDraw property, int index, Map<GGroupObjectValue, Object> values) {
+    public void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, Object> values) {
         this.lastAggrs.get(properties.indexOf(property)).set(index, values);
 
         dataUpdated = true;
@@ -200,7 +202,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
     private boolean updateState;
 
-    protected void updateView(boolean dataUpdated, Boolean updateState) {
+    public void updateView(boolean dataUpdated, Boolean updateState) {
         if(updateState != null)
             this.updateState = updateState;
 
@@ -217,7 +219,30 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected void updatePageSizeState(boolean hit) {
         getPageSizeWidget().setVisible(hit);
     }
-    protected abstract void updateRendererState(boolean set);
+    protected abstract Element getRendererAreaElement();
+
+    private long lastRendererDropped = 0;
+    protected void updateRendererState(boolean set) {
+        Runnable setFilter = () -> {
+            com.google.gwt.dom.client.Element element = getRendererAreaElement();
+            if (set)
+                element.getStyle().setProperty("filter", "opacity(0.5)");
+            else
+                element.getStyle().setProperty("filter", "opacity(1)");
+        };
+
+        if(set) {
+            long wasRendererDropped = lastRendererDropped;
+            Scheduler.get().scheduleFixedDelay(() -> {
+                if(wasRendererDropped == lastRendererDropped) // since set and drop has different timeouts
+                    setFilter.run();
+                return false;
+            }, (int) MainFrame.updateRendererStateSetTimeout);
+        } else {
+            lastRendererDropped++;
+            setFilter.run();
+        }
+    }
 
     @Override
     public void update(Boolean updateState) {
@@ -253,32 +278,32 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
 
     }
 
     @Override
-    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
 
     }
 
     @Override
-    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
 
     }
 
     @Override
-    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
 
     }
 
     @Override
-    public void updateShowIfValues(GPropertyDraw property, Map<GGroupObjectValue, Object> values) {
+    public void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> values) {
 
     }
 
     @Override
-    public void updateReadOnlyValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+    public void updateReadOnlyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         this.readOnlys.set(properties.indexOf(propertyDraw), values);
 
         this.dataUpdated = true;
@@ -297,14 +322,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public GGroupObjectValue getCurrentColumn() {
+    public GGroupObjectValue getCurrentColumnKey() {
         if(!properties.isEmpty())
             return columnKeys.get(0).get(0);
         return null;
     }
 
     @Override
-    public int getKeyboardSelectedRow() {
+    public int getSelectedRow() {
         return -1;
     }
 
@@ -314,17 +339,25 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public void groupChange() {
-
-    }
-
-    @Override
-    public void runGroupReport(boolean toExcel) {
+    public void runGroupReport() {
     }
 
     @Override
     public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         return null;
+    }
+
+    @Override
+    public List<Pair<Column, String>> getSelectedColumns() {
+        List<Pair<Column, String>> result = new ArrayList<>();
+        for(int i=0,size=properties.size();i<size;i++) {
+            GPropertyDraw property = properties.get(i);
+            NativeHashMap<GGroupObjectValue, Object> propertyCaptions = captions.get(i);
+            List<GGroupObjectValue> columns = columnKeys.get(i);
+            for (GGroupObjectValue column : columns)
+                result.add(GGridPropertyTable.getSelectedColumn(propertyCaptions, property, column));
+        }
+        return result;
     }
 
     @Override
@@ -352,21 +385,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return null;
     }
 
-    @Override
-    public void beforeHiding() {
-
-    }
-
-    @Override
-    public void afterShowing() {
-
-    }
-
-    @Override
-    public void afterAppliedChanges() {
-
-    }
-
     protected void changeGroupObject(GGroupObjectValue value) {
         setCurrentKey(value);
         form.changeGroupObjectLater(grid.groupObject, value);
@@ -384,7 +402,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         if(property.isReadOnly())
             return true;
 
-        Map<GGroupObjectValue, Object> readOnlyValues = readOnlys.get(properties.indexOf(property));
+        NativeHashMap<GGroupObjectValue, Object> readOnlyValues = readOnlys.get(properties.indexOf(property));
         if(readOnlyValues == null)
             return false;
 

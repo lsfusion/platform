@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 
 public abstract class GCountQuantityButton extends GToolbarButton {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -16,7 +17,7 @@ public abstract class GCountQuantityButton extends GToolbarButton {
     }
 
     public void showPopup(int result) {
-        PopupPanel popup = new PopupPanel(true, false);
+        PopupDialogPanel popup = new PopupDialogPanel();
         popup.addStyleName("popup");
         popup.setWidget(new Label(messages.formQueriesNumberOfEntries() + ": " + format.format(result)));
         GwtClientUtils.showPopupInWindow(popup, getAbsoluteLeft() + getOffsetWidth(), getAbsoluteTop());

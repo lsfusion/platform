@@ -16,7 +16,7 @@ import static lsfusion.gwt.client.base.view.ResizableWindow.Direction.*;
 /**
  * based on https://github.com/fredsa/gwt-dnd/blob/master/DragDrop/demo/com/allen_sauer/gwt/dnd/demo/client/example/window/WindowPanel.java
  */
-public class ResizableWindow extends Composite implements HasCloseHandlers<ResizableWindow> {
+public class ResizableWindow extends Composite {
 
     private static final int MIN_WIDGET_SIZE = 10;
 
@@ -54,8 +54,6 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
 
     private int contentWidth;
 
-    protected boolean initialOnLoad = true;
-
     public ResizableWindow() {
         windowController = WindowDragDropController.rootController;
         headerWidget = new HeaderWidget();
@@ -92,7 +90,7 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         headerPanel.add(headerWidget);
         headerPanel.setTabIndex(-1);
 
-        TooltipManager.registerWidget(this, new TooltipManager.TooltipHelper() {
+        TooltipManager.registerWidget(headerPanel, new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip() {
                 return tooltip;
@@ -184,41 +182,25 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         }
     }
 
-    @Override
-    protected void onLoad() {
-        if (initialOnLoad && contentWidget.getOffsetHeight() != 0) {
-            initialOnLoad = false;
-            headerWidget.setPixelSize(headerWidget.getOffsetWidth(), headerWidget.getOffsetHeight());
-            setContentSize(contentWidget.getOffsetWidth(), contentWidget.getOffsetHeight());
-        }
-    }
-
     public void hide() {
         windowController.getBoundaryPanel().remove(this);
-        CloseEvent.fire(this, this);
     }
 
-    public void center() {
-        attach();
-        justCenter();
+    protected void onShow() {
+        headerWidget.setPixelSize(headerWidget.getOffsetWidth(), headerWidget.getOffsetHeight());
+
+        setContentSize(contentWidget.getOffsetWidth(), contentWidget.getOffsetHeight());
     }
 
-    protected void attach() {
-        windowController.getBoundaryPanel().add(this);
-    }
+    public void show() {
+        windowController.getBoundaryPanel().add(this); // attaching
+        
+        onShow(); // need it after attach to have actual sizes calculated
 
-    protected void justCenter() {
-        int left = (Window.getClientWidth() - getOffsetWidth()) / 2;
-        int top = (Window.getClientHeight() - getOffsetHeight()) / 2;
-
-//        left = Math.max(Window.getScrollLeft() + left, 0);
-//        top = Math.max(Window.getScrollTop() + top, 0);
-
-        windowController.getBoundaryPanel().setWidgetPosition(this, left, top);
-    }
-
-    public HandlerRegistration addCloseHandler(CloseHandler<ResizableWindow> handler) {
-        return addHandler(handler, CloseEvent.getType());
+        // centering, has to be done after everything is calculated
+        windowController.getBoundaryPanel().setWidgetPosition(this,
+                (Window.getClientWidth() - getOffsetWidth()) / 2,
+                (Window.getClientHeight() - getOffsetHeight()) / 2);
     }
 
     public enum Direction {

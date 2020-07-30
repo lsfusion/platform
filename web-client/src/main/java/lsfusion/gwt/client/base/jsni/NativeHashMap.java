@@ -3,128 +3,134 @@ package lsfusion.gwt.client.base.jsni;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import lsfusion.gwt.client.base.Result;
 
 /**
  * modified com/google/gwt/emul/java/util/AbstractHashMap.java
  */
-public class NativeHashMap<K, V> implements Map<K, V> {
+public class NativeHashMap<K, V> {
 
     @SuppressWarnings("UnusedDeclaration")
-    private JavaScriptObject hasCodeMap;
-    private int size = 0;
+    private JavaScriptObject hashCodeMap;
 
     public NativeHashMap() {
-        init();
     }
 
-    private void init() {
-        size = 0;
-        hasCodeMap = JavaScriptObject.createObject();
-    }
-
-    @Override
     public void clear() {
-        init();
+        hashCodeMap = null;
+    }
+
+    public V firstValue() {
+        Result<V> resultValue = new Result<>();
+        foreachValue(result -> {
+            if(resultValue.result == null)
+                resultValue.set(result);
+        });
+        return resultValue.result;
+    }
+    public K firstKey() {
+        Result<K> resultValue = new Result<>();
+        foreachKey(result -> {
+            if(resultValue.result == null)
+                resultValue.set(result);
+        });
+        return resultValue.result;
+    }
+    public void putAll(NativeHashMap<? extends K, ? extends V> map) {
+        map.foreachEntry(this::put);
+    }
+
+    public V get(K key) {
+        if(hashCodeMap == null)
+            return null;
+        return jsGet(key, key.hashCode());
+    }
+
+    private boolean containsAll(NativeHashMap<K, V> map) {
+        Result<Boolean> result = new Result<>();
+        map.foreachEntry((key, value) -> {
+            if(!equalsBridge(get(key), value))
+                result.set(true);
+        });
+        return result.result == null;
+    }
+
+    // very rarely used so that not very efficient implementation
+    @Override
+    public int hashCode() {
+        Result<Integer> result = new Result<>(0);
+        foreachEntry((key, value) -> {
+            result.set(result.result + (key != null ? key.hashCode() : 0) ^ (value != null ? value.hashCode() : 0));
+        });
+        return result.result;
     }
 
     @Override
-    public Set<Entry<K, V>> entrySet() {
-        throw new UnsupportedOperationException("NativeMap.entrySet isn't supported");
-    }
+    public boolean equals(Object obj) {
+        NativeHashMap<K, V> map = (NativeHashMap<K, V>) obj;
+        if(hashCodeMap == null || map.hashCodeMap == null)
+            return hashCodeMap == null && map.hashCodeMap == null;
 
-    @Override
-    public Set<K> keySet() {
-        throw new UnsupportedOperationException("NativeMap.keySet isn't supported");
-    }
-
-    @Override
-    public Collection<V> values() {
-        throw new UnsupportedOperationException("NativeMap.values isn't supported");
-    }
-
-    @Override
-    public V get(Object key) {
-        if (key == null) {
-            throw new NullPointerException("null keys aren't allowed");
-        }
-        return jsGet(key, getHashCode(key));
+        return containsAll(map) && map.containsAll(this);
     }
 
     public V put(K key, V value) {
-        if (key == null) {
-            throw new NullPointerException("null keys aren't allowed");
-        }
-        return jsPut(key, value, getHashCode(key));
+        if(hashCodeMap == null)
+            hashCodeMap = JavaScriptObject.createObject();
+        return jsPut(key, value, key.hashCode());
     }
 
-    @Override
-    public void putAll(Map<? extends K, ? extends V> m) {
-        for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
-            put(entry.getKey(), entry.getValue());
-        }
-    }
-
-    @Override
     public V remove(Object key) {
-        return jsRemove(key, getHashCode(key));
+        if(hashCodeMap == null)
+            return null;
+
+        V removed = jsRemove(key, key.hashCode());
+
+        if(jsIsEmpty())
+            hashCodeMap = null;
+        return removed;
     }
 
-    @Override
     public boolean containsKey(Object key) {
-        return jsContainsKey(key, getHashCode(key));
+        return hashCodeMap != null && jsContainsKey(key, key.hashCode());
     }
 
-    @Override
     public boolean containsValue(final Object value) {
-        return jsContainsValue(value);
+        return hashCodeMap != null && jsContainsValue(value);
     }
 
-    @Override
     public boolean isEmpty() {
-        return size == 0;
-    }
-
-    @Override
-    public int size() {
-        return size;
+        return hashCodeMap == null;
     }
 
     public String toString() {
         final JsArrayString ts = JsArray.createArray().cast();
         ts.push("{");
-        foreachEntry(new Function2<K, V>() {
-            @Override
-            public void apply(K key, V value) {
-                ts.push(",");
-                ts.push(key == null ? null : key.toString());
-                ts.push("=");
-                ts.push(value == null ? null : value.toString());
-            }
+        foreachEntry((key, value) -> {
+            ts.push(",");
+            ts.push(key == null ? null : key.toString());
+            ts.push("=");
+            ts.push(value == null ? null : value.toString());
         });
         ts.push("}");
         return ts.join();
     }
 
-    private int getHashCode(Object key) {
-        return key.hashCode();
-    }
-
     @SuppressWarnings("UnusedDeclaration")
     public void foreachKey(Function<K> f) {
-        jsForeachKey(f);
+        if(hashCodeMap != null)
+            jsForeachKey(f);
     }
 
     @SuppressWarnings("UnusedDeclaration")
     public void foreachValue(Function<V> f) {
-        jsForeachValue(f);
+        if(hashCodeMap != null)
+            jsForeachValue(f);
     }
 
     public void foreachEntry(Function2<K, V> f) {
-        jsForeachEntry(f);
+        if(hashCodeMap != null)
+            jsForeachEntry(f);
     }
 
     /**
@@ -144,7 +150,7 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }
 
     public native V jsGet(Object key, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
+        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
         if (array) {
             for (var i = 0, c = array.length; i < c; ++i) {
                 var entry = array[i];
@@ -157,7 +163,7 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }-*/;
 
     private native V jsPut(K key, V value, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
+        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
         if (array) {
             for (var i = 0, c = array.length; i < c; ++i) {
                 var entry = array[i];
@@ -169,27 +175,25 @@ public class NativeHashMap<K, V> implements Map<K, V> {
                 }
             }
         } else {
-            array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode] = []
+            array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode] = []
         }
 
         array.push([key, value]);
-        ++this.@lsfusion.gwt.client.base.jsni.NativeHashMap::size;
         return null;
     }-*/;
 
     private native V jsRemove(Object key, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
+        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
         if (array) {
             for (var i = 0, c = array.length; i < c; ++i) {
                 var entry = array[i];
                 if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
                     if (array.length == 1) {
                         // remove the whole array
-                        delete this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
+                        delete this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
                     } else {
                         array.splice(i, 1)
                     }
-                    --this.@lsfusion.gwt.client.base.jsni.NativeHashMap::size;
                     return entry[1]
                 }
             }
@@ -198,7 +202,7 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }-*/;
 
     private native boolean jsContainsKey(Object key, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
+        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
         if (array) {
             for (var i = 0, c = array.length; i < c; ++i) {
                 if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, array[i][0])) {
@@ -210,7 +214,7 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }-*/;
 
     private native boolean jsContainsValue(Object value) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap;
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
         for (var hashCode in hashCodeMap) {
             // sanity check that it's really one of ours
             var hashCodeInt = parseInt(hashCode, 10);
@@ -226,8 +230,23 @@ public class NativeHashMap<K, V> implements Map<K, V> {
         return false;
     }-*/;
 
+    private native boolean jsIsEmpty() /*-{
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
+        for (var hashCode in hashCodeMap) {
+            // sanity check that it's really one of ours
+            var hashCodeInt = parseInt(hashCode, 10);
+            if (hashCode == hashCodeInt) {
+                var array = hashCodeMap[hashCodeInt];
+                for (var i = 0, c = array.length; i < c; ++i) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }-*/;
+
     private native void jsForeachKey(Function f) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap;
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
         for (var hashCode in hashCodeMap) {
             // sanity check that it's really one of ours
             var hashCodeInt = parseInt(hashCode, 10);
@@ -241,7 +260,7 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }-*/;
 
     private native void jsForeachValue(Function f) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap;
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
         for (var hashCode in hashCodeMap) {
             // sanity check that it's really one of ours
             var hashCodeInt = parseInt(hashCode, 10);
@@ -255,7 +274,7 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }-*/;
 
     private native void jsForeachEntry(Function2 f) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap;
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
         for (var hashCode in hashCodeMap) {
             // sanity check that it's really one of ours
             var hashCodeInt = parseInt(hashCode, 10);

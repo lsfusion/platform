@@ -1,15 +1,13 @@
 package lsfusion.gwt.client.form.event;
 
+import com.google.gwt.user.client.Event;
+
 import java.io.Serializable;
 import java.util.Map;
 
-public class GInputEvent implements Serializable {
-    public Map<String, GBindingMode> bindingModes;
-
+public abstract class GInputEvent implements Serializable {
     public GInputEvent() {
     }
 
-    public GInputEvent(Map<String, GBindingMode> bindingModes) {
-        this.bindingModes = bindingModes;
-    }
+    public abstract boolean isEvent(Event event);
 }

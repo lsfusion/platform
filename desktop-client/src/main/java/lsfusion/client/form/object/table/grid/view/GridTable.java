@@ -347,7 +347,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     private boolean isEditOnSingleClick(int row, int col) {
-        return getProperty(row, col).editOnSingleClick;
+        Boolean editOnSingleClick = getProperty(row, col).editOnSingleClick;
+        if(editOnSingleClick != null)
+            return editOnSingleClick;
+        return false;
     }
 
     private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType, boolean alreadySet) {
@@ -651,13 +654,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             Field leadRowField;
             try {
                 leadRowField = uiAction.getClass().getDeclaredField("leadRow");
-                if (leadRowField != null) {
-                    leadRowField.setAccessible(true);
-                    //int oldLeadRow = leadRowField.getInt(uiAction);
-                    int oldLeadRow = ReflectionUtils.getPrivateMethodValue(Field.class, leadRowField, "getInt", new Class[]{uiAction.getClass()}, new Object[]{uiAction});
-                    if (newLeadRow != oldLeadRow) {
-                        leadRowField.set(uiAction, newLeadRow);
-                    }
+                leadRowField.setAccessible(true);
+                int oldLeadRow = leadRowField.getInt(uiAction);
+                if (newLeadRow != oldLeadRow) {
+                    leadRowField.set(uiAction, newLeadRow);
                 }
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 Throwables.propagate(e);
@@ -759,17 +759,6 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         } else {
             setRowKeysAndCurrentObject(removeList(rowKeys, rowKey), currentObject.equals(rowKey) ? getNearObject(singleValue(rowKey), rowKeys) : null);
         }
-    }
-
-    @Override
-    public void groupChange() {
-        final int rowIndex = getSelectedRow();
-        final int columnIndex = getSelectedColumn();
-        if (rowIndex == -1 || columnIndex == -1)
-            JOptionPane.showMessageDialog(form.getLayout(), getString("form.grid.group.groupchange.no.column.selected"),
-                    getString("errors.error"), JOptionPane.ERROR_MESSAGE);
-        else
-            RmiQueue.runAction(() -> editCellAt(rowIndex, columnIndex, new InternalEditEvent(this, ServerResponse.GROUP_CHANGE)));
     }
 
     @Override

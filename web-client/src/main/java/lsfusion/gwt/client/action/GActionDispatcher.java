@@ -11,7 +11,7 @@ public interface GActionDispatcher {
 
     void execute(GMessageAction action);
 
-    int execute(GConfirmAction action);
+    Object execute(GConfirmAction action);
 
     void execute(GLogMessageAction action);
 

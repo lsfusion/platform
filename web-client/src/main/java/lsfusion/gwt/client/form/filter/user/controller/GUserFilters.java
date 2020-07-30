@@ -1,17 +1,16 @@
 package lsfusion.gwt.client.form.filter.user.controller;
 
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.view.GFilterView;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +29,8 @@ public abstract class GUserFilters {
 
         toolbarButton = new GToolbarButton(FILTER) {
             @Override
-            public void addListener() {
-                addClickHandler(event -> showDialog(null, null, null, false, false));
+            public ClickHandler getClickHandler() {
+                return event -> showDialog(null, null, null, false, false);
             }
         };
         updateToolbarButton();
@@ -53,12 +52,12 @@ public abstract class GUserFilters {
         return logicsSupplier;
     }
 
-    private void showDialog(EditEvent keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey, boolean replace, boolean alwaysAddNew) {
+    private void showDialog(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey, boolean replace, boolean alwaysAddNew) {
         List<GPropertyFilter> conditions = replace ? new ArrayList<>() : new ArrayList<>(this.conditions);
         if(alwaysAddNew || conditions.isEmpty()) {
             conditions.add(getNewCondition(propertyDraw, columnKey));
         }
-        new GFilterView(this).showDialog(conditions, logicsSupplier, keyEvent, propertyDraw);
+        new GFilterView(this).showDialog(conditions, logicsSupplier, keyEvent, propertyDraw, columnKey);
     }
 
     private void updateToolbarButton() {
@@ -74,50 +73,30 @@ public abstract class GUserFilters {
     public GPropertyFilter getNewCondition(GPropertyDraw property, GGroupObjectValue columnKey) {
         GPropertyDraw filterProperty = property;
         GGroupObjectValue filterColumnKey = columnKey;
+        Object filterValue = null;
 
         if(filterProperty == null) {
             filterProperty = logicsSupplier.getSelectedProperty();
-            if(filterProperty != null)
-                filterColumnKey = logicsSupplier.getSelectedColumn();
+            if(filterProperty != null) {
+                filterColumnKey = logicsSupplier.getSelectedColumnKey();
+                filterValue = logicsSupplier.getSelectedValue(filterProperty, filterColumnKey);
+            }
         }
-        if (filterProperty == null) {
-            //не добавляем, если нет ни одного свойства
+        if (filterProperty == null)
             return null;
-        }
 
-        GPropertyFilter filter = new GPropertyFilter();
-        filter.property = filterProperty;
-        filter.columnKey = filterColumnKey;
-        GDataFilterValue filterValue = new GDataFilterValue();
-        filterValue.value = (Serializable) logicsSupplier.getSelectedValue(filterProperty, filterColumnKey);
-        filter.value = filterValue;
-        filter.groupObject = logicsSupplier.getSelectedGroupObject();
-        filter.compare = filter.getDefaultCompare();
-        return filter;
+        return new GPropertyFilter(logicsSupplier.getSelectedGroupObject(), filterProperty, filterColumnKey, filterValue, filterProperty.getDefaultCompare());
     }
 
     public void applyFilters(List<GPropertyFilter> filters, boolean replace) {
         if(replace) {
             conditions = filters;
         } else {
-            for (GPropertyFilter filter : filters) {
-                GPropertyFilter condition = findConditionByProperty(filter.property);
-                if (condition != null) {
-                    conditions.remove(condition);
-                }
-                conditions.add(filter);
-            }
+            for (GPropertyFilter filter : filters)
+                if (!conditions.contains(filter))
+                    conditions.add(filter);
         }
         applyQuery();
-    }
-
-    private GPropertyFilter findConditionByProperty(GPropertyDraw property) {
-        for(GPropertyFilter condition : conditions) {
-            if(condition.property.equals(property)) {
-                return condition;
-            }
-        }
-        return null;
     }
 
     public void allRemovedPressed() {
@@ -130,10 +109,11 @@ public abstract class GUserFilters {
         updateToolbarButton();
     }
 
-    public void quickEditFilter(EditEvent keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+    public void quickEditFilter(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         showDialog(keyEvent, propertyDraw, columnKey, true, true);
     }
 
     public abstract void remoteApplyQuery();
     public abstract void filterHidden();
+    public abstract void checkCommitEditing();
 }
