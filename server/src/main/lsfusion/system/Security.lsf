@@ -5,10 +5,18 @@ REQUIRE System, SystemEvents, Email, Utils;
 CLASS UserRole '{security.user.role}';
 TABLE userRole (UserRole);
 
+// Copy user role
+copy ABSTRACT LIST (UserRole, UserRole);
+
 name '{security.name.user.role}' = DATA ISTRING[100](UserRole) CHARWIDTH 20;
 
 sid '{security.sid.user.role}' = DATA STRING[30] (UserRole) CHARWIDTH 10;
 userRoleSID = GROUP AGGR UserRole userRole WHERE userRole IS UserRole BY sid (userRole);
+
+copy (UserRole from, UserRole to) + { 
+    name(to) <- CONCAT '', name(from), '_copy';
+    sid(to) <- CONCAT '', sid(from), '_copy'; 
+}
 
 // Main role
 mainRole = DATA UserRole (User);
@@ -60,9 +68,6 @@ DESIGN customUser {
         }
     }
 }
-
-// Copy user role
-copy ABSTRACT LIST (UserRole, UserRole);
 
 // Transaction timeout
 transactTimeout '{security.transact.timeout}' = DATA INTEGER (UserRole);
@@ -231,8 +236,11 @@ maximizeDefaultForms '{security.default.forms.maximize}' = DATA BOOLEAN (UserRol
 maximizeDefaultFormsCurrentUser() = GROUP MAX maximizeDefaultForms(UserRole ur) IF has(currentUser(), ur);
 maximizeForm  INTERNAL 'lsfusion.server.logics.form.interactive.action.MaximizeFormAction' ();
 
-copy (UserRole from, UserRole to) +{
+copy (UserRole from, UserRole to) + {
+    forbidDuplicateForms(to) <- forbidDuplicateForms(from);
+    showDetailedInfo(to) <- showDetailedInfo(from);
     defaultNumber(to, NavigatorElement navigatorElement) <- defaultNumber(from, navigatorElement);
+    maximizeDefaultForms(to) <- maximizeDefaultForms(from);
 }
 
 showDefaultForms()  { 
