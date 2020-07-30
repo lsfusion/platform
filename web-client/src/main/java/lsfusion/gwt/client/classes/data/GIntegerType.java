@@ -18,7 +18,7 @@ public class GIntegerType extends GIntegralType {
 
     @Override
     public Integer parseString(String s, String pattern) throws ParseException {
-        return parseToDouble(s, pattern).intValue();
+        return parseToDouble(s).intValue();
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.http.client.*;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
@@ -23,6 +24,8 @@ public class GwtClientUtils {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public static final com.google.gwt.user.client.Element rootElement = RootPanel.get().getElement();
+
+    public final static String UNBREAKABLE_SPACE = "\u00a0";
 
     public static void removeLoaderFromHostedPage() {
         RootPanel p = RootPanel.get("loadingWrapper");
@@ -690,6 +693,21 @@ public class GwtClientUtils {
     //equal to BaseUtils.replaceDotSeparator
     public static String replaceDotSeparator(String value) {
         return value.replace('.', ',');
+    }
+
+    public static Double smartParse(String value) {
+        String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
+        if (UNBREAKABLE_SPACE.equals(groupingSeparator)) {
+            value = value.replace(" ", UNBREAKABLE_SPACE);
+        }
+        String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
+        return NumberFormat.getDecimalFormat().parse(replaceSeparators(value, decimalSeparator, groupingSeparator));
+    }
+
+    public static String plainFormat(Double value) {
+        String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
+        String s = NumberFormat.getDecimalFormat().format(value);
+        return GwtClientUtils.replaceCommaSeparator(s.replace(groupingSeparator, ""));
     }
 
     public static String replicate(char character, int length) {
