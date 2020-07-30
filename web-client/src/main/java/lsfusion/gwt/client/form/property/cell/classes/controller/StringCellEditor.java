@@ -20,7 +20,7 @@ public class StringCellEditor extends TextBasedCellEditor {
     }
 
     @Override
-    protected String renderToString(Object value) {
+    protected String tryFormatInputText(Object value) {
         if (value == null) {
             return "";
         }
