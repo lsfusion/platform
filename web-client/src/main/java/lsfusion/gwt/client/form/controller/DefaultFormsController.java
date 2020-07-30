@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.UnFocusableImageButton;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -39,7 +40,7 @@ public abstract class DefaultFormsController implements FormsController {
     public DefaultFormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
 
-        fullScreenButton = new ImageButton();
+        fullScreenButton = new UnFocusableImageButton();
         fullScreenButton.addStyleName("toolbarButton");
         fullScreenButton.setSize(StyleDefaults.VALUE_HEIGHT_STRING, StyleDefaults.VALUE_HEIGHT_STRING);
         fullScreenButton.addClickHandler(event -> {
