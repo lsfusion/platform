@@ -55,23 +55,16 @@
                                 </p>
                                 <input name="submit" type="submit" class="button round blue" value="<%= ServerMessages.getString(request, "log.in") %>"/>
                                 <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
+                                    <c:catch var ="catchException">
+                                        <c:set var = "message" scope = "page" value = "${sessionScope['SPRING_SECURITY_LAST_EXCEPTION'].message}"/>
+                                    </c:catch>
+                                    <c:if test="${catchException != null}" >
+                                        <c:set var = "message" scope = "page" value = "${sessionScope['SPRING_SECURITY_LAST_EXCEPTION']}"/>
+                                    </c:if>
                                     <div class="errorblock round full-width-box">
-                                        <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION_HEADER}">
-                                            <%= ServerMessages.getString(request, "oauth2.authorization.unavailable") %><br/>
-                                        </c:if>
-                                        <c:if test="${empty SPRING_SECURITY_LAST_EXCEPTION_HEADER}">
-                                            <%= ServerMessages.getString(request, "login.unsuccessful") %><br/>
-                                        </c:if>
-                                        <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["SPRING_SECURITY_LAST_EXCEPTION"].message}
+                                        ${pageScope["message"]}
                                     </div>
                                     <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
-                                    <c:remove var="SPRING_SECURITY_LAST_EXCEPTION_HEADER" scope="session"/>
-                                </c:if>
-                                <c:if test="${not empty LAST_MESSAGE}">
-                                    <div class="errorblock round full-width-box">
-                                            ${sessionScope["LAST_MESSAGE"]}
-                                    </div>
-                                    <c:remove var="LAST_MESSAGE" scope="session"/>
                                 </c:if>
                             </fieldset>
                         </form>
@@ -86,11 +79,9 @@
             <tr valign="top">
                 <td>
                     <div class="text-center">
-                        <c:if test="${empty SPRING_SECURITY_LAST_EXCEPTION}">
-                            <c:forEach var="url" items="${urls}">
-                                <a href="${url.value}" class="text-center fa fa-${url.key}"></a>
-                            </c:forEach>
-                        </c:if>
+                        <c:forEach var="url" items="${urls}">
+                            <a href="${url.value}" class="text-center fa fa-${url.key}"></a>
+                        </c:forEach>
                     </div>
                 </td>
             </tr>

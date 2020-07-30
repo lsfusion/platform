@@ -139,7 +139,7 @@ public class MainController {
             request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
             return "redirect:/forgot-password";
         } else if (jsonResponse.has("success")) {
-            request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("success"));
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         }
         return "redirect:/login";
     }
@@ -153,7 +153,7 @@ public class MainController {
 
         JSONObject jsonResponse = sendRequest(jsonArray, request, "checkToken");
         if (jsonResponse.has("error")) {
-            request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("error"));
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
         } else if (jsonResponse.has("success")){
             addStandardModelAttributes(model, request);
             return "change-password";
@@ -172,9 +172,9 @@ public class MainController {
 
         JSONObject jsonResponse = sendRequest(user, request, "changePassword");
         if (jsonResponse.has("error")) {
-            request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("error"));
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
         } else if (jsonResponse.has("success")){
-            request.getSession(true).setAttribute("LAST_MESSAGE", jsonResponse.optString("success"));
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         }
         return "redirect:/login";
     }

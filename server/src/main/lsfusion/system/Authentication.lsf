@@ -87,9 +87,9 @@ setSHA256Password(CustomUser customUser, STRING str)  {
     calculateBase64Hash('SHA-256', str);
     sha256Password(customUser) <- calculatedHash();
 }
-passwordResetToken = DATA STRING[100] (CustomUser);
+passwordResetToken = DATA STRING (CustomUser);
 expiryPasswordResetTokenDate = DATA DATETIME (CustomUser);
-userByPasswResetToken(STRING[100] str) = GROUP NAGGR CustomUser cu BY passwordResetToken(cu) IF cu IS CustomUser;
+userByPassResetToken(STRING str) = GROUP NAGGR CustomUser cu BY passwordResetToken(cu) IF cu IS CustomUser;
 
 // tokens
 currentAuthToken = NATIVE TEXT();    
@@ -220,8 +220,8 @@ registerUser(JSONFILE user) {
 } @@api @@noauth;
 
 resetPassword(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING[100] userNameOrEmail, STRING[100] url DO {
-        LOCAL NESTED token = STRING[100]();
+    IMPORT FROM input FIELDS STRING userNameOrEmail, STRING url DO {
+        LOCAL NESTED token = STRING();
         LOCAL NESTED success = BOOLEAN();
         FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
             token() <- randomUUID();
@@ -245,8 +245,8 @@ resetPassword(JSONFILE input) {
 } @@api @@noauth;
 
 checkToken(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING[100] token DO {
-        IF expiryPasswordResetTokenDate(userByPasswResetToken(token)) <= currentDateTime() THEN {
+    IMPORT FROM input FIELDS STRING token DO {
+        IF expiryPasswordResetTokenDate(userByPassResetToken(token)) <= currentDateTime() THEN {
             EXPORT FROM '\{success: success\}';
         } ELSE {
             EXPORT FROM '\{error: {password.reset.token.invalid}\}';
@@ -255,11 +255,11 @@ checkToken(JSONFILE input) {
 } @@api @@noauth;
 
 changePassword(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING[100] token, STRING[100] newPassword DO {
-        IF userByPasswResetToken(token) THEN {
-            setSHA256Password(userByPasswResetToken(token), newPassword);
-            passwordResetToken(userByPasswResetToken(token)) <- NULL;
-            expiryPasswordResetTokenDate(userByPasswResetToken(token)) <- NULL;
+    IMPORT FROM input FIELDS STRING token, STRING newPassword DO {
+        FOR CustomUser cu = userByPassResetToken(token) AND cu IS CustomUser DO {
+            setSHA256Password(cu, newPassword);
+            passwordResetToken(cu) <- NULL;
+            expiryPasswordResetTokenDate(cu) <- NULL;
             APPLY;
         }
         IF NOT canceled() THEN {
