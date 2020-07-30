@@ -3,6 +3,7 @@ package lsfusion.client.controller.remote.proxy;
 import lsfusion.client.navigator.controller.remote.proxy.RemoteNavigatorProxy;
 import lsfusion.client.session.remote.proxy.RemoteSessionProxy;
 import lsfusion.interop.action.ReportPath;
+import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
@@ -44,9 +45,9 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
     }
 
     @Override
-    public AuthenticationToken authenticateUser(String userName, String password) throws RemoteException {
+    public AuthenticationToken authenticateUser(Authentication authentication) throws RemoteException {
         logRemoteMethodStartCall("authenticateUser");
-        AuthenticationToken result = target.authenticateUser(userName, password);
+        AuthenticationToken result = target.authenticateUser(authentication);
         logRemoteMethodEndCall("authenticateUser", result);
         return result;
     }

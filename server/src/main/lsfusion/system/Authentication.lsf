@@ -1,6 +1,6 @@
 MODULE Authentication;
 
-REQUIRE System;
+REQUIRE System, Time;
 
 // ------------------------- Computers ---------------------- //
 
@@ -83,6 +83,13 @@ changeSHA256Password(CustomUser customUser)  {
         sha256Password(customUser) <- calculatedHash();
     }
 }
+setSHA256Password(CustomUser customUser, STRING str)  { 
+    calculateBase64Hash('SHA-256', str);
+    sha256Password(customUser) <- calculatedHash();
+}
+passwordResetToken = DATA STRING (CustomUser);
+expiryPasswordResetTokenDate = DATA DATETIME (CustomUser);
+userByPassResetToken(STRING str) = GROUP NAGGR CustomUser cu BY passwordResetToken(cu) IF cu IS CustomUser;
 
 // tokens
 currentAuthToken = NATIVE TEXT();    
@@ -99,6 +106,180 @@ serverLDAP '{authentication.server.ldap}' = DATA STRING[100] ();
 portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
 baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
 userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
+
+// OAuth and Web-client authentication
+CLASS OAuth2;
+id = DATA STRING (OAuth2);
+clientId = DATA STRING (OAuth2);
+clientSecret = DATA STRING (OAuth2);
+clientAuthenticationMethod = DATA STRING (OAuth2);
+scope = DATA STRING (OAuth2);
+authorizationUri = DATA STRING (OAuth2);
+tokenUri = DATA STRING (OAuth2);
+jwkSetUri = DATA STRING (OAuth2);
+userInfoUri = DATA STRING (OAuth2);
+userNameAttributeName = DATA STRING (OAuth2);
+clientName = DATA STRING (OAuth2);
+
+auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
+clientName(STRING str) = clientName(auth(str));
+
+webClientSecretKey = DATA STRING (); 
+
+writeDefaultCredentials() {
+    IF NOT clientName('github') THEN {
+        NEW oa = OAuth2{
+            id(oa) <- 'github';
+            clientAuthenticationMethod(oa) <- 'basic';
+            scope(oa) <- 'read:user';
+            authorizationUri(oa) <- 'https://github.com/login/oauth/authorize';
+            tokenUri(oa) <- 'https://github.com/login/oauth/access_token';
+            userInfoUri(oa) <- 'https://api.github.com/user';
+            userNameAttributeName(oa) <- 'node_id';
+            clientName(oa) <- 'GitHub';
+        }
+    }
+    IF NOT clientName('google') THEN {
+        NEW oa = OAuth2{
+            id(oa) <- 'google';
+            clientAuthenticationMethod(oa) <- 'basic';
+            scope(oa) <- 'openid profile email';
+            authorizationUri(oa) <- 'https://accounts.google.com/o/oauth2/v2/auth';
+            tokenUri(oa) <- 'https://www.googleapis.com/oauth2/v4/token';
+            jwkSetUri(oa) <- 'https://www.googleapis.com/oauth2/v3/certs';
+            userInfoUri(oa) <- 'https://www.googleapis.com/oauth2/v3/userinfo';
+            userNameAttributeName(oa) <- 'sub';
+            clientName(oa) <- 'Google';
+        }
+    }
+    IF NOT clientName('facebook') THEN {
+        NEW oa = OAuth2{
+            id(oa) <- 'facebook';
+            clientAuthenticationMethod(oa) <- 'post';
+            scope(oa) <- 'public_profile email';
+            authorizationUri(oa) <- 'https://www.facebook.com/v2.8/dialog/oauth';
+            tokenUri(oa) <- 'https://graph.facebook.com/v2.8/oauth/access_token';
+            userInfoUri(oa) <- 'https://graph.facebook.com/me?fields=id,name,email';
+            userNameAttributeName(oa) <- 'id';
+            clientName(oa) <- 'Facebook';
+        }
+    }
+    IF NOT clientName('yandex') THEN {
+        NEW oa = OAuth2{
+            id(oa) <- 'yandex';
+            clientAuthenticationMethod(oa) <- 'basic';
+            scope(oa) <- 'login:info login:email';
+            authorizationUri(oa) <- 'https://oauth.yandex.ru/authorize';
+            tokenUri(oa) <- 'https://oauth.yandex.ru/token';
+            userInfoUri(oa) <- 'https://login.yandex.ru/info';
+            userNameAttributeName(oa) <- 'id';
+            clientName(oa) <- 'Yandex';
+        }
+    }
+    IF NOT webClientSecretKey() THEN {
+            webClientSecretKey() <- 'secretKey';
+    }
+    APPLY;
+}
+
+getClientCredentials(STRING str) {
+    IF str != webClientSecretKey() THEN {
+        EXPORT FROM '[\{error: {authentication.oauth2.incorrect.web.client.auth.token}\}]';
+    } ELSE {
+        EXPORT FROM OAuth2 oa, 
+            id(oa),
+            clientId(oa),
+            clientSecret(oa),
+            clientAuthenticationMethod(oa),
+            scope(oa),
+            authorizationUri(oa),
+            tokenUri(oa),
+            jwkSetUri(oa),
+            userInfoUri(oa),
+            userNameAttributeName(oa),
+            clientName(oa) WHERE clientId(oa) AND clientSecret(oa) AND oa IS OAuth2;
+    }
+} @@api @@noauth;
+
+registerUser(JSONFILE user) {
+    IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
+        IF customUser(login) THEN {
+            EXPORT FROM '\{error: {registration.not.successful.login.exist}\}';
+        } ELSE {
+            NEW cu = CustomUser { 
+                login(cu) <- login;
+                setSHA256Password(cu, password);
+                firstName(cu) <- firstName;
+                lastName(cu) <- lastName;
+                email(cu) <- email;
+                APPLY;
+                EXPORT FROM '\{success: {registration.successful}\}';
+            }
+        } 
+    }
+} @@api @@noauth;
+
+resetPassword(JSONFILE input) {
+    IMPORT FROM input FIELDS STRING userNameOrEmail, STRING url DO {
+        LOCAL NESTED token = STRING();
+        LOCAL NESTED success = BOOLEAN();
+        FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
+            token() <- randomUUID();
+            passwordResetToken(cu) <- token();
+            expiryPasswordResetTokenDate(cu) <- currentDateTime();
+            APPLY;
+            IF NOT canceled() THEN {
+                EMAIL 
+                    SUBJECT '{password.reset.email.subject} '
+                    TO email(cu)
+                    BODY CONCAT '', '<a href="', url, token(), '"> {password.reset} - ', login(cu), '</a>';
+                    success() <- TRUE;
+            }
+        }
+        IF success() THEN {
+            EXPORT FROM '\{success: {password.reset.email.sent}\}';  
+        } ELSE {
+            EXPORT FROM '\{error: {password.reset.error}\}';
+        }
+    }
+} @@api @@noauth;
+
+checkToken(JSONFILE input) {
+    IMPORT FROM input FIELDS STRING token DO {
+        IF expiryPasswordResetTokenDate(userByPassResetToken(token)) <= currentDateTime() THEN {
+            EXPORT FROM '\{success: success\}';
+        } ELSE {
+            EXPORT FROM '\{error: {password.reset.token.invalid}\}';
+        }
+    }
+} @@api @@noauth;
+
+changePassword(JSONFILE input) {
+    IMPORT FROM input FIELDS STRING token, STRING newPassword DO {
+        FOR CustomUser cu = userByPassResetToken(token) AND cu IS CustomUser DO {
+            setSHA256Password(cu, newPassword);
+            passwordResetToken(cu) <- NULL;
+            expiryPasswordResetTokenDate(cu) <- NULL;
+            APPLY;
+        }
+        IF NOT canceled() THEN {
+             EXPORT FROM '\{success: {password.changed}\}';
+        } ELSE {
+            EXPORT FROM '\{error: {password.reset.token.invalid}\}';
+        }
+    }
+} @@api @@noauth;
+
+clearPassResetToken ABSTRACT LIST ( ) ;
+clearPassResetToken () + { 
+	NEWSESSION {
+	    FOR expiryPasswordResetTokenDate(CustomUser cu) <= subtractSeconds(currentDateTime(), 3600) DO {
+	        expiryPasswordResetTokenDate(cu) <- NULL;
+	        passwordResetToken(cu) <- NULL;
+	    }
+        APPLY;
+	}
+}
 
 // lock
 isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
@@ -147,7 +328,7 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
     FOR CustomUser user AS CustomUser = currentUser() DO
-        EXPORT JSON FROM language(user), country(user); 
+        EXPORT FROM language(user), country(user); 
 } @@api;
 
 timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimezone(), serverTimezone();
@@ -309,6 +490,21 @@ FORM customUsers '{authentication.users}'
     PROPERTIES() READONLY serverLanguage, serverCountry, serverTimezone, serverTwoDigitYearStart
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
+    
+    OBJECTS auth = OAuth2 
+    PROPERTIES(auth)  NEW, DELETE,
+                      id,
+                      clientId,
+                      clientSecret,
+                      clientAuthenticationMethod,
+                      scope,
+                      authorizationUri,
+                      tokenUri,
+                      jwkSetUri,
+                      userInfoUri,
+                      userNameAttributeName,
+                      clientName
+    PROPERTIES () webClientSecretKey
 ;
 
 DESIGN customUsers {
@@ -344,6 +540,18 @@ DESIGN customUsers {
                 MOVE PROPERTY(portLDAP());
                 MOVE PROPERTY(baseDNLDAP());
                 MOVE PROPERTY(userDNSuffixLDAP());
+            } 
+            NEW OAUTH2 {
+                caption = 'OAUTH2';
+                MOVE BOX (auth){
+                    GRID (auth){
+                    headerHeight = 50;
+                    }
+                }
+            }
+            NEW WEBAUTH {
+                caption = 'WEB-AUTH';
+                MOVE PROPERTY(webClientSecretKey());
             }
         }
     }

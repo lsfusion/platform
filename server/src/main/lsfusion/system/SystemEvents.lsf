@@ -135,6 +135,7 @@ currentRevision = DATA LOCAL STRING[10]();
 getCurrentRevision INTERNAL 'lsfusion.server.physics.admin.monitor.action.GetCurrentRevisionAction' ();
 
 onStarted() + { 
+    writeDefaultCredentials();
     getCurrentRevision();
     NEW launch = Launch {
         computer(launch) <- currentComputer();

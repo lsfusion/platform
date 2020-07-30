@@ -2,6 +2,7 @@ package lsfusion.interop.logics.remote;
 
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
+import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -21,7 +22,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     // main interface
 
     // authentication
-    AuthenticationToken authenticateUser(String userName, String password) throws RemoteException;
+    AuthenticationToken authenticateUser(Authentication authentication) throws RemoteException;
 
     // stateful interfaces
     RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException;

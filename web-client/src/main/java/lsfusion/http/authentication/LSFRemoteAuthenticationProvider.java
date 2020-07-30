@@ -10,6 +10,7 @@ import lsfusion.interop.base.exception.LoginException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -43,16 +44,11 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
         final String password = authentication.getCredentials().toString();
 
         try {
-            //https://stackoverflow.com/questions/24025924/java-lang-illegalstateexception-no-thread-bound-request-found-exception-in-asp
-            HttpServletRequest request = null;
-            final RequestAttributes attribs = RequestContextHolder.getRequestAttributes();
-            if (attribs != null)
-                request = ((ServletRequestAttributes) attribs).getRequest();
-
+            HttpServletRequest request = getHttpServletRequest();
             Pair<AuthenticationToken, Locale> authLocale = runRequest(request, new LogicsRunnable<Pair<AuthenticationToken, Locale>>() {
                 public Pair<AuthenticationToken, Locale> run(LogicsSessionObject sessionObject) throws RemoteException {
                     try {
-                        AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(username, password);
+                        AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(username, password));
                         return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());
@@ -70,7 +66,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
         }
     }
 
-    private static Locale getUserLocale(RemoteLogicsInterface remoteLogics, Authentication auth, AuthenticationToken authToken) throws RemoteException {
+    protected static Locale getUserLocale(RemoteLogicsInterface remoteLogics, Authentication auth, AuthenticationToken authToken) throws RemoteException {
         try {
             SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(auth);
             ExternalResponse result = remoteLogics.exec(authToken, sessionInfo, "Authentication.getCurrentUserLocale", new ExternalRequest());
@@ -85,5 +81,15 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
 
     public boolean supports(Class<? extends Object> authentication) {
         return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+    }
+
+    //https://stackoverflow.com/questions/24025924/java-lang-illegalstateexception-no-thread-bound-request-found-exception-in-asp
+    public static HttpServletRequest getHttpServletRequest() {
+        HttpServletRequest request = null;
+        final RequestAttributes attribs = RequestContextHolder.getRequestAttributes();
+        if (attribs != null) {
+            request = ((ServletRequestAttributes) attribs).getRequest();
+        }
+        return request;
     }
 }
