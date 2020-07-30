@@ -9,11 +9,13 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
+import lsfusion.interop.connection.authentication.*;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
@@ -53,6 +55,8 @@ import javax.naming.CommunicationException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static lsfusion.base.ApiResourceBundle.getString;
 
 public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;
@@ -222,51 +226,67 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact());
     }
-    
-    public AuthenticationToken authenticateUser(String userName, String password, ExecutionStack stack) {
-        try(DataSession session = createSession()) {
-            DataObject userObject = readUser(userName, session);
-            authenticateUser(session, userObject, userName, password, stack);
-            return generateToken(userName);
+
+    private String getWebClientSecret() {
+        try (DataSession session = createSession()) {
+            return (String) authenticationLM.webClientSecret.read(session);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public void authenticateUser(DataSession session, DataObject userObject, String login, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if (authenticationLM.useLDAP.read(session) != null) {
-            String server = (String) authenticationLM.serverLDAP.read(session);
-            Integer port = (Integer) authenticationLM.portLDAP.read(session);
-            String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
-            String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
-
-            try {
-                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(login, password);
-                if (ldapParameters.isConnected()) {
-                    if (userObject == null) {
-                        userObject = addUser(login, password, session);
+    public AuthenticationToken authenticateUser(Authentication authentication, ExecutionStack stack) {
+        try (DataSession session = createSession()) {
+            DataObject userObject;
+            if (authentication instanceof PasswordAuthentication) {
+                userObject = readUser(authentication.getUserName(), session);
+                if (authenticationLM.useLDAP.read(session) != null) {
+                    String server = (String) authenticationLM.serverLDAP.read(session);
+                    Integer port = (Integer) authenticationLM.portLDAP.read(session);
+                    String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
+                    String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
+                    try {
+                        LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix)
+                                .authenticate(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword());
+                        if (ldapParameters.isConnected()) {
+                            if (userObject == null) {
+                                userObject = addUser(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword(), session);
+                            }
+                            setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(),
+                                    ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
+                            apply(session);
+                        } else {
+                            throw new LoginException();
+                        }
+                    } catch (CommunicationException e) {
+                        systemLogger.error("LDAP authentication failed", e);
                     }
-                    setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
-                    apply(session);
-                    return;
-                } else {
+                }
+                if (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword(), stack)) {
                     throw new LoginException();
                 }
-            } catch (CommunicationException e) {
-                systemLogger.error("LDAP authentication failed", e);
+            } else {
+                String webClientAuthSecret = ((OAuth2Authentication) authentication).getAuthSecret();
+                if ((webClientAuthSecret == null || !webClientAuthSecret.equals(getWebClientSecret()))) {
+                    throw new AuthenticationException(getString("exceptions.incorrect.web.client.auth.token"));
+                }
+                userObject = readUser(authentication.getUserName(), session);
+                if (userObject == null) {
+                    String pwd = BaseUtils.generatePassword(20, false, true);
+                    userObject = addUser(authentication.getUserName(), pwd, session);
+                    setUserParameters(userObject, ((OAuth2Authentication) authentication).getFirstName(),
+                            ((OAuth2Authentication) authentication).getLastName(), ((OAuth2Authentication) authentication).getEmail(),
+                            null, session);
+                    apply(session, stack);
+                }
             }
+            if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
+                throw new LockedException();
+            }
+            return generateToken(authentication.getUserName());
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
-
-        if (userObject == null) {
-            throw new LoginException();
-        }
-
-        if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
-            throw new LockedException();
-        }
-
-        if (!authenticationLM.checkPassword(session, userObject, password, stack))
-            throw new LoginException();
     }
 
     public SecurityPolicy getSecurityPolicy(DataSession session, DataObject userObject) {

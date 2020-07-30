@@ -9,13 +9,23 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <title>${title}</title>
         <link rel="shortcut icon" href="${logicsIcon}" />
-        <link rel="stylesheet" media="only screen and (min-device-width: ${minDesktopWidth}px)" href="static/noauth/css/login.css"/>
-        <link rel="stylesheet" media="only screen and (max-device-width: ${maxMobileWidth}px)" href="static/noauth/css/mobile_login.css"/>
+        <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
+        <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     </head>
     <body onload="document.loginForm.username.focus();">
 
         <table class="content-table">
             <tr></tr>
+            <tr valign="bottom">
+                <td>
+                    <div class="text-center">
+                        <div class="text-center">
+                            <div class="desktop-link">${jnlpUrls}</div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
             <tr>
                 <td>
                     <div id="content">
@@ -43,17 +53,34 @@
                                     <label for="password"><%= ServerMessages.getString(request, "password") %></label>
                                     <input type="password" id="password" name="password" class="round full-width-box"/>
                                 </p>
-                                <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="<%= ServerMessages.getString(request, "log.in") %>"/>
-                                <div class="desktop-link">${jnlpUrls}</div>
+                                <input name="submit" type="submit" class="button round blue" value="<%= ServerMessages.getString(request, "log.in") %>"/>
                                 <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
+                                    <%
+                                        if (session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION") instanceof Exception) {
+                                            session.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", ((Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION")).getMessage());
+                                        }
+                                    %>
                                     <div class="errorblock round full-width-box">
-                                        <%= ServerMessages.getString(request, "login.unsuccessful") %><br/>
-                                        <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["SPRING_SECURITY_LAST_EXCEPTION"].message}
+                                        ${SPRING_SECURITY_LAST_EXCEPTION}
                                     </div>
                                     <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
                                 </c:if>
                             </fieldset>
                         </form>
+                        <div class="reg-block">
+                            <br>
+                                <a class="registration" href="${registrationPage}"><%= ServerMessages.getString(request, "registration") %></a>
+                                <a class="forgot-password" href="${forgotPasswordPage}"><%= ServerMessages.getString(request, "password.forgot") %></a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>
+                    <div class="text-center">
+                        <c:forEach var="url" items="${urls}">
+                            <a href="${url.value}" class="text-center fa fa-${url.key}"></a>
+                        </c:forEach>
                     </div>
                 </td>
             </tr>

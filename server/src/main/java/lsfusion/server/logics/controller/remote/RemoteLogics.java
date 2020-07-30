@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.lambda.CallableWithParam;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.RemoteMessageException;
+import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
@@ -173,8 +174,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public AuthenticationToken authenticateUser(String userName, String password) throws RemoteException {
-        return securityManager.authenticateUser(userName, password, getStack());
+    public AuthenticationToken authenticateUser(Authentication authentication) throws RemoteException {
+        return securityManager.authenticateUser(authentication, getStack());
     }
 
     @Override

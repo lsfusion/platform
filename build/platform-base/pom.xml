@@ -100,6 +100,8 @@
         <javax.ejb.api.version>3.2.2</javax.ejb.api.version>
 
         <javax.xml.bind.version>2.3.0</javax.xml.bind.version>
+        <jakarta.activation.version>1.2.1</jakarta.activation.version>
+        <javax.activation.version>1.1.1</javax.activation.version>
 
         <tess4j.version>4.3.1</tess4j.version>
         <pdfbox.version>2.0.12</pdfbox.version>
@@ -502,6 +504,12 @@
                 <version>${httpcomponents.httpclient-android.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>4.0.1</version>
+            </dependency>
+
             <!-- GWT-related libraries -->
             <dependency>
                 <groupId>com.google.gwt</groupId>
@@ -593,7 +601,13 @@
             <dependency>
                 <groupId>jakarta.activation</groupId>
                 <artifactId>jakarta.activation-api</artifactId>
-                <version>1.2.1</version>
+                <version>${jakarta.activation.version}</version>
+            </dependency>
+            <!--for mail service worked on java 11-->
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>${javax.activation.version}</version>
             </dependency>
 
             <!--optional dependencies-->
