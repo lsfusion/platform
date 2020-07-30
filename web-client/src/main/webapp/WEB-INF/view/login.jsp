@@ -55,14 +55,13 @@
                                 </p>
                                 <input name="submit" type="submit" class="button round blue" value="<%= ServerMessages.getString(request, "log.in") %>"/>
                                 <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
-                                    <c:catch var ="catchException">
-                                        <c:set var = "message" scope = "page" value = "${sessionScope['SPRING_SECURITY_LAST_EXCEPTION'].message}"/>
-                                    </c:catch>
-                                    <c:if test="${catchException != null}" >
-                                        <c:set var = "message" scope = "page" value = "${sessionScope['SPRING_SECURITY_LAST_EXCEPTION']}"/>
-                                    </c:if>
+                                    <%
+                                        if (session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION") instanceof Exception) {
+                                            session.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", ((Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION")).getMessage());
+                                        }
+                                    %>
                                     <div class="errorblock round full-width-box">
-                                        ${pageScope["message"]}
+                                        ${SPRING_SECURITY_LAST_EXCEPTION}
                                     </div>
                                     <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
                                 </c:if>
