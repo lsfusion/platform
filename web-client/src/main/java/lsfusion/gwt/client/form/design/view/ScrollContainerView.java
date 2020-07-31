@@ -22,6 +22,7 @@ public class ScrollContainerView extends GAbstractContainerView {
 
         scrollPanel = new FlexPanel(vertical);
         scrollPanel.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
+        scrollPanel.getElement().getStyle().setOverflowX(Style.Overflow.AUTO);
 
         view = initBorder(scrollPanel);
     }
@@ -30,6 +31,7 @@ public class ScrollContainerView extends GAbstractContainerView {
     protected void addImpl(int index, GComponent child, Widget view) {
         assert child.getFlex() == 1 && child.getAlignment() == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
         view.getElement().getStyle().setOverflowY(Style.Overflow.VISIBLE);
+        view.getElement().getStyle().setOverflowX(Style.Overflow.VISIBLE);
         add(scrollPanel, view, 0, child.getAlignment(), child.getFlex(), child, vertical);
     }
 
