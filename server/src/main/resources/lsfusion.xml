@@ -136,6 +136,7 @@
                 <entry key="connectTimeout" value="${settings.connectTimeout:}"/>
                 <entry key="editBooleanOnSingleClick" value="${settings.editBooleanOnSingleClick:}"/>
                 <entry key="editActionOnSingleClick" value="${settings.editActionOnSingleClick:}"/>
+                <entry key="pivotOnlySelectedColumn" value="${settings.pivotOnlySelectedColumn:}"/>
             </map>
         </property>
         </bean>
