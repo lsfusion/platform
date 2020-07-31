@@ -48,12 +48,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private FlexAlignment alignment = null;
 
     public Dimension getSize() {
-        if(size == null) {
-            ContainerView container = getLayoutParamContainer();
-            if(container != null && container.isScroll()) {
-                return new Dimension(-1, 1);
-            }
-        }
         return size;
     }
     
