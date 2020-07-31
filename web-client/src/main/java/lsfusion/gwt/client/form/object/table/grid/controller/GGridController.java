@@ -479,7 +479,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     public GPropertyDraw getSelectedProperty() {
-        return table.getCurrentProperty();
+        return table != null ? table.getCurrentProperty() : null;
     }
     @Override
     public GGroupObjectValue getSelectedColumnKey() {
