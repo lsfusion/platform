@@ -962,16 +962,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }-*/;
 
-    private String getColumnName(String attr, JsArrayString columnKeys) {
+    private String getColumnName(String attr, JsArrayMixed columnKeys) {
         JsArrayString cols = config.getArrayString(attr);
         for (int i = 0; i < columnKeys.length(); ++i) {
             if (cols.get(i).equals(COLUMN))
-                return columnKeys.get(i);
+                return columnKeys.getString(i);
         }
         return null;
     }
 
-    private String getColumnName(JsArrayString rowKeys, JsArrayString columnKeys) {
+    private String getColumnName(JsArrayMixed rowKeys, JsArrayMixed columnKeys) {
         String column = getColumnName("cols", columnKeys);
         if(column != null)
             return column;
@@ -979,7 +979,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return getColumnName("rows", rowKeys);
     }
 
-    public void renderValueCell(Element jsElement, JavaScriptObject value, JsArrayString rowKeys, JsArrayString columnKeys) {
+    public void renderValueCell(Element jsElement, JavaScriptObject value, JsArrayMixed rowKeys, JsArrayMixed columnKeys) {
         GPropertyTableBuilder.renderTD(jsElement, rowHeight);
 
         String column = getColumnName(rowKeys, columnKeys);
@@ -1039,7 +1039,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         setTableToExcelColorAttributes(td, rgbToArgb(cellBackground != null ? cellBackground : getComponentBackground(colorTheme)));
     }
 
-    public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayString rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
+    public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayMixed rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
         GPropertyTableBuilder.renderTD(th, rowHeight);
         if (isArrow) {
             if (rowKeyValues.length() > 0) {
@@ -1099,7 +1099,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         });
     }
 
-    public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
+    public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayMixed colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement, rowHeight);
             renderArrow(jsElement, getTreeColumnValue(0, isExpanded, false, false, null));
@@ -1413,14 +1413,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private final static int defaultValueWidth = 80;
 
-    private int getValueColumnWidth(JsArrayString colValues) {
+    private int getValueColumnWidth(JsArrayMixed colValues) {
         int width = 0;
         JsArrayString cols = config.getArrayString("cols");
         for (int i = 0; i < cols.length(); ++i) {
             String column = cols.get(i);
             if (column.equals(COLUMN)) {
                 if(i < colValues.length()) {
-                    column = colValues.get(i);
+                    column = colValues.getString(i);
                     if(column == null) // it can be null when there are no columns (see getData method)
                         continue;
                 } else
@@ -1446,7 +1446,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return columnMap.get(column).property.getValueWidthWithPadding(font);
     }
 
-    public int getColumnWidth(boolean isValueColumn, JsArrayString colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {
+    public int getColumnWidth(boolean isValueColumn, JsArrayMixed colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {
         if (isArrow) {
             return getArrowColumnWidth(arrowLevels);
         } else if (isValueColumn) {
@@ -1773,7 +1773,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }-*/;
 
-    private void cellDblClickAction(JsArrayString rowKeyValues, JsArrayString colKeyValues, int x, int y) {
+    private void cellDblClickAction(JsArrayMixed rowKeyValues, JsArrayMixed colKeyValues, int x, int y) {
         final PopupDialogPanel popup = new PopupDialogPanel();
 
         List<String> menuItems = new ArrayList<>();
@@ -1804,12 +1804,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
 
-    private List<GPropertyFilter> getFilters(JsArrayString elements, JsArrayString values) {
+    private List<GPropertyFilter> getFilters(JsArrayString elements, JsArrayMixed values) {
         List<GPropertyFilter> filters = new ArrayList<>();
         for (int i = 0; i < elements.length(); i++) {
             Column column = columnMap.get(elements.get(i));
             if (column != null)
-                filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, values.get(i), GCompare.EQUALS));
+                filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, values.getObject(i), GCompare.EQUALS));
         }
         return filters;
     }
@@ -1832,7 +1832,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return -1;
     }
 
-    private void rowAttrHeaderDblClickAction(JsArrayString rowKeyValues, String attrName) {
+    private void rowAttrHeaderDblClickAction(JsArrayMixed rowKeyValues, String attrName) {
         if(rowKeyValues.length() > 0) {
             Column column = columnMap.get(attrName);
             Integer rowIndex = getRowIndex(rowKeyValues);
@@ -1842,7 +1842,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
-    private Integer getRowIndex(JsArrayString rowKeyValues) {
+    private Integer getRowIndex(JsArrayMixed rowKeyValues) {
         JsArrayString rows = config.getArrayString("rows");
         JsArray<JsArrayMixed> data = getData(columnMap, Aggregator.create(), aggrCaptions, JavaScriptObject.createArray().cast(), false, false);
         ArrayList<String> headers = toArrayList(data.get(0));
@@ -1857,7 +1857,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             boolean found = true;
             for (int j = 0; j < rowKeyValues.length(); j++) {
                 Integer headerIndex = headerIndexes.get(j);
-                if (!isSystemColumn(row, headerIndex) && !equals(row.getString(headerIndex), rowKeyValues.get(j))) {
+                if (!isSystemColumn(row, headerIndex) && !equals(row.getObject(headerIndex), rowKeyValues.getObject(j))) {
                     found = false;
                     break;
                 }
@@ -1874,13 +1874,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return row.length() <= headerIndex;
     }
 
-    private void colAttrHeaderDblClickAction(JsArrayString columnKeys, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
+    private void colAttrHeaderDblClickAction(JsArrayMixed columnKeys, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
         modifySortCols(columnKeys, ctrlKey, shiftKey);
         if (!shiftKey && !ctrlKey) {
             unwrapOthers(rendererElement, th);
         }
         th.removeAllChildren();
-        renderColAttrCell(th, fromObject(columnKeys.get(columnKeys.length() - 1)), columnKeys, isSubtotal, false, false);
+        renderColAttrCell(th, fromObject(columnKeys.getObject(columnKeys.length() - 1)), columnKeys, isSubtotal, false, false);
 
         updateView(true, null);
     }
@@ -1946,7 +1946,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return false;
     }-*/;
 
-    private boolean isSortColumn(boolean isSubtotal, JsArrayString colKeyValues) {
+    private boolean isSortColumn(boolean isSubtotal, JsArrayMixed colKeyValues) {
         return isSubtotal || colKeyValues.length() == config.getArrayString("cols").length();
     }
 
@@ -1963,8 +1963,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private boolean equals(Object a, Object b) {
-        if(a instanceof JsArrayMixed && b instanceof JsArrayMixed) {
-            return arraysEquals((JsArrayMixed) a, (JsArrayMixed) b);
+        if(a instanceof JsArrayMixed || b instanceof JsArrayMixed) {
+            return a instanceof JsArrayMixed && b instanceof JsArrayMixed && arraysEquals((JsArrayMixed) a, (JsArrayMixed) b);
         } else {
             if(a == null && b == null) return true;
             return a != null && a.equals(b);
