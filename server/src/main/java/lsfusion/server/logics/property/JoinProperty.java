@@ -82,7 +82,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         super(caption, interfaces);
         this.implement = implement;
         this.user = user;
-        this.implementChange = isIdentity();
+        this.isIdentity = isIdentity();
 
         finalizeInit();
     }
@@ -131,7 +131,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     // разрешить менять основное свойство
-    public final boolean implementChange;
+    public final boolean isIdentity;
     
     private final boolean user;
     
@@ -154,7 +154,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         }
 
         Property<T> implementProperty = implement.property;
-        if(implementChange) {
+        if(isIdentity) {
             MSet<Property> mImplementProps = SetFact.mSet();
             fillDepends(mImplementProps,implement.mapping.values());
             return SetFact.add(implementProperty.getUsedDataChanges(propChanges), propChanges.getUsedChanges(mImplementProps.immutable()));
@@ -217,7 +217,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(andInterface!=null)
             return implement.mapping.get(andInterface).mapChangeProps();
 
-        if(implementChange)
+        if(isIdentity)
             return implement.property.getChangeProps();
 
         return super.getChangeProps();
@@ -240,7 +240,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             PropertyInterfaceImplement<Interface> andImplement = implement.mapping.get(andInterface);
             return andImplement instanceof PropertyMapImplement && ((PropertyMapImplement) andImplement).property.canBeHeurChanged(global);
         }
-        if(implementChange) // groupBy'им выбирая max
+        if(isIdentity) // groupBy'им выбирая max
             return implement.property.canBeHeurChanged(global); // пока implementChange = identity
         return false;
     }
@@ -267,7 +267,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                     change.where.and(getAndWhere(this, mapExprs, propChanges)), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges);
         }
 
-        if(implementChange) // groupBy'им выбирая max
+        if(isIdentity) // groupBy'им выбирая max
             return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, GroupType.ASSERTSINGLE_CHANGE(), propChanges, changedWhere); // пока implementChange = identity
         
         return super.calculateDataChanges(change, changedWhere, propChanges);
@@ -292,7 +292,16 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             }
         }
 
-        if (implement.mapping.size() == 1 && !implementChange) {
+        if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
+            if(getValueClass(ClassType.tryEditPolicy) instanceof CustomClass) // just call edit action (see super implementation)
+                return super.getDefaultEventAction(eventActionSID, filterProperty);
+
+            ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID);
+            if(editImplement != null)
+                return PropertyFact.createJoinAction(editImplement.map(implement.mapping));
+        }
+
+        if (implement.mapping.size() == 1 && !isIdentity) {
             ValueClass aggClass = ((PropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editValuePolicy);
 
             if (eventActionSID.equals(ServerResponse.CHANGE_WYS)) {
@@ -304,10 +313,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 DefaultChangeAggAction<T> aggChangeAction =
                         new DefaultChangeAggAction<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeActionImplement);
                 return aggChangeAction.getImplement(listInterfaces);
-            } else {
-                // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
+            } else
                 return implement.mapping.singleValue().mapEventAction(eventActionSID, aggClass instanceof CustomClass ? aggProp : null);
-            }
         }
         return super.getDefaultEventAction(eventActionSID, filterProperty);
     }
