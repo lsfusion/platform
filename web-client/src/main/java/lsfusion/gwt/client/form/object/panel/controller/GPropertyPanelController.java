@@ -39,6 +39,8 @@ public class GPropertyPanelController {
     private NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues;
     private NativeHashMap<GGroupObjectValue, Object> cellForegroundValues;
 
+    private NativeHashMap<GGroupObjectValue, Object> images;
+
     public GPropertyPanelController(GPropertyDraw property, GFormController form, Supplier<Object> rowBackground, Supplier<Object> rowForeground) {
         this.property = property;
         this.form = form;
@@ -117,6 +119,10 @@ public class GPropertyPanelController {
 
         if (captions != null) {
             renderer.setCaption(property.getDynamicCaption(captions.get(columnKey)));
+        }
+
+        if (images != null && renderer instanceof ActionPanelRenderer) {
+            ((ActionPanelRenderer)renderer).setDynamicImage(images.get(columnKey));
         }
     }
 

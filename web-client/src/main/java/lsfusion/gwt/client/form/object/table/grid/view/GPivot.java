@@ -50,7 +50,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
-public class GPivot extends GStateTableView implements ColorThemeChangeListener {
+public class GPivot extends GStateTableView implements ColorThemeChangeListener, RenderContext, UpdateContext {
 
     private final String ICON_LEAF = "tree_leaf.png";
     private final String ICON_OPEN = "tree_open.png";
@@ -1081,22 +1081,27 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GPropertyDraw property = columnMap.get(columnName).property;
         GPivot.setTableToExcelPropertyAttributes(th, value, property);
-        property.getCellRenderer().render(th, value, new RenderContext() {
-            @Override
-            public Integer getStaticHeight() {
-                return rowHeight;
-            }
+        property.getCellRenderer().render(th, value, this, this);
+    }
 
-            @Override
-            public GFont getFont() {
-                return font;
-            }
-        }, new UpdateContext() {
-            @Override
-            public boolean isStaticHeight() {
-                return true;
-            }
-        });
+    @Override
+    public Integer getStaticHeight() {
+        return rowHeight;
+    }
+
+    @Override
+    public boolean globalCaptionIsDrawn() {
+        return true;
+    }
+
+    @Override
+    public GFont getFont() {
+        return font;
+    }
+
+    @Override
+    public boolean isStaticHeight() {
+        return true;
     }
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayString colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {

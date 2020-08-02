@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -38,9 +39,19 @@ public class ActionPanelRenderer extends PanelRenderer {
         ActionCellRenderer.setLabelText(value.getRenderElement(), text);
     }
 
+    private Object image;
+    public void setDynamicImage(Object image) {
+        if (!GwtSharedUtils.nullEquals(this.image, image)) {
+            this.image = image;
+
+            assert property.hasDynamicImage();
+            GFormController.setDynamicImage(value.getRenderElement(), image);
+        }
+    }
+
     // interface for refresh button
     private String nullImage = null;
-    public void setImage(String iconPath) {
+    public void setLoadingImage(String iconPath) {
         Element renderElement = value.getRenderElement();
         if(iconPath == null) {
             if(nullImage != null) {

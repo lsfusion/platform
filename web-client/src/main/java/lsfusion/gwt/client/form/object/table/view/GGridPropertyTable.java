@@ -60,6 +60,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeHashMap<GGroupObjectValue, Object> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, Object> rowForegroundValues = new NativeHashMap<>();
 
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellImages = new NativeSIDMap<>();
+
     public static String getPropertyCaption(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
         String caption;
         if (propCaptions != null)
@@ -134,7 +136,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
-    protected GFont getFont() {
+    public GFont getFont() {
         return font;
     }
 
@@ -255,8 +257,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
     public abstract GAbstractTableController getGroupController();
-    public abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
-    public abstract String getCellForeground(GridDataRecord rowValue, int row, int column);
+
+    public abstract String getColumnSID(int column);
 
     public void runGroupReport() {
         form.runGroupReport(groupObject.ID);
@@ -451,14 +453,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         public void renderDom(Cell cell, Element cellElement) {
             GPropertyDraw property = getProperty(cell);
             if(property != null) // in tree there can be no property in groups other than last
-                form.render(property, cellElement, getRenderContext());
+                form.render(property, cellElement, GGridPropertyTable.this);
         }
 
         @Override
         public void updateDom(Cell cell, Element cellElement) {
             GPropertyDraw property = getProperty(cell);
             if (property != null) // in tree there can be no property in groups other than last
-                form.update(property, cellElement, getValue(property, (T) cell.getRow()), getUpdateContext());
+                form.update(property, cellElement, getValue(property, (T) cell.getRow()), GGridPropertyTable.this);
         }
     }
 }

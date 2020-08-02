@@ -345,7 +345,7 @@ public class GGridController extends GAbstractTableController {
             if (!(key instanceof GPropertyDraw)) {
                 GPropertyReader propertyReader = key;
                 if (formController.getGroupObject(propertyReader.getGroupObjectID()) == groupObject) {
-                    propertyReader.update(this, value, propertyReader instanceof GPropertyDraw && fc.updateProperties.contains(propertyReader));
+                    propertyReader.update(this, value, false);
                 }
             }
         });

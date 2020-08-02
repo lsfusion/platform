@@ -91,6 +91,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
     }
 
+    public boolean hasStaticImage() {
+        return imageHolder != null;
+    }
+    public boolean hasDynamicImage(); // when it's an action and has dynamic image
+
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
     public boolean showChangeKey;
 

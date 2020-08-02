@@ -19,6 +19,8 @@ import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 // actually extends TextBasedCellRenderer for optimization purposes, when there are no images
 public class ActionCellRenderer extends CellRenderer {
 
+    private static final String ICON_EXECUTE = "action.png";
+
     public ActionCellRenderer(GPropertyDraw property) {
         super(property);
     }
@@ -27,8 +29,25 @@ public class ActionCellRenderer extends CellRenderer {
     public static final String IMAGE = "lsf-image-button";
 
     @Override
-    protected boolean isSimpleText() {
-        return property.imageHolder == null;
+    protected boolean isSimpleText(RenderContext renderContext) {
+        return !hasImage(renderContext);
+    }
+
+    @Override
+    protected boolean isSimpleText(UpdateContext updateContext) {
+        return !hasImage(updateContext);
+    }
+
+    private boolean hasImage(boolean globalCaptionIsDrawn) {
+        return property.hasStaticImage() || property.hasDynamicImage();
+    }
+
+    protected boolean hasImage(RenderContext renderContext) {
+        return hasImage(renderContext.globalCaptionIsDrawn());
+    }
+
+    protected boolean hasImage(UpdateContext updateContext) {
+        return hasImage(updateContext.globalCaptionIsDrawn());
     }
 
     @Override
@@ -42,7 +61,7 @@ public class ActionCellRenderer extends CellRenderer {
 
         String setText;
         Element textElement;
-        if(property.imageHolder == null) { // optimization;
+        if(!hasImage(renderContext)) { // optimization;
             textElement = element;
             setText = "...";
         } else {
@@ -69,7 +88,7 @@ public class ActionCellRenderer extends CellRenderer {
         element.getStyle().clearPadding();
         element.setPropertyObject(TEXT, null);
 
-        if(property.imageHolder == null)
+        if(!hasImage(renderContext))
             clearBasedTextFonts(property, element.getStyle(), renderContext);
 
         element.removeClassName("gwt-Button-disabled");
@@ -106,9 +125,11 @@ public class ActionCellRenderer extends CellRenderer {
     public void renderDynamicContent(Element element, Object value, UpdateContext updateContext) {
         boolean enabled = (value != null) && (Boolean) value;
 
-        if(property.imageHolder != null) {
-            ImageDescription image = property.getImage(enabled);
-            setImage(element, image != null ? GwtClientUtils.getAppImagePath(image.url) : null, null);
+        boolean hasStaticImage = property.hasStaticImage();
+        if(hasStaticImage || updateContext.globalCaptionIsDrawn()) {
+            setImage(element, hasStaticImage ?
+                    GwtClientUtils.getAppImagePath(property.getImage(enabled).url) :
+                    GwtClientUtils.getModuleImagePath(ICON_EXECUTE), null);
         }
         if(!enabled)
             element.addClassName("gwt-Button-disabled");

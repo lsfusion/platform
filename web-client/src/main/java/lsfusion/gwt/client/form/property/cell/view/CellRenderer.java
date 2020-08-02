@@ -25,7 +25,10 @@ public abstract class CellRenderer<T> {
         renderDynamic(element, value, updateContext);
     }
 
-    protected boolean isSimpleText() {
+    protected boolean isSimpleText(RenderContext renderContext) {
+        return false;
+    }
+    protected boolean isSimpleText(UpdateContext updateContext) {
         return false;
     }
 
@@ -59,7 +62,7 @@ public abstract class CellRenderer<T> {
         Integer staticHeight = renderContext.getStaticHeight();
         // is simple text renderer (SINGLE LINE (!)) && has static height (otherwise when div is expanded line-height will not work)
         // maybe later it makes sense to add optimization for ActionOrPropertyValue to look at the upper container if it's has static height
-        if(isSimpleText() && staticHeight != null) // optimization
+        if(staticHeight != null && isSimpleText(renderContext)) // optimization
             renderSimpleStatic(element, textAlign, vertAlignment, staticHeight);
         else {
             String horzAlignment = getFlexAlign(textAlign);
@@ -96,7 +99,7 @@ public abstract class CellRenderer<T> {
         Integer staticHeight = renderContext.getStaticHeight();
         // is simple text renderer (SINGLE LINE (!)) && has static height (otherwise when div is expanded line-height will not work)
         boolean sameElement = true;
-        if(isSimpleText() && staticHeight != null) // optimization
+        if(staticHeight != null && isSimpleText(renderContext)) // optimization
             clearRenderSimpleStatic(element);
         else
             sameElement = clearRenderFlexStatic(element, staticHeight);
@@ -124,7 +127,7 @@ public abstract class CellRenderer<T> {
     }
 
     public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
-        if(!(isSimpleText() && updateContext.isStaticHeight()) && GwtClientUtils.isTDorTH(element))
+        if(!(updateContext.isStaticHeight() && isSimpleText(updateContext)) && GwtClientUtils.isTDorTH(element))
             element = element.getFirstChildElement();
 
         renderDynamicContent(element, value, updateContext);

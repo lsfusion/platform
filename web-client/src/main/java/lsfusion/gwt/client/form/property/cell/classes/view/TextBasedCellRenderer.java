@@ -21,7 +21,12 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     }
 
     @Override
-    protected boolean isSimpleText() {
+    protected boolean isSimpleText(RenderContext renderContext) {
+        return !isMultiLine();
+    }
+
+    @Override
+    protected boolean isSimpleText(UpdateContext updateContext) {
         return !isMultiLine();
     }
 

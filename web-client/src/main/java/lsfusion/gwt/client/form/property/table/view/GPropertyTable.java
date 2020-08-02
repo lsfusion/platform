@@ -24,7 +24,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
-public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> {
+public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> implements RenderContext, UpdateContext {
 
     protected final GFormController form;
     protected final GGroupObject groupObject;
@@ -94,12 +94,12 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
                 new ExecuteEditContext() {
                     @Override
                     public RenderContext getRenderContext() {
-                        return GPropertyTable.this.getRenderContext();
+                        return GPropertyTable.this;
                     }
 
                     @Override
                     public UpdateContext getUpdateContext() {
-                        return GPropertyTable.this.getUpdateContext();
+                        return GPropertyTable.this;
                     }
 
                     @Override
@@ -163,28 +163,22 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         );
     }
 
-    public RenderContext getRenderContext() {
-        return new RenderContext() {
-            @Override
-            public Integer getStaticHeight() {
-                return tableBuilder.getCellHeight();
-            }
+    @Override
+    public Integer getStaticHeight() {
+        return tableBuilder.getCellHeight();
+    }
 
-            @Override
-            public GFont getFont() {
-                return GPropertyTable.this.getFont();
-            }
-        };
+    @Override
+    public boolean globalCaptionIsDrawn() {
+        return true;
     }
-    public UpdateContext getUpdateContext() {
-        return new UpdateContext() {
-            @Override
-            public boolean isStaticHeight() {
-                return true;
-            }
-        };
+
+    @Override
+    public boolean isStaticHeight() {
+        return true;
     }
-    protected abstract GFont getFont();
+
+    public abstract GFont getFont();
 
     protected void setCellHeight(int cellHeight) {
         tableBuilder.setCellHeight(cellHeight);

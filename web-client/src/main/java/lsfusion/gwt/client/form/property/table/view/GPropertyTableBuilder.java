@@ -9,6 +9,8 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 
+import java.util.Optional;
+
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
  */
@@ -118,6 +120,10 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
         GFormController.setForegroundColor(td, foregroundColor, true);
+
+        Optional<Object> image = getImage(rowValue, rowIndex, columnIndex);
+        if(image != null) // assert that it is action and rendered with ActionCellRenderer
+            GFormController.setDynamicImage(td, image.get());
     }
 
     public static void renderTD(Element td, int height) {
@@ -145,5 +151,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public abstract String getBackground(T rowValue, int row, int column);
     public abstract String getForeground(T rowValue, int row, int column);
+    public abstract Optional<Object> getImage(T rowValue, int row, int column);
 }
 

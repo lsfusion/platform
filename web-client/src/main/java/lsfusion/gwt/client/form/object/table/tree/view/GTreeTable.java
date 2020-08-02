@@ -27,7 +27,6 @@ import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
-import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -396,7 +395,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             // if property changed - rerender
             if(!GwtClientUtils.nullEquals(oldProperty, newProperty) && !form.isEditing()) { // we don't want to clear editing (it will be rerendered anyway, however not sure if this check is needed)
                 if(oldProperty != null) {
-                    oldProperty.getCellRenderer().clearRender(cellElement, getRenderContext());
+                    oldProperty.getCellRenderer().clearRender(cellElement, GTreeTable.this);
                     cellElement.setPropertyObject(PDRAW_ATTRIBUTE, null);
                 }
 
@@ -601,6 +600,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                     String columnSID = getColumnSID(i);
                     record.setBackground(columnSID, background == null ? readerProperty.background : background);
                     record.setForeground(columnSID, foreground == null ? readerProperty.foreground : foreground);
+                    if(readerProperty.hasDynamicImage()) {
+                        NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(readerProperty);
+                        record.setImage(columnSID, actionImages == null ? null : actionImages.get(key));
+                    }
                 }
             }
         }
@@ -734,18 +737,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         ).collect(Collectors.toList());
     }
 
-    @Override
-    public String getCellBackground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getBackground(getColumnSID(column));
-    }
-
-    private String getColumnSID(int column) {
+    public String getColumnSID(int column) {
         return "" + column;
-    }
-
-    @Override
-    public String getCellForeground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getForeground(getColumnSID(column));
     }
 
     @Override

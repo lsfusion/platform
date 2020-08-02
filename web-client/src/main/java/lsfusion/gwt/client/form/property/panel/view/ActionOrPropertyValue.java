@@ -22,7 +22,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 // property value renderer with editing
-public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext {
+public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext {
 
     private Object value;
 
@@ -60,7 +60,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     protected void finalizeInit() {
-        this.form.render(this.property, getRenderElement(), getRenderContext());
+        this.form.render(this.property, getRenderElement(), this);
     }
 
     private Widget borderWidget;
@@ -148,26 +148,31 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     public RenderContext getRenderContext() {
-        return new RenderContext() {
-            @Override
-            public Integer getStaticHeight() {
-                return null;
-            }
+        return this;
+    }
 
-            @Override
-            public GFont getFont() {
-                return null;
-            }
-        };
+    @Override
+    public Integer getStaticHeight() {
+        return null;
+    }
+
+    @Override
+    public boolean globalCaptionIsDrawn() {
+        return false;
+    }
+
+    @Override
+    public GFont getFont() {
+        return null;
+    }
+
+    @Override
+    public boolean isStaticHeight() {
+        return false;
     }
 
     public UpdateContext getUpdateContext() {
-        return new UpdateContext() {
-            @Override
-            public boolean isStaticHeight() {
-                return false;
-            }
-        };
+        return this;
     }
 
     protected abstract void onPaste(Object objValue, String stringValue);
@@ -187,14 +192,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     public void updateValue(Object value) {
         setValue(value);
 
-        form.update(property, getRenderElement(), getValue(), getUpdateContext());
-    }
-
-    public void setBackground(String color) {
-        GFormController.setBackgroundColor(getRenderElement(), getDisplayColor(color));
-    }
-
-    public void setForeground(String color) {
-        GFormController.setForegroundColor(getRenderElement(), getDisplayColor(color));
+        form.update(property, getRenderElement(), getValue(), this);
     }
 }
