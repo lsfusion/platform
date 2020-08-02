@@ -1810,7 +1810,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         for (int i = 0; i < elements.length(); i++) {
             Column column = columnMap.get(elements.get(i));
             if (column != null)
-                filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, values.getObject(i), GCompare.EQUALS));
+                filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, getObjectValue(values, i), GCompare.EQUALS));
         }
         return filters;
     }
@@ -1858,7 +1858,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             boolean found = true;
             for (int j = 0; j < rowKeyValues.length(); j++) {
                 Integer headerIndex = headerIndexes.get(j);
-                if (!isSystemColumn(row, headerIndex) && !equals(row.getObject(headerIndex), rowKeyValues.getObject(j))) {
+                if (!isSystemColumn(row, headerIndex) && !equals(getObjectValue(row, headerIndex), getObjectValue(rowKeyValues, j))) {
                     found = false;
                     break;
                 }
@@ -1871,17 +1871,25 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         return null;
     }
 
+    // should be used instead of JsArrayMixed.getObject since it does some unnecessary convertions
+    private Object getObjectValue(JsArrayMixed rowValues, int index) {
+        return toObject(getRawObjectValue(rowValues, index));
+    }
+    private native final JavaScriptObject getRawObjectValue(JsArrayMixed rowValues, int index) /*-{
+        return rowValues[index];
+    }-*/;
+
     private boolean isSystemColumn(JsArrayMixed row, Integer headerIndex) {
         return row.length() <= headerIndex;
     }
 
-    private void colAttrHeaderDblClickAction(JsArrayMixed columnKeys, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
-        modifySortCols(columnKeys, ctrlKey, shiftKey);
+    private void colAttrHeaderDblClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
+        modifySortCols(columnKeyValues, ctrlKey, shiftKey);
         if (!shiftKey && !ctrlKey) {
             unwrapOthers(rendererElement, th);
         }
         th.removeAllChildren();
-        renderColAttrCell(th, fromObject(columnKeys.getObject(columnKeys.length() - 1)), columnKeys, isSubtotal, false, false);
+        renderColAttrCell(th, fromObject(getObjectValue(columnKeyValues,columnKeyValues.length() - 1)), columnKeyValues, isSubtotal, false, false);
 
         updateView(true, null);
     }
