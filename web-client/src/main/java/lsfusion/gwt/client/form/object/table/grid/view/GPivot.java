@@ -540,7 +540,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void afterRefresh() {
-        checkPadding(true); // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
+        // we don't want to do force-layout, so we'll just emulate UpdateDOMCommand behaviour
+        Scheduler.get().scheduleFinally(() -> checkPadding(true)); // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
