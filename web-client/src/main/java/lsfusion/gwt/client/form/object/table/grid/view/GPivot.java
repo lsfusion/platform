@@ -67,7 +67,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private final static int defaultFontSize = 9;
 
     private GPropertyDraw selectedProperty;
-    
+
     public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty) {
         super(formController, gridController);
         this.selectedProperty = selectedProperty;
@@ -541,7 +541,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
     private void afterRefresh() {
         // we don't want to do force-layout, so we'll just emulate UpdateDOMCommand behaviour
-        Scheduler.get().scheduleFinally(() -> checkPadding(true)); // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
+        Scheduler.get().scheduleFinally(() -> {
+            // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
+            checkPadding(true);
+            restoreScrollLeft();
+        });
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
@@ -1698,6 +1702,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
+    private Integer scrollLeft = null;
+
+    private void saveScrollLeft() {
+        scrollLeft = getTableDataScroller().getScrollLeft();
+    }
+
+    private void restoreScrollLeft() {
+        if(scrollLeft != null) {
+            getTableDataScroller().setScrollLeft(scrollLeft);
+            scrollLeft = null;
+        }
+    }
+
     public native void resizePlotlyChart() /*-{
         var plotlyElement = this.@GPivot::getPlotlyChartElement()();
         if (plotlyElement) {
@@ -1884,6 +1901,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void colAttrHeaderDblClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
+        saveScrollLeft();
         modifySortCols(columnKeyValues, ctrlKey, shiftKey);
         if (!shiftKey && !ctrlKey) {
             unwrapOthers(rendererElement, th);
