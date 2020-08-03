@@ -39,7 +39,7 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     private boolean hasImage(boolean globalCaptionIsDrawn) {
-        return property.hasStaticImage() || property.hasDynamicImage();
+        return globalCaptionIsDrawn || property.hasStaticImage() || property.hasDynamicImage();
     }
 
     protected boolean hasImage(RenderContext renderContext) {
