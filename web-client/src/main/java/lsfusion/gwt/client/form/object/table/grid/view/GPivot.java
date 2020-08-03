@@ -67,7 +67,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private final static int defaultFontSize = 9;
 
     private GPropertyDraw selectedProperty;
-    private Integer scrollLeft = null;
 
     public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty) {
         super(formController, gridController);
@@ -545,7 +544,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         Scheduler.get().scheduleFinally(() -> {
             // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
             checkPadding(true);
-            renderScrollDiv();
+            restoreScrollLeft();
         });
     }
 
@@ -1703,9 +1702,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
-    public void renderScrollDiv() {
+    private Integer scrollLeft = null;
+
+    private void saveScrollLeft() {
+        scrollLeft = getTableDataScroller().getScrollLeft();
+    }
+
+    private void restoreScrollLeft() {
         if(scrollLeft != null) {
-            getElement(getDrawElement(), ".scrolldiv").setScrollLeft(scrollLeft);
+            getTableDataScroller().setScrollLeft(scrollLeft);
             scrollLeft = null;
         }
     }
@@ -1896,7 +1901,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     }
 
     private void colAttrHeaderDblClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
-        scrollLeft = getTableDataScroller().getScrollLeft();
+        saveScrollLeft();
         modifySortCols(columnKeyValues, ctrlKey, shiftKey);
         if (!shiftKey && !ctrlKey) {
             unwrapOthers(rendererElement, th);
