@@ -33,22 +33,28 @@ public class LSFAuthenticationFailureHandler extends SimpleUrlAuthenticationFail
     }
 
     public static String getURLPreservingParameters(String url, String paramToRemove, HttpServletRequest request) {
-        StringBuilder paramString = new StringBuilder();
         String queryString = request.getQueryString();
         if (paramToRemove != null){
             List<String> params = Arrays.asList(queryString.split("&"));
-            params = params.stream().filter(s -> !s.contains(paramToRemove)).collect(Collectors.toList());
-            for (int i = 0; i < params.size(); i++) {
-                if (i < params.size() - 1) {
-                    paramString.append(params.get(i)).append("&");
-                } else {
-                    paramString.append(params.get(i));
-                }
-            }
-            return url + "?" + paramString.toString();
+            String paramString = params.stream().filter(s -> !s.contains(paramToRemove)).collect(Collectors.joining("&"));
+            return paramString.length() > 0 ? url + "?" + paramString : url;
         } else {
             queryString = !BaseUtils.isRedundantString(queryString) ? "?" + queryString : "";
             return url + queryString;
         }
+    }
+
+    public static String getDirectUrl(String url, String query, HttpServletRequest request) {
+        String contextPath = request.getContextPath();
+        String queryString = request.getQueryString();
+        if (query == null) {
+            return queryString == null ? contextPath + url : contextPath + url + "?" + queryString;
+        } else {
+            return queryString == null ? contextPath + url + "?" + query : contextPath + url + "?" + queryString + "&" + query;
+        }
+    }
+
+    public static String getRedirectUrl(String url, String paramToRemove, HttpServletRequest request) {
+        return "redirect:" + getURLPreservingParameters(url, paramToRemove, request);
     }
 }

@@ -89,7 +89,7 @@ setSHA256Password(CustomUser customUser, STRING str)  {
 }
 passwordResetToken = DATA STRING (CustomUser);
 expiryPasswordResetTokenDate = DATA DATETIME (CustomUser);
-userByPassResetToken(STRING str) = GROUP AGGR CustomUser cu BY passwordResetToken(cu) IF cu IS CustomUser;
+userByPassResetToken(STRING str) = GROUP NAGGR CustomUser cu BY passwordResetToken(cu) IF cu IS CustomUser;
 
 // tokens
 currentAuthToken = NATIVE TEXT();    
@@ -228,14 +228,14 @@ resetPassword(JSONFILE input) {
             token() <- randomUUID();
             passwordResetToken(cu) <- token();
             expiryPasswordResetTokenDate(cu) <- currentDateTime();
-            href() <- CONCAT '', '<a href="', host(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
+            href() <- CONCAT '', '<a href="', url(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
             APPLY;
             IF NOT canceled() THEN {
+                success() <- TRUE;
                 EMAIL 
                     SUBJECT '{password.reset.email.subject} '
                     TO email(cu)
                     BODY href();
-                    success() <- TRUE;
             }
         }
         IF success() THEN {

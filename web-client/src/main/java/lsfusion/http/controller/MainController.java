@@ -20,6 +20,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
+import org.apache.http.entity.ContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +36,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+
+import static lsfusion.http.authentication.LSFAuthenticationFailureHandler.getDirectUrl;
+import static lsfusion.interop.session.ExternalUtils.getCharsetFromContentType;
 
 @Controller
 public class MainController {
@@ -59,7 +64,7 @@ public class MainController {
     public String processLogin(ModelMap model, HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !(auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous())) {
-            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
+            return LSFAuthenticationFailureHandler.getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
         }
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
@@ -113,9 +118,9 @@ public class MainController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
-            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/registration", null, request);
+            return LSFAuthenticationFailureHandler.getRedirectUrl("/registration", null, request);
         }
-        return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/login", null, request);
+        return LSFAuthenticationFailureHandler.getRedirectUrl("/login", null, request);
     }
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.GET)
@@ -136,9 +141,9 @@ public class MainController {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
-            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/forgot-password", null, request);
+            return LSFAuthenticationFailureHandler.getRedirectUrl("/forgot-password", null, request);
         }
-        return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/login", null, request);
+        return LSFAuthenticationFailureHandler.getRedirectUrl("/login", null, request);
     }
 
     @RequestMapping(value = "/change-password", method = RequestMethod.GET)
@@ -161,9 +166,9 @@ public class MainController {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
-            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/change-password", "token", request);
+            return LSFAuthenticationFailureHandler.getRedirectUrl("/change-password", "token", request);
         }
-        return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/login", "token", request);
+        return LSFAuthenticationFailureHandler.getRedirectUrl("/login", "token", request);
     }
 
     private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
@@ -237,21 +242,15 @@ public class MainController {
         return GwtSharedUtils.getDownloadURL(FileUtils.saveApplicationFile(file), null, null, false);
     }
 
-    private String getDirectUrl(String url, String query, HttpServletRequest request) {
-        String contextPath = request.getContextPath();
-        String queryString = request.getQueryString();
-        if (query == null) {
-            return queryString == null ? contextPath + url : contextPath + url + "?" + queryString;
-        } else {
-            return queryString == null ? contextPath + url + "?" + query : contextPath + url + "?" + queryString + "&" + query;
-        }
-    }
-
     public static ExternalRequest getExternalRequest(Object[] params, HttpServletRequest request){
-        StringBuffer url = request.getRequestURL();
-        String host = url.substring(0, url.indexOf(request.getRequestURI())) + request.getContextPath();
-        return new ExternalRequest(new String[0], params, "utf-8", request.getRequestURL().toString(),
+        StringBuffer fullUrl = request.getRequestURL();
+        String url = fullUrl.substring(0, fullUrl.indexOf(request.getRequestURI())) + request.getContextPath();
+
+        String contentTypeString = request.getContentType();
+        Charset charset = getCharsetFromContentType(contentTypeString != null ? ContentType.parse(contentTypeString) : null);
+
+        return new ExternalRequest(new String[0], params, charset == null ? null : charset.toString(), url,
                 request.getQueryString() != null ? request.getQueryString() : "", new String[0], new String[0], null, null,
-                host, request.getServerPort(), null);
+                null, request.getServerPort(), null);
     }
 }

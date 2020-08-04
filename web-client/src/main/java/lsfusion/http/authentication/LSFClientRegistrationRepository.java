@@ -80,7 +80,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
         List<ClientRegistration> clientRegistrations = new ArrayList<>();
 
         ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
-                "Authentication.getClientCredentials", MainController.getExternalRequest(new Object[]{authSecret}, request));//new ExternalRequest(new Object[]{authSecret}));
+                "Authentication.getClientCredentials", MainController.getExternalRequest(new Object[]{authSecret}, request));
         JSONArray jsonArray = new JSONArray(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
 
         int jsonArrayLength = jsonArray.length();
