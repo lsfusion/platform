@@ -130,6 +130,7 @@ form p em {
 }
 
 .content-table {
+    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
     height: 100%;
     width: 100%;
 }
@@ -193,6 +194,7 @@ details summary::-webkit-details-marker {
 }
 
 .text-center {
+    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
     text-align: center;
     font-size: 2em;
     margin: 0em 1em;
@@ -204,12 +206,10 @@ details summary::-webkit-details-marker {
 
 .registration {
     float: left;
-    text-decoration: underline;
 }
 
 .forgot-password {
     float: right;
-    text-decoration: underline;
 }
 
 .reg-block {
@@ -222,4 +222,8 @@ details summary::-webkit-details-marker {
     text-transform: uppercase;
     font-size: small;
     text-decoration: underline;
+}
+
+label {
+    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
 }

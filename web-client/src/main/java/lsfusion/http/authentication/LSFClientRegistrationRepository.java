@@ -3,13 +3,13 @@ package lsfusion.http.authentication;
 import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
 import lsfusion.http.controller.LogicsRequestHandler;
+import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
-import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -80,7 +80,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
         List<ClientRegistration> clientRegistrations = new ArrayList<>();
 
         ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
-                "Authentication.getClientCredentials", new ExternalRequest(new Object[]{authSecret}));
+                "Authentication.getClientCredentials", MainController.getExternalRequest(new Object[]{authSecret}, request));//new ExternalRequest(new Object[]{authSecret}));
         JSONArray jsonArray = new JSONArray(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
 
         int jsonArrayLength = jsonArray.length();

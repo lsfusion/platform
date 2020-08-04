@@ -17,8 +17,6 @@ import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.logics.LogicsRunnable;
-import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
@@ -38,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,25 +59,26 @@ public class MainController {
     public String processLogin(ModelMap model, HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !(auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous())) {
-            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/main", request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
+            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
         }
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
-        model.addAttribute("registrationPage", "/registration");
-        model.addAttribute("forgotPasswordPage", "/forgot-password");
+        model.addAttribute("registrationPage", getDirectUrl("/registration", null, request));
+        model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, request));
 
         try {
-            clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(), authorizationRequestBaseUri + registration.getRegistrationId()));
+            clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
+                    getDirectUrl(authorizationRequestBaseUri + registration.getRegistrationId(), null, request)));
             model.addAttribute("urls", oauth2AuthenticationUrls);
         } catch (AuthenticationException e){
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION_HEADER", "oauthException");
         }
 
-        model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
+        model.addAttribute("jnlpUrls", getJNLPUrls(request));
         if (checkVersionError.result != null) {
             model.addAttribute("error", checkVersionError.result);
             return "restricted";
@@ -108,15 +106,16 @@ public class MainController {
         user.put(jsonObject);
 
         JSONObject jsonResponse = sendRequest(user, request, "registerUser");
-        if (jsonResponse.has("error")) {
+        if (jsonResponse.has("success")){
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+            usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetails(request));
+            Authentication authentication = authenticationProvider.authenticate(usernamePasswordAuthenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
-            return "redirect:/registration";
+            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/registration", null, request);
         }
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-        usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetails(request));
-        Authentication authentication = authenticationProvider.authenticate(usernamePasswordAuthenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        return "redirect:/login";
+        return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/login", null, request);
     }
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.GET)
@@ -127,38 +126,25 @@ public class MainController {
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
     public String processForgotPassword(@RequestParam String usernameOrEmail, HttpServletRequest request) {
-        String url = "http://" + request.getLocalAddr() + ":" + request.getServerPort() + "/change-password?token=";
         JSONArray jsonArray = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("userNameOrEmail", usernameOrEmail);
-        jsonObject.put("url", url);
         jsonArray.put(jsonObject);
 
         JSONObject jsonResponse = sendRequest(jsonArray, request, "resetPassword");
-        if (jsonResponse.has("error")) {
-            request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
-            return "redirect:/forgot-password";
-        } else if (jsonResponse.has("success")) {
+        if (jsonResponse.has("success")){
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
+        } else if (jsonResponse.has("error")) {
+            request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
+            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/forgot-password", null, request);
         }
-        return "redirect:/login";
+        return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/login", null, request);
     }
 
     @RequestMapping(value = "/change-password", method = RequestMethod.GET)
-    public String changePassword(ModelMap model, HttpServletRequest request, @RequestParam String token) {
-        JSONArray jsonArray = new JSONArray();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("token", token);
-        jsonArray.put(jsonObject);
-
-        JSONObject jsonResponse = sendRequest(jsonArray, request, "checkToken");
-        if (jsonResponse.has("error")) {
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
-        } else if (jsonResponse.has("success")){
-            addStandardModelAttributes(model, request);
-            return "change-password";
-        }
-        return "redirect:/login";
+    public String changePassword(ModelMap model, HttpServletRequest request) {
+        addStandardModelAttributes(model, request);
+        return "change-password";
     }
 
     @RequestMapping(value = "/change-password", method = RequestMethod.POST)
@@ -171,24 +157,21 @@ public class MainController {
         user.put(jsonObject);
 
         JSONObject jsonResponse = sendRequest(user, request, "changePassword");
-        if (jsonResponse.has("error")) {
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
-        } else if (jsonResponse.has("success")){
+        if (jsonResponse.has("success")){
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
+        } else if (jsonResponse.has("error")) {
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
+            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/change-password", "token", request);
         }
-        return "redirect:/login";
+        return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/login", "token", request);
     }
 
     private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
         FileData fileData = new FileData(new RawFileData(jsonArray.toString().getBytes(StandardCharsets.UTF_8)), "json");
         try {
-            ExternalResponse externalResponse = logicsProvider.runRequest(request, new LogicsRunnable<ExternalResponse>() {
-                @Override
-                public ExternalResponse run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
-                            "Authentication." + method + "[JSONFILE]", new ExternalRequest(new Object[]{fileData}));
-                }
-            });
+            ExternalResponse externalResponse = logicsProvider.runRequest(request,
+                    sessionObject -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
+                    "Authentication." + method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request)));
             return new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);
@@ -200,7 +183,7 @@ public class MainController {
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
-        model.addAttribute("loginPage", "/login");
+        model.addAttribute("loginPage", getDirectUrl("/login",null, request));
     }
 
     private ServerSettings getAndCheckServerSettings(HttpServletRequest request, Result<String> rCheck, boolean noCache) {
@@ -245,11 +228,30 @@ public class MainController {
         return serverSettings != null ? serverSettings.logicsName : null;
     }
 
-    private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
-        return serverSettings != null ? serverSettings.jnlpUrls : ("<a href=" + request.getContextPath() + "/exec?action=Security.generateJnlp>" + ServerMessages.getString(request, "run.desktop.client") + "</a>");
+    private String getJNLPUrls(HttpServletRequest request) {
+        return "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request)
+                + ">" + ServerMessages.getString(request, "run.desktop.client") + "</a>";
     }
 
     private String getFileUrl(RawFileData file) {
         return GwtSharedUtils.getDownloadURL(FileUtils.saveApplicationFile(file), null, null, false);
+    }
+
+    private String getDirectUrl(String url, String query, HttpServletRequest request) {
+        String contextPath = request.getContextPath();
+        String queryString = request.getQueryString();
+        if (query == null) {
+            return queryString == null ? contextPath + url : contextPath + url + "?" + queryString;
+        } else {
+            return queryString == null ? contextPath + url + "?" + query : contextPath + url + "?" + queryString + "&" + query;
+        }
+    }
+
+    public static ExternalRequest getExternalRequest(Object[] params, HttpServletRequest request){
+        StringBuffer url = request.getRequestURL();
+        String host = url.substring(0, url.indexOf(request.getRequestURI())) + request.getContextPath();
+        return new ExternalRequest(new String[0], params, "utf-8", request.getRequestURL().toString(),
+                request.getQueryString() != null ? request.getQueryString() : "", new String[0], new String[0], null, null,
+                host, request.getServerPort(), null);
     }
 }

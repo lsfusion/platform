@@ -89,7 +89,7 @@ setSHA256Password(CustomUser customUser, STRING str)  {
 }
 passwordResetToken = DATA STRING (CustomUser);
 expiryPasswordResetTokenDate = DATA DATETIME (CustomUser);
-userByPassResetToken(STRING str) = GROUP NAGGR CustomUser cu BY passwordResetToken(cu) IF cu IS CustomUser;
+userByPassResetToken(STRING str) = GROUP AGGR CustomUser cu BY passwordResetToken(cu) IF cu IS CustomUser;
 
 // tokens
 currentAuthToken = NATIVE TEXT();    
@@ -220,19 +220,21 @@ registerUser(JSONFILE user) {
 } @@api @@noauth;
 
 resetPassword(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING userNameOrEmail, STRING url DO {
+    IMPORT FROM input FIELDS STRING userNameOrEmail DO {
         LOCAL NESTED token = STRING();
         LOCAL NESTED success = BOOLEAN();
+        LOCAL NESTED href = STRING();
         FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
             token() <- randomUUID();
             passwordResetToken(cu) <- token();
             expiryPasswordResetTokenDate(cu) <- currentDateTime();
+            href() <- CONCAT '', '<a href="', host(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
             APPLY;
             IF NOT canceled() THEN {
                 EMAIL 
                     SUBJECT '{password.reset.email.subject} '
                     TO email(cu)
-                    BODY CONCAT '', '<a href="', url, token(), '"> {password.reset} - ', login(cu), '</a>';
+                    BODY href();
                     success() <- TRUE;
             }
         }
@@ -244,25 +246,17 @@ resetPassword(JSONFILE input) {
     }
 } @@api @@noauth;
 
-checkToken(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING token DO {
-        IF expiryPasswordResetTokenDate(userByPassResetToken(token)) <= currentDateTime() THEN {
-            EXPORT FROM '\{success: success\}';
-        } ELSE {
-            EXPORT FROM '\{error: {password.reset.token.invalid}\}';
-        }
-    }
-} @@api @@noauth;
-
 changePassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING token, STRING newPassword DO {
+        LOCAL NESTED success = BOOLEAN();
         FOR CustomUser cu = userByPassResetToken(token) AND cu IS CustomUser DO {
             setSHA256Password(cu, newPassword);
             passwordResetToken(cu) <- NULL;
             expiryPasswordResetTokenDate(cu) <- NULL;
             APPLY;
+            success() <- TRUE;
         }
-        IF NOT canceled() THEN {
+        IF NOT canceled() AND success() THEN {
              EXPORT FROM '\{success: {password.changed}\}';
         } ELSE {
             EXPORT FROM '\{error: {password.reset.token.invalid}\}';

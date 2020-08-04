@@ -7,6 +7,9 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class LSFAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
@@ -22,16 +25,30 @@ public class LSFAuthenticationFailureHandler extends SimpleUrlAuthenticationFail
         String savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request);
 
         if (savedRequest == null) {
-            redirectUrl = getURLPreservingParameters(defaultURL, request);
+            redirectUrl = getURLPreservingParameters(defaultURL, null, request);
         } else {
             redirectUrl = savedRequest;
         }
         return redirectUrl;
     }
 
-    public static String getURLPreservingParameters(String url, HttpServletRequest request) {
+    public static String getURLPreservingParameters(String url, String paramToRemove, HttpServletRequest request) {
+        StringBuilder paramString = new StringBuilder();
         String queryString = request.getQueryString();
-        queryString = !BaseUtils.isRedundantString(queryString) ? "?" + queryString : "";
-        return url + queryString;
+        if (paramToRemove != null){
+            List<String> params = Arrays.asList(queryString.split("&"));
+            params = params.stream().filter(s -> !s.contains(paramToRemove)).collect(Collectors.toList());
+            for (int i = 0; i < params.size(); i++) {
+                if (i < params.size() - 1) {
+                    paramString.append(params.get(i)).append("&");
+                } else {
+                    paramString.append(params.get(i));
+                }
+            }
+            return url + "?" + paramString.toString();
+        } else {
+            queryString = !BaseUtils.isRedundantString(queryString) ? "?" + queryString : "";
+            return url + queryString;
+        }
     }
 }
