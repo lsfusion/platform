@@ -5,7 +5,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -144,9 +143,13 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> url;
     public LP<?> query;
     public LP<?> params;
-    public LP<?> host;
-    public LP<?> port;
+    public LP<?> appHost;
+    public LP<?> appPort;
     public LP<?> exportName;
+    public LP<?> scheme;
+    public LP<?> webHost;
+    public LP<?> webPort;
+    public LP<?> contextPath;
 
     public LP messageCaughtException;
     public LP javaStackTraceCaughtException;
@@ -449,9 +452,13 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         url = findProperty("url[]");
         query = findProperty("query[]");
         params = findProperty("params[TEXT]");
-        host = findProperty("host[]");
-        port = findProperty("port[]");
+        appHost = findProperty("appHost[]");
+        appPort = findProperty("appPort[]");
         exportName = findProperty("exportName[]");
+        scheme = findProperty("scheme[]");
+        webHost = findProperty("webHost[]");
+        webPort = findProperty("webPort[]");
+        contextPath = findProperty("contextPath[]");
 
         messageCaughtException = findProperty("messageCaughtException[]");
         javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");

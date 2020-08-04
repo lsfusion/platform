@@ -62,8 +62,8 @@ public class GenerateJNLPAction extends InternalAction {
             String query = (String) LM.findProperty("query[]").read(context);
             query = query.replaceAll("&", "&amp;"); // escaping
             String jnlpUrl = url.substring(execSlashIndex + 1) + "?" + query;
-            String host = (String) LM.findProperty("host[]").read(context);
-            Integer port = (Integer) LM.findProperty("port[]").read(context);
+            String host = (String) LM.findProperty("appHost[]").read(context);
+            Integer port = (Integer) LM.findProperty("appPort[]").read(context);
             String exportName = (String) LM.findProperty("exportName[]").read(context);
             
             String jnlpString = IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp"));

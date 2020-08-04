@@ -9,7 +9,6 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.http.authentication.LSFAuthenticationFailureHandler;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.authentication.LSFClientRegistrationRepository;
 import lsfusion.http.authentication.LSFRemoteAuthenticationProvider;
@@ -38,10 +37,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import static lsfusion.http.authentication.LSFAuthenticationFailureHandler.getDirectUrl;
 import static lsfusion.interop.session.ExternalUtils.getCharsetFromContentType;
 
 @Controller
@@ -64,7 +65,7 @@ public class MainController {
     public String processLogin(ModelMap model, HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !(auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous())) {
-            return LSFAuthenticationFailureHandler.getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
+            return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
         }
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
@@ -118,9 +119,9 @@ public class MainController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
-            return LSFAuthenticationFailureHandler.getRedirectUrl("/registration", null, request);
+            return getRedirectUrl("/registration", null, request);
         }
-        return LSFAuthenticationFailureHandler.getRedirectUrl("/login", null, request);
+        return getRedirectUrl("/login", null, request);
     }
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.GET)
@@ -141,9 +142,9 @@ public class MainController {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
-            return LSFAuthenticationFailureHandler.getRedirectUrl("/forgot-password", null, request);
+            return getRedirectUrl("/forgot-password", null, request);
         }
-        return LSFAuthenticationFailureHandler.getRedirectUrl("/login", null, request);
+        return getRedirectUrl("/login", null, request);
     }
 
     @RequestMapping(value = "/change-password", method = RequestMethod.GET)
@@ -166,9 +167,9 @@ public class MainController {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
-            return LSFAuthenticationFailureHandler.getRedirectUrl("/change-password", "token", request);
+            return getRedirectUrl("/change-password", "token", request);
         }
-        return LSFAuthenticationFailureHandler.getRedirectUrl("/login", "token", request);
+        return getRedirectUrl("/login", "token", request);
     }
 
     private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
@@ -243,14 +244,37 @@ public class MainController {
     }
 
     public static ExternalRequest getExternalRequest(Object[] params, HttpServletRequest request){
-        StringBuffer fullUrl = request.getRequestURL();
-        String url = fullUrl.substring(0, fullUrl.indexOf(request.getRequestURI())) + request.getContextPath();
-
         String contentTypeString = request.getContentType();
         Charset charset = getCharsetFromContentType(contentTypeString != null ? ContentType.parse(contentTypeString) : null);
+        return  new ExternalRequest(new String[0], params, charset == null ? null : charset.toString(), null,
+                request.getQueryString() != null ? request.getQueryString() : "", new String[0], new String[0], null,
+                null, null, null, null, request.getScheme(), request.getServerName(),
+                request.getServerPort(), request.getContextPath());
+    }
 
-        return new ExternalRequest(new String[0], params, charset == null ? null : charset.toString(), url,
-                request.getQueryString() != null ? request.getQueryString() : "", new String[0], new String[0], null, null,
-                null, request.getServerPort(), null);
+    public static String getURLPreservingParameters(String url, String paramToRemove, HttpServletRequest request) {
+        String queryString = request.getQueryString();
+        if (paramToRemove != null){
+            List<String> params = Arrays.asList(queryString.split("&"));
+            String paramString = params.stream().filter(s -> !s.contains(paramToRemove)).collect(Collectors.joining("&"));
+            return !paramString.isEmpty() ? url + "?" + paramString : url;
+        } else {
+            queryString = !BaseUtils.isRedundantString(queryString) ? "?" + queryString : "";
+            return url + queryString;
+        }
+    }
+
+    public static String getDirectUrl(String url, String query, HttpServletRequest request) {
+        String contextPath = request.getContextPath();
+        String queryString = request.getQueryString();
+        if (query == null) {
+            return queryString == null ? contextPath + url : contextPath + url + "?" + queryString;
+        } else {
+            return queryString == null ? contextPath + url + "?" + query : contextPath + url + "?" + queryString + "&" + query;
+        }
+    }
+
+    public static String getRedirectUrl(String url, String paramToRemove, HttpServletRequest request) {
+        return "redirect:" + getURLPreservingParameters(url, paramToRemove, request);
     }
 }

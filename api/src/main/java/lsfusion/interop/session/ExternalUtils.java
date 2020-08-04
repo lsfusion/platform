@@ -86,7 +86,8 @@ public class ExternalUtils {
         String filename = "export";
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
-                charset == null ? null : charset.toString(), url, query, headerNames, headerValues, cookieNames, cookieValues, logicsHost, logicsPort, logicsExportName);
+                charset == null ? null : charset.toString(), url, query, headerNames, headerValues, cookieNames,
+                cookieValues, logicsHost, logicsPort, logicsExportName, null, null, null, null);
 
         boolean isEvalAction = uri.endsWith("/eval/action");
         if (uri.endsWith("/eval") || isEvalAction) {
