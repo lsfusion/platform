@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.util.Optional;
 
@@ -122,8 +123,10 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         GFormController.setForegroundColor(td, foregroundColor, true);
 
         Optional<Object> image = getImage(rowValue, rowIndex, columnIndex);
-        if(image != null) // assert that it is action and rendered with ActionCellRenderer
-            GFormController.setDynamicImage(td, image.get());
+        if(image != null)
+            // assert that it is action and rendered with ActionCellRenderer
+            // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
+            GFormController.setDynamicImage(CellRenderer.unwrapTD(td), image.get());
     }
 
     public static void renderTD(Element td, int height) {
