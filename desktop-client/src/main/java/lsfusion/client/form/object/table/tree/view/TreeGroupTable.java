@@ -385,6 +385,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         model.updateCellForegroundValues(property, cellForegroundValues);
     }
 
+    public void updateImageValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> imageValues) {
+        model.updateImageValues(property, imageValues);
+    }
+
     public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
         model.updateRowBackgroundValues(rowBackground);
     }

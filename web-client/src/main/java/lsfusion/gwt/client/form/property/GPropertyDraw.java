@@ -94,7 +94,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean hasStaticImage() {
         return imageHolder != null;
     }
-    public boolean hasDynamicImage(); // when it's an action and has dynamic image
+    public boolean hasDynamicImage() { // when it's an action and has dynamic image
+        return imageReader != null;
+    }
 
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
     public boolean showChangeKey;
@@ -123,6 +125,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GReadOnlyReader readOnlyReader;
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
+    public GImageReader imageReader;
 
     // for pivoting
     public String formula;

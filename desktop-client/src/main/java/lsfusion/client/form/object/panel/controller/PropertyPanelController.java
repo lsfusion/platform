@@ -28,6 +28,7 @@ public class PropertyPanelController {
     private Map<ClientGroupObjectValue, Object> readOnly;
     private Map<ClientGroupObjectValue, Object> cellBackgroundValues;
     private Map<ClientGroupObjectValue, Object> cellForegroundValues;
+    private Map<ClientGroupObjectValue, Object> imageValues;
 
     private Map<ClientGroupObjectValue, PanelView> views;
 
@@ -110,6 +111,10 @@ public class PropertyPanelController {
         this.cellForegroundValues = cellForegroundValues;
     }
 
+    public void setImageValues(Map<ClientGroupObjectValue, Object> imageValues) {
+        this.imageValues = imageValues;
+    }
+
     void update(Color rowBackground, Color rowForeground) {
         if (views == null) {
             views = new HashMap<>();
@@ -183,6 +188,10 @@ public class PropertyPanelController {
             foreground = (Color) cellForegroundValues.get(columnKey);
         }
         view.setForegroundColor(foreground);
+
+        if(imageValues != null) {
+            view.setImage(imageValues.get(columnKey));
+        }
 
         if (captions != null) {
             String caption = property.getDynamicCaption(captions.get(columnKey));

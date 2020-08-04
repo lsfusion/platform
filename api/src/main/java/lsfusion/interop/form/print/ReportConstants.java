@@ -12,6 +12,7 @@ public class ReportConstants {
     public static final String showIfSuffix = ".showif";
     public static final String backgroundSuffix = ".background";
     public static final String foregroundSuffix = ".foreground";
+    public static final String imageSuffix = ".image";
 
     public static final String beginIndexMarker = "[";
     public static final String endIndexMarker = "]";

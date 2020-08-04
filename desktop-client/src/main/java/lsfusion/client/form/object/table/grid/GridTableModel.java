@@ -31,7 +31,8 @@ public class GridTableModel extends AbstractTableModel {
                            Map<ClientGroupObjectValue, Object> mapRowBackgroundValues,
                            Map<ClientGroupObjectValue, Object> mapRowForegroundValues,
                            Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapBackgroundValues,
-                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapForegroundValues) {
+                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapForegroundValues,
+                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapImageValues) {
 
         if (data.length == 0 || data[0].length != columnProps.length || data.length != rowKeys.size()) {
             data = new Object[rowKeys.size()][columnProps.length];
@@ -53,6 +54,7 @@ public class GridTableModel extends AbstractTableModel {
                 Map<ClientGroupObjectValue, Object> readOnlyValues = mapReadOnlyValues.get(columnProp);
                 Map<ClientGroupObjectValue, Object> backgroundValues = mapBackgroundValues.get(columnProp);
                 Map<ClientGroupObjectValue, Object> foregroundValues = mapForegroundValues.get(columnProp);
+                Map<ClientGroupObjectValue, Object> imageValues = mapImageValues.get(columnProp);
 
                 data[i][j] = propValues == null ? null : propValues.get(cellKey);
                 readOnly[i][j] = readOnlyValues != null && readOnlyValues.get(cellKey) != null;
@@ -72,6 +74,8 @@ public class GridTableModel extends AbstractTableModel {
                 } else {
                     foregroundColor[i][j] = null;
                 }
+
+                //set image
             }
         }
     }

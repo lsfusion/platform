@@ -99,6 +99,22 @@ public enum PropertyDrawExtraType {
 
         @Override
         public String getText() {
+            return "{logics.image}";
+        }
+    },
+    IMAGE {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return ReportFieldExtraType.IMAGE;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.IMAGE;
+        }
+
+        @Override
+        public String getText() {
             return "{logics.foreground}";
         }
     };

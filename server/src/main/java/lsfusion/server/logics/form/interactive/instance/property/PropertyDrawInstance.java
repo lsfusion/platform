@@ -90,6 +90,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyFooter;
     public final PropertyObjectInstance<?> propertyBackground;
     public final PropertyObjectInstance<?> propertyForeground;
+    public final PropertyObjectInstance<?> propertyImage;
     public final ImList<PropertyObjectInstance<?>> propertiesAggrLast;
 
     public ExtraReaderInstance captionReader;
@@ -98,6 +99,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ExtraReaderInstance readOnlyReader;
     public ExtraReaderInstance backgroundReader;
     public ExtraReaderInstance foregroundReader;
+    public ExtraReaderInstance imageReader;
     public final ImOrderSet<LastReaderInstance> aggrLastReaders;
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
@@ -117,6 +119,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyFooter = propertyExtras.get(PropertyDrawExtraType.FOOTER);
         propertyBackground = propertyExtras.get(PropertyDrawExtraType.BACKGROUND);
         propertyForeground = propertyExtras.get(PropertyDrawExtraType.FOREGROUND);
+        propertyImage = propertyExtras.get(PropertyDrawExtraType.IMAGE);
         this.propertiesAggrLast = propertiesAggrLast;
 
         captionReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTION, propertyCaption);
@@ -125,6 +128,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         readOnlyReader = new ExtraReaderInstance(PropertyDrawExtraType.READONLYIF, propertyReadOnly);
         backgroundReader = new ExtraReaderInstance(PropertyDrawExtraType.BACKGROUND, propertyBackground);
         foregroundReader = new ExtraReaderInstance(PropertyDrawExtraType.FOREGROUND, propertyForeground);
+        imageReader = new ExtraReaderInstance(PropertyDrawExtraType.IMAGE, propertyImage);
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 
