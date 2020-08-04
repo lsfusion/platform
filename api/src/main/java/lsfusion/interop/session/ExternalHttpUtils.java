@@ -54,6 +54,7 @@ public class ExternalHttpUtils {
 
         if(timeout != null) {
             RequestConfig.Builder configBuilder = RequestConfig.custom();
+            configBuilder.setSocketTimeout(timeout);
             configBuilder.setConnectTimeout(timeout);
             configBuilder.setConnectionRequestTimeout(timeout);
             requestBuilder.setDefaultRequestConfig(configBuilder.build());
