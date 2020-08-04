@@ -1,5 +1,6 @@
 package lsfusion.interop.session;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.file.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -58,7 +59,7 @@ public class ExternalHttpUtils {
             requestBuilder.setDefaultRequestConfig(configBuilder.build());
         }
 
-        HttpResponse response = requestBuilder.build().execute(httpRequest);
+        HttpResponse response = (HttpResponse) BaseUtils.executeWithTimeout(() -> requestBuilder.build().execute(httpRequest), timeout);
         HttpEntity responseEntity = response.getEntity();
         ContentType responseContentType = ContentType.get(responseEntity);
         byte[] responseBytes = responseEntity != null ? IOUtils.readBytesFromStream(responseEntity.getContent()) : null;
