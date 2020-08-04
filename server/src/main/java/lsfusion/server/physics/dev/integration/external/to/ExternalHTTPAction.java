@@ -198,7 +198,7 @@ public class ExternalHTTPAction extends ExternalAction {
             requestBuilder.setDefaultRequestConfig(configBuilder.build());
         }
 
-        return requestBuilder.build().execute(httpRequest);
+        return (HttpResponse) BaseUtils.executeWithTimeout(() -> requestBuilder.build().execute(httpRequest), timeout);
     }
 
     private BasicClientCookie parseRawCookie(String cookieName, String rawCookie) {
