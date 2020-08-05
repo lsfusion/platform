@@ -754,7 +754,6 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
-		|	'IMAGE' propObj=formPropertyObject { $options.setImage($propObj.property); }
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }

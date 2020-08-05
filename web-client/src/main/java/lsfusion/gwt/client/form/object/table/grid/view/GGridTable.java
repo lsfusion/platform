@@ -655,13 +655,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        super.updateCellImages(propertyDraw, values);
-        updatedProperties.put(propertyDraw, TRUE);
-        dataUpdated = true;
-    }
-
-    @Override
     public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateRowBackgroundValues(values);
         rowsUpdated = true;

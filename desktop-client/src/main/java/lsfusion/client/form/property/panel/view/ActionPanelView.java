@@ -210,11 +210,6 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         // пока не highlight'им
     }
 
-    @Override
-    public void setImage(Object image) {
-        setIcon((Icon) image);
-    }
-
     public void setToolTip(String caption) {
         setToolTipText(property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption));
     }

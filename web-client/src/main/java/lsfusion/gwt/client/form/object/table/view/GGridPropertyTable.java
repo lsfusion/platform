@@ -224,10 +224,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         cellForegroundValues.put(propertyDraw, values);
     }
 
-    public void updateCellImages(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        cellImages.put(propertyDraw, values);
-    }
-
     public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         rowBackgroundValues = values;
     }

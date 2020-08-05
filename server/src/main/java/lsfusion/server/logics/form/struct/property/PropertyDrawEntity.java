@@ -113,7 +113,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void fillQueryProps(MExclSet<PropertyReaderEntity> mResult) {
         mResult.exclAdd(this);
-        PropertyDrawExtraType[] propTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND, IMAGE}; // READONLYIF is absent here
+        PropertyDrawExtraType[] propTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND}; // READONLYIF is absent here
         for (PropertyDrawExtraType type : propTypes) {
             fillQueryProp(mResult, getPropertyExtra(type), extraReaders.get(type));
         }
@@ -189,7 +189,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.inheritedProperty = inheritedProperty;
         
         this.extraReaders = new HashMap<>();
-        PropertyDrawExtraType[] extraTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND, IMAGE};
+        PropertyDrawExtraType[] extraTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND};
         for (PropertyDrawExtraType type : extraTypes) {
             this.extraReaders.put(type, new PropertyDrawReader(type));
         }
@@ -474,7 +474,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
 
         // todo [dale]: READONLYIF is absent in the list, but may be it should be in some cases
-        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND, IMAGE};
+        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND};
         for (PropertyDrawExtraType type : neededTypes) {
             PropertyObjectEntity<?> prop = propertyExtras.get(type);
             if (prop != null) {

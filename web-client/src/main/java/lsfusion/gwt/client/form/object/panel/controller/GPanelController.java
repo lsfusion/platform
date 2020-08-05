@@ -82,10 +82,6 @@ public class GPanelController {
         propertyControllers.get(property).setCellForegroundValues(cellForegroundValues);
     }
 
-    public void updateCellImages(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> imageValues) {
-        propertyControllers.get(property).setImages(imageValues);
-    }
-
     public void updatePropertyCaptions(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propertyCaptions) {
         propertyControllers.get(property).setPropertyCaptions(propertyCaptions);
     }

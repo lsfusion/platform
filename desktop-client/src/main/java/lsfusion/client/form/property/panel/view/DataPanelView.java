@@ -170,10 +170,6 @@ public class DataPanelView extends JPanel implements PanelView {
         repaint();
     }
 
-    public void setImage(Object image) {
-        //nothing
-    }
-
     @SuppressWarnings("deprecation")
     public boolean forceEdit() {
         if (table.isShowing()) {

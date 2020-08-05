@@ -94,8 +94,6 @@ public class GFormChanges {
                 return form.getProperty(readerId).backgroundReader;
             case GPropertyReadType.CELL_FOREGROUND:
                 return form.getProperty(readerId).foregroundReader;
-            case GPropertyReadType.IMAGE:
-                return form.getProperty(readerId).imageReader;
             case GPropertyReadType.FOOTER:
                 return form.getProperty(readerId).footerReader;
             case GPropertyReadType.ROW_BACKGROUND:
@@ -124,6 +122,5 @@ public class GFormChanges {
         public final static byte ROW_FOREGROUND = 8;
         public final static byte LAST = 9;
         public final static byte CONTAINER_CAPTION = 10;
-        public final static byte IMAGE = 11;
     }
 }

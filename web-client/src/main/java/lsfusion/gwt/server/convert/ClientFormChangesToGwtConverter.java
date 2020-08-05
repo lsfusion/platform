@@ -168,8 +168,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     private Object convertFileValue(ClientPropertyReader reader, Object value, FormSessionObject sessionObject) {
-        if ((reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass)
-                || reader instanceof ClientPropertyDraw.ImageReader) {
+        if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass) {
             return FileUtils.saveFormFile((RawFileData) value, sessionObject);
         } else {
             return value == null ? null : true;

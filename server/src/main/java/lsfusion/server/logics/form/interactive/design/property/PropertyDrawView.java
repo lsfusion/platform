@@ -169,7 +169,7 @@ public class PropertyDrawView extends ComponentView {
         setupGeometry(reportField, scale);
         setupColumnGroupObjects(reportField);
 
-        PropertyDrawExtraType[] setupTypes = {CAPTION, FOOTER, BACKGROUND, FOREGROUND, IMAGE};
+        PropertyDrawExtraType[] setupTypes = {CAPTION, FOOTER, BACKGROUND, FOREGROUND};
         for (PropertyDrawExtraType setupType : setupTypes) {
             setupExtra(reportField, setupType);
         }

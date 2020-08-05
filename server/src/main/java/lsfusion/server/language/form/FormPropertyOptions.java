@@ -32,7 +32,6 @@ public class FormPropertyOptions {
     private PropertyObjectEntity readOnlyIf;
     private PropertyObjectEntity background;
     private PropertyObjectEntity foreground;
-    private PropertyObjectEntity image;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
@@ -157,14 +156,6 @@ public class FormPropertyOptions {
 
     public void setForeground(PropertyObjectEntity foreground) {
         this.foreground = foreground;
-    }
-
-    public PropertyObjectEntity getImage() {
-        return image;
-    }
-
-    public void setImage(PropertyObjectEntity image) {
-        this.image = image;
     }
 
     public PropertyObjectEntity getHeader() {
@@ -413,7 +404,6 @@ public class FormPropertyOptions {
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));
         merged.setBackground(nvl(overrides.getBackground(), background));
         merged.setForeground(nvl(overrides.getForeground(), foreground));
-        merged.setImage(nvl(overrides.getImage(), image));
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setViewType(nvl(overrides.getViewType(), viewType));

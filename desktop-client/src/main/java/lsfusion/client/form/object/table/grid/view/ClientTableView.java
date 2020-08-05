@@ -25,7 +25,6 @@ public interface ClientTableView {
     // columns
     void updateCellBackgroundValues(ClientPropertyDraw propertyDraw, Map<ClientGroupObjectValue, Object> values);
     void updateCellForegroundValues(ClientPropertyDraw propertyDraw, Map<ClientGroupObjectValue, Object> values);
-    void updateImageValues(ClientPropertyDraw propertyDraw, Map<ClientGroupObjectValue, Object> values);
     void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update);
     void updatePropertyCaptions(ClientPropertyDraw propertyDraw, Map<ClientGroupObjectValue, Object> values);
     void updateShowIfValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs);

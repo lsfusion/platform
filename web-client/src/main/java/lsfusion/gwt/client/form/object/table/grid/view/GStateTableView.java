@@ -298,11 +298,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-
-    }
-
-    @Override
     public void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> values) {
 
     }

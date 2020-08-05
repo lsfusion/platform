@@ -99,14 +99,10 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     public static void setImage(Element element, String absolutePath, Consumer<String> prevImage) {
-        if(element != null) {
-            ImageElement img = (ImageElement) element.getPropertyObject(IMAGE);
-            if(prevImage != null)
-                prevImage.accept(img.getSrc());
-            if(!absolutePath.isEmpty()) {
-                img.setSrc(absolutePath);
-            }
-        }
+        ImageElement img = (ImageElement) element.getPropertyObject(IMAGE);
+        if(prevImage != null)
+            prevImage.accept(img.getSrc());
+        img.setSrc(absolutePath);
     }
 
     @Override

@@ -26,7 +26,6 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
     private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> imageValues = new HashMap<>();
 
     private final ClientFormController form;
     private final boolean plainTreeMode;
@@ -307,10 +306,6 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
 
     public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
         BaseUtils.putUpdate(this.cellForegroundValues, property, cellForegroundValues, false);
-    }
-
-    public void updateImageValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> imageValues) {
-        BaseUtils.putUpdate(this.imageValues, property, imageValues, false);
     }
 
     public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
