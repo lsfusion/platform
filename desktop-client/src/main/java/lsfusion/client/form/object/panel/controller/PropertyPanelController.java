@@ -1,11 +1,13 @@
 package lsfusion.client.form.object.panel.controller;
 
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.Callback;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.form.design.Alignment;
@@ -28,6 +30,7 @@ public class PropertyPanelController {
     private Map<ClientGroupObjectValue, Object> readOnly;
     private Map<ClientGroupObjectValue, Object> cellBackgroundValues;
     private Map<ClientGroupObjectValue, Object> cellForegroundValues;
+    private Map<ClientGroupObjectValue, Object> imageValues;
 
     private Map<ClientGroupObjectValue, PanelView> views;
 
@@ -110,6 +113,10 @@ public class PropertyPanelController {
         this.cellForegroundValues = cellForegroundValues;
     }
 
+    public void setImageValues(Map<ClientGroupObjectValue, Object> imageValues) {
+        this.imageValues = imageValues;
+    }
+
     void update(Color rowBackground, Color rowForeground) {
         if (views == null) {
             views = new HashMap<>();
@@ -183,6 +190,10 @@ public class PropertyPanelController {
             foreground = (Color) cellForegroundValues.get(columnKey);
         }
         view.setForegroundColor(foreground);
+
+        if(imageValues != null) {
+            view.setImage(ImagePropertyRenderer.convertValue((RawFileData) imageValues.get(columnKey)));
+        }
 
         if (captions != null) {
             String caption = property.getDynamicCaption(captions.get(columnKey));

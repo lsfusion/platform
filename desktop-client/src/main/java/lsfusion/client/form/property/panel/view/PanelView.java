@@ -16,6 +16,7 @@ public interface PanelView {
     void setToolTip(String caption);
     void setBackgroundColor(Color background);
     void setForegroundColor(Color foreground);
+    void setImage(Image image);
 
     Icon getIcon();
     void setIcon(Icon icon);

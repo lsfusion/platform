@@ -79,6 +79,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GEditBindingMap editBindingMap;
 
     public ImageHolder imageHolder;
+    public boolean hasDynamicImage;
     public Boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
@@ -94,7 +95,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean hasStaticImage() {
         return imageHolder != null;
     }
-    public boolean hasDynamicImage(); // when it's an action and has dynamic image
+    public boolean hasDynamicImage() { // when it's an action and has dynamic image
+        return baseType instanceof GActionType && hasDynamicImage;
+    }
 
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
     public boolean showChangeKey;
@@ -123,6 +126,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GReadOnlyReader readOnlyReader;
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
+    public GImageReader imageReader;
 
     // for pivoting
     public String formula;

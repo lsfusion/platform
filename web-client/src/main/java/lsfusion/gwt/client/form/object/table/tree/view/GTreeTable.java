@@ -443,6 +443,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
+    public void updateCellImages(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        super.updateCellImages(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
     public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         super.updateRowBackgroundValues(values);
         dataUpdated = true;

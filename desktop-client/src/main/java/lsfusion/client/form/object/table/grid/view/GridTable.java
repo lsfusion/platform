@@ -85,6 +85,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> imageValues = new HashMap<>();
 
     private ClientGroupObjectValue currentObject;
 
@@ -460,7 +461,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
         model.updateColumns(getOrderedVisibleProperties(properties), columnKeys, captions, showIfs);
 
-        model.updateRows(rowKeys, values, readOnlyValues, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
+        model.updateRows(rowKeys, values, readOnlyValues, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues, imageValues);
 
         refreshColumnModel();
 
@@ -1173,6 +1174,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         this.cellForegroundValues.put(property, cellForegroundValues);
     }
 
+    public void updateImageValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> imageValues) {
+        this.imageValues.put(property, imageValues);
+    }
+
     public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
         Map<ClientGroupObjectValue, Object> propValues = this.values.get(property);
         if (!update || propValues == null) {
@@ -1299,6 +1304,11 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     public Color getForegroundColor(int row, int column) {
         return model.getForegroundColor(row, column);
+    }
+
+    @Override
+    public Image getImage(int row, int column) {
+        return model.getImage(row, column);
     }
 
     public int getMinPropertyIndex(ClientPropertyDraw property) {

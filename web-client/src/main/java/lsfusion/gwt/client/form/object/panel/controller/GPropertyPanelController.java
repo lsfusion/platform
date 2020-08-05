@@ -176,4 +176,8 @@ public class GPropertyPanelController {
     public void setCellForegroundValues(NativeHashMap<GGroupObjectValue, Object> cellForegroundValues) {
         this.cellForegroundValues = cellForegroundValues;
     }
+
+    public void setImages(NativeHashMap<GGroupObjectValue, Object> images) {
+        this.images = images;
+    }
 }

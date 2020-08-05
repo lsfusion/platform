@@ -394,6 +394,16 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (property.grid) {
+            table.updateImageValues(property, values);
+        } else {
+            panel.updateCellImages(property, values);
+        }
+    }
+
+    @Override
     public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
