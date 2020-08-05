@@ -571,7 +571,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     private void initEditBindingMap() {
         if (editBindingMap == null) {
-            editBindingMap = new EditBindingMap();
+            editBindingMap = new EditBindingMap(false);
         }
     }
 

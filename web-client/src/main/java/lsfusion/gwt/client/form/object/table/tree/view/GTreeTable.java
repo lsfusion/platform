@@ -98,7 +98,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         getElement().setPropertyObject("groupObject", groupObject);
 
         if(treeGroupController.isExpandOnClick())
-            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK), new GBindingEnv(100, null, GBindingMode.ONLY, null, null),
+            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK), new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null),
                     event -> {
                         GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
                         if (node != null && node.isExpandable()) {
@@ -746,6 +746,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public String getCellForeground(GridDataRecord rowValue, int row, int column) {
         return rowValue.getForeground(getColumnSID(column));
+    }
+
+    @Override
+    public GPropertyDraw getProperty(int row, int column) {
+        GTreeGridRecord rowValue = getRowValue(row);
+        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), column);
     }
 
     @Override

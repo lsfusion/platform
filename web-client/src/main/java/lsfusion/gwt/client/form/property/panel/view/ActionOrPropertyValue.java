@@ -108,21 +108,21 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         if(!DataGrid.checkSinkEvents(event))
             return;
 
-        EventHandler handler = createEventHandler(event);
+        EventHandler focusHandler = createEventHandler(event);
 
         if(BrowserEvents.FOCUS.equals(event.getType())) {
-            onFocus(handler);
+            onFocus(focusHandler);
         } else if(BrowserEvents.BLUR.equals(event.getType())) {
-            onBlur(handler);
+            onBlur(focusHandler);
         }
-        if(handler.consumed)
+        if(focusHandler.consumed)
             return;
 
-        form.onPropertyBrowserEvent(handler, getRenderElement(), getFocusElement(),
-                () -> {}, // no outer context
-                () -> onEditEvent(handler),
-                () -> {}, // no outer context
-                () -> CopyPasteUtils.putIntoClipboard(getRenderElement()), () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line)));
+        form.onPropertyBrowserEvent(event, getRenderElement(), getFocusElement(),
+                handler -> {}, // no outer context
+                this::onEditEvent,
+                handler -> {}, // no outer context
+                handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line)));
     }
 
     protected void onFocus(EventHandler handler) {
@@ -152,6 +152,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
             @Override
             public Integer getStaticHeight() {
                 return null;
+            }
+
+            @Override
+            public boolean isAlwaysSelected() {
+                return true;
             }
 
             @Override

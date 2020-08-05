@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.event;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.io.Serializable;
@@ -128,6 +129,14 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_SPACE;
     }
 
+    public static boolean isCtrlKeyDownEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_CTRL;
+    }
+
+    public static boolean isCtrlKeyUpEvent(NativeEvent event) {
+        return KEYUP.equals(event.getType()) && event.getKeyCode() == KEY_CTRL;
+    }
+
     public static boolean isEnterKeyEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_ENTER;
     }
@@ -136,15 +145,17 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_ESCAPE;
     }
 
-    public static boolean isEditObjectEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F9;
+    public static boolean isEditObjectEvent(Event event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F9
+                || GMouseStroke.isDblClickEvent(event)
+                || GFormController.isLinkEditMode() && GMouseStroke.isChangeEvent(event);
     }
 
-    public static boolean isGroupChangeKeyEvent(NativeEvent event) {
+    public static boolean isGroupChangeKeyEvent(Event event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
     }
 
-    public static boolean isCharModifyKeyEvent(NativeEvent event, GEditBindingMap.EditEventFilter editEventFilter) {
+    public static boolean isCharModifyKeyEvent(Event event, GEditBindingMap.EditEventFilter editEventFilter) {
         return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event))) || isCharDeleteKeyEvent(event));
     }
 

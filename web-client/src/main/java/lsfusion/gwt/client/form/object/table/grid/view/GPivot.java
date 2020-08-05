@@ -1089,6 +1089,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
             }
 
             @Override
+            public boolean isAlwaysSelected() {
+                return true;
+            }
+
+            @Override
             public GFont getFont() {
                 return font;
             }

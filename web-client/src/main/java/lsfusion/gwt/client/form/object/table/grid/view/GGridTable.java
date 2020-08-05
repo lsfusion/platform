@@ -665,6 +665,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return getGridColumn(column).property;
     }
 
+    @Override
+    public GPropertyDraw getProperty(int row, int column) {
+        return getProperty(column);
+    }
+
     public GPropertyDraw getProperty(Cell cell) {
         return getGridColumn(cell).property;
     }
