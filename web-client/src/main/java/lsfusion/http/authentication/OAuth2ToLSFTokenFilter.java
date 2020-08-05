@@ -68,7 +68,7 @@ public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
                 try {
                     Map<String, Object> userInfo = new HashMap<>(principal.getAttributes());
                     AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new OAuth2Authentication(username, authSecret, userInfo));
-                    return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
+                    return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken, request));
                 } catch (LockedException le) {
                     throw new org.springframework.security.authentication.LockedException(le.getMessage());
                 }

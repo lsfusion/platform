@@ -220,20 +220,22 @@ registerUser(JSONFILE user) {
 } @@api @@noauth;
 
 resetPassword(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING userNameOrEmail, STRING url DO {
+    IMPORT FROM input FIELDS STRING userNameOrEmail DO {
         LOCAL NESTED token = STRING();
         LOCAL NESTED success = BOOLEAN();
+        LOCAL NESTED href = STRING();
         FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
             token() <- randomUUID();
             passwordResetToken(cu) <- token();
             expiryPasswordResetTokenDate(cu) <- currentDateTime();
+            href() <- CONCAT '', '<a href="', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
             APPLY;
             IF NOT canceled() THEN {
+                success() <- TRUE;
                 EMAIL 
                     SUBJECT '{password.reset.email.subject} '
                     TO email(cu)
-                    BODY CONCAT '', '<a href="', url, token(), '"> {password.reset} - ', login(cu), '</a>';
-                    success() <- TRUE;
+                    BODY href();
             }
         }
         IF success() THEN {
@@ -244,26 +246,20 @@ resetPassword(JSONFILE input) {
     }
 } @@api @@noauth;
 
-checkToken(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING token DO {
-        IF expiryPasswordResetTokenDate(userByPassResetToken(token)) <= currentDateTime() THEN {
-            EXPORT FROM '\{success: success\}';
-        } ELSE {
-            EXPORT FROM '\{error: {password.reset.token.invalid}\}';
-        }
-    }
-} @@api @@noauth;
-
 changePassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING token, STRING newPassword DO {
+        LOCAL NESTED success = BOOLEAN();
         FOR CustomUser cu = userByPassResetToken(token) AND cu IS CustomUser DO {
             setSHA256Password(cu, newPassword);
             passwordResetToken(cu) <- NULL;
             expiryPasswordResetTokenDate(cu) <- NULL;
             APPLY;
+            IF NOT canceled() THEN {
+                success() <- TRUE;
+            }
         }
-        IF NOT canceled() THEN {
-             EXPORT FROM '\{success: {password.changed}\}';
+        IF success() THEN {
+            EXPORT FROM '\{success: {password.changed}\}';
         } ELSE {
             EXPORT FROM '\{error: {password.reset.token.invalid}\}';
         }
@@ -328,7 +324,7 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
     FOR CustomUser user AS CustomUser = currentUser() DO
-        EXPORT FROM language(user), country(user); 
+        EXPORT JSON FROM language(user), country(user); 
 } @@api;
 
 timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimezone(), serverTimezone();

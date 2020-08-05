@@ -5,7 +5,6 @@ import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.ExternalRequest;
@@ -156,9 +155,6 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         if (action.uses(businessLogics.LM.cookies.property)) {
             ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.cookies, request.headerNames, request.headerValues);
         }
-        if (request.url != null) {
-            businessLogics.LM.url.change(request.url, session);
-        }
         if (request.query != null) {
             businessLogics.LM.query.change(request.query, session);
 
@@ -175,14 +171,29 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                 ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.params, paramNames.toArray(new String[0]), paramValues.toArray(new String[0]));
             }
         }
-        if (request.host != null) {
-            businessLogics.LM.host.change(request.host, session);
+        if (request.appHost != null) {
+            businessLogics.LM.appHost.change(request.appHost, session);
         }
-        if (request.port != null) {
-            businessLogics.LM.port.change(request.port, session);
+        if (request.appPort != null) {
+            businessLogics.LM.appPort.change(request.appPort, session);
         }
         if (request.exportName != null) {
             businessLogics.LM.exportName.change(request.exportName, session);
+        }
+        if (request.scheme != null) {
+            businessLogics.LM.scheme.change(request.scheme, session);
+        }
+        if (request.webHost != null) {
+            businessLogics.LM.webHost.change(request.webHost, session);
+        }
+        if (request.webPort != null) {
+            businessLogics.LM.webPort.change(request.webPort, session);
+        }
+        if (request.contextPath != null) {
+            businessLogics.LM.contextPath.change(request.contextPath, session);
+        }
+        if (request.servletPath != null) {
+            businessLogics.LM.servletPath.change(request.servletPath, session);
         }
     }
 

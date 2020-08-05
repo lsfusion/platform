@@ -32,12 +32,18 @@
         <tr>
             <td>
                 <div id="content">
+
+                    <%
+                        String query = request.getQueryString();
+                        String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                    %>
+
                     <div class="image-center">
                         <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
                     </div>
                     <form id="new-password-form"
                           name="setNewPassword"
-                          action="change-password"
+                          action="change-password<%=queryString%>"
                           method="POST">
                         <fieldset>
                             <div class="text-center">
@@ -59,12 +65,20 @@
                                        required onkeyup='check();'/>
                                 <span id='message'></span>
                             </p>
-                            <input type="hidden" id="token" name="token" value="${param.token}">
                             <input name="submit" type="submit" class="button round blue" id="submit" disabled
                                    value="<%= ServerMessages.getString(request, "password.new.confirm") %>"/>
+                            <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
+                                <div class="errorblock round full-width-box">
+                                        ${SPRING_SECURITY_LAST_EXCEPTION}
+                                </div>
+                                <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
+                            </c:if>
                         </fieldset>
                     </form>
                     <br>
+                    <div class="text-center">
+                        <a class="main-page-link" href="${loginPage}"><%= ServerMessages.getString(request, "main.page") %></a>
+                    </div>
                 </div>
             </td>
         </tr>
