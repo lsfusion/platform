@@ -118,19 +118,16 @@ public class PropertyPanelController {
     }
 
     void update(Color rowBackground, Color rowForeground) {
-        if (views == null) {
-            views = new HashMap<>();
-        }
+        Map<ClientGroupObjectValue, PanelView> newViews = new HashMap<>();
 
         List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
         for (final ClientGroupObjectValue columnKey : columnKeys) {
             if (showIfs == null || showIfs.get(columnKey) != null) {
-                PanelView view = views.get(columnKey);
-                if (view == null && !property.hide) {
-                    view = property.getPanelView(form, columnKey);
+                if (!property.hide) {
+                    PanelView view = property.getPanelView(form, columnKey);
                     view.setReadOnly(property.isReadOnly());
-                    views.put(columnKey, view);
-                    
+                    newViews.put(columnKey, view);
+
                     view.getEditPropertyDispatcher().setUpdateEditValueCallback(new Callback<Object>() {
                         @Override
                         public void done(Object result) {
@@ -140,13 +137,13 @@ public class PropertyPanelController {
 
                     panelController.addGroupObjectActions(view.getComponent());
                 }
-            } else {
-                PanelView view = views.remove(columnKey);
-                if (view != null) {
-                    viewsPanel.remove(view.getComponent());
-                }
             }
         }
+
+        if(views != null) {
+            views.values().forEach(panelView -> viewsPanel.remove(panelView.getComponent()));
+        }
+        views = newViews;
 
         //вообще надо бы удалять всё, и добавлять заново, чтобы соблюдался порядок,
         //но при этом будет терятся фокус с удалённых компонентов, поэтому пока забиваем на порядок
