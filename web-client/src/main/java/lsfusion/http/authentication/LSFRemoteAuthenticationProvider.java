@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.file.FileData;
 import lsfusion.http.controller.LogicsRequestHandler;
+import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
@@ -14,7 +15,6 @@ import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
-import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.json.JSONObject;
@@ -49,7 +49,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
                 public Pair<AuthenticationToken, Locale> run(LogicsSessionObject sessionObject) throws RemoteException {
                     try {
                         AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(username, password));
-                        return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
+                        return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken, request));
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());
                     } catch (LockedException le) {
@@ -66,10 +66,10 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
         }
     }
 
-    protected static Locale getUserLocale(RemoteLogicsInterface remoteLogics, Authentication auth, AuthenticationToken authToken) throws RemoteException {
+    protected static Locale getUserLocale(RemoteLogicsInterface remoteLogics, Authentication auth, AuthenticationToken authToken, HttpServletRequest request) throws RemoteException {
         try {
             SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(auth);
-            ExternalResponse result = remoteLogics.exec(authToken, sessionInfo, "Authentication.getCurrentUserLocale", new ExternalRequest());
+            ExternalResponse result = remoteLogics.exec(authToken, sessionInfo, "Authentication.getCurrentUserLocale", MainController.getExternalRequest(new Object[0], request));
             JSONObject localeObject = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
             String language = localeObject.optString("language");
             String country = localeObject.optString("country");

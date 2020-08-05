@@ -31,11 +31,17 @@
             <tr>
                 <td>
                     <div id="content">
+
+                        <%
+                            String query = request.getQueryString();
+                            String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                        %>
+
                         <div class="image-center">
                             <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
                         </div>
                         <form id="registration-form"
-                                     action="registration"
+                                     action="registration<%=queryString%>"
                                      name="registrationForm"
                                      method="POST">
                             <fieldset>

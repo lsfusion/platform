@@ -112,11 +112,11 @@ public class ExternalHttpServer extends MonitorServer {
                 InetAddress address = remoteAddress.getAddress();
                 SessionInfo sessionInfo = new SessionInfo(getHostName(remoteAddress), address != null ? address.getHostAddress() : null, null, null);// client locale does not matter since we use anonymous authentication
 
-                String uriPath = request.getRequestURI().getPath();
-                String url = "http://" + request.getRequestHeaders().getFirst("Host") + uriPath;
+                String[] host = request.getRequestHeaders().getFirst("Host").split(":");
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
-                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec, url, uriPath, request.getRequestURI().getRawQuery(), 
-                        request.getRequestBody(), new HashMap<String, String[]>(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null, null, null);
+                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
+                        request.getRequestBody(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null, null,null,
+                        "http", host[0], Integer.parseInt(host[1]), "", request.getRequestURI().getPath(), request.getRequestURI().getRawQuery());
 
                 if (response.response != null)
                     sendResponse(request, response);

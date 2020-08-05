@@ -1,12 +1,13 @@
 package lsfusion.http.authentication;
 
-import lsfusion.base.BaseUtils;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static lsfusion.http.controller.MainController.getURLPreservingParameters;
 
 public class LSFAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
@@ -22,16 +23,10 @@ public class LSFAuthenticationFailureHandler extends SimpleUrlAuthenticationFail
         String savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request);
 
         if (savedRequest == null) {
-            redirectUrl = getURLPreservingParameters(defaultURL, request);
+            redirectUrl = getURLPreservingParameters(defaultURL, null, request);
         } else {
             redirectUrl = savedRequest;
         }
         return redirectUrl;
-    }
-
-    public static String getURLPreservingParameters(String url, HttpServletRequest request) {
-        String queryString = request.getQueryString();
-        queryString = !BaseUtils.isRedundantString(queryString) ? "?" + queryString : "";
-        return url + queryString;
     }
 }

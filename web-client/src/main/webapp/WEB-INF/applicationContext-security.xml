@@ -33,6 +33,8 @@
         <intercept-url pattern="/**" access="isAuthenticated()"/>
         <csrf disabled="true"/>
     </http>
+    <http pattern="/forgot-password" security="none"/>
+    <http pattern="/change-password" security="none"/>
 
     <!-- we need to download logo and icon -->
     <http pattern="/downloadFile" security="none"/>
@@ -42,6 +44,7 @@
     <http pattern="/lsfusion-client*" security="none"/>
     <!-- UI security -->
     <http entry-point-ref="entryPoint">
+        <intercept-url pattern="/registration" access="permitAll()"/>
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
         <oauth2-login login-page="/login"
