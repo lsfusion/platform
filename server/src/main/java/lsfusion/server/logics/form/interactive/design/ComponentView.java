@@ -48,6 +48,15 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private FlexAlignment alignment = null;
 
     public Dimension getSize() {
+        if(size == null) {
+            ContainerView container = getLayoutParamContainer();
+            if(container != null) {
+                if(container.isSplitHorizontal())
+                    return new Dimension(1, -1);
+                if(container.isSplitVertical())
+                    return new Dimension(-1, 1);
+            }
+        }
         return size;
     }
     
