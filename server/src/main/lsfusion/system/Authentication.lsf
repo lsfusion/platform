@@ -324,7 +324,7 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
     FOR CustomUser user AS CustomUser = currentUser() DO
-        EXPORT FROM language(user), country(user); 
+        EXPORT JSON FROM language(user), country(user); 
 } @@api;
 
 timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimezone(), serverTimezone();

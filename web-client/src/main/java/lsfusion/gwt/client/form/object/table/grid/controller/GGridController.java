@@ -129,7 +129,7 @@ public class GGridController extends GAbstractTableController {
             mapTableButton.showBackground(false);
     }
     private void setPivotTableView() {
-        changeTableView(new GPivot(formController, this));
+        changeTableView(new GPivot(formController, this, getSelectedProperty()));
         pivotTableButton.showBackground(true);
         gridTableButton.showBackground(false);
         if(mapTableButton != null)
@@ -479,7 +479,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     public GPropertyDraw getSelectedProperty() {
-        return table.getCurrentProperty();
+        return table != null ? table.getCurrentProperty() : null;
     }
     @Override
     public GGroupObjectValue getSelectedColumnKey() {

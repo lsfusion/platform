@@ -9,14 +9,10 @@ public class NativeStringMap<V> {
     private JavaScriptObject map;
 
     public NativeStringMap() {
-        init();
+        map = JavaScriptObject.createObject();
     }
 
     public void clear() {
-        init();
-    }
-
-    private void init() {
         map = JavaScriptObject.createObject();
     }
 

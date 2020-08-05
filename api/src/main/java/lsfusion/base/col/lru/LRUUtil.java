@@ -63,7 +63,7 @@ public class LRUUtil {
 
     private static final String cmsFraction = "-XX:CMSInitiatingOccupancyFraction=";
     private static final String newSizeFraction = "-XX:G1NewSizePercent=";
-    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Double> adjustTargetLRU, Supplier<Double> adjustCriticalLRU, double LRUDefCoeff, Supplier<Double> LRUMinCoeff, Supplier<Double> LRUMaxCoeff, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
+    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Double> adjustTargetIncLRU, Supplier<Double> adjustTargetDecLRU, Supplier<Double> adjustCriticalLRU, double LRUDefCoeff, Supplier<Double> LRUMinCoeff, Supplier<Double> LRUMaxCoeff, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
 
         // the same as in updateSavePointsInfo
@@ -182,11 +182,11 @@ public class LRUUtil {
                         long downAverageMemValue = downAverageMem.get();
                         logger.log("ADJUST COLLECTED : " + lastCollected + " UPAVERAGE : " + upAverageMemValue + ", DOWNAVERAGE : " + downAverageMemValue);
                         if (lastCollected > upAverageMemValue && multiplier > LRUMinCoeff.get()) {
-                            multiplier /= (1.0 + targetMemRatio.get() * adjustTargetLRU.get());
+                            multiplier /= (1.0 + targetMemRatio.get() * adjustTargetDecLRU.get());
                             logger.log("DEC MULTI " + multiplier);
                         }
                         if (lastCollected < downAverageMemValue && multiplier < LRUMaxCoeff.get()) {
-                            multiplier *= (1.0 + targetMemRatio.get() * adjustTargetLRU.get());
+                            multiplier *= (1.0 + targetMemRatio.get() * adjustTargetIncLRU.get());
                             logger.log("INC MULTI " + multiplier);
                         }
                         needAdjustment = false;

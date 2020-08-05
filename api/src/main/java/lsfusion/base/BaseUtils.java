@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
@@ -43,6 +44,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.*;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
@@ -2847,4 +2849,25 @@ public class BaseUtils {
     }
 
     public static final String impossibleString = "FDWREVSFFGFSDRSDR";
+
+    public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
+        if (timeout != null) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            final Future<Object> future = executor.submit(callable);
+            executor.shutdown();
+
+            try {
+                return future.get(timeout, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException | InterruptedException | ExecutionException e) {
+                future.cancel(true);
+                throw Throwables.propagate(e);
+            }
+        } else {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
+        }
+    }
 }

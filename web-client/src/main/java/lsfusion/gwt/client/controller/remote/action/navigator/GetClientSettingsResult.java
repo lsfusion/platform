@@ -11,6 +11,7 @@ public class GetClientSettingsResult implements Result {
     public boolean showDetailedInfo;
     public boolean forbidDuplicateForms;
     public boolean showNotDefinedStrings;
+    public boolean pivotOnlySelectedColumn;
     public GColorTheme colorTheme;
     public GColorPreferences colorPreferences;
 
@@ -18,14 +19,15 @@ public class GetClientSettingsResult implements Result {
     }
 
     public GetClientSettingsResult(boolean busyDialog, long busyDialogTimeout, boolean devMode, boolean showDetailedInfo,
-                                   boolean forbidDuplicateForms, boolean showNotDefinedStrings, GColorTheme colorTheme, 
-                                   GColorPreferences colorPreferences) {
+                                   boolean forbidDuplicateForms, boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn,
+                                   GColorTheme colorTheme, GColorPreferences colorPreferences) {
         this.busyDialog = busyDialog;
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.showDetailedInfo = showDetailedInfo;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.showNotDefinedStrings = showNotDefinedStrings;
+        this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
         this.colorTheme = colorTheme;
         this.colorPreferences = colorPreferences;
     }
