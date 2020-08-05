@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.authentication.LSFClientRegistrationRepository;
+import lsfusion.http.authentication.LSFLoginUrlAuthenticationEntryPoint;
 import lsfusion.http.authentication.LSFRemoteAuthenticationProvider;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
@@ -64,8 +65,12 @@ public class MainController {
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String processLogin(ModelMap model, HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !(auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous())) {
-            return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
+        if (auth != null && auth.isAuthenticated()) {
+            if (auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous()) {
+                LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
+            } else {
+                return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
+            }
         }
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
