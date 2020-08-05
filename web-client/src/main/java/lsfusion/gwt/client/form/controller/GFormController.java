@@ -1582,7 +1582,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public static void setDynamicImage(Element element, Object value) { // assert that property.hasDynamicImage
         ActionCellRenderer.setImage(element, value instanceof String && !value.equals("null") ?
                 getDownloadURL((String) value, null, null, false) :
-                "", null);
+                "", null, true);
     }
 
     public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Runnable onOuterEditBefore, Runnable onEdit, Runnable onOuterEditAfter, Runnable onCut, Runnable onPaste) {

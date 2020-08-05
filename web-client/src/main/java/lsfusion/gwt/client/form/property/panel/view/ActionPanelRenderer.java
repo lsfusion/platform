@@ -55,10 +55,10 @@ public class ActionPanelRenderer extends PanelRenderer {
         Element renderElement = value.getRenderElement();
         if(iconPath == null) {
             if(nullImage != null) {
-                ActionCellRenderer.setImage(renderElement, nullImage, null);
+                ActionCellRenderer.setImage(renderElement, nullImage, null, false);
                 nullImage = null;
             }
         } else
-            GwtClientUtils.setThemeImage(iconPath, imageUrl -> ActionCellRenderer.setImage(renderElement, imageUrl, nullImage == null ? s -> { nullImage = s; } : null));
+            GwtClientUtils.setThemeImage(iconPath, imageUrl -> ActionCellRenderer.setImage(renderElement, imageUrl, nullImage == null ? s -> { nullImage = s; } : null, false));
     }
 }

@@ -192,7 +192,10 @@ public class PropertyPanelController {
         view.setForegroundColor(foreground);
 
         if(imageValues != null) {
-            view.setImage(ImagePropertyRenderer.convertValue((RawFileData) imageValues.get(columnKey)));
+            RawFileData image = (RawFileData) imageValues.get(columnKey);
+            if(image != null) {
+                view.setImage(ImagePropertyRenderer.convertValue(image));
+            }
         }
 
         if (captions != null) {

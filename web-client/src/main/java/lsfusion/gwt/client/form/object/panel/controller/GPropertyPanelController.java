@@ -122,7 +122,8 @@ public class GPropertyPanelController {
         }
 
         if (images != null && renderer instanceof ActionPanelRenderer) {
-            ((ActionPanelRenderer)renderer).setDynamicImage(images.get(columnKey));
+            Object image = images.get(columnKey);
+            ((ActionPanelRenderer)renderer).setDynamicImage(image != null ? image : "null");
         }
     }
 

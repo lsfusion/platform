@@ -65,6 +65,8 @@ public class ActionCellRenderer extends CellRenderer {
             textElement = element;
             setText = "...";
         } else {
+            if(property.panelCaptionAbove)
+                element.getStyle().setProperty("flexDirection", "column");
             textElement = GwtClientUtils.wrapAlignedFlexImg(element, imageElement -> { // assert that in renderStatic it is wrapped into wrap-center
                 element.setPropertyObject(IMAGE, imageElement);
             });
@@ -85,6 +87,8 @@ public class ActionCellRenderer extends CellRenderer {
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
         element.removeClassName("gwt-Button");
+        if(property.panelCaptionAbove)
+            element.getStyle().clearProperty("flexDirection");
         element.getStyle().clearPadding();
         element.setPropertyObject(TEXT, null);
 
@@ -98,10 +102,17 @@ public class ActionCellRenderer extends CellRenderer {
         ((Element)element.getPropertyObject(TEXT)).setInnerText(text != null ? text : "");
     }
 
-    public static void setImage(Element element, String absolutePath, Consumer<String> prevImage) {
+    public static void setImage(Element element, String absolutePath, Consumer<String> prevImage, boolean dynamicMargins) {
         ImageElement img = (ImageElement) element.getPropertyObject(IMAGE);
         if(prevImage != null)
             prevImage.accept(img.getSrc());
+        if(dynamicMargins) {
+            if(absolutePath.isEmpty()) {
+                img.removeClassName("wrap-img-margins");
+            } else {
+                img.addClassName("wrap-img-margins");
+            }
+        }
         img.setSrc(absolutePath);
     }
 
@@ -129,7 +140,7 @@ public class ActionCellRenderer extends CellRenderer {
         if(hasStaticImage || updateContext.globalCaptionIsDrawn()) {
             setImage(element, hasStaticImage ?
                     GwtClientUtils.getAppImagePath(property.getImage(enabled).url) :
-                    GwtClientUtils.getModuleImagePath(ICON_EXECUTE), null);
+                    GwtClientUtils.getModuleImagePath(ICON_EXECUTE), null, false);
         }
         if(!enabled)
             element.addClassName("gwt-Button-disabled");
