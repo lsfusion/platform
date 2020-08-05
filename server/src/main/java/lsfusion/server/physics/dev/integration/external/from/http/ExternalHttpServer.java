@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,11 +113,11 @@ public class ExternalHttpServer extends MonitorServer {
                 InetAddress address = remoteAddress.getAddress();
                 SessionInfo sessionInfo = new SessionInfo(getHostName(remoteAddress), address != null ? address.getHostAddress() : null, null, null);// client locale does not matter since we use anonymous authentication
 
-                String uriPath = request.getRequestURI().getPath();
+                List<String> host = Arrays.asList(request.getRequestHeaders().getFirst("Host").split(":"));
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
-                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec, uriPath, request.getRequestURI().getRawQuery(),
-                        request.getRequestBody(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null,
-                        null, null, null, null, null, null, null);
+                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
+                        request.getRequestBody(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null, null,null,
+                        "http", host.get(0), Integer.parseInt(host.get(1)), "", request.getRequestURI().getPath(), request.getRequestURI().getRawQuery());
 
                 if (response.response != null)
                     sendResponse(request, response);

@@ -24,7 +24,6 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,10 +74,9 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
 
             InputStream requestInputStream = getRequestInputStream(request, contentType, query);
             
-            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, request.getRequestURI(),
-                    query, requestInputStream, contentType, headerNames, headerValues, cookieNames, cookieValues, logicsHost, sessionObject.connection.port,
-                    sessionObject.connection.exportName, request.getScheme(), request.getServerName(), request.getServerPort(), request.getContextPath(),
-                    request.getServletPath());
+            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, requestInputStream, contentType,
+                    headerNames, headerValues, cookieNames, cookieValues, logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
+                    request.getScheme(), request.getServerName(), request.getServerPort(), request.getContextPath(), request.getServletPath(), query);
 
             if (responseHttpEntity.response != null) {
                 sendResponse(response, responseHttpEntity);

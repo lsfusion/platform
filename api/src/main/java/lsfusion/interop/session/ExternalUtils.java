@@ -68,10 +68,10 @@ public class ExternalUtils {
         };
     }
 
-    public static ExternalResponse processRequest(ExecInterface remoteExec, String uri, String query, InputStream is, ContentType requestContentType,
+    public static ExternalResponse processRequest(ExecInterface remoteExec, InputStream is, ContentType requestContentType,
                                                   String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
                                                   Integer logicsPort, String logicsExportName, String scheme, String webHost, Integer webPort,
-                                                  String contextPath, String servletPath) throws IOException, MessagingException {
+                                                  String contextPath, String servletPath, String query) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
@@ -87,11 +87,11 @@ public class ExternalUtils {
         String filename = "export";
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
-                charset == null ? null : charset.toString(), query, headerNames, headerValues, cookieNames,
-                cookieValues, logicsHost, logicsPort, logicsExportName, scheme, webHost, webPort, contextPath, servletPath);
+                charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
+                cookieValues, logicsHost, logicsPort, logicsExportName, scheme, webHost, webPort, contextPath, servletPath, query);
 
-        boolean isEvalAction = uri.endsWith("/eval/action");
-        if (uri.endsWith("/eval") || isEvalAction) {
+        boolean isEvalAction = servletPath.endsWith("/eval/action");
+        if (servletPath.endsWith("/eval") || isEvalAction) {
             Object script = getParameterValue(queryParams, SCRIPT_PARAM);
             if (script == null && !paramsList.isEmpty()) {
                 int scriptParam = queryActionParams.size();
@@ -102,12 +102,12 @@ public class ExternalUtils {
                 }
             }
             execResult = remoteExec.eval(isEvalAction, script, request);
-        } else if (uri.endsWith("/exec")) {
+        } else if (servletPath.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
             execResult = remoteExec.exec(action, request);
         } else {
             Pattern p = Pattern.compile(".*/exec/(.*)");
-            Matcher m = p.matcher(uri);
+            Matcher m = p.matcher(servletPath);
             if(m.matches()) {
                 String action = m.group(1);
                 execResult = remoteExec.exec(action, request);

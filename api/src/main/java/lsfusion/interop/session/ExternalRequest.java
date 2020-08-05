@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 public class ExternalRequest implements Serializable {
 
-    private static final long serialVersionUID = -1029191636149626916L;
     public final String[] returnNames;
     public Object[] params;
 
@@ -38,19 +37,19 @@ public class ExternalRequest implements Serializable {
     }
 
     public ExternalRequest(String[] returnNames, Object[] params, String charsetName) {
-        this(returnNames, params, charsetName, null, new String[0], new String[0], null,
-                null, null, null, null, null, null, null, null, null);
+        this(returnNames, params, charsetName, new String[0], new String[0], null,
+                null, null, null, null, null, null, null, null, null, null);
     }
 
     public ExternalRequest(String query) {
-        this(new String[0], new Object[0], "utf-8", query, new String[0], new String[0], null,
-                null, null, null, null, null, null, null, null, null);
+        this(new String[0], new Object[0], "utf-8", new String[0], new String[0], null,
+                null, null, null, null, null, null, null, null, null, query);
     }
 
-    public ExternalRequest(String[] returnNames, Object[] params, String charsetName, String query,
+    public ExternalRequest(String[] returnNames, Object[] params, String charsetName,
                            String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
                            String appHost, Integer appPort, String exportName, String scheme, String webHost,
-                           Integer webPort, String contextPath, String servletPath) {
+                           Integer webPort, String contextPath, String servletPath, String query) {
         this.returnNames = returnNames;
         this.params = params;
         this.charsetName = charsetName;
@@ -58,7 +57,6 @@ public class ExternalRequest implements Serializable {
         this.headerValues = headerValues;
         this.cookieNames = cookieNames;
         this.cookieValues = cookieValues;
-        this.query = query;
         this.appHost = appHost;
         this.appPort = appPort;
         this.exportName = exportName;
@@ -67,5 +65,6 @@ public class ExternalRequest implements Serializable {
         this.webPort = webPort;
         this.contextPath = contextPath;
         this.servletPath = servletPath;
+        this.query = query;
     }
 }
