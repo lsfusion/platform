@@ -228,7 +228,7 @@ resetPassword(JSONFILE input) {
             token() <- randomUUID();
             passwordResetToken(cu) <- token();
             expiryPasswordResetTokenDate(cu) <- currentDateTime();
-            href() <- CONCAT '', '<a href="', webPath(), 'change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
+            href() <- CONCAT '', '<a href="', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
             APPLY;
             IF NOT canceled() THEN {
                 success() <- TRUE;

@@ -246,10 +246,10 @@ public class MainController {
     public static ExternalRequest getExternalRequest(Object[] params, HttpServletRequest request){
         String contentTypeString = request.getContentType();
         Charset charset = getCharsetFromContentType(contentTypeString != null ? ContentType.parse(contentTypeString) : null);
-        return  new ExternalRequest(new String[0], params, charset == null ? null : charset.toString(), null,
+        return new ExternalRequest(new String[0], params, charset == null ? null : charset.toString(),
                 request.getQueryString() != null ? request.getQueryString() : "", new String[0], new String[0], null,
                 null, null, null, null, request.getScheme(), request.getServerName(),
-                request.getServerPort(), request.getContextPath());
+                request.getServerPort(), request.getContextPath(), request.getServletPath());
     }
 
     public static String getURLPreservingParameters(String url, String paramToRemove, HttpServletRequest request) {

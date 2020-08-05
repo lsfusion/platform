@@ -155,9 +155,6 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         if (action.uses(businessLogics.LM.cookies.property)) {
             ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.cookies, request.headerNames, request.headerValues);
         }
-        if (request.url != null) {
-            businessLogics.LM.url.change(request.url, session);
-        }
         if (request.query != null) {
             businessLogics.LM.query.change(request.query, session);
 
@@ -194,6 +191,9 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
         if (request.contextPath != null) {
             businessLogics.LM.contextPath.change(request.contextPath, session);
+        }
+        if (request.servletPath != null) {
+            businessLogics.LM.servletPath.change(request.servletPath, session);
         }
     }
 
