@@ -772,7 +772,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         return cell.getColumn().isFocusable();
     }
     public boolean isEditOnSingleClick(Cell cell) {
-        return !isFocusable(cell) || GFormController.isLinkEditMode();
+        return !isFocusable(cell);
     }
 
     public boolean setSelectedRow(int row) {
