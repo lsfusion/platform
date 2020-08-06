@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.Map;
 
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
@@ -84,7 +83,7 @@ public class PropertyDrawView extends ComponentView {
     public boolean panelCaptionVertical = false;
     public boolean panelCaptionAfter;
 
-    public boolean columnKeysVertical = false;
+    public boolean panelColumnVertical = false;
 
     public FlexAlignment valueAlignment;
 
@@ -264,7 +263,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(panelCaptionVertical);
         outStream.writeBoolean(panelCaptionAfter);
 
-        outStream.writeBoolean(columnKeysVertical);
+        outStream.writeBoolean(panelColumnVertical);
         
         pool.writeObject(outStream, getValueAlignment());
 
@@ -450,7 +449,7 @@ public class PropertyDrawView extends ComponentView {
         panelCaptionVertical = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
 
-        columnKeysVertical = inStream.readBoolean();
+        panelColumnVertical = inStream.readBoolean();
 
         valueAlignment = pool.readObject(inStream);
 
