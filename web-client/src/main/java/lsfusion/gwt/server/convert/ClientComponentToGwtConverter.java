@@ -350,7 +350,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             propertyDraw.valueHeight = clientPropertyDraw.valueSize.height;
         }
 
-        propertyDraw.panelCaptionAbove = clientPropertyDraw.panelCaptionAbove;
+        propertyDraw.panelCaptionVertical = clientPropertyDraw.panelCaptionVertical;
         
         propertyDraw.columnKeysVertical = clientPropertyDraw.columnKeysVertical;
         

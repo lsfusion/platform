@@ -48,7 +48,7 @@ public class DataPanelView extends JPanel implements PanelView {
         columnKey = icolumnKey;
         simpleDispatcher = form.getSimpleChangePropertyDispatcher();
 
-        setLayout(new FlexLayout(this, property.panelCaptionAbove, Alignment.CENTER));
+        setLayout(new FlexLayout(this, property.panelCaptionVertical, Alignment.CENTER));
 
         //игнорируем key.readOnly, чтобы разрешить редактирование,
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
@@ -245,7 +245,7 @@ public class DataPanelView extends JPanel implements PanelView {
             Dimension tableSize = sizeGetter.get(table);
             int width;
             int height;
-            if (property.panelCaptionAbove) {
+            if (property.panelCaptionVertical) {
                 width = max(labelSize.width, tableSize.width);
                 height = limitedSum(labelSize.height, tableSize.height);
             } else {
@@ -258,7 +258,7 @@ public class DataPanelView extends JPanel implements PanelView {
 
         @Override
         public void layoutContainer(Container parent) {
-            boolean vertical = property.panelCaptionAbove;
+            boolean vertical = property.panelCaptionVertical;
             boolean tableFirst = property.panelCaptionAfter;
 
             Insets in = parent.getInsets();

@@ -105,7 +105,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Boolean focusable;
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
-    public boolean panelCaptionAbove;
+    public boolean panelCaptionVertical;
     public boolean panelCaptionAfter;
 
     public boolean columnKeysVertical;
@@ -417,7 +417,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
 
-        outStream.writeBoolean(panelCaptionAbove);
+        outStream.writeBoolean(panelCaptionVertical);
         outStream.writeBoolean(panelCaptionAfter);
 
         outStream.writeBoolean(columnKeysVertical);
@@ -461,7 +461,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
 
-        panelCaptionAbove = inStream.readBoolean();
+        panelCaptionVertical = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
 
         columnKeysVertical = inStream.readBoolean();
