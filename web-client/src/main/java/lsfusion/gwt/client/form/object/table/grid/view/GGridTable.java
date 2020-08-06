@@ -1185,5 +1185,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
         return userOrders;
     }
-    
+
+    @Override
+    public int getPageSize() {
+        return -1;
+    }
 }

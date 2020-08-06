@@ -141,11 +141,6 @@ public class GGridController extends GAbstractTableController {
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
     }
-    private void changeMode(Runnable updateView,  int pageSize, GListViewType viewType) {
-        updateView.run();
-        table.setSetRequestIndex(formController.changeListViewType(groupObject, pageSize, viewType));
-        updateSettingsButton();
-    }
 
     private boolean manual;
     private void setUpdateMode(boolean manual) {
@@ -184,7 +179,7 @@ public class GGridController extends GAbstractTableController {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
-                    changeMode(() -> setGridTableView(), -2, GListViewType.GRID);
+                    changeMode(() -> setGridTableView(), GListViewType.GRID, false);
                 };
             }
         };
@@ -194,7 +189,7 @@ public class GGridController extends GAbstractTableController {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
-                    changeMode(() -> setPivotTableView(), -1, GListViewType.PIVOT); // we need to make a call to get columns to init default config
+                    changeMode(() -> setPivotTableView(), GListViewType.PIVOT, true); // we need to make a call to get columns to init default config
                 };
             }
         };
@@ -205,7 +200,7 @@ public class GGridController extends GAbstractTableController {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> {
-                        changeMode(() -> setMapTableView(), ((GMap)table).getPageSize(), GListViewType.MAP);
+                        changeMode(() -> setMapTableView(), GListViewType.MAP, false);
                     };
                 }
             };
@@ -633,8 +628,13 @@ public class GGridController extends GAbstractTableController {
         formController.changeFilter(groupObject, conditions);
     }
 
-    public void changeGroups(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, Integer pageSize, GPropertyGroupType aggrType) {
-        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, pageSize, false, null, GListViewType.PIVOT);
+    private void changeMode(Runnable updateView, GListViewType viewType, boolean setManualUpdateMode) {
+        updateView.run();
+        table.setSetRequestIndex(formController.changeListViewType(groupObject, table.getPageSize(), viewType, setManualUpdateMode ? GUpdateMode.MANUAL : null));
+        updateSettingsButton();
+    }
+    public void changeGroups(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, boolean restoreUpdateMode, GPropertyGroupType aggrType) {
+        formController.changeMode(groupObject, true, properties, columnKeys, aggrProps, aggrType, null, false, restoreUpdateMode ? (manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO) : null, GListViewType.PIVOT);
     }
     public void changePageSize(int pageSize) {
         formController.changeMode(groupObject, false, null, null, 0, null, pageSize, false, null, null);

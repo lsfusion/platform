@@ -1028,9 +1028,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     // change group mode with force refresh
-    public long changeListViewType(final GGroupObject groupObject, int pageSize, GListViewType viewType) {
+    public long changeListViewType(final GGroupObject groupObject, int pageSize, GListViewType viewType, GUpdateMode updateMode) {
         boolean enableGroup = viewType == GListViewType.PIVOT;
-        return changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null, viewType);
+        return changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, updateMode, viewType);
     }
     public long changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GListViewType viewType) {
         int[] propertyIDs = null;

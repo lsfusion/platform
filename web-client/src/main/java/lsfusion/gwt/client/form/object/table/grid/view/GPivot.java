@@ -534,7 +534,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
         if(firstUpdateView == null || !firstUpdateView) { // we don't need to update server groups, since they should be already set
             updateRendererState(true); // will wait until server will answer us if we need to change something
-            grid.changeGroups(properties, columnKeys, aggrProps, firstUpdateView != null ? getPageSize() : null, getGroupType(aggregatorName.toUpperCase())); // we need to do "changeListViewType" if it's firstUpdateView
+            grid.changeGroups(properties, columnKeys, aggrProps, firstUpdateView != null, getGroupType(aggregatorName.toUpperCase())); // we need to do "changeListViewType" if it's firstUpdateView
             firstUpdateView = null;
         }
     }
