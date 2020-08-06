@@ -116,7 +116,7 @@ public class MainController {
         jsonObject.put("email", email);
         user.put(jsonObject);
 
-        JSONObject jsonResponse = sendRequest(user, request, "registerUser");
+        JSONObject jsonResponse = sendRequest(user, request, "Authentication.registerUser");
         if (jsonResponse.has("success")){
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
             usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetails(request));
@@ -142,7 +142,7 @@ public class MainController {
         jsonObject.put("userNameOrEmail", usernameOrEmail);
         jsonArray.put(jsonObject);
 
-        JSONObject jsonResponse = sendRequest(jsonArray, request, "resetPassword");
+        JSONObject jsonResponse = sendRequest(jsonArray, request, "Authentication.resetPassword");
         if (jsonResponse.has("success")){
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
@@ -167,7 +167,7 @@ public class MainController {
         jsonObject.put("token", token);
         user.put(jsonObject);
 
-        JSONObject jsonResponse = sendRequest(user, request, "changePassword");
+        JSONObject jsonResponse = sendRequest(user, request, "Authentication.changePassword");
         if (jsonResponse.has("success")){
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
@@ -182,7 +182,7 @@ public class MainController {
         try {
             ExternalResponse externalResponse = logicsProvider.runRequest(request,
                     sessionObject -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
-                    "Authentication." + method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request)));
+                    method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request)));
             return new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);

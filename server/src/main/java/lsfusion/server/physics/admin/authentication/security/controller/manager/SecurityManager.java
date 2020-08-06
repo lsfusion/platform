@@ -276,7 +276,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     userObject = addUser(authentication.getUserName(), pwd, session);
                     setUserParameters(userObject, ((OAuth2Authentication) authentication).getFirstName(),
                             ((OAuth2Authentication) authentication).getLastName(), ((OAuth2Authentication) authentication).getEmail(),
-                            null, session);
+                            Collections.singletonList("selfRegister"), session);
                     apply(session, stack);
                 }
             }

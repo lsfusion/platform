@@ -46,6 +46,10 @@ WHEN SETCHANGED (User u IS User) DO {
     in(u, userRoleSID('default')) <- TRUE;        
 }
 
+onUserRegister(User user) + {
+    in(user, userRoleSID('selfRegister')) <- TRUE;
+}
+
 // Forms
 FORM userRolesDialog '{security.user.roles}'
     OBJECTS ur=UserRole
@@ -308,6 +312,15 @@ createSystemUserRoles() {
         NEW ur = UserRole {
             sid(ur) <- 'default';
             name(ur) <- ISTRING[100] ('{security.user.role.default}');
+        }
+     }   
+    
+     IF NOT userRoleSID('selfRegister') THEN {
+        NEW ur = UserRole {
+            sid(ur) <- 'selfRegister';
+            name(ur) <- ISTRING[100] ('{security.user.role.new.user}');
+            dataPermission(ur, navigatorElementCanonicalName('System.root')) <- Permission.forbid;        
+            dataPermission(ur, navigatorElementCanonicalName('Authentication.account')) <- Permission.permit;          
         }
      }   
 }
