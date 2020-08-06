@@ -144,7 +144,8 @@ public class MainController {
 
         JSONObject jsonResponse = sendRequest(jsonArray, request, "Authentication.resetPassword");
         if (jsonResponse.has("success")){
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success")
+                    + " " + jsonResponse.optString("email"));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
             return getRedirectUrl("/forgot-password", null, request);

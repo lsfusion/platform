@@ -227,6 +227,7 @@ resetPassword(JSONFILE input) {
         LOCAL NESTED token = STRING();
         LOCAL NESTED success = BOOLEAN();
         LOCAL NESTED href = STRING();
+        LOCAL NESTED email = STRING();
         FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
             token() <- randomUUID();
             passwordResetToken(cu) <- token();
@@ -240,9 +241,10 @@ resetPassword(JSONFILE input) {
                     TO email(cu)
                     BODY href();
             }
+            email() <- email(cu);
         }
         IF success() THEN {
-            EXPORT FROM '\{success: {password.reset.email.sent}\}';  
+            EXPORT FROM '\{success: {password.reset.email.sent}, email:' + email() + ' \}';  
         } ELSE {
             EXPORT FROM '\{error: {password.reset.error}\}';
         }
