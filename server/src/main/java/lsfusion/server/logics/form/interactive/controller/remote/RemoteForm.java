@@ -350,7 +350,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
             
             if(pageSize != null)
-                groupObject.setPageSize(pageSize < -1 ? Settings.get().getPageSizeDefaultValue() : pageSize); // when pageSize -1 assert setGroup
+                groupObject.setPageSize(pageSize < 0 ? Settings.get().getPageSizeDefaultValue() : pageSize);
             
             if(forceRefresh)
                 groupObject.forceRefresh();

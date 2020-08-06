@@ -1001,7 +1001,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     if (!groupMode.groupProps.containsAll(setGroupMode.groupProps)) // groups added - update anyway
                         updateKeys = true;
                     int groupPageSize = getGroupPageSize();
-                    if(groupPageSize > 0 && keys.size() == groupPageSize && !BaseUtils.hashEquals(groupMode.groupProps, setGroupMode.groupProps)) // maximum number of groups and groups changed (removed) - update anyway
+                    if(keys.size() == groupPageSize && !BaseUtils.hashEquals(groupMode.groupProps, setGroupMode.groupProps)) // maximum number of groups and groups changed (removed) - update anyway
                         updateKeys = true;
                     if(!updateKeys) {
                         ImMap<PropertyDrawInstance, ImMap<ImMap<ObjectInstance, DataObject>, PropertyGroupType>> changedAggrProps = setGroupMode.aggrProps.removeEquals(groupMode.aggrProps);
@@ -1138,8 +1138,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
                     if(!useGroupMode) { // we are not sure
                         int pageSize = getPageSize();
-                        if(pageSize >= 0) // pageSize -1 means that we're waiting for actual groups / pagesize
-                            keys = SEEK_HOME.executeOrders(sql, env, modifier, baseClass, pageSize, true, reallyChanged);
+                        keys = SEEK_HOME.executeOrders(sql, env, modifier, baseClass, pageSize, true, reallyChanged);
                         if(keys.size() == pageSize)
                             useGroupMode = true;
                     }

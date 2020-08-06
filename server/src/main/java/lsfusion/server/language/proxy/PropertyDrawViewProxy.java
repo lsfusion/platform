@@ -128,8 +128,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelCaptionVertical = panelCaptionVertical;
     }
 
+    //for backward compatibility
     public void setColumnKeysVertical(boolean columnKeysVertical) {
-        target.columnKeysVertical = columnKeysVertical;
+        target.panelColumnVertical = columnKeysVertical;
+    }
+
+    public void setPanelColumnVertical(boolean panelColumnVertical) {
+        target.panelColumnVertical = panelColumnVertical;
     }
 
     public void setCaption(LocalizedString caption) {

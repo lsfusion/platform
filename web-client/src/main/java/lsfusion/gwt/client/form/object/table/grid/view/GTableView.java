@@ -76,4 +76,6 @@ public interface GTableView {
     LinkedHashMap<GPropertyDraw, Boolean> getUserOrders(List<GPropertyDraw> propertyDrawList);
     GGroupObjectUserPreferences getCurrentUserGridPreferences();
     GGroupObjectUserPreferences getGeneralGridPreferences();
+
+    int getPageSize();
 }
