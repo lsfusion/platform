@@ -4,7 +4,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -65,7 +64,7 @@ public class ActionCellRenderer extends CellRenderer {
             textElement = element;
             setText = "...";
         } else {
-            if(property.panelCaptionAbove)
+            if(property.panelCaptionVertical)
                 element.getStyle().setProperty("flexDirection", "column");
             textElement = GwtClientUtils.wrapAlignedFlexImg(element, imageElement -> { // assert that in renderStatic it is wrapped into wrap-center
                 element.setPropertyObject(IMAGE, imageElement);
@@ -87,7 +86,7 @@ public class ActionCellRenderer extends CellRenderer {
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
         element.removeClassName("gwt-Button");
-        if(property.panelCaptionAbove)
+        if(property.panelCaptionVertical)
             element.getStyle().clearProperty("flexDirection");
         element.getStyle().clearPadding();
         element.setPropertyObject(TEXT, null);

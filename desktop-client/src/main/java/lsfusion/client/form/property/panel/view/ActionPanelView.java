@@ -126,7 +126,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         panel.add(this, new FlexConstraints(property.getAlignment(), 1));
         property.installMargins(panel);
 
-        if(property.panelCaptionAbove) {
+        if(property.panelCaptionVertical) {
             setVerticalTextPosition(SwingConstants.BOTTOM);
             setHorizontalTextPosition(SwingConstants.CENTER);
         }
