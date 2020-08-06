@@ -2063,7 +2063,7 @@ public class BaseUtils {
     }
 
     public static void openFile(RawFileData data, String name, String extension) throws IOException {
-        File file = name != null ? new File(System.getProperty("java.io.tmpdir") + "/" + name + "." + extension) : File.createTempFile("lsf", "." + extension);
+        File file = name != null ? new File(System.getProperty("java.io.tmpdir") + "/" + getFileName(name, extension)) : File.createTempFile("lsf", "." + extension);
         try (FileOutputStream f = new FileOutputStream(file)) {
             data.write(f);
         }
@@ -2081,6 +2081,10 @@ public class BaseUtils {
                 Runtime.getRuntime().exec("open " + file.getAbsolutePath()).waitFor();*/
 
         Desktop.getDesktop().open(file);
+    }
+
+    public static String getFileName(String name, String extension) {
+        return (extension != null && !extension.isEmpty() ? (name + "." + extension) : name).replaceAll("[/\\\\]", ""); //remove / and \
     }
 
     public static String firstWord(String string, String separator) {
