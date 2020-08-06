@@ -101,6 +101,22 @@ public enum PropertyDrawExtraType {
         public String getText() {
             return "{logics.foreground}";
         }
+    },
+    IMAGE {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return ReportFieldExtraType.IMAGE;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.IMAGE;
+        }
+
+        @Override
+        public String getText() {
+            return "{logics.image}";
+        }
     };
 
     public static final ImSet<PropertyDrawExtraType> extras = SetFact.toSet(values());

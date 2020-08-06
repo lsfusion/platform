@@ -387,6 +387,15 @@ public class GridController extends AbstractTableController {
     }
 
     @Override
+    public void updateImageValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (property.isList) {
+            table.updateImageValues(property, values);
+        } else {
+            panel.updateImageValues(property, values);
+        }
+    }
+
+    @Override
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean updateKeys) {
         if (property.isList) {
             table.updatePropertyValues(property, values, updateKeys);

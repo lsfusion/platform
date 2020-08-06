@@ -54,6 +54,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ForegroundReader foregroundReader = new ForegroundReader();
     public FooterReader footerReader = new FooterReader();
     public ReadOnlyReader readOnlyReader = new ReadOnlyReader();
+    public ImageReader imageReader = new ImageReader();
+    public boolean hasDynamicImage;
 
     // for pivoting
     public String formula;
@@ -487,6 +489,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         
         hasEditObjectAction = inStream.readBoolean();
         hasChangeAction = inStream.readBoolean();
+        hasDynamicImage = inStream.readBoolean();
 
         namespace = pool.readString(inStream);
         sID = pool.readString(inStream);
@@ -794,6 +797,24 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.CELL_FOREGROUND;
+        }
+    }
+
+    public class ImageReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+            controller.updateImageValues(ClientPropertyDraw.this, readKeys);
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.IMAGE;
         }
     }
 }

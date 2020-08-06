@@ -32,6 +32,12 @@ public enum ReportFieldExtraType {
         public String getReportFieldNameSuffix() {
             return ReportConstants.foregroundSuffix;
         }
+    },
+    IMAGE {
+        @Override
+        public String getReportFieldNameSuffix() {
+            return ReportConstants.imageSuffix;
+        }
     };
 
     public String getReportFieldNameSuffix() {

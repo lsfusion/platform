@@ -34,6 +34,7 @@ public interface GTableView {
     // columns
     void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
     void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
     void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
     void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> values);
     void updateReadOnlyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
