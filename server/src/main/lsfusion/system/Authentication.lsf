@@ -109,22 +109,22 @@ userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
 
 // OAuth and Web-client authentication
 CLASS OAuth2;
-id = DATA STRING (OAuth2);
-clientId = DATA STRING (OAuth2);
-clientSecret = DATA STRING (OAuth2);
-clientAuthenticationMethod = DATA STRING (OAuth2);
-scope = DATA STRING (OAuth2);
-authorizationUri = DATA STRING (OAuth2);
-tokenUri = DATA STRING (OAuth2);
-jwkSetUri = DATA STRING (OAuth2);
-userInfoUri = DATA STRING (OAuth2);
-userNameAttributeName = DATA STRING (OAuth2);
-clientName = DATA STRING (OAuth2);
+id 'Id' = DATA STRING (OAuth2);
+clientId 'Client id' = DATA STRING (OAuth2);
+clientSecret 'Client secret' = DATA STRING (OAuth2);
+clientAuthenticationMethod 'Client authentication method' = DATA STRING (OAuth2);
+scope 'scope' = DATA STRING (OAuth2);
+authorizationUri 'Authorization URI' = DATA STRING (OAuth2);
+tokenUri 'Token URI' = DATA STRING (OAuth2);
+jwkSetUri 'Jwk set URI' = DATA STRING (OAuth2);
+userInfoUri 'User info URI' = DATA STRING (OAuth2);
+userNameAttributeName 'Username attribute name' = DATA STRING (OAuth2);
+clientName 'Client name' = DATA STRING (OAuth2);
 
 auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
 clientName(STRING str) = clientName(auth(str));
 
-webClientSecretKey = DATA STRING (); 
+webClientSecretKey 'Web-client secret key' = DATA STRING (); 
 
 writeDefaultCredentials() {
     IF NOT clientName('github') THEN {
@@ -201,6 +201,8 @@ getClientCredentials(STRING str) {
     }
 } @@api @@noauth;
 
+setRoleOnRegistration ABSTRACT LIST (User, STRING);
+
 registerUser(JSONFILE user) {
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
         IF customUser(login) THEN {
@@ -212,6 +214,7 @@ registerUser(JSONFILE user) {
                 firstName(cu) <- firstName;
                 lastName(cu) <- lastName;
                 email(cu) <- email;
+                setRoleOnRegistration(cu, 'selfRegister');
                 APPLY;
                 EXPORT FROM '\{success: {registration.successful}\}';
             }
