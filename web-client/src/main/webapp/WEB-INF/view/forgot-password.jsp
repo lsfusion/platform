@@ -36,7 +36,7 @@
                         <div class="text-center">
                             <p>
                                 <br/>
-                                <%= ServerMessages.getString(request, "password.reset") %>
+                                <%= ServerMessages.getString(request, "password.recovery") %>
                             </p>
                         </div>
                         <p>
