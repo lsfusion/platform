@@ -154,9 +154,7 @@ details summary::-webkit-details-marker {
 }
 
 .main-page-link {
-    text-transform: uppercase;
     font-size: smaller;
-    text-decoration: underline;
 }
 
 label {

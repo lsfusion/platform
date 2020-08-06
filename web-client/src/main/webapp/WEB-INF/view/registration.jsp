@@ -48,7 +48,7 @@
                                 <div class="text-center">
                                     <p>
                                         <br/>
-                                        <%= ServerMessages.getString(request, "registration") %>
+                                        <%= ServerMessages.getString(request, "register") %>
                                     </p>
                                 </div>
                                 <p>
