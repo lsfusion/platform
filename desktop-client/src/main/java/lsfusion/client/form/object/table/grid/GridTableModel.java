@@ -2,10 +2,13 @@ package lsfusion.client.form.object.table.grid;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.util.ArrayList;
@@ -24,6 +27,7 @@ public class GridTableModel extends AbstractTableModel {
     private boolean manualUpdate;
     private Color[][] backgroundColor = new Color[0][];
     private Color[][] foregroundColor = new Color[0][];
+    private Image[][] images = new Image[0][];
 
     public void updateRows(List<ClientGroupObjectValue> rowKeys,
                            Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values,
@@ -31,13 +35,15 @@ public class GridTableModel extends AbstractTableModel {
                            Map<ClientGroupObjectValue, Object> mapRowBackgroundValues,
                            Map<ClientGroupObjectValue, Object> mapRowForegroundValues,
                            Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapBackgroundValues,
-                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapForegroundValues) {
+                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapForegroundValues,
+                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapImageValues) {
 
         if (data.length == 0 || data[0].length != columnProps.length || data.length != rowKeys.size()) {
             data = new Object[rowKeys.size()][columnProps.length];
             readOnly = new boolean[rowKeys.size()][columnProps.length];
             backgroundColor = new Color[rowKeys.size()][columnProps.length];
             foregroundColor = new Color[rowKeys.size()][columnProps.length];
+            images = new Image[rowKeys.size()][columnProps.length];
         }
 
         for (int i = 0; i < rowKeys.size(); ++i) {
@@ -53,6 +59,7 @@ public class GridTableModel extends AbstractTableModel {
                 Map<ClientGroupObjectValue, Object> readOnlyValues = mapReadOnlyValues.get(columnProp);
                 Map<ClientGroupObjectValue, Object> backgroundValues = mapBackgroundValues.get(columnProp);
                 Map<ClientGroupObjectValue, Object> foregroundValues = mapForegroundValues.get(columnProp);
+                Map<ClientGroupObjectValue, Object> imageValues = mapImageValues.get(columnProp);
 
                 data[i][j] = propValues == null ? null : propValues.get(cellKey);
                 readOnly[i][j] = readOnlyValues != null && readOnlyValues.get(cellKey) != null;
@@ -71,6 +78,10 @@ public class GridTableModel extends AbstractTableModel {
                     foregroundColor[i][j] = (Color) foregroundValues.get(cellKey);
                 } else {
                     foregroundColor[i][j] = null;
+                }
+
+                if(imageValues != null) {
+                    images[i][j] = ImagePropertyRenderer.convertValue((RawFileData) imageValues.get(cellKey));
                 }
             }
         }
@@ -237,5 +248,9 @@ public class GridTableModel extends AbstractTableModel {
 
     public Color getForegroundColor(int row, int column) {
         return manualUpdate ? Color.LIGHT_GRAY : foregroundColor[row][column];
+    }
+
+    public Image getImage(int row, int column) {
+        return images[row][column];
     }
 }

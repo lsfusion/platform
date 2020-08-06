@@ -345,7 +345,7 @@ public class GGridController extends GAbstractTableController {
             if (!(key instanceof GPropertyDraw)) {
                 GPropertyReader propertyReader = key;
                 if (formController.getGroupObject(propertyReader.getGroupObjectID()) == groupObject) {
-                    propertyReader.update(this, value, propertyReader instanceof GPropertyDraw && fc.updateProperties.contains(propertyReader));
+                    propertyReader.update(this, value, false);
                 }
             }
         });
@@ -390,6 +390,16 @@ public class GGridController extends GAbstractTableController {
             table.updateCellForegroundValues(property, values);
         } else {
             panel.updateCellForegroundValues(property, values);
+        }
+    }
+
+    @Override
+    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (property.grid) {
+            table.updateImageValues(property, values);
+        } else {
+            panel.updateCellImages(property, values);
         }
     }
 

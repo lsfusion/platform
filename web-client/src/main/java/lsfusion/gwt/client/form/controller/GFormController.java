@@ -77,6 +77,7 @@ import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -158,7 +159,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         asyncTimer = new Timer() {
             @Override
             public void run() {
-                asyncView.setImage("loading.gif");
+                asyncView.setLoadingImage("loading.gif");
             }
         };
 
@@ -1108,7 +1109,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void onAsyncFinished() {
         if (asyncView != null) {
             asyncTimer.cancel();
-            asyncView.setImage(null);
+            asyncView.setLoadingImage(null);
         }
     }
 
@@ -1576,6 +1577,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         } else {
             element.getStyle().clearColor();
         }
+    }
+
+    public static void setDynamicImage(Element element, Object value) { // assert that property.hasDynamicImage
+        ActionCellRenderer.setImage(element, value instanceof String && !value.equals("null") ?
+                getDownloadURL((String) value, null, null, false) :
+                "", null, true);
     }
 
     public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Runnable onOuterEditBefore, Runnable onEdit, Runnable onOuterEditAfter, Runnable onCut, Runnable onPaste) {

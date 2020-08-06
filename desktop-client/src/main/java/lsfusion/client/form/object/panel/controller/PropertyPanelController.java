@@ -1,11 +1,13 @@
 package lsfusion.client.form.object.panel.controller;
 
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.Callback;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.form.design.Alignment;
@@ -28,6 +30,7 @@ public class PropertyPanelController {
     private Map<ClientGroupObjectValue, Object> readOnly;
     private Map<ClientGroupObjectValue, Object> cellBackgroundValues;
     private Map<ClientGroupObjectValue, Object> cellForegroundValues;
+    private Map<ClientGroupObjectValue, Object> imageValues;
 
     private Map<ClientGroupObjectValue, PanelView> views;
 
@@ -110,20 +113,21 @@ public class PropertyPanelController {
         this.cellForegroundValues = cellForegroundValues;
     }
 
+    public void setImageValues(Map<ClientGroupObjectValue, Object> imageValues) {
+        this.imageValues = imageValues;
+    }
+
     void update(Color rowBackground, Color rowForeground) {
-        if (views == null) {
-            views = new HashMap<>();
-        }
+        Map<ClientGroupObjectValue, PanelView> newViews = new HashMap<>();
 
         List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
         for (final ClientGroupObjectValue columnKey : columnKeys) {
             if (showIfs == null || showIfs.get(columnKey) != null) {
-                PanelView view = views.get(columnKey);
-                if (view == null && !property.hide) {
-                    view = property.getPanelView(form, columnKey);
+                if (!property.hide) {
+                    PanelView view = property.getPanelView(form, columnKey);
                     view.setReadOnly(property.isReadOnly());
-                    views.put(columnKey, view);
-                    
+                    newViews.put(columnKey, view);
+
                     view.getEditPropertyDispatcher().setUpdateEditValueCallback(new Callback<Object>() {
                         @Override
                         public void done(Object result) {
@@ -133,13 +137,13 @@ public class PropertyPanelController {
 
                     panelController.addGroupObjectActions(view.getComponent());
                 }
-            } else {
-                PanelView view = views.remove(columnKey);
-                if (view != null) {
-                    viewsPanel.remove(view.getComponent());
-                }
             }
         }
+
+        if(views != null) {
+            views.values().forEach(panelView -> viewsPanel.remove(panelView.getComponent()));
+        }
+        views = newViews;
 
         //вообще надо бы удалять всё, и добавлять заново, чтобы соблюдался порядок,
         //но при этом будет терятся фокус с удалённых компонентов, поэтому пока забиваем на порядок
@@ -183,6 +187,13 @@ public class PropertyPanelController {
             foreground = (Color) cellForegroundValues.get(columnKey);
         }
         view.setForegroundColor(foreground);
+
+        if(imageValues != null) {
+            RawFileData image = (RawFileData) imageValues.get(columnKey);
+            if(image != null) {
+                view.setImage(ImagePropertyRenderer.convertValue(image));
+            }
+        }
 
         if (captions != null) {
             String caption = property.getDynamicCaption(captions.get(columnKey));

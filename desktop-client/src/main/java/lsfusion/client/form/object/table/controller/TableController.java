@@ -20,6 +20,7 @@ public interface TableController {
     void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
     void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> values);
     void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> values);
+    void updateImageValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
 
     ClientFormController getFormController();
     ClientGroupObject getSelectedGroupObject();

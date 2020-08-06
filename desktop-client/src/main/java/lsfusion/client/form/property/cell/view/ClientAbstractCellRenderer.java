@@ -42,7 +42,8 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
                 cellTable.hasSingleSelection(),
                 table.hasFocus(),
                 cellTable.getBackgroundColor(row, column),
-                cellTable.getForegroundColor(row, column));
+                cellTable.getForegroundColor(row, column),
+                cellTable.getImage(row, column));
 
         JComponent comp = currentComp.getComponent();
         if (comp instanceof JButton) {

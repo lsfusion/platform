@@ -34,7 +34,7 @@ public abstract class PropertyRenderer {
     }
 
     public void updateRenderer(Object value, boolean isInFocusedRow, boolean hasFocus, boolean drawFocusBorder, boolean tableFocused) {
-        updateRenderer(value, isInFocusedRow, hasFocus, drawFocusBorder, false, false, tableFocused, null, null);
+        updateRenderer(value, isInFocusedRow, hasFocus, drawFocusBorder, false, false, tableFocused, null, null, null);
     }
 
     public void updateRenderer(Object value,
@@ -45,7 +45,8 @@ public abstract class PropertyRenderer {
                                boolean hasSingleSelection,
                                boolean isTableFocused,
                                Color conditionalBackground,
-                               Color conditionalForeground) {
+                               Color conditionalForeground,
+                               Image conditionalImage) {
         setValue(value);
 
         if (!isSelected || (hasSingleSelection && (hasFocus && isTableFocused || !isTableFocused && isInFocusedRow))) {
@@ -55,6 +56,8 @@ public abstract class PropertyRenderer {
         }
 
         drawForeground(isInFocusedRow, hasFocus, conditionalForeground);
+
+        drawImage(conditionalImage);
 
         drawBorder(isInFocusedRow, hasFocus, drawFocusBorder);
     }
@@ -110,6 +113,13 @@ public abstract class PropertyRenderer {
             } else {
                 getComponent().setForeground(SwingDefaults.getTableCellForeground());
             }
+        }
+    }
+
+    protected void drawImage(Image conditionalImage) {
+        JComponent component = getComponent();
+        if (component instanceof JButton && conditionalImage != null) {
+            ((JButton) component).setIcon(new ImageIcon(conditionalImage));
         }
     }
     

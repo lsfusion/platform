@@ -203,6 +203,15 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     @Override
+    public void updateImageValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (property.isList) {
+            tree.updateImageValues(property, values);
+        } else {
+            panel.updateImageValues(property, values);
+        }
+    }
+
+    @Override
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
         if (property.isList) {
             view.updateDrawPropertyValues(property, values, update);

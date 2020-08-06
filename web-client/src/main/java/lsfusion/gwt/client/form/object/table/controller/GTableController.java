@@ -16,6 +16,7 @@ import java.util.List;
 public interface GTableController {
     void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values);
+    void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values);
