@@ -201,7 +201,7 @@ getClientCredentials(STRING str) {
     }
 } @@api @@noauth;
 
-setRoleOnRegistration ABSTRACT LIST (User, STRING);
+onUserRegister ABSTRACT LIST (User);
 
 registerUser(JSONFILE user) {
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
@@ -214,7 +214,7 @@ registerUser(JSONFILE user) {
                 firstName(cu) <- firstName;
                 lastName(cu) <- lastName;
                 email(cu) <- email;
-                setRoleOnRegistration(cu, 'selfRegister');
+                onUserRegister(cu);
                 APPLY;
                 EXPORT FROM '\{success: {registration.successful}\}';
             }

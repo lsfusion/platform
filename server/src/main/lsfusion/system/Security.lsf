@@ -46,8 +46,8 @@ WHEN SETCHANGED (User u IS User) DO {
     in(u, userRoleSID('default')) <- TRUE;        
 }
 
-setRoleOnRegistration(User user, STRING role) + {
-    in(user, userRoleSID(role)) <- TRUE;
+onUserRegister(User user) + {
+    in(user, userRoleSID('selfRegister')) <- TRUE;
 }
 
 // Forms
