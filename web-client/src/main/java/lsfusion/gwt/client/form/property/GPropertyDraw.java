@@ -229,8 +229,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
     }
 
+    public boolean canUseChangeValueForRendering(GType type) {
+        return type != null && baseType.getClass() == type.getClass();
+    }
+
     public boolean canUseChangeValueForRendering() {
-        return changeType != null && baseType.getClass() == changeType.getClass();
+        return canUseChangeValueForRendering(changeType);
     }
 
     @Override
