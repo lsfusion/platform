@@ -35,6 +35,9 @@ in '{security.in}' = DATA BOOLEAN (CustomUser, UserRole);
 
 TABLE userUserRole (User, UserRole);
 has '{security.in}' (User user, UserRole role) = in(user, role) OR overIn(user, role) MATERIALIZED;
+//firstRole need for Settings
+firstRole(User user) = GROUP MIN UserRole role IF has(user, role);
+userRoles '{security.user.roles}' (User user) = GROUP CONCAT name(UserRole role) IF has(user, role), ', ' ORDER name(role) CHARWIDTH 15;
 
 rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 
