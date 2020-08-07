@@ -238,7 +238,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         checkKeyEvent(handler, true);
     }
 
-    public static void checkCtrlEvent(DomEvent event, DefaultFormsController formsController) {
+    public static void checkCtrlEvent(DomEvent event, FormsController formsController) {
         NativeEvent nativeEvent = event.getNativeEvent();
         if(GKeyStroke.isCtrlKeyDownEvent(nativeEvent))
             formsController.updateLinkEditModeButton(true);
@@ -260,7 +260,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     // will handle key events in upper container which will be better from UX point of view
-    public static void initKeyEventHandler(Widget widget, DefaultFormsController formsController, Supplier<GFormController> currentForm) {
+    public static void initKeyEventHandler(Widget widget, FormsController formsController, Supplier<GFormController> currentForm) {
         widget.addDomHandler(event -> {
             checkGlobalKeyEvent(event, currentForm);
             checkCtrlEvent(event, formsController);

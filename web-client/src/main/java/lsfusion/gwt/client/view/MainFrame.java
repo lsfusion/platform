@@ -37,7 +37,7 @@ import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.CreateNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
-import lsfusion.gwt.client.form.controller.DefaultFormsController;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
@@ -208,7 +208,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         final Linker<GAbstractWindow> formsWindowLink = new Linker<>();
         final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink = new Linker<>();
         final Linker<GNavigatorController> navigatorControllerLink = new Linker<>();
-        final Linker<DefaultFormsController> formsControllerLinker = new Linker<>();
+        final Linker<FormsController> formsControllerLinker = new Linker<>();
         final WindowsController windowsController = new WindowsController() {
             @Override
             public Widget getWindowView(GAbstractWindow window) {
@@ -225,7 +225,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         };
 
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
-        final DefaultFormsController formsController = new DefaultFormsController(windowsController) {
+        final FormsController formsController = new FormsController(windowsController) {
             @Override
             public void executeNavigatorAction(GNavigatorAction action, final NativeEvent event) {
                 syncDispatch(new ExecuteNavigatorAction(action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
@@ -407,7 +407,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         return modalPopup;
     }
 
-    private void initializeWindows(final DefaultFormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
+    private void initializeWindows(final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
         navigatorDispatchAsync.execute(new GetNavigatorInfo(), new ErrorHandlingCallback<GetNavigatorInfoResult>() {
             @Override
             public void success(GetNavigatorInfoResult result) {
