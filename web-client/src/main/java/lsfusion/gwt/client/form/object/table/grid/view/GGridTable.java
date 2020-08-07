@@ -48,6 +48,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     // map for fast incremental update, essentially needed for working with group-to-columns (columnKeys)
     private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap = new NativeSIDMap<>();
 
+    private ArrayList<ArrayList<Integer>> bindingEventIndices = new ArrayList<>();
+
     private ArrayList<GGroupObjectValue> rowKeys = new ArrayList<>();
 
     private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> values = new NativeSIDMap<>();
@@ -566,8 +568,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void removeProperty(GPropertyDraw property) {
+        int index = properties.indexOf(property);
+        properties.remove(index);
+        form.removePropertyBindings(bindingEventIndices.remove(index));
+
         values.remove(property);
-        properties.remove(property);
         columnKeys.remove(property);
 
         columnsUpdated = true;
@@ -577,13 +582,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         if(!updateKeys) {
             if (!properties.contains(property)) {
                 int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
-                properties.add(newColumnIndex, property);
 
-                form.addPropertyBindings(property, event -> {
+                properties.add(newColumnIndex, property);
+                bindingEventIndices.add(newColumnIndex, form.addPropertyBindings(property, event -> {
                     int column = getPropertyIndex(property, null);
                     if(column >= 0 && getSelectedRow() >= 0)
                         onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
-                }, GGridTable.this);
+                }, GGridTable.this));
 
                 this.columnKeys.put(property, columnKeys);
 
