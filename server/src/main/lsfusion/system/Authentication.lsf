@@ -184,10 +184,9 @@ writeDefaultCredentials() {
 
 getClientCredentials(STRING str) {
     IF str != webClientSecretKey() THEN {
-        EXPORT FROM '[\{error: {authentication.oauth2.incorrect.web.client.auth.token}\}]';
+        EXPORT FROM error = STRING s WHERE s = '{authentication.oauth2.incorrect.web.client.auth.token}';
     } ELSE {
-        EXPORT FROM OAuth2 oa, 
-            id(oa),
+        EXPORT FROM id(OAuth2 oa),
             clientId(oa),
             clientSecret(oa),
             clientAuthenticationMethod(oa),
@@ -206,7 +205,7 @@ onUserRegister ABSTRACT LIST (User);
 registerUser(JSONFILE user) {
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
         IF customUser(login) THEN {
-            EXPORT FROM '\{error: {registration.not.successful.login.exist}\}';
+            EXPORT FROM error = '{registration.not.successful.login.exist}';
         } ELSE {
             NEW cu = CustomUser { 
                 login(cu) <- login;
@@ -216,7 +215,7 @@ registerUser(JSONFILE user) {
                 email(cu) <- email;
                 onUserRegister(cu);
                 APPLY;
-                EXPORT FROM '\{success: {registration.successful}\}';
+                EXPORT FROM success = '{registration.successful}';
             }
         } 
     }
@@ -224,29 +223,34 @@ registerUser(JSONFILE user) {
 
 resetPassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING userNameOrEmail DO {
-        LOCAL NESTED token = STRING();
+        LOCAL token = STRING();
         LOCAL NESTED success = BOOLEAN();
         LOCAL NESTED href = STRING();
         LOCAL NESTED email = STRING();
-        FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
-            token() <- randomUUID();
-            passwordResetToken(cu) <- token();
-            expiryPasswordResetTokenDate(cu) <- currentDateTime();
-            href() <- CONCAT '', '<a href="', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
-            APPLY;
-            IF NOT canceled() THEN {
-                success() <- TRUE;
-                EMAIL 
-                    SUBJECT '{password.reset.email.subject} '
-                    TO email(cu)
-                    BODY href();
+        TRY {
+            FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
+                token() <- randomUUID();
+                passwordResetToken(cu) <- token();
+                expiryPasswordResetTokenDate(cu) <- currentDateTime();
+                href() <- CONCAT '', '<a href="', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
+                APPLY;
+                IF NOT canceled() THEN {
+                    EMAIL 
+                        SUBJECT '{password.reset.email.subject} '
+                        TO email(cu)
+                        BODY href()
+                        NOWAIT;
+                    success() <- TRUE; //если NOWAIT то сработает на первой из сорока итераций
+                }
+                email() <- email(cu);
             }
-            email() <- email(cu);
-        }
-        IF success() THEN {
-            EXPORT FROM '\{success: {password.reset.email.sent}, email:' + email() + ' \}';  
-        } ELSE {
-            EXPORT FROM '\{error: {password.reset.error}\}';
+            IF success() THEN {
+                EXPORT FROM success = '{password.reset.email.sent}', email = email();  
+            } ELSE {
+                EXPORT FROM error = '{password.reset.error}';
+            }
+        } CATCH {
+            EXPORT FROM error = messageCaughtException();
         }
     }
 } @@api @@noauth;
@@ -264,9 +268,9 @@ changePassword(JSONFILE input) {
             }
         }
         IF success() THEN {
-            EXPORT FROM '\{success: {password.changed}\}';
+            EXPORT FROM success = '{password.changed}';
         } ELSE {
-            EXPORT FROM '\{error: {password.reset.token.invalid}\}';
+            EXPORT FROM error = '{password.reset.token.invalid}';
         }
     }
 } @@api @@noauth;

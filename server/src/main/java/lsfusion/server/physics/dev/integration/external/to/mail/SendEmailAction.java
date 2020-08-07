@@ -10,6 +10,7 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.LSFException;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
@@ -22,6 +23,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;
+import javax.mail.MessagingException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,12 +49,14 @@ public class SendEmailAction extends SystemExplicitAction {
     private final List<PropertyInterfaceImplement> attachFileNames = new ArrayList<>();
     private final List<PropertyInterfaceImplement> attachFiles = new ArrayList<>();
     private final List<PropertyInterfaceImplement> inlineFiles = new ArrayList<>();
+    private final Boolean syncType;
 
-    public SendEmailAction(LocalizedString caption, ValueClass[] classes) {
+    public SendEmailAction(LocalizedString caption, ValueClass[] classes, Boolean syncType) {
         super(caption, classes);
 
         drawOptions.setAskConfirm(true);
         drawOptions.setImage("email.png");
+        this.syncType = syncType;
     }
 
     @Override
@@ -98,7 +103,7 @@ public class SendEmailAction extends SystemExplicitAction {
                 String subject = this.subject != null ? (String) this.subject.read(context, context.getKeys()) : localize("{mail.nosubject}");
                 String nameAccount = (String) emailLM.nameAccount.read(context, account);
                 String passwordAccount = (String) emailLM.passwordAccount.read(context, account);
-                
+
                 if (emailLM.disableAccount.read(context, account) != null) {
                     logger.error(localize("{mail.disabled}"));
                     return;
@@ -119,16 +124,13 @@ public class SendEmailAction extends SystemExplicitAction {
                 List<EmailSender.AttachmentFile> attachFiles = new ArrayList<>();
                 List<String> inlineFiles = new ArrayList<>();
                 proceedFiles(context, attachFiles, inlineFiles);
-                
-                sender.sendMail(context, subject, inlineFiles, attachFiles);
-            }
-        } catch (Throwable e) {
-            String errorMessage = localize("{mail.failed.to.send.mail}") + " : " + e.toString();
-            logger.error(errorMessage);
-            context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.sending}")));
 
+                sender.sendMail(context, subject, inlineFiles, attachFiles, syncType);
+            } else {
+                throw new RuntimeException(localize("{mail.failed.email.not.configured}"));
+            }
+        } catch (SQLException | SQLHandledException | MessagingException | IOException e) {
             logError(context, localize("{mail.failed.to.send.mail}") + " : " + e.toString());
-            e.printStackTrace();
         }
     }
 

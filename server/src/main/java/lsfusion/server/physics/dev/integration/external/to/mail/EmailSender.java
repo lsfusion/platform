@@ -6,7 +6,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.session.DataSession;
@@ -140,7 +139,7 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(ExecutionContext context, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException {
+    public void sendMail(ExecutionContext context, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments, Boolean syncType) throws MessagingException, IOException {
         Multipart mp = new MimeMultipart();
         setMessageHeading(subject);
 
@@ -154,31 +153,42 @@ public class EmailSender {
         message.setContent(mp);
         final LP emailSent = context.getBL().emailLM.emailSent;
 
-        ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
-        executor.submit(() -> {
-            String messageInfo = subject.trim();
-            try {
-                Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
-                if (addressesTo == null || addressesTo.length == 0) {
-                    logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-                    throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-                }
-                messageInfo += " " + localize("{mail.sender}") + " : " + fromAddress;
-                messageInfo += " " + localize("{mail.recipients}") + " : " + BaseUtils.toString(",", addressesTo);
-            } catch (MessagingException me) {
-                messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
-            }
+        if (syncType) {
+            processEmail(subject, emailSent, true);
+        } else {
+            ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
+            executor.submit(() -> {
+                processEmail(subject, emailSent, false);
+            });
+            executor.shutdown();
+        }
+    }
 
-            boolean send = false;
-            int count = 0;
-            try {
-                while (!send) {
-                    send = true;
-                    count++;
-                    try {
-                        sendMessage(message, smtpHost, smtpPort, userName, password);
-                        logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
-                    } catch (MessagingException e) {
+    private void processEmail(String subject, LP emailSent, Boolean syncType) {
+        String messageInfo = subject.trim();
+        try {
+            Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
+            if (addressesTo == null || addressesTo.length == 0) {
+                logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
+                throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
+            }
+            messageInfo += " " + localize("{mail.sender}") + " : " + fromAddress;
+            messageInfo += " " + localize("{mail.recipients}") + " : " + BaseUtils.toString(",", addressesTo);
+        } catch (MessagingException me) {
+            messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
+        }
+
+        boolean send = false;
+        int count = 0;
+        try {
+            while (!send) {
+                send = true;
+                count++;
+                try {
+                     sendMessage(message, smtpHost, smtpPort, userName, password);
+                    logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
+                } catch (MessagingException e) {
+                    if (!syncType) {
                         send = false;
                         if (count < 40) {
                             logger.info(localize("{mail.unsuccessful.attempt.to.send.mail}") + " : " + e.getMessage() + " " + messageInfo);
@@ -190,19 +200,20 @@ public class EmailSender {
                             logger.error(localize("{mail.failed.to.send.mail}") + " : " + messageInfo, e);
                             throw new RuntimeException(localize("{mail.error.send.mail}") + " : " + messageInfo, e);
                         }
+                    } else {
+                        throw new RuntimeException(e.getMessage());
                     }
-                }
-            } finally {
-                try {
-                    try (DataSession session = ThreadLocalContext.createSession()){
-                        emailSent.change(send ? true : null, session);
-                    }
-                } catch (Exception e) {
-                    logger.error("emailSent writing error", e);
                 }
             }
-        });
-        executor.shutdown();
+        } finally {
+            try {
+                try (DataSession session = ThreadLocalContext.createSession()){
+                    emailSent.change(send ? true : null, session);
+                }
+            } catch (Exception e) {
+                logger.error("emailSent writing error", e);
+            }
+        }
     }
 
     private void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String userName, String password) throws MessagingException {
