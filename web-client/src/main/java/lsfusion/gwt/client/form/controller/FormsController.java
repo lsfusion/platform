@@ -21,6 +21,4 @@ public interface FormsController {
     void executeNavigatorAction(GNavigatorAction action, NativeEvent nativeEvent);
 
     void executeNotificationAction(String actionSID, int type);
-
-    void updateLinkEditModeButton(boolean linkEditMode);
 }

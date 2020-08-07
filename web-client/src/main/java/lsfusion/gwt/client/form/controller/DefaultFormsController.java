@@ -124,8 +124,8 @@ public abstract class DefaultFormsController implements FormsController {
         setFullScreenMode(storage != null && storage.getItem("full_screen") != null);
     }
 
-    public void initRoot() {
-        GFormController.initKeyEventHandler(RootPanel.get(), () -> {
+    public void initRoot(DefaultFormsController formsController) {
+        GFormController.initKeyEventHandler(RootPanel.get(), formsController, () -> {
             FormContainer currentForm = MainFrame.getCurrentForm();
             if(currentForm != null)
                 return currentForm.getForm();
