@@ -25,7 +25,7 @@ import java.util.Map;
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
 
-    private ServerResponseResult currentResponse = null;
+    protected ServerResponseResult currentResponse = null;
     Object[] currentActionResults = null;
     private int currentActionIndex = -1;
     private int currentContinueIndex = -1;
@@ -59,8 +59,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 GAction action = actions[i];
                 Object dispatchResult;
                 try {
-                    //для неподдерживаемых action'ов присылается null-ссылка, чтобы сохранить порядок результатов выполнения action'ов
-                    dispatchResult = action == null ? null : action.dispatch(this);
+                    dispatchingIndex = response.requestIndex;
+                    try {
+                        //for unsupported actions null is send to preserve number of actions and thus the order of responses
+                        dispatchResult = action == null ? null : action.dispatch(this);
+                    } finally {
+                        dispatchingIndex = -1;
+                    }
                 } catch (Throwable ex) {
                     actionThrowable = ex;
                     break;
@@ -117,6 +122,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     public void continueDispatching() {
         continueDispatching(null, null);
+    }
+
+    protected long dispatchingIndex = -1;
+    public long getDispatchingIndex() {
+        if (currentResponse == null) // means that we continueDispatching before exiting to dispatchResponse cycle (for example LogicalCellRenderer commits editing immediately)
+            return dispatchingIndex;
+        else
+            return currentResponse.requestIndex;
     }
 
     public void continueDispatching(Object currentActionResult, Result<Object> result) {

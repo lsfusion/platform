@@ -400,7 +400,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     protected void changeProperty(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, Serializable newValue) {
-        form.changeProperty(property, rowKey, columnKey, newValue, getValue(property, rowKey, columnKey));
+        form.changeProperty(property, rowKey, columnKey, newValue, getValue(property, rowKey, columnKey), null);
     }
 
     protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
