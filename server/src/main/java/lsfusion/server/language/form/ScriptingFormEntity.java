@@ -345,7 +345,7 @@ public class ScriptingFormEntity {
                     property = LM.getAddObjectAction(form, obj, explicitClass);
                     objects = SetFact.EMPTYORDER();
                     forceIntegrationSID = propertyName;
-                } else if (propertyName.equals("NEWEDIT") || (propertyName.equals("NEW") && scope != OLDSESSION)) {
+                } else if (propertyName.equals("NEWEDIT") || propertyName.equals("NEW")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddFormAction(form, obj, explicitClass, scope, version);

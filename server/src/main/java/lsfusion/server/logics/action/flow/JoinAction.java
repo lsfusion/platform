@@ -125,6 +125,9 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
     @Override
     protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+        if(isRecursive)
+            return null;
+
         ActionMapImplement<?, T> replacedAction = action.action.replace(replacer);
         if(replacedAction == null)
             return null;
