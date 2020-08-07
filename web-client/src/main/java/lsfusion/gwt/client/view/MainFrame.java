@@ -7,6 +7,8 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -39,6 +41,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -254,6 +257,16 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
         formsControllerLinker.link = formsController;
         actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController);
+
+        RootPanel.get().addDomHandler(event -> {
+            if(GKeyStroke.isCtrlKeyDownEvent(event.getNativeEvent()))
+                formsController.updateLinkEditModeButton(true);
+        }, KeyDownEvent.getType());
+
+        RootPanel.get().addDomHandler(event -> {
+            if(GKeyStroke.isCtrlKeyUpEvent(event.getNativeEvent()))
+                formsController.updateLinkEditModeButton(false);
+        }, KeyUpEvent.getType());
 
         //we use CloseHandler instead of Window.ClosingHandler because mobile browsers send closing event without closing window
         Window.addCloseHandler(new CloseHandler<Window>() { // добавляем после инициализации окон

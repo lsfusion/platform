@@ -1,23 +1,24 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
-import lsfusion.gwt.client.base.view.UnFocusableImageButton;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,8 @@ import java.util.List;
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
 
 public abstract class DefaultFormsController implements FormsController {
+    private final ClientMessages messages = ClientMessages.Instance.get();
+
     private final FlexTabbedPanel tabsPanel;
 
     private final List<FormDockable> forms = new ArrayList<>();
@@ -34,22 +37,36 @@ public abstract class DefaultFormsController implements FormsController {
     private final WindowsController windowsController;
     private final ResizableSimplePanel formsContainer;
 
-    private final ImageButton fullScreenButton;
+    private final GToolbarButton linkEditButton;
+    private boolean linkEditMode;
+
+    private final GToolbarButton fullScreenButton;
     private Boolean fullScreenMode = null;
 
     public DefaultFormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
 
-        fullScreenButton = new UnFocusableImageButton();
-        fullScreenButton.addStyleName("toolbarButton");
-        fullScreenButton.setSize(StyleDefaults.VALUE_HEIGHT_STRING, StyleDefaults.VALUE_HEIGHT_STRING);
-        fullScreenButton.addClickHandler(event -> {
-            setFullScreenMode(!this.fullScreenMode);
-        });
+        GToolbarView toolbarView = new GToolbarView();
+
+        linkEditButton = new GToolbarButton("linkEditMode.png", messages.linkEditModeEnable()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> updateLinkEditModeButton(!linkEditMode);
+            }
+        };
+        toolbarView.addComponent(linkEditButton);
+
+        fullScreenButton = new GToolbarButton(null) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> setFullScreenMode(!fullScreenMode);
+            }
+        };
+        toolbarView.addComponent(fullScreenButton);
 
         formsContainer = new ResizableSimplePanel();
 
-        tabsPanel = new FlexTabbedPanel("formsTabBar", fullScreenButton);
+        tabsPanel = new FlexTabbedPanel("formsTabBar", toolbarView);
 
         // unselected (but not removed)
         tabsPanel.setBeforeSelectionHandler(index -> {
@@ -69,6 +86,13 @@ public abstract class DefaultFormsController implements FormsController {
     private boolean isRemoving = false;
     private boolean isAdding = false;
 
+    public void updateLinkEditModeButton(boolean linkEditMode) {
+        this.linkEditMode = linkEditMode;
+        GFormController.setLinkEditMode(linkEditMode);
+        linkEditButton.showBackground(linkEditMode);
+        linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable());
+    }
+
     public void storeFullScreen(){
         Storage storage = Storage.getLocalStorageIfSupported();
         if (this.fullScreenMode) {
@@ -79,11 +103,8 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     public void updateFullScreenButton(){
-        if (this.fullScreenMode){
-            fullScreenButton.setModuleImagePath("minimize.png");
-        } else {
-            fullScreenButton.setModuleImagePath("maximize.png");
-        }
+        fullScreenButton.setTitle(fullScreenMode ? messages.fullScreenModeDisable() : messages.fullScreenModeEnable());
+        fullScreenButton.setModuleImagePath(fullScreenMode ? "minimize.png" : "maximize.png");
     }
 
     public void setFullScreenMode(boolean fullScreenMode) {

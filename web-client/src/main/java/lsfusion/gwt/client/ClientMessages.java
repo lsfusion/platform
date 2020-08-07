@@ -205,7 +205,12 @@ public interface ClientMessages extends Messages {
     String pivotMultiplePiechartRenderer();
     String pivotHorizontalBarchartRenderer();
     String pivotHorizontalStackedBarchartRenderer();
-    String pivotTreemapRenderer();   
+    String pivotTreemapRenderer();
+
+    String linkEditModeEnable();
+    String linkEditModeDisable();
+    String fullScreenModeEnable();
+    String fullScreenModeDisable();
     
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);

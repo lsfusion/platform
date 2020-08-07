@@ -238,14 +238,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         checkKeyEvent(handler, true);
     }
 
-    public static void checkCtrlEvent(DomEvent event) {
-        NativeEvent nativeEvent = event.getNativeEvent();
-        if(GKeyStroke.isCtrlKeyDownEvent(nativeEvent))
-            setLinkEditMode(true);
-        if(GKeyStroke.isCtrlKeyUpEvent(nativeEvent))
-            setLinkEditMode(false);
-    }
-
     private static boolean linkEditMode;
     public static boolean isLinkEditMode() {
         return linkEditMode;
@@ -263,10 +255,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public static void initKeyEventHandler(Widget widget, Supplier<GFormController> currentForm) {
         widget.addDomHandler(event -> {
             checkGlobalKeyEvent(event, currentForm);
-            checkCtrlEvent(event);
         }, KeyDownEvent.getType());
         widget.addDomHandler(event -> checkGlobalKeyEvent(event, currentForm), KeyPressEvent.getType());
-        widget.addDomHandler(GFormController::checkCtrlEvent, KeyUpEvent.getType());
     }
 
     public GGridController getController(GGroupObject groupObject) {
