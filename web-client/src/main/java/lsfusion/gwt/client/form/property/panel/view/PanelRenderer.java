@@ -9,6 +9,8 @@ import lsfusion.gwt.client.form.event.GInputEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.util.ArrayList;
+
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
 public abstract class PanelRenderer {
@@ -19,6 +21,8 @@ public abstract class PanelRenderer {
     protected final GGroupObjectValue columnKey;
 
     protected final ActionOrPropertyPanelValue value;
+
+    public ArrayList<Integer> bindingEventIndices;
 
     private String caption;
     private String tooltip;

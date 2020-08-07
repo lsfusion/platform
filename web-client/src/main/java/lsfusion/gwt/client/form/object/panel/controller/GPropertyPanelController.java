@@ -73,8 +73,7 @@ public class GPropertyPanelController {
                         newRenderer.setReadOnly(property.isReadOnly());
                         Widget component = newRenderer.getComponent();
                         renderersPanel.addFill(component);
-
-                        form.addPropertyBindings(property, newRenderer::onBinding, component);
+                        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component);
 
                         renderer = newRenderer;
                     }
@@ -85,7 +84,10 @@ public class GPropertyPanelController {
             }
 
             // removing old renderers
-            renderers.foreachValue(renderer -> renderersPanel.remove(renderer.getComponent()));
+            renderers.foreachValue(renderer -> {
+                form.removePropertyBindings(renderer.bindingEventIndices);
+                renderersPanel.remove(renderer.getComponent());
+            });
             renderers = newRenderers;
 
             columnsUpdated = false;

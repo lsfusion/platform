@@ -1308,19 +1308,25 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public interface BindingExec {
         void exec(Event event);
     }
-    public void addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
+    public ArrayList<Integer> addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
+        ArrayList<Integer> result = new ArrayList<>();
         for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
-            addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject);
+            result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject));
+        return result;
+    }
+    public void removePropertyBindings(ArrayList<Integer> indices) {
+        for(int index : indices)
+            removeBinding(index);
     }
 
-    public void addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
+    public int addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
     }
-    public void addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding(event::isEvent, env, pressed, component, groupObject);
+    public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event::isEvent, env, pressed, component, groupObject);
     }
-    public void addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
+    public int addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
             @Override
             public boolean showing() {
                 return component != null ? isShowing(component) : true;
@@ -1332,9 +1338,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
     }
-    public void addBinding(GBindingEvent event, Binding action) {
+    public int addBinding(GBindingEvent event, Binding action) {
+        int index = bindings.size();
         bindingEvents.add(event);
         bindings.add(action);
+        return index;
+    }
+    public void removeBinding(int index) {
+        bindingEvents.remove(index);
+        bindings.remove(index);
     }
     
     private GGroupObject getGroupObject(Element elementTarget) {
