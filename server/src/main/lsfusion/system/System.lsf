@@ -301,7 +301,7 @@ requestedTableLink = DATA LOCAL NESTED TABLELINK ();
 isActiveForm = DATA LOCAL BOOLEAN ();
 
 edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) TOOLBAR;
-edit(Object o) + {  DIALOG EDIT Object =o DOCKED; }
+edit(Object o) + {  SHOW EDIT Object =o DOCKED; } // since now SHOW fills request props, we don't need to do DIALOG, and without dialog there is no REQUEST wrapping, so group change for example will work
 formEdit(Object o)  { edit(o); }
 
 // private, only for interactive usage (for other purposes use operator DELETE)
