@@ -570,8 +570,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         dbManager.addIndex(staticCaption);
     }
 
-    public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property messageProperty, ImList<PropertyMapImplement<?, P>> properties) { // messageProperty - nullable
-        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, properties, getRecognizeGroup());
+    public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property<?> messageProperty, ImList<PropertyMapImplement<?, P>> properties) { // messageProperty - nullable
+        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, properties);
         addAutoFormEntity(form);
         return form;
     }

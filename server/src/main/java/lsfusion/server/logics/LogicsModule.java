@@ -1613,7 +1613,7 @@ public abstract class LogicsModule {
 
     public void setupDrillDownProperty(Property property, boolean isLightStart) {
         if (property.supportsDrillDown()) {
-            LA<?> drillDownFormProperty = isLightStart ? addLazyAProp(property) : addDDAProp(property);
+            LA<?> drillDownFormProperty = addLazyAProp(property); //isLightStart ? : addDDAProp(property);
             Action formProperty = drillDownFormProperty.action;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
             property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
