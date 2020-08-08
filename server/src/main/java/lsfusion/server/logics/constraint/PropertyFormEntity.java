@@ -22,7 +22,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class PropertyFormEntity extends AutoFormEntity {
 
-    public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule LM, Property<P> property, Property<X> messageProperty, ImList<PropertyMapImplement<?,P>> properties, Group recognizeGroup) {
+    public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule LM, Property<P> property, Property<X> messageProperty, ImList<PropertyMapImplement<?,P>> properties) {
         super(property.caption, LM.getVersion());
 
         Version version = LM.getVersion();
@@ -45,7 +45,7 @@ public class PropertyFormEntity extends AutoFormEntity {
         if(properties.isEmpty()) {
             for(ObjectEntity object : objects)
                 addPropertyDraw(LM.getObjValueProp(this, object), version, object);
-            addPropertyDraw(recognizeGroup, property.usePrevHeur(), version, objects);
+            addPropertyDraw(LM.getRecognizeGroup(), property.usePrevHeur(), version, objects);
         } else {
             for (PropertyMapImplement prop : properties) {
                 addPropertyDraw(prop.property, prop.mapping.join(mapObjects), version);
