@@ -2160,6 +2160,7 @@ public abstract class LogicsModule {
         assert !namedForms.containsKey(form.getName());
         namedForms.put(form.getName(), form);
     }
+    // should be cached, otherwise it may lead to memory leaks
     public void addAutoFormEntity(AutoFormEntity form) {
         assert !form.isNamed();
 
