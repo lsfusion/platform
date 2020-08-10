@@ -1912,7 +1912,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                                              List<Message.RecipientType> recipTypes,
                                              List<LPWithParams> recipProps,
                                              List<LPWithParams> attachFileNames,
-                                             List<LPWithParams> attachFiles) {
+                                             List<LPWithParams> attachFiles,
+                                             Boolean syncType) {
 
         List<LAPWithParams> allProps = new ArrayList<>();
 
@@ -1939,7 +1940,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
         ValueClass[] eaClasses = Property.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
-        LA<ClassPropertyInterface> eaLA = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses);
+        if (syncType == null) {
+            syncType = true;
+        }
+
+        LA<ClassPropertyInterface> eaLA = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses, syncType);
         SendEmailAction eaProp = (SendEmailAction) eaLA.action;
 
         ImList<PropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaLA.listInterfaces, allParams);
