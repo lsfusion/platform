@@ -82,7 +82,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         unpackAccount = findProperty("unpack[Account]");
     }
 
-    public LA<ClassPropertyInterface> addEAProp(Group group, LocalizedString caption, ValueClass[] params, Boolean syncType) {
+    public LA<ClassPropertyInterface> addEAProp(Group group, LocalizedString caption, ValueClass[] params, boolean syncType) {
         return addAction(group, new LA<>(new SendEmailAction(caption, params, syncType)));
     }
 

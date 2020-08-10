@@ -238,9 +238,8 @@ resetPassword(JSONFILE input) {
                     EMAIL 
                         SUBJECT '{password.reset.email.subject} '
                         TO email(cu)
-                        BODY href()
-                        NOWAIT;
-                    success() <- TRUE; //если NOWAIT то сработает на первой из сорока итераций
+                        BODY href();
+                    success() <- TRUE;
                 }
                 email() <- email(cu);
             }

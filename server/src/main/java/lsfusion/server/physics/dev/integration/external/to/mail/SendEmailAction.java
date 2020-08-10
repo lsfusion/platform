@@ -51,7 +51,7 @@ public class SendEmailAction extends SystemExplicitAction {
     private final List<PropertyInterfaceImplement> inlineFiles = new ArrayList<>();
     private final Boolean syncType;
 
-    public SendEmailAction(LocalizedString caption, ValueClass[] classes, Boolean syncType) {
+    public SendEmailAction(LocalizedString caption, ValueClass[] classes, boolean syncType) {
         super(caption, classes);
 
         drawOptions.setAskConfirm(true);

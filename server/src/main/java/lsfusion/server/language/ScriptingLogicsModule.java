@@ -1941,7 +1941,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass[] eaClasses = Property.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
         if (syncType == null) {
-            syncType = false;
+            syncType = true;
         }
 
         LA<ClassPropertyInterface> eaLA = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses, syncType);

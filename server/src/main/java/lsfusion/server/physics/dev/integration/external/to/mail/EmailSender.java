@@ -139,7 +139,7 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(ExecutionContext context, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments, Boolean syncType) throws MessagingException, IOException {
+    public void sendMail(ExecutionContext context, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments, boolean syncType) throws MessagingException, IOException {
         Multipart mp = new MimeMultipart();
         setMessageHeading(subject);
 
@@ -164,7 +164,7 @@ public class EmailSender {
         }
     }
 
-    private void processEmail(String subject, LP emailSent, Boolean syncType) {
+    private void processEmail(String subject, LP emailSent, boolean syncType) {
         String messageInfo = subject.trim();
         try {
             Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);

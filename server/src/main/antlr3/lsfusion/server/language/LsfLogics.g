@@ -3430,7 +3430,7 @@ newActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams acti
 
 emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
-    Boolean syncType = true;
+    Boolean syncType = null;
 	LPWithParams fromProp = null;
 	LPWithParams subjProp = null;
 	LPWithParams bodyProp = null;
