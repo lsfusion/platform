@@ -147,7 +147,8 @@ public class MainController {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success")
                     + " " + jsonResponse.optString("email"));
         } else if (jsonResponse.has("error")) {
-            request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
+            String[] error = jsonResponse.optString("error").split(":");
+            request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", error.length > 1 ? error[1] : error[0]);
             return getRedirectUrl("/forgot-password", null, request);
         }
         return getRedirectUrl("/login", null, request);
