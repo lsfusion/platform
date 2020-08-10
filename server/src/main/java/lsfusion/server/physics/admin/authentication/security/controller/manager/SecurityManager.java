@@ -428,8 +428,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 for (String userRoleName : userRoleSIDs) {
                     ObjectValue userRole = securityLM.userRoleSID.readClasses(session, new DataObject(userRoleName));
 
-                    if (! (userRole instanceof NullValue)) {
-                        securityLM.mainRoleCustomUser.change(userRole, session, customUser);
+                    if (userRole instanceof DataObject) {
+                        securityLM.inCustomUserUserRole.change(true, session, customUser, (DataObject) userRole);
                         break;
                     }
                 }

@@ -11,7 +11,6 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.navigator.window.GModalityType;
@@ -122,7 +121,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     protected Event editEvent;
 
-    private EditContext editContext;
+    private ExecuteEditContext editContext;
 
     public void executePropertyActionSID(Event event, String actionSID, ExecuteEditContext editContext) {
         editEvent = event;
@@ -143,7 +142,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
         // we should not drop at least editSetValue since GUpdateEditValueAction might use it
         Result<Object> result = new Result<>();
-        form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue, value -> {},
+        form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue,
+                value -> form.changeEditPropertyValue(editContext, action.readType, value, getDispatchingIndex()), // we'll be optimists and assume that this value will stay
                 value -> continueDispatching(new GUserInputResult(value), result),
                 () -> continueDispatching(GUserInputResult.canceled, result), editContext);
         return result.result;

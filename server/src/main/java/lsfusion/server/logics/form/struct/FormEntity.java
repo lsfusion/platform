@@ -1375,6 +1375,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return this;
     }
 
+    @Override
+    public FormEntity getStaticForm(BaseLogicsModule LM) {
+        return this;
+    }
+
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) {
         return new Pair<>(this, getObjects().toRevMap());
     }

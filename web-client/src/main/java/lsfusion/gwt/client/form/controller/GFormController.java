@@ -761,17 +761,23 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private void executeSimpleChange(boolean asyncModifyObject, Event event, ExecuteEditContext editContext) {
         GPropertyDraw property = editContext.getProperty();
         if (asyncModifyObject)
-            modifyObject(editContext.getProperty(), editContext.getColumnKey());
+            modifyObject(property, editContext.getColumnKey());
         else {
-            edit(property.changeType, event, false, null, value -> {
-                Object oldValue = editContext.getValue();
-
-                if(property.canUseChangeValueForRendering()) // changing model, to rerender new value
-                    editContext.setValue(value);
-
-                changeProperty(property, editContext.getColumnKey(), (Serializable) value, oldValue);
-            }, value -> {}, () -> {}, editContext);
+            GType changeType = property.changeType;
+            edit(changeType, event, false, null,
+                value -> changeEditPropertyValue(editContext, changeType, value, null),
+                value -> {}, () -> {}, editContext);
         }
+    }
+
+    public void changeEditPropertyValue(ExecuteEditContext editContext, GType changeType, Object value, Long changeRequestIndex) {
+        Object oldValue = editContext.getValue();
+
+        GPropertyDraw property = editContext.getProperty();
+        if(property.canUseChangeValueForRendering(changeType)) // changing model, to rerender new value
+            editContext.setValue(value);
+
+        changeProperty(property, editContext.getColumnKey(), (Serializable) value, oldValue, changeRequestIndex);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
@@ -830,22 +836,23 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return treeControllers.get(group.parent);
     }
 
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue, Long changeRequestIndex) {
         GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
         if(property.grid) {
             rowKey = getGroupObjectLogicsSupplier(property.groupObject).getCurrentKey();
             if(rowKey.isEmpty())
                 return;
         }
-        changeProperty(property, rowKey, columnKey, value, oldValue);
+        changeProperty(property, rowKey, columnKey, value, oldValue, changeRequestIndex);
     }
 
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, Serializable value, Object oldValue, Long changeRequestIndex) {
         GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKey);
 
-        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(fullKey), value, null), new ServerResponseCallback());
+        if(changeRequestIndex == null)
+            changeRequestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(fullKey), value, null), new ServerResponseCallback());
 
-        putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(requestIndex, value, oldValue, property.canUseChangeValueForRendering()));
+        putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(changeRequestIndex, value, oldValue, property.canUseChangeValueForRendering()));
     }
 
     public boolean isAsyncModifyObject(GPropertyDraw property) {
@@ -1301,19 +1308,25 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public interface BindingExec {
         void exec(Event event);
     }
-    public void addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
+    public ArrayList<Integer> addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
+        ArrayList<Integer> result = new ArrayList<>();
         for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
-            addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject);
+            result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject));
+        return result;
+    }
+    public void removePropertyBindings(ArrayList<Integer> indices) {
+        for(int index : indices)
+            removeBinding(index);
     }
 
-    public void addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
+    public int addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
     }
-    public void addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding(event::isEvent, env, pressed, component, groupObject);
+    public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event::isEvent, env, pressed, component, groupObject);
     }
-    public void addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
+    public int addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
             @Override
             public boolean showing() {
                 return component != null ? isShowing(component) : true;
@@ -1325,9 +1338,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
     }
-    public void addBinding(GBindingEvent event, Binding action) {
+    public int addBinding(GBindingEvent event, Binding action) {
+        int index = bindings.size();
         bindingEvents.add(event);
         bindings.add(action);
+        return index;
+    }
+    public void removeBinding(int index) {
+        bindingEvents.remove(index);
+        bindings.remove(index);
     }
     
     private GGroupObject getGroupObject(Element elementTarget) {

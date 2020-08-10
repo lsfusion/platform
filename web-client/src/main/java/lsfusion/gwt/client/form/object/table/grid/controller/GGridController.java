@@ -312,7 +312,7 @@ public class GGridController extends GAbstractTableController {
 
     public void processFormChanges(long requestIndex, GFormChanges fc, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
         for (GPropertyDraw property : fc.dropProperties) {
-            if (property.groupObject == groupObject) {
+            if (property.groupObject == groupObject && isPropertyShown(property)) { // drop properties sent without checking if it was sent for update at least once, so it's possible when drop is sent for property that has not been added
                 removeProperty(property);
             }
         }

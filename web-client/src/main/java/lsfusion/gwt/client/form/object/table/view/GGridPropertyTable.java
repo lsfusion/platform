@@ -428,7 +428,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public <C> void onBrowserEvent(Cell cell, EventHandler handler, Column<T, C> column, Element parent) {
         form.onPropertyBrowserEvent(handler, parent, getTableDataFocusElement(),
-                () -> selectionHandler.onCellBefore(handler, cell, () -> isEditOnSingleClick(cell)),
+                () -> selectionHandler.onCellBefore(handler, cell, () -> isChangeOnSingleClick(cell)),
                 () -> column.onEditEvent(handler, false, cell, parent),
                 () -> selectionHandler.onCellAfter(handler, cell),
                 () -> CopyPasteUtils.putIntoClipboard(parent), () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));

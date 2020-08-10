@@ -26,11 +26,12 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP<?> permissionEditObjectsUserRoleActionOrProperty;
 
     public LP userRoleSID;
-    public LP mainRoleCustomUser;
+    public LP firstRoleUser;
+    public LP userRolesUser;
+    public LP inCustomUserUserRole;
     public LP hasUserRole;
     public LA<?> createSystemUserRoles;
 
-    public LP nameMainRoleUser;
     public LP transactTimeoutUser;
 
     public FormEntity propertyPolicyForm;
@@ -52,11 +53,12 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         super.initMainLogic();
         // ---- Роли
         userRoleSID = findProperty("userRoleSID[STRING[30]]");
-        nameMainRoleUser = findProperty("nameMainRole[User]");
         transactTimeoutUser = findProperty("transactTimeout[User]");
 
         // Список ролей для пользователей
-        mainRoleCustomUser = findProperty("mainRole[CustomUser]");
+        firstRoleUser = findProperty("firstRole[User]");
+        userRolesUser = findProperty("userRoles[User]");
+        inCustomUserUserRole = findProperty("in[CustomUser,UserRole]");
         hasUserRole = findProperty("has[User,UserRole]");
 
         createSystemUserRoles = findAction("createSystemUserRoles[]");
