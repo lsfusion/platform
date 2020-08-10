@@ -511,9 +511,9 @@
               }
             }
           };
-          th.ondblclick = function(event) {
+          th.onclick = function(event) {
             if (callbacks != null) {
-              return callbacks.rowAttrHeaderDblClickHandler(event, th, rowKey, cellAttr);
+              return callbacks.rowAttrHeaderClickHandler(event, th, rowKey, cellAttr);
             }
           };
         }
@@ -542,9 +542,9 @@
             }
           }
         };
-        textElement.ondblclick = function(event) {
+        textElement.onclick = function(event) {
           if (callbacks != null) {
-            return callbacks.colAttrHeaderDblClickHandler(event, textElement, colKey, isSubtotal);
+            return callbacks.colAttrHeaderClickHandler(event, textElement, colKey, isSubtotal);
           }
         };
         if (colKey.length === colAttrs.length || isSubtotal || colKey.length === 0) {
