@@ -61,7 +61,7 @@ public abstract class FormsController {
         fullScreenButton = new GToolbarButton(null) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> setFullScreenMode(!fullScreenMode);
+                return event -> switchFullScreenMode();
             }
         };
         toolbarView.addComponent(fullScreenButton);
@@ -92,7 +92,7 @@ public abstract class FormsController {
         this.linkEditMode = linkEditMode;
         GFormController.setLinkEditMode(linkEditMode);
         linkEditButton.showBackground(linkEditMode);
-        linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable());
+        linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable() + " (CTRL)");
     }
 
     public void storeFullScreen(){
@@ -105,8 +105,12 @@ public abstract class FormsController {
     }
 
     public void updateFullScreenButton(){
-        fullScreenButton.setTitle(fullScreenMode ? messages.fullScreenModeDisable() : messages.fullScreenModeEnable());
+        fullScreenButton.setTitle(fullScreenMode ? messages.fullScreenModeDisable() : messages.fullScreenModeEnable() + " (ALT+ENTER)");
         fullScreenButton.setModuleImagePath(fullScreenMode ? "minimize.png" : "maximize.png");
+    }
+
+    public void switchFullScreenMode() {
+        setFullScreenMode(!fullScreenMode);
     }
 
     public void setFullScreenMode(boolean fullScreenMode) {
