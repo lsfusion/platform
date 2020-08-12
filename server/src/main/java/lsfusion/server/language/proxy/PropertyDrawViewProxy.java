@@ -27,8 +27,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelCaptionAfter = panelCaptionAfter;
     }
 
+    //for backward compatibility
     public void setEditOnSingleClick(boolean editOnSingleClick) {
-        target.editOnSingleClick = editOnSingleClick;
+        target.changeOnSingleClick = editOnSingleClick;
+    }
+
+    public void setChangeOnSingleClick(boolean changeOnSingleClick) {
+        target.changeOnSingleClick = changeOnSingleClick;
     }
 
     public void setHide(boolean hide) {

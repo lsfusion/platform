@@ -150,7 +150,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     
     public GFlexAlignment valueAlignment;
 
-    public Boolean editOnSingleClick;
+    public Boolean changeOnSingleClick;
 
     public boolean hide;
 

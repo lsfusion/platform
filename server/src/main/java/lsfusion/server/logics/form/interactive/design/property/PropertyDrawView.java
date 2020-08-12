@@ -54,7 +54,7 @@ public class PropertyDrawView extends ComponentView {
 
     public PropertyDrawEntity<?> entity;
 
-    public Boolean editOnSingleClick;
+    public Boolean changeOnSingleClick;
     public boolean hide;
     public String regexp;
     public String regexpMessage;
@@ -267,7 +267,7 @@ public class PropertyDrawView extends ComponentView {
         
         pool.writeObject(outStream, getValueAlignment());
 
-        pool.writeObject(outStream, editOnSingleClick);
+        pool.writeObject(outStream, changeOnSingleClick);
         outStream.writeBoolean(hide);
 
         //entity часть
@@ -453,7 +453,7 @@ public class PropertyDrawView extends ComponentView {
 
         valueAlignment = pool.readObject(inStream);
 
-        editOnSingleClick = pool.readObject(inStream);
+        changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
 
         entity = pool.context.entity.getPropertyDraw(inStream.readInt());

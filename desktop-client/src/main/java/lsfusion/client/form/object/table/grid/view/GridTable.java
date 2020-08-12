@@ -25,7 +25,6 @@ import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
-import lsfusion.client.form.property.table.view.InternalEditEvent;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.design.FontInfo;
@@ -259,7 +258,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                     changeSelection(getSelectedRow(), getSelectedColumn(), false, false);
                 }
 
-                if (column != -1 && (getSelectedRow() == previousSelectedRow || isEditOnSingleClick(row, column))) {
+                if (column != -1 && (getSelectedRow() == previousSelectedRow || isChangeOnSingleClick(row, column))) {
                     pressedCellColumn = column;
                     pressedCellRow = row;
                     repaint();
@@ -347,10 +346,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         return gridController.getAutoSize() ? getPreferredSize() : SwingDefaults.getTablePreferredSize();
     }
 
-    private boolean isEditOnSingleClick(int row, int col) {
-        Boolean editOnSingleClick = getProperty(row, col).editOnSingleClick;
-        if(editOnSingleClick != null)
-            return editOnSingleClick;
+    private boolean isChangeOnSingleClick(int row, int col) {
+        Boolean changeOnSingleClick = getProperty(row, col).changeOnSingleClick;
+        if(changeOnSingleClick != null)
+            return changeOnSingleClick;
         return false;
     }
 

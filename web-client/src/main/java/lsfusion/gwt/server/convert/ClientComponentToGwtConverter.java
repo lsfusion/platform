@@ -356,7 +356,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         
         propertyDraw.valueAlignment = convertFlexAlignment(clientPropertyDraw.valueAlignment);
 
-        propertyDraw.editOnSingleClick = clientPropertyDraw.editOnSingleClick;
+        propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
         
         propertyDraw.hide = clientPropertyDraw.hide;
         

@@ -88,7 +88,7 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
         boolean rowHasFocus = (oldRow == pressedRow);
 
         // todo: теперь rowHasFocus не обязательно, работает и без него,
-        // todo: поэтому есть возможность корректно реализовать логику editOnSingleClick, если понадобится
+        // todo: поэтому есть возможность корректно реализовать логику changeOnSingleClick, если понадобится
         if (isLeftMouseButton && !(withCtrl || withShift) && (rowHasFocus || e.getClickCount() > 1)) {
             final ClientPropertyDraw property = table.getProperty(pressedRow, pressedCol);
             RmiQueue.runAction(new Runnable() {

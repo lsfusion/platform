@@ -590,8 +590,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.focusable = focusable;
     }
 
-    public void setEditOnSingleClick(PropertyDrawView property, Boolean editOnSingleClick) {
-        property.editOnSingleClick = editOnSingleClick;
+    public void setChangeOnSingleClick(PropertyDrawView property, Boolean changeOnSingleClick) {
+        property.changeOnSingleClick = changeOnSingleClick;
     }
 
     public void setCaption(LocalizedString caption) {
