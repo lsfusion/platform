@@ -60,8 +60,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     @Override
     public boolean isChangeOnSingleClick(Cell cell) {
         GPropertyDraw property = getProperty(cell);
-        if(property != null && property.editOnSingleClick != null)
-            return property.editOnSingleClick;
+        if(property != null && property.changeOnSingleClick != null)
+            return property.changeOnSingleClick;
         return super.isChangeOnSingleClick(cell);
     }
 
