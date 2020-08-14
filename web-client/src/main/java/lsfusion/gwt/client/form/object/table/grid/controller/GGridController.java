@@ -311,12 +311,6 @@ public class GGridController extends GAbstractTableController {
     }
 
     public void processFormChanges(long requestIndex, GFormChanges fc, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
-        for (GPropertyDraw property : fc.dropProperties) {
-            if (property.groupObject == groupObject && isPropertyShown(property)) { // drop properties sent without checking if it was sent for update at least once, so it's possible when drop is sent for property that has not been added
-                removeProperty(property);
-            }
-        }
-
         if (isList()) {
             ArrayList<GGroupObjectValue> keys = fc.gridObjects.get(groupObject);
             if (keys != null)
@@ -327,23 +321,10 @@ public class GGridController extends GAbstractTableController {
                 table.setCurrentKey(currentKey);
         }
 
-        // first proceed property with its values, then extra values
-        fc.properties.foreachEntry((key, value) -> {
-            if (key instanceof GPropertyDraw) {
-                GPropertyDraw property = (GPropertyDraw) key;
-                if (property.groupObject == groupObject) // filling keys
-                    updateProperty(property, getColumnKeys(property, currentGridObjects), fc.updateProperties.contains(property), value);
-            }
-        });
-
-        fc.properties.foreachEntry((key, value) -> {
-            if (!(key instanceof GPropertyDraw)) {
-                GPropertyReader propertyReader = key;
-                if (formController.getGroupObject(propertyReader.getGroupObjectID()) == groupObject) {
-                    propertyReader.update(this, value, false);
-                }
-            }
-        });
+        processFormChanges(groupObject, fc, currentGridObjects,
+                property -> property.grid && property.groupObject == groupObject && isPropertyShown(property),
+                property -> property.grid && property.groupObject == groupObject,
+                propertyReader -> formController.getGroupObject(propertyReader.getGroupObjectID()) == groupObject);
 
         Boolean updateState = null;
         if(isList())
@@ -373,8 +354,6 @@ public class GGridController extends GAbstractTableController {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateCellBackgroundValues(property, values);
-        } else {
-            panel.updateCellBackgroundValues(property, values);
         }
     }
 
@@ -383,8 +362,6 @@ public class GGridController extends GAbstractTableController {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateCellForegroundValues(property, values);
-        } else {
-            panel.updateCellForegroundValues(property, values);
         }
     }
 
@@ -393,8 +370,6 @@ public class GGridController extends GAbstractTableController {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateImageValues(property, values);
-        } else {
-            panel.updateCellImages(property, values);
         }
     }
 
@@ -403,8 +378,6 @@ public class GGridController extends GAbstractTableController {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updatePropertyCaptions(property, values);
-        } else {
-            panel.updatePropertyCaptions(property, values);
         }
     }
 
@@ -413,8 +386,6 @@ public class GGridController extends GAbstractTableController {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateShowIfValues(property, values);
-        } else {
-            panel.updateShowIfValues(property, values);
         }
     }
 
@@ -423,8 +394,6 @@ public class GGridController extends GAbstractTableController {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (property.grid) {
             table.updateReadOnlyValues(property, values);
-        } else {
-            panel.updateReadOnlyValues(property, values);
         }
     }
 
@@ -440,10 +409,6 @@ public class GGridController extends GAbstractTableController {
     public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         if (isList()) {
             table.updateRowBackgroundValues(values);
-        } else {
-            if (values != null && !values.isEmpty()) {
-                panel.updateRowBackgroundValue(values.firstValue());
-            }
         }
     }
 
@@ -451,10 +416,6 @@ public class GGridController extends GAbstractTableController {
     public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
         if (isList()) {
             table.updateRowForegroundValues(values);
-        } else {
-            if (values != null && !values.isEmpty()) {
-                panel.updateRowForegroundValue(values.firstValue());
-            }
         }
     }
 
@@ -501,19 +462,15 @@ public class GGridController extends GAbstractTableController {
         return table.getSelectedColumns();
     }
 
-    private void removeProperty(GPropertyDraw property) {
+    @Override
+    public void updateProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
+        table.updateProperty(property, columnKeys, updateKeys, values);
+    }
+
+    @Override
+    public void removeProperty(GGroupObject group, GPropertyDraw property) {
         if (property.grid) {
             table.removeProperty(property);
-        } else {
-            panel.removeProperty(property);
-        }
-    }
-    
-    private void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
-        if (property.grid) {
-            table.updateProperty(property, columnKeys, updateKeys, values);
-        } else {
-            panel.updateProperty(property, columnKeys, updateKeys, values);
         }
     }
 
@@ -531,9 +488,6 @@ public class GGridController extends GAbstractTableController {
 
             formController.setFiltersVisible(groupObject, isVisible);
         }
-
-        panel.update();
-        panel.setVisible(true);
     }
 
     @Override
@@ -587,15 +541,8 @@ public class GGridController extends GAbstractTableController {
         return table.getSelectedRow();
     }
 
-    public boolean isPropertyInPanel(GPropertyDraw property) {
-        return panel.containsProperty(property);
-    }
-
     public boolean isPropertyShown(GPropertyDraw property) {
-        if(property.grid)
-            return table.containsProperty(property);
-        else
-            return panel.containsProperty(property);
+        return property.grid && table.containsProperty(property);
     }
 
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
@@ -610,7 +557,7 @@ public class GGridController extends GAbstractTableController {
             return true;
         }
 
-        return panel.focusFirstWidget();
+        return false;
     }
 
     @Override
@@ -645,15 +592,13 @@ public class GGridController extends GAbstractTableController {
             GTableView table = this.table;
             table.focus();
             table.focusProperty(property);
-        } else {
-            panel.focusProperty(property);
         }
     }
 
     public void changeSettings() {
         if(table instanceof GGridTable) {
             GGridTable gridTable = (GGridTable) table;
-            GUserPreferencesDialog dialog = new GUserPreferencesDialog(gridTable, this, formController.hasCanonicalName()) {
+            GUserPreferencesDialog dialog = new GUserPreferencesDialog(gridTable, this, formController.panelController, formController.hasCanonicalName()) {
                 @Override
                 public void preferencesChanged() {
                     updateSettingsButton();

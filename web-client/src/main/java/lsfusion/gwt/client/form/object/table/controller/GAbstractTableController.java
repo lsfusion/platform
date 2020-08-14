@@ -13,7 +13,6 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
-import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
@@ -22,16 +21,13 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GAbstractTableController implements GTableController {
+public abstract class GAbstractTableController extends GPropertyController implements GTableController {
     protected final GFormController formController;
-    protected final GPanelController panel;
     protected final GToolbarView toolbarView;
     public GUserFilters filter;
 
     public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {
         this.formController = formController;
-
-        panel = new GPanelController(formController);
 
         if (toolbar == null || !toolbar.visible || !isList) {
             toolbarView = null;

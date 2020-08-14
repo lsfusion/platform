@@ -1,17 +1,21 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
+import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
+import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
+import lsfusion.gwt.client.form.property.*;
 
 import java.util.ArrayList;
 
-public class GPanelController {
+public class GPanelController extends GPropertyController {
 
-    private final GFormController form;
+    private final GFormController formController;
 
     private final NativeSIDMap<GPropertyDraw, GPropertyPanelController> propertyControllers = new NativeSIDMap<>();
 
@@ -19,18 +23,19 @@ public class GPanelController {
     private Object rowForeground;
 
     public GPanelController(GFormController iform) {
-        this.form = iform;
+        this.formController = iform;
     }
 
     private GFormLayout getFormLayout() {
-        return form.formLayout;
+        return formController.formLayout;
     }
 
-    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
+    @Override
+    public void updateProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
         GPropertyPanelController propertyController = propertyControllers.get(property);
         if(!updateKeys) {
             if (propertyController == null) {
-                propertyController = new GPropertyPanelController(property, form, () -> rowBackground, () -> rowForeground);
+                propertyController = new GPropertyPanelController(property, formController, () -> rowBackground, () -> rowForeground);
                 propertyControllers.put(property, propertyController);
 
                 getFormLayout().addBaseComponent(property, propertyController.getView(), this::focusFirstWidget);
@@ -40,7 +45,8 @@ public class GPanelController {
         propertyController.setPropertyValues(values, updateKeys);
     }
 
-    public void removeProperty(GPropertyDraw property) {
+    @Override
+    public void removeProperty(GGroupObject group, GPropertyDraw property) {
         GPropertyPanelController propController = propertyControllers.remove(property);
 
         getFormLayout().removeBaseComponent(property, propController.getView());
@@ -66,36 +72,74 @@ public class GPanelController {
         return propertyControllers.containsKey(property);
     }
 
-    public void updateRowBackgroundValue(Object color) {
-        rowBackground = color;
+    @Override
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
+        if(values != null && !values.isEmpty()) {
+            rowBackground = values.firstValue();
+        }
     }
 
-    public void updateRowForegroundValue(Object color) {
-        rowForeground = color;
+    @Override
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
+        if(values != null && !values.isEmpty()) {
+            rowForeground = values.firstValue();
+        }
     }
 
-    public void updateCellBackgroundValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues) {
-        propertyControllers.get(property).setCellBackgroundValues(cellBackgroundValues);
+    @Override
+    public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (!property.grid) {
+            propertyControllers.get(property).setCellBackgroundValues(values);
+        }
     }
 
-    public void updateCellForegroundValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> cellForegroundValues) {
-        propertyControllers.get(property).setCellForegroundValues(cellForegroundValues);
+    @Override
+    public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (!property.grid) {
+            propertyControllers.get(property).setCellForegroundValues(values);
+        }
     }
 
-    public void updateCellImages(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> imageValues) {
-        propertyControllers.get(property).setImages(imageValues);
+    @Override
+    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (!property.grid) {
+            propertyControllers.get(property).setImages(values);
+        }
     }
 
-    public void updatePropertyCaptions(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propertyCaptions) {
-        propertyControllers.get(property).setPropertyCaptions(propertyCaptions);
+    @Override
+    public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (!property.grid) {
+            propertyControllers.get(property).setPropertyCaptions(values);
+        }
     }
 
-    public void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> showIfs) {
-        propertyControllers.get(property).setShowIfs(showIfs);
+    @Override
+    public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (!property.grid) {
+            propertyControllers.get(property).setShowIfs(values);
+        }
     }
 
-    public void updateReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> readOnlyValues) {
-        propertyControllers.get(property).setReadOnlyValues(readOnlyValues);
+    @Override
+    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    }
+
+    @Override
+    public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (!property.grid) {
+            propertyControllers.get(property).setReadOnlyValues(values);
+        }
+    }
+
+    @Override
+    public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
@@ -107,7 +151,7 @@ public class GPanelController {
             return false;
         }
 
-        for (GPropertyDraw property : form.getPropertyDraws()) {
+        for (GPropertyDraw property : formController.getPropertyDraws()) {
             GPropertyPanelController propController = propertyControllers.get(property);
             if (propController != null) {
                 if (propController.focusFirstWidget()) {
@@ -119,4 +163,18 @@ public class GPanelController {
         return false;
     }
 
+    @Override
+    public void setContainerCaption(GContainer container, String caption) {
+        formController.setContainerCaption(container, caption);
+    }
+
+    public void processFormChanges(GFormChanges fc, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
+        processFormChanges(null, fc, currentGridObjects,
+                property -> !property.grid && containsProperty(property),
+                property -> !property.grid,
+                propertyReader -> true);
+
+        update();
+        setVisible(true);
+    }
 }

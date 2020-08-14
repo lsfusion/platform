@@ -13,6 +13,7 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.PropertyListItem;
@@ -35,6 +36,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
 
     private GGridController groupController;
     private GGridTable grid;
+    private GPanelController panelController;
 
     private FocusPanel focusPanel;
 
@@ -48,12 +50,14 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
     private TextBox columnCaptionBox;
     private TextBox columnPatternBox;
 
-    public GUserPreferencesDialog(GGridTable grid, GGridController groupController, boolean canBeSaved) {
+    public GUserPreferencesDialog(GGridTable grid, GGridController groupController, GPanelController panelController, boolean canBeSaved) {
         super(messages.formGridPreferences());
 
         this.groupController = groupController;
 
         this.grid = grid;
+
+        this.panelController = panelController;
 
         // columns
         columnsDualListBox = new ColumnsDualListBox() {
@@ -388,7 +392,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
     private Boolean getPropertyState(GPropertyDraw property) {
         if (groupController.isPropertyInGrid(property)) {
             return true;
-        } else if (groupController.isPropertyInPanel(property)) {
+        } else if (panelController.containsProperty(property)) {
             return false;
         }
         return null;

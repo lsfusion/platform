@@ -64,6 +64,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
 import lsfusion.gwt.client.form.object.GObject;
+import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
@@ -126,6 +127,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private final LinkedHashMap<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
     private final LinkedHashMap<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
+    public final GPanelController panelController;
 
     private final NativeSIDMap<GGroupObject, ArrayList<Widget>> filterViews = new NativeSIDMap<>();
 
@@ -149,6 +151,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         this.formsController = formsController;
         this.formContainer = formContainer;
+        this.panelController = new GPanelController(this);
         this.form = gForm;
         this.isDialog = isDialog;
 
@@ -492,6 +495,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             treeController.processFormChanges(fc);
         }
 
+        panelController.processFormChanges(fc, currentGridObjects);
+
         formLayout.hideEmptyContainerViews();
 
         activateElements(fc);
@@ -591,7 +596,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private boolean isPropertyShown(GPropertyDraw property) {
         if(property != null) {
             GGridController controller = controllers.get(property.groupObject);
-            return controller != null && controller.isPropertyShown(property);
+            return (controller != null && controller.isPropertyShown(property)) || panelController.containsProperty(property);
         }
         return false;
     }
@@ -994,6 +999,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (controllers.containsKey(propertyDraw.groupObject)) {
             controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
         }
+        if(panelController.containsProperty(propertyDraw)) {
+            panelController.focusProperty(propertyDraw);
+        }
     }
 
     private Map<Integer, Integer> getTabMap(TabbedContainerView containerView, GContainer component) {
@@ -1274,6 +1282,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 return;
             }
         }
+
+        panelController.focusFirstWidget();
     }
 
     private class ServerResponseCallback extends ErrorHandlingCallback<ServerResponseResult> {
