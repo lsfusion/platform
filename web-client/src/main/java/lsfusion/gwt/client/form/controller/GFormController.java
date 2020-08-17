@@ -1107,22 +1107,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         this.asyncView = asyncView;
     }
 
-    int asyncCount;
-
     public void onAsyncStarted() {
         if (asyncView != null) {
             asyncTimer.schedule(ASYNC_TIME_OUT);
-            asyncCount++;
         }
     }
 
     public void onAsyncFinished() {
         if (asyncView != null) {
             asyncTimer.cancel();
-            asyncCount--;
-            if(asyncCount == 0) {
-                asyncView.setLoadingImage(null);
-            }
+            asyncView.setLoadingImage(null);
         }
     }
 
