@@ -60,10 +60,8 @@ a {
 
 a:hover {
     color: #2a2e36;
-}
-
-a:hover {
     border-bottom: 1px dotted;
+    margin-bottom: -1px; /* prevents from jumping */
 }
 
 .blue {
