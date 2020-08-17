@@ -106,7 +106,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider, EditManager {
-    private static final int ASYNC_TIME_OUT = 50;
+    private static final int ASYNC_TIME_OUT = 20;
 
     private FormDispatchAsync dispatcher;
 
@@ -1107,16 +1107,22 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         this.asyncView = asyncView;
     }
 
+    int asyncCount;
+
     public void onAsyncStarted() {
         if (asyncView != null) {
             asyncTimer.schedule(ASYNC_TIME_OUT);
+            asyncCount++;
         }
     }
 
     public void onAsyncFinished() {
         if (asyncView != null) {
             asyncTimer.cancel();
-            asyncView.setLoadingImage(null);
+            asyncCount--;
+            if (asyncCount == 0) {
+                asyncView.setLoadingImage(null);
+            }
         }
     }
 
