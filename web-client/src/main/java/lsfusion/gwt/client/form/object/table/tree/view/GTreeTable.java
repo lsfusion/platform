@@ -40,7 +40,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
     private boolean dataUpdated;
-    private boolean columnsUpdated;
+    private boolean columnsUpdated = true; //could be no properties on init
 
     private GTreeTableTree tree;
 
