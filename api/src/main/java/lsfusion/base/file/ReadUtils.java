@@ -129,7 +129,7 @@ public abstract class ReadUtils {
 
         if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             result = fileChooser.getSelectedFile().getAbsolutePath();
-            SystemUtils.saveCurrentDirectory(new File(result.substring(0, result.lastIndexOf("\\"))));
+            SystemUtils.saveCurrentDirectory(new File(result).getParentFile());
         }
         return result;
     }
