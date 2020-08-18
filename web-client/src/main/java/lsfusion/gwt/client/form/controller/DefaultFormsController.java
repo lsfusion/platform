@@ -131,7 +131,7 @@ public abstract class DefaultFormsController implements FormsController {
         return formsContainer;
     }
 
-    public FormContainer openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
+    public FormContainer openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, List<String> inputObjects, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {
         FormDockable duplForm;
         if(forbidDuplicate && MainFrame.forbidDuplicateForms && (duplForm = findForm(form.sID)) != null) {
             selectTab(duplForm);
@@ -140,19 +140,19 @@ public abstract class DefaultFormsController implements FormsController {
 
         FormContainer formContainer = modalityType.isModalWindow() ? new ModalForm(this) : new FormDockable(this);
 
-        initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
+        initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), inputObjects, initFilterEvent);
 
         formContainer.show();
 
         return formContainer;
     }
 
-    public void initForm(FormContainer<?> formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, Event initFilterEvent) {
+    public void initForm(FormContainer<?> formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, List<String> inputObjects, Event initFilterEvent) {
         formContainer.initForm(this, form, () -> {
             formContainer.hide();
 
             hiddenHandler.onHidden();
-        }, dialog, initFilterEvent);
+        }, dialog, inputObjects, initFilterEvent);
     }
 
     public void selectTab(FormDockable dockable) {

@@ -578,9 +578,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
-    public void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, boolean forbidDuplicate, List<String> inputObjects, ExecutionStack stack) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
-        ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
+        ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, inputObjects, stack);
     }
 
     public void writeRequested(ImList<RequestResult> requestResults) throws SQLException, SQLHandledException { // have to be used with getRequestChangeExtProps

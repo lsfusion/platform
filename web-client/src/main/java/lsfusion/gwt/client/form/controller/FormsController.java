@@ -10,9 +10,11 @@ import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 
+import java.util.List;
+
 public interface FormsController {
 
-    FormContainer openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler);
+    FormContainer openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, List<String> inputObjects, Event initFilterEvent, WindowHiddenHandler hiddenHandler);
 
     void selectTab(FormDockable form);
 

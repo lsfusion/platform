@@ -141,6 +141,7 @@ public class ClientFormController implements AsyncListener {
 
     private final boolean isDialog;
     private final boolean isModal;
+    private final List<String> inputObjects;
 
     private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<>();
 
@@ -160,11 +161,13 @@ public class ClientFormController implements AsyncListener {
 
     private ScheduledExecutorService autoRefreshScheduler;
 
-    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
+    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog,
+                                List<String> iinputObjects) {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         canonicalName = icanonicalName;
         isDialog = iisDialog;
         isModal = iisModal;
+        inputObjects = iinputObjects;
 
         ID = idGenerator.idShift();
 
@@ -1682,6 +1685,8 @@ public class ClientFormController implements AsyncListener {
                 return equalGroup(groupObject, binding);
             case NO:
                 return !equalGroup(groupObject, binding);
+            case INPUT:
+                return inputObjects != null && groupObject != null && inputObjects.contains(groupObject.getSID());
         }
         return true;
     }

@@ -119,6 +119,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public final GFormLayout formLayout;
 
     private final boolean isDialog;
+    private final List<String> inputObjects;
 
     private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects = new NativeSIDMap<>();
 
@@ -144,13 +145,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return formsController;
     }
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, List<String> inputObjects) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
         this.formContainer = formContainer;
         this.form = gForm;
         this.isDialog = isDialog;
+        this.inputObjects = inputObjects;
 
         dispatcher = new FormDispatchAsync(this);
 
@@ -596,12 +598,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return false;
     }
 
-    public void openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, final WindowHiddenHandler handler) {
+    public void openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, List<String> inputObjects, Event initFilterEvent, final WindowHiddenHandler handler) {
         boolean isDockedModal = modalityType == GModalityType.DOCKED_MODAL;
         if (isDockedModal)
             ((FormDockable)formContainer).block();
 
-        FormContainer blockingForm = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, () -> {
+        FormContainer blockingForm = formsController.openForm(form, modalityType, forbidDuplicate, inputObjects, initFilterEvent, () -> {
             if(isDockedModal) {
                 ((FormDockable)formContainer).unblock();
 
@@ -1380,7 +1382,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 boolean equalGroup;
                 GBindingEnv bindingEnv = bindingEvent.env;
                 if(bindDialog(bindingEnv) &&
-                    bindGroup(bindingEnv, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
+                    bindGroup(bindingEnv, groupObject, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
                     bindEditing(bindingEnv) &&
                     bindShowing(bindingEnv, binding.showing()))
                 orderedBindings.put(-(GwtClientUtils.nvl(bindingEnv.priority, i) + (equalGroup ? 100 : 0)), binding); // increasing priority for group object
@@ -1407,6 +1409,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         switch (binding.bindDialog) {
             case AUTO:
             case ALL:
+            case INPUT:
                 return true;
             case ONLY:
                 return isDialog();
@@ -1417,7 +1420,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private boolean bindGroup(GBindingEnv bindingEvent, boolean equalGroup) {
+    private boolean bindGroup(GBindingEnv bindingEvent, GGroupObject groupObject, boolean equalGroup) {
         switch (bindingEvent.bindGroup) {
             case AUTO:
             case ALL:
@@ -1426,6 +1429,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 return equalGroup;
             case NO:
                 return !equalGroup;
+            case INPUT:
+                return inputObjects != null && groupObject != null && inputObjects.contains(groupObject.getSID());
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode");
         }
@@ -1440,6 +1445,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 return isEditing();
             case NO:
                 return !isEditing();
+            case INPUT:
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindEditing);
         }
@@ -1454,6 +1460,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 return showing;
             case NO:
                 return !showing;
+            case INPUT:
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindShowing);
         }
