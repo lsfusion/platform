@@ -65,7 +65,7 @@ public class FileDialogUtils {
                     result.put(file, path + "\\" + file);
                 }
             }
-            SystemUtils.saveCurrentDirectory(singleFile ? new File(path.substring(0, path.lastIndexOf("\\"))) : new File(path));
+            SystemUtils.saveCurrentDirectory(singleFile ? new File(path).getParentFile() : new File(path));
         }
         return result;
     }
