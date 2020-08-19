@@ -2171,11 +2171,13 @@ public abstract class LogicsModule {
         assert !namedForms.containsKey(form.getName());
         namedForms.put(form.getName(), form);
     }
-    // should be cached, otherwise it may lead to memory leaks
-    public void addAutoFormEntity(AutoFormEntity form) {
+    @NFLazy
+    public boolean addAutoFormEntityNotFinalized(AutoFormEntity form) {
         assert !form.isNamed();
-
-        boolean added = unnamedForms.add(form);
+        return unnamedForms.add(form);
+    }
+    public void addAutoFormEntity(AutoFormEntity form) {
+        boolean added = addAutoFormEntityNotFinalized(form);
         if(formsFinalized && added) // last check is recursion guard
             form.finalizeAroundInit();
     }
