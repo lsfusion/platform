@@ -17,7 +17,7 @@ public class ClientFormDockable extends ClientDockable {
     public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, FormsController formsController, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) throws IOException {
         super(canonicalName, formsController);
 
-        clientForm = new ClientFormController(canonicalName, formSID, remoteForm, firstChanges, navigator, false, false, null) {
+        clientForm = new ClientFormController(canonicalName, formSID, remoteForm, firstChanges, navigator, false, false) {
             @Override
             public void onFormHidden() {
                 if (control() != null) {

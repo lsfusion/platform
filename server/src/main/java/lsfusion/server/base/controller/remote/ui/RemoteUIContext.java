@@ -34,7 +34,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
@@ -42,12 +41,12 @@ import static lsfusion.server.data.type.TypeSerializer.serializeType;
 public abstract class RemoteUIContext extends AbstractContext {
 
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, List<String> inputObjects, ExecutionStack stack) throws SQLException, SQLHandledException {
-        requestFormUserInteraction(createRemoteForm(formInstance, stack), modalityType, forbidDuplicate, inputObjects, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        requestFormUserInteraction(createRemoteForm(formInstance, stack), modalityType, forbidDuplicate, stack);
     }
 
-    protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, List<String> inputObjects, ExecutionStack stack) throws SQLException, SQLHandledException {
-        FormClientAction action = new FormClientAction(remoteForm.getCanonicalName(), remoteForm.getSID(), forbidDuplicate, inputObjects, remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType);
+    protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        FormClientAction action = new FormClientAction(remoteForm.getCanonicalName(), remoteForm.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType);
         if(modalityType.isModal()) {
             requestUserInteraction(action);
             remoteForm.form.syncLikelyOnClose(true, stack);
@@ -61,7 +60,7 @@ public abstract class RemoteUIContext extends AbstractContext {
             return null;
         }
 
-        requestFormUserInteraction(dialogInstance, ModalityType.DIALOG_MODAL, false, null, stack);
+        requestFormUserInteraction(dialogInstance, ModalityType.DIALOG_MODAL, false, stack);
 
         if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {
             return null;

@@ -218,7 +218,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } else if (modality.isModal()) {
             beforeModalActionInSameEDT(false);
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-            new ClientModalForm(action.canonicalName, action.formSID, owner, remoteForm, action.firstChanges, modality.isDialog(), action.inputObjects, editEvent) {
+            new ClientModalForm(action.canonicalName, action.formSID, owner, remoteForm, action.firstChanges, modality.isDialog(), editEvent) {
                 @Override
                 public void hideDialog() {
                     super.hideDialog();

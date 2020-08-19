@@ -30,7 +30,6 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import lsfusion.server.physics.admin.log.LogInfo;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 
@@ -115,12 +114,12 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             }
 
             @Override
-            protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, List<String> inputObjects, ExecutionStack stack) throws SQLException, SQLHandledException {
+            protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
                 Stack<Result<RemoteForm>> getForms = getForm.get();
                 if(getForms != null)
                     getForms.peek().set(remoteForm);
                 else
-                    super.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, inputObjects, stack);
+                    super.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
             }
         };
     }
@@ -169,8 +168,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
     // UI interfaces, multiple inheritance
     
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, List<String> inputObjects, ExecutionStack stack) throws SQLException, SQLHandledException {
-        uiContext.requestFormUserInteraction(formInstance, modalityType, forbidDuplicate, inputObjects, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        uiContext.requestFormUserInteraction(formInstance, modalityType, forbidDuplicate, stack);
     }
 
     public ObjectValue requestUserObject(DialogRequest dialog, ExecutionStack stack) throws SQLException, SQLHandledException { // null если canceled

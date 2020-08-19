@@ -18,8 +18,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.util.List;
-
 import static java.lang.Math.min;
 
 // multiple inheritance
@@ -65,10 +63,10 @@ public abstract class FormContainer<W extends Widget> {
         MainFrame.setCurrentForm(null);
     }
 
-    public void initForm(FormsController formsController, GForm gForm, WindowHiddenHandler hiddenHandler, boolean isDialog, List<String> inputObjects, Event initFilterEvent) {
+    public void initForm(FormsController formsController, GForm gForm, WindowHiddenHandler hiddenHandler, boolean isDialog, Event initFilterEvent) {
         this.initFilterEvent = initFilterEvent;
 
-        form = new GFormController(formsController, this, gForm, isDialog, inputObjects) {
+        form = new GFormController(formsController, this, gForm, isDialog) {
             @Override
             public void onFormHidden(int closeDelay) {
                 super.onFormHidden(closeDelay);
