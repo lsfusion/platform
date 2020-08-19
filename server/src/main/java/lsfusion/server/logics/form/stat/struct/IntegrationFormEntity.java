@@ -109,6 +109,8 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
             property.setIntegrationSID(null);
             addDefaultOrder(property, orders.getValue(i), version);
         }
+
+        finalizeInit(version);
     }
 
     @Override

@@ -20,7 +20,7 @@ public class EditFormEntity extends BaseClassFormEntity {
     public FormView createDefaultRichDesign(Version version) {
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        design.getDropButton().removeFromParent(version);
+        design.removeComponent(design.getDropButton(), version);
 
         return design;
     }

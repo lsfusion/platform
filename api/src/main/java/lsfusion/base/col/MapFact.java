@@ -120,6 +120,15 @@ public class MapFact {
         return mMap.immutable();
     }
 
+    public static <K, V> ImMap<K, V> toMap(K[] keys, Function<K, V> values) {
+        MExclMap<K, V> mMap = MapFact.mExclMap(keys.length);
+        for(int i=0;i<keys.length;i++) {
+            K key = keys[i];
+            mMap.exclAdd(key, values.apply(key));
+        }
+        return mMap.immutable();
+    }
+
     public static <K, V> ImMap<K, V> override(ImMap<? extends K, ? extends V> map1, ImMap<? extends K, ? extends V> map2) {
         return ((ImMap<K, V>)map1).override(map2);
     }
