@@ -1253,10 +1253,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return mContainers.immutable();
     }
 
-    public void setReadOnlyIf(PropertyDrawEntity property, PropertyObjectEntity condition) {
-        property.setPropertyExtra(condition, PropertyDrawExtraType.READONLYIF);
-    }
-
     public void setEditType(PropertyEditType editType) {
         for (PropertyDrawEntity propertyView : getPropertyDrawsIt()) {
             setEditType(propertyView, editType);

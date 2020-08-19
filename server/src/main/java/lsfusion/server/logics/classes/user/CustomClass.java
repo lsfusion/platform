@@ -356,9 +356,21 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return this instanceof BaseClass; // тут возможно стоило бы еще другие абстрактные классы с большим количеством children'ов исключить, но кроме Object'а пока таких нет 
     }
 
+    public void finalizeAroundInit() {
+        dialogFormHolder.finalizeAroundInit();
+        editFormHolder.finalizeAroundInit();
+
+        for(CustomClass child : getChildrenIt())
+            child.finalizeAroundInit();
+    }
+
     private abstract class ClassFormHolder {
         private NFProperty<ClassFormEntity> form = NFFact.property();
         private boolean isUsed = false;
+
+        public void finalizeAroundInit() {
+            form.finalizeChanges();
+        }
 
         public ClassFormEntity getForm(final BaseLogicsModule LM) {
             ClassFormEntity setForm = form.get();

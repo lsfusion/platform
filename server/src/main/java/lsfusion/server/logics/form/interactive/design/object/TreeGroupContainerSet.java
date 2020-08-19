@@ -123,7 +123,6 @@ public class TreeGroupContainerSet {
         set.toolbarRightContainer.add(set.filtersContainer, version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
 
-
         set.filtersContainer.setType(ContainerType.CONTAINERH);
         set.filtersContainer.setAlignment(FlexAlignment.CENTER);
         set.filtersContainer.setChildrenAlignment(Alignment.END);
