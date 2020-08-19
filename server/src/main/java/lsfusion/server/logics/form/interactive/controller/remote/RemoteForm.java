@@ -130,6 +130,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return null; // deprecated
     }
 
+    @Override
+    public List<String> getInputObjects() {
+        return form.inputObjects;
+    }
+
     /**
      * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
      */
@@ -794,7 +799,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     public Object[] getImmutableMethods() {
         try {
-            return new Object[]{getUserPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw()};
+            return new Object[]{getUserPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw(), getInputObjects()};
         } catch (RemoteException e) {
             return null;
         }
