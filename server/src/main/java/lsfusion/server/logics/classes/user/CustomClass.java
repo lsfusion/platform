@@ -462,9 +462,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             return null;
         }
 
+        // need this for recursion guard, since otherwise finalizeAroundInit is called in recursion
         @IdentityStrongLazy
+        private ClassFormEntity getDefaultFormNotFinalized(BaseLogicsModule LM) {
+            return createDefaultForm(LM);
+        }
+
         private ClassFormEntity getDefaultForm(BaseLogicsModule LM) {
-            ClassFormEntity classForm = createDefaultForm(LM);
+            ClassFormEntity classForm = getDefaultFormNotFinalized(LM);
             LM.addAutoFormEntity((BaseClassFormEntity)classForm.form);
             return classForm;
         }
