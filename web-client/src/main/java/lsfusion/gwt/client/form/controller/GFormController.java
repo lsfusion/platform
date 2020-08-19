@@ -595,8 +595,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private boolean isPropertyShown(GPropertyDraw property) {
         if(property != null) {
-            GGridController controller = controllers.get(property.groupObject);
-            return (controller != null && controller.isPropertyShown(property)) || panelController.containsProperty(property);
+            if(property.grid) {
+                GGridController controller = controllers.get(property.groupObject);
+                return controller != null && controller.isPropertyShown(property);
+            } else {
+                return panelController.containsProperty(property);
+            }
         }
         return false;
     }
@@ -996,11 +1000,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        if (controllers.containsKey(propertyDraw.groupObject)) {
-            controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
-        }
-        if(panelController.containsProperty(propertyDraw)) {
-            panelController.focusProperty(propertyDraw);
+        if(propertyDraw.grid) {
+            if (controllers.containsKey(propertyDraw.groupObject)) {
+                controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
+            }
+        } else {
+            if (panelController.containsProperty(propertyDraw)) {
+                panelController.focusProperty(propertyDraw);
+            }
         }
     }
 
