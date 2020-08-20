@@ -625,10 +625,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         securityManager.initSecret();
     }
 
-    public void finalizeClasses() {
-        LM.baseClass.finalizeAroundInit();
-    }
-
     public void finalizeGroups() {
         LM.getRootGroup().finalizeAroundInit();
     }
