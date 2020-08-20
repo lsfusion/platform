@@ -1644,10 +1644,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         mList.add(input.first);
 
         // we need to update edited value to provide WYSIWYG
-        if(filterProperty != null) {
-            assert BaseUtils.nullEquals(filterProperty.getType(), getType());
+        if(filterProperty != null)
             mList.add(getDefaultAsyncUpdateAction(lm, filterProperty, input.second));
-        }
 
         ActionMapImplement<?, T> exInputAction = PropertyFact.createListAction(interfaces, mList.immutableList());
         return new Pair<>(exInputAction, input.second);
