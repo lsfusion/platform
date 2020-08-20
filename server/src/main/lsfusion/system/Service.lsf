@@ -346,7 +346,7 @@ FORM settings '{service.form.settings}'
                  dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon,
                  initHeapSize, maxHeapSize, minHeapFreeRatio, maxHeapFreeRatio, vmargs
     OBJECTS u=User
-    PROPERTIES(u) READONLY name, login, nameMainRole
+    PROPERTIES(u) READONLY name, login, userRoles
     PROPERTIES(u) explainAnalyzeMode, loggerDebugEnabled, explainTemporaryTablesEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, explainAllocationEnabled, nameExecEnv, volatileStatsEnabled
     
     OBJECTS uc=User

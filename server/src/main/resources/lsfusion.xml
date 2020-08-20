@@ -492,6 +492,33 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="finalizeTablesTask" class="lsfusion.server.physics.exec.db.controller.init.FinalizeTablesTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initStoredTask"/> <!-- in init stored task auto tables are generated-->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
+    <bean id="finalizeClassesTask" class="lsfusion.server.logics.classes.controller.init.FinalizeClassesTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initMainLogicTask"/>
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
+    <bean id="finalizeGroupsTask" class="lsfusion.server.logics.form.controller.init.FinalizeGroupsTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initMainLogicTask"/>
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="finalizePropsTask" class="lsfusion.server.logics.property.controller.init.FinalizePropsTask">
         <property name="dependencies">
             <set>
@@ -501,6 +528,7 @@
                 <ref bean="setupPropertyPolicyFormsTask"/>
                 <ref bean="setupActionPolicyFormsTask"/>
                 <ref bean="initIndicesTask"/> <!-- hideOlds -> STAT calculation -> getIndices cache  -->
+                <ref bean="finalizeGroupsTask"/> <!-- so that all props created after that task will be finalized (see Group.finalized usages) -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -546,6 +574,8 @@
                 <ref bean="initIndicesTask"/>
                 <ref bean="initClassDataIndicesTask"/>
                 <ref bean="finalizeFormsTask"/>
+                <ref bean="finalizeClassesTask"/>
+                <ref bean="finalizeTablesTask"/>
                 <ref bean="finalizeNavigatorElementsTask"/>
             </set>
         </property>

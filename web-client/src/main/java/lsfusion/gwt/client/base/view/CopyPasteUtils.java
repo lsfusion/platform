@@ -12,21 +12,20 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import java.util.function.Consumer;
 
 public class CopyPasteUtils {
-    private static Selection selection = Selection.getSelection();
+    private static final Selection selection = Selection.getSelection();
 
     // actually it justs sets selection, since we don't consume event default handler does the rest
     public static void putIntoClipboard(Element element) {
         if (element != null && (selection.getRange() == null || selection.getRange().getText().isEmpty())) {
-            selection.setRange(new Range(element));
-
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    Range range = selection.getRange();
-                    range.collapse(true);
-                    selection.setRange(range);
-                }
-            });
+            Range range = new Range(element);
+            selection.setRange(range);
+            setClipboardData(selection.getRange().getText());
+            //DELAY
+            Scheduler.get().scheduleFixedDelay(() -> {
+                range.collapse(true);
+                selection.setRange(range);
+                return false;
+            }, 100);
         }
     }
     
@@ -35,23 +34,14 @@ public class CopyPasteUtils {
         if (range != null) {
             String rangeText = range.getText();
             if (!rangeText.isEmpty()) {
-                setClipboardData2(rangeText);    
+                setClipboardData(rangeText);
             }
         }
     }
 
     public static native void setClipboardData(String text)
     /*-{
-        if ($wnd.clipboardData) {
-            $wnd.clipboardData.setData("text/plain", text); // в Firefox не работает
-        }
-    }-*/;
-
-    public static native void setClipboardData2(String text)
-    /*-{
-        if(clipboard) {
-            clipboard.copy(text) // в Firefox не работает
-        }
+        $doc.execCommand('copy');
     }-*/;
 
     public static void setEmptySelection(final Element element) {

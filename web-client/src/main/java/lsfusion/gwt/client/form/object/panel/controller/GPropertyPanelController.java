@@ -39,6 +39,8 @@ public class GPropertyPanelController {
     private NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues;
     private NativeHashMap<GGroupObjectValue, Object> cellForegroundValues;
 
+    private NativeHashMap<GGroupObjectValue, Object> images;
+
     public GPropertyPanelController(GPropertyDraw property, GFormController form, Supplier<Object> rowBackground, Supplier<Object> rowForeground) {
         this.property = property;
         this.form = form;
@@ -47,7 +49,7 @@ public class GPropertyPanelController {
         this.rowBackground = rowBackground;
         this.rowForeground = rowForeground;
 
-        renderersPanel = new FlexPanel(property.columnKeysVertical);
+        renderersPanel = new FlexPanel(property.panelColumnVertical);
     }
 
     public Widget getView() {
@@ -71,8 +73,7 @@ public class GPropertyPanelController {
                         newRenderer.setReadOnly(property.isReadOnly());
                         Widget component = newRenderer.getComponent();
                         renderersPanel.addFill(component);
-
-                        form.addPropertyBindings(property, newRenderer::onBinding, component);
+                        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component);
 
                         renderer = newRenderer;
                     }
@@ -83,7 +84,10 @@ public class GPropertyPanelController {
             }
 
             // removing old renderers
-            renderers.foreachValue(renderer -> renderersPanel.remove(renderer.getComponent()));
+            renderers.foreachValue(renderer -> {
+                form.removePropertyBindings(renderer.bindingEventIndices);
+                renderersPanel.remove(renderer.getComponent());
+            });
             renderers = newRenderers;
 
             columnsUpdated = false;
@@ -117,6 +121,11 @@ public class GPropertyPanelController {
 
         if (captions != null) {
             renderer.setCaption(property.getDynamicCaption(captions.get(columnKey)));
+        }
+
+        if (images != null && renderer instanceof ActionPanelRenderer) {
+            Object image = images.get(columnKey);
+            ((ActionPanelRenderer)renderer).setDynamicImage(image != null ? image : "null");
         }
     }
 
@@ -169,5 +178,9 @@ public class GPropertyPanelController {
 
     public void setCellForegroundValues(NativeHashMap<GGroupObjectValue, Object> cellForegroundValues) {
         this.cellForegroundValues = cellForegroundValues;
+    }
+
+    public void setImages(NativeHashMap<GGroupObjectValue, Object> images) {
+        this.images = images;
     }
 }

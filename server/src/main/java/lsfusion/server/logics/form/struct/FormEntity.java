@@ -1253,10 +1253,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return mContainers.immutable();
     }
 
-    public void setReadOnlyIf(PropertyDrawEntity property, PropertyObjectEntity condition) {
-        property.setPropertyExtra(condition, PropertyDrawExtraType.READONLYIF);
-    }
-
     public void setEditType(PropertyEditType editType) {
         for (PropertyDrawEntity propertyView : getPropertyDrawsIt()) {
             setEditType(propertyView, editType);
@@ -1372,6 +1368,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @Override
     public FormEntity getNFStaticForm() {
+        return this;
+    }
+
+    @Override
+    public FormEntity getStaticForm(BaseLogicsModule LM) {
         return this;
     }
 

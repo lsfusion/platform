@@ -48,15 +48,14 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     // there is some architecture bug in filters so for now will do this hack (later filter should rerender all GDataFilterValue)
     public void changeProperty(GPropertyDraw property) {
         Element renderElement = getRenderElement();
-        RenderContext renderContext = getRenderContext();
 
-        this.property.getCellRenderer().clearRender(renderElement, renderContext);
+        this.property.getCellRenderer().clearRender(renderElement, this);
 
         this.property = property;
 
         setBaseSize(true);
 
-        property.getCellRenderer().renderStatic(renderElement, renderContext);
+        property.getCellRenderer().renderStatic(renderElement, this);
     }
 
     @Override

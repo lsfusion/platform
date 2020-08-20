@@ -323,6 +323,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
+        propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
+        propertyDraw.hasDynamicImage = clientPropertyDraw.hasDynamicImage;
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {
@@ -348,13 +350,13 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             propertyDraw.valueHeight = clientPropertyDraw.valueSize.height;
         }
 
-        propertyDraw.panelCaptionAbove = clientPropertyDraw.panelCaptionAbove;
+        propertyDraw.panelCaptionVertical = clientPropertyDraw.panelCaptionVertical;
         
-        propertyDraw.columnKeysVertical = clientPropertyDraw.columnKeysVertical;
+        propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         
         propertyDraw.valueAlignment = convertFlexAlignment(clientPropertyDraw.valueAlignment);
 
-        propertyDraw.editOnSingleClick = clientPropertyDraw.editOnSingleClick;
+        propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
         
         propertyDraw.hide = clientPropertyDraw.hide;
         
@@ -462,6 +464,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GForegroundReader convertForegroundReader(ClientPropertyDraw.ForegroundReader reader) {
         return reader == null ? null : new GForegroundReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GImageReader convertImageReader(ClientPropertyDraw.ImageReader reader) {
+        return reader == null ? null : new GImageReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GRowBackgroundReader convertRowBackgroundReader(ClientGroupObject.RowBackgroundReader reader) {

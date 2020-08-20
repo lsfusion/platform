@@ -93,6 +93,10 @@ public class PanelController {
         propertyControllers.get(property).setCellForegroundValues(cellForegroundValues);
     }
 
+    public void updateImageValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> imageValues) {
+        propertyControllers.get(property).setImageValues(imageValues);
+    }
+
     public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> valueMap, boolean updateKeys) {
         propertyControllers.get(property).setPropertyValues(valueMap, updateKeys);
     }

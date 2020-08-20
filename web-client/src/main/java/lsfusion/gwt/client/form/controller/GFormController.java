@@ -75,6 +75,8 @@ import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -103,7 +105,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider, EditManager {
-    private static final int ASYNC_TIME_OUT = 50;
+    private static final int ASYNC_TIME_OUT = 20;
 
     private FormDispatchAsync dispatcher;
 
@@ -156,7 +158,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         asyncTimer = new Timer() {
             @Override
             public void run() {
-                asyncView.setImage("loading.gif");
+                asyncView.setLoadingImage("loading.gif");
             }
         };
 
@@ -812,17 +814,23 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private void executeSimpleChange(boolean asyncModifyObject, Event event, ExecuteEditContext editContext) {
         GPropertyDraw property = editContext.getProperty();
         if (asyncModifyObject)
-            modifyObject(editContext.getProperty(), editContext.getColumnKey());
+            modifyObject(property, editContext.getColumnKey());
         else {
-            edit(property.changeType, event, false, null, value -> {
-                Object oldValue = editContext.getValue();
-
-                if(property.canUseChangeValueForRendering()) // changing model, to rerender new value
-                    editContext.setValue(value);
-
-                changeProperty(property, editContext.getColumnKey(), (Serializable) value, oldValue);
-            }, value -> {}, () -> {}, editContext);
+            GType changeType = property.changeType;
+            edit(changeType, event, false, null,
+                value -> changeEditPropertyValue(editContext, changeType, value, null),
+                value -> {}, () -> {}, editContext);
         }
+    }
+
+    public void changeEditPropertyValue(ExecuteEditContext editContext, GType changeType, Object value, Long changeRequestIndex) {
+        Object oldValue = editContext.getValue();
+
+        GPropertyDraw property = editContext.getProperty();
+        if(property.canUseChangeValueForRendering(changeType)) // changing model, to rerender new value
+            editContext.setValue(value);
+
+        changeProperty(property, editContext.getColumnKey(), (Serializable) value, oldValue, changeRequestIndex);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
@@ -881,22 +889,23 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return treeControllers.get(group.parent);
     }
 
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue, Long changeRequestIndex) {
         GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
         if(property.grid) {
             rowKey = getGroupObjectLogicsSupplier(property.groupObject).getCurrentKey();
             if(rowKey.isEmpty())
                 return;
         }
-        changeProperty(property, rowKey, columnKey, value, oldValue);
+        changeProperty(property, rowKey, columnKey, value, oldValue, changeRequestIndex);
     }
 
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, Serializable value, Object oldValue, Long changeRequestIndex) {
         GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(rowKey, columnKey);
 
-        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(fullKey), value, null), new ServerResponseCallback());
+        if(changeRequestIndex == null)
+            changeRequestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(fullKey), value, null), new ServerResponseCallback());
 
-        putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(requestIndex, value, oldValue, property.canUseChangeValueForRendering()));
+        putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(changeRequestIndex, value, oldValue, property.canUseChangeValueForRendering()));
     }
 
     public boolean isAsyncModifyObject(GPropertyDraw property) {
@@ -1079,9 +1088,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     // change group mode with force refresh
-    public long changeListViewType(final GGroupObject groupObject, int pageSize, GListViewType viewType) {
+    public long changeListViewType(final GGroupObject groupObject, int pageSize, GListViewType viewType, GUpdateMode updateMode) {
         boolean enableGroup = viewType == GListViewType.PIVOT;
-        return changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, null, viewType);
+        return changeMode(groupObject, true, enableGroup ? new ArrayList<>() : null, enableGroup ? new ArrayList<>() : null, 0, null, pageSize, true, updateMode, viewType);
     }
     public long changeMode(final GGroupObject groupObject, boolean setGroup, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeysList, int aggrProps, GPropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, GUpdateMode updateMode, GListViewType viewType) {
         int[] propertyIDs = null;
@@ -1151,16 +1160,22 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         this.asyncView = asyncView;
     }
 
+    int asyncCount;
+
     public void onAsyncStarted() {
         if (asyncView != null) {
             asyncTimer.schedule(ASYNC_TIME_OUT);
+            asyncCount++;
         }
     }
 
     public void onAsyncFinished() {
         if (asyncView != null) {
             asyncTimer.cancel();
-            asyncView.setImage(null);
+            asyncCount--;
+            if (asyncCount == 0) {
+                asyncView.setLoadingImage(null);
+            }
         }
     }
 
@@ -1352,19 +1367,25 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public interface BindingExec {
         void exec(Event event);
     }
-    public void addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
+    public ArrayList<Integer> addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
+        ArrayList<Integer> result = new ArrayList<>();
         for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
-            addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject);
+            result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject));
+        return result;
+    }
+    public void removePropertyBindings(ArrayList<Integer> indices) {
+        for(int index : indices)
+            removeBinding(index);
     }
 
-    public void addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
+    public int addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
     }
-    public void addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding(event::isEvent, env, pressed, component, groupObject);
+    public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event::isEvent, env, pressed, component, groupObject);
     }
-    public void addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
+    public int addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
             @Override
             public boolean showing() {
                 return component != null ? isShowing(component) : true;
@@ -1376,9 +1397,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
     }
-    public void addBinding(GBindingEvent event, Binding action) {
+    public int addBinding(GBindingEvent event, Binding action) {
+        int index = bindings.size();
         bindingEvents.add(event);
         bindings.add(action);
+        return index;
+    }
+    public void removeBinding(int index) {
+        bindingEvents.remove(index);
+        bindings.remove(index);
     }
     
     private GGroupObject getGroupObject(Element elementTarget) {
@@ -1638,7 +1665,51 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void onPropertyBrowserEvent(Event event, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore, Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut, Consumer<EventHandler> onPaste) {
+    public static void setDynamicImage(Element element, Object value) { // assert that property.hasDynamicImage
+        ActionCellRenderer.setImage(element, value instanceof String && !value.equals("null") ?
+                getDownloadURL((String) value, null, null, false) :
+                "", null, true);
+    }
+
+    public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Runnable onOuterEditBefore, Runnable onEdit, Runnable onOuterEditAfter, Runnable onCut, Runnable onPaste) {
+        boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
+        if(isPropertyEditing)
+            cellEditor.onBrowserEvent(getEditElement(), handler);
+
+        if(handler.consumed)
+            return;
+
+        if(GMouseStroke.isChangeEvent(handler.event))
+            focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
+
+        onOuterEditBefore.run();
+
+        if(handler.consumed)
+            return;
+
+        if (!isPropertyEditing) { // if editor did not consume event, we don't want it to be handled by "renderer" since it doesn't exist
+            if (GKeyStroke.isCopyToClipboardEvent(handler.event)) {
+                onCut.run();
+            } else if (GKeyStroke.isPasteFromClipboardEvent(handler.event)) {
+                onPaste.run();
+            } else {
+                onEdit.run();
+            }
+        }
+
+        if(handler.consumed)
+            return;
+
+        onOuterEditAfter.run();
+
+        if(handler.consumed)
+            return;
+
+        if(GMouseStroke.isDownEvent(handler.event))
+            handler.consume(); // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
+    }
+
+    /*public void onPropertyBrowserEvent(Event event, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore, Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut, Consumer<EventHandler> onPaste) {
         EventHandler handler = new EventHandler(event);
 
         boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
@@ -1684,5 +1755,5 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         if(GMouseStroke.isDownEvent(handler.event))
             handler.consume(); // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
-    }
+    }*/
 }

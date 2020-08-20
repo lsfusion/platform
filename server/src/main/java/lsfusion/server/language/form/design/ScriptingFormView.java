@@ -133,7 +133,7 @@ public class ScriptingFormView {
             errLog.emitRemoveMainContainerError(parser);
         }
 
-        component.removeFromParent(version);
+        view.removeComponent(component, version);
     }
 
     public GroupObjectView getGroupObject(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {

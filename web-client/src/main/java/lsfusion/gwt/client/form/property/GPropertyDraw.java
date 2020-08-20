@@ -79,6 +79,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GEditBindingMap editBindingMap;
 
     public ImageHolder imageHolder;
+    public boolean hasDynamicImage;
     public Boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
@@ -89,6 +90,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GCompare getDefaultCompare() {
         return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+    }
+
+    public boolean hasStaticImage() {
+        return imageHolder != null;
+    }
+    public boolean hasDynamicImage() { // when it's an action and has dynamic image
+        return baseType instanceof GActionType && hasDynamicImage;
     }
 
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
@@ -118,6 +126,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GReadOnlyReader readOnlyReader;
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
+    public GImageReader imageReader;
 
     // for pivoting
     public String formula;
@@ -135,13 +144,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int valueWidth = -1;
     public int valueHeight = -1;
 
-    public boolean panelCaptionAbove;
+    public boolean panelCaptionVertical;
     
-    public boolean columnKeysVertical;
+    public boolean panelColumnVertical;
     
     public GFlexAlignment valueAlignment;
 
-    public Boolean editOnSingleClick;
+    public Boolean changeOnSingleClick;
 
     public boolean hide;
 
@@ -220,8 +229,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
     }
 
+    public boolean canUseChangeValueForRendering(GType type) {
+        return type != null && baseType.getClass() == type.getClass();
+    }
+
     public boolean canUseChangeValueForRendering() {
-        return changeType != null && baseType.getClass() == changeType.getClass();
+        return canUseChangeValueForRendering(changeType);
     }
 
     @Override

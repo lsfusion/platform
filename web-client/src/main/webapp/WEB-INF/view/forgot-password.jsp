@@ -19,18 +19,24 @@
     <tr>
         <td>
             <div id="content">
+
+                <%
+                    String query = request.getQueryString();
+                    String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                %>
+
                 <div class="image-center">
                     <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
                 </div>
                 <form id="forgot-password-form"
                       name="forgotPassword"
-                      action="forgot-password"
+                      action="forgot-password<%=queryString%>"
                       method="POST">
                     <fieldset>
                         <div class="text-center">
                             <p>
                                 <br/>
-                                <%= ServerMessages.getString(request, "password.reset") %>
+                                <%= ServerMessages.getString(request, "password.recovery") %>
                             </p>
                         </div>
                         <p>

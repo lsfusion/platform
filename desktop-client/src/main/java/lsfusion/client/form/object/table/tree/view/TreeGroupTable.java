@@ -385,6 +385,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         model.updateCellForegroundValues(property, cellForegroundValues);
     }
 
+    public void updateImageValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> imageValues) {
+        model.updateImageValues(property, imageValues);
+    }
+
     public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
         model.updateRowBackgroundValues(rowBackground);
     }
@@ -691,6 +695,19 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return null;
         }
         return model.getForegroundColor(pathForRow.getLastPathComponent(), column);
+    }
+
+    @Override
+    public Image getImage(int row, int column) {
+        if (row < 0 || row > getRowCount()) {
+            return null;
+        }
+
+        TreePath pathForRow = getPathForRow(row);
+        if (pathForRow == null) {
+            return null;
+        }
+        return model.getImage(pathForRow.getLastPathComponent(), column);
     }
 
     @Override

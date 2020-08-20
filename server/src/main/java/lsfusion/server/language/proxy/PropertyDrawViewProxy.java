@@ -27,8 +27,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelCaptionAfter = panelCaptionAfter;
     }
 
+    //for backward compatibility
     public void setEditOnSingleClick(boolean editOnSingleClick) {
-        target.editOnSingleClick = editOnSingleClick;
+        target.changeOnSingleClick = editOnSingleClick;
+    }
+
+    public void setChangeOnSingleClick(boolean changeOnSingleClick) {
+        target.changeOnSingleClick = changeOnSingleClick;
     }
 
     public void setHide(boolean hide) {
@@ -119,12 +124,22 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.focusable = focusable;
     }
 
+    //for backward compatibility
     public void setPanelCaptionAbove(boolean panelCaptionAbove) {
-        target.panelCaptionAbove = panelCaptionAbove;
+        target.panelCaptionVertical = panelCaptionAbove;
     }
 
+    public void setPanelCaptionVertical(boolean panelCaptionVertical) {
+        target.panelCaptionVertical = panelCaptionVertical;
+    }
+
+    //for backward compatibility
     public void setColumnKeysVertical(boolean columnKeysVertical) {
-        target.columnKeysVertical = columnKeysVertical;
+        target.panelColumnVertical = columnKeysVertical;
+    }
+
+    public void setPanelColumnVertical(boolean panelColumnVertical) {
+        target.panelColumnVertical = panelColumnVertical;
     }
 
     public void setCaption(LocalizedString caption) {

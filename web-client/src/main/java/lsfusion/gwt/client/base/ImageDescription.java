@@ -3,7 +3,7 @@ package lsfusion.gwt.client.base;
 import java.io.Serializable;
 
 public class ImageDescription implements Serializable {
-    public String url;
+    public String url; // asser is not null
     public int width = -1;
     public int height = -1;
 

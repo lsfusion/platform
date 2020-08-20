@@ -9,6 +9,8 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.view.MainFrame;
 
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
+
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
     private final GGroupObjectValue columnKey;
@@ -104,5 +106,13 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     @Override
     protected void onPaste(Object objValue, String stringValue) {
         form.pasteSingleValue(property, columnKey, stringValue);
+    }
+
+    public void setBackground(String color) {
+        GFormController.setBackgroundColor(getRenderElement(), getDisplayColor(color));
+    }
+
+    public void setForeground(String color) {
+        GFormController.setForegroundColor(getRenderElement(), getDisplayColor(color));
     }
 }

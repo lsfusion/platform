@@ -754,6 +754,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
+		|	'IMAGE' propObj=formPropertyObject { $options.setImage($propObj.property); }
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
@@ -3429,6 +3430,7 @@ newActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams acti
 
 emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
+    Boolean syncType = null;
 	LPWithParams fromProp = null;
 	LPWithParams subjProp = null;
 	LPWithParams bodyProp = null;
@@ -3441,7 +3443,7 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedEmailProp(fromProp, subjProp, bodyProp, recipTypes, recipProps, attachFileNames, attachFiles);
+		$action = self.addScriptedEmailProp(fromProp, subjProp, bodyProp, recipTypes, recipProps, attachFileNames, attachFiles, syncType);
 	}
 }
 	:	'EMAIL'
@@ -3458,6 +3460,7 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
                 { attachFileNames.add(attachFileName); }
 			)
 		)*
+		(sync = syncTypeLiteral{ syncType = $sync.val; })?
 	;
 	
 emailActionFormObjects[List<TypedParameter> context, boolean dynamic] returns [OrderedMap<String, LPWithParams> mapObjects]

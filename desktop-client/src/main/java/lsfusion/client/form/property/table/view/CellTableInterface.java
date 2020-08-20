@@ -21,6 +21,7 @@ public interface CellTableInterface extends EditPropertyHandler {
     boolean hasSingleSelection();
     Color getBackgroundColor(int row, int column);
     Color getForegroundColor(int row, int column);
+    Image getImage(int row, int column);
 
     ClientFormController getForm();
 }

@@ -41,16 +41,22 @@ statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
 timeoutHttp() = DATA LOCAL INTEGER ();
 
-headers = DATA LOCAL TEXT(TEXT);    
-cookies = DATA LOCAL TEXT(TEXT);    
-headersTo = DATA LOCAL TEXT(TEXT);
-cookiesTo = DATA LOCAL TEXT(TEXT);
-url = DATA LOCAL TEXT();
-query = DATA LOCAL TEXT();
-params = DATA LOCAL TEXT(TEXT);
-host = DATA LOCAL TEXT();
-port = DATA LOCAL INTEGER();
-exportName = DATA LOCAL TEXT();
+headers = DATA LOCAL NESTED TEXT(TEXT);    
+cookies = DATA LOCAL NESTED TEXT(TEXT);    
+headersTo = DATA LOCAL NESTED TEXT(TEXT);
+cookiesTo = DATA LOCAL NESTED TEXT(TEXT);
+query = DATA LOCAL NESTED TEXT();
+params = DATA LOCAL NESTED TEXT(TEXT);
+appHost = DATA LOCAL NESTED TEXT();
+appPort = DATA LOCAL NESTED INTEGER();
+exportName = DATA LOCAL NESTED TEXT();
+scheme = DATA LOCAL NESTED TEXT();
+webHost = DATA LOCAL NESTED TEXT();
+webPort = DATA LOCAL NESTED INTEGER();
+contextPath = DATA LOCAL NESTED TEXT();
+servletPath = DATA LOCAL NESTED TEXT();
+webPath() = scheme() + '://' + webHost() + ':' + webPort() + contextPath();
+url() = webPath() + servletPath(); 
 
 messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();
@@ -295,7 +301,7 @@ requestedTableLink = DATA LOCAL NESTED TABLELINK ();
 isActiveForm = DATA LOCAL BOOLEAN ();
 
 edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) TOOLBAR;
-edit(Object o) + {  DIALOG EDIT Object =o DOCKED; }
+edit(Object o) + {  SHOW EDIT Object =o DOCKED; } // since now SHOW fills request props, we don't need to do DIALOG, and without dialog there is no REQUEST wrapping, so group change for example will work
 formEdit(Object o)  { edit(o); }
 
 // private, only for interactive usage (for other purposes use operator DELETE)

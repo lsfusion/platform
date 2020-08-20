@@ -50,9 +50,9 @@ FORM dialogTypes '{word.type}'
     LIST Type OBJECT o
 ;
 
-type '{word.type.template.enrty}' = DATA Type(TemplateEntry);
-nameType '{word.name.type.template.enrty}' (TemplateEntry t) = name(type(t));
-idType '{word.id.type.template.enrty}' (TemplateEntry t) = staticName(type(t));
+type '{word.type.template.entry}' = DATA Type(TemplateEntry);
+nameType '{word.name.type.template.entry}' (TemplateEntry t) = name(type(t));
+idType '{word.id.type.template.entry}' (TemplateEntry t) = staticName(type(t));
 
 isTableMigrated = DATA BOOLEAN();
 onStarted() + {

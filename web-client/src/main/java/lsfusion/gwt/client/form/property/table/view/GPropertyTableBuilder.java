@@ -8,6 +8,9 @@ import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+
+import java.util.Optional;
 
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
@@ -118,6 +121,12 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
         GFormController.setForegroundColor(td, foregroundColor, true);
+
+        Optional<Object> image = getImage(rowValue, rowIndex, columnIndex);
+        if(image != null)
+            // assert that it is action and rendered with ActionCellRenderer
+            // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
+            GFormController.setDynamicImage(CellRenderer.unwrapTD(td), image.orElse(null));
     }
 
     public static void renderTD(Element td, int height) {
@@ -145,5 +154,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public abstract String getBackground(T rowValue, int row, int column);
     public abstract String getForeground(T rowValue, int row, int column);
+    public abstract Optional<Object> getImage(T rowValue, int row, int column);
 }
 

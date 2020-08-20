@@ -5,6 +5,7 @@ import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 public class GridDataRecord {
     public final int rowIndex;
@@ -17,6 +18,8 @@ public class GridDataRecord {
     private NativeStringMap<Boolean> readOnlys;
     private NativeStringMap<String> backgrounds;
     private NativeStringMap<String> foregrounds;
+
+    private NativeStringMap<Optional<Object>> images;
 
     public GridDataRecord(GGroupObjectValue key) {
         this(-1, key);
@@ -83,6 +86,14 @@ public class GridDataRecord {
         }
     }
 
+    public Optional<Object> getImage(String column) {
+        return images == null ? null : images.get(column);
+    }
+
+    public void setImage(String column, Object image) {
+        createImages().put(column, Optional.ofNullable(image));
+    }
+
     public boolean isReadonly(String column) {
         return readOnlys != null && readOnlys.get(column) != null;
     }
@@ -125,6 +136,13 @@ public class GridDataRecord {
             readOnlys = new NativeStringMap<>();
         }
         return readOnlys;
+    }
+
+    private NativeStringMap<Optional<Object>> createImages() {
+        if (images == null) {
+            images = new NativeStringMap<>();
+        }
+        return images;
     }
 
     public void reinit(GGroupObjectValue newKey, Object newRowBackground, Object newRowForeground) {

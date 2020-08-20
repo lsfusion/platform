@@ -25,7 +25,10 @@ public abstract class CellRenderer<T> {
         renderDynamic(element, value, updateContext);
     }
 
-    protected boolean isSimpleText() {
+    protected boolean isSimpleText(RenderContext renderContext) {
+        return false;
+    }
+    protected boolean isSimpleText(UpdateContext updateContext) {
         return false;
     }
 
@@ -62,7 +65,7 @@ public abstract class CellRenderer<T> {
         Integer staticHeight = renderContext.getStaticHeight();
         // is simple text renderer (SINGLE LINE (!)) && has static height (otherwise when div is expanded line-height will not work)
         // maybe later it makes sense to add optimization for ActionOrPropertyValue to look at the upper container if it's has static height
-        if(isSimpleText() && staticHeight != null) // optimization
+        if(staticHeight != null && isSimpleText(renderContext)) // optimization
             renderSimpleStatic(element, textAlign, vertAlignment, staticHeight);
         else {
             String horzAlignment = getFlexAlign(textAlign);
@@ -84,7 +87,7 @@ public abstract class CellRenderer<T> {
     private Element renderFlexStatic(Element element, String horzAlignment, String vertAlignment, Integer staticHeight) {
         int paddings = 0;
         if(GwtClientUtils.isTDorTH(element)) { // we need to wrap into div, at list because we cannot set display:flex to div
-            element = GwtClientUtils.wrapDiv(element);
+            element = wrapTD(element);
             if(staticHeight != null) // we need to remove paddings when setting maximum height (maybe in future margins might be used, and that will not be needed)
                 paddings = getHeightPadding() * 2;
         }
@@ -93,6 +96,15 @@ public abstract class CellRenderer<T> {
         if(staticHeight != null) // setting maxHeight for div ??? if inner context is too big, for example multi-line text (strictly speaking for now it seems that it is used only for multi-line text)
             GwtClientUtils.setMaxHeight(element, staticHeight, paddings);
         return element;
+    }
+
+    private static Element wrapTD(Element element) {
+        assert GwtClientUtils.isTDorTH(element);
+        return GwtClientUtils.wrapDiv(element);
+    }
+    public static Element unwrapTD(Element element) {
+        assert GwtClientUtils.isTDorTH(element);
+        return element.getFirstChildElement();
     }
 
     private static void renderSimpleStatic(Element element, Style.TextAlign horzAlignment, String vertAlignment, Integer staticHeight) {
@@ -112,7 +124,7 @@ public abstract class CellRenderer<T> {
         Integer staticHeight = renderContext.getStaticHeight();
         // is simple text renderer (SINGLE LINE (!)) && has static height (otherwise when div is expanded line-height will not work)
         boolean sameElement = true;
-        if(isSimpleText() && staticHeight != null) // optimization
+        if(staticHeight != null && isSimpleText(renderContext)) // optimization
             clearRenderSimpleStatic(element);
         else
             sameElement = clearRenderFlexStatic(element, staticHeight);
@@ -140,8 +152,8 @@ public abstract class CellRenderer<T> {
     }
 
     public void renderDynamic(Element element, Object value, UpdateContext updateContext) {
-        if(!(isSimpleText() && updateContext.isStaticHeight()) && GwtClientUtils.isTDorTH(element))
-            element = element.getFirstChildElement();
+        if(!(updateContext.isStaticHeight() && isSimpleText(updateContext)) && GwtClientUtils.isTDorTH(element)) // there is another unwrapping in GPropertyTableBuilder, so it also should be kept consistent
+            element = unwrapTD(element);
 
         renderDynamicContent(element, value, updateContext);
     }

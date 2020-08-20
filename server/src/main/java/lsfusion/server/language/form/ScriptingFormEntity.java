@@ -24,6 +24,7 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.language.property.oraction.MappedActionOrProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ColorClass;
+import lsfusion.server.logics.classes.data.file.ImageClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -344,7 +345,7 @@ public class ScriptingFormEntity {
                     property = LM.getAddObjectAction(form, obj, explicitClass);
                     objects = SetFact.EMPTYORDER();
                     forceIntegrationSID = propertyName;
-                } else if (propertyName.equals("NEWEDIT") || (propertyName.equals("NEW") && scope != OLDSESSION)) {
+                } else if (propertyName.equals("NEWEDIT") || propertyName.equals("NEW")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddFormAction(form, obj, explicitClass, scope, version);
@@ -469,6 +470,12 @@ public class ScriptingFormEntity {
             property.setPropertyExtra(addGroundPropertyObject(foregroundProperty, false), PropertyDrawExtraType.FOREGROUND);
         } else {
             property.setPropertyExtra(foregroundProperty, PropertyDrawExtraType.FOREGROUND);
+        }
+
+        PropertyObjectEntity imageProperty = options.getImage();
+        if (imageProperty != null && ((PropertyObjectEntity<?>) imageProperty).property.getType().equals(ImageClass.get())) {
+            property.setPropertyExtra(imageProperty, PropertyDrawExtraType.IMAGE);
+            property.hasDynamicImage = true;
         }
 
         property.setPropertyExtra(options.getReadOnlyIf(), PropertyDrawExtraType.READONLYIF);

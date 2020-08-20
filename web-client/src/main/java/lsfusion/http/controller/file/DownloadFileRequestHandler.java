@@ -1,8 +1,8 @@
 package lsfusion.http.controller.file;
 
 import com.google.common.io.ByteStreams;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
-import lsfusion.base.file.WriteUtils;
 import lsfusion.gwt.server.FileUtils;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         File file = new File(FileUtils.APP_TEMP_FOLDER_URL, fileName);
         
         response.setContentType(MIMETypeUtils.MIMETypeForFileExtension(extension));
-        response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(WriteUtils.appendExtension(displayName != null ? displayName : fileName, extension)));
+        response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName != null ? displayName : fileName, extension)));
         // expiration will be set in urlRewrite.xml /downloadFile (just to have it at one place)
 
         try(FileInputStream fis = new FileInputStream(file)) {
@@ -39,5 +39,10 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         
         if(actionFile)
             FileUtils.deleteFile(file);
+    }
+
+    private String getFileName(String name, String extension) {
+        //comma is not allowed in Content-Disposition filename*
+        return BaseUtils.getFileName(name, extension).replace(",", "");
     }
 }

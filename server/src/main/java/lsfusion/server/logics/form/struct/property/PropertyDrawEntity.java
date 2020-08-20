@@ -7,10 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.property.ClassViewType;
@@ -18,6 +15,7 @@ import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.caches.IdentityStartLazy;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -85,10 +83,26 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public String columnsName;
-    public Object columnGroupObjects = SetFact.mOrderExclSet();
-    private boolean finalizedColumnGroupObjects;
+    public ImOrderSet<GroupObjectEntity> columnGroupObjects = SetFact.EMPTYORDER();
 
-    private Map<PropertyDrawExtraType, PropertyObjectEntity<?>> propertyExtras = new HashMap<>();
+    private Object propertyExtras = MapFact.mMap(MapFact.override());
+    private boolean finalizedPropertyExtras;
+
+    @LongMutable
+    public ImMap<PropertyDrawExtraType, PropertyObjectEntity<?>> getPropertyExtras() {
+        if(!finalizedPropertyExtras) {
+            finalizedPropertyExtras = true;
+            propertyExtras = ((MMap<PropertyDrawExtraType, PropertyObjectEntity<?>>)propertyExtras).immutable();
+        }
+        return (ImMap<PropertyDrawExtraType, PropertyObjectEntity<?>>) propertyExtras;
+    }
+    public void setPropertyExtra(PropertyObjectEntity<?> property, PropertyDrawExtraType type) {
+        assert !finalizedPropertyExtras;
+        if(property != null)
+            ((MMap<PropertyDrawExtraType, PropertyObjectEntity<?>>) propertyExtras).add(type, property);
+    }
+
+    public boolean hasDynamicImage;
 
     public Group group;
     
@@ -111,18 +125,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public PropertyDrawEntity quickFilterProperty;
 
-    public void fillQueryProps(MExclSet<PropertyReaderEntity> mResult) {
+    @IdentityStrongLazy
+    public ImSet<PropertyReaderEntity> getQueryProps() {
+        MExclSet<PropertyReaderEntity> mResult = SetFact.mExclSet();
         mResult.exclAdd(this);
-        PropertyDrawExtraType[] propTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND}; // READONLYIF is absent here
+        PropertyDrawExtraType[] propTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND, IMAGE}; // READONLYIF is absent here
         for (PropertyDrawExtraType type : propTypes) {
-            fillQueryProp(mResult, getPropertyExtra(type), extraReaders.get(type));
+            PropertyObjectEntity<?> property = getPropertyExtra(type);
+            if (property != null)
+                mResult.exclAdd(new PropertyDrawReader(type));
         }
-    }
-
-    private void fillQueryProp(MExclSet<PropertyReaderEntity> mResult, PropertyObjectEntity<?> property, PropertyReaderEntity reader) {
-        if (property != null) {
-            mResult.exclAdd(reader);
-        }
+        return mResult.immutable();
     }
 
     public class PropertyDrawReader implements PropertyReaderEntity {
@@ -144,7 +157,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         @Override
         public PropertyObjectEntity getPropertyObjectEntity() {
-            return propertyExtras.get(type);
+            return getPropertyExtra(type);
         }
 
         @Override
@@ -177,8 +190,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     }
 
-    public final Map<PropertyDrawExtraType, PropertyDrawReader> extraReaders;
-    
     private ActionOrProperty inheritedProperty;
 
     public PropertyDrawEntity(int ID, String sID, ActionOrPropertyObjectEntity<P, ?> propertyObject, ActionOrProperty inheritedProperty) {
@@ -187,12 +198,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         setIntegrationSID(sID);
         this.propertyObject = propertyObject;
         this.inheritedProperty = inheritedProperty;
-        
-        this.extraReaders = new HashMap<>();
-        PropertyDrawExtraType[] extraTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND};
-        for (PropertyDrawExtraType type : extraTypes) {
-            this.extraReaders.put(type, new PropertyDrawReader(type));
-        }
     }
 
     public DataClass getRequestInputType(FormEntity form, SecurityPolicy policy) {
@@ -396,37 +401,20 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return mouseBinding != null ? mouseBinding : getEventProperty().getMouseBinding();
     }
 
-    @LongMutable
     public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
-        if(!finalizedColumnGroupObjects) {
-            finalizedColumnGroupObjects = true;
-            columnGroupObjects = ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).immutableOrder();
-        }
-
-        return (ImOrderSet<GroupObjectEntity>)columnGroupObjects;
+        return columnGroupObjects;
     }
     public void setColumnGroupObjects(String columnsName, ImOrderSet<GroupObjectEntity> columnGroupObjects) {
-        assert !finalizedColumnGroupObjects;
         this.columnsName = columnsName;
-        finalizedColumnGroupObjects = true;
         this.columnGroupObjects = columnGroupObjects;
     }
 
-    public void addColumnGroupObject(GroupObjectEntity columnGroupObject) {
-        assert !finalizedColumnGroupObjects;
-        ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).exclAdd(columnGroupObject);
-    }
-
-    public void setPropertyExtra(PropertyObjectEntity<?> property, PropertyDrawExtraType type) {
-        propertyExtras.put(type, property);
-    }
-    
     public PropertyObjectEntity<?> getPropertyExtra(PropertyDrawExtraType type) {
-        return propertyExtras.get(type);
+        return getPropertyExtras().get(type);
     }
     
     public boolean hasPropertyExtra(PropertyDrawExtraType type) {
-        return propertyExtras.get(type) != null;
+        return getPropertyExtra(type) != null;
     }
     
     public PropertyEditType getEditType() {
@@ -474,9 +462,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
 
         // todo [dale]: READONLYIF is absent in the list, but may be it should be in some cases
-        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND};
+        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND, IMAGE};
         for (PropertyDrawExtraType type : neededTypes) {
-            PropertyObjectEntity<?> prop = propertyExtras.get(type);
+            PropertyObjectEntity<?> prop = getPropertyExtra(type);
             if (prop != null) {
                 propertyObjects.add(prop);
             }

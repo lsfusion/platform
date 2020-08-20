@@ -10,7 +10,7 @@ import javax.swing.border.Border;
 import java.awt.*;
 
 public class ActionPropertyRenderer extends PropertyRenderer {
-    private static final String defaultCaption = "...";
+    private static final String ICON_EXECUTE = "action.png";
     private Icon defaultIcon;
 
     private JButton button;
@@ -40,9 +40,12 @@ public class ActionPropertyRenderer extends PropertyRenderer {
 
     public void setValue(Object value) {
         super.setValue(value);
-        if (defaultIcon == null && getComponent().getIcon() != null) defaultIcon = getComponent().getIcon(); // временно так
-
-        getComponent().setText(defaultIcon != null || value == null ? "" : defaultCaption);
+        if (defaultIcon == null) {
+            defaultIcon = getComponent().getIcon();
+            if(defaultIcon == null) {
+                defaultIcon = ClientImages.get(ICON_EXECUTE);
+            }
+        }
         getComponent().setIcon(value == null ? null : defaultIcon);
     }
 }

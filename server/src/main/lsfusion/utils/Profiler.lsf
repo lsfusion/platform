@@ -132,7 +132,7 @@ order '{profiler.order}'(ProfileObject p1, ProfileObject p2, User u, Form f) = v
 
 dataInFilter '{profiler.in.filter}' = DATA LOCAL NESTED BOOLEAN (User);
 inFilter '{profiler.in.filter}' = DATA LOCAL NESTED BOOLEAN (UserRole);
-overFilter '{profiler.in.filter}' = OVERRIDE dataInFilter(User u), inFilter(mainRole(u)), (GROUP SUM 1 IF in(u, UserRole r) AND inFilter(r)) > 0;
+overFilter '{profiler.in.filter}' = OVERRIDE dataInFilter(User u), (GROUP SUM 1 IF has(u, UserRole r) AND inFilter(r)) > 0;
 inFilter '{profiler.in.filter}' (User u) = OVERRIDE overFilter(u), NOT (GROUP SUM 1 IF overFilter(User uu)) AND u IS User;
 background(User u) = IF inFilter(u) THEN RGB(220,220,220);
 
@@ -265,7 +265,7 @@ FORM profiler '{profiler.profiler}'
     PROPERTIES (r) READONLY name
     
     OBJECTS u = User
-    PROPERTIES (u) BACKGROUND background(u) overFilter, name READONLY  , nameMainRole READONLY  
+    PROPERTIES (u) BACKGROUND background(u) overFilter, name READONLY, userRoles READONLY  
     
     OBJECTS f = Form
     PROPERTIES (f)  BACKGROUND background(f) dataFilter, canonicalName READONLY

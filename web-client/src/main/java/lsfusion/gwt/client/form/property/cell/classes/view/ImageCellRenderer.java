@@ -18,8 +18,9 @@ public class ImageCellRenderer extends FileBasedCellRenderer {
 
     @Override
     protected String getFilePath(Object value) {
+        String extension = ((GImageType) property.baseType).extension;
         return value instanceof String && !value.equals("null") ?
-                GwtClientUtils.getDownloadURL((String) value, null, ((GImageType) property.baseType).extension, false) :
+                GwtClientUtils.getDownloadURL((String) value, null, extension, false) :
                 GwtClientUtils.getModuleImagePath(ICON_EMPTY);
     }
 }

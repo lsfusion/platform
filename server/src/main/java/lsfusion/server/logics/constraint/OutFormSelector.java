@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
@@ -39,8 +40,16 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
         return null;
     }
 
+    // strictly speaking if properties is not null we can do form "completely" static (for example return in getNFStaticForm)
+    // IdentityStrongLazy is important to avoid memory leaks
+    @Override
+    @IdentityStrongLazy
+    public FormEntity getStaticForm(BaseLogicsModule LM) {
+        return LM.getLogForm(property, messageProperty, properties);
+    }
+
     @Override
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues) {
-        return new Pair<>(LM.getLogForm(property, messageProperty, properties), MapFact.EMPTYREV());
+        return new Pair<>(getStaticForm(LM), MapFact.EMPTYREV());
     }
 }

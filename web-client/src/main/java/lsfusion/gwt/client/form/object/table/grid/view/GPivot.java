@@ -50,7 +50,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
-public class GPivot extends GStateTableView implements ColorThemeChangeListener {
+public class GPivot extends GStateTableView implements ColorThemeChangeListener, RenderContext, UpdateContext {
 
     private final String ICON_LEAF = "tree_leaf.png";
     private final String ICON_OPEN = "tree_open.png";
@@ -67,7 +67,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private final static int defaultFontSize = 9;
 
     private GPropertyDraw selectedProperty;
-    
+
     public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty) {
         super(formController, gridController);
         this.selectedProperty = selectedProperty;
@@ -534,14 +534,18 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
 
         if(firstUpdateView == null || !firstUpdateView) { // we don't need to update server groups, since they should be already set
             updateRendererState(true); // will wait until server will answer us if we need to change something
-            grid.changeGroups(properties, columnKeys, aggrProps, firstUpdateView != null ? getPageSize() : null, getGroupType(aggregatorName.toUpperCase())); // we need to do "changeListViewType" if it's firstUpdateView
+            grid.changeGroups(properties, columnKeys, aggrProps, firstUpdateView != null, getGroupType(aggregatorName.toUpperCase())); // we need to do "changeListViewType" if it's firstUpdateView
             firstUpdateView = null;
         }
     }
 
     private void afterRefresh() {
         // we don't want to do force-layout, so we'll just emulate UpdateDOMCommand behaviour
-        Scheduler.get().scheduleFinally(() -> checkPadding(true)); // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
+        Scheduler.get().scheduleFinally(() -> {
+            // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
+            checkPadding(true);
+            restoreScrollLeft();
+        });
     }
 
     private Element rendererElement; // we need to save renderer element, since it is asynchronously replaced, and we might update old element (that is just about to disappear)
@@ -1082,6 +1086,32 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
         GPropertyDraw property = columnMap.get(columnName).property;
         GPivot.setTableToExcelPropertyAttributes(th, value, property);
+        property.getCellRenderer().render(th, value, this, this);
+    }
+
+    @Override
+    public Integer getStaticHeight() {
+        return rowHeight;
+    }
+
+    @Override
+    public boolean globalCaptionIsDrawn() {
+        return true;
+    }
+
+    @Override
+    public GFont getFont() {
+        return font;
+    }
+
+    @Override
+    public boolean isStaticHeight() {
+        return true;
+    }
+
+    /*private void renderColumn(Element th, JavaScriptObject value, String columnName) {
+        GPropertyDraw property = columnMap.get(columnName).property;
+        GPivot.setTableToExcelPropertyAttributes(th, value, property);
         property.getCellRenderer().render(th, value, new RenderContext() {
             @Override
             public Integer getStaticHeight() {
@@ -1103,7 +1133,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
                 return true;
             }
         });
-    }
+    }*/
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayMixed colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
@@ -1703,6 +1733,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
         }
     }
 
+    private Integer scrollLeft = null;
+
+    private void saveScrollLeft() {
+        scrollLeft = getTableDataScroller().getScrollLeft();
+    }
+
+    private void restoreScrollLeft() {
+        if(scrollLeft != null) {
+            getTableDataScroller().setScrollLeft(scrollLeft);
+            scrollLeft = null;
+        }
+    }
+
     public native void resizePlotlyChart() /*-{
         var plotlyElement = this.@GPivot::getPlotlyChartElement()();
         if (plotlyElement) {
@@ -1889,6 +1932,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener 
     private void colAttrHeaderClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey, boolean dblClick) {
         if(dblClick) {
             if (isSortColumn(isSubtotal, columnKeyValues)) {
+                saveScrollLeft();
                 modifySortCols(columnKeyValues, ctrlKey, shiftKey);
                 if (!shiftKey && !ctrlKey) {
                     unwrapOthers(rendererElement, th);

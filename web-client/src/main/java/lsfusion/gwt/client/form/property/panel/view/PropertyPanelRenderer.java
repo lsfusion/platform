@@ -3,16 +3,12 @@ package lsfusion.gwt.client.form.property.panel.view;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -30,7 +26,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     public PropertyPanelRenderer(final GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
         super(form, property, columnKey);
 
-        vertical = property.panelCaptionAbove;
+        vertical = property.panelCaptionVertical;
 
         panel = new Panel(vertical);
         panel.addStyleName("dataPanelRendererPanel");

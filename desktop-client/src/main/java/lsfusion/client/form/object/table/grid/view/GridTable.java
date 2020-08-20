@@ -25,7 +25,6 @@ import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
-import lsfusion.client.form.property.table.view.InternalEditEvent;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.design.FontInfo;
@@ -85,6 +84,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> imageValues = new HashMap<>();
 
     private ClientGroupObjectValue currentObject;
 
@@ -258,7 +258,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                     changeSelection(getSelectedRow(), getSelectedColumn(), false, false);
                 }
 
-                if (column != -1 && (getSelectedRow() == previousSelectedRow || isEditOnSingleClick(row, column))) {
+                if (column != -1 && (getSelectedRow() == previousSelectedRow || isChangeOnSingleClick(row, column))) {
                     pressedCellColumn = column;
                     pressedCellRow = row;
                     repaint();
@@ -346,10 +346,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         return gridController.getAutoSize() ? getPreferredSize() : SwingDefaults.getTablePreferredSize();
     }
 
-    private boolean isEditOnSingleClick(int row, int col) {
-        Boolean editOnSingleClick = getProperty(row, col).editOnSingleClick;
-        if(editOnSingleClick != null)
-            return editOnSingleClick;
+    private boolean isChangeOnSingleClick(int row, int col) {
+        Boolean changeOnSingleClick = getProperty(row, col).changeOnSingleClick;
+        if(changeOnSingleClick != null)
+            return changeOnSingleClick;
         return false;
     }
 
@@ -460,7 +460,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
         model.updateColumns(getOrderedVisibleProperties(properties), columnKeys, captions, showIfs);
 
-        model.updateRows(rowKeys, values, readOnlyValues, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
+        model.updateRows(rowKeys, values, readOnlyValues, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues, imageValues);
 
         refreshColumnModel();
 
@@ -1173,6 +1173,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         this.cellForegroundValues.put(property, cellForegroundValues);
     }
 
+    public void updateImageValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> imageValues) {
+        this.imageValues.put(property, imageValues);
+    }
+
     public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
         Map<ClientGroupObjectValue, Object> propValues = this.values.get(property);
         if (!update || propValues == null) {
@@ -1299,6 +1303,11 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     public Color getForegroundColor(int row, int column) {
         return model.getForegroundColor(row, column);
+    }
+
+    @Override
+    public Image getImage(int row, int column) {
+        return model.getImage(row, column);
     }
 
     public int getMinPropertyIndex(ClientPropertyDraw property) {

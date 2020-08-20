@@ -35,6 +35,9 @@ in '{security.in}' = DATA BOOLEAN (CustomUser, UserRole);
 
 TABLE userUserRole (User, UserRole);
 has '{security.in}' (User user, UserRole role) = in(user, role) OR overIn(user, role) MATERIALIZED;
+//firstRole need for Settings
+firstRole(User user) = GROUP MIN UserRole role IF has(user, role);
+userRoles '{security.user.roles}' (User user) = GROUP CONCAT name(UserRole role) IF has(user, role), ', ' ORDER name(role) CHARWIDTH 15;
 
 rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 
@@ -44,6 +47,10 @@ CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
 WHEN SETCHANGED (User u IS User) DO {
     in(u, userRoleSID('admin')) <- TRUE WHERE login(u) == 'admin';        
     in(u, userRoleSID('default')) <- TRUE;        
+}
+
+onUserRegister(User user) + {
+    in(user, userRoleSID('selfRegister')) <- TRUE;
 }
 
 // Forms
@@ -308,6 +315,15 @@ createSystemUserRoles() {
         NEW ur = UserRole {
             sid(ur) <- 'default';
             name(ur) <- ISTRING[100] ('{security.user.role.default}');
+        }
+     }   
+    
+     IF NOT userRoleSID('selfRegister') THEN {
+        NEW ur = UserRole {
+            sid(ur) <- 'selfRegister';
+            name(ur) <- ISTRING[100] ('{security.user.role.new.user}');
+            dataPermission(ur, navigatorElementCanonicalName('System.root')) <- Permission.forbid;        
+            dataPermission(ur, navigatorElementCanonicalName('Authentication.account')) <- Permission.permit;          
         }
      }   
 }

@@ -25,7 +25,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
-public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> {
+public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> implements RenderContext, UpdateContext {
 
     protected final GFormController form;
     protected final GGroupObject groupObject;
@@ -71,12 +71,20 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public abstract GPropertyDraw getProperty(Cell cell);
 
     @Override
+    public boolean isChangeOnSingleClick(Cell cell) {
+        GPropertyDraw property = getProperty(cell);
+        if(property != null && property.changeOnSingleClick != null)
+            return property.changeOnSingleClick;
+        return super.isChangeOnSingleClick(cell);
+    }
+
+    /*@Override
     public boolean isEditOnSingleClick(Cell cell) {
         GPropertyDraw property = getProperty(cell);
         if(property != null && property.editOnSingleClick != null)
             return property.editOnSingleClick;
         return super.isEditOnSingleClick(cell) || (GFormController.isLinkEditMode() && property != null && property.hasEditObjectAction);
-    }
+    }*/
 
     public abstract GGroupObjectValue getColumnKey(Cell editCell);
 
@@ -107,12 +115,12 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
                 new ExecuteEditContext() {
                     @Override
                     public RenderContext getRenderContext() {
-                        return GPropertyTable.this.getRenderContext();
+                        return GPropertyTable.this;
                     }
 
                     @Override
                     public UpdateContext getUpdateContext() {
-                        return GPropertyTable.this.getUpdateContext();
+                        return GPropertyTable.this;
                     }
 
                     @Override
@@ -176,7 +184,40 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         );
     }
 
-    public RenderContext getRenderContext() {
+    @Override
+    public Integer getStaticHeight() {
+        return tableBuilder.getCellHeight();
+    }
+
+    @Override
+    public boolean globalCaptionIsDrawn() {
+        return true;
+    }
+
+    @Override
+    public boolean isStaticHeight() {
+        return true;
+    }
+
+    public abstract GFont getFont();
+
+    protected void setCellHeight(int cellHeight) {
+        tableBuilder.setCellHeight(cellHeight);
+    }
+
+    @Override
+    public boolean changeSelectedColumn(int column) {
+        form.checkCommitEditing();
+        return super.changeSelectedColumn(column);
+    }
+
+    @Override
+    public void changeSelectedRow(int row) {
+        form.checkCommitEditing();
+        super.changeSelectedRow(row);
+    }
+
+   /* public RenderContext getRenderContext() {
         return new RenderContext() {
             @Override
             public Integer getStaticHeight() {
@@ -218,5 +259,5 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public void changeSelectedRow(int row) {
         form.checkCommitEditing();
         super.changeSelectedRow(row);
-    }
+    }*/
 }

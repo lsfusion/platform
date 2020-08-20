@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
@@ -43,6 +44,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.*;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
@@ -57,7 +59,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 126;
+        return 128;
     }
 
     public static String getPlatformVersion() {
@@ -2061,7 +2063,7 @@ public class BaseUtils {
     }
 
     public static void openFile(RawFileData data, String name, String extension) throws IOException {
-        File file = name != null ? new File(System.getProperty("java.io.tmpdir") + "/" + name + "." + extension) : File.createTempFile("lsf", "." + extension);
+        File file = name != null ? new File(System.getProperty("java.io.tmpdir") + "/" + getFileName(name, extension)) : File.createTempFile("lsf", "." + extension);
         try (FileOutputStream f = new FileOutputStream(file)) {
             data.write(f);
         }
@@ -2079,6 +2081,10 @@ public class BaseUtils {
                 Runtime.getRuntime().exec("open " + file.getAbsolutePath()).waitFor();*/
 
         Desktop.getDesktop().open(file);
+    }
+
+    public static String getFileName(String name, String extension) {
+        return (extension != null && !extension.isEmpty() ? (name + "." + extension) : name).replaceAll("[/\\\\]", ""); //remove / and \
     }
 
     public static String firstWord(String string, String separator) {
@@ -2847,4 +2853,25 @@ public class BaseUtils {
     }
 
     public static final String impossibleString = "FDWREVSFFGFSDRSDR";
+
+    public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
+        if (timeout != null) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            final Future<Object> future = executor.submit(callable);
+            executor.shutdown();
+
+            try {
+                return future.get(timeout, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException | InterruptedException | ExecutionException e) {
+                future.cancel(true);
+                throw Throwables.propagate(e);
+            }
+        } else {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
+        }
+    }
 }

@@ -1,6 +1,8 @@
 package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -41,10 +43,8 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
 import static lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet.*;
@@ -122,7 +122,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public ContainerView mainContainer;
 
-    protected PropertyDrawView printButton;
     protected PropertyDrawView editButton;
     protected PropertyDrawView xlsButton;
     protected PropertyDrawView dropButton;
@@ -417,10 +416,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return componentSIDHandler.find(sid, version);
     }
 
-    public PropertyDrawView getPrintButton() {
-        return printButton;
-    }
-
     public PropertyDrawView getEditButton() {
         return editButton;
     }
@@ -590,8 +585,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.focusable = focusable;
     }
 
-    public void setEditOnSingleClick(PropertyDrawView property, Boolean editOnSingleClick) {
-        property.editOnSingleClick = editOnSingleClick;
+    public void setChangeOnSingleClick(PropertyDrawView property, Boolean changeOnSingleClick) {
+        property.changeOnSingleClick = changeOnSingleClick;
     }
 
     public void setCaption(LocalizedString caption) {
@@ -734,5 +729,21 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
                 
         mainContainer.finalizeAroundInit();
         componentSIDHandler.finalizeChanges();
+
+        pivotColumns.finalizeChanges();
+        pivotRows.finalizeChanges();
+        pivotMeasures.finalizeChanges();
+
+        for(ComponentView removedComponent : removedComponents)
+            if(removedComponent.getContainer() == null)
+                removedComponent.finalizeAroundInit();
+    }
+
+    protected transient Set<ComponentView> removedComponents = new ConcurrentIdentityWeakHashSet<>();
+
+    // the problem is that if removed components are not put somewhere they are not finalized
+    public void removeComponent(ComponentView component, Version version) {
+        removedComponents.add(component);
+        component.removeFromParent(version);
     }
 }

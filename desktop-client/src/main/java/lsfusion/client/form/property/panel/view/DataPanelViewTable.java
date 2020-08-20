@@ -15,6 +15,7 @@ import static lsfusion.interop.form.event.KeyStrokes.getEnter;
 public class DataPanelViewTable extends SingleCellTable {
     private Color backgroundColor;
     private Color foregroundColor;
+    private Image image;
 
     public DataPanelViewTable(ClientFormController form, ClientGroupObjectValue columnKey, ClientPropertyDraw property) {
         super(columnKey, form);
@@ -53,6 +54,18 @@ public class DataPanelViewTable extends SingleCellTable {
 
     public Color getForegroundColor() {
         return foregroundColor;
+    }
+
+    public Image getImage(int row, int column) {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
+    }
+
+    public Image getImage() {
+        return image;
     }
 
     public ClientFormController getForm() {

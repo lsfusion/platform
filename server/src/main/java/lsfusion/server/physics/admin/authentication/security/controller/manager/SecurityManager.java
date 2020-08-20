@@ -276,7 +276,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     userObject = addUser(authentication.getUserName(), pwd, session);
                     setUserParameters(userObject, ((OAuth2Authentication) authentication).getFirstName(),
                             ((OAuth2Authentication) authentication).getLastName(), ((OAuth2Authentication) authentication).getEmail(),
-                            null, session);
+                            Collections.singletonList("selfRegister"), session);
                     apply(session, stack);
                 }
             }
@@ -428,8 +428,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 for (String userRoleName : userRoleSIDs) {
                     ObjectValue userRole = securityLM.userRoleSID.readClasses(session, new DataObject(userRoleName));
 
-                    if (! (userRole instanceof NullValue)) {
-                        securityLM.mainRoleCustomUser.change(userRole, session, customUser);
+                    if (userRole instanceof DataObject) {
+                        securityLM.inCustomUserUserRole.change(true, session, customUser, (DataObject) userRole);
                         break;
                     }
                 }

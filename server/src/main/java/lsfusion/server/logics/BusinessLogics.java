@@ -625,6 +625,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         securityManager.initSecret();
     }
 
+    public void finalizeClasses() {
+        LM.baseClass.finalizeAroundInit();
+    }
+
+    public void finalizeGroups() {
+        LM.getRootGroup().finalizeAroundInit();
+    }
+
     public ImOrderSet<ActionOrProperty> getOrderActionOrProperties() {
         return LM.getRootGroup().getActionOrProperties();
     }
@@ -1759,11 +1767,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutable();
     }
 
-    public ImSet<FormEntity> markFormsForFinalization() {
-        MExclSet<FormEntity> mResult = SetFact.mExclSet();
+    public void markFormsForFinalization() {
         for(LogicsModule logicsModule : modules.all())
             logicsModule.markFormsForFinalization();
-        return mResult.immutable();
+    }
+
+    public void markPropsForFinalization() {
+        for(LogicsModule logicsModule : modules.all())
+            logicsModule.markPropsForFinalization();
     }
 
     public ImSet<FormEntity> getAllForms() {
@@ -1866,14 +1877,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                         LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
                         String computer = logInfo == null ? null : logInfo.hostnameComputer;
                         String user = logInfo == null ? null : logInfo.userName;
-                        String userRole = logInfo == null ? null : logInfo.userRole;
+                        String userRoles = logInfo == null ? null : logInfo.userRoles;
                         String threadName = "";
                         ThreadInfo threadInfo = thread == null ? null : tBean.getThreadInfo(thread.getId());
                         if (threadInfo != null) {
                             threadName = threadInfo.getThreadName();
                         }
 
-                        infos.add(new AllocatedInfo(user, userRole, computer, threadName, bEntry.getKey(), deltaBytes, userMissed, userHit, userHitMap, userMissedMap));
+                        infos.add(new AllocatedInfo(user, userRoles, computer, threadName, bEntry.getKey(), deltaBytes, userMissed, userHit, userHitMap, userMissedMap));
                     }
                 }
             }
@@ -2101,7 +2112,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private class AllocatedInfo {
         private final String user;
-        private final String userRole;
+        private final String userRoles;
         private final String computer;
         private final String threadName;
         private final Long pid;
@@ -2111,9 +2122,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         private final HashMap<CacheType, Long> userHitMap;
         private final HashMap<CacheType, Long> userMissedMap;
 
-        AllocatedInfo(String user, String userRole, String computer, String threadName, Long pid, Long bytes, long userMissed, long userHit, HashMap<CacheType, Long> userHitMap, HashMap<CacheType, Long> userMissedMap) {
+        AllocatedInfo(String user, String userRoles, String computer, String threadName, Long pid, Long bytes, long userMissed, long userHit, HashMap<CacheType, Long> userHitMap, HashMap<CacheType, Long> userMissedMap) {
             this.user = user;
-            this.userRole = userRole;
+            this.userRoles = userRoles;
             this.computer = computer;
             this.threadName = threadName;
             this.pid = pid;
@@ -2128,7 +2139,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         public String toString() {
             String userMessage = String.format("PID %s: %s, Thread %s", pid, humanReadableByteCount(bytes), threadName);
             if (user != null) {
-                userMessage += String.format(", Comp. %s, User %s, Role %s", computer == null ? "unknown" : computer, user, userRole);
+                userMessage += String.format(", Comp. %s, User %s, Roles %s", computer == null ? "unknown" : computer, user, userRoles);
             }
             userMessage += String.format(", missed-hit: All: %s-%s, %s", userMissed, userHit, getStringMap(userHitMap, userMissedMap));
 

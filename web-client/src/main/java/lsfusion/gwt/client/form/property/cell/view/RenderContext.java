@@ -7,5 +7,7 @@ public interface RenderContext {
 
     boolean isAlwaysSelected(); // needed for editing object style (on ctrl pressed)
 
+    boolean globalCaptionIsDrawn();
+
     GFont getFont();
 }

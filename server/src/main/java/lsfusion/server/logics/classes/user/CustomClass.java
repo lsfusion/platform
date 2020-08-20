@@ -356,9 +356,21 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return this instanceof BaseClass; // тут возможно стоило бы еще другие абстрактные классы с большим количеством children'ов исключить, но кроме Object'а пока таких нет 
     }
 
+    public void finalizeAroundInit() {
+        dialogFormHolder.finalizeAroundInit();
+        editFormHolder.finalizeAroundInit();
+
+        for(CustomClass child : getChildrenIt())
+            child.finalizeAroundInit();
+    }
+
     private abstract class ClassFormHolder {
         private NFProperty<ClassFormEntity> form = NFFact.property();
         private boolean isUsed = false;
+
+        public void finalizeAroundInit() {
+            form.finalizeChanges();
+        }
 
         public ClassFormEntity getForm(final BaseLogicsModule LM) {
             ClassFormEntity setForm = form.get();
@@ -450,9 +462,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             return null;
         }
 
+        // need this for recursion guard, since otherwise finalizeAroundInit is called in recursion
         @IdentityStrongLazy
+        private ClassFormEntity getDefaultFormNotFinalized(BaseLogicsModule LM) {
+            return createDefaultForm(LM);
+        }
+
         private ClassFormEntity getDefaultForm(BaseLogicsModule LM) {
-            ClassFormEntity classForm = createDefaultForm(LM);
+            ClassFormEntity classForm = getDefaultFormNotFinalized(LM);
             LM.addAutoFormEntity((BaseClassFormEntity)classForm.form);
             return classForm;
         }

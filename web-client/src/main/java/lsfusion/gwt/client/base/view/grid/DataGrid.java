@@ -771,7 +771,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     public boolean isFocusable(Cell cell) {
         return cell.getColumn().isFocusable();
     }
-    public boolean isEditOnSingleClick(Cell cell) {
+    public boolean isChangeOnSingleClick(Cell cell) {
         return !isFocusable(cell);
     }
 
@@ -1612,9 +1612,10 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             this.display = display;
         }
 
-        public void onCellBefore(EventHandler handler, Cell cell, Supplier<Boolean> isEditOnSingleClick) {
+        public void onCellBefore(EventHandler handler, Cell cell, Supplier<Boolean> isChangeOnSingleClick) {
             Event event = handler.event;
-            if (GMouseStroke.isChangeEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
+            boolean changeEvent = GMouseStroke.isChangeEvent(event);
+            if (changeEvent || GMouseStroke.isContextMenuEvent(event)) {
                 int col = cell.getColumnIndex();
                 int row = cell.getRowIndex();
                 if ((display.getSelectedColumn() != col) || (display.getSelectedRow() != row)) {
@@ -1622,7 +1623,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                     changeColumn(col);
                     changeRow(row);
 
-                    if(!isEditOnSingleClick.get())
+                    if(changeEvent && !isChangeOnSingleClick.get())
                         handler.consume(); // we need to propagate at least MOUSEDOWN since native handler is needed for focus event
                 }
 //                else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus

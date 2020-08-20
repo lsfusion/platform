@@ -17,6 +17,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.*;
+import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.object.table.grid.ListViewType;
@@ -249,7 +250,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 if(listViewType != ListViewType.GRID) {
                     if (listViewType == ListViewType.PIVOT) {
                         if(groupEntity.asyncInit) // will wait for first changeGroupMode
-                            groupObject.setPageSize(-1);
+                            groupObject.setUpdateMode(UpdateMode.MANUAL);
                         else {
                             // should correspond RemoteForm.changeMode method (block with changeGroupMode)
                             if (groupPivotProps == null) {
@@ -269,8 +270,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                                 measureColumns = measureProps.mapSetValues(propToColumn);
 
                             groupObject.changeGroupMode(GroupMode.create(pivotColumns, measureColumns, groupEntity.pivotOptions.getAggregation(), instanceFactory));
-                            groupObject.setPageSize(1000); // GStateTableView.pageSize
                         }
+                        groupObject.setPageSize(1000); // GStateTableView.pageSize
                     } else
                         changePageSize(groupObject, 1000); // GStateTableView.pageSize
                 }
@@ -2064,6 +2065,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.readOnlyReader, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.backgroundReader, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.foregroundReader, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(drawProperty.imageReader, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 for(PropertyDrawInstance<?>.LastReaderInstance aggrLastReader : drawProperty.aggrLastReaders)
                     fillChangedReader(aggrLastReader, drawProperty.toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
             } else if (oldPropIsShown) {

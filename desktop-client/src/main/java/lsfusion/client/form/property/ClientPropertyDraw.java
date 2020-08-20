@@ -54,6 +54,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ForegroundReader foregroundReader = new ForegroundReader();
     public FooterReader footerReader = new FooterReader();
     public ReadOnlyReader readOnlyReader = new ReadOnlyReader();
+    public ImageReader imageReader = new ImageReader();
+    public boolean hasDynamicImage;
 
     // for pivoting
     public String formula;
@@ -103,10 +105,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Boolean focusable;
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
-    public boolean panelCaptionAbove;
+    public boolean panelCaptionVertical;
     public boolean panelCaptionAfter;
 
-    public boolean columnKeysVertical;
+    public boolean panelColumnVertical;
 
     public FlexAlignment valueAlignment;
 
@@ -136,7 +138,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean notSelectAll;
     public String tableName;
     public String eventID;
-    public Boolean editOnSingleClick;
+    public Boolean changeOnSingleClick;
     public boolean hide;
 
     public String creationScript;
@@ -415,14 +417,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
 
-        outStream.writeBoolean(panelCaptionAbove);
+        outStream.writeBoolean(panelCaptionVertical);
         outStream.writeBoolean(panelCaptionAfter);
 
-        outStream.writeBoolean(columnKeysVertical);
+        outStream.writeBoolean(panelColumnVertical);
 
         pool.writeObject(outStream, valueAlignment);
         
-        pool.writeObject(outStream, editOnSingleClick);
+        pool.writeObject(outStream, changeOnSingleClick);
         outStream.writeBoolean(hide);
 
         outStream.writeInt(ID);
@@ -459,14 +461,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
 
-        panelCaptionAbove = inStream.readBoolean();
+        panelCaptionVertical = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
 
-        columnKeysVertical = inStream.readBoolean();
+        panelColumnVertical = inStream.readBoolean();
 
         valueAlignment = pool.readObject(inStream);
 
-        editOnSingleClick = pool.readObject(inStream);
+        changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
@@ -487,6 +489,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         
         hasEditObjectAction = inStream.readBoolean();
         hasChangeAction = inStream.readBoolean();
+        hasDynamicImage = inStream.readBoolean();
 
         namespace = pool.readString(inStream);
         sID = pool.readString(inStream);
@@ -794,6 +797,24 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.CELL_FOREGROUND;
+        }
+    }
+
+    public class ImageReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+            controller.updateImageValues(ClientPropertyDraw.this, readKeys);
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.IMAGE;
         }
     }
 }

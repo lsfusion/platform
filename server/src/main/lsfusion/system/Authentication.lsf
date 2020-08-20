@@ -109,22 +109,22 @@ userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
 
 // OAuth and Web-client authentication
 CLASS OAuth2;
-id = DATA STRING (OAuth2);
-clientId = DATA STRING (OAuth2);
-clientSecret = DATA STRING (OAuth2);
-clientAuthenticationMethod = DATA STRING (OAuth2);
-scope = DATA STRING (OAuth2);
-authorizationUri = DATA STRING (OAuth2);
-tokenUri = DATA STRING (OAuth2);
-jwkSetUri = DATA STRING (OAuth2);
-userInfoUri = DATA STRING (OAuth2);
-userNameAttributeName = DATA STRING (OAuth2);
-clientName = DATA STRING (OAuth2);
+id 'Id' = DATA STRING (OAuth2);
+clientId 'Client id' = DATA STRING (OAuth2);
+clientSecret 'Client secret' = DATA STRING (OAuth2);
+clientAuthenticationMethod 'Client authentication method' = DATA STRING (OAuth2);
+scope 'scope' = DATA STRING (OAuth2);
+authorizationUri 'Authorization URI' = DATA STRING (OAuth2);
+tokenUri 'Token URI' = DATA STRING (OAuth2);
+jwkSetUri 'Jwk set URI' = DATA STRING (OAuth2);
+userInfoUri 'User info URI' = DATA STRING (OAuth2);
+userNameAttributeName 'Username attribute name' = DATA STRING (OAuth2);
+clientName 'Client name' = DATA STRING (OAuth2);
 
 auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
 clientName(STRING str) = clientName(auth(str));
 
-webClientSecretKey = DATA STRING (); 
+webClientSecretKey 'Web-client secret key' = DATA STRING (); 
 
 writeDefaultCredentials() {
     IF NOT clientName('github') THEN {
@@ -184,10 +184,9 @@ writeDefaultCredentials() {
 
 getClientCredentials(STRING str) {
     IF str != webClientSecretKey() THEN {
-        EXPORT FROM '[\{error: {authentication.oauth2.incorrect.web.client.auth.token}\}]';
+        EXPORT FROM error = STRING s WHERE s = '{authentication.oauth2.incorrect.web.client.auth.token}';
     } ELSE {
-        EXPORT FROM OAuth2 oa, 
-            id(oa),
+        EXPORT FROM id(OAuth2 oa),
             clientId(oa),
             clientSecret(oa),
             clientAuthenticationMethod(oa),
@@ -201,10 +200,12 @@ getClientCredentials(STRING str) {
     }
 } @@api @@noauth;
 
+onUserRegister ABSTRACT LIST (User);
+
 registerUser(JSONFILE user) {
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
         IF customUser(login) THEN {
-            EXPORT FROM '\{error: {registration.not.successful.login.exist}\}';
+            EXPORT FROM error = '{registration.not.successful.login.exist}';
         } ELSE {
             NEW cu = CustomUser { 
                 login(cu) <- login;
@@ -212,60 +213,63 @@ registerUser(JSONFILE user) {
                 firstName(cu) <- firstName;
                 lastName(cu) <- lastName;
                 email(cu) <- email;
+                onUserRegister(cu);
                 APPLY;
-                EXPORT FROM '\{success: {registration.successful}\}';
+                EXPORT FROM success = '{registration.successful}';
             }
         } 
     }
 } @@api @@noauth;
 
 resetPassword(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING userNameOrEmail, STRING url DO {
-        LOCAL NESTED token = STRING();
+    IMPORT FROM input FIELDS STRING userNameOrEmail DO {
+        LOCAL token = STRING();
         LOCAL NESTED success = BOOLEAN();
-        FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
-            token() <- randomUUID();
-            passwordResetToken(cu) <- token();
-            expiryPasswordResetTokenDate(cu) <- currentDateTime();
-            APPLY;
-            IF NOT canceled() THEN {
-                EMAIL 
-                    SUBJECT '{password.reset.email.subject} '
-                    TO email(cu)
-                    BODY CONCAT '', '<a href="', url, token(), '"> {password.reset} - ', login(cu), '</a>';
+        LOCAL NESTED href = STRING();
+        LOCAL NESTED email = STRING();
+        TRY {
+            FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
+                token() <- randomUUID();
+                passwordResetToken(cu) <- token();
+                expiryPasswordResetTokenDate(cu) <- currentDateTime();
+                href() <- CONCAT '', '<a href="', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
+                APPLY;
+                IF NOT canceled() THEN {
+                    EMAIL 
+                        SUBJECT '{password.reset.email.subject} '
+                        TO email(cu)
+                        BODY href();
                     success() <- TRUE;
+                }
+                email() <- email(cu);
             }
-        }
-        IF success() THEN {
-            EXPORT FROM '\{success: {password.reset.email.sent}\}';  
-        } ELSE {
-            EXPORT FROM '\{error: {password.reset.error}\}';
-        }
-    }
-} @@api @@noauth;
-
-checkToken(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING token DO {
-        IF expiryPasswordResetTokenDate(userByPassResetToken(token)) <= currentDateTime() THEN {
-            EXPORT FROM '\{success: success\}';
-        } ELSE {
-            EXPORT FROM '\{error: {password.reset.token.invalid}\}';
+            IF success() THEN {
+                EXPORT FROM success = '{password.reset.email.sent}', email = email();  
+            } ELSE {
+                EXPORT FROM error = '{password.reset.error}';
+            }
+        } CATCH {
+            EXPORT FROM error = messageCaughtException();
         }
     }
 } @@api @@noauth;
 
 changePassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING token, STRING newPassword DO {
+        LOCAL NESTED success = BOOLEAN();
         FOR CustomUser cu = userByPassResetToken(token) AND cu IS CustomUser DO {
             setSHA256Password(cu, newPassword);
             passwordResetToken(cu) <- NULL;
             expiryPasswordResetTokenDate(cu) <- NULL;
             APPLY;
+            IF NOT canceled() THEN {
+                success() <- TRUE;
+            }
         }
-        IF NOT canceled() THEN {
-             EXPORT FROM '\{success: {password.changed}\}';
+        IF success() THEN {
+            EXPORT FROM success = '{password.changed}';
         } ELSE {
-            EXPORT FROM '\{error: {password.reset.token.invalid}\}';
+            EXPORT FROM error = '{password.reset.token.invalid}';
         }
     }
 } @@api @@noauth;
@@ -328,7 +332,7 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
     FOR CustomUser user AS CustomUser = currentUser() DO
-        EXPORT FROM language(user), country(user); 
+        EXPORT JSON FROM language(user), country(user); 
 } @@api;
 
 timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimezone(), serverTimezone();

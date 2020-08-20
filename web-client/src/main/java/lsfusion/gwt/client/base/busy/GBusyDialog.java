@@ -301,7 +301,7 @@ public class GBusyDialog extends WindowBox {
 
 
 
-        CopyPasteUtils.setClipboardData2(text);
+        CopyPasteUtils.setClipboardData(text);
     }
 
     private void exitAction() {

@@ -84,4 +84,11 @@ public class GridView extends ComponentView {
 
         groupObject = pool.deserializeObject(inStream);
     }
+
+    @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+
+        record.finalizeChanges();
+    }
 }

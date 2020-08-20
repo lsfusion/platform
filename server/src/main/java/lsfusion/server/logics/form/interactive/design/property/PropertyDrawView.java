@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.Map;
 
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
@@ -55,7 +54,7 @@ public class PropertyDrawView extends ComponentView {
 
     public PropertyDrawEntity<?> entity;
 
-    public Boolean editOnSingleClick;
+    public Boolean changeOnSingleClick;
     public boolean hide;
     public String regexp;
     public String regexpMessage;
@@ -81,10 +80,10 @@ public class PropertyDrawView extends ComponentView {
 
     public Boolean focusable;
 
-    public boolean panelCaptionAbove = false;
+    public boolean panelCaptionVertical = false;
     public boolean panelCaptionAfter;
 
-    public boolean columnKeysVertical = false;
+    public boolean panelColumnVertical = false;
 
     public FlexAlignment valueAlignment;
 
@@ -169,7 +168,7 @@ public class PropertyDrawView extends ComponentView {
         setupGeometry(reportField, scale);
         setupColumnGroupObjects(reportField);
 
-        PropertyDrawExtraType[] setupTypes = {CAPTION, FOOTER, BACKGROUND, FOREGROUND};
+        PropertyDrawExtraType[] setupTypes = {CAPTION, FOOTER, BACKGROUND, FOREGROUND, IMAGE};
         for (PropertyDrawExtraType setupType : setupTypes) {
             setupExtra(reportField, setupType);
         }
@@ -261,14 +260,14 @@ public class PropertyDrawView extends ComponentView {
         pool.writeObject(outStream, focusable);
         outStream.writeByte(entity.getEditType().serialize());
 
-        outStream.writeBoolean(panelCaptionAbove);
+        outStream.writeBoolean(panelCaptionVertical);
         outStream.writeBoolean(panelCaptionAfter);
 
-        outStream.writeBoolean(columnKeysVertical);
+        outStream.writeBoolean(panelColumnVertical);
         
         pool.writeObject(outStream, getValueAlignment());
 
-        pool.writeObject(outStream, editOnSingleClick);
+        pool.writeObject(outStream, changeOnSingleClick);
         outStream.writeBoolean(hide);
 
         //entity часть
@@ -305,6 +304,7 @@ public class PropertyDrawView extends ComponentView {
             pool.writeString(outStream, getAskConfirmMessage());
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
+        outStream.writeBoolean(entity.hasDynamicImage);
 
         ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugProperty(); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip
@@ -446,14 +446,14 @@ public class PropertyDrawView extends ComponentView {
 
         focusable = pool.readObject(inStream);
 
-        panelCaptionAbove = inStream.readBoolean();
+        panelCaptionVertical = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
 
-        columnKeysVertical = inStream.readBoolean();
+        panelColumnVertical = inStream.readBoolean();
 
         valueAlignment = pool.readObject(inStream);
 
-        editOnSingleClick = pool.readObject(inStream);
+        changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
 
         entity = pool.context.entity.getPropertyDraw(inStream.readInt());

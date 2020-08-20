@@ -53,7 +53,7 @@
                                     <label for="password"><%= ServerMessages.getString(request, "password") %></label>
                                     <input type="password" id="password" name="password" class="round full-width-box"/>
                                 </p>
-                                <input name="submit" type="submit" class="button round blue" value="<%= ServerMessages.getString(request, "log.in") %>"/>
+                                <input name="submit" type="submit" class="button round blue" value="<%= ServerMessages.getString(request, "sign.in") %>"/>
                                 <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
                                     <%
                                         if (session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION") instanceof Exception) {
