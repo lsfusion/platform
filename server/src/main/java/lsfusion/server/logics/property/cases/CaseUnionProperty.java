@@ -260,13 +260,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, Property filterProperty) {
+    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         int lastNotNullAction = 0;
         ImList<CalcCase<Interface>> cases = getCases();
         MList<ActionCase<Interface>> mActionCases = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
-            ActionMapImplement<?, Interface> eventAction = propCase.implement.mapEventAction(eventActionSID, filterProperty);
+            ActionMapImplement<?, Interface> eventAction = propCase.implement.mapEventAction(eventActionSID, viewProperties);
             if(isExclusive) {
                 if(eventAction == null)
                     continue;                                

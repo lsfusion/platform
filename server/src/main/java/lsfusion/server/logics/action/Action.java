@@ -500,7 +500,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
-    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, Property filterProperty) {
+    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
         if(eventActionSID.equals(ServerResponse.CHANGE_WYS) || eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return getImplement();
