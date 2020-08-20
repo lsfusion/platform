@@ -74,6 +74,15 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         setBaseSize(isProperty);
     }
+    public void setDynamic(Panel panel, boolean isProperty) {
+        panel.add(this);
+        com.google.gwt.dom.client.Element element = getElement();
+        element.getStyle().setWidth(100, Style.Unit.PCT);
+        element.getStyle().setHeight(100, Style.Unit.PCT);
+        borderWidget = panel;
+
+        setBaseSize(isProperty);
+    }
     public void setDynamic(boolean isProperty) {
         borderWidget = this;
 
