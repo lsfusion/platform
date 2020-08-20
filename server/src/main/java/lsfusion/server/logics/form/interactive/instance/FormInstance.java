@@ -167,7 +167,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public final ImList<PropertyDrawInstance<?>> properties;
 
-    public final List<String> inputObjects;
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Set<PropertyDrawInstance> isShown = new HashSet<>();
@@ -203,7 +202,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, List<String> inputObjects, DataSession session, SecurityPolicy securityPolicy,
+    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
@@ -220,7 +219,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.entity = entity;
         this.logicsInstance = logicsInstance;
         this.BL = logicsInstance.getBusinessLogics();
-        this.inputObjects = inputObjects;
 
         this.securityPolicy = securityPolicy;
 
@@ -2274,7 +2272,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
     private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue, ImSet<ContextFilterInstance> additionalFilters, ExecutionStack outerStack) throws SQLException, SQLHandledException {
-        return new FormInstance(entity, this.logicsInstance, this.inputObjects,
+        return new FormInstance(entity, this.logicsInstance,
                                 this.session, securityPolicy,
                                 getFocusListener(), getClassListener(),
                                 MapFact.singleton(dialogEntity, dialogValue),

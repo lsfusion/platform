@@ -84,14 +84,6 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         }
     }
 
-    public List<String> getInputObjects() {
-        try {
-            return callImmutableMethod("getInputObjects", target::getInputObjects);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     public ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormPrintType printType, FormUserPreferences userPreferences) throws RemoteException {
         return target.getReportData(requestIndex, lastReceivedRequestIndex, groupId, printType, userPreferences);
     }

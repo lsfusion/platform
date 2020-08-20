@@ -103,7 +103,7 @@ public class LogicsInstanceContext extends AbstractContext {
     @Deprecated
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isFloat, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
         assert false;
-        return new FormInstance(formEntity, getLogicsInstance(), null,
+        return new FormInstance(formEntity, getLogicsInstance(),
                 session,
                 SecurityManager.baseServerSecurityPolicy, getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
