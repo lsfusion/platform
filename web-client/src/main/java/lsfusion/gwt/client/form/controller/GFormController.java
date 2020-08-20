@@ -1671,45 +1671,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 "", null, true);
     }
 
-    public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Runnable onOuterEditBefore, Runnable onEdit, Runnable onOuterEditAfter, Runnable onCut, Runnable onPaste) {
-        boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
-        if(isPropertyEditing)
-            cellEditor.onBrowserEvent(getEditElement(), handler);
-
-        if(handler.consumed)
-            return;
-
-        if(GMouseStroke.isChangeEvent(handler.event))
-            focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
-
-        onOuterEditBefore.run();
-
-        if(handler.consumed)
-            return;
-
-        if (!isPropertyEditing) { // if editor did not consume event, we don't want it to be handled by "renderer" since it doesn't exist
-            if (GKeyStroke.isCopyToClipboardEvent(handler.event)) {
-                onCut.run();
-            } else if (GKeyStroke.isPasteFromClipboardEvent(handler.event)) {
-                onPaste.run();
-            } else {
-                onEdit.run();
-            }
-        }
-
-        if(handler.consumed)
-            return;
-
-        onOuterEditAfter.run();
-
-        if(handler.consumed)
-            return;
-
-        if(GMouseStroke.isDownEvent(handler.event))
-            handler.consume(); // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
-    }
-
-    /*public void onPropertyBrowserEvent(Event event, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore, Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut, Consumer<EventHandler> onPaste) {
+    public void onPropertyBrowserEvent(Event event, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore, Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut, Consumer<EventHandler> onPaste) {
         EventHandler handler = new EventHandler(event);
 
         boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
@@ -1755,5 +1717,5 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         if(GMouseStroke.isDownEvent(handler.event))
             handler.consume(); // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
-    }*/
+    }
 }

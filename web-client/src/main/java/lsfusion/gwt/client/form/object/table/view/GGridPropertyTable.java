@@ -426,21 +426,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
-    public <C> void onBrowserEvent(Cell cell, EventHandler handler, Column<T, C> column, Element parent) {
-        form.onPropertyBrowserEvent(handler, parent, getTableDataFocusElement(),
-                () -> selectionHandler.onCellBefore(handler, cell, () -> isChangeOnSingleClick(cell)),
-                () -> column.onEditEvent(handler, false, cell, parent),
-                () -> selectionHandler.onCellAfter(handler, cell),
-                () -> CopyPasteUtils.putIntoClipboard(parent), () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
-    }
-
-/*    public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent) {
+    public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent) {
         form.onPropertyBrowserEvent(event, parent, getTableDataFocusElement(),
-                handler -> selectionHandler.onCellBefore(handler, cell, () -> isEditOnSingleClick(cell)),
+                handler -> selectionHandler.onCellBefore(handler, cell, () -> isChangeOnSingleClick(cell)),
                 handler -> column.onEditEvent(handler, false, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),
                 handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));
-    }*/
+    }
 
     protected boolean isFocusable(GPropertyDraw property) {
         return property.focusable == null || property.focusable;

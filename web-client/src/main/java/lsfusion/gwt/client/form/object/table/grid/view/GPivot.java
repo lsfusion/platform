@@ -1095,6 +1095,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     @Override
+    public boolean isAlwaysSelected() {
+        return true;
+    }
+
+    @Override
     public boolean globalCaptionIsDrawn() {
         return true;
     }
@@ -1108,32 +1113,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     public boolean isStaticHeight() {
         return true;
     }
-
-    /*private void renderColumn(Element th, JavaScriptObject value, String columnName) {
-        GPropertyDraw property = columnMap.get(columnName).property;
-        GPivot.setTableToExcelPropertyAttributes(th, value, property);
-        property.getCellRenderer().render(th, value, new RenderContext() {
-            @Override
-            public Integer getStaticHeight() {
-                return rowHeight;
-            }
-
-            @Override
-            public boolean isAlwaysSelected() {
-                return true;
-            }
-
-            @Override
-            public GFont getFont() {
-                return font;
-            }
-        }, new UpdateContext() {
-            @Override
-            public boolean isStaticHeight() {
-                return true;
-            }
-        });
-    }*/
 
     public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayMixed colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {

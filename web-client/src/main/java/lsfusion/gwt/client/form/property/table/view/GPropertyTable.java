@@ -190,6 +190,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     @Override
+    public boolean isAlwaysSelected() {
+        return false;
+    }
+
+    @Override
     public boolean globalCaptionIsDrawn() {
         return true;
     }
@@ -216,48 +221,4 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         form.checkCommitEditing();
         super.changeSelectedRow(row);
     }
-
-   /* public RenderContext getRenderContext() {
-        return new RenderContext() {
-            @Override
-            public Integer getStaticHeight() {
-                return tableBuilder.getCellHeight();
-            }
-
-            @Override
-            public boolean isAlwaysSelected() {
-                return false;
-            }
-
-            @Override
-            public GFont getFont() {
-                return GPropertyTable.this.getFont();
-            }
-        };
-    }
-    public UpdateContext getUpdateContext() {
-        return new UpdateContext() {
-            @Override
-            public boolean isStaticHeight() {
-                return true;
-            }
-        };
-    }
-    protected abstract GFont getFont();
-
-    protected void setCellHeight(int cellHeight) {
-        tableBuilder.setCellHeight(cellHeight);
-    }
-
-    @Override
-    public boolean changeSelectedColumn(int column) {
-        form.checkCommitEditing();
-        return super.changeSelectedColumn(column);
-    }
-
-    @Override
-    public void changeSelectedRow(int row) {
-        form.checkCommitEditing();
-        super.changeSelectedRow(row);
-    }*/
 }
