@@ -8,7 +8,7 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.ThrowInNavigatorAction;
-import lsfusion.gwt.client.form.controller.DefaultFormsController;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
@@ -16,9 +16,9 @@ import lsfusion.gwt.client.view.MainFrame;
 public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     
     private final WindowsController windowsController;
-    private final DefaultFormsController formsController;
+    private final FormsController formsController;
 
-    public GNavigatorActionDispatcher(WindowsController windowsController, DefaultFormsController formsController) {
+    public GNavigatorActionDispatcher(WindowsController windowsController, FormsController formsController) {
         this.windowsController = windowsController;
         this.formsController = formsController;
     }
