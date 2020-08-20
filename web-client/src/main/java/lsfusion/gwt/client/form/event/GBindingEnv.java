@@ -18,7 +18,7 @@ public class GBindingEnv implements Serializable {
 
     public GBindingEnv(Integer priority, GBindingMode bindPreview, GBindingMode bindDialog, GBindingMode bindGroup, GBindingMode bindEditing, GBindingMode bindShowing) {
         this.priority = priority;
-        this.bindPreview = bindPreview == null ? GBindingMode.AUTO : bindPreview;
+        this.bindPreview = bindPreview == null ? GBindingMode.ONLY : bindPreview;
         this.bindDialog = bindDialog == null ? GBindingMode.AUTO : bindDialog;
         this.bindGroup = bindGroup == null ? GBindingMode.AUTO : bindGroup;
         this.bindEditing = bindEditing == null ? GBindingMode.AUTO : bindEditing;
