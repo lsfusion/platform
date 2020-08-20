@@ -1453,6 +1453,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 handler.consume();
 
                 binding.exec(event);
+                return;
             }
         }
     }
