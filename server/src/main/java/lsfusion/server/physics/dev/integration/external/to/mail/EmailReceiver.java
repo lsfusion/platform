@@ -8,7 +8,6 @@ import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
 import com.sun.mail.imap.IMAPBodyPart;
 import com.sun.mail.pop3.POP3Folder;
-import com.sun.mail.util.BASE64DecoderStream;
 import com.sun.mail.util.FolderClosedIOException;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
@@ -255,7 +254,7 @@ public class EmailReceiver {
                         if (!skipEmails.contains(idEmail)) {
                             message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                             Object messageContent = getEmailContent(message);
-                            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) : messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, decodeFileName(message.getFileName()), unpack) : messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
+                            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) : messageContent instanceof FilterInputStream ? getMultipartBodyStream(subjectEmail, (FilterInputStream) messageContent, decodeFileName(message.getFileName()), unpack) : messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
                             if (messageEmail == null) {
                                 messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
@@ -385,8 +384,8 @@ public class EmailReceiver {
                     if(content == null) {
                         content = bp.getContent();
                     }
-                    if (content instanceof BASE64DecoderStream) {
-                        RawFileData byteArray = new RawFileData((BASE64DecoderStream) content);
+                    if (content instanceof FilterInputStream) {
+                        RawFileData byteArray = new RawFileData((FilterInputStream) content);
                         String fileName = decodeFileName(bp.getFileName());
                         attachments.putAll(unpack(byteArray, fileName, unpack));
                     } else if (content instanceof MimeMultipart) {
@@ -420,8 +419,8 @@ public class EmailReceiver {
         return new MultipartBody(msg.getBody(), attachments);
     }
 
-    private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String fileName, boolean unpack) throws IOException {
-        RawFileData byteArray = new RawFileData(base64InputStream);
+    private MultipartBody getMultipartBodyStream(String subjectEmail, FilterInputStream filterInputStream, String fileName, boolean unpack) throws IOException {
+        RawFileData byteArray = new RawFileData(filterInputStream);
         Map<String, FileData> attachments = new HashMap<>();
         attachments.putAll(unpack(byteArray, fileName, unpack));
         return new MultipartBody(subjectEmail, attachments);
