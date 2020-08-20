@@ -1337,6 +1337,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                     case "no":
                         bindingMode = BindingMode.NO;
                         break;
+                    case "input":
+                        bindingMode = BindingMode.INPUT;
+                        break;
                     default:
                         bindingMode = BindingMode.AUTO;
                         break;

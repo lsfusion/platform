@@ -1682,8 +1682,19 @@ public class ClientFormController implements AsyncListener {
                 return equalGroup(groupObject, binding);
             case NO:
                 return !equalGroup(groupObject, binding);
+            case INPUT:
+                Set<String> inputObjects = getInputObjects();
+                return inputObjects != null && groupObject != null && inputObjects.contains(groupObject.getSID());
         }
         return true;
+    }
+
+    private Set<String> getInputObjects() {
+        try {
+            return remoteForm.getInputObjects();
+        } catch (RemoteException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     private boolean equalGroup(ClientGroupObject groupObject, Binding binding) {

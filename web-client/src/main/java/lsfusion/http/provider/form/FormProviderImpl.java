@@ -45,13 +45,15 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     public FormProviderImpl() {}
 
     public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException {
-        // 0 and 2 are indices from FormClientAction.methodNames array
+        // 0, 1, 3 are indices from FormClientAction.methodNames array
         byte[] formDesign = immutableMethods != null ? (byte[]) immutableMethods[1] : remoteForm.getRichDesignByteArray();
         FormUserPreferences formUP = immutableMethods != null ? (FormUserPreferences)immutableMethods[0] : remoteForm.getUserPreferences();
 
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(formDesign)));
 
         GForm gForm = new ClientComponentToGwtConverter(navigatorProvider.getLogicsName(sessionID)).convertOrCast(clientForm);
+
+        gForm.inputObjects = immutableMethods != null ? (Set<String>) immutableMethods[3] : remoteForm.getInputObjects();
 
         gForm.sID = formSID;
         gForm.canonicalName = canonicalName;
