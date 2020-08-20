@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 
@@ -18,7 +17,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
 
-    public FormDockable(DefaultFormsController formsController) {
+    public FormDockable(FormsController formsController) {
         super(formsController);
 
         tabWidget = new TabWidget("");
@@ -108,7 +107,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
                 public void onClick(ClickEvent clickEvent) {
                     if(content instanceof GFormController) {
                         FormsController formsController = ((GFormController) content).getFormsController();
-                        if(formsController instanceof DefaultFormsController && blockingForm != null) {
+                        if(formsController instanceof FormsController && blockingForm != null) {
                             formsController.selectTab(blockingForm);
                         }
                     }

@@ -148,6 +148,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.orderInterfaces = interfaces;
 
         setContextMenuAction(ServerResponse.GROUP_CHANGE, LocalizedString.create("{logics.property.groupchange}"));
+        setContextMenuAction(ServerResponse.EDIT_OBJECT, LocalizedString.create("{logics.property.editobject}"));
 
 //        notFinalized.put(this, ExceptionUtils.getStackTrace());
     }

@@ -59,6 +59,9 @@ public abstract class CellRenderer<T> {
 
         String vertAlignment = getDefaultVertAlignment();
 
+        if(renderContext.isAlwaysSelected())
+            renderEditSelected(element, property);
+
         Integer staticHeight = renderContext.getStaticHeight();
         // is simple text renderer (SINGLE LINE (!)) && has static height (otherwise when div is expanded line-height will not work)
         // maybe later it makes sense to add optimization for ActionOrPropertyValue to look at the upper container if it's has static height
@@ -70,6 +73,15 @@ public abstract class CellRenderer<T> {
         }
 
         renderStaticContent(element, renderContext);
+    }
+
+    public static void renderEditSelected(Element element, GPropertyDraw property) {
+        if(property.hasEditObjectAction)
+            element.addClassName("selectedCellHasEdit");
+    }
+    public static void clearEditSelected(Element element, GPropertyDraw property) {
+        if(property.hasEditObjectAction)
+            element.removeClassName("selectedCellHasEdit");
     }
 
     private Element renderFlexStatic(Element element, String horzAlignment, String vertAlignment, Integer staticHeight) {
@@ -105,6 +117,10 @@ public abstract class CellRenderer<T> {
     // of course without optimization of using the same render element this drops won't be needed, but it is important optimization
     public void clearRender(Element element, RenderContext renderContext) {
         GwtClientUtils.removeAllChildren(element);
+
+        if(renderContext.isAlwaysSelected())
+            clearEditSelected(element, property);
+
         Integer staticHeight = renderContext.getStaticHeight();
         // is simple text renderer (SINGLE LINE (!)) && has static height (otherwise when div is expanded line-height will not work)
         boolean sameElement = true;

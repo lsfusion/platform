@@ -169,7 +169,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 //            return GEditBindingMap.CHANGE;
 //        }
         if (actionSID == null) {
-            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter());
+            actionSID = GEditBindingMap.getDefaultEventSID(editEvent, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction);
         }
         return actionSID;
     }

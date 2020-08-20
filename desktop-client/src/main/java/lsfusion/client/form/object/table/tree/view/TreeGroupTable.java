@@ -69,7 +69,7 @@ import static lsfusion.client.form.property.cell.EditBindingMap.isEditableAwareE
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
 
-    private final EditBindingMap editBindingMap = new EditBindingMap();
+    private final EditBindingMap editBindingMap = new EditBindingMap(true);
 
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
 

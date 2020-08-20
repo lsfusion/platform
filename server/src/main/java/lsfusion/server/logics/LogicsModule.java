@@ -1808,6 +1808,7 @@ public abstract class LogicsModule {
         
         result.setImage("edit.png");
         Map<String, BindingMode> bindingModes = new HashMap<>();
+        bindingModes.put("preview", BindingMode.ONLY);
         bindingModes.put("group", BindingMode.ONLY);
         bindingModes.put("editing", BindingMode.NO);
         result.setChangeKey(KeyStrokes.getEditActionKeyStroke(), bindingModes);
