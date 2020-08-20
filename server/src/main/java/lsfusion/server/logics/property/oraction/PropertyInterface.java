@@ -2,10 +2,7 @@ package lsfusion.server.logics.property.oraction;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
@@ -130,7 +127,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return remap.get((P)this);
     }
 
-    public ActionMapImplement<?, P> mapEventAction(String eventSID, Property filterProperty) {
+    public ActionMapImplement<?, P> mapEventAction(String eventSID, ImList<Property> viewProperties) {
         return null;
     }
 

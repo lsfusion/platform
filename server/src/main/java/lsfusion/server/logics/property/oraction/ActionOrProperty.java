@@ -272,10 +272,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public ActionMapImplement<?, T> getEventAction(String eventActionSID) {
-        return getEventAction(eventActionSID, null);
+        return getEventAction(eventActionSID, ListFact.EMPTY());
     }
 
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID, Property filterProperty) {
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID, ImList<Property> viewProperties) {
         ActionMapImplement<?, T> eventAction = getEventActions().get(eventActionSID);
         if (eventAction != null) {
             return eventAction;
@@ -286,10 +286,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         assert CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID);
 
-        return getDefaultEventAction(eventActionSID, filterProperty);
+        return getDefaultEventAction(eventActionSID, viewProperties);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, Property filterProperty);
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties);
 
     public ActionMapImplement<?, T> getDefaultWYSAction() {
         return null;

@@ -275,13 +275,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, Property filterProperty) {
+    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
         Property<T> aggProp = implement.property;
 
         if (aggProp instanceof AndFormulaProperty) {
             final AndFormulaProperty andProperty = (AndFormulaProperty) aggProp;
             ImCol<PropertyInterfaceImplement<Interface>> ands = implement.mapping.filterFn(element -> element != andProperty.objectInterface).values();
-            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEventAction(eventActionSID, filterProperty);
+            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEventAction(eventActionSID, viewProperties);
             if (implementEdit != null) {
                 return PropertyFact.createIfAction(
                         interfaces,
@@ -294,7 +294,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             if(getValueClass(ClassType.tryEditPolicy) instanceof CustomClass) // just call edit action (see super implementation)
-                return super.getDefaultEventAction(eventActionSID, filterProperty);
+                return super.getDefaultEventAction(eventActionSID, viewProperties);
 
             ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID);
             if(editImplement != null)
@@ -314,9 +314,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                         new DefaultChangeAggAction<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeActionImplement);
                 return aggChangeAction.getImplement(listInterfaces);
             } else
-                return implement.mapping.singleValue().mapEventAction(eventActionSID, aggClass instanceof CustomClass ? aggProp : null);
+                return implement.mapping.singleValue().mapEventAction(eventActionSID, viewProperties.addList(aggProp));
         }
-        return super.getDefaultEventAction(eventActionSID, filterProperty);
+        return super.getDefaultEventAction(eventActionSID, viewProperties);
     }
     
     public boolean checkEquals() {
