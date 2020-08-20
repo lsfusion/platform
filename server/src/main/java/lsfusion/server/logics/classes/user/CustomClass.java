@@ -356,12 +356,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return this instanceof BaseClass; // тут возможно стоило бы еще другие абстрактные классы с большим количеством children'ов исключить, но кроме Object'а пока таких нет 
     }
 
+    public void initDialogForm(BaseLogicsModule LM) {
+        // we want auto dialog forms to be generated before finalizing forms to avoid dead locks in getDefaultEventAction (IdentityStrongLazy) -> getDialogForm -> addAutoFormEntity -> finalizeAroundInit -> proceedAllEventActions -> getDefaultEventAction
+        dialogFormHolder.getForm(LM);
+    }
+
     public void finalizeAroundInit() {
         dialogFormHolder.finalizeAroundInit();
         editFormHolder.finalizeAroundInit();
-
-        for(CustomClass child : getChildrenIt())
-            child.finalizeAroundInit();
     }
 
     private abstract class ClassFormHolder {

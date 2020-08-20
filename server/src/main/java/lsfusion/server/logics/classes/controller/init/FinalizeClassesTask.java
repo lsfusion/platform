@@ -1,9 +1,10 @@
 package lsfusion.server.logics.classes.controller.init;
 
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.controller.init.SimpleBLTask;
 import org.apache.log4j.Logger;
 
-public class FinalizeClassesTask extends SimpleBLTask {
+public class FinalizeClassesTask extends GroupClassesTask {
 
     @Override
     public String getCaption() {
@@ -11,7 +12,7 @@ public class FinalizeClassesTask extends SimpleBLTask {
     }
 
     @Override
-    public void run(Logger logger) {
-        getBL().finalizeClasses();
+    protected void runTask(CustomClass customClass) {
+        customClass.finalizeAroundInit();
     }
 }
