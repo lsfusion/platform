@@ -18,10 +18,7 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
-import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingBlocker;
 import lsfusion.gwt.client.base.busy.LoadingManager;
@@ -78,6 +75,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
@@ -1554,7 +1552,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext) {
         assert this.editContext == null;
-        CellEditor cellEditor = type.createGridCellEditor(this, editContext.getProperty());
+        GPropertyDraw property = editContext.getProperty();
+        CellEditor cellEditor = type.createGridCellEditor(this, property);
         if (cellEditor != null) {
             editBeforeCommit = beforeCommit;
             editAfterCommit = afterCommit;
@@ -1569,8 +1568,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     forceSetFocus = editContext.forceSetFocus();
 
                 RenderContext renderContext = editContext.getRenderContext();
-                editContext.getProperty().getCellRenderer().clearRender(element, renderContext); // dropping previous render
-                ((ReplaceCellEditor)cellEditor).render(element, renderContext); // rendering new one, filling inputElement
+
+                CellRenderer cellRenderer = property.getCellRenderer();
+                Pair<Integer, Integer> renderedSize = null;
+                if(property.autoSize) // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
+                    renderedSize = new Pair<>(element.getClientWidth() - cellRenderer.getWidthPadding() * 2, element.getClientHeight() - cellRenderer.getHeightPadding() * 2);
+
+                cellRenderer.clearRender(element, renderContext); // dropping previous render
+
+                ((ReplaceCellEditor)cellEditor).render(element, renderContext, renderedSize); // rendering new one, filling inputElement
             }
 
             this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
