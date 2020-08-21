@@ -1199,7 +1199,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, plotlyDefaults, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, pvtUiContainer, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, x;
+      var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, fn1, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, plotlyDefaults, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, pvtUiContainer, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, unusedDivWrapper, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1310,7 +1310,8 @@
           $("<option>").val(x).html(x).appendTo(renderer);
         }
         unused = $("<td>").addClass('pvtAxisContainer pvtUnused pvtUiCell');
-        unusedDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(unused);
+        unusedDivWrapper = $("<div>").addClass('pvtUnusedCellDivWrapper').appendTo(unused);
+        unusedDiv = $("<div>").addClass('pvtUiCellVDiv pvtUnusedCellDiv').appendTo(unusedDivWrapper);
         shownAttributes = (function() {
           var results;
           results = [];
@@ -1689,7 +1690,12 @@
               placeholder: 'pvtPlaceholder',
               tolerance: "pointer",
               forcePlaceholderSize: true,
-              cancel: ".pvtTriangle"
+              cancel: ".pvtTriangle",
+              appendTo: _this.find(".pvtUiContainer"),
+              helper: "clone",
+              stop: function(event, ui) {
+                return ui.item[0].style.display = null;
+              }
             });
             subopts = {
               derivedAttributes: opts.derivedAttributes,
@@ -1844,7 +1850,12 @@
           placeholder: 'pvtPlaceholder',
           tolerance: "pointer",
           forcePlaceholderSize: true,
-          cancel: ".pvtTriangle"
+          cancel: ".pvtTriangle",
+          appendTo: this.find(".pvtUiContainer"),
+          helper: "clone",
+          stop: function(event, ui) {
+            return ui.item[0].style.display = null;
+          }
         });
       } catch (error) {
         e = error;
