@@ -29,7 +29,7 @@ public class TextCellRenderer extends StringBasedCellRenderer {
     @Override
     protected void setInnerContent(Element element, String innerText) {
         if (rich) {
-            element.setInnerHTML(EscapeUtils.sanitizeHtml(innerText));
+            element.setInnerHTML("<div>"+EscapeUtils.sanitizeHtml(innerText)+"</div>"); // need to wrap in div, since there can be display:flex in element
         } else {
             super.setInnerContent(element, innerText);
         }
