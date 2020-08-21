@@ -1,3 +1,11 @@
+## 4.0-beta1 (2020-08-21)
+##### Implemented enhancements:
+ - Implement support of edit object on double click and in "link mode" [#420](https://github.com/lsfusion/platform/issues/420)
+ - Implement WAIT / NOWAIT options for EMAIL operator [#424](https://github.com/lsfusion/platform/issues/424)
+ - Allow action images to be dynamic (calculated and not set with literal) [#418](https://github.com/lsfusion/platform/issues/418)
+ - Add "register" and "forget password" functionality to login form [#279](https://github.com/lsfusion/platform/issues/279)
+ - Timeout for EXTERNAL HTTP [#415](https://github.com/lsfusion/platform/issues/415)
+## ----- PREVIOUS RELEASES --------
 ## 4.0-beta0 (2020-07-24)
 ##### Implemented major enhancements:
  - Extended list view support (i.e. pivot, map, diagram) [#70](https://github.com/lsfusion/platform/issues/70)
@@ -80,7 +88,6 @@
  - OK should be shown only when form manages session or in dialog mode [#200](https://github.com/lsfusion/platform/issues/200)
  - Unable to shutdown specific connection [#221](https://github.com/lsfusion/platform/issues/221)
  - Exception in IMPORT XLS [#207](https://github.com/lsfusion/platform/issues/207)
-## ----- PREVIOUS RELEASES --------
 ## 3.0 (2020-01-16)
 ##### Implemented enhancements:
  - Create an action for finding forms by name [#203](https://github.com/lsfusion/platform/issues/203)
