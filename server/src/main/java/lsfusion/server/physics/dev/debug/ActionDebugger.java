@@ -321,7 +321,6 @@ public class ActionDebugger implements DebuggerService {
     }
 
     private Object evalAction(ExecutionContext<?> context, String namespace, String require, String priorities, String expression, final String valueName) throws SQLException, SQLHandledException {
-        System.out.println(expression);
         //используем все доступные в контексте параметры
         ExecutionStack stack = context.stack;
 
