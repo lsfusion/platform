@@ -128,7 +128,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis);
         widget.setLayoutData(layoutData);
 
-        setBaseWidth(widget, vertical ? crossAxisSize : flexBasis, vertical ? flexBasis : crossAxisSize);
+        setBaseSize(widget, vertical ? crossAxisSize : flexBasis, vertical ? flexBasis : crossAxisSize);
 
         // Adopt.
         adopt(widget);
@@ -137,7 +137,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     // we're setting min-width/height and not width/height for two reasons:
     // a) alignment STRETCH doesn't work when width is set
     // b) flexBasis auto doesn't respect flexBasis of its descendants, but respects min-width (however with that approach in future there might be some problems with flex-shrink if we we'll want to support it)
-    public static void setBaseWidth(Widget widget, Integer width, Integer height) {
+    public static void setBaseSize(Widget widget, Integer width, Integer height) {
         if(width != null)
             widget.getElement().getStyle().setProperty("minWidth", width + "px");
         if(height != null)

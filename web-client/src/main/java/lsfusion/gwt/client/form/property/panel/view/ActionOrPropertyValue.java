@@ -99,7 +99,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
         boolean isStatic = borderWidget != this;
-        FlexPanel.setBaseWidth(borderWidget,
+        FlexPanel.setBaseSize(borderWidget,
                 isStatic ? property.getValueWidthWithPadding(null) : property.getValueWidth(null),
                 isStatic ? property.getValueHeightWithPadding(null ) : property.getValueHeight(null));
     }

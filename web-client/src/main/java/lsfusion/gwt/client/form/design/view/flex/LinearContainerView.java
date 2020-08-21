@@ -33,12 +33,11 @@ public class LinearContainerView extends GAbstractContainerView {
         boolean vertical = container.isLinearVertical(); // assert isLinear
         if (child.hasMargins()) {
             FlexPanel proxyPanel = new FlexPanel(vertical);
+            add(proxyPanel, view, 0, child.getAlignment(), child.getFlex(), child, vertical);
             proxyPanel.getElement().getStyle().setOverflow(Style.Overflow.VISIBLE);
             child.installPaddings(proxyPanel);
 
-            proxyPanel.add(view, child.getAlignment(), child.getFlex() > 0 ? 1 : 0);
-
-            add(panel, proxyPanel, index, child.getAlignment(), child.getFlex(), child, vertical);
+            panel.add(proxyPanel, index, child.getAlignment(), child.getFlex() > 0 ? 1 : 0);
         } else {
             add(panel, view, index, child.getAlignment(), child.getFlex(), child, vertical);
         }
