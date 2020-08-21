@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPanel, RequiresResize, ProvidesResize {
     private final FlexPanel panel;
     protected TabBar tabBar;
-    protected TabDeck deck;
+    protected TabbedDeckPanel deck;
 
     public FlexTabbedPanel() {
         this(null, null);
@@ -92,37 +92,15 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
      * @param tabText the text to be shown on its tab
      */
     public void add(Widget w, String tabText) {
-        insert(w, tabText, getWidgetCount());
+        add(w, new Label(tabText, false));
     }
 
-    /**
-     * Adds a widget to the tab panel. If the Widget is already attached to the
-     * TabPanel, it will be moved to the right-most index.
-     * @param w       the widget to be added
-     * @param tabText the text to be shown on its tab
-     * @param asHTML  <code>true</code> to treat the specified text as HTML
-     */
-    public void add(Widget w, String tabText, boolean asHTML) {
-        insert(w, tabText, asHTML, getWidgetCount());
-    }
-
-    /**
-     * Adds a widget to the tab panel. If the Widget is already attached to the
-     * TabPanel, it will be moved to the right-most index.
-     * @param w         the widget to be added
-     * @param tabWidget the widget to be shown in the tab
-     */
     public void add(Widget w, Widget tabWidget) {
         insert(w, tabWidget, getWidgetCount());
     }
 
     public void insert(Widget widget, String tabText, int beforeIndex) {
-        insert(widget, tabText, false, beforeIndex);
-    }
-
-    public void insert(Widget widget, String tabText, boolean asHTML, int beforeIndex) {
-        // Delegate updates to the TabBar to our DeckPanel implementation
-        insert(widget, asHTML ? new HTML(tabText, false) : new Label(tabText, false), beforeIndex);
+        insert(widget, new Label(tabText, false), beforeIndex);
     }
 
     public void insert(Widget widget, Widget tabWidget, int beforeIndex) {
@@ -136,7 +114,9 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
             }
         }
         tabBar.insertTab(tabWidget, beforeIndex);
-        deck.insert(widget, beforeIndex);
+
+        widget.setVisible(false);
+        deck.addFill(widget, beforeIndex);
     }
 
     @Override

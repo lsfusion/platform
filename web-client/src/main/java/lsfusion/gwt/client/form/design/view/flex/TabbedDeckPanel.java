@@ -4,17 +4,11 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 
-public class TabbedDeckPanel extends FlexPanel implements TabDeck {
+public class TabbedDeckPanel extends FlexPanel {
     private Widget visibleWidget;
 
     public TabbedDeckPanel() {
         super(true);
-    }
-
-    @Override
-    public void insert(Widget widget, int beforeIndex) {
-        widget.setVisible(false);
-        addFill(widget, beforeIndex);
     }
 
     @Override

@@ -21,10 +21,9 @@ public class ScrollContainerView extends GAbstractContainerView {
         assert container.isScroll();
 
         scrollPanel = new FlexPanel(vertical);
-        scrollPanel.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
-        scrollPanel.getElement().getStyle().setOverflowX(Style.Overflow.AUTO);
-
         view = initBorder(scrollPanel);
+        view.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
+        view.getElement().getStyle().setOverflowX(Style.Overflow.AUTO);
     }
 
     @Override
