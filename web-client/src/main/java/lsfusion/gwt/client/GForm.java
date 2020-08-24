@@ -45,7 +45,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
 
     public GFormChangesDTO initialFormChanges;
     public GFormUserPreferences userPreferences;
-    public Set<String> inputObjects;
+    public Set<GGroupObject> inputGroupObjects;
 
     public ArrayList<GFontWidthString> usedFonts = new ArrayList<>();
     

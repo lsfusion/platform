@@ -85,9 +85,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         }
     }
 
-    public Set<String> getInputObjects() {
+    public Set<Integer> getInputGroupObjects() {
         try {
-            return callImmutableMethod("getInputObjects", target::getInputObjects);
+            return callImmutableMethod("getInputGroupObjects", target::getInputGroupObjects);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

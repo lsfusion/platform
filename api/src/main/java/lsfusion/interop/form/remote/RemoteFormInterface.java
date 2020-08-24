@@ -25,7 +25,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     Integer getInitFilterPropertyDraw() throws RemoteException;
 
-    Set<String> getInputObjects() throws RemoteException;
+    Set<Integer> getInputGroupObjects() throws RemoteException;
 
     ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException;
 

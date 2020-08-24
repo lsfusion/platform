@@ -10,7 +10,6 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPrefere
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.provider.SessionInvalidatedException;
@@ -53,7 +52,11 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
         GForm gForm = new ClientComponentToGwtConverter(navigatorProvider.getLogicsName(sessionID)).convertOrCast(clientForm);
 
-        gForm.inputObjects = immutableMethods != null ? (Set<String>) immutableMethods[3] : remoteForm.getInputObjects();
+        Set<Integer> inputObjects = remoteForm.getInputGroupObjects();
+        gForm.inputGroupObjects = new HashSet<>();
+        for(Integer inputObject : inputObjects) {
+            gForm.inputGroupObjects.add(gForm.getGroupObject(inputObject));
+        }
 
         gForm.sID = formSID;
         gForm.canonicalName = canonicalName;

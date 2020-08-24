@@ -132,10 +132,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public Set<String> getInputObjects() {
-        Set<String> inputObjects = new HashSet<>();
-        for(ObjectEntity objectEntity : form.inputObjects.toJavaSet()) {
-            inputObjects.add(objectEntity.getSID());
+    public Set<Integer> getInputGroupObjects() {
+        Set<Integer> inputObjects = new HashSet<>();
+        for(ObjectEntity objectEntity : form.inputObjects) {
+            inputObjects.add(objectEntity.groupTo.ID);
         }
         return inputObjects;
     }
@@ -804,7 +804,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     public Object[] getImmutableMethods() {
         try {
-            return new Object[]{getUserPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw(), getInputObjects()};
+            return new Object[]{getUserPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw(), getInputGroupObjects()};
         } catch (RemoteException e) {
             return null;
         }

@@ -1407,12 +1407,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         switch (binding.bindDialog) {
             case AUTO:
             case ALL:
-            case INPUT:
                 return true;
             case ONLY:
                 return isDialog();
             case NO:
                 return !isDialog();
+            case INPUT:
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindDialog);
         }
@@ -1428,7 +1428,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             case NO:
                 return !equalGroup;
             case INPUT:
-                return form.inputObjects != null && groupObject != null && form.inputObjects.contains(groupObject.getSID());
+                return groupObject != null && form.inputGroupObjects.contains(groupObject);
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode");
         }
