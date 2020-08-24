@@ -21,6 +21,7 @@ import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,7 @@ public abstract class FormsController {
                 return event -> updateLinkEditModeButton(!linkEditMode);
             }
         };
+        setCompactSize(linkEditButton);
         toolbarView.addComponent(linkEditButton);
 
         fullScreenButton = new GToolbarButton(null) {
@@ -64,6 +66,7 @@ public abstract class FormsController {
                 return event -> switchFullScreenMode();
             }
         };
+        setCompactSize(fullScreenButton);
         toolbarView.addComponent(fullScreenButton);
 
         formsContainer = new ResizableSimplePanel();
@@ -83,6 +86,10 @@ public abstract class FormsController {
             formFocusOrder.set(index, focusOrderCount++);
             isAdding = false;
         });
+    }
+
+    private void setCompactSize(GToolbarButton button) {
+        button.setSize(StyleDefaults.VALUE_HEIGHT_STRING, StyleDefaults.VALUE_HEIGHT_STRING);
     }
 
     private boolean isRemoving = false;
