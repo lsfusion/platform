@@ -590,3 +590,31 @@ seekChat(CustomUser user) + {
 NAVIGATOR {
     NEW fullChat IMAGE 'chat.png' BEFORE Authentication.account;
 }
+
+sendMessage '{chat.send.message.user}' (CustomUser userFrom, CustomUser userTo, STRING message, BOOLEAN notificate)  { 
+    LOCAL chat = Chat();
+    chat() <- chatIn(userFrom, userTo);
+    IF NOT chat() THEN {
+        NEW newChat = Chat {
+            in(newChat, userFrom) <- TRUE;
+            in(newChat, userTo) <- TRUE;
+            chat() <- newChat;
+        }
+    }
+    
+    NEW m = Message {
+            chat(m) <- chat();
+            dateTime(m) <- currentDateTime();
+            author(m) <- userFrom;
+            text(m) <- message;
+            status(m, userFrom) <- MessageStatus.seen;
+            status(m, userTo) <- MessageStatus.sent;            
+        }
+    apply();
+        
+    NEWSESSION NEWTHREAD {
+        FOR user(Connection conn) == userTo AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+            NEWSESSION { NEWTHREAD pushAction(NULL, notificate); CONNECTION conn; }
+        }          
+    }
+}
