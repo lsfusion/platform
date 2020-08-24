@@ -64,7 +64,7 @@ public class RichTextCellEditor extends DialogBasedCellEditor {
         bottomPane.add(btnCancel);
 
         final FlexPanel mainPane = new FlexPanel(true);
-        mainPane.addFillFlex(contentsContainer, 0);
+        mainPane.addFill(contentsContainer);
         mainPane.add(bottomPane, GFlexAlignment.CENTER);
 
         textArea.addInitializeHandler(new InitializeHandler() {

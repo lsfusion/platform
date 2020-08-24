@@ -351,6 +351,14 @@ public class GwtClientUtils {
         style.setPaddingRight(paddingRight, Style.Unit.PX);
     }
 
+    public static void installMargins(Element element, int paddingTop, int paddingBottom, int paddingLeft, int paddingRight) {
+        Style style = element.getStyle();
+        style.setMarginTop(paddingTop, Style.Unit.PX);
+        style.setMarginBottom(paddingBottom, Style.Unit.PX);
+        style.setMarginLeft(paddingLeft, Style.Unit.PX);
+        style.setMarginRight(paddingRight, Style.Unit.PX);
+    }
+
     public static void showPopupInWindow(PopupPanel popup, int mouseX, int mouseY) {
         // special minimum offset for Firefox, where PopupPanel swallows MOUSEOVER event 
         popup.setPopupPosition(mouseX + 1, mouseY + 1);

@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import static lsfusion.gwt.client.base.view.FlexPanel.Justify;
 
@@ -144,7 +145,7 @@ public class FlexPanelImpl {
         setFlex(child, layoutData.flex, flexBasis);
     }
 
-    public void fixFlexBasis(FlexPanel.LayoutData layoutData, FixFlexBasisComposite child, boolean vertical) {
+    public void fixFlexBasis(FlexPanel.LayoutData layoutData, FlexTabbedPanel child, boolean vertical) {
         if(layoutData.flexBasis != null)
             return;
 
@@ -152,7 +153,7 @@ public class FlexPanelImpl {
         // фиксируем явную ширину composite'а (ставим базис равный ширине, flex - 0)
         int size = getSize(childElement, vertical);
 
-        Element childWidgetElement = child.widget.getElement();
+        Element childWidgetElement = child.panel.getElement();
 
         if(layoutData.flex == 0) // оптимизация если flex'а нет, этот размер и фиксируем 
             layoutData.flexBasis = size;

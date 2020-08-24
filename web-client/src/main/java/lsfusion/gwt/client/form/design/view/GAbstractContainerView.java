@@ -192,10 +192,9 @@ public abstract class GAbstractContainerView {
             return size;
         return null;
     }
-    public static void add(FlexPanel panel, Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, GComponent component, boolean vertical) { // последний параметр временный хак для Scrollable
-//        assert alignment == component.alignment;
-//        assert flex == component.flex;
-        panel.add(widget, beforeIndex, alignment, flex, getSize(vertical, true, component), getSize(vertical, false, component));
+    public static void add(FlexPanel panel, Widget widget, GComponent component, int beforeIndex) {
+        boolean vertical = panel.isVertical();
+        panel.add(widget, beforeIndex, component.getAlignment(), component.getFlex(), getSize(vertical, true, component), getSize(vertical, false, component));
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view);

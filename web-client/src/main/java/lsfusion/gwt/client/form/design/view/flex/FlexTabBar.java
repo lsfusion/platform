@@ -31,8 +31,7 @@ public class FlexTabBar extends Composite implements TabBar {
             initWidget(panel);
         } else {
             FlexPanel tabBarContainer = new FlexPanel();
-            tabBarContainer.add(panel, GFlexAlignment.START, 1);
-            panel.getElement().getStyle().setProperty("flexShrink", "1");
+            tabBarContainer.addFill(panel);
             tabBarContainer.add(extraTabWidget);
             initWidget(tabBarContainer);
         }
@@ -54,8 +53,8 @@ public class FlexTabBar extends Composite implements TabBar {
         first.setStyleName("gwt-TabBarFirst");
         rest.setStyleName("gwt-TabBarRest");
 
-        panel.add(first, GFlexAlignment.STRETCH, 0);
-        panel.add(rest, GFlexAlignment.STRETCH, 1);
+        panel.add(first, GFlexAlignment.STRETCH);
+        panel.addFill(rest);
     }
 
     private Consumer<Integer> beforeSelectionHandler;
@@ -79,12 +78,19 @@ public class FlexTabBar extends Composite implements TabBar {
         return panel.getWidgetCount() - 2;
     }
 
-    public void insertTab(String text, boolean asHTML, int beforeIndex) {
-        insertTabWidget(asHTML ? new HTML(text, false) : new Label(text, false), beforeIndex);
-    }
-
     public void insertTab(Widget widget, int beforeIndex) {
-        insertTabWidget(widget, beforeIndex);
+        checkInsertBeforeTabIndex(beforeIndex);
+
+        ClickDelegatePanel delWidget = new ClickDelegatePanel(widget);
+        delWidget.setStyleName(STYLENAME_DEFAULT);
+        delWidget.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
+        final Style delWidgetStyle = delWidget.getElement().getStyle();
+        delWidgetStyle.setDisplay(Style.Display.FLEX);
+        delWidgetStyle.setProperty("alignItems", "center");
+
+        panel.add(delWidget, beforeIndex + 1, GFlexAlignment.STRETCH);
+
+        setStyleName(DOM.getParent(delWidget.getElement()), STYLENAME_DEFAULT + "-wrapper", true);
     }
 
     public void removeTab(int index) {
@@ -181,26 +187,6 @@ public class FlexTabBar extends Composite implements TabBar {
         // reuse it here because HTML is an instanceof Label. Leaving an HTML would
         // throw off the results of getTabHTML(int).
         focusablePanel.setWidget(new Label(text, false));
-    }
-
-    /**
-     * Inserts a new tab at the specified index.
-     * @param widget      widget to be used in the new tab
-     * @param beforeIndex the index before which this tab will be inserted
-     */
-    protected void insertTabWidget(Widget widget, int beforeIndex) {
-        checkInsertBeforeTabIndex(beforeIndex);
-
-        ClickDelegatePanel delWidget = new ClickDelegatePanel(widget);
-        delWidget.setStyleName(STYLENAME_DEFAULT);
-        delWidget.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
-        final Style delWidgetStyle = delWidget.getElement().getStyle();
-        delWidgetStyle.setDisplay(Style.Display.FLEX);
-        delWidgetStyle.setProperty("alignItems", "center");
-
-        panel.add(delWidget, beforeIndex + 1, GFlexAlignment.STRETCH, 0);
-
-        setStyleName(DOM.getParent(delWidget.getElement()), STYLENAME_DEFAULT + "-wrapper", true);
     }
 
     private void checkInsertBeforeTabIndex(int beforeIndex) {
