@@ -178,7 +178,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             } else
                 tableHeaderScroller = null;
 
-            headerPanel.addFillFlex(tableDataContainer, 1);
+            headerPanel.addFillFlex(tableDataContainer, !noScrollers ? 0 : null); // for scrollers we need 0 basis (since that is the point of scroller)
 
             if (!noFooters) { // the same as for headers
                 Widget tableFooterContainer;

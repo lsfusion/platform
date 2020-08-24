@@ -2,14 +2,13 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.view.FixFlexBasisComposite;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 
 import java.util.function.Consumer;
 
-public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPanel, RequiresResize, ProvidesResize {
-    private final FlexPanel panel;
+public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, RequiresResize, ProvidesResize {
+    public final FlexPanel panel;
     protected TabBar tabBar;
     protected TabbedDeckPanel deck;
 
@@ -17,6 +16,7 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
         this(null, null);
     }
     public FlexTabbedPanel(String tabBarClass, Widget extraTabWidget) {
+        super(true);
         FlexTabBar tabBar = new FlexTabBar(extraTabWidget);
         if (tabBarClass != null) {
             tabBar.addStyleName(tabBarClass);
@@ -34,7 +34,7 @@ public class FlexTabbedPanel extends FixFlexBasisComposite implements IndexedPan
         tabBar.setBeforeSelectionHandler(this::onBeforeTabSelected);
         tabBar.setSelectionHandler(index -> FlexTabbedPanel.this.onTabSelected(index));
 
-        initWidget(panel);
+        addFill(panel);
 
         setStyleName("gwt-TabPanel");
         deck.setStyleName("gwt-TabPanelBottom");

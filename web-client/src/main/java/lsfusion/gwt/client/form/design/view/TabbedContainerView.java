@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -27,11 +26,12 @@ public class TabbedContainerView extends GAbstractContainerView {
     public static class Panel extends FlexTabbedPanel {
 
         public void insertTab(GComponent child, Widget childView, String tabTitle, int index) {
+            child.installMargins(childView);
+
             // not sure why but this wrapping is necessary (otherwise widgets are not hidden)
             // + in that case we'll need to "override" insert to deck method to fill correct base sizes
             FlexPanel proxyPanel = new FlexPanel(true);
-            GAbstractContainerView.add(proxyPanel, childView, 0, child.getAlignment(), child.getFlex() > 0 ? 1 : 0, child, true);
-            child.installPaddings(proxyPanel);
+            GAbstractContainerView.add(proxyPanel, childView, child, 0);
 
             insert(proxyPanel, tabTitle, index);
         }
