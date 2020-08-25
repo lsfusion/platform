@@ -129,7 +129,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     // in horizontal direction it seems that flex basis does not respect descendants flex-basis, and in vertical direction it does
     // test case in jsfiddle (changing direction to column doesn't work)
     // <div style="overflow: hidden;display: flex;flex-direction: row; position:absolute; top:0; left:0; right:0; bottom:0;">
-    //  <div style="overflow: hidden;display: flex;flex-direction: row;flex: 1 0 0px;">
+    //  <div style="overflow: hidden;display: flex;flex-direction: row;flex: 0 0 auto;">
     //     <div style="overflow: hidden;display: flex;flex-direction: row;flex: 1 0 0px;">
     //       <div>TEXT</div>
     //     </div>
