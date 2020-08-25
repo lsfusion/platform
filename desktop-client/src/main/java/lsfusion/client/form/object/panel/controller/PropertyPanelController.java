@@ -132,7 +132,9 @@ public class PropertyPanelController {
 
                     panelController.addGroupObjectActions(view.getComponent());
                 }
-                newViews.put(columnKey, view);
+                if(view != null) {
+                    newViews.put(columnKey, view);
+                }
             }
         }
 
