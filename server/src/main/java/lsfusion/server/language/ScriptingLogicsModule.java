@@ -1321,7 +1321,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             property.setShowChangeKey(showChangeKey);
     }
 
-    private static List<String> supportedBindings = Arrays.asList("dialog", "group", "editing", "showing");
+    private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "group", "editing", "showing");
     private Map<String, BindingMode> getBindingModesMap(Map<String, String> optionsMap) {
         Map<String, BindingMode> bindingModes = new HashMap<>();
         for(Map.Entry<String, String> option : optionsMap.entrySet()) {
