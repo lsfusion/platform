@@ -5,11 +5,13 @@ import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientColorUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
 
 import javax.swing.*;
+import javax.swing.event.CaretEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
@@ -206,6 +208,38 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
                 }
             }
             return mask;
+        }
+
+        // c/p of super method to override colors 
+        @Override
+        public void caretUpdate(CaretEvent caretEvent) {
+            String text = getText().trim();
+            String emptyMask = maskPattern.replace('#', placeholder);
+
+            if (text.length() == 0 || text.equals(emptyMask)) {
+                setForeground(SwingDefaults.getTableCellForeground());
+                return;
+            }
+
+            try {
+                Date date = dateFormatter.parse(getText());
+                if (dateUtil.checkDate(date)) {
+                    setForeground(SwingDefaults.getValidDateForeground());
+                } else {
+                    setForeground(SwingDefaults.getRequiredForeground());
+                }
+            } catch (Exception e) {
+                setForeground(SwingDefaults.getRequiredForeground());
+            }
+        }
+
+        @Override
+        protected void setDate(Date date, boolean b) {
+            super.setDate(date, b);
+
+            if (date != null && dateUtil.checkDate(date)) {
+                setForeground(SwingDefaults.getTableCellForeground());
+            }
         }
 
         public Date getDate() {
