@@ -54,6 +54,7 @@ public class SwingDefaults {
     private static Color notNullLineColor;
     private static Color hasChangeActionColor;
     private static Color requiredForeground;
+    private static Color validDateForeground;
     private static Insets tableCellMargins;
     private static Insets buttonMargin;
     private static Insets toggleButtonMargin;
@@ -87,6 +88,7 @@ public class SwingDefaults {
         notNullLineColor = null;
         hasChangeActionColor = null;
         requiredForeground = null;
+        validDateForeground = null;
         buttonMargin = null;
         toggleButtonMargin = null;
         panelBackground = null;
@@ -336,6 +338,13 @@ public class SwingDefaults {
             requiredForeground = colorTheme.isLight() ? new Color(199, 13, 0) : new Color(197, 77, 77);
         }
         return requiredForeground;
+    }
+    
+    public static Color getValidDateForeground() {
+        if (validDateForeground == null) {
+            validDateForeground = colorTheme.isLight() ? new Color(0, 150, 0) : new Color(0, 130, 0);
+        }
+        return validDateForeground;
     }
     
     public static Insets getTableCellMargins() {
