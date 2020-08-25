@@ -231,6 +231,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
     public void checkPreviewEvent(EventHandler handler) {
+        if(MainFrame.isModalPopup())
+            return;
+        
         checkMouseEvent(handler, true);
         if(handler.consumed)
             return;
