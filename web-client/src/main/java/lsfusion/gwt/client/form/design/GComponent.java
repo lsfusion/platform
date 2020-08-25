@@ -101,11 +101,9 @@ public class GComponent implements Serializable {
         return vertical ? getVerticalMargin() : getHorizontalMargin();
     }
 
-    public void installPaddings(Widget widget) {
-        installPaddings(widget.getElement());
-    }
-
-    public void installPaddings(Element element) {
-        GwtClientUtils.installPaddings(element, marginTop, marginBottom, marginLeft, marginRight);
+    public void installMargins(Widget widget) {
+        if(hasMargins()) // margins and not padding to not override other paddings
+            GwtClientUtils.installMargins(widget.getElement(), marginTop, marginBottom, marginLeft, marginRight);
+//        GwtClientUtils.installPaddings(widget.getElement(), marginTop, marginBottom, marginLeft, marginRight);
     }
 }

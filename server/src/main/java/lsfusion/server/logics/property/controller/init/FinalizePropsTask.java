@@ -7,6 +7,12 @@ public class FinalizePropsTask extends GroupPropertiesTask {
         return "Finalizing properties";
     }
 
+    @Override
+    protected boolean prerun() {
+        getBL().markPropsForFinalization();
+        return true;
+    }
+
     protected void runTask(ActionOrProperty property) {
         property.finalizeAroundInit();
     }

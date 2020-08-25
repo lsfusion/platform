@@ -19,8 +19,9 @@ public class EditBindingMap {
     //пока одно значение, возможно в будущем расширится до мэпа (типа клик, дабл клик и т. д.)
     private String mouseBinding;
 
-    public EditBindingMap() {
-        setMouseAction(ServerResponse.CHANGE);
+    public EditBindingMap(boolean changeMouse) {
+        if(changeMouse)
+            setMouseAction(ServerResponse.CHANGE);
     }
 
     public String getEventSID(EventObject editEvent, EditEventFilter editEventFilter) {

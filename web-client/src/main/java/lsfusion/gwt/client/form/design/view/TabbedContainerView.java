@@ -26,10 +26,12 @@ public class TabbedContainerView extends GAbstractContainerView {
     public static class Panel extends FlexTabbedPanel {
 
         public void insertTab(GComponent child, Widget childView, String tabTitle, int index) {
-            FlexPanel proxyPanel = new FlexPanel(true);
-            proxyPanel.add(childView, child.getAlignment(), child.getFlex());
+            child.installMargins(childView);
 
-            child.installPaddings(proxyPanel);
+            // not sure why but this wrapping is necessary (otherwise widgets are not hidden)
+            // + in that case we'll need to "override" insert to deck method to fill correct base sizes
+            FlexPanel proxyPanel = new FlexPanel(true);
+            GAbstractContainerView.add(proxyPanel, childView, child, 0);
 
             insert(proxyPanel, tabTitle, index);
         }

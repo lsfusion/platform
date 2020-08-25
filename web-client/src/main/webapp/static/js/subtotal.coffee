@@ -289,7 +289,7 @@ callWithJQuery ($) ->
             th = createElement "th", className, attributes
             if not isArrow
                 th.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
-                th.ondblclick = (event) -> callbacks.rowAttrHeaderDblClickHandler event, th, rowKey, cellAttr if callbacks?
+                th.onclick = (event) -> callbacks.rowAttrHeaderClickHandler event, th, rowKey, cellAttr if callbacks?
             renderRowAttrHeader th, value, rowKey, cellAttr, isArrow, isExpanded, isLastChildList
             return th
 
@@ -307,7 +307,7 @@ callWithJQuery ($) ->
                 textElement = th.textDiv
 
             textElement.onmousedown = (event) -> if event.detail > 1 then event.preventDefault() if callbacks?
-            textElement.ondblclick = (event) -> callbacks.colAttrHeaderDblClickHandler event, textElement, colKey, isSubtotal if callbacks?
+            textElement.onclick = (event) -> callbacks.colAttrHeaderClickHandler event, textElement, colKey, isSubtotal if callbacks?
             if colKey.length == colAttrs.length or isSubtotal or colKey.length == 0
                 colsData.push { width : getColumnWidth(true, colKey, null, false), colnode : attributes["data-colnode"] }      
             renderColAttrHeader th, value, colKey, isSubtotal, isExpanded, false

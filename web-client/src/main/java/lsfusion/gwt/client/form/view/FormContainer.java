@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
@@ -12,7 +11,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -23,14 +21,14 @@ import static java.lang.Math.min;
 // multiple inheritance
 public abstract class FormContainer<W extends Widget> {
 
-    protected final DefaultFormsController formsController;
+    protected final FormsController formsController;
     protected final W contentWidget;
 
     protected Event initFilterEvent;
 
     protected GFormController form;
 
-    public FormContainer(DefaultFormsController formsController) {
+    public FormContainer(FormsController formsController) {
         this.formsController = formsController;
 
         this.contentWidget = initContentWidget();

@@ -2,10 +2,7 @@ package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
@@ -13,6 +10,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
@@ -20,10 +18,7 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
-import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingBlocker;
 import lsfusion.gwt.client.base.busy.LoadingManager;
@@ -78,7 +73,9 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
@@ -201,22 +198,78 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         super.onBrowserEvent(event);
 
-        if(GMouseStroke.isChangeEvent(event) || GMouseStroke.isDoubleChangeEvent(event))
-            handleMouseEvent(target, event);
+        checkFormEvent(event, this::checkMouseEvent);
+    }
+
+    private interface CheckEvent {
+        void accept(EventHandler handler, boolean preview);
+    }
+    private static void checkFormEvent(Event event, CheckEvent preview) {
+        EventHandler handler = new EventHandler(event);
+
+        preview.accept(handler, true); // the problem is that now we check preview twice (however it's not that big overhead, so so far will leave it this way)
+        if(handler.consumed)
+            return;
+
+        preview.accept(handler, false);
+    }
+
+    public void checkMouseEvent(EventHandler handler, boolean preview) {
+        if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event))
+            processBinding(handler, preview);
+    }
+    public void checkKeyEvent(EventHandler handler, boolean preview) {
+        if(GKeyStroke.isKeyEvent(handler.event))
+            processBinding(handler, preview);
+    }
+    private static void checkGlobalKeyEvent(DomEvent event, Supplier<GFormController> currentForm) {
+        NativeEvent nativeEvent = event.getNativeEvent();
+        if(nativeEvent instanceof Event) { // just in case
+            GFormController form = currentForm.get();
+            if(form != null)
+                checkFormEvent((Event) nativeEvent, form::checkKeyEvent);
+        }
+    }
+    public void checkPreviewEvent(EventHandler handler) {
+        checkMouseEvent(handler, true);
+        if(handler.consumed)
+            return;
+
+        checkKeyEvent(handler, true);
+    }
+
+    public static void checkKeyEvents(DomEvent event, FormsController formsController) {
+        NativeEvent nativeEvent = event.getNativeEvent();
+        if(GKeyStroke.isCtrlKeyDownEvent(nativeEvent))
+            formsController.updateLinkEditModeButton(true);
+        else if(GKeyStroke.isCtrlKeyUpEvent(nativeEvent))
+            formsController.updateLinkEditModeButton(false);
+        else if(GKeyStroke.isAltEnterEvent(nativeEvent)) {
+            formsController.switchFullScreenMode();
+        }
+    }
+
+    private static boolean linkEditMode;
+    public static boolean isLinkEditMode() {
+        return linkEditMode;
+    }
+    public static void setLinkEditMode(boolean enabled) {
+        com.google.gwt.user.client.Element globalElement = RootPanel.get().getElement();
+        linkEditMode = enabled;
+        if(enabled)
+            globalElement.addClassName("linkEditMode");
+        else
+            globalElement.removeClassName("linkEditMode");
     }
 
     // will handle key events in upper container which will be better from UX point of view
-    public static void initKeyEventHandler(Widget widget, Supplier<GFormController> currentForm) {
+    public static void initKeyEventHandler(Widget widget, FormsController formsController, Supplier<GFormController> currentForm) {
         widget.addDomHandler(event -> {
-            GFormController form = currentForm.get();
-            if(form != null)
-                form.handleKeyEvent(event.getNativeEvent());
+            checkGlobalKeyEvent(event, currentForm);
+            checkKeyEvents(event, formsController);
         }, KeyDownEvent.getType());
-        widget.addDomHandler(event -> {
-            GFormController form = currentForm.get();
-            if(form != null)
-                form.handleKeyEvent(event.getNativeEvent());
-        }, KeyPressEvent.getType());
+        widget.addDomHandler(event -> checkGlobalKeyEvent(event, currentForm), KeyPressEvent.getType());
+        widget.addDomHandler(event -> checkKeyEvents(event, formsController), KeyUpEvent.getType());
     }
 
     public GGridController getController(GGroupObject groupObject) {
@@ -707,13 +760,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
         Event event = handler.event;
-        GPropertyDraw editProperty = editContext.getProperty();
-        if(editProperty == null)  // in tree there can be no property in groups other than last
+        GPropertyDraw property = editContext.getProperty();
+        if(property == null)  // in tree there can be no property in groups other than last
             return;
 
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(editProperty, event.getClientX(), event.getClientY(), actionSID -> {
+            GPropertyContextMenuPopup.show(property, event.getClientX(), event.getClientY(), actionSID -> {
                 actionDispatcher.executePropertyActionSID(event, actionSID, editContext);
             });
         } else {
@@ -723,17 +776,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     editContext.trySetFocus(); // we want element to be focused on key binding (if it's possible)
                 actionSID = CHANGE;
             } else {
-                actionSID = editProperty.getEventSID(event);
+                actionSID = property.getEventSID(event);
                 if(actionSID == null)
                     return;
             }
 
             if ((GEditBindingMap.CHANGE.equals(actionSID) || GEditBindingMap.CHANGE_WYS.equals(actionSID) || GEditBindingMap.GROUP_CHANGE.equals(actionSID)) &&
-                    editContext.isReadOnly())
-                return;
-
-            GPropertyDraw property = editProperty;
-            if(!property.hasChangeAction) // important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
+                (editContext.isReadOnly() || !property.hasChangeAction)) // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
+                    return;
+            if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;
 
             handler.consume();
@@ -1369,17 +1420,24 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GGroupObject get();
     }
 
-    public boolean processBinding(Event event, GGroupObjectSupplier groupObjectSupplier) {
+    public void processBinding(EventHandler handler, boolean preview) {
+        final EventTarget target = handler.event.getEventTarget();
+        if (!Element.is(target)) {
+            return;
+        }
+
+        Event event = handler.event;
         TreeMap<Integer, Binding> orderedBindings = new TreeMap<>(); // descending sorting by priority
 
-        GGroupObject groupObject = groupObjectSupplier.get();
+        GGroupObject groupObject = getGroupObject(Element.as(target));
         for (int i = 0, size = bindingEvents.size(); i < size; i++) {
             GBindingEvent bindingEvent = bindingEvents.get(i);
             if (bindingEvent.event.check(event)) {
                 Binding binding = bindings.get(i);
                 boolean equalGroup;
                 GBindingEnv bindingEnv = bindingEvent.env;
-                if(bindDialog(bindingEnv) &&
+                if(bindPreview(bindingEnv, preview) &&
+                    bindDialog(bindingEnv) &&
                     bindGroup(bindingEnv, groupObject, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
                     bindEditing(bindingEnv) &&
                     bindShowing(bindingEnv, binding.showing()))
@@ -1390,17 +1448,31 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         for (Binding binding : orderedBindings.values()) {
             if (binding.enabled()) {
                 checkCommitEditing();
+                handler.consume();
+
                 binding.exec(event);
-                stopPropagation(event);
-                return true;
+                return;
             }
         }
-        return false;
     }
 
     public void checkCommitEditing() {
         if(cellEditor != null)
             cellEditor.commitEditing(getEditElement());
+    }
+
+    private boolean bindPreview(GBindingEnv binding, boolean preview) {
+        switch (binding.bindPreview) {
+            case AUTO:
+            case NO:
+                return !preview;
+            case ALL: // actually makes no since if previewed, than will be consumed so equivalent to only
+                return true;
+            case ONLY:
+                return preview;
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindDialog);
+        }
     }
 
     private boolean bindDialog(GBindingEnv binding) {
@@ -1464,18 +1536,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private void handleKeyEvent(NativeEvent nativeEvent) {
-        final EventTarget target = nativeEvent.getEventTarget();
-        if (!Element.is(target)) {
-            return;
-        }
-        processBinding((Event) nativeEvent, () -> getGroupObject(Element.as(target)));
-    }
-
-    private void handleMouseEvent(Element target, Event event) {
-        processBinding(event, () -> getGroupObject(target));
-    }
-
     private CellEditor cellEditor;
 
     public Element getEditElement() {
@@ -1497,7 +1557,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, Consumer<Object> beforeCommit, Consumer<Object> afterCommit, Runnable cancel, EditContext editContext) {
         assert this.editContext == null;
-        CellEditor cellEditor = type.createGridCellEditor(this, editContext.getProperty());
+        GPropertyDraw property = editContext.getProperty();
+        CellEditor cellEditor = type.createGridCellEditor(this, property);
         if (cellEditor != null) {
             editBeforeCommit = beforeCommit;
             editAfterCommit = afterCommit;
@@ -1512,8 +1573,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                     forceSetFocus = editContext.forceSetFocus();
 
                 RenderContext renderContext = editContext.getRenderContext();
-                editContext.getProperty().getCellRenderer().clearRender(element, renderContext); // dropping previous render
-                ((ReplaceCellEditor)cellEditor).render(element, renderContext); // rendering new one, filling inputElement
+
+                CellRenderer cellRenderer = property.getCellRenderer();
+                Pair<Integer, Integer> renderedSize = null;
+                if(property.autoSize) // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
+                    renderedSize = new Pair<>(element.getClientWidth() - cellRenderer.getWidthPadding() * 2, element.getClientHeight() - cellRenderer.getHeightPadding() * 2);
+
+                cellRenderer.clearRender(element, renderContext); // dropping previous render
+
+                ((ReplaceCellEditor)cellEditor).render(element, renderContext, renderedSize); // rendering new one, filling inputElement
             }
 
             this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
@@ -1615,10 +1683,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 "", null, true);
     }
 
-    public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Runnable onOuterEditBefore, Runnable onEdit, Runnable onOuterEditAfter, Runnable onCut, Runnable onPaste) {
+    public void onPropertyBrowserEvent(Event event, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore, Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut, Consumer<EventHandler> onPaste) {
+        EventHandler handler = new EventHandler(event);
+
         boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
         if(isPropertyEditing)
             cellEditor.onBrowserEvent(getEditElement(), handler);
+
+        if(DataGrid.getBrowserTooltipMouseEvents().contains(event.getType())) // just not to have problems in debugger
+            return;
 
         if(handler.consumed)
             return;
@@ -1626,25 +1699,30 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(GMouseStroke.isChangeEvent(handler.event))
             focusElement.focus(); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 
-        onOuterEditBefore.run();
+        checkPreviewEvent(handler);
+
+        if(handler.consumed)
+            return;
+
+        onOuterEditBefore.accept(handler);
 
         if(handler.consumed)
             return;
 
         if (!isPropertyEditing) { // if editor did not consume event, we don't want it to be handled by "renderer" since it doesn't exist
             if (GKeyStroke.isCopyToClipboardEvent(handler.event)) {
-                onCut.run();
+                onCut.accept(handler);
             } else if (GKeyStroke.isPasteFromClipboardEvent(handler.event)) {
-                onPaste.run();
+                onPaste.accept(handler);
             } else {
-                onEdit.run();
+                onEdit.accept(handler);
             }
         }
 
         if(handler.consumed)
             return;
 
-        onOuterEditAfter.run();
+        onOuterEditAfter.accept(handler);
 
         if(handler.consumed)
             return;

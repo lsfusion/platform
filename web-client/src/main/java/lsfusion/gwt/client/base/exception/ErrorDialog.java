@@ -44,7 +44,7 @@ public class ErrorDialog extends ResizableSystemModalWindow {
             stacksPanel.selectTab(0);
             stacksPanel.setVisible(false);
             
-            mainPane.add(stacksPanel, 1, GFlexAlignment.STRETCH, 1, 150);
+            mainPane.addFill(stacksPanel, 1);
         }
         
         FlexPanel buttonsPanel = new FlexPanel(false, FlexPanel.Justify.CENTER);

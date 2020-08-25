@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.calculateStackMaxPreferredSize;
 
@@ -69,31 +70,23 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     @Override
     public void add(Widget child) {
-        add(child, GFlexAlignment.START, 0);
+        add(child, GFlexAlignment.START);
     }
     
     public void addCentered(Widget child) {
-        add(child, GFlexAlignment.CENTER, 0);
+        add(child, GFlexAlignment.CENTER);
     }
 
     public void addStretched(Widget child) {
-        add(child, GFlexAlignment.STRETCH, 0);
+        add(child, GFlexAlignment.STRETCH);
     }
 
-    public void add(Widget child, int beforeIndex) {
-        add(child, beforeIndex, GFlexAlignment.START, 0);
+    public void add(Widget widget, GFlexAlignment alignment) {
+        add(widget, getWidgetCount(), alignment);
     }
 
-    public void add(Widget child, GFlexAlignment alignment) {
-        add(child, alignment, 0);
-    }
-
-    public void add(Widget widget, GFlexAlignment alignment, double flex) {
-        add(widget, getWidgetCount(), alignment, flex);
-    }
-
-    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex) {
-        add(widget, beforeIndex, alignment, flex, null);
+    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment) {
+        add(widget, beforeIndex, alignment, 0, null); // maybe here it also makes sense to set basis to 0 as in addFill, but for now it's used mostly in vertical container for simple components
     }
 
     public void addFill(Widget widget) {
@@ -101,11 +94,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void addFillFlex(Widget widget, Integer flexBasis) {
+        assert vertical;
         addFill(widget, getWidgetCount(), flexBasis);
-    }
-
-    public void addFill(Widget widget, int beforeIndex) {
-        addFill(widget, beforeIndex, null);
     }
 
     public void addFill(Widget widget, int beforeIndex, Integer flexBasis) {
@@ -128,16 +118,34 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis);
         widget.setLayoutData(layoutData);
 
-        setBaseWidth(widget, vertical ? crossAxisSize : flexBasis, vertical ? flexBasis : crossAxisSize);
+        setBaseSize(widget, vertical ? crossAxisSize : flexBasis, vertical ? flexBasis : crossAxisSize);
 
         // Adopt.
         adopt(widget);
     }
 
+    // it's tricky here
+    // it seems that flex basis auto works different in vertical (column) and horizontal (row) directions
+    // in horizontal direction it seems that flex basis does not respect descendants flex-basis, and in vertical direction it does
+    // test case in jsfiddle (changing direction to column doesn't work)
+    // <div style="overflow: hidden;display: flex;flex-direction: row; position:absolute; top:0; left:0; right:0; bottom:0;">
+    //  <div style="overflow: hidden;display: flex;flex-direction: row;flex: 1 0 0px;">
+    //     <div style="overflow: hidden;display: flex;flex-direction: row;flex: 1 0 0px;">
+    //       <div>TEXT</div>
+    //     </div>
+    //  </div>
+    //</div>
+    // so for vertical direction we keep auto since it works predictable and as expected
+    // for horizontal direction we set 0 - basis since it doesn't influence on other autos
+    // for now all that is important only for autoSize props, but in theory can be important in other cases
+    public void addFill(Widget widget, int beforeIndex) {
+        addFill(widget, beforeIndex, vertical ? null : 0);
+    }
+
     // we're setting min-width/height and not width/height for two reasons:
     // a) alignment STRETCH doesn't work when width is set
-    // b) flexBasis auto doesn't respect flexBasis of its descendants, but respects min-width (however with that approach in future there might be some problems with flex-shrink if we we'll want to support it)
-    public static void setBaseWidth(Widget widget, Integer width, Integer height) {
+    // b) flexBasis auto doesn't respect flexBasis of its descendants (!!! it's not true for vertical direction, see addFill comment !!!), but respects min-width (however with that approach in future there might be some problems with flex-shrink if we we'll want to support it)
+    public static void setBaseSize(Widget widget, Integer width, Integer height) {
         if(width != null)
             widget.getElement().getStyle().setProperty("minWidth", width + "px");
         if(height != null)
@@ -165,7 +173,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     }
 
-    public void fixFlexBasis(FixFlexBasisComposite w) {
+    public void fixFlexBasis(FlexTabbedPanel w) {
         int index = getWidgetIndex(w);
         if (index != -1) {
             impl.fixFlexBasis((LayoutData) w.getLayoutData(), w, vertical);

@@ -1604,10 +1604,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         // formEdit(property(...))
         return createJoinAction(lm.getFormEdit());
     }
-    private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultAsyncUpdateAction(BaseLogicsModule lm, Property<X> filter, PropertyMapImplement<?, T> resultValue) {
+    private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultAsyncUpdateAction(BaseLogicsModule lm, ImList<Property> viewProperties, PropertyMapImplement<?, T> resultValue) {
+        for(int i=viewProperties.size()-1;i>=0;i--) {
+            Property<X> viewProperty = viewProperties.get(i);
+            resultValue = PropertyFact.createJoin(new PropertyImplement<>(viewProperty, MapFact.singleton(viewProperty.interfaces.single(), resultValue)));
+        }
         // IF NOT requestCanceled() ASYNCUPDATE requestedProperty(...)
-        ActionMapImplement<?, T> asyncUpdate = createJoinAction(lm.addAsyncUpdateAProp(), PropertyFact.createJoin(new PropertyImplement<>(filter, MapFact.singleton(filter.interfaces.single(), resultValue))));
-        return PropertyFact.createIfAction(SetFact.EMPTY(), PropertyFact.createNot(lm.getRequestCanceledProperty().getImplement()), asyncUpdate, null);
+        return PropertyFact.createIfAction(SetFact.EMPTY(), PropertyFact.createNot(lm.getRequestCanceledProperty().getImplement()),
+                                                    createJoinAction(lm.addAsyncUpdateAProp(), resultValue), null);
     }    
     private <X extends PropertyInterface> Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultMainInputAction(BaseLogicsModule lm) {
         ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
@@ -1633,7 +1637,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         return new Pair<>(action, targetProp.getImplement()); 
     }
-    private Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultInputAction(BaseLogicsModule lm, Property filterProperty) {
+    private Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> getDefaultInputAction(BaseLogicsModule lm, ImList<Property> viewProperies) {
         MList<ActionMapImplement<?, T>> mList = ListFact.mList();
 
         // adaptive canBeChanged, to provide better ergonomics for abstracts
@@ -1644,15 +1648,15 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         mList.add(input.first);
 
         // we need to update edited value to provide WYSIWYG
-        if(filterProperty != null)
-            mList.add(getDefaultAsyncUpdateAction(lm, filterProperty, input.second));
+        if(!viewProperies.isEmpty())
+            mList.add(getDefaultAsyncUpdateAction(lm, viewProperies, input.second));
 
         ActionMapImplement<?, T> exInputAction = PropertyFact.createListAction(interfaces, mList.immutableList());
         return new Pair<>(exInputAction, input.second);
     }
 
     @IdentityStrongLazy // STRONG for using in security policy
-    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, Property filterProperty) {
+    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
 //        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
 //        if(interfaceClasses.size() < interfaces.size()) // не все классы есть
 //            return null;
@@ -1672,7 +1676,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if (!canBeChanged()) // optimization
             return null;
         
-        Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> input = getDefaultInputAction(lm, filterProperty);
+        Pair<ActionMapImplement<?, T>, PropertyMapImplement<?, T>> input = getDefaultInputAction(lm, viewProperties);
         return PropertyFact.createRequestAction(interfaces, input.first, 
                                 PropertyFact.createSetAction(interfaces, getImplement(), input.second), null); // INPUT scripted input generates FOR, but now it's not important
     }

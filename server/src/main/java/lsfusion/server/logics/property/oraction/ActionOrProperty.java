@@ -40,7 +40,7 @@ import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
-import lsfusion.server.logics.form.struct.group.AbstractPropertyNode;
+import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.property.Property;
@@ -63,7 +63,7 @@ import java.util.function.IntFunction;
 import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.BusinessLogics.linkComparator;
 
-public abstract class ActionOrProperty<T extends PropertyInterface> extends AbstractPropertyNode {
+public abstract class ActionOrProperty<T extends PropertyInterface> extends AbstractNode {
     public static final IntFunction<PropertyInterface> genInterface = PropertyInterface::new;
 
     private int ID = 0;
@@ -148,6 +148,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.orderInterfaces = interfaces;
 
         setContextMenuAction(ServerResponse.GROUP_CHANGE, LocalizedString.create("{logics.property.groupchange}"));
+        setContextMenuAction(ServerResponse.EDIT_OBJECT, LocalizedString.create("{logics.property.editobject}"));
 
 //        notFinalized.put(this, ExceptionUtils.getStackTrace());
     }
@@ -271,10 +272,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public ActionMapImplement<?, T> getEventAction(String eventActionSID) {
-        return getEventAction(eventActionSID, null);
+        return getEventAction(eventActionSID, ListFact.EMPTY());
     }
 
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID, Property filterProperty) {
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID, ImList<Property> viewProperties) {
         ActionMapImplement<?, T> eventAction = getEventActions().get(eventActionSID);
         if (eventAction != null) {
             return eventAction;
@@ -285,10 +286,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         assert CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID);
 
-        return getDefaultEventAction(eventActionSID, filterProperty);
+        return getDefaultEventAction(eventActionSID, viewProperties);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, Property filterProperty);
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties);
 
     public ActionMapImplement<?, T> getDefaultWYSAction() {
         return null;
@@ -309,7 +310,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public boolean hasNFChild(ActionOrProperty prop, Version version) {
         return hasChild(prop);
     }
-    
+
     public ImOrderSet<ActionOrProperty> getActionOrProperties() {
         return SetFact.singletonOrder(this);
     }

@@ -142,7 +142,7 @@ public class ColumnsContainerView extends GAbstractContainerView {
 
             child.getElement().setPropertyObject(COLUMN_PROXY_KEY, this);
 
-            component.installPaddings(this);
+            component.installMargins(this);
         }
     }
 }

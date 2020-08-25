@@ -7,7 +7,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -17,7 +16,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.FormStaticAction;
-import lsfusion.server.logics.form.open.stat.PrintAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
@@ -30,7 +28,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang3.ArrayUtils;
@@ -140,9 +137,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
             if (this instanceof ExportAction)
                 mProps.add(propertyDraw.getValueProperty().property, false);
             else {
-                MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
-                propertyDraw.fillQueryProps(mReaders);
-                for (PropertyReaderEntity reader : mReaders.immutable()) {
+                for (PropertyReaderEntity reader : propertyDraw.getQueryProps()) {
                     ActionOrPropertyObjectEntity<?, ?> entity;
                     if(reader instanceof PropertyDrawEntity && (entity = ((PropertyDrawEntity<?>) reader).getValueActionOrProperty()) instanceof ActionObjectEntity)
                         mProps.addAll(((ActionObjectEntity<?>)entity).property.getUsedExtProps());

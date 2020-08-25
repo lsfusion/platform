@@ -688,6 +688,8 @@ public abstract class LogicsModule {
 
         // creating form
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, aliases, literals, exprs, where, orders, attr, version);
+        addAutoFormEntity(form);
+
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
         
@@ -710,6 +712,7 @@ public abstract class LogicsModule {
 
         // creating form
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.EMPTYORDER(), aliases, literals, exprs, where, MapFact.EMPTYORDER(), attr, version);
+        addAutoFormEntity(form);
         
         // create action
         return addImportFAProp(type, form, paramsCount, SetFact.singletonOrder(form.groupObject == null ? GroupObjectEntity.NULL : form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasWhere, null); 
@@ -1805,6 +1808,7 @@ public abstract class LogicsModule {
         
         result.setImage("edit.png");
         Map<String, BindingMode> bindingModes = new HashMap<>();
+        bindingModes.put("preview", BindingMode.ONLY);
         bindingModes.put("group", BindingMode.ONLY);
         bindingModes.put("editing", BindingMode.NO);
         result.setChangeKey(KeyStrokes.getEditActionKeyStroke(), bindingModes);
@@ -1835,6 +1839,9 @@ public abstract class LogicsModule {
         } else if (!property.isLocal()) {
             baseLM.privateGroup.add(property, version);
         }
+
+        if(propsFinalized)
+            property.finalizeAroundInit();
     }
 
     protected LP addProperty(Group group, LP lp) {
@@ -2139,11 +2146,16 @@ public abstract class LogicsModule {
     }
 
     // need this mark because unnamed forms can be added during / after finalization
-    boolean formsFinalized;
+    private boolean formsFinalized;
     public void markFormsForFinalization() {
         formsFinalized = true;
     }
-    
+    // need this mark because unnamed properties can be added during / after finalization
+    private boolean propsFinalized;
+    public void markPropsForFinalization() {
+        propsFinalized = true;
+    }
+
     public NavigatorElement getNavigatorElement(String name) {
         return navigatorElements.get(name);
     }
@@ -2160,12 +2172,14 @@ public abstract class LogicsModule {
         assert !namedForms.containsKey(form.getName());
         namedForms.put(form.getName(), form);
     }
-    // should be cached, otherwise it may lead to memory leaks
-    public void addAutoFormEntity(AutoFormEntity form) {
+    @NFLazy
+    public boolean addAutoFormEntityNotFinalized(AutoFormEntity form) {
         assert !form.isNamed();
-
-        boolean added = unnamedForms.add(form);
-        if(formsFinalized && !added) // last check is recursion guard
+        return unnamedForms.add(form);
+    }
+    public void addAutoFormEntity(AutoFormEntity form) {
+        boolean added = addAutoFormEntityNotFinalized(form);
+        if(formsFinalized && added) // last check is recursion guard
             form.finalizeAroundInit();
     }
     

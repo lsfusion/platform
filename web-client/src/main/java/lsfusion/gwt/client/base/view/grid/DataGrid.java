@@ -178,7 +178,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             } else
                 tableHeaderScroller = null;
 
-            headerPanel.addFillFlex(tableDataContainer, 1);
+            headerPanel.addFillFlex(tableDataContainer, !noScrollers ? 0 : null); // for scrollers we need 0 basis (since that is the point of scroller)
 
             if (!noFooters) { // the same as for headers
                 Widget tableFooterContainer;
@@ -256,14 +256,24 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             eventTypes.add(BrowserEvents.CLICK);
             eventTypes.add(BrowserEvents.DBLCLICK);
             eventTypes.add(BrowserEvents.MOUSEDOWN);
-            // for tooltips on header
+            eventTypes.addAll(getBrowserTooltipMouseEvents());
+            browserMouseEvents = eventTypes;
+        }
+        return browserMouseEvents;
+    }
+
+    // for tooltips on header
+    private static Set<String> browserTooltipMouseEvents;
+    public static Set<String> getBrowserTooltipMouseEvents() {
+        if(browserTooltipMouseEvents == null) {
+            Set<String> eventTypes = new HashSet<>();
             eventTypes.add(BrowserEvents.MOUSEUP);
             eventTypes.add(BrowserEvents.MOUSEOVER);
             eventTypes.add(BrowserEvents.MOUSEOUT);
             eventTypes.add(BrowserEvents.MOUSEMOVE);
-            browserMouseEvents = eventTypes;
+            browserTooltipMouseEvents = eventTypes;
         }
-        return browserMouseEvents;
+        return browserTooltipMouseEvents;
     }
 
     private static Set<String> browserEvents;
@@ -472,17 +482,12 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             if (footer != null)
                 footer.onBrowserEvent(footerParent, event);
         } else {
-            if (column != null) {
-                Cell cell = new Cell(row, getColumnIndex(column), column, getRowValue(row));
-
-                EventHandler handler = new EventHandler(event);
-
-                onBrowserEvent(cell, handler, column, columnParent);
-            }
+            if (column != null)
+                onBrowserEvent(new Cell(row, getColumnIndex(column), column, getRowValue(row)), event, column, columnParent);
         }
     }
 
-    public abstract <C> void onBrowserEvent(Cell cell, EventHandler handler, Column<T, C> column, Element parent);
+    public abstract <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent);
 
     /**
      * Checks that the row is within bounds of the view.
@@ -1299,10 +1304,13 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                 assert column != focusedColumn;
                 setColor = background != null ? getDisplayColor(background) : null;
             }
+            onSelectedChanged(td, row, column, selected);
 
             GFormController.setBackgroundColor(td, setColor);
         }
     }
+
+    protected abstract void onSelectedChanged(TableCellElement td, int row, int column, boolean selected);
 
     private void updateFocusedCellDOM() {
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();

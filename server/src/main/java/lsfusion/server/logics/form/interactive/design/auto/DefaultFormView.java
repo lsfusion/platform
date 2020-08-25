@@ -75,9 +75,11 @@ public class DefaultFormView extends FormView {
     protected transient final Table<Optional<PropertyGroupContainerView>, Group, ContainerView> groupPropertyContainers = HashBasedTable.create();
 
     public ContainerView objectsContainer;
-    public ContainerView toolbarBoxContainer;
     public ContainerView panelContainer;
     public ContainerView groupContainer;
+    public ContainerView toolbarBoxContainer;
+    public ContainerView toolbarLeftContainer;
+    public ContainerView toolbarRightContainer;
     public ContainerView toolbarContainer;
 
     private ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(idGenerator.idShift());
@@ -93,23 +95,29 @@ public class DefaultFormView extends FormView {
         creationPath = entity.getCreationPath();
         autoRefresh = entity.autoRefresh;
 
-        FormContainerSet formSet = FormContainerSet.fillContainers(this, containerFactory, version);
+        FormContainerSet formSet = FormContainerSet.fillContainers(mainContainer, containerFactory, version);
         
         objectsContainer = formSet.getObjectsContainer();
         addComponentToMapping(objectsContainer, version);
         
         toolbarBoxContainer = formSet.getToolbarBoxContainer();
         addComponentToMapping(toolbarBoxContainer, version);
-        
+
+        toolbarLeftContainer = formSet.getToolbarLeftContainer();
+        addComponentToMapping(toolbarLeftContainer, version);
+
+        toolbarRightContainer = formSet.getToolbarRightContainer();
+        addComponentToMapping(toolbarRightContainer, version);
+
+        toolbarContainer = formSet.getToolbarContainer();
+        registerComponent(toolbarContainers, toolbarContainer, null, version);
+
         panelContainer = formSet.getPanelContainer();
         registerComponent(panelContainers, panelContainer, null, version);
         
         groupContainer = formSet.getGroupContainer();
         registerComponent(groupContainers, groupContainer, null, version);
         
-        toolbarContainer = formSet.getToolbarContainer();
-        registerComponent(toolbarContainers, toolbarContainer, null, version);
-
         TreeGroupEntity prevTree = null;
         for (GroupObjectView groupObject : getNFGroupObjectsListIt(version)) {
             TreeGroupEntity newTree = groupObject.entity.treeGroup;
@@ -222,31 +230,15 @@ public class DefaultFormView extends FormView {
 
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
 
-        ContainerView toolbarLeftContainer = createContainer(null, DefaultFormView.getToolbarLeftContainerSID(), version);
-        toolbarLeftContainer.setType(ContainerType.CONTAINERH);
-        toolbarLeftContainer.childrenAlignment = Alignment.START;
-        toolbarLeftContainer.setFlex(0);
-        toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
-
-        ContainerView toolbarRightContainer = createContainer(null, DefaultFormView.getToolbarRightContainerSID(), version);
-        toolbarRightContainer.setType(ContainerType.CONTAINERH);
-        toolbarRightContainer.childrenAlignment = Alignment.END;
-        toolbarRightContainer.setFlex(1);
-        toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
-
         toolbarLeftContainer.add(editFunction, version);
         toolbarLeftContainer.add(logMessage, version); // otherwise it will go to OBJECTS container which has types COLUMNS and this type doesnt respect SHOWIF
 
-        toolbarRightContainer.add(toolbarContainer, version);
         toolbarRightContainer.add(refreshFunction, version);
         toolbarRightContainer.add(dropFunction, version);
         toolbarRightContainer.add(applyFunction, version);
         toolbarRightContainer.add(cancelFunction, version);
         toolbarRightContainer.add(okFunction, version);
         toolbarRightContainer.add(closeFunction, version);
-
-        toolbarBoxContainer.add(toolbarLeftContainer, version);
-        toolbarBoxContainer.add(toolbarRightContainer, version);
     }
 
     private void setupFormButton(PropertyDrawView action) {

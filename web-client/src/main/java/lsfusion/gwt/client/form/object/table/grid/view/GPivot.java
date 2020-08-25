@@ -1095,6 +1095,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     @Override
+    public boolean isAlwaysSelected() {
+        return true;
+    }
+
+    @Override
     public boolean globalCaptionIsDrawn() {
         return true;
     }
@@ -1751,15 +1756,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             valueCellDblClickHandler: function (event, td, rowKeyValues, colKeyValues) {
                 instance.@GPivot::cellDblClickAction(*)(rowKeyValues, colKeyValues, event.clientX, event.clientY);
             },
-            
-            rowAttrHeaderDblClickHandler: function (event, th, rowKeyValues, attrName) {
-                instance.@GPivot::rowAttrHeaderDblClickAction(*)(rowKeyValues, attrName);
+
+            rowAttrHeaderClickHandler: function (event, th, rowKeyValues, attrName) {
+                instance.@GPivot::rowAttrHeaderClickAction(*)(rowKeyValues, attrName, event.detail > 1);
             },
-            
-            colAttrHeaderDblClickHandler: function (event, element, colKeyValues, isSubtotal) {
-                if(instance.@GPivot::isSortColumn(*)(isSubtotal, colKeyValues)) {
-                    instance.@GPivot::colAttrHeaderDblClickAction(*)(colKeyValues, element, isSubtotal, event.ctrlKey, event.shiftKey);
-                }
+
+            colAttrHeaderClickHandler: function (event, element, colKeyValues, isSubtotal) {
+                instance.@GPivot::colAttrHeaderClickAction(*)(colKeyValues, element, isSubtotal, event.ctrlKey, event.shiftKey, event.detail > 1);
             },
             
             colAxisHeaderDblClickHandler: function (event, element, attrName) {
@@ -1855,32 +1858,32 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return -1;
     }
 
-    private void rowAttrHeaderDblClickAction(JsArrayMixed rowKeyValues, String attrName) {
-        if(rowKeyValues.length() > 0) {
+    private void rowAttrHeaderClickAction(JsArrayMixed rowKeyValues, String attrName, boolean dblClick) {
+        if((dblClick || GFormController.isLinkEditMode()) && rowKeyValues.length() > 0) {
             Column column = columnMap.get(attrName);
-            Integer rowIndex = getRowIndex(rowKeyValues);
+            Integer rowIndex = getRowIndex(rowKeyValues, false);
             if (column != null && rowIndex != null) {
                 form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
             }
         }
     }
 
-    private Integer getRowIndex(JsArrayMixed rowKeyValues) {
-        JsArrayString rows = config.getArrayString("rows");
+    private Integer getRowIndex(JsArrayMixed keyValues, boolean cols) {
+        JsArrayString rowsOrCols = config.getArrayString(cols ? "cols" : "rows");
         JsArray<JsArrayMixed> data = getData(columnMap, Aggregator.create(), aggrCaptions, JavaScriptObject.createArray().cast(), false, false);
         ArrayList<String> headers = toArrayList(data.get(0));
         List<Integer> headerIndexes = new ArrayList<>();
-        for (int i = 0; i < rows.length(); i++) {
-            headerIndexes.add(headers.indexOf(rows.get(i)));
+        for (int i = 0; i < rowsOrCols.length(); i++) {
+            headerIndexes.add(headers.indexOf(rowsOrCols.get(i)));
         }
 
         Integer rowIndex = 0;
         for (int i = 1; i < data.length(); i++) {
             JsArrayMixed row = data.get(i);
             boolean found = true;
-            for (int j = 0; j < rowKeyValues.length(); j++) {
+            for (int j = 0; j < keyValues.length(); j++) {
                 Integer headerIndex = headerIndexes.get(j);
-                if (!isSystemColumn(row, headerIndex) && !equals(getObjectValue(row, headerIndex), getObjectValue(rowKeyValues, j))) {
+                if (!isSystemColumn(row, headerIndex) && !equals(getObjectValue(row, headerIndex), getObjectValue(keyValues, j))) {
                     found = false;
                     break;
                 }
@@ -1905,16 +1908,30 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return row.length() <= headerIndex;
     }
 
-    private void colAttrHeaderDblClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
-        saveScrollLeft();
-        modifySortCols(columnKeyValues, ctrlKey, shiftKey);
-        if (!shiftKey && !ctrlKey) {
-            unwrapOthers(rendererElement, th);
-        }
-        th.removeAllChildren();
-        renderColAttrCell(th, fromObject(getObjectValue(columnKeyValues,columnKeyValues.length() - 1)), columnKeyValues, isSubtotal, false, false);
+    private void colAttrHeaderClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey, boolean dblClick) {
+        if(dblClick) {
+            if (isSortColumn(isSubtotal, columnKeyValues)) {
+                saveScrollLeft();
+                modifySortCols(columnKeyValues, ctrlKey, shiftKey);
+                if (!shiftKey && !ctrlKey) {
+                    unwrapOthers(rendererElement, th);
+                }
+                th.removeAllChildren();
+                renderColAttrCell(th, fromObject(getObjectValue(columnKeyValues, columnKeyValues.length() - 1)), columnKeyValues, isSubtotal, false, false);
 
-        updateView(true, null);
+                updateView(true, null);
+            }
+        } else {
+            if(GFormController.isLinkEditMode() && columnKeyValues.length() > 0) {
+                Column column = columnMap.get(config.getArrayString("cols").get(columnKeyValues.length() - 1));
+                Integer rowIndex = getRowIndex(columnKeyValues, true);
+                if (column != null && rowIndex != null) {
+                    form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
+                }
+
+                updateView(true, null);
+            }
+        }
     }
 
     private void rowAxisHeaderDblClickAction(String attrName, Element th, String columnCaption, boolean ctrlKey, boolean shiftKey) {

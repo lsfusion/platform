@@ -323,7 +323,11 @@ public class ImplementTable extends DBTable { // последний интерф
     public boolean isNamed() {
         return canonicalName != null;
     }
-    
+
+    public void finalizeAroundInit() {
+        parents.finalizeChanges();
+    }
+
     private interface MapTableType {
         boolean skipParents(ImplementTable table);
         boolean skipResult(ImplementTable table);

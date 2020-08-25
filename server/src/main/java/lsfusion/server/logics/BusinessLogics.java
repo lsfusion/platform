@@ -625,6 +625,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         securityManager.initSecret();
     }
 
+    public void finalizeGroups() {
+        LM.getRootGroup().finalizeAroundInit();
+    }
+
     public ImOrderSet<ActionOrProperty> getOrderActionOrProperties() {
         return LM.getRootGroup().getActionOrProperties();
     }
@@ -1759,11 +1763,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutable();
     }
 
-    public ImSet<FormEntity> markFormsForFinalization() {
-        MExclSet<FormEntity> mResult = SetFact.mExclSet();
+    public void markFormsForFinalization() {
         for(LogicsModule logicsModule : modules.all())
             logicsModule.markFormsForFinalization();
-        return mResult.immutable();
+    }
+
+    public void markPropsForFinalization() {
+        for(LogicsModule logicsModule : modules.all())
+            logicsModule.markPropsForFinalization();
     }
 
     public ImSet<FormEntity> getAllForms() {

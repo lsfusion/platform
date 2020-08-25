@@ -23,6 +23,12 @@
     width: 100%;
 }
 
+.pvtUnusedCellDivWrapper {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
 .pvtUiCellVDiv {
     height: 100%;
     overflow: hidden auto;
@@ -31,6 +37,16 @@
 .pvtUiCellHDiv {
     width: 100%;
     overflow: auto hidden;
+}
+
+.pvtUnusedCellDiv {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: unset;  /* to reset 100% */
+    width: unset;
 }
 
 .pvtUi {
@@ -175,11 +191,12 @@ table.pvtTable tbody tr td {
     padding: 0;
 }
 
-.pvtUiCell > div {
+.pvtUiCell > div:not(.pvtUnusedCellDivWrapper), .pvtUnusedCellDivWrapper > div {
     padding: 4px;
 }
 
-.pvtAxisContainer li {
+.pvtAxisContainer li, 
+.pvtUiContainer > li /* dragged */ {
     list-style-type: none;
     cursor: move;
     display: flex;
@@ -198,7 +215,8 @@ table.pvtTable tbody tr td {
     margin: 4px;
 }
 
-.pvtAxisContainer li div.pvtAttr {
+.pvtAxisContainer li div.pvtAttr, 
+.pvtUiContainer > li div.pvtAttr /* dragged */ {
     -webkit-text-size-adjust: 100%;
     border: 1px solid var(--component-border-color);
     border-radius: var(--combobox-border-radius);

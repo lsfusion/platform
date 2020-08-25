@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -21,10 +20,9 @@ public class ScrollContainerView extends GAbstractContainerView {
         assert container.isScroll();
 
         scrollPanel = new FlexPanel(vertical);
-        scrollPanel.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
-        scrollPanel.getElement().getStyle().setOverflowX(Style.Overflow.AUTO);
-
         view = initBorder(scrollPanel);
+        view.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
+        view.getElement().getStyle().setOverflowX(Style.Overflow.AUTO);
     }
 
     @Override
@@ -32,7 +30,7 @@ public class ScrollContainerView extends GAbstractContainerView {
         assert child.getFlex() == 1 && child.getAlignment() == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
         view.getElement().getStyle().setOverflowY(Style.Overflow.VISIBLE);
         view.getElement().getStyle().setOverflowX(Style.Overflow.VISIBLE);
-        add(scrollPanel, view, 0, child.getAlignment(), child.getFlex(), child, vertical);
+        add(scrollPanel, view, child, 0);
     }
 
     @Override

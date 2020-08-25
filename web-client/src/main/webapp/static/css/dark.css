@@ -32,4 +32,7 @@
     --date-picker-day-is-value-background-color: #416946;
     --date-picker-day-is-today-background-color: #497bc5;
     --date-picker-day-is-highlighted-background-color: #716817;
+
+    --link-color: #000000;
+    --link-hover-color: #808080;
 }
