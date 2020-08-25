@@ -15,6 +15,7 @@ import lsfusion.interop.form.property.PropertyGroupType;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface RemoteFormInterface extends RemoteRequestInterface {
 
@@ -23,6 +24,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     byte[] getRichDesignByteArray() throws RemoteException;
 
     Integer getInitFilterPropertyDraw() throws RemoteException;
+
+    Set<Integer> getInputGroupObjects() throws RemoteException;
 
     ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException;
 

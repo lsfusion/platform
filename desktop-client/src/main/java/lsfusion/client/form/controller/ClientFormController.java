@@ -48,7 +48,6 @@ import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangeProper
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.UpdateMode;
@@ -1682,8 +1681,23 @@ public class ClientFormController implements AsyncListener {
                 return equalGroup(groupObject, binding);
             case NO:
                 return !equalGroup(groupObject, binding);
+            case INPUT:
+                Set<ClientGroupObject> inputGroupObjects = getInputGroupObjects();
+                return groupObject != null && inputGroupObjects.contains(groupObject);
         }
         return true;
+    }
+
+    private Set<ClientGroupObject> getInputGroupObjects() {
+        try {
+            Set<ClientGroupObject> inputGroupObjects = new HashSet<>();
+            for(Integer inputGroupObject : remoteForm.getInputGroupObjects()) {
+                inputGroupObjects.add(form.getGroupObject(inputGroupObject));
+            }
+            return inputGroupObjects;
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     private boolean equalGroup(ClientGroupObject groupObject, Binding binding) {
