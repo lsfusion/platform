@@ -134,8 +134,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     @Override
     public Set<Integer> getInputGroupObjects() {
         Set<Integer> inputObjects = new HashSet<>();
-        for(ObjectEntity objectEntity : form.inputObjects) {
-            inputObjects.add(objectEntity.groupTo.ID);
+        if(form.inputObjects != null) {
+            for (ObjectEntity objectEntity : form.inputObjects) {
+                inputObjects.add(objectEntity.groupTo.ID);
+            }
         }
         return inputObjects;
     }
