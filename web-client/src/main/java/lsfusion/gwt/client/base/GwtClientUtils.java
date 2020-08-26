@@ -212,11 +212,12 @@ public class GwtClientUtils {
     }
 
     public static void stopPropagation(NativeEvent event) {
-        stopPropagation(event, false);
+        stopPropagation(event, false, false);
     }
 
-    public static void stopPropagation(NativeEvent event, boolean propagateToNative) {
-        event.stopPropagation();
+    public static void stopPropagation(NativeEvent event, boolean propagateToNative, boolean propagateToUpper) {
+        if(!propagateToUpper)
+            event.stopPropagation();
         if(!propagateToNative)
             event.preventDefault();
     }
