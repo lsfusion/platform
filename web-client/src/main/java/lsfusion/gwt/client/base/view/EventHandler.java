@@ -14,13 +14,13 @@ public class EventHandler {
     public boolean consumed;
 
     public void consume() {
-        consume(false);
+        consume(false, false);
     }
 
     // called when we find out that event should be proceeded by native component
     // so we want to finish consuming events (for example LEFT, RIGHT in grid), but we want to be proceeded by native component (for example text input in property editor)
-    public void consume(boolean propagateToNative) {
-        GwtClientUtils.stopPropagation(event, propagateToNative);
+    public void consume(boolean propagateToNative, boolean propagateToUpper) {
+        GwtClientUtils.stopPropagation(event, propagateToNative, propagateToUpper);
         consumed = true;
     }
 }

@@ -82,7 +82,7 @@ public abstract class TextBasedCellEditor implements ReplaceCellEditor {
             if(stringToAdd != null && !checkInputValidity(parent, stringToAdd))
                 isCorrect = false; // this thing is needed to disable inputting incorrect symbols
 
-            handler.consume(isCorrect);
+            handler.consume(isCorrect, false);
         } else if (KEYDOWN.equals(type)) {
             int keyCode = event.getKeyCode();
             if (keyCode == KeyCodes.KEY_ENTER) {
