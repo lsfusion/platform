@@ -34,13 +34,14 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     public EventHandler createEventHandler(Event event) {
         return new EventHandler(event) {
             @Override
-            public void consume() {
+            public void consume(boolean propagateToNative) {
                 if(BrowserEvents.KEYDOWN.equals(event.getType())) {
                     int keyCode = event.getKeyCode();
                     if (keyCode == KeyCodes.KEY_ESCAPE || keyCode == KeyCodes.KEY_ENTER)
                         return;
                 }
-                super.consume();
+
+                super.consume(propagateToNative);
             }
         };
     }

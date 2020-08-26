@@ -117,17 +117,17 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         if(!DataGrid.checkSinkEvents(event))
             return;
 
-        EventHandler focusHandler = createEventHandler(event);
+        EventHandler eventHandler = createEventHandler(event);
 
         if(BrowserEvents.FOCUS.equals(event.getType())) {
-            onFocus(focusHandler);
+            onFocus(eventHandler);
         } else if(BrowserEvents.BLUR.equals(event.getType())) {
-            onBlur(focusHandler);
+            onBlur(eventHandler);
         }
-        if(focusHandler.consumed)
+        if(eventHandler.consumed)
             return;
 
-        form.onPropertyBrowserEvent(event, getRenderElement(), getFocusElement(),
+        form.onPropertyBrowserEvent(eventHandler, getRenderElement(), getFocusElement(),
                 handler -> {}, // no outer context
                 this::onEditEvent,
                 handler -> {}, // no outer context
