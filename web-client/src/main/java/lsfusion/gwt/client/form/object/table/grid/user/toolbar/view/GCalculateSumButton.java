@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -44,7 +44,6 @@ public abstract class GCalculateSumButton extends GToolbarButton {
             panel.setCellVerticalAlignment(text, HasAlignment.ALIGN_MIDDLE);
         }
 
-        popup.setWidget(panel);
-        GwtClientUtils.showPopupInWindow(popup, getAbsoluteLeft() + getOffsetWidth(), getAbsoluteTop());
+        GwtClientUtils.showPopupInWindow(popup, new FocusPanel(panel), getAbsoluteLeft() + getOffsetWidth(), getAbsoluteTop());
     }
 }

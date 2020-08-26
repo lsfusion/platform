@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.http.client.*;
@@ -11,6 +12,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
@@ -359,10 +361,15 @@ public class GwtClientUtils {
         style.setMarginRight(paddingRight, Style.Unit.PX);
     }
 
-    public static void showPopupInWindow(PopupPanel popup, int mouseX, int mouseY) {
-        // special minimum offset for Firefox, where PopupPanel swallows MOUSEOVER event 
-        popup.setPopupPosition(mouseX + 1, mouseY + 1);
+    public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {
+        popup.setWidget(widget);
         popup.show();
+        Scheduler.get().scheduleDeferred(() -> widget.getElement().focus());
+
+        setPopupPosition(popup, mouseX, mouseY);
+    }
+
+    public static void setPopupPosition(PopupPanel popup, int mouseX, int mouseY) {
 
         int popupWidth = popup.getOffsetWidth();
         int popupHeight = popup.getOffsetHeight();
@@ -371,7 +378,7 @@ public class GwtClientUtils {
 
         if (xCorrection > 0 || yCorrection > 0) {
             if (xCorrection > 0 && yCorrection > 0) {
-                // For the same reason with a lack of space on both sides (right and bottom) we show popup on the opposite side of the cursor. 
+                // For the same reason with a lack of space on both sides (right and bottom) we show popup on the opposite side of the cursor.
                 // Otherwise, in Firefox we won't see the popup at all.
                 popup.setPopupPosition(mouseX - popupWidth, mouseY - popupHeight);
             } else {
@@ -380,6 +387,8 @@ public class GwtClientUtils {
                         yCorrection > 0 ? max(mouseY - yCorrection, 0) : mouseY + 1
                 );
             }
+        } else {
+            popup.setPopupPosition(mouseX + 1, mouseY + 1);
         }
     }
 

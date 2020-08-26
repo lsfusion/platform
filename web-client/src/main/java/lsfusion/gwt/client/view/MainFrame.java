@@ -400,7 +400,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         return null;
     }
     public static FormContainer getAssertCurrentForm() {
-        assert !modalPopup;
+//        assert !modalPopup; // this assertion can be broken in tooltips (since their showing is async) - for example it's showing is scheduled, change initiated, after that tooltip is showm and then response is received and message is shown
         return currentForm;
     }
     public static boolean isModalPopup() {

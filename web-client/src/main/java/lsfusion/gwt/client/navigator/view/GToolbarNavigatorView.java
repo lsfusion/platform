@@ -68,50 +68,26 @@ public class GToolbarNavigatorView extends GNavigatorView {
         button.addMouseUpHandler(new MouseUpHandler() {
             @Override
             public void onMouseUp(MouseUpEvent event) {
-                TooltipManager.get().hideTooltip();
+                TooltipManager.get().hideTooltip(null); // not sure if this is needed
+
                 selected = element;
                 navigatorController.update();
                 navigatorController.openElement(element, event.getNativeEvent());
             }
         });
 
-        button.addMouseOverHandler(new MouseOverHandler() {
+        TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
             @Override
-            public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), new TooltipManager.TooltipHelper() {
-                    @Override
-                    public String getTooltip() {
-                        return element.getTooltipText();
-                    }
-
-                    @Override
-                    public boolean stillShowTooltip() {
-                        return button.isAttached() && button.isVisible();
-                    }
-                });
+            public String getTooltip() {
+                return element.getTooltipText();
             }
-        });
 
-        button.addMouseOutHandler(new MouseOutHandler() {
             @Override
-            public void onMouseOut(MouseOutEvent event) {
-                TooltipManager.get().hideTooltip();
+            public boolean stillShowTooltip() {
+                return button.isAttached() && button.isVisible();
             }
-        });
-
-        button.addMouseMoveHandler(new MouseMoveHandler() {
-            @Override
-            public void onMouseMove(MouseMoveEvent event) {
-                TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
-            }
-        });
-
-        button.addMouseDownHandler(new MouseDownHandler() {
-            @Override
-            public void onMouseDown(MouseDownEvent event) {
-                TooltipManager.get().hideTooltip();
-            }
-        });
+        };
+        TooltipManager.registerWidget(button, tooltipHelper);
 
         button.setHeight("auto");
         button.addStyleName("toolbarNavigatorButton");

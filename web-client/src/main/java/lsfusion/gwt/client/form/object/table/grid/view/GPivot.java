@@ -1824,9 +1824,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             menuBar.addItem(menuItem);
         }
 
-        popup.setWidget(menuBar);
-        GwtClientUtils.showPopupInWindow(popup, x, y);
-        Scheduler.get().scheduleDeferred(menuBar::focus);
+        GwtClientUtils.showPopupInWindow(popup, menuBar, x, y);
     }
 
 
