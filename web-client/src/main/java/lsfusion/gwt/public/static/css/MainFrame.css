@@ -802,10 +802,11 @@ input[type=checkbox]:focus {
 
 /* we want to turn cell to hyper link*/
 .linkEditMode .selectedCellHasEdit {
-    color : var(--link-color) !important;
-    cursor : pointer !important;
+    color: var(--link-color) !important;
+    cursor: pointer !important;
 }
 
 .linkEditMode .selectedCellHasEdit:hover {
-    color : var(--link-hover-color) !important;
+    color: var(--link-hover-color) !important;
+    text-decoration: underline;
 }
