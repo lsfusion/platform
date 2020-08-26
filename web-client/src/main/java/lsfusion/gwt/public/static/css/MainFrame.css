@@ -807,6 +807,5 @@ input[type=checkbox]:focus {
 }
 
 .linkEditMode .selectedCellHasEdit:hover {
-    color: var(--link-hover-color) !important;
     text-decoration: underline;
 }
