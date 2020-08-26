@@ -1686,14 +1686,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 "", null, true);
     }
 
-    public void onPropertyBrowserEvent(Event event, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore, Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut, Consumer<EventHandler> onPaste) {
-        EventHandler handler = new EventHandler(event);
-
+    public void onPropertyBrowserEvent(EventHandler handler, Element cellParent, Element focusElement, Consumer<EventHandler> onOuterEditBefore, Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut, Consumer<EventHandler> onPaste) {
         boolean isPropertyEditing = cellEditor != null && getEditElement() == cellParent;
         if(isPropertyEditing)
             cellEditor.onBrowserEvent(getEditElement(), handler);
 
-        if(DataGrid.getBrowserTooltipMouseEvents().contains(event.getType())) // just not to have problems in debugger
+        if(DataGrid.getBrowserTooltipMouseEvents().contains(handler.event.getType())) // just not to have problems in debugger
             return;
 
         if(handler.consumed)
