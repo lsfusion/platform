@@ -2274,7 +2274,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
     private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue, ImSet<ContextFilterInstance> additionalFilters, ExecutionStack outerStack) throws SQLException, SQLHandledException {
-        return new FormInstance(entity, this.logicsInstance, null,
+        return new FormInstance(entity, this.logicsInstance, SetFact.singleton(dialogEntity),
                                 this.session, securityPolicy,
                                 getFocusListener(), getClassListener(),
                                 MapFact.singleton(dialogEntity, dialogValue),
