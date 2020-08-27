@@ -35,6 +35,8 @@ public class ScriptingGroupObject {
     public GroupObjectEntity neighbourGroupObject;
     public LogicsModule.InsertType insertType;
 
+    public String functionToExecute;
+
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> integrationSIDs) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
 
@@ -46,9 +48,12 @@ public class ScriptingGroupObject {
         this.integrationSIDs = integrationSIDs;
     }
 
-    public void setViewType(ClassViewType viewType, ListViewType listViewType) {
+    public void setViewType(ClassViewType viewType, ListViewType listViewType, String functionToExecute) {
         this.viewType = viewType;
         this.listViewType = listViewType;
+        if (functionToExecute!= null) {
+            this.functionToExecute = functionToExecute;
+        }
     }
 
     public void setPivotOptions(PivotOptions pivotOptions) {

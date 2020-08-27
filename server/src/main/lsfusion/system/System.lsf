@@ -82,7 +82,8 @@ manageSession = NOT sessionOwners() > 1;
 CLASS ListViewType {
     grid 'Grid',
     pivot 'Pivot',
-    map 'Map'
+    map 'Map',
+    custom 'Custom'
 }
 count '{form.grid.count}' = 1;
 isPivot(ListViewType t) = t == ListViewType.pivot;

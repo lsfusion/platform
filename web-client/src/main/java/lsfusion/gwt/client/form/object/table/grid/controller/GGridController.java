@@ -107,6 +107,9 @@ public class GGridController extends GAbstractTableController {
                     if(!groupObject.asyncInit)
                         ((GPivot)table).setDefaultChangesApplied();
                     break;
+                case CUSTOM:
+                    setCustomTableView();
+                    break;
                 case MAP:
                     setMapTableView();
                     break;
@@ -137,6 +140,14 @@ public class GGridController extends GAbstractTableController {
     private void setMapTableView() {
         changeTableView(new GMap(formController, this));
         mapTableButton.showBackground(true);
+        gridTableButton.showBackground(false);
+        pivotTableButton.showBackground(false);
+    }
+
+    private void setCustomTableView() {
+        changeTableView(new GCustom(formController, this, groupObject.functionToExecute));
+        if(mapTableButton != null)
+            mapTableButton.showBackground(false);
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
     }

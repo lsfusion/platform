@@ -1,5 +1,6 @@
 package lsfusion.http.provider.logics;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.controller.remote.proxy.RemoteLogicsLoaderProxy;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
@@ -11,15 +12,25 @@ import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 // singleton, one for whole application
 // needed for custom handler requests + RemoteAuthenticationManager (where gwt is not used)
@@ -30,10 +41,12 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     private static final String hostKey = "host";
     private static final String portKey = "port";
     private static final String exportNameKey = "exportName";
+    private static final String jsPath = "/static/js/";
 
     private String host; // default host
     private int port; // default port
     private String exportName; // default export name
+    private final Set<String> jsUrls = new HashSet<>();
 
     public LogicsProviderImpl() {
     }
@@ -55,6 +68,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         FileUtils.APP_CSS_FOLDER_URL = appPath + "/static/css/";
         FileUtils.APP_CLIENT_IMAGES_FOLDER_URL = appPath + "/main/static/images/";
         FileUtils.APP_TEMP_FOLDER_URL = appPath + "/WEB-INF/temp";
+        FileUtils.APP_JS_FOLDER_URL = appPath + jsPath;
 
         setHost(host);
         setPort(Integer.parseInt(port));
@@ -93,7 +107,31 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     }
 
     public ServerSettings getServerSettings(final HttpServletRequest request, boolean noCache) {
-        return getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), noCache);
+        ServerSettings serverSettings = getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), noCache);
+        if (serverSettings.jsFiles != null) {
+            saveFiles(serverSettings.jsFiles);
+        }
+        return serverSettings;
+    }
+
+    public Set<String> getJsUrls() {
+        return this.jsUrls;
+    }
+
+    private void saveFiles(JSONObject jsFiles) {
+        for (String s : jsFiles.toMap().keySet()) {
+            String folderPath = FileUtils.APP_JS_FOLDER_URL + FilenameUtils.removeExtension(s);
+            File outputFile = new File(folderPath, s);
+            jsUrls.add(jsPath + FilenameUtils.removeExtension(s) + "/" + s);
+            if (!outputFile.exists()) {
+                new File(folderPath).mkdirs();
+                try (OutputStream out = new FileOutputStream(outputFile)){
+                    out.write(jsFiles.optString(s).getBytes());
+                } catch (IOException e) {
+                    throw Throwables.propagate(e);
+                }
+            }
+        }
     }
 
     public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {

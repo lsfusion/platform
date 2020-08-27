@@ -31,6 +31,7 @@ public class FileUtils {
     public static String APP_CSS_FOLDER_URL; // all files has to be prefixed with logicsName
     public static String APP_CLIENT_IMAGES_FOLDER_URL;
     public static String APP_TEMP_FOLDER_URL; // all files hasn't to be prefixed because their names are (or prefixed with) random strings
+    public static String APP_JS_FOLDER_URL;
 
     public static ImageHolder createImage(String logicsName, SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
         if (imageHolder != null) {

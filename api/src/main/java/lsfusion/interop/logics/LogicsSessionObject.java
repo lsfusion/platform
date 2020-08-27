@@ -43,8 +43,12 @@ public class LogicsSessionObject {
             if (jnlpUrls != null && contextPath != null) {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
             }
+            JSONObject jsFiles = null;
+            if (json.has("jsFiles")){
+                jsFiles = new JSONObject(json.optString("jsFiles"));
+            }
 
-            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI, jnlpUrls);
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI, jnlpUrls, jsFiles);
         }
         return serverSettings;
     }

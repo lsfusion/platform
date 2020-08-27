@@ -175,6 +175,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public ClassViewType viewType = ClassViewType.DEFAULT;
     public ListViewType listViewType = ListViewType.DEFAULT;
     public PivotOptions pivotOptions;
+    public String functionToExecute;
 
     // for now will use async init since pivot is analytics and don't need for example focuses and can afford extra round trip
     public boolean asyncInit = true; // so far supported only for pivot
@@ -237,6 +238,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         } else {
             this.pivotOptions = pivotOptions;
         }
+    }
+
+    public void setFunctionToExecute(String functionToExecute) {
+        this.functionToExecute = functionToExecute;
     }
 
     public void setViewTypePanel() {

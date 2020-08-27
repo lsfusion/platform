@@ -214,6 +214,7 @@ public class MainController {
     public String processMain(ModelMap model, HttpServletRequest request) {
         ServerSettings serverSettings = getServerSettings(request, false);
 
+        model.addAttribute("jsUrls", logicsProvider.getJsUrls());
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));

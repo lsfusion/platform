@@ -6,6 +6,7 @@ import lsfusion.interop.logics.ServerSettings;
 
 import javax.servlet.http.HttpServletRequest;
 import java.rmi.RemoteException;
+import java.util.Set;
 
 public interface LogicsProvider {
 
@@ -13,4 +14,6 @@ public interface LogicsProvider {
 
     <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException;
     <R> R runRequest(HttpServletRequest request, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException;
+
+    Set<String> getJsUrls();
 }
