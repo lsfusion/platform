@@ -60,7 +60,7 @@
 
         <csrf disabled="true"/>
 
-        <custom-filter ref="characterEncodingFilter" before="FORM_LOGIN_FILTER"/>
+        <custom-filter ref="characterEncodingFilter" before="OAUTH2_AUTHORIZATION_REQUEST_FILTER"/>
         <custom-filter after="ANONYMOUS_FILTER" ref="anonymousFilter"/>
     </http>
 
