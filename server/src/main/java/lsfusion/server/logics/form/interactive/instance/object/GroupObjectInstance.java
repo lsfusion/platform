@@ -905,7 +905,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     @StackMessage("{message.form.update.group.keys}")
     @ThisMessage
-    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, MSet<PropertyDrawInstance> mChangedDrawProps, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, MSet<PropertyDrawInstance> mChangedDrawProps, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (keyTable == null) // в общем то только для hidden'а но может и потом понадобиться
             keyTable = createKeyTable("upktable-" + System.identityHashCode(execEnv));
 
@@ -939,7 +939,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
 
         if(updateFilters) // изменились фильтры, надо обновить свойства созданные при помощи соответствующих операторов форм, сейчас будет определенная избыточность для dataUpdated (так как через eventChange уже должны изменится), но пока не критично
-            updateEnvironmentIncrementProp(environmentIncrement, modifier, changedProps, reallyChanged, GroupObjectProp.FILTER, true, true);
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.FILTER), environmentIncrement, changedProps, reallyChanged, true, true);
 
         // ORDERS
 
@@ -962,7 +962,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
 
         if(updateOrders) // изменились порядки, надо обновить свойства созданные при помощи соответствующих операторов форм, сейчас будет определенная избыточность для dataUpdated (так как через eventChange уже должны изменится), но пока не критично
-            updateEnvironmentIncrementProp(environmentIncrement, modifier, changedProps, reallyChanged, GroupObjectProp.ORDER, true, true);
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
 
         boolean updateKeys = updateFilters || updateOrders || (setGroupMode == null && userSeeks != null);
 
