@@ -117,6 +117,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                         GPropertyDraw currentProperty = getSelectedProperty();
                         if(currentProperty != null && currentProperty.quickFilterProperty != null) {
                             filterProperty = currentProperty.quickFilterProperty;
+                            filterColumnKey = GGroupObjectValue.EMPTY;
                             if(currentProperty.columnGroupObjects != null && filterProperty.columnGroupObjects != null && currentProperty.columnGroupObjects.equals(filterProperty.columnGroupObjects)) {
                                 filterColumnKey = getSelectedColumnKey();
                             }
@@ -188,8 +189,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
-    protected boolean previewClickEvent(Element target, Event event) {
-        return form.previewClickEvent(target, event);
+    protected boolean previewEvent(Element target, Event event) {
+        return form.previewEvent(target, event);
     }
 
     @Override
@@ -428,7 +429,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, Element parent) {
         form.onPropertyBrowserEvent(new EventHandler(event), parent, getTableDataFocusElement(),
-                handler -> selectionHandler.onCellBefore(handler, cell, () -> isChangeOnSingleClick(cell)),
+                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, (Boolean) rowChanged)),
                 handler -> column.onEditEvent(handler, false, cell, parent),
                 handler -> selectionHandler.onCellAfter(handler, cell),
                 handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(GwtClientUtils.getClipboardTable(line))));

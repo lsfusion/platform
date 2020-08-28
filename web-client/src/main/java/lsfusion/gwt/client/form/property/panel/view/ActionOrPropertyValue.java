@@ -109,7 +109,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         Element target = DataGrid.getTargetAndCheck(getElement(), event);
         if(target == null)
             return;
-        if(!form.previewClickEvent(target, event))
+        if(!form.previewEvent(target, event))
             return;
 
         super.onBrowserEvent(event);

@@ -41,7 +41,6 @@ public abstract class FormsController {
     private final ResizableSimplePanel formsContainer;
 
     private final GToolbarButton linkEditButton;
-    private boolean linkEditMode;
 
     private final GToolbarButton fullScreenButton;
     private Boolean fullScreenMode = null;
@@ -54,7 +53,7 @@ public abstract class FormsController {
         linkEditButton = new GToolbarButton("linkEditMode.png", messages.linkEditModeEnable()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> updateLinkEditModeButton(!linkEditMode);
+                return event -> updateLinkEditMode(!GFormController.isLinkEditMode(), false);
             }
         };
         setCompactSize(linkEditButton);
@@ -95,9 +94,8 @@ public abstract class FormsController {
     private boolean isRemoving = false;
     private boolean isAdding = false;
 
-    public void updateLinkEditModeButton(boolean linkEditMode) {
-        this.linkEditMode = linkEditMode;
-        GFormController.setLinkEditMode(linkEditMode);
+    public void updateLinkEditMode(boolean linkEditMode, boolean linkEditModeWithCtrl) {
+        GFormController.setLinkEditMode(linkEditMode, linkEditModeWithCtrl);
         linkEditButton.showBackground(linkEditMode);
         linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable() + " (CTRL)");
     }

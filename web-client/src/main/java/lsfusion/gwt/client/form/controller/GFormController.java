@@ -73,7 +73,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
-import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -193,7 +192,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Element target = DataGrid.getTargetAndCheck(getElement(), event);
         if(target == null)
             return;
-        if(!previewClickEvent(target, event))
+        if(!previewEvent(target, event))
             return;
 
         super.onBrowserEvent(event);
@@ -243,22 +242,40 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public static void checkKeyEvents(DomEvent event, FormsController formsController) {
         NativeEvent nativeEvent = event.getNativeEvent();
-        if(GKeyStroke.isCtrlKeyDownEvent(nativeEvent))
-            formsController.updateLinkEditModeButton(true);
-        else if(GKeyStroke.isCtrlKeyUpEvent(nativeEvent))
-            formsController.updateLinkEditModeButton(false);
-        else if(GKeyStroke.isAltEnterEvent(nativeEvent)) {
+        checkLinkEditModeEvents(formsController, nativeEvent);
+
+        if(GKeyStroke.isAltEnterEvent(nativeEvent)) {
             formsController.switchFullScreenMode();
         }
     }
 
+    // we need native method and not getCtrlKey, since some events (for example focus) have ctrlKey undefined and in this case we want to ignore them
+    private static native Boolean eventGetCtrlKey(NativeEvent evt) /*-{
+        return evt.ctrlKey;
+    }-*/;
+
+    public static void checkLinkEditModeEvents(FormsController formsController, NativeEvent event) {
+        Boolean ctrlKey = eventGetCtrlKey(event);
+        if(ctrlKey != null) {
+            if (!ctrlKey && GFormController.isLinkEditModeWithCtrl())
+                formsController.updateLinkEditMode(false, false);
+            if (ctrlKey && !GFormController.isLinkEditMode())
+                formsController.updateLinkEditMode(true, true);
+        }
+   }
+
     private static boolean linkEditMode;
+    private static boolean linkEditModeWithCtrl;
     public static boolean isLinkEditMode() {
         return linkEditMode;
     }
-    public static void setLinkEditMode(boolean enabled) {
-        com.google.gwt.user.client.Element globalElement = RootPanel.get().getElement();
+    public static boolean isLinkEditModeWithCtrl() {
+        return linkEditModeWithCtrl;
+    }
+    public static void setLinkEditMode(boolean enabled, boolean enabledWithCtrl) {
         linkEditMode = enabled;
+        linkEditModeWithCtrl = enabledWithCtrl;
+        com.google.gwt.user.client.Element globalElement = RootPanel.get().getElement();
         if(enabled)
             globalElement.addClassName("linkEditMode");
         else
@@ -1036,7 +1053,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GPropertyDraw propertyDraw = getProperty(initialFilterPropertyID);
         if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
             focusProperty(propertyDraw);
-            controllers.get(propertyDraw.groupObject).quickEditFilter(event, propertyDraw, null);
+            controllers.get(propertyDraw.groupObject).quickEditFilter(event, propertyDraw, GGroupObjectValue.EMPTY);
         }
     }
 
@@ -1183,7 +1200,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void previewBlurEvent(Event event) {
         MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
     }
-    public boolean previewClickEvent(Element target, Event event) {
+    public boolean previewEvent(Element target, Event event) {
+        checkLinkEditModeEvents(formsController, event);
+
         return MainFrame.previewClickEvent(target, event);
     }
 
