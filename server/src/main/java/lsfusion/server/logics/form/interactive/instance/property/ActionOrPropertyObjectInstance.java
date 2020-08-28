@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -56,8 +55,6 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         ImMap<P, AndClassSet> classImplement = mapping.mapValues(value -> value.getClassSet(classGroups));
         return property.isInInterface(classImplement, any);
     }
-
-    public abstract PropertyObjectInstance<?> getDrawProperty();
 
     public ImMap<P, ObjectValue> getInterfaceObjectValues() {
         return mapping.mapValues(PropertyObjectInterfaceInstance::getObjectValue);

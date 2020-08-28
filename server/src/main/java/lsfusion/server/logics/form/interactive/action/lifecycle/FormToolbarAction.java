@@ -11,7 +11,6 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -33,11 +32,15 @@ public abstract class FormToolbarAction extends InternalAction {
     public FormToolbarAction(ScriptingLogicsModule lm, final boolean showCaption) {
         super(lm);
 
-        final LP propertyCaption = getShowIf();
+        LP propertyCaption = getShowIf();
+        LP readOnlyIf = getReadOnlyIf();
         drawOptions.addProcessor(new DefaultProcessor() {
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
                 if (propertyCaption != null) {
                     entity.setPropertyExtra(form.addPropertyObject(propertyCaption), PropertyDrawExtraType.SHOWIF);
+                }
+                if(readOnlyIf != null) {
+                    entity.setPropertyExtra(form.addPropertyObject(readOnlyIf), PropertyDrawExtraType.READONLYIF);
                 }
             }
             public void proceedDefaultDesign(PropertyDrawView propertyView) {
@@ -52,15 +55,19 @@ public abstract class FormToolbarAction extends InternalAction {
         return null;
     }
 
-    public static LP createShowIfProperty(final Property showIfs[], boolean showIfNots[]) {
-        assert showIfs != null && showIfNots != null && showIfs.length == showIfNots.length;
+    protected LP getReadOnlyIf() {
+        return null;
+    }
 
-        MList<PropertyInterfaceImplement<PropertyInterface>> mAnds = ListFact.mList(showIfs.length);
-        MList<Boolean> mNots = ListFact.mList(showIfs.length);
+    public static LP createIfProperty(final Property ifs[], boolean ifNots[]) {
+        assert ifs != null && ifNots != null && ifs.length == ifNots.length;
 
-        for (int i = 0; i < showIfs.length; ++i) {
-            mAnds.add(showIfs[i].getImplement());
-            mNots.add(showIfNots[i]);
+        MList<PropertyInterfaceImplement<PropertyInterface>> mAnds = ListFact.mList(ifs.length);
+        MList<Boolean> mNots = ListFact.mList(ifs.length);
+
+        for (int i = 0; i < ifs.length; ++i) {
+            mAnds.add(ifs[i].getImplement());
+            mNots.add(ifNots[i]);
         }
 
         PropertyMapImplement showIfImplement = createAnd(SetFact.EMPTY(), createTrue(), mAnds.immutableList(), mNots.immutableList());

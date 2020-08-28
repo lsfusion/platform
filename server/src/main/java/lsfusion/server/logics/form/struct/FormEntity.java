@@ -278,7 +278,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         setRichDesign(createDefaultRichDesign(version), version);
     }
 
-    private static LP externalShowIf = FormToolbarAction.createShowIfProperty(new Property[]{FormEntity.isExternal}, new boolean[]{false});
+    private static LP externalShowIf = FormToolbarAction.createIfProperty(new Property[]{FormEntity.isExternal}, new boolean[]{false});
 
     public void addFixedFilter(FilterEntity filter, Version version) {
         fixedFilters.add(filter, version);

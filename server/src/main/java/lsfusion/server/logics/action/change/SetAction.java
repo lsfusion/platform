@@ -99,7 +99,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         // если не хватает ключей надо or добавить, так чтобы кэширование работало
         ImSet<I> extInterfaces = innerInterfaces.remove(mapInterfaces.valuesSet());
         PropertyMapImplement<?, I> changeWhere = (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces) && !(writeTo.property instanceof SessionDataProperty)) ?
-                (where == null ? PropertyFact.createTrue() : where) : getFullProperty();
+                (where == null ? getTrueProperty() : where) : getFullProperty();
 
         Where exprWhere = changeWhere.mapExpr(innerExprs, context.getModifier()).getWhere();
 
@@ -145,6 +145,11 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     @IdentityInstanceLazy
     private PropertyMapImplement<?, I> getFullProperty() {
         return getFullProperty(innerInterfaces, where, writeTo, writeFrom);
+    }
+
+    @IdentityInstanceLazy
+    private <T extends PropertyInterface> PropertyMapImplement<?, T> getTrueProperty() { // to avoid property leaks
+        return PropertyFact.createTrue();
     }
 
     protected PropertyMapImplement<?, I> calcGroupWhereProperty() {

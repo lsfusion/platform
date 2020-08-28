@@ -461,8 +461,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ImSet<ObjectEntity> getObjectInstances() { 
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
 
-        // todo [dale]: READONLYIF is absent in the list, but may be it should be in some cases
-        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND, IMAGE};
+        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND, IMAGE, READONLYIF};
         for (PropertyDrawExtraType type : neededTypes) {
             PropertyObjectEntity<?> prop = getPropertyExtra(type);
             if (prop != null) {
@@ -567,6 +566,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     
     public PropertyObjectEntity getImportProperty() {
         return (PropertyObjectEntity) propertyObject;
+    }
+
+    public PropertyObjectEntity<?> getDrawProperty() {
+        return propertyObject.getDrawProperty(getPropertyExtras().get(READONLYIF));
     }
 
     // for getExpr, getType purposes

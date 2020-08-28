@@ -20,16 +20,6 @@ public abstract class FormFlowAction extends FormToolbarAction {
         super(lm, showCaption);
     }
 
-    protected Property getEnableIf() {
-        return null;
-    }
-
-    @Override
-    public PropertyMapImplement<?, ClassPropertyInterface> getWhereProperty(boolean recursive) {
-        Property enableIf = getEnableIf();
-        return enableIf == null ? super.getWhereProperty(recursive) : enableIf.getImplement();
-    }
-
     protected boolean isSameSession() {
         return true;
     }
@@ -37,9 +27,9 @@ public abstract class FormFlowAction extends FormToolbarAction {
         return true;
     }
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        Property enableIf = getEnableIf();
-        if(enableIf != null && enableIf.read(context) == null)
-            return;
+//        Property enableIf = getEnableIf();
+//        if(enableIf != null && enableIf.read(context) == null)
+//            return;
         FormInstance formInstance = context.getFormFlowInstance(isAssertExists(), isSameSession());
         if(formInstance != null)
             executeForm(formInstance, context);

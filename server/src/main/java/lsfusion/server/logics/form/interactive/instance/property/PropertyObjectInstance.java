@@ -21,7 +21,6 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
-import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.exec.hint.AutoHintsAspect;
@@ -40,10 +39,6 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
 
     public Object read(FormInstance formInstance) throws SQLException, SQLHandledException {
         return property.read(formInstance, getInterfaceObjectValues());
-    }
-
-    public PropertyObjectInstance getDrawProperty() {
-        return this;
     }
 
     public ValueClass getValueClass() {
