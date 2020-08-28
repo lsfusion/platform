@@ -71,11 +71,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public abstract GPropertyDraw getProperty(Cell cell);
 
     @Override
-    public boolean isChangeOnSingleClick(Cell cell) {
+    public boolean isChangeOnSingleClick(Cell cell, boolean rowChanged) {
         GPropertyDraw property = getProperty(cell);
         if(property != null && property.changeOnSingleClick != null)
             return property.changeOnSingleClick;
-        return super.isChangeOnSingleClick(cell) || (GFormController.isLinkEditMode() && property != null && property.hasEditObjectAction);
+        return super.isChangeOnSingleClick(cell, rowChanged) || (!rowChanged && GFormController.isLinkEditMode() && property != null && property.hasEditObjectAction);
     }
 
     public abstract GGroupObjectValue getColumnKey(Cell editCell);

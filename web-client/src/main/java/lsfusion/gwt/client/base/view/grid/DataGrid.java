@@ -32,7 +32,7 @@ import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -404,7 +404,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         Element target = getTargetAndCheck(getElement(), event);
         if(target == null)
             return;
-        if(!previewClickEvent(target, event))
+        if(!previewEvent(target, event))
             return;
 
         super.onBrowserEvent(event);
@@ -771,7 +771,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     public boolean isFocusable(Cell cell) {
         return cell.getColumn().isFocusable();
     }
-    public boolean isChangeOnSingleClick(Cell cell) {
+    public boolean isChangeOnSingleClick(Cell cell, boolean rowChanged) {
         return !isFocusable(cell);
     }
 
@@ -947,7 +947,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         return null;
     }
 
-    protected abstract boolean previewClickEvent(Element target, Event event);
+    protected abstract boolean previewEvent(Element target, Event event);
 
     protected void onFocus() {
         DataGrid.sinkPasteEvent(getTableDataFocusElement());
@@ -1612,18 +1612,19 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
             this.display = display;
         }
 
-        public void onCellBefore(EventHandler handler, Cell cell, Supplier<Boolean> isChangeOnSingleClick) {
+        public void onCellBefore(EventHandler handler, Cell cell, Function<Boolean, Boolean> isChangeOnSingleClick) {
             Event event = handler.event;
             boolean changeEvent = GMouseStroke.isChangeEvent(event);
             if (changeEvent || GMouseStroke.isContextMenuEvent(event)) {
                 int col = cell.getColumnIndex();
                 int row = cell.getRowIndex();
-                if ((display.getSelectedColumn() != col) || (display.getSelectedRow() != row)) {
+                boolean rowChanged = display.getSelectedRow() != row;
+                if ((display.getSelectedColumn() != col) || rowChanged) {
 
                     changeColumn(col);
                     changeRow(row);
 
-                    if(changeEvent && !isChangeOnSingleClick.get())
+                    if(changeEvent && !isChangeOnSingleClick.apply(rowChanged))
                         handler.consume(false, true); // we'll propagate events upper, to process bindings if there are any (for example CTRL+CLICK)
                 }
 //                else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus
