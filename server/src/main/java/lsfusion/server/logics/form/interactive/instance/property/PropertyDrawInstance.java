@@ -104,12 +104,14 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
                                 ActionOrPropertyObjectInstance<?, ?> propertyObject,
+                                PropertyObjectInstance<?> drawProperty,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
                                 ImMap<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras,
                                 ImList<PropertyObjectInstance<?>> propertiesAggrLast) {
         super(entity);
         this.propertyObject = propertyObject;
+        this.drawProperty = drawProperty;
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
 
@@ -137,8 +139,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public PropertyObjectInstance<?> getDrawInstance() {
-        return getValueProperty().getDrawProperty();
+        return drawProperty;
     }
+
+    private final PropertyObjectInstance<?> drawProperty;
 
     public byte getTypeID() {
         return PropertyReadType.DRAW;

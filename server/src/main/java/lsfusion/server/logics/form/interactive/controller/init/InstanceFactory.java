@@ -144,6 +144,7 @@ public class InstanceFactory {
             propertyDrawInstance = new PropertyDrawInstance<>(
                     entity,
                     getInstance(entity.getValueActionOrProperty()),
+                    getInstance(entity.getDrawProperty()),
                     getInstance(entity.toDraw),
                     columnGroupObjects,
                     PropertyDrawExtraType.extras.mapValues((PropertyDrawExtraType type) -> entity.hasPropertyExtra(type) ? getInstance(entity.getPropertyExtra(type)) : null),

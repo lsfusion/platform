@@ -6,8 +6,10 @@ import com.bfr.client.selection.Selection;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.Text;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Result;
 
 import java.util.function.Consumer;
 
@@ -44,10 +46,68 @@ public class CopyPasteUtils {
         $doc.execCommand('copy');
     }-*/;
 
+    // copy from range, but we need stopper if in element there is no text, but a lot of elements (for example grid with only actions - images)
+    public static Text getAdjacentTextElement(Node current,
+                                              Node topMostNode,
+                                              boolean forward,
+                                              boolean traversingUp,
+                                              Result<Integer> depth) {
+        depth.set(depth.result + 1);
+        if(depth.result > 10000)
+            return null;
+
+        Text res = null;
+        Node node;
+
+        // If traversingUp, then the children have already been processed
+        if (!traversingUp) {
+            if (current.getChildCount() > 0) {
+                node = forward ? current.getFirstChild()
+                        : current.getLastChild();
+
+                if (node.getNodeType() == Node.TEXT_NODE) {
+                    res = (Text) node;
+                } else {
+                    // Depth first traversal, the recursive call deals with
+                    // siblings
+                    res = getAdjacentTextElement(node, topMostNode,
+                            forward, false, depth);
+                }
+            }
+        }
+
+        if (res == null) {
+            node = forward ? current.getNextSibling()
+                    : current.getPreviousSibling();
+            // Traverse siblings
+            if (node != null) {
+                if (node.getNodeType() == Node.TEXT_NODE) {
+                    res = (Text) node;
+                } else {
+                    // Depth first traversal, the recursive call deals with
+                    // siblings
+                    res = getAdjacentTextElement(node, topMostNode,
+                            forward, false, depth);
+                }
+            }
+        }
+
+        // Go up and over if still not found
+        if ((res == null) && (current != topMostNode)) {
+            node = current.getParentNode();
+            // Stop at document (technically could stop at "html" tag)
+            if ((node != null) && (node.getNodeType() != Node.DOCUMENT_NODE)) {
+                res = getAdjacentTextElement(node, topMostNode,
+                        forward, true, depth);
+            }
+        }
+        return res;
+    }
+
     public static void setEmptySelection(final Element element) {
         Node textNode;
         // just putting empty selection to any text containing element
-        if (element != null && !GwtClientUtils.isIEUserAgent() && (textNode = Range.getAdjacentTextElement(element, element, true, false)) != null) {
+        if (element != null && !GwtClientUtils.isIEUserAgent() && (textNode = getAdjacentTextElement(element, element, true, false, new Result<>(0))) != null) {
             Element textElement;
             textElement = GwtClientUtils.getElement(textNode);
             if(textElement == null) // if we haven't found element, just put it somewhere

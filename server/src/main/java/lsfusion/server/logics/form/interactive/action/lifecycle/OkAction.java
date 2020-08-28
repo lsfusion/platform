@@ -12,7 +12,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import java.sql.SQLException;
 
 public class OkAction extends FormFlowAction {
-    private static LP showIf = createShowIfProperty(new Property[]{FormEntity.showOk}, new boolean[]{false});
+    private static LP showIf = createIfProperty(new Property[]{FormEntity.showOk}, new boolean[]{false});
 
     public OkAction(BaseLogicsModule lm) {
         super(lm);

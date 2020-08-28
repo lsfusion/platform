@@ -138,9 +138,6 @@ import static lsfusion.server.logics.form.interactive.instance.object.GroupObjec
 
 public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
 
-    private final static Function<PropertyReaderInstance, PropertyObjectInstance<?>> GET_PROPERTY_OBJECT_FROM_READER =
-            PropertyReaderInstance::getPropertyObjectInstance;
-
     private final Function<ContainerView, PropertyObjectInstance<?>> GET_CONTAINER_SHOWIF =
             new Function<ContainerView, PropertyObjectInstance<?>>() {
                 @Override
