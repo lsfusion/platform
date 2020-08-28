@@ -135,6 +135,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
@@ -724,6 +725,18 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public ReversedI18NDictionary getReversedI18nDictionary() {
         return dictionary;
     }
+    
+    public Function<String, String> getIdFromReversedI18NDictionaryMethod() {
+        if (lsfStrLiteralsLanguage != null) {
+            return this::getIdFromReversedI18NDictionary;    
+        } else {
+            return null;
+        }
+    }
+    
+    private String getIdFromReversedI18NDictionary(String propertyValue) {
+        return getReversedI18nDictionary().getValue(propertyValue);
+    }
 
     private ResourceBundleGenerator generator;
     public synchronized ResourceBundleGenerator getResourceBundleGenerator() {
@@ -734,6 +747,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return generator;                
     }
 
+    public void appendEntryToBundle(String entry) {
+        getResourceBundleGenerator().appendEntry(entry);
+    }
+    
     private static class NamedDecl {
         public final LAP prop;
         public final String namespace;
