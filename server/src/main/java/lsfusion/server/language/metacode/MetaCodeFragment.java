@@ -1,11 +1,17 @@
 package lsfusion.server.language.metacode;
 
 import lsfusion.base.Pair;
+import lsfusion.server.language.ScriptedStringUtils;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import static lsfusion.server.language.ScriptedStringUtils.*;
+import static lsfusion.server.physics.dev.i18n.LocalizedString.CLOSE_CH;
+import static lsfusion.server.physics.dev.i18n.LocalizedString.OPEN_CH;
 
 public class MetaCodeFragment {
     public List<String> parameters;
@@ -15,8 +21,6 @@ public class MetaCodeFragment {
     private String code;
     private String moduleName;
     private int lineNumber;
-
-    private final char QUOTE = '\'';
 
     public MetaCodeFragment(String canonicalName, List<String> params, List<String> tokens, List<Pair<Integer,Boolean>> metaTokens, String code, String moduleName, int lineNumber) {
         this.parameters = params;
@@ -28,12 +32,12 @@ public class MetaCodeFragment {
         this.canonicalName = canonicalName;
     }
 
-    public String getCode(List<String> params) {
+    public String getCode(List<String> params, Function<String, String> getIdFromReversedI18NDictionary, Consumer<String> appendEntry) {
         assert params.size() == parameters.size();
         ArrayList<String> newTokens = new ArrayList<>(tokens);
         for (Pair<Integer, Boolean> metaToken : metaTokens) {
             Integer metaIndex = metaToken.first;
-            newTokens.set(metaIndex, transformToken(params, tokens.get(metaIndex), metaToken.second));
+            newTokens.set(metaIndex, transformToken(params, tokens.get(metaIndex), metaToken.second, getIdFromReversedI18NDictionary, appendEntry));
         }
 
         return getTransformedCode(newTokens, tokens, code);
@@ -69,22 +73,23 @@ public class MetaCodeFragment {
         int index = parameters.indexOf(token);
         return index >= 0 ? actualParams.get(index) : token;
     }
-    private String transformToken(List<String> actualParams, String token, boolean isMeta) {
-        if(!isMeta) { // optimization;
+    
+    private String transformToken(List<String> actualParams, String token, boolean isMeta, Function<String, String> getIdFromReversedI18NDictionary, Consumer<String> appendEntry) {
+        if (!isMeta) { // optimization;
             assert !token.contains("##");
             return transformParamToken(actualParams, token);
         }
+        
         String[] parts = token.split("##");
         boolean isStringLiteral = false;
-        String result = "";
-        boolean firstPartIsNotEmpty = false;
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
 
             boolean capitalize = false;
             if (part.startsWith("#")) {
                 assert i > 0;
-                capitalize = !result.isEmpty() || (i == 1 && parts[0].isEmpty()); // when there is ###param, forcing its capitalization
+                capitalize = (result.length() > 0) || (i == 1 && parts[0].isEmpty()); // when there is ###param, forcing its capitalization
                 part = part.substring(1);
             }
 
@@ -92,30 +97,52 @@ public class MetaCodeFragment {
 
             if (!part.isEmpty() && part.charAt(0) == QUOTE) {
                 isStringLiteral = true;
+                if (getIdFromReversedI18NDictionary != null && ScriptedStringUtils.hasNoLocalizationFeatures(part, true)) {
+                    part = transformLiteralForReverseI18N(part, capitalize, getIdFromReversedI18NDictionary, appendEntry);
+                } 
                 part = unquote(part);
             }
             
-            result += capitalize(part, capitalize);
+            result.append(ScriptedStringUtils.capitalizeIfNeeded(part, capitalize));
         }
         
-        if(isStringLiteral)
-            result = QUOTE + result + QUOTE;
+        if (isStringLiteral)
+            result = new StringBuilder(quote(result.toString()));
         
-        return result;
+        return result.toString();
     }
 
-    private String unquote(String s) {
-        if (s.length() >= 2 && s.charAt(0) == QUOTE && s.charAt(s.length()-1) == QUOTE) {
-            s = s.substring(1, s.length()-1);
+    // We don't know if the literal is localized or not at the moment. Thus, we transform the literal into the 
+    // intermediate format if it can be found in the reverse dictionary.
+    // This format is {{ {id}  }literal}, where { {id}  } part is the dictionary id with possible leading and trailing spaces
+    // Without spaces the fromat is {{{id}}literal}
+    private String transformLiteralForReverseI18N(String part, boolean capitalize, Function<String, String> getIdFromReversedI18NDictionary, Consumer<String> appendEntry) {
+        try {
+            String propertyFileValue = ScriptedStringUtils.transformAnyStringLiteralToPropertyFileValue(part);
+            propertyFileValue = ScriptedStringUtils.capitalizeIfNeeded(propertyFileValue, capitalize);
+            String translateId = null;
+            if (System.getProperty("generateBundleFile") != null) {
+                ScriptedStringUtils.addToResourceBundle(propertyFileValue, appendEntry);
+                // For the purpose of bundle generation we need to transform literal into the intermediate form even if
+                // it was not found in the dictionary (because we need to generate the bundle before)
+                translateId = "id";
+            }
+        
+            Pair<Integer, Integer> spaces = ScriptedStringUtils.getSpaces(propertyFileValue);
+            if (spaces.first + spaces.second < propertyFileValue.length()) {
+                String dictionaryId = getIdFromReversedI18NDictionary.apply(propertyFileValue.trim());
+                if (dictionaryId != null) {
+                    translateId = dictionaryId;
+                }
+                if (translateId != null) {
+                    String i18nPart = ScriptedStringUtils.setSpaces(OPEN_CH + translateId + CLOSE_CH, spaces);
+                    return quote(OPEN_CH + "" + OPEN_CH + i18nPart + CLOSE_CH + ScriptedStringUtils.capitalizeIfNeeded(unquote(part), capitalize) + CLOSE_CH);  
+                }
+            }
+        } catch (ScriptedStringUtils.TransformationError transformationError) {
+            transformationError.printStackTrace();
         }
-        return s;
-    }
-
-    private String capitalize(String s, boolean toCapitalize) {
-        if (toCapitalize && s.length() > 0) {
-            s = StringUtils.capitalize(s);
-        }
-        return s;
+        return part;
     }
 
     public String getModuleName() {

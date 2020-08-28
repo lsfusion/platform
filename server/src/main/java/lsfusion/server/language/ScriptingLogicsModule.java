@@ -348,7 +348,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public String transformStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            return ScriptedStringUtils.transformStringLiteral(s);
+            return ScriptedStringUtils.transformStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod());
         } catch (ScriptedStringUtils.TransformationError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
@@ -357,7 +357,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL);
+            return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
         } catch (ScriptedStringUtils.TransformationError | LocalizedString.FormatError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
@@ -3660,7 +3660,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         MetaCodeFragment metaCode = findMetaCodeFragment(name, params.size());
         checks.checkMetaCodeParamCount(metaCode, params.size());
 
-        String code = metaCode.getCode(params);
+        String code = metaCode.getCode(params, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
         parser.runMetaCode(this, code, metaCode, MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta);
     }
 
