@@ -14,77 +14,71 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     </head>
     <body onload="document.loginForm.username.focus();">
+        <div class="main">
+            <div class="header">
+                <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
+                <div class="title">
+                    <%= ServerMessages.getString(request, "sign.in.title") %>
+                </div>
+            </div>
+            <div class="content">
 
-        <table class="content-table">
-            <tr></tr>
-            <tr valign="bottom">
-                <td>
-                    <div class="text-center">
-                        <div class="text-center">
-                            <div class="desktop-link">${jnlpUrls}</div>
+                <%
+                    String query = request.getQueryString();
+                    String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                %>
+
+                <form id="login-form"
+                      name="loginForm"
+                      method="POST"
+                      action="login_check<%=queryString%>" >
+                    <fieldset>
+                        <div class="label-and-field">
+                            <label for="username"><%= ServerMessages.getString(request, "login") %></label>
+                            <input type="text" id="username" name="username" class="round full-width-box"/>
+                        </div>
+                        <div class="label-and-field">
+                            <div class="password-labels-container">
+                                <label for="password"><%= ServerMessages.getString(request, "password") %></label>
+                                <a class="link" href="${forgotPasswordPage}" tabindex="1"><%= ServerMessages.getString(request, "password.forgot") %></a>
+                            </div>
+                            <input type="password" id="password" name="password" class="round full-width-box"/>
+                        </div>
+                        <input name="submit" type="submit" class="action-button round blue" value="<%= ServerMessages.getString(request, "sign.in") %>"/>
+                        <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
+                            <%
+                                if (session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION") instanceof Exception) {
+                                    session.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", ((Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION")).getMessage());
+                                }
+                            %>
+                            <div class="error-block round full-width-box">
+                                ${SPRING_SECURITY_LAST_EXCEPTION}
+                            </div>
+                            <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
+                        </c:if>
+                    </fieldset>
+                </form>
+                <div class="reg-block">
+                    <%= ServerMessages.getString(request, "no.account") %>
+                    &#32;
+                    <a class="link" href="${registrationPage}"><%= ServerMessages.getString(request, "register") %></a>.
+                </div>
+                <c:if test="${not empty urls}">
+                    <div class="oauth-block">                                                                                
+                        <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
+                        <div class="oauth-links">
+                            <c:forEach var="url" items="${urls}">
+                                <a href="${url.value}" class="oauth-link fa fa-${url.key}" title="${url.key}"></a>
+                            </c:forEach>
                         </div>
                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div id="content">
-
-                        <%
-                            String query = request.getQueryString();
-                            String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
-                        %>
-
-                        <div class="image-center">
-                            <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
-                        </div>
-                        
-                        <form id="login-form"
-                              name="loginForm"
-                              method="POST"
-                              action="login_check<%=queryString%>" >
-                            <fieldset>
-                                <p>
-                                    <br/>
-                                    <label for="username"><%= ServerMessages.getString(request, "login") %></label>
-                                    <input type="text" id="username" name="username" class="round full-width-box"/>
-                                </p>
-                                <p>
-                                    <label for="password"><%= ServerMessages.getString(request, "password") %></label>
-                                    <input type="password" id="password" name="password" class="round full-width-box"/>
-                                </p>
-                                <input name="submit" type="submit" class="button round blue" value="<%= ServerMessages.getString(request, "sign.in") %>"/>
-                                <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
-                                    <%
-                                        if (session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION") instanceof Exception) {
-                                            session.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", ((Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION")).getMessage());
-                                        }
-                                    %>
-                                    <div class="errorblock round full-width-box">
-                                        ${SPRING_SECURITY_LAST_EXCEPTION}
-                                    </div>
-                                    <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
-                                </c:if>
-                            </fieldset>
-                        </form>
-                        <div class="reg-block">
-                            <br>
-                                <a class="registration" href="${registrationPage}"><%= ServerMessages.getString(request, "registration") %></a>
-                                <a class="forgot-password" href="${forgotPasswordPage}"><%= ServerMessages.getString(request, "password.forgot") %></a>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            <tr valign="top">
-                <td>
-                    <div class="text-center">
-                        <c:forEach var="url" items="${urls}">
-                            <a href="${url.value}" class="text-center fa fa-${url.key}"></a>
-                        </c:forEach>
-                    </div>
-                </td>
-            </tr>
-            <tr></tr>
-        </table>
+                </c:if>
+            </div>
+            <div class="footer">
+                <div class="desktop-link link">
+                    ${jnlpUrls}
+                </div>
+            </div>
+        </div>
     </body>
 </html>

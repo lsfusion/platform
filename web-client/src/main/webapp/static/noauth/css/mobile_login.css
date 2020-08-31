@@ -1,40 +1,18 @@
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-
-fieldset {
-    border: 0;
-}
-
 body {
     background-color: #f8f9fa;
+    font-size: 2em;
 }
 
 html, body {
     height: 100%;
 }
 
-.round {
-    border-radius: 0.3125em;
-    -moz-border-radius: 0.3125em;
-    -webkit-border-radius: 0.3125em;
+body, input {
+    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
 }
 
-p {
-    margin-bottom: 1.25em;
-}
-
-form {
-    font-family: Helvetica, Arial, sans-serif;
-}
-
-p, a, form input, .errorblock {
-    font-size: 2em;
-}
-
-form p input[type="text"], form p input[type="password"] {
-    font-size: 1.5em;
+input, .title {
+    font-size: 1.4em;
 }
 
 a {
@@ -42,24 +20,8 @@ a {
     color: #2069b4;
 }
 
-.blue {
-    background-color: #2069b4;
-    color: white;
-}
-
-.full-width-box {
-    width: 100%;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-.image-center {
-    text-align: center;
-}               
-
-.logo {
-    width: 60%;
+form {
+    padding: 0 0.5em;
 }
 
 form label {
@@ -69,70 +31,115 @@ form label {
     margin: 0 0 0.3125em 0;
 }
 
-form input[type="text"], input[type="password"], textarea {
+form input[type="text"], input[type="password"], input[type="email"], textarea {
     border: 1px solid #d9dbdd;
     padding: 0.625em;
     outline: none;
 }
 
-form input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+form input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus, textarea:focus {
     border: 1px solid #bbbdbe;
 }
 
 form input[type="submit"] {
     border: none;
     cursor: pointer;
-    padding: 1.2em;
+    margin-top: 0.35em;
+    padding: 1.16em;
     width: 100%;
+    font-size: 1em;
     font-weight: bold;
     text-transform: uppercase;
-    margin-top: 1em;
 }
 
-form p em {
-    margin-top: 0.833em;
-    display: block;
+fieldset {
+    padding: 0;
+    border: 0;
 }
 
-.content-table {
-    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
+
+.main {
     height: 100%;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    flex: 1 0 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    padding: 1em 0;
+}
+
+.footer {
+    flex: 1 0 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.round {
+    border-radius: 0.3125em;
+    -moz-border-radius: 0.3125em;
+    -webkit-border-radius: 0.3125em;
+}
+
+.blue {
+    background-color: #2069b4;
+    color: white;
+}
+
+.label-and-field {
+    margin-bottom: 1.1em;
+}
+
+.password-labels-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+
+.full-width-box {
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.logo {
+    align-self: center;
+    margin: 1.1em 0;
+    width: 60%;
+}
+
+.title {
+    align-self: center;
+    margin-bottom: 1.1em;
 }
 
 .desktop-link {
     display: none;
 }
 
-.errorblock {
+.error-block {
     color: #ff0000;
     background-color: #ffEEEE;
     border: 1px solid #ff0000;
-    padding: 8px;
+    padding: 1.1em;
     text-align: left;
-    margin: 40px auto;
-}
-
-.oauth-error-block {
-    font-size: 0.4em;
-    color: #2b2a29;
-    background-color: #2dc1f7;
-    border: 1px solid #0489ba;
-    padding: 8px;
-    text-align: center;
-    width: 100%;
-    margin: 10px auto;
+    margin: 1.5em auto 0;
+    overflow-wrap: break-word;
 }
 
 details summary::-webkit-details-marker {
     color: #75AEEA;
-}
-
-.text-center {
-    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
-    text-align: center;
-    font-size: 4em;
-    margin: 0em 1em;
 }
 
 .fa-yandex:before {
@@ -140,23 +147,35 @@ details summary::-webkit-details-marker {
 }
 
 .reg-block {
+    margin-top: 0.9em;
     margin-left: auto;
     margin-right: auto;
-    width: 55em;
+    justify-content: center;
 }
 
-.registration {
-    float: left;
+.oauth-block {
+    align-self: center;
+    margin-top: 1.9em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.forgot-password {
-    float: right;
+.oauth-title {
+    font-size: 1.1em;
+    margin-bottom: 0.8em;
+}
+
+.title, .oauth-title {
+    color: #9498a1;
+}
+
+.oauth-link {
+    font-size: 2em !important;
+    margin: 0 1em;
 }
 
 .main-page-link {
-    font-size: smaller;
-}
-
-label {
-    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
+    align-self: center;
+    margin: 1em ;
 }

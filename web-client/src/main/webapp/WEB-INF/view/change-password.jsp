@@ -26,63 +26,50 @@
         </script>
     </head>
     <body onload="document.setNewPassword.newPassword.focus();">
-
-    <table class="content-table">
-        <tr></tr>
-        <tr>
-            <td>
-                <div id="content">
-
-                    <%
-                        String query = request.getQueryString();
-                        String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
-                    %>
-
-                    <div class="image-center">
-                        <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
-                    </div>
-                    <form id="new-password-form"
-                          name="setNewPassword"
-                          action="change-password<%=queryString%>"
-                          method="POST">
-                        <fieldset>
-                            <div class="text-center">
-                                <p>
-                                    <br/>
-                                    <%= ServerMessages.getString(request, "password.new") %>
-                                </p>
-                            </div>
-                            <p>
-                                <label for="newPassword"><%= ServerMessages.getString(request, "password") %>
-                                </label>
-                                <input type="password" id="newPassword" name="newPassword" class="round full-width-box"
-                                       required onkeyup='check();'/>
-                            </p>
-                            <p>
-                                <label for="repeatPassword"><%= ServerMessages.getString(request, "password.repeat") %>
-                                </label>
-                                <input type="password" id="repeatPassword" name="repeatPassword" class="round full-width-box"
-                                       required onkeyup='check();'/>
-                                <span id='message'></span>
-                            </p>
-                            <input name="submit" type="submit" class="button round blue" id="submit" disabled
-                                   value="<%= ServerMessages.getString(request, "password.new.confirm") %>"/>
-                            <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
-                                <div class="errorblock round full-width-box">
-                                        ${SPRING_SECURITY_LAST_EXCEPTION}
-                                </div>
-                                <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
-                            </c:if>
-                        </fieldset>
-                    </form>
-                    <br>
-                    <div class="text-center">
-                        <a class="main-page-link" href="${loginPage}"><%= ServerMessages.getString(request, "main.page") %></a>
-                    </div>
+        <div class="main">
+            <div class="header">
+                <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
+                <div class="title">
+                    <%= ServerMessages.getString(request, "password.new") %>
                 </div>
-            </td>
-        </tr>
-        <tr></tr>
-    </table>
+            </div>
+            <div class="content">
+
+                <%
+                    String query = request.getQueryString();
+                    String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                %>
+
+                <form id="new-password-form"
+                      name="setNewPassword"
+                      action="change-password<%=queryString%>"
+                      method="POST">
+                    <fieldset>
+                        <div class="label-and-field">
+                            <label for="newPassword"><%= ServerMessages.getString(request, "password") %></label>
+                            <input type="password" id="newPassword" name="newPassword" class="round full-width-box"
+                                   required onkeyup='check();'/>
+                        </div>
+                        <div class="label-and-field">
+                            <label for="repeatPassword"><%= ServerMessages.getString(request, "password.repeat") %></label>
+                            <input type="password" id="repeatPassword" name="repeatPassword" class="round full-width-box"
+                                   required onkeyup='check();'/>
+                            <span id='message'></span>
+                        </div>
+                        <input name="submit" type="submit" class="action-button round blue" id="submit" disabled
+                               value="<%= ServerMessages.getString(request, "password.new.confirm") %>"/>
+                        <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
+                            <div class="error-block round full-width-box">
+                                    ${SPRING_SECURITY_LAST_EXCEPTION}
+                            </div>
+                            <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
+                        </c:if>
+                    </fieldset>
+                </form>
+            </div>
+            <div class="footer">
+                <a class="main-page-link link" href="${loginPage}"><%= ServerMessages.getString(request, "main.page") %></a>
+            </div>
+        </div>
     </body>
 </html>

@@ -26,80 +26,64 @@
         </script>
     </head>
     <body onload="document.registrationForm.username.focus();">
-        <table class="content-table">
-            <tr></tr>
-            <tr>
-                <td>
-                    <div id="content">
+        <div class="main">
+            <div class="header">
+                <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
+                <div class="title">
+                    <%= ServerMessages.getString(request, "registration") %>
+                </div>
+            </div>
+            <div class="content">
 
-                        <%
-                            String query = request.getQueryString();
-                            String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
-                        %>
+                <%
+                    String query = request.getQueryString();
+                    String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                %>
 
-                        <div class="image-center">
-                            <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
+                <form id="registration-form"
+                      action="registration<%=queryString%>"
+                      name="registrationForm"
+                      method="POST">
+                    <fieldset>
+                        <div class="label-and-field">
+                            <label for="username"><%= ServerMessages.getString(request, "login") %></label>
+                            <input type="text" id="username" name="username" class="round full-width-box" required="required"/>
                         </div>
-                        <form id="registration-form"
-                                     action="registration<%=queryString%>"
-                                     name="registrationForm"
-                                     method="POST">
-                            <fieldset>
-                                <div class="text-center">
-                                    <p>
-                                        <br/>
-                                        <%= ServerMessages.getString(request, "register") %>
-                                    </p>
-                                </div>
-                                <p>
-                                    <label for="username"><%= ServerMessages.getString(request, "login") %>
-                                    </label>
-                                    <input type="text" id="username" name="username" class="round full-width-box" required="required"/>
-                                </p>
-                                <p>
-                                    <label for="password"><%= ServerMessages.getString(request, "password") %>
-                                    </label>
-                                    <input type="password" id="password" name="password" class="round full-width-box" required onkeyup='check();'/>
-                                </p>
-                                <p>
-                                    <label for="repeatPassword"><%= ServerMessages.getString(request, "password.repeat") %>
-                                    </label>
-                                    <input type="password" id="repeatPassword" name="repeatPassword" class="round full-width-box" required onkeyup='check();'/>
-                                    <span id='message'></span>
-                                </p>
-                                <p>
-                                    <label for="firstName"><%= ServerMessages.getString(request, "first.name") %>
-                                    </label>
-                                    <input type="text" id="firstName" name="firstName" class="round full-width-box" required="required"/>
-                                </p>
-                                <p>
-                                    <label for="lastName"><%= ServerMessages.getString(request, "last.name") %>
-                                    </label>
-                                    <input type="text" id="lastName" name="lastName" class="round full-width-box" required="required"/>
-                                </p>
-                                <p>
-                                    <label for="email"><%= ServerMessages.getString(request, "email") %>
-                                    </label>
-                                    <input type="email" id="email" name="email" class="round full-width-box" required="required"/>
-                                </p>
-                                <input name="submit" type="submit" class="button round blue" id="submit" disabled value="<%= ServerMessages.getString(request, "registration") %>"/>
-                                <c:if test="${not empty REGISTRATION_EXCEPTION}">
-                                    <div class="errorblock round full-width-box">
-                                        <%= ServerMessages.getString(request, "registration.not.successful") %><br/>
-                                        <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["REGISTRATION_EXCEPTION"].message}
-                                    </div>
-                                    <c:remove var="REGISTRATION_EXCEPTION" scope="session"/>
-                                </c:if>
-                            </fieldset>
-                        </form>
-                        <br>
-                        <div class="text-center">
-                            <a class="main-page-link" href="${loginPage}"><%= ServerMessages.getString(request, "main.page") %></a>
+                        <div class="label-and-field">
+                            <label for="password"><%= ServerMessages.getString(request, "password") %></label>
+                            <input type="password" id="password" name="password" class="round full-width-box" required onkeyup='check();'/>
                         </div>
-                    </div>
-                </td>
-            </tr>
-            <tr></tr>
-        </table>
+                        <div class="label-and-field">
+                            <label for="repeatPassword"><%= ServerMessages.getString(request, "password.repeat") %></label>
+                            <input type="password" id="repeatPassword" name="repeatPassword" class="round full-width-box" required onkeyup='check();'/>
+                            <span id='message'></span>
+                        </div>
+                        <div class="label-and-field">
+                            <label for="firstName"><%= ServerMessages.getString(request, "first.name") %></label>
+                            <input type="text" id="firstName" name="firstName" class="round full-width-box" required="required"/>
+                        </div>
+                        <div class="label-and-field">
+                            <label for="lastName"><%= ServerMessages.getString(request, "last.name") %></label>
+                            <input type="text" id="lastName" name="lastName" class="round full-width-box" required="required"/>
+                        </div>
+                        <div class="label-and-field">
+                            <label for="email"><%= ServerMessages.getString(request, "email") %></label>
+                            <input type="email" id="email" name="email" class="round full-width-box" required="required"/>
+                        </div>
+                        <input name="submit" type="submit" class="action-button round blue" id="submit" disabled value="<%= ServerMessages.getString(request, "registration") %>"/>
+                        <c:if test="${not empty REGISTRATION_EXCEPTION}">
+                            <div class="error-block round full-width-box">
+                                <%= ServerMessages.getString(request, "registration.not.successful") %><br/>
+                                <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["REGISTRATION_EXCEPTION"].message}
+                            </div>
+                            <c:remove var="REGISTRATION_EXCEPTION" scope="session"/>
+                        </c:if>
+                    </fieldset>
+                </form>
+            </div>
+            <div class="footer">
+                <a class="main-page-link link" href="${loginPage}"><%= ServerMessages.getString(request, "main.page") %></a>
+            </div>
+        </div>
     </body>
 </html>
