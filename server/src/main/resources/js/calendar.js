@@ -1,38 +1,37 @@
+function calendar(element, listJsObject) {
 
-function calendar(element, listJsObject){
+    var script= document.createElement('script');
+    script.src= 'https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.js';
 
-    var events = [];
-    for (let i = 0; i < listJsObject.length; i++) {
-        var parse = JSON.parse(JSON.stringify(listJsObject[i]));
-        var obj = {
-            'title': parse['hostname(l)'],
-            'start': parse['time(l)']
-        }
-        events.push(obj);
-    }
+    var css = document.createElement('link');
+    css.href = 'https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.css';
+    css.rel = 'stylesheet';
 
-    if( document.readyState !== 'loading' ) {
-        var htmlDivElement = document.createElement("div");
-        htmlDivElement.id = 'calendar';
-        htmlDivElement.style.position = 'absolute';
-        htmlDivElement.style.top = '0px';
-        htmlDivElement.style.left = '0px';
-        htmlDivElement.style.bottom = '0px';
-        htmlDivElement.style.right = '0px';
 
-        element.appendChild(htmlDivElement);
-        var calendar = new FullCalendar.Calendar(htmlDivElement, {
-            timeZone: 'UTC',
-            firstDay: 1,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            editable: true,
-            dayMaxEvents: true, // when too many events in a day, show the popover
-            events: events
-        });
-        calendar.render();
-    }
+    script.onload = function() {
+        setTimeout(function() {
+            element.style.position = 'absolute';
+            element.style.top = '0px';
+            element.style.left = '0px';
+            element.style.bottom = '0px';
+            element.style.right = '0px';
+
+            var calendar = new FullCalendar.Calendar(element, {
+                timeZone: 'UTC',
+                firstDay: 1,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                editable: true,
+                dayMaxEvents: true,
+                events: listJsObject
+            });
+            calendar.render();
+        }, 0);
+    };
+
+    document.head.appendChild(script);
+    document.head.appendChild(css);
 }

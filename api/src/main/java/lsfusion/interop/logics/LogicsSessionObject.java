@@ -8,6 +8,7 @@ import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.castor.core.util.Base64Decoder;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
@@ -43,12 +44,9 @@ public class LogicsSessionObject {
             if (jnlpUrls != null && contextPath != null) {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
             }
-            JSONObject jsFiles = null;
-            if (json.has("jsFiles")){
-                jsFiles = new JSONObject(json.optString("jsFiles"));
-            }
+            JSONArray resourceFiles = json.optJSONArray("resourceFiles");
 
-            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI, jnlpUrls, jsFiles);
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI, jnlpUrls, resourceFiles);
         }
         return serverSettings;
     }

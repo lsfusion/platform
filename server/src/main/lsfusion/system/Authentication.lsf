@@ -508,14 +508,6 @@ FORM customUsers '{authentication.users}'
                       userInfoUri,
                       userNameAttributeName,
                       clientName
-                      
-    OBJECTS testOAuth = OAuth2 CUSTOM 'renderTable'
-    PROPERTIES(testOAuth)
-                      id,
-                      clientId,
-                      clientSecret,
-                      clientAuthenticationMethod
-                      
     PROPERTIES () webClientSecretKey
 ;
 
@@ -564,14 +556,6 @@ DESIGN customUsers {
             NEW WEBAUTH {
                 caption = 'WEB-AUTH';
                 MOVE PROPERTY(webClientSecretKey());
-            }
-            NEW TESTJS {
-                caption = 'TESTJS';
-                MOVE BOX (testOAuth){
-                    GRID (testOAuth){
-                    headerHeight = 50;
-                    }
-                }
             }
         }
     }

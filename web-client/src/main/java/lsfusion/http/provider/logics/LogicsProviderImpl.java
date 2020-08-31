@@ -13,8 +13,9 @@ import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.net.util.Base64;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
+import org.json.JSONArray;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -27,9 +28,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 // singleton, one for whole application
@@ -108,8 +107,8 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
 
     public ServerSettings getServerSettings(final HttpServletRequest request, boolean noCache) {
         ServerSettings serverSettings = getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), noCache);
-        if (serverSettings.jsFiles != null) {
-            saveFiles(serverSettings.jsFiles);
+        if (serverSettings.resourceFiles != null) {
+            saveFiles(serverSettings.resourceFiles);
         }
         return serverSettings;
     }
@@ -118,15 +117,17 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         return this.jsUrls;
     }
 
-    private void saveFiles(JSONObject jsFiles) {
-        for (String s : jsFiles.toMap().keySet()) {
-            String folderPath = FileUtils.APP_JS_FOLDER_URL + FilenameUtils.removeExtension(s);
-            File outputFile = new File(folderPath, s);
-            jsUrls.add(jsPath + FilenameUtils.removeExtension(s) + "/" + s);
+    private void saveFiles(JSONArray jsFiles) {
+        for (int i = 0; i < jsFiles.length(); i++) {
+            String file = new String(Base64.decodeBase64(jsFiles.optJSONObject(i).optString("file")));
+            String fileName = jsFiles.optJSONObject(i).optString("name");
+            String folderPath = FileUtils.APP_JS_FOLDER_URL + FilenameUtils.removeExtension(fileName);
+            File outputFile = new File(folderPath, fileName);
+            jsUrls.add(jsPath + FilenameUtils.removeExtension(fileName) + "/" + fileName);
             if (!outputFile.exists()) {
                 new File(folderPath).mkdirs();
                 try (OutputStream out = new FileOutputStream(outputFile)){
-                    out.write(jsFiles.optString(s).getBytes());
+                    out.write(file.getBytes());
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }

@@ -325,10 +325,13 @@ WHEN CHANGED (baseValue(Setting r, UserRole ur))
     DO updateSetting(r, ur, TRUE);
 
 getServerSettings() {
-    readJsFolder('src/main/resources/js');
+    readResources('/js/');
+    LOCAL jsonResourceFiles = JSONFILE ();
+    EXPORT FROM file = resourceFiles(STRING str), name = str WHERE resourceFiles(str) TO jsonResourceFiles;
+
     generateJnlpUrls();
     EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
-                anonymousUI=(valueSetting('enableUI')='2'), jnlpUrls=exportText(), jsFiles=jsFiles();
+                anonymousUI=(valueSetting('enableUI')='2'), jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles());
 } @@noauth;
 
 selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);

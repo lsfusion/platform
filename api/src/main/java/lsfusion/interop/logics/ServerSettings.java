@@ -1,7 +1,7 @@
 package lsfusion.interop.logics;
 
 import lsfusion.base.file.RawFileData;
-import org.json.JSONObject;
+import org.json.JSONArray;
 
 public class ServerSettings {
     public String logicsName;
@@ -12,10 +12,10 @@ public class ServerSettings {
     public Integer apiVersion;
     public boolean anonymousUI;
     public String jnlpUrls;
-    public JSONObject jsFiles;
+    public JSONArray resourceFiles;
 
     public ServerSettings(String logicsName, String displayName, RawFileData logicsLogo, RawFileData logicsIcon, String platformVersion, Integer apiVersion,
-                          boolean anonymousUI, String jnlpUrls, JSONObject jsFiles) {
+                          boolean anonymousUI, String jnlpUrls, JSONArray jsFiles) {
         this.logicsName = logicsName;
         this.displayName = displayName;
         this.logicsLogo = logicsLogo;
@@ -24,6 +24,6 @@ public class ServerSettings {
         this.apiVersion = apiVersion;
         this.anonymousUI = anonymousUI;
         this.jnlpUrls = jnlpUrls;
-        this.jsFiles = jsFiles;
+        this.resourceFiles = jsFiles;
     }
 }

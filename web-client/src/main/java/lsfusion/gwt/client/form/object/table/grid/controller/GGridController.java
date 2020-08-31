@@ -145,7 +145,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void setCustomTableView() {
-        changeTableView(new GCustom(formController, this, groupObject.functionToExecute));
+        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction));
         if(mapTableButton != null)
             mapTableButton.showBackground(false);
         gridTableButton.showBackground(false);

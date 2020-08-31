@@ -7,22 +7,22 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 
 public class GCustom extends GSimpleStateTableView {
-    private final String js;
+    private final String renderFunction;
 
-    public GCustom(GFormController form, GGridController grid, String js) {
+    public GCustom(GFormController form, GGridController grid, String renderFunction) {
         super(form, grid);
-        this.js = js;
+        this.renderFunction = renderFunction;
     }
 
     @Override
     protected void render(Element element, Element recordElement, JsArray<JavaScriptObject> list) {
         if (list.length() > 0 && element != null) {
-            runFunction(element, list, js);
+            runFunction(element, list, renderFunction);
         }
     }
 
-    protected native void runFunction(Element element, JavaScriptObject list, String jsFunction)/*-{
-        var fn = $wnd[jsFunction];
+    protected native void runFunction(Element element, JavaScriptObject list, String renderFunction)/*-{
+        var fn = $wnd[renderFunction];
         if (typeof fn === 'function'){
             fn(element, list);
         }
