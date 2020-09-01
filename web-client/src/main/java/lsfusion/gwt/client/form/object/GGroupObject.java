@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.object;
 
-import lsfusion.gwt.client.base.jsni.HasSID;
+import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GGroupObject implements Serializable, HasSID {
+public class GGroupObject implements Serializable, HasNativeSID {
     public List<GObject> objects = new ArrayList<>();
 
     public GGrid grid;
@@ -25,6 +25,7 @@ public class GGroupObject implements Serializable, HasSID {
     public GFilter filter;
 
     public int ID;
+    public String nativeSID;
     public String sID;
 
     public GClassViewType viewType;
@@ -60,6 +61,11 @@ public class GGroupObject implements Serializable, HasSID {
 
     public String getSID() {
         return sID;
+    }
+
+    @Override
+    public String getNativeSID() {
+        return nativeSID;
     }
 
     public boolean mayHaveChildren() {
