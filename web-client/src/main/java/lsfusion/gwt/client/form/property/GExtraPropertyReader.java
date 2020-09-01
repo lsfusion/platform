@@ -17,7 +17,7 @@ public abstract class GExtraPropertyReader implements GPropertyReader {
     }
 
     @Override
-    public String getSID() {
+    public String getNativeSID() {
         return sID;
     }
 

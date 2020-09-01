@@ -41,6 +41,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSep
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
     public int ID;
+    public String nativeSID;
     public String sID;
     public String namespace;
     public String caption;
@@ -355,8 +356,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     @Override
-    public String getSID() {
-        return sID;
+    public String getNativeSID() {
+        return nativeSID;
     }
 
     public boolean isReadOnly() {
@@ -454,15 +455,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public String toString() {
-        return "GPropertyDraw{" +
-                "sID='" + sID + '\'' +
-                ", caption='" + caption + '\'' +
-                ", baseType=" + baseType +
-                ", changeType=" + changeType +
-                (imageHolder != null ? ", imagePath='" + imageHolder.getDefaultImage() + '\'' : "") +
-                ", focusable=" + focusable +
-                ", checkEquals=" + checkEquals +
-                ", editType=" + editType +
-                '}';
+        return sID + " " + caption;
     }
 }

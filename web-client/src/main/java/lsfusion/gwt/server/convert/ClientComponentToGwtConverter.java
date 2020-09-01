@@ -245,6 +245,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GPropertyDraw propertyDraw = initGwtComponent(clientPropertyDraw, new GPropertyDraw());
 
         propertyDraw.ID = clientPropertyDraw.ID;
+        propertyDraw.nativeSID = "p" + clientPropertyDraw.ID;
         propertyDraw.sID = clientPropertyDraw.getSID();
         propertyDraw.namespace = clientPropertyDraw.getNamespace();
         propertyDraw.caption = clientPropertyDraw.caption;
@@ -512,6 +513,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         int clientID = clientGroupObject.ID;
         groupObject.ID = clientID;
+        groupObject.nativeSID = "g" + clientID;
         String clientSID = clientGroupObject.getSID();
         groupObject.sID = clientSID != null ? clientSID : "obj" + clientID;
 

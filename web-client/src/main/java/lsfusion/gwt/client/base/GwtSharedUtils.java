@@ -5,7 +5,7 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.shared.DateTimeFormatInfo;
-import lsfusion.gwt.client.base.jsni.HasSID;
+import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
@@ -161,7 +161,7 @@ public class GwtSharedUtils {
         }
     }
 
-    public static <MK extends HasSID, K, V> void putUpdate(NativeSIDMap<MK, NativeHashMap<K, V>> keyValues, MK key, NativeHashMap<K, V> values, boolean update) {
+    public static <MK extends HasNativeSID, K, V> void putUpdate(NativeSIDMap<MK, NativeHashMap<K, V>> keyValues, MK key, NativeHashMap<K, V> values, boolean update) {
         if (update) {
             keyValues.put(key, GwtSharedUtils.<K, K, K ,V>override(keyValues.get(key), values));
         } else {
@@ -209,7 +209,7 @@ public class GwtSharedUtils {
         return result;
     }
 
-    public static <R extends HasSID, C, V> void putToDoubleNativeMap(NativeSIDMap<R, NativeHashMap<C, V>> doubleMap, R row, C column, V value) {
+    public static <R extends HasNativeSID, C, V> void putToDoubleNativeMap(NativeSIDMap<R, NativeHashMap<C, V>> doubleMap, R row, C column, V value) {
         NativeHashMap<C, V> rowMap = doubleMap.get(row);
         if (rowMap == null) {
             doubleMap.put(row, rowMap = new NativeHashMap<>());
@@ -217,12 +217,12 @@ public class GwtSharedUtils {
         rowMap.put(column, value);
     }
 
-    public static <R extends HasSID, C, V> V getFromDoubleMap(NativeSIDMap<R, ? extends NativeHashMap<C, V>> doubleMap, R row, C column) {
+    public static <R extends HasNativeSID, C, V> V getFromDoubleMap(NativeSIDMap<R, ? extends NativeHashMap<C, V>> doubleMap, R row, C column) {
         NativeHashMap<C, V> rowMap = doubleMap.get(row);
         return rowMap == null ? null : rowMap.get(column);
     }
 
-    public static <R extends HasSID, C, V> V removeFromDoubleMap(NativeSIDMap<R, ? extends NativeHashMap<C, V>> doubleMap, R row, C column) {
+    public static <R extends HasNativeSID, C, V> V removeFromDoubleMap(NativeSIDMap<R, ? extends NativeHashMap<C, V>> doubleMap, R row, C column) {
         V result = null;
         NativeHashMap<C, V> rowMap = doubleMap.get(row);
         if (rowMap != null) {

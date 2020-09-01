@@ -3,14 +3,8 @@ package lsfusion.gwt.client.base.jsni;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.user.client.ui.Widget;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-public class NativeSIDMap<K extends HasSID, V> {
+public class NativeSIDMap<K extends HasNativeSID, V> {
 
     private JavaScriptObject keyMap;
     private JavaScriptObject valueMap;
@@ -29,7 +23,7 @@ public class NativeSIDMap<K extends HasSID, V> {
     }
 
     public boolean containsKey(K key) {
-        return jsContainsKey(key.getSID(), keyMap);
+        return jsContainsKey(key.getNativeSID(), keyMap);
     }
 
     public boolean containsValue(final Object val) {
@@ -37,11 +31,11 @@ public class NativeSIDMap<K extends HasSID, V> {
     }
 
     public V get(K key) {
-        return jsGet(key.getSID());
+        return jsGet(key.getNativeSID());
     }
 
     public V put(K key, V value) {
-        return jsPut(key.getSID(), key, value);
+        return jsPut(key.getNativeSID(), key, value);
     }
 
     public void putAll(NativeSIDMap<? extends K, ? extends V> m) {
@@ -49,7 +43,7 @@ public class NativeSIDMap<K extends HasSID, V> {
     }
 
     public V remove(K key) {
-        return jsRemove(key.getSID());
+        return jsRemove(key.getNativeSID());
     }
 
     public boolean isEmpty() {
