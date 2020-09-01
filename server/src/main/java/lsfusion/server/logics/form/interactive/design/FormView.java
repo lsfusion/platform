@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -20,6 +19,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
+import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerCustomSerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
@@ -43,10 +43,11 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static java.util.Collections.synchronizedMap;
+import static lsfusion.server.logics.LogicsModule.InsertType.AFTER;
 import static lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet.*;
 
 public class FormView extends IdentityObject implements ServerCustomSerializable {
@@ -187,7 +188,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
 
         for (PropertyDrawEntity property : entity.getNFPropertyDrawsListIt(version)) {
-            PropertyDrawView view = addPropertyDrawBase(property, version);
+            PropertyDrawView view = addPropertyDrawBase(property, false, version);
             view.caption = property.initCaption;
         }
 
@@ -234,8 +235,13 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         mproperties.put(property.entity, property);
     }
 
-    private PropertyDrawView addPropertyDrawBase(PropertyDrawEntity property, Version version) {
+    private PropertyDrawView addPropertyDrawBase(PropertyDrawEntity property, boolean addFirst, Version version) {
         PropertyDrawView propertyView = new PropertyDrawView(property);
+        if (addFirst) {
+            properties.addFirst(propertyView, version);
+        } else {
+            properties.add(propertyView, version);
+        }
         properties.add(propertyView, version);
         addPropertyDrawView(propertyView);
 
@@ -248,8 +254,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return propertyView;
     }
 
-    public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, Version version) {
-        return addPropertyDrawBase(property, version);
+    public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, boolean addFirst, Version version) {
+        return addPropertyDrawBase(property, addFirst, version);
     }
 
     public void movePropertyDrawTo(PropertyDrawEntity property, PropertyDrawEntity newNeighbour, boolean isRightNeighbour, Version version) {
@@ -259,7 +265,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
         properties.move(propertyView, neighbourView, isRightNeighbour, version);
     }
-
+    
     private void addGroupObjectView(GroupObjectView groupObjectView, Version version) {
         mgroupObjects.put(groupObjectView.entity, groupObjectView);
 
@@ -279,10 +285,12 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
     }
     
-    public GroupObjectView addGroupObjectBase(GroupObjectEntity groupObject, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
+    public GroupObjectView addGroupObjectBase(GroupObjectEntity groupObject, GroupObjectEntity neighbour, InsertType insertType, Version version) {
         GroupObjectView groupObjectView = new GroupObjectView(idGenerator, groupObject);
-        if (neighbour != null) {
-            groupObjects.addIfNotExistsToThenLast(groupObjectView, get(neighbour), isRightNeighbour != null && isRightNeighbour, version);
+        if (insertType == InsertType.FIRST) {
+            groupObjects.addFirst(groupObjectView, version);
+        } else if (neighbour != null) {
+            groupObjects.addIfNotExistsToThenLast(groupObjectView, get(neighbour), insertType == AFTER, version);
         } else {
             groupObjects.add(groupObjectView, version);
         }
@@ -295,15 +303,15 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, Version version) {
-        return addTreeGroupBase(treeGroup, null, false, version);
+        return addTreeGroupBase(treeGroup, null, null, version);
     }
 
-    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
-        return addGroupObjectBase(groupObject, neighbour, isRightNeighbour, version);
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, InsertType insertType, Version version) {
+        return addGroupObjectBase(groupObject, neighbour, insertType, version);
     }
 
-    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, boolean isRightNeighbour, Version version) {
-        return addTreeGroupBase(treeGroup, neighbour, isRightNeighbour, version);
+    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, InsertType insertType, Version version) {
+        return addTreeGroupBase(treeGroup, neighbour, insertType, version);
     }
 
     private void addTreeGroupView(TreeGroupView treeGroupView, Version version) {
@@ -313,7 +321,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         setComponentSID(treeGroupView.getUserFilter(), getUserFilterSID(treeGroupView), version);
     }
 
-    private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, boolean isRightNeighbour, Version version) {
+    private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, InsertType insertType, Version version) {
         TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup, version);
         treeGroups.add(treeGroupView, version);
         addTreeGroupView(treeGroupView, version);

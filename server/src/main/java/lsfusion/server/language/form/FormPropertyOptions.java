@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -60,7 +61,8 @@ public class FormPropertyOptions {
 
     private PropertyDrawEntity quickFilterPropertyDraw;
     private String neighbourPropertyText;
-    private Boolean isRightNeighbour;
+
+    private InsertType insertType; 
     
     private Boolean newSession;
     private Boolean isNested;
@@ -318,12 +320,12 @@ public class FormPropertyOptions {
         this.quickFilterPropertyDraw = quickFilterPropertyDraw;
     }
 
-    public Boolean isRightNeighbour() {
-        return isRightNeighbour;
+    public InsertType getInsertType() {
+        return insertType;
     }
 
-    public void setNeighbourType(Boolean isRightNeighbour) {
-        this.isRightNeighbour = isRightNeighbour;
+    public void setInsertType(InsertType insertType) {
+        this.insertType = insertType;
     }
 
     public String getEventId() {
@@ -424,7 +426,7 @@ public class FormPropertyOptions {
         merged.setEventId(nvl(overrides.getEventId(), eventId));
         merged.setIntegrationSID(nvl(overrides.getIntegrationSID(), integrationSID));
         merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
-        merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));
+        merged.setInsertType(nvl(overrides.getInsertType(), insertType));
 
         merged.formula = nvl(overrides.formula, formula);
         merged.formulaOperands = nvl(overrides.formulaOperands, formulaOperands);
