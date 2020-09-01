@@ -544,13 +544,7 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
-	:	(	viewType=formGroupObjectViewType { 
-		if ($viewType.listType == ListViewType.CUSTOM){
-			$groupObject.setCustomViewType($viewType.customRenderFunction);
-		} else {
-			$groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options);
-		}
- 		}
+	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options); $groupObject.setCustomTypeRenderFunction($viewType.customRenderFunction); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.insertType); }

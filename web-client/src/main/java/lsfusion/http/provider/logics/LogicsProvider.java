@@ -14,6 +14,4 @@ public interface LogicsProvider {
 
     <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException;
     <R> R runRequest(HttpServletRequest request, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException;
-
-    Set<String> getJsUrls();
 }

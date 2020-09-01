@@ -16,15 +16,11 @@ public class GCustom extends GSimpleStateTableView {
 
     @Override
     protected void render(Element element, Element recordElement, JsArray<JavaScriptObject> list) {
-        if (list.length() > 0 && element != null) {
-            runFunction(element, list, renderFunction);
-        }
+        runFunction(element, list, renderFunction);
     }
 
     protected native void runFunction(Element element, JavaScriptObject list, String renderFunction)/*-{
         var fn = $wnd[renderFunction];
-        if (typeof fn === 'function'){
-            fn(element, list);
-        }
+        fn(element, list);
     }-*/;
 }

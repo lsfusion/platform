@@ -61,8 +61,7 @@ public class ScriptingGroupObject {
         }
     }
 
-    public void setCustomViewType(String customRenderFunction) {
-        this.listViewType = ListViewType.CUSTOM;
+    public void setCustomTypeRenderFunction(String customRenderFunction) {
         this.customRenderFunction = customRenderFunction;
     }
 

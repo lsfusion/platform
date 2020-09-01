@@ -1,6 +1,5 @@
 package lsfusion.http.provider.logics;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.controller.remote.proxy.RemoteLogicsLoaderProxy;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
@@ -12,24 +11,15 @@ import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.net.util.Base64;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.HashSet;
-import java.util.Set;
 
 // singleton, one for whole application
 // needed for custom handler requests + RemoteAuthenticationManager (where gwt is not used)
@@ -40,12 +30,10 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     private static final String hostKey = "host";
     private static final String portKey = "port";
     private static final String exportNameKey = "exportName";
-    private static final String jsPath = "/static/js/";
 
     private String host; // default host
     private int port; // default port
     private String exportName; // default export name
-    private final Set<String> jsUrls = new HashSet<>();
 
     public LogicsProviderImpl() {
     }
@@ -67,7 +55,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         FileUtils.APP_CSS_FOLDER_URL = appPath + "/static/css/";
         FileUtils.APP_CLIENT_IMAGES_FOLDER_URL = appPath + "/main/static/images/";
         FileUtils.APP_TEMP_FOLDER_URL = appPath + "/WEB-INF/temp";
-        FileUtils.APP_JS_FOLDER_URL = appPath + jsPath;
+        FileUtils.APP_PATH = appPath;
 
         setHost(host);
         setPort(Integer.parseInt(port));
@@ -106,33 +94,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     }
 
     public ServerSettings getServerSettings(final HttpServletRequest request, boolean noCache) {
-        ServerSettings serverSettings = getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), noCache);
-        if (serverSettings.resourceFiles != null) {
-            saveFiles(serverSettings.resourceFiles);
-        }
-        return serverSettings;
-    }
-
-    public Set<String> getJsUrls() {
-        return this.jsUrls;
-    }
-
-    private void saveFiles(JSONArray jsFiles) {
-        for (int i = 0; i < jsFiles.length(); i++) {
-            String file = new String(Base64.decodeBase64(jsFiles.optJSONObject(i).optString("file")));
-            String fileName = jsFiles.optJSONObject(i).optString("name");
-            String folderPath = FileUtils.APP_JS_FOLDER_URL + FilenameUtils.removeExtension(fileName);
-            File outputFile = new File(folderPath, fileName);
-            jsUrls.add(jsPath + FilenameUtils.removeExtension(fileName) + "/" + fileName);
-            if (!outputFile.exists()) {
-                new File(folderPath).mkdirs();
-                try (OutputStream out = new FileOutputStream(outputFile)){
-                    out.write(file.getBytes());
-                } catch (IOException e) {
-                    throw Throwables.propagate(e);
-                }
-            }
-        }
+        return getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), noCache);
     }
 
     public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {
