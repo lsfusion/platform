@@ -36,14 +36,7 @@ public class ReadResourcesAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String resourcePath = (String) context.getKeyValue(resourcePathInterface).getValue();
         Set<File> files = new HashSet<>();
-        Pattern pattern;
-        if (resourcePath.startsWith("/")) {
-            //absolute path(find in resources folders)
-            pattern = Pattern.compile(resourcePath.endsWith("/") ? resourcePath + ".*" : resourcePath + "/.*");
-        } else {
-            //relative path(find by regexp)
-            pattern = Pattern.compile(resourcePath);
-        }
+        Pattern pattern = Pattern.compile(resourcePath);
         List<String> allResources = ResourceUtils.getResources(pattern);
         allResources
                 .stream()

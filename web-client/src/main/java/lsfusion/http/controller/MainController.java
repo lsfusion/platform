@@ -61,7 +61,7 @@ public class MainController {
     private final Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
     private static final String authorizationRequestBaseUri = "/oauth2/authorization/";
     private final Result<String> checkVersionError = new Result<>();
-    private static final String externalResourcesParentPath = "/static/web/";
+    private static final String externalResourcesParentPath = "static/web/";
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String processLogin(ModelMap model, HttpServletRequest request) {
@@ -214,8 +214,9 @@ public class MainController {
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request) {
         ServerSettings serverSettings = getServerSettings(request, false);
+        serverSettings.saveFiles(FileUtils.APP_PATH, externalResourcesParentPath);
 
-        model.addAttribute("jsUrls", serverSettings.getFilesUrls());
+        model.addAttribute("filesUrls", serverSettings.getFilesUrls());
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));
@@ -224,9 +225,7 @@ public class MainController {
     }
 
     private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {
-        ServerSettings serverSettings = logicsProvider.getServerSettings(request, noCache);
-        serverSettings.saveFiles(FileUtils.APP_PATH, externalResourcesParentPath);
-        return serverSettings;
+        return logicsProvider.getServerSettings(request, noCache);
     }
 
     private String getTitle(ServerSettings serverSettings) {

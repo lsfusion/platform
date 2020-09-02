@@ -108,12 +108,12 @@
         <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"></script>
 
-        <c:forEach items="${jsUrls}" var="jsUrl">
-            <c:if test="${jsUrl.endsWith('js')}">
-                <script type="text/javascript" src="${jsUrl}"></script>
+        <c:forEach items="${filesUrls}" var="fileUrl">
+            <c:if test="${fileUrl.endsWith('js')}">
+                <script type="text/javascript" src="${fileUrl}"></script>
             </c:if>
-            <c:if test="${jsUrl.endsWith('css')}">
-                <link rel="stylesheet" type="text/css" href="${jsUrl}"/>
+            <c:if test="${fileUrl.endsWith('css')}">
+                <link rel="stylesheet" type="text/css" href="${fileUrl}"/>
             </c:if>
         </c:forEach>
 

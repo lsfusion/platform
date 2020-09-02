@@ -3,6 +3,7 @@ package lsfusion.interop.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,7 +23,7 @@ public class ServerSettings {
     public boolean anonymousUI;
     public String jnlpUrls;
     public List<Pair<String, RawFileData>> resourceFiles;
-    public Set<String> filesUrls = new HashSet<>();
+    public Set<String> filesUrls = null;
 
     public ServerSettings(String logicsName, String displayName, RawFileData logicsLogo, RawFileData logicsIcon, String platformVersion, Integer apiVersion,
                           boolean anonymousUI, String jnlpUrls, List<Pair<String, RawFileData>> jsFiles) {
@@ -37,18 +38,24 @@ public class ServerSettings {
         this.resourceFiles = jsFiles;
     }
 
-    public void saveFiles(String appPath, String  externalResourcesParentPath) {
-        for (Pair<String, RawFileData> pair : resourceFiles) {
-            String folderPath = appPath + externalResourcesParentPath + pair.first.split("/")[0];
-            File outputFile = new File(appPath + externalResourcesParentPath, pair.first);
-            filesUrls.add(externalResourcesParentPath +  pair.first);
-            if (!outputFile.exists()) {
-                new File(folderPath).mkdirs();
-                try (OutputStream out = new FileOutputStream(outputFile)){
-                    out.write(pair.second.getBytes());
-                } catch (IOException e) {
-                    throw Throwables.propagate(e);
+    public synchronized void saveFiles(String appPath, String  externalResourcesParentPath) {
+        if (filesUrls == null) {
+            filesUrls = new HashSet<>();
+            try {
+                FileUtils.deleteDirectory(new File(appPath + externalResourcesParentPath));
+                for (Pair<String, RawFileData> pair : resourceFiles) {
+                    String folderPath = appPath + externalResourcesParentPath + pair.first.split("/")[0];
+                    File outputFile = new File(appPath + externalResourcesParentPath, pair.first);
+                    if (!outputFile.exists()) {
+                        new File(folderPath).mkdirs();
+                        try (OutputStream out = new FileOutputStream(outputFile)) {
+                            out.write(pair.second.getBytes());
+                        }
+                        filesUrls.add(externalResourcesParentPath + pair.first);
+                    }
                 }
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
         }
     }

@@ -325,7 +325,7 @@ WHEN CHANGED (baseValue(Setting r, UserRole ur))
     DO updateSetting(r, ur, TRUE);
 
 getServerSettings() {
-    readResources('/calendar/');
+    readResources('/web/.*');
     LOCAL jsonResourceFiles = JSONFILE ();
     EXPORT FROM file = resourceFiles(STRING str), name = str WHERE resourceFiles(str) TO jsonResourceFiles;
 
