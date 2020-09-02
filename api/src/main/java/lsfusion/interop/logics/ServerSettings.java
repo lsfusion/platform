@@ -39,13 +39,14 @@ public class ServerSettings {
     }
 
     public synchronized void saveFiles(String appPath, String  externalResourcesParentPath) {
+        String externalResourcesAbsolutePath = appPath + "/" + externalResourcesParentPath;
         if (filesUrls == null) {
             filesUrls = new HashSet<>();
             try {
-                FileUtils.deleteDirectory(new File(appPath + externalResourcesParentPath));
+                FileUtils.deleteDirectory(new File(externalResourcesAbsolutePath));
                 for (Pair<String, RawFileData> pair : resourceFiles) {
-                    String folderPath = appPath + externalResourcesParentPath + pair.first.split("/")[0];
-                    File outputFile = new File(appPath + externalResourcesParentPath, pair.first);
+                    String folderPath = externalResourcesAbsolutePath + pair.first.split("/")[0];
+                    File outputFile = new File(externalResourcesAbsolutePath, pair.first);
                     if (!outputFile.exists()) {
                         new File(folderPath).mkdirs();
                         try (OutputStream out = new FileOutputStream(outputFile)) {
