@@ -32,9 +32,8 @@ public class GFormLayout extends ResizableSimplePanel {
 
         this.mainContainer = mainContainer;
 
-        GAbstractContainerView mainContainerView = addContainers(mainContainer);
-
-        setFillWidget(mainContainerView.getView());
+        addContainers(mainContainer);
+        setFillWidget(getComponentView(mainContainer));
         
         getWidget().getElement().getStyle().setOverflow(Style.Overflow.AUTO);
     }
@@ -60,13 +59,7 @@ public class GFormLayout extends ResizableSimplePanel {
         GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
-        Widget view = containerView.getView();
-        if (container.sID != null) {
-            view.getElement().setAttribute("lsfusion-container", container.sID);
-            view.getElement().setAttribute("lsfusion-container-type", container.type.name());
-        }
-
-        add(container, view, null);
+        add(container, containerView.getView(), null);
 
         for (GComponent child : container.children) {
             if(child instanceof GGrid)
@@ -75,6 +68,14 @@ public class GFormLayout extends ResizableSimplePanel {
                 addContainers((GContainer) child);
             }
         }
+
+        // debug info
+        if (container.sID != null) {
+            Widget view = containerView.getView();
+            view.getElement().setAttribute("lsfusion-container", container.sID);
+            view.getElement().setAttribute("lsfusion-container-type", container.type.name());
+        }
+
         return containerView;
     }
     public void addBaseComponent(GComponent component, Widget view, DefaultFocusReceiver focusReceiver) {

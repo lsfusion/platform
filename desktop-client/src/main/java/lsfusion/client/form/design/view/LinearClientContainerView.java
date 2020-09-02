@@ -15,7 +15,6 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         assert container.isLinear();
         panel = new ContainerViewPanel(container.isLinearVertical(), container.childrenAlignment);
 
-        container.design.installFont(panel);
         ClientColorUtils.designComponent(panel, container.design);
     }
 

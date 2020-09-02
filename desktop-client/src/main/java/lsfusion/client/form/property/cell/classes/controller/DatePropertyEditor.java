@@ -39,10 +39,8 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
             ((JFormattedTextField) dateEditor).selectAll();
         }
 
-        if (property != null && property.design != null) {
-            property.design.installFont(this);
+        if (property != null && property.design != null)
             ClientColorUtils.designComponent(this, property.design);
-        }
     }
 
     public Date valueToDate(Object value) {

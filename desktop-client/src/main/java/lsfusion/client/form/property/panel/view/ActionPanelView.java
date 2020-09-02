@@ -57,7 +57,6 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             setEnabled(false);
         }
 
-        property.design.installFont(this);
         ClientColorUtils.designComponent(this, property.design);
         if (property.focusable != null) {
             setFocusable(property.focusable);
