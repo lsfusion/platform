@@ -6,6 +6,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.form.ScriptingFormEntity;
 import lsfusion.server.language.proxy.ViewProxyUtil;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -61,7 +62,7 @@ public class ScriptingFormView {
         }
     }
 
-    public ContainerView createNewComponent(String sid, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public ContainerView createNewComponent(String sid, ComponentView parentComponent, LogicsModule.InsertType pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert sid != null && sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*") && parentComponent != null;
 
         if (getComponentBySID(sid, false, version) != null) {
@@ -75,7 +76,7 @@ public class ScriptingFormView {
         return container;
     }
 
-    public void moveComponent(ComponentView component, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void moveComponent(ComponentView component, ComponentView parentComponent, LogicsModule.InsertType pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert component != null && parentComponent != null;
 
         if(parentComponent instanceof GridView) {
@@ -97,7 +98,7 @@ public class ScriptingFormView {
         parentComponent.setRecord(component, version);
     }
 
-    public void moveComponentToContainer(ComponentView component, ContainerView parent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void moveComponentToContainer(ComponentView component, ContainerView parent, LogicsModule.InsertType pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
 
         if (anchorComponent != null && !parent.equals(anchorComponent.getNFContainer(version))) {
             errLog.emitIllegalInsertBeforeAfterElementError(parser, component.getSID(), parent.getSID(), anchorComponent.getSID());

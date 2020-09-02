@@ -3,6 +3,7 @@ package lsfusion.server.language.form.object;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -32,7 +33,7 @@ public class ScriptingGroupObject {
     public PropertyObjectEntity subReportPath;
 
     public GroupObjectEntity neighbourGroupObject;
-    public Boolean isRightNeighbour;
+    public LogicsModule.InsertType insertType;
 
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> integrationSIDs) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
@@ -66,9 +67,9 @@ public class ScriptingGroupObject {
         this.updateType = updateType; 
     }
     
-    public void setNeighbourGroupObject(GroupObjectEntity neighbourGroupObject, boolean isRightNeighbour) {
+    public void setNeighbourGroupObject(GroupObjectEntity neighbourGroupObject, LogicsModule.InsertType insertType) {
         this.neighbourGroupObject = neighbourGroupObject;
-        this.isRightNeighbour = isRightNeighbour;
+        this.insertType = insertType;
     }
 
     public void setPropertyGroupName(String propertyGroupName) {

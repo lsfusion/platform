@@ -22,6 +22,7 @@ import lsfusion.server.language.form.object.ScriptingGroupObject;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.language.property.oraction.MappedActionOrProperty;
+import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.file.ImageClass;
@@ -56,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.server.logics.LogicsModule.InsertType.*;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
 
 public class ScriptingFormEntity {
@@ -75,17 +77,17 @@ public class ScriptingFormEntity {
     public void addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         for (ScriptingGroupObject groupObject : groupObjects) {
             GroupObjectEntity neighbour = groupObject.neighbourGroupObject;
-            Boolean isRightNeighbour = groupObject.isRightNeighbour;
-            checkNeighbour(neighbour, isRightNeighbour);
-            addScriptingGroupObject(groupObject, null, neighbour, isRightNeighbour, version, debugPoint);
+            InsertType insertType = groupObject.insertType;
+            checkNeighbour(neighbour, insertType);
+            addScriptingGroupObject(groupObject, null, neighbour, insertType, version, debugPoint);
         }
     }
-    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, boolean isRightNeighbour, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, InsertType insertType, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         List<GroupObjectEntity> groups = new ArrayList<>();
 
-        boolean reverseList = neighbourGroupObject != null && !isRightNeighbour;
+        boolean reverseList = neighbourGroupObject != null && insertType == BEFORE || insertType == FIRST;
         for (ScriptingGroupObject groupObject : (reverseList ? BaseUtils.reverse(groupObjects) : groupObjects)) {
-            GroupObjectEntity groupObj = addScriptingGroupObject(groupObject, treeGroup, neighbourGroupObject, isRightNeighbour, version, debugPoint);
+            GroupObjectEntity groupObj = addScriptingGroupObject(groupObject, treeGroup, neighbourGroupObject, insertType, version, debugPoint);
             if(neighbourGroupObject != null)
                 neighbourGroupObject = groupObj;
             groups.add(groupObj);
@@ -93,7 +95,7 @@ public class ScriptingFormEntity {
         return (reverseList ? BaseUtils.reverse(groups) : groups);
     }
 
-    private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, GroupObjectEntity neighbour, InsertType insertType, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup);
         groupObj.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
 
@@ -154,7 +156,7 @@ public class ScriptingFormEntity {
             groupObj.setIntegrationSID(integrationSID);
 
         groupObj.setIntegrationKey(groupObject.integrationKey);
-        addGroupObjectEntity(groupName, groupObj, neighbour,isRightNeighbour, version);
+        addGroupObjectEntity(groupName, groupObj, neighbour, insertType, version);
 
         if(groupObject.isSubReport)
             setSubReport(groupObj, groupObject.subReportPath);
@@ -162,11 +164,11 @@ public class ScriptingFormEntity {
         return groupObj;
     }
 
-    public void addScriptingTreeGroupObject(String treeSID, GroupObjectEntity neighbour, boolean isRightNeighbour, List<ScriptingGroupObject> groupObjects, List<List<LP>> parentProperties, List<List<ImOrderSet<String>>> propertyMappings, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        checkNeighbour(neighbour, isRightNeighbour);
+    public void addScriptingTreeGroupObject(String treeSID, GroupObjectEntity neighbour, InsertType insertType, List<ScriptingGroupObject> groupObjects, List<List<LP>> parentProperties, List<List<ImOrderSet<String>>> propertyMappings, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        checkNeighbour(neighbour, insertType);
 
         TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID());
-        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, neighbour, isRightNeighbour, version, debugPoint);
+        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, neighbour, insertType, version, debugPoint);
         for (ScriptingGroupObject groupObject : groupObjects) {
             int groupIndex = groupObjects.indexOf(groupObject);
             List<LP> properties = parentProperties.get(groupIndex);
@@ -193,7 +195,7 @@ public class ScriptingFormEntity {
             }
         }
 
-        form.addTreeGroupObject(treeGroup, neighbour, isRightNeighbour, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
+        form.addTreeGroupObject(treeGroup, neighbour, insertType, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
     private LP findLPByPropertyUsage(ScriptingLogicsModule.NamedPropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
@@ -208,23 +210,23 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void checkNeighbour(GroupObjectEntity neighbour, Boolean isRightNeighbour) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkNeighbour(GroupObjectEntity neighbour, InsertType insertType) throws ScriptingErrorLog.SemanticErrorException {
         if (neighbour != null && neighbour.isInTree()) {
-            if(isRightNeighbour != null && isRightNeighbour) {
-                if(!neighbour.equals(neighbour.treeGroup.getGroups().last()))
+            if (insertType == AFTER) {
+                if (!neighbour.equals(neighbour.treeGroup.getGroups().last()))
                     LM.getErrLog().emitGroupObjectInTreeAfterNotLastError(LM.getParser(), neighbour.getSID());
-            } else {
-                if(!neighbour.equals(neighbour.treeGroup.getGroups().get(0)))
+            } else if (insertType == BEFORE) {
+                if (!neighbour.equals(neighbour.treeGroup.getGroups().get(0)))
                     LM.getErrLog().emitGroupObjectInTreeBeforeNotFirstError(LM.getParser(), neighbour.getSID());
             }
         }
     }
-    private void addGroupObjectEntity(String groupName, GroupObjectEntity group, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private void addGroupObjectEntity(String groupName, GroupObjectEntity group, GroupObjectEntity neighbour, InsertType insertType, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (form.getNFGroupObject(groupName, version) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
         }
         group.setSID(groupName);
-        form.addGroupObject(group,neighbour, isRightNeighbour, version);
+        form.addGroupObject(group, neighbour, insertType, version);
     }
 
     private void addObjectEntity(String name, ObjectEntity object, GroupObjectEntity group, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -316,7 +318,7 @@ public class ScriptingFormEntity {
     }
 
     public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
-        boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
+        boolean reverse = commonOptions.getInsertType() == FIRST || commonOptions.getNeighbourPropertyDraw() != null && commonOptions.getInsertType() == AFTER;
         
         for (int i = reverse ? properties.size() - 1 : 0; (reverse ? i >= 0 : i < properties.size()); i = reverse ? i - 1 : i + 1) {
             ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = properties.get(i);
@@ -379,9 +381,9 @@ public class ScriptingFormEntity {
             PropertyDrawEntity propertyDraw;
             ActionOrPropertyObjectEntity propertyObject = property.createObjectEntity(objects);
             if(inherited.result != null)
-                propertyDraw = form.addPropertyDraw(propertyObject, formPath, inherited.result.second, inherited.result.first, version);
+                propertyDraw = form.addPropertyDraw(propertyObject, formPath, inherited.result.second, inherited.result.first, propertyOptions.getInsertType() == FIRST, version);
             else
-                propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, version);
+                propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, propertyOptions.getInsertType() == FIRST, version);
             propertyDraw.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
 
 
@@ -397,7 +399,7 @@ public class ScriptingFormEntity {
             applyPropertyOptions(propertyDraw, propertyOptions, version);
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
-            PropertyDrawView view = form.addPropertyDrawView(propertyDraw, version);
+            PropertyDrawView view = form.addPropertyDrawView(propertyDraw, propertyOptions.getInsertType() == FIRST, version);
             if(view != null)
                 view.caption = caption;
             else
@@ -567,12 +569,12 @@ public class ScriptingFormEntity {
             form.addPivotMeasure(property, version);
     }
 
-    private void movePropertyDraw(PropertyDrawEntity property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private void movePropertyDraw(PropertyDrawEntity<?> property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (options.getNeighbourPropertyDraw() != null) {
             if (options.getNeighbourPropertyDraw().getNFToDraw(form, version) != property.getNFToDraw(form, version)) {
                 LM.getErrLog().emitNeighbourPropertyError(LM.getParser(), options.getNeighbourPropertyText(), property.getSID());
             }
-            form.movePropertyDrawTo(property, options.getNeighbourPropertyDraw(), options.isRightNeighbour(), version);
+            form.movePropertyDrawTo(property, options.getNeighbourPropertyDraw(), options.getInsertType() == AFTER, version);
         }
     }
 

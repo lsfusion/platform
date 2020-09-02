@@ -2381,4 +2381,7 @@ public abstract class LogicsModule {
     public ImplementTable resolveTable(String compoundName) throws ResolvingErrors.ResolvingError {
         return resolveManager.findTable(compoundName);
     }
+
+    public enum InsertType {IN, BEFORE, AFTER, FIRST}
 }
+
