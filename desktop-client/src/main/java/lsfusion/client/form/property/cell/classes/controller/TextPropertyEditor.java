@@ -46,10 +46,8 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         setViewportView(textArea);
         setPreferredSize(new Dimension(200, 200));
         dialog = new JDialog(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
-        if (design != null) {
-            design.installFont(textArea);
+        if (design != null)
             ClientColorUtils.designComponent(textArea, design);
-        }
         textArea.setBackground(SwingDefaults.getTableCellBackground());
         Insets insets = getTableCellMargins();
         textArea.setBorder(BorderFactory.createEmptyBorder(insets.top - 1, insets.left - 1, insets.bottom, insets.right - 1));

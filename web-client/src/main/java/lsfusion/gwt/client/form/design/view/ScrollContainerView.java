@@ -27,9 +27,13 @@ public class ScrollContainerView extends GAbstractContainerView {
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
-        assert child.getFlex() == 1 && child.getAlignment() == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
-        view.getElement().getStyle().setOverflowY(Style.Overflow.VISIBLE);
-        view.getElement().getStyle().setOverflowX(Style.Overflow.VISIBLE);
+        // it's a very odd hack to enable "opposite" scrolling, that will work really unstable
+        // it's needed since stretch always gives 100% width / height even if the component contents is bigger
+        if(child.getAlignment() == GFlexAlignment.STRETCH) {
+            view.getElement().getStyle().setOverflowY(Style.Overflow.VISIBLE); // without this horizontal scroller is shown for view and not element (it's also really odd)
+            view.getElement().getStyle().setOverflowX(Style.Overflow.VISIBLE);
+        }
+
         add(scrollPanel, view, child, 0);
     }
 

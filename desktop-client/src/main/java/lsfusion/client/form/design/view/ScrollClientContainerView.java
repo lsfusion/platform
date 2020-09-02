@@ -11,7 +11,6 @@ import java.awt.*;
 public class ScrollClientContainerView extends AbstractClientContainerView {
 
     private final ContainerViewPanel panel;
-    private final JComponentPanel scrollPanel;
     private final JScrollPane scroll;
 
     public ScrollClientContainerView(ClientFormLayout formLayout, ClientContainer container) {
@@ -21,22 +20,17 @@ public class ScrollClientContainerView extends AbstractClientContainerView {
         scroll = new JScrollPane();
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.getHorizontalScrollBar().setUnitIncrement(14);
-        
-        container.design.installFont(scroll);
         ClientColorUtils.designComponent(scroll, container.design);
 
-        scrollPanel = new JComponentPanel(); // componentSize добавляемого компонента
-        scrollPanel.add(scroll, BorderLayout.CENTER);
-
-        panel = new ContainerViewPanel(); // componentSize этого контейнера
-        panel.add(scrollPanel, BorderLayout.CENTER);
+        panel = new ContainerViewPanel();
+        panel.add(scroll, BorderLayout.CENTER);
     }
 
     @Override
     public void addImpl(int index, ClientComponent child, JComponentPanel view) {
         assert child.getFlex() == 1 && child.getAlignment() == FlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
         scroll.setViewportView(view);
-        setSizes(scrollPanel, child);
+        setSizes(view, child);
     }
 
     @Override

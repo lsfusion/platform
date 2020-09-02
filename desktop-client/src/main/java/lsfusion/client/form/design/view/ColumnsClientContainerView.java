@@ -42,7 +42,6 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
             columnsChildren[i] = new ArrayList<>();
         }
 
-        container.design.installFont(panel);
         ClientColorUtils.designComponent(panel, container.design);
     }
 

@@ -151,6 +151,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         dispatcher = new FormDispatchAsync(this);
 
         formLayout = new GFormLayout(this, form.mainContainer);
+        setFillWidget(formLayout);
 
         asyncTimer = new Timer() {
             @Override
@@ -162,9 +163,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (form.sID != null) {
             getElement().setAttribute("lsfusion-form", form.sID);
         }
-
-        getElement().getStyle().setOverflow(Style.Overflow.AUTO);
-        setFillWidget(formLayout);
 
         updateFormCaption();
 
