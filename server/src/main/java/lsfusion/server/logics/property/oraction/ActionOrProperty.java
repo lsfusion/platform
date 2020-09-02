@@ -428,14 +428,27 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
 //    private static ConcurrentHashMap<Property, String> notFinalized = new ConcurrentHashMap<Property, String>();
 
+    private boolean finalizedChanges;
+
+    protected void finalizeChanges() {
+        eventActions = eventActions == null ? MapFact.EMPTY() : ((MMap) eventActions).immutable();
+        keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();
+        contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
+    }
+
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
 
 //        notFinalized.remove(this);
-        
-        eventActions = eventActions == null ? MapFact.EMPTY() : ((MMap) eventActions).immutable();
-        keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();
-        contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
+        // we need this synchronization since property finalization first marks modules, and only then reads all properties (so property can be finalized twice)
+        if(!finalizedChanges) {
+            synchronized (this) { // in theory there can be separate lock, but for now there is no need for this
+                if(!finalizedChanges) {
+                    finalizeChanges();
+                    finalizedChanges = true;
+                }
+            }
+        }
     }
 
     public void prereadCaches() {
