@@ -226,6 +226,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public int getValueHeight(JComponent comp) {
+        return getValueHeight(comp, null);
+    }
+
+    public int getValueHeight(JComponent comp, Integer userFontSize) {
         if (valueSize != null && valueSize.height > -1) {
             return valueSize.height;
         }
@@ -234,7 +238,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         int insetsHeight = insets.top + insets.bottom;
         int lines = charHeight == 0 ? baseType.getDefaultCharHeight() : charHeight;
         int height;
-        if ((design.font != null && design.font.fontSize > 0) || lines > 1) {
+        int fontSize = userFontSize != null && userFontSize > 0 ? userFontSize : (design.font != null ? design.font.fontSize : -1);
+        if (fontSize > 0 || lines > 1) {
             int lineHeight = comp.getFontMetrics(design.getFont(comp)).getHeight();
             height = lineHeight * lines + insetsHeight;
         } else {
