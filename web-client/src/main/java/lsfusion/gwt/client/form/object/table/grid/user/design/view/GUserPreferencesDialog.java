@@ -26,7 +26,6 @@ import java.util.Map;
 import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
 import static lsfusion.gwt.client.base.GwtClientUtils.createVerticalStrut;
 import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_FAMILY;
-import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_SIZE;
 
 @SuppressWarnings("GWTStyleCheck")
 public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow {
@@ -258,6 +257,9 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
         }
 
         GFont userFont = getUserFont();
+        if (userFont.size <= 0) {
+            userFont = userFont.deriveFont(userFont.bold, userFont.italic);
+        }
         grid.setUserFont(userFont);
         grid.font = userFont;
         
@@ -285,7 +287,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
                 size = initialFont.size;
             }
         } catch(NumberFormatException e) {
-            size = initialFont.size;
+            size = -1;
         }
 
         return new GFont(initialFont.family, size, boldBox.getValue(), italicBox.getValue());
@@ -313,7 +315,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
 
     private GFont getInitialFont() {
         GFont designFont = grid.getDesignFont();
-        return designFont == null ? new GFont(grid.font != null ? grid.font.family : DEFAULT_FONT_FAMILY, GFont.DEFAULT_FONT_SIZE, false, false) : designFont;
+        return designFont == null ? new GFont(grid.font != null ? grid.font.family : DEFAULT_FONT_FAMILY, 0, false, false) : designFont;
     }
     
     private void resetPressed() {
@@ -410,7 +412,7 @@ public abstract class GUserPreferencesDialog extends ResizableSystemModalWindow 
             }
         }
 
-        sizeBox.setValue((font == null || font.size == 0) ? DEFAULT_FONT_SIZE.toString() : String.valueOf(font.size));
+        sizeBox.setValue((font == null || font.size <= 0) ? "" : String.valueOf(font.size));
         boldBox.setValue(font != null && font.bold);
         italicBox.setValue(font != null && font.italic);
 
