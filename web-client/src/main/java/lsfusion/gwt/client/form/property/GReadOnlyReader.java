@@ -12,7 +12,7 @@ public class GReadOnlyReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "READONLY");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values) {
         controller.updateReadOnlyValues(this, values);
     }
 }

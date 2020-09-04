@@ -12,7 +12,7 @@ public class GImageReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "IMAGE");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values) {
         controller.updateImageValues(this, values);
     }
 }

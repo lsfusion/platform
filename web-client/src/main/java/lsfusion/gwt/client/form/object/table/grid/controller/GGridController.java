@@ -7,7 +7,6 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.classes.data.GIntegralType;
@@ -45,19 +44,19 @@ public class GGridController extends GAbstractTableController {
     private GTableView table;
 
     private static boolean isList(GGroupObject groupObject) {
-        return groupObject != null && groupObject.viewType.isList();
+        return groupObject.viewType.isList();
     }
     public boolean isList() {
-        return groupObject != null && groupObject.viewType.isList();
+        return groupObject.viewType.isList();
     }
 
     public GPivotOptions getPivotOptions() {
-        return groupObject != null ? groupObject.pivotOptions : null;
+        return groupObject.pivotOptions;
     }
 
-    public GGridController(GFormController iformController, GGroupObject igroupObject, GGridUserPreferences[] userPreferences) {
-        super(iformController, igroupObject == null ? null : igroupObject.toolbar, isList(igroupObject));
-        groupObject = igroupObject;
+    public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
+        super(iformController, groupObject.toolbar, isList(groupObject));
+        this.groupObject = groupObject;
 
         if (isList()) {
             boolean autoSize = groupObject.grid.autoSize;
@@ -310,22 +309,18 @@ public class GGridController extends GAbstractTableController {
         sumButton.showPopup(sum, property);
     }
 
-    public void processFormChanges(long requestIndex, GFormChanges fc, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
-        if (isList()) {
-            ArrayList<GGroupObjectValue> keys = fc.gridObjects.get(groupObject);
-            if (keys != null)
-                table.setKeys(keys);
+    public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc) {
+        if(isList())
+            table.setKeys(keys);
+    }
 
-            GGroupObjectValue currentKey = fc.objects.get(groupObject);
-            if (currentKey != null)
-                table.setCurrentKey(currentKey);
-        }
+    @Override
+    public void updateCurrentKey(GGroupObjectValue currentKey) {
+        if(isList())
+            table.setCurrentKey(currentKey);
+    }
 
-        processFormChanges(groupObject, fc, currentGridObjects,
-                property -> property.grid && property.groupObject == groupObject && isPropertyShown(property),
-                property -> property.grid && property.groupObject == groupObject,
-                propertyReader -> formController.getGroupObject(propertyReader.getGroupObjectID()) == groupObject);
-
+    public void update(long requestIndex, GFormChanges fc) {
         Boolean updateState = null;
         if(isList())
             updateState = fc.updateStateObjects.get(groupObject);
@@ -333,76 +328,39 @@ public class GGridController extends GAbstractTableController {
         update(requestIndex, updateState);
     }
 
-    public ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
-        ArrayList<GGroupObjectValue> columnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
-        if (property.columnGroupObjects != null) {
-            LinkedHashMap<GGroupObject, ArrayList<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<>();
-            for (GGroupObject columnGroupObject : property.columnGroupObjects) {
-                ArrayList<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
-                if (columnGroupKeys != null) {
-                    groupColumnKeys.put(columnGroupObject, columnGroupKeys);
-                }
-            }
-
-            columnKeys = GGroupObject.mergeGroupValues(groupColumnKeys);
-        }
-        return columnKeys;
-    }
-
     @Override
     public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            table.updateCellBackgroundValues(property, values);
-        }
+        table.updateCellBackgroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            table.updateCellForegroundValues(property, values);
-        }
+        table.updateCellForegroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            table.updateImageValues(property, values);
-        }
+        table.updateImageValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            table.updatePropertyCaptions(property, values);
-        }
+        table.updatePropertyCaptions(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            table.updateShowIfValues(property, values);
-        }
+        table.updateShowIfValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            table.updateReadOnlyValues(property, values);
-        }
+        table.updateReadOnlyValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        assert property.grid;
-        if(property.grid)
-            table.updateLastValues(property, reader.index, values);
+        table.updateLastValues(formController.getProperty(reader.propertyID), reader.index, values);
     }
 
     @Override
@@ -463,15 +421,13 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
         table.updateProperty(property, columnKeys, updateKeys, values);
     }
 
     @Override
-    public void removeProperty(GGroupObject group, GPropertyDraw property) {
-        if (property.grid) {
-            table.removeProperty(property);
-        }
+    public void removeProperty(GPropertyDraw property) {
+        table.removeProperty(property);
     }
 
     private void update(long requestIndex, Boolean updateState) {
@@ -542,7 +498,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     public boolean isPropertyShown(GPropertyDraw property) {
-        return property.grid && table.containsProperty(property);
+        return table.containsProperty(property);
     }
 
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
@@ -588,11 +544,9 @@ public class GGridController extends GAbstractTableController {
     }
 
     public void focusProperty(GPropertyDraw property) {
-        if(property.grid) {
-            GTableView table = this.table;
-            table.focus();
-            table.focusProperty(property);
-        }
+        GTableView table = this.table;
+        table.focus();
+        table.focusProperty(property);
     }
 
     public void changeSettings() {

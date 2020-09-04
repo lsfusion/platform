@@ -628,7 +628,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity, form.securityPolicy);
                 Object objectPushChange = deserializeObject(pushChange);
                 if(pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
-                    ServerLoggers.assertLog(objectPushChange == null, "PUSH CHANGE SHOULD BE NULL");
+                    ServerLoggers.assertLog(objectPushChange == null, "PROPERTY CANNOT BE CHANGED -> PUSH CHANGE SHOULD BE NULL");
                 else
                     pushChangeObject = DataObject.getValue(objectPushChange, pushChangeType);
             }

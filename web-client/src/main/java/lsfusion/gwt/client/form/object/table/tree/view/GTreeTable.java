@@ -119,21 +119,33 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return autoSize;
     }
 
-    public void removeProperty(GGroupObject group, GPropertyDraw property) {
+    public void removeProperty(GPropertyDraw property) {
         dataUpdated = true;
 
-        int index = tree.removeProperty(group, property);
+        int index = tree.removeProperty(property);
         if(index > -1) // we need only last group, just like everywhere
             removeColumn(index);
 
         columnsUpdated = true;
     }
 
-    public void updateProperty(GGroupObject group, GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
+    public boolean isPropertyShown(GPropertyDraw property) {
+        return tree.getPropertyIndex(property) != -1;
+    }
+
+    public void focusProperty(GPropertyDraw propertyDraw) {
+        focus();
+        int ind = tree.getPropertyIndex(propertyDraw);
+        if (ind != -1) {
+            changeSelectedColumn(ind);
+        }
+    }
+
+    public void updateProperty(GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
         dataUpdated = true;
 
         if(!updateKeys) {
-            int index = tree.updateProperty(group, property);
+            int index = tree.updateProperty(property);
 
             if (index > -1) {
                 GridColumn gridColumn = new GridColumn(property);

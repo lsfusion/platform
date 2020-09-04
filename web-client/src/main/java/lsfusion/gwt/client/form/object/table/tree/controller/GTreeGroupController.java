@@ -5,7 +5,6 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -70,38 +69,36 @@ public class GTreeGroupController extends GAbstractTableController {
         return treeGroup.font;
     }
 
-    public void processFormChanges(GFormChanges fc) {
-        for (GGroupObject group : treeGroup.groups) {
-            if (fc.gridObjects.containsKey(group)) {
-                tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group), fc.expandables.get(group));
-            }
-
-            processFormChanges(group, fc, new NativeSIDMap<>(),
-                    property -> property.groupObject == group,
-                    property -> property.groupObject == group,
-                    propertyReader -> formController.getGroupObject(propertyReader.getGroupObjectID()) == group);
-
-            if (fc.objects.containsKey(group)) {
-                tree.setCurrentKey(fc.objects.get(group));
-            }
-        }
-        update();
+    public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc) {
+        tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group), fc.expandables.get(group));
     }
 
     @Override
-    public void updateProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
-        if (property.grid) {
-            tree.updateProperty(group, property, columnKeys, updateKeys, values);
-        }
+    public void updateCurrentKey(GGroupObjectValue currentKey) {
+        tree.setCurrentKey(currentKey);
     }
 
     @Override
-    public void removeProperty(GGroupObject group, GPropertyDraw property) {
-        if(property.grid)
-            tree.removeProperty(group, property);
+    public boolean isPropertyShown(GPropertyDraw property) {
+        return tree.isPropertyShown(property);
     }
 
-    private void update() {
+    @Override
+    public void focusProperty(GPropertyDraw propertyDraw) {
+        tree.focusProperty(propertyDraw);
+    }
+
+    @Override
+    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
+        tree.updateProperty(property, columnKeys, updateKeys, values);
+    }
+
+    @Override
+    public void removeProperty(GPropertyDraw property) {
+        tree.removeProperty(property);
+    }
+
+    public void update() {
         tree.update();
 
         tree.restoreVisualState();
@@ -130,34 +127,22 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            tree.updateCellBackgroundValues(property, values);
-        }
+        tree.updateCellBackgroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            tree.updateCellForegroundValues(property, values);
-        }
+        tree.updateCellForegroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            tree.updateCellImages(property, values);
-        }
+        tree.updateCellImages(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            tree.updatePropertyCaptions(property, values);
-        }
+        tree.updatePropertyCaptions(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
@@ -166,10 +151,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        GPropertyDraw property = formController.getProperty(reader.readerID);
-        if (property.grid) {
-            tree.updateReadOnlyValues(property, values);
-        }
+        tree.updateReadOnlyValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override

@@ -11,7 +11,7 @@ public class GCaptionReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "CAPTION");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values) {
         controller.updatePropertyCaptions(this, values);
     }
 }

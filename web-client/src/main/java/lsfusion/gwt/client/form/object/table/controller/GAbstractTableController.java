@@ -3,14 +3,15 @@ package lsfusion.gwt.client.form.object.table.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GUserFilters;
+import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
@@ -22,12 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GAbstractTableController extends GPropertyController implements GTableController {
-    protected final GFormController formController;
     protected final GToolbarView toolbarView;
     public GUserFilters filter;
 
     public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {
-        this.formController = formController;
+        super(formController);
 
         if (toolbar == null || !toolbar.visible || !isList) {
             toolbarView = null;
@@ -40,10 +40,6 @@ public abstract class GAbstractTableController extends GPropertyController imple
     @Override
     public GFormController getForm() {
         return formController;
-    }
-
-    public GFormLayout getFormLayout() {
-        return formController.formLayout;
     }
 
     protected DefaultFocusReceiver getDefaultFocusReceiver() {
@@ -130,6 +126,9 @@ public abstract class GAbstractTableController extends GPropertyController imple
     public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
     }
 
+    public abstract void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values);
+    public abstract void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values);
+
     // вызов focus() у getFocusHolderElement() грида по какой-то причине приводит к подскролливанию нашего скролла
     // (если грид заключён в скролл и не влезает по высоте) до первого ряда таблицы, скрывая заголовок (видимо вызывается scrollIntoView(), 
     // который, кстати, продолжает вызываться и при последующих изменениях фокуса в IE).
@@ -154,8 +153,6 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
     }
 
-    @Override
-    public void setContainerCaption(GContainer container, String caption) {
-        formController.setContainerCaption(container, caption);
-    }
+    public abstract void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc);
+    public abstract void updateCurrentKey(GGroupObjectValue currentKey);
 }

@@ -12,7 +12,6 @@ import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.util.ArrayList;
-import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -27,9 +26,6 @@ public class GPropertyPanelController {
 
     public FlexPanel renderersPanel;
 
-    private final Supplier<Object> rowBackground;
-    private final Supplier<Object> rowForeground;
-
     private ArrayList<GGroupObjectValue> columnKeys;
     // it doesn't make sense to make this maps Native since they come from server and are built anyway
     private NativeHashMap<GGroupObjectValue, Object> values;
@@ -41,13 +37,10 @@ public class GPropertyPanelController {
 
     private NativeHashMap<GGroupObjectValue, Object> images;
 
-    public GPropertyPanelController(GPropertyDraw property, GFormController form, Supplier<Object> rowBackground, Supplier<Object> rowForeground) {
+    public GPropertyPanelController(GPropertyDraw property, GFormController form) {
         this.property = property;
         this.form = form;
         renderers = new NativeHashMap<>();
-
-        this.rowBackground = rowBackground;
-        this.rowForeground = rowForeground;
 
         renderersPanel = new FlexPanel(property.panelColumnVertical);
     }
@@ -107,14 +100,14 @@ public class GPropertyPanelController {
             renderer.setReadOnly(readOnly.get(columnKey) != null);
         }
 
-        Object background = rowBackground.get();
-        if (background == null && cellBackgroundValues != null) {
+        Object background = null;
+        if (cellBackgroundValues != null) {
             background = cellBackgroundValues.get(columnKey);
         }
         renderer.updateCellBackgroundValue(background == null ? property.background : background);
 
-        Object foreground = rowForeground.get();
-        if (foreground == null && cellForegroundValues != null) {
+        Object foreground = null;
+        if (cellForegroundValues != null) {
             foreground = cellForegroundValues.get(columnKey);
         }
         renderer.updateCellForegroundValue(foreground == null ? property.foreground : foreground);

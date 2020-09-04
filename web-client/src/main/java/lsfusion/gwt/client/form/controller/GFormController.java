@@ -65,7 +65,8 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
-import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
@@ -75,8 +76,10 @@ import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.order.user.GOrder;
+import lsfusion.gwt.client.form.property.GExtraPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
+import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
@@ -98,6 +101,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -123,11 +127,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects = new NativeSIDMap<>();
 
+    public NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> getCurrentGridObjects() {
+        return currentGridObjects;
+    }
+
     private final NativeSIDMap<GGroupObject, ArrayList<GPropertyFilter>> currentFilters = new NativeSIDMap<>();
 
     private final LinkedHashMap<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
     private final LinkedHashMap<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
-    public final GPanelController panelController;
+    public GPanelController panelController;
 
     private final NativeSIDMap<GGroupObject, ArrayList<Widget>> filterViews = new NativeSIDMap<>();
 
@@ -151,7 +159,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         this.formsController = formsController;
         this.formContainer = formContainer;
-        this.panelController = new GPanelController(this);
         this.form = gForm;
         this.isDialog = isDialog;
 
@@ -220,10 +227,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if(form != null)
                 form.handleKeyEvent(event.getNativeEvent());
         }, KeyPressEvent.getType());
-    }
-
-    public GGridController getController(GGroupObject groupObject) {
-        return controllers.get(groupObject);
     }
 
     public GFormLayout getFormLayout() {
@@ -333,7 +336,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 initializeGroupController(group);
             }
         }
-        initializeGroupController(null);
+
+        panelController = new GPanelController(this);
 
         hasColumnGroupObjects = false;
         for (GPropertyDraw property : form.propertyDraws) {
@@ -344,7 +348,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void initializeGroupController(GGroupObject group) {
-        GGridController controller = new GGridController(this, group, group != null && form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
+        GGridController controller = new GGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
         controllers.put(group, controller);
     }
 
@@ -393,7 +397,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> defaultOrders = groupDefaultOrders();
         for(Map.Entry<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> entry : defaultOrders.entrySet()) {
             GGroupObject groupObject = entry.getKey();
-            getGroupObjectLogicsSupplier(groupObject).changeOrders(groupObject, entry.getValue(), true);
+            getGroupObjectController(groupObject).changeOrders(groupObject, entry.getValue(), true);
         }
     }
 
@@ -450,7 +454,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                             }
                         });
                     } else {
-                        scheduleRefresh();   
+                        scheduleRefresh();
                     }
                 }
                 return false;
@@ -486,16 +490,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         modifyFormChangesWithChangePropertyAsyncs(changesDTO.requestIndex, fc);
 
-        // затем одним скопом обновляем данные во всех таблицах
-        for (GGridController controller : controllers.values()) {
-            controller.processFormChanges(changesDTO.requestIndex, fc, currentGridObjects);
-        }
+        applyKeyChanges(fc);
 
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.processFormChanges(fc);
-        }
+        applyPropertyChanges(fc);
 
-        panelController.processFormChanges(fc, currentGridObjects);
+        update(fc, changesDTO.requestIndex);
 
         formLayout.hideEmptyContainerViews();
 
@@ -504,12 +503,49 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         onResize();
     }
 
+    public void applyKeyChanges(GFormChanges fc) {
+        fc.gridObjects.foreachEntry((key, value) ->
+            getGroupObjectController(key).updateKeys(key, value, fc));
+
+        fc.objects.foreachEntry((key, value) ->
+            getGroupObjectController(key).updateCurrentKey(value));
+    }
+
+    private void applyPropertyChanges(GFormChanges fc) {
+        fc.dropProperties.forEach(property -> {
+            GPropertyController controller = getPropertyController(property);
+            if (controller.isPropertyShown(property)) // drop properties sent without checking if it was sent for update at least once, so it's possible when drop is sent for property that has not been added
+                controller.removeProperty(property);
+        });
+
+        // first proceed property with its values, then extra values (some views, for example GPivot use updated properties)
+        updatePropertyChanges(fc, key -> !(key instanceof GExtraPropertyReader));
+        updatePropertyChanges(fc, key -> key instanceof GExtraPropertyReader);
+    }
+
+    private void updatePropertyChanges(GFormChanges fc, Predicate<GPropertyReader> filter) {
+        fc.properties.foreachEntry((key, value) -> {
+            if(filter.test(key))
+                key.update(this, value, key instanceof GPropertyDraw && fc.updateProperties.contains((GPropertyDraw)key));
+        });
+    }
+
+    public void update(GFormChanges fc, int requestIndex) {
+        for (GGridController controller : controllers.values())
+            controller.update(requestIndex, fc);
+
+        for (GTreeGroupController treeController : treeControllers.values())
+            treeController.update();
+
+        panelController.update();
+    }
+
     private void activateElements(GFormChanges fc) {
         for(GComponent component : fc.activateTabs)
             activateTab(component);
 
         for(GPropertyDraw propertyDraw : fc.activateProps)
-            focusProperty(propertyDraw);            
+            focusProperty(propertyDraw);
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(final int currentDispatchingRequestIndex, GFormChanges fc) {
@@ -562,7 +598,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
                             removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
 
-                            if(isPropertyShown(property) && !fc.dropProperties.contains(property)) {
+                            if(getPropertyController(property).isPropertyShown(property) && !fc.dropProperties.contains(property)) {
                                 NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
                                 if (propertyValues == null) {
                                     // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
@@ -593,16 +629,24 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    private boolean isPropertyShown(GPropertyDraw property) {
-        if(property != null) {
-            if(property.grid) {
-                GGridController controller = controllers.get(property.groupObject);
-                return controller != null && controller.isPropertyShown(property);
-            } else {
-                return panelController.containsProperty(property);
-            }
+    public GGridController getGridController(GGroupObject group) {
+        return controllers.get(group);
+    }
+
+    public GAbstractTableController getGroupObjectController(GGroupObject group) {
+        GGridController groupObjectController = controllers.get(group);
+        if (groupObjectController != null) {
+            return groupObjectController;
         }
-        return false;
+
+        return treeControllers.get(group.parent);
+    }
+
+    public GPropertyController getPropertyController(GPropertyDraw property) {
+        if(property.grid) {
+            return getGroupObjectController(property.groupObject);
+        } else
+            return panelController;
     }
 
     public void openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, final WindowHiddenHandler handler) {
@@ -832,23 +876,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return fullKey.toGroupObjectValue();
     }
 
-    public GGridController getGroupObjectController(GGroupObject group) {
-        return controllers.get(group);
-    }
-
-    private GTableController getGroupObjectLogicsSupplier(GGroupObject group) {
-        GGridController groupObjectController = controllers.get(group);
-        if (groupObjectController != null) {
-            return groupObjectController;
-        }
-
-        return treeControllers.get(group.parent);
-    }
-
     public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue, Long changeRequestIndex) {
         GGroupObjectValue rowKey = GGroupObjectValue.EMPTY;
         if(property.grid) {
-            rowKey = getGroupObjectLogicsSupplier(property.groupObject).getCurrentKey();
+            rowKey = getGroupObjectController(property.groupObject).getCurrentKey();
             if(rowKey.isEmpty())
                 return;
         }
@@ -880,7 +911,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         final GObject object = property.addRemove.object;
         final boolean add = property.addRemove.add;
 
-        GGridController controller = getGroupObjectController(property.addRemove.object.groupObject);
+        GGridController controller = getGridController(property.addRemove.object.groupObject);
         final int position = controller.getSelectedRow();
 
         if (add) {
@@ -1000,15 +1031,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        if(propertyDraw.grid) {
-            if (controllers.containsKey(propertyDraw.groupObject)) {
-                controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
-            }
-        } else {
-            if (panelController.containsProperty(propertyDraw)) {
-                panelController.focusProperty(propertyDraw);
-            }
-        }
+        getPropertyController(propertyDraw).focusProperty(propertyDraw);
     }
 
     private Map<Integer, Integer> getTabMap(TabbedContainerView containerView, GContainer component) {
@@ -1109,7 +1132,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
     }
-    
+
     public void refreshUPHiddenProps(String groupObjectSID, String[] propSids) {
         syncDispatch(new RefreshUPHiddenPropsAction(groupObjectSID, propSids), new ServerResponseCallback());
     }
@@ -1176,7 +1199,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void blockingConfirm(String caption, String message, boolean cancel, final DialogBoxHelper.CloseCallback callback) {
         DialogBoxHelper.showConfirmBox(caption, message, cancel, 0, 0, callback);
     }
-    
+
     public void blockingConfirm(String caption, String message, boolean cancel, int timeout, int initialValue, final DialogBoxHelper.CloseCallback callback) {
         DialogBoxHelper.showConfirmBox(caption, message, cancel, timeout, initialValue, callback);
     }
@@ -1365,7 +1388,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         bindingEvents.remove(index);
         bindings.remove(index);
     }
-    
+
     private GGroupObject getGroupObject(Element elementTarget) {
         while (elementTarget != null) {     // пытаемся найти GroupObject, к которому относится элемент с фокусом
             GGroupObject targetGO = (GGroupObject) elementTarget.getPropertyObject("groupObject");
@@ -1375,7 +1398,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
         return null;
     }
-    
+
     public interface GGroupObjectSupplier {
         GGroupObject get();
     }

@@ -66,30 +66,6 @@ public class GForm implements Serializable, GWidthStringProcessor {
         return null;
     }
 
-    public GObject getObject(int id) {
-        GObject obj;
-        if (idObjects == null) {
-            idObjects = new HashMap<>();
-            obj = null;
-        } else {
-            obj = idObjects.get(id);
-        }
-
-        if (obj == null) {
-            OBJECTS:
-            for (GGroupObject groupObject : groupObjects) {
-                for (GObject object : groupObject.objects) {
-                    if (object.ID == id) {
-                        obj = object;
-                        idObjects.put(id, object);
-                        break OBJECTS;
-                    }
-                }
-            }
-        }
-        return obj;
-    }
-
     public GPropertyDraw getProperty(int id) {
         GPropertyDraw prop;
         if (idProps == null) {

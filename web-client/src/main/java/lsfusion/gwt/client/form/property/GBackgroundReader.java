@@ -12,7 +12,7 @@ public class GBackgroundReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "BACKGROUND");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> keys, boolean updateKeys) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> keys) {
         controller.updateCellBackgroundValues(this, keys);
     }
 }

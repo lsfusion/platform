@@ -238,11 +238,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return canUseChangeValueForRendering(changeType);
     }
 
-    @Override
-    public int getGroupObjectID() {
-        return groupObject != null ? groupObject.ID : -1;
-    }
-
     public String getCaptionOrEmpty() {
         return caption == null ? "" : caption;
     }
@@ -392,6 +387,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             }
         }
         return null;
+    }
+
+    @Override
+    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+        controller.getPropertyController(this).updateProperty(this, GPropertyController.getColumnKeys(this, controller.getCurrentGridObjects()), updateKeys, values);
     }
 
     // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
