@@ -92,11 +92,32 @@ public abstract class GUserFilters {
         if(replace) {
             conditions = filters;
         } else {
-            for (GPropertyFilter filter : filters)
-                if (!conditions.contains(filter))
+            for (GPropertyFilter filter : filters) {
+                if (!hasCondition(filter)) {
                     conditions.add(filter);
+                }
+            }
         }
         applyQuery();
+    }
+
+    private boolean hasCondition(GPropertyFilter newCondition) {
+        assert newCondition.junction;
+        for(int i = 0; i < conditions.size(); i++) {
+            GPropertyFilter prevCondition = i > 0 ? conditions.get(i - 1) : null;
+            GPropertyFilter condition = conditions.get(i);
+            if((prevCondition == null || prevCondition.junction) &&
+                    condition.junction &&
+                    condition.negation == newCondition.negation &&
+                    condition.groupObject.equals(newCondition.groupObject) &&
+                    condition.property.equals(newCondition.property) &&
+                    condition.value.equals(newCondition.value) &&
+                    condition.columnKey.equals(newCondition.columnKey) &&
+                    condition.compare == newCondition.compare) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void allRemovedPressed() {
