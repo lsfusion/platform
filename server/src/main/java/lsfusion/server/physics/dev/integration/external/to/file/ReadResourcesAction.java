@@ -16,10 +16,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 public class ReadResourcesAction extends InternalAction {
@@ -35,21 +33,18 @@ public class ReadResourcesAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String resourcePath = (String) context.getKeyValue(resourcePathInterface).getValue();
-        Set<File> files = new HashSet<>();
-        Pattern pattern = Pattern.compile(resourcePath);
-        List<String> allResources = ResourceUtils.getResources(pattern);
+        List<String> allResources = ResourceUtils.getResources(Pattern.compile(resourcePath));
         allResources
                 .stream()
                 .filter(r -> ResourceUtils.getResource(r) != null)
-                .forEach(r -> files.add(new File(ResourceUtils.getResource(r).getPath())));
-
-        files.forEach(f -> {
-            try {
-                RawFileData fileData = new RawFileData(f);
-                findProperty("resourceFiles[STRING]").change(fileData, context, new DataObject(f.getParentFile().getName() + "/" + f.getName(), StringClass.text));
-            } catch (ScriptingErrorLog.SemanticErrorException | IOException | SQLException | SQLHandledException e) {
-                throw Throwables.propagate(e);
-            }
-        });
+                .forEach(r -> {
+                    try {
+                        File file = new File(ResourceUtils.getResource(r).getPath());
+                        RawFileData fileData = new RawFileData(file);
+                        findProperty("resourceFiles[STRING]").change(fileData, context, new DataObject(file.getParentFile().getName() + "/" + file.getName(), StringClass.text));
+                    } catch (ScriptingErrorLog.SemanticErrorException | IOException | SQLException | SQLHandledException e) {
+                        throw Throwables.propagate(e);
+                    }
+                });
     }
 }

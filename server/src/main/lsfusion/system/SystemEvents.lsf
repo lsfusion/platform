@@ -375,7 +375,7 @@ DESIGN exceptions {
 FORM launches '{system.events.form.launches}'
 
    OBJECTS l=Launch CUSTOM 'calendar'
-   PROPERTIES(l) READONLY title = hostname, start = time
+   PROPERTIES(l) title = hostname, start = time
 ;
 
 FORM changes '{system.events.form.changes}'
