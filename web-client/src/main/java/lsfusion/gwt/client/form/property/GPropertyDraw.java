@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.GClass;
@@ -24,7 +25,7 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
-import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -192,7 +193,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GPropertyDraw(){}
 
-    public void update(GTableController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
         throw new UnsupportedOperationException();
     }
 
@@ -236,11 +237,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean canUseChangeValueForRendering() {
         return canUseChangeValueForRendering(changeType);
-    }
-
-    @Override
-    public int getGroupObjectID() {
-        return groupObject != null ? groupObject.ID : -1;
     }
 
     public String getCaptionOrEmpty() {
@@ -392,6 +388,27 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             }
         }
         return null;
+    }
+
+    public static ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
+        ArrayList<GGroupObjectValue> columnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+        if (property.columnGroupObjects != null) {
+            LinkedHashMap<GGroupObject, ArrayList<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<>();
+            for (GGroupObject columnGroupObject : property.columnGroupObjects) {
+                ArrayList<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
+                if (columnGroupKeys != null) {
+                    groupColumnKeys.put(columnGroupObject, columnGroupKeys);
+                }
+            }
+
+            columnKeys = GGroupObject.mergeGroupValues(groupColumnKeys);
+        }
+        return columnKeys;
+    }
+
+    @Override
+    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+        controller.getPropertyController(this).updateProperty(this, getColumnKeys(this, controller.getCurrentGridObjects()), updateKeys, values);
     }
 
     // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)

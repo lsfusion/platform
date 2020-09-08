@@ -28,7 +28,13 @@ public class GTreeTableTree {
         root = new GTreeTableNode();
     }
 
-    public int updateProperty(GGroupObject group, GPropertyDraw property) {
+    public int getPropertyIndex(GPropertyDraw propertyDraw) {
+        List<GPropertyDraw> properties = groupProperties.get(propertyDraw.groupObject);
+        return properties.indexOf(propertyDraw);
+    }
+
+    public int updateProperty(GPropertyDraw property) {
+        GGroupObject group = property.groupObject;
         List<GPropertyDraw> properties = groupProperties.computeIfAbsent(group, k -> new ArrayList<>());
         if (!properties.contains(property) && !property.hide) {
             int gins = GwtSharedUtils.relativePosition(property, form.propertyDraws, properties);
@@ -39,9 +45,10 @@ public class GTreeTableTree {
         return -1;
     }
 
-    public int removeProperty(GGroupObject group, GPropertyDraw property) {
+    public int removeProperty(GPropertyDraw property) {
         values.remove(property);
 
+        GGroupObject group = property.groupObject;
         List<GPropertyDraw> properties = groupProperties.get(group);
         int ind = properties.indexOf(property);
         properties.remove(property);

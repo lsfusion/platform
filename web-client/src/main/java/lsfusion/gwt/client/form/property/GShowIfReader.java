@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 
 public class GShowIfReader extends GExtraPropertyReader {
 
@@ -12,7 +12,7 @@ public class GShowIfReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "SHOWIF");
     }
 
-    public void update(GTableController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values) {
         controller.updateShowIfValues(this, values);
     }
 }
