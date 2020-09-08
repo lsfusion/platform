@@ -123,7 +123,7 @@ public class PropertyPanelController {
         List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
         for (final ClientGroupObjectValue columnKey : columnKeys) {
             if (showIfs == null || showIfs.get(columnKey) != null) {
-                PanelView view = views != null ? views.get(columnKey) : null;
+                PanelView view = views != null ? views.remove(columnKey) : null;
                 if (view == null && !property.hide) {
                     view = property.getPanelView(form, columnKey);
                     view.setReadOnly(property.isReadOnly());
