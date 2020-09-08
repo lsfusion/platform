@@ -41,19 +41,4 @@ public abstract class GPropertyController {
     public abstract void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void removeProperty(GPropertyDraw property);
 
-    public static ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
-        ArrayList<GGroupObjectValue> columnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
-        if (property.columnGroupObjects != null) {
-            LinkedHashMap<GGroupObject, ArrayList<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<>();
-            for (GGroupObject columnGroupObject : property.columnGroupObjects) {
-                ArrayList<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
-                if (columnGroupKeys != null) {
-                    groupColumnKeys.put(columnGroupObject, columnGroupKeys);
-                }
-            }
-
-            columnKeys = GGroupObject.mergeGroupValues(groupColumnKeys);
-        }
-        return columnKeys;
-    }
 }
