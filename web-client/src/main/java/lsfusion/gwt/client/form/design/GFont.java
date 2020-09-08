@@ -46,6 +46,10 @@ public class GFont implements Serializable {
         style.clearFontSize();
         style.clearFontWeight();
     }
+    
+    public GFont deriveFont(boolean bold, boolean italic) {
+        return new GFont(family, size, bold, italic);
+    }
 
     public boolean isBold() {
         return bold;

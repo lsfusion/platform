@@ -746,7 +746,9 @@ callWithJQuery ($) ->
 
             #axis list, including the double-click menu
             unused = $("<td>").addClass('pvtAxisContainer pvtUnused pvtUiCell')
-            unusedDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(unused)
+            # wrapper to be able to use 'position: absolute' in pvtUnusedCellDiv. Added to fix scrolling issue in Firefox, to limit container size
+            unusedDivWrapper = $("<div>").addClass('pvtUnusedCellDivWrapper').appendTo(unused)
+            unusedDiv = $("<div>").addClass('pvtUiCellVDiv pvtUnusedCellDiv').appendTo(unusedDivWrapper)
             shownAttributes = (a for a of attrValues when a not in opts.hiddenAttributes)
             shownInAggregators = (c for c in shownAttributes when c not in opts.hiddenFromAggregators)
             shownInDragDrop = (c for c in shownAttributes when c not in opts.hiddenFromDragDrop)
@@ -1074,6 +1076,22 @@ callWithJQuery ($) ->
                     forcePlaceholderSize: true
                     cancel: ".pvtTriangle" # in Firefox click event is triggered and pvtFilterBox is shown after drop
 
+                    # 1. In order to fix scrolling issue due to unused-table-cell unlimited size in Firefox 
+                    # we wrapped its content into div with 'position: relative'. 
+                    # This broke basic sortable item behaviour while dragging - z-index stopped working
+                    # and dragged item was overlapped by other elements.
+                    # To fix this 'appendTo' was used - to append dragged item to upper component and make it visible while dragging. 
+                    appendTo: @find(".pvtUiContainer")
+                    # 2. 'appendTo' doesn't work with the default 'helper: "original"'. 'clone' should be used instead.
+                    helper: "clone"
+                    # 3. 'helper: "clone"' sets 'display: none' to the source item before drag and restores the original 
+                    # display property value to the item after drop. The problem is that we use different display values ('flex' or 'inline-flex')
+                    # depending on the container; and 'clone' sets display as inline style which overrides our CSS settings. 
+                    # ('!important' cannot be used too, because it overrides 'display: none' on drag start) 
+                    # So we clear the inline display style on drop to make our CSS properties be used instead.
+                    stop: (event, ui) ->
+                        ui.item[0].style.display = null;
+
                 subopts =
                     derivedAttributes: opts.derivedAttributes
                     localeStrings: opts.localeStrings
@@ -1204,13 +1222,19 @@ callWithJQuery ($) ->
             refresh()
 
             @find(".pvtAxisContainer").sortable
-                    update: (e, ui) -> refresh() if not ui.sender?
-                    connectWith: @find(".pvtAxisContainer")
-                    items: 'li'
-                    placeholder: 'pvtPlaceholder'
-                    tolerance: "pointer"
-                    forcePlaceholderSize: true
-                    cancel: ".pvtTriangle" # in Firefox click event is triggered and pvtFilterBox is shown after drop
+                update: (e, ui) -> refresh() if not ui.sender?
+                connectWith: @find(".pvtAxisContainer")
+                items: 'li'
+                placeholder: 'pvtPlaceholder'
+                tolerance: "pointer"
+                forcePlaceholderSize: true
+                cancel: ".pvtTriangle" # in Firefox click event is triggered and pvtFilterBox is shown after drop
+
+                # For the next 4 lines see comments for the similar lines in refreshDelayed 
+                appendTo: @find(".pvtUiContainer")
+                helper: "clone"
+                stop: (event, ui) ->
+                    ui.item[0].style.display = null;
         catch e
             console.error(e.stack) if console?
             @html opts.localeStrings.uiRenderError

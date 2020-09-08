@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -21,18 +20,21 @@ public class ScrollContainerView extends GAbstractContainerView {
         assert container.isScroll();
 
         scrollPanel = new FlexPanel(vertical);
-        scrollPanel.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
-        scrollPanel.getElement().getStyle().setOverflowX(Style.Overflow.AUTO);
-
         view = initBorder(scrollPanel);
+        view.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
+        view.getElement().getStyle().setOverflowX(Style.Overflow.AUTO);
     }
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
-        assert child.getFlex() == 1 && child.getAlignment() == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
-        view.getElement().getStyle().setOverflowY(Style.Overflow.VISIBLE);
-        view.getElement().getStyle().setOverflowX(Style.Overflow.VISIBLE);
-        add(scrollPanel, view, 0, child.getAlignment(), child.getFlex(), child, vertical);
+        // it's a very odd hack to enable "opposite" scrolling, that will work really unstable
+        // it's needed since stretch always gives 100% width / height even if the component contents is bigger
+        if(child.getAlignment() == GFlexAlignment.STRETCH) {
+            view.getElement().getStyle().setOverflowY(Style.Overflow.VISIBLE); // without this horizontal scroller is shown for view and not element (it's also really odd)
+            view.getElement().getStyle().setOverflowX(Style.Overflow.VISIBLE);
+        }
+
+        add(scrollPanel, view, child, 0);
     }
 
     @Override

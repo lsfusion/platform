@@ -30,32 +30,27 @@ public class LinearContainerView extends GAbstractContainerView {
 
     @Override
     protected void addImpl(int index, GComponent child, final Widget view) {
-        boolean vertical = container.isLinearVertical(); // assert isLinear
-        if (child.hasMargins()) {
-            FlexPanel proxyPanel = new FlexPanel(vertical);
-            proxyPanel.getElement().getStyle().setOverflow(Style.Overflow.VISIBLE);
-            child.installPaddings(proxyPanel);
-
-            proxyPanel.add(view, child.getAlignment(), child.getFlex() > 0 ? 1 : 0);
-
-            add(panel, proxyPanel, index, child.getAlignment(), child.getFlex(), child, vertical);
-        } else {
-            add(panel, view, index, child.getAlignment(), child.getFlex(), child, vertical);
-        }
-
         if(child.getFlex() > 0 && hasSeveralFlexes && view instanceof TabbedContainerView.Panel)
             ((TabbedContainerView.Panel)view).setBeforeSelectionHandler(tabIndex -> {
                 if(tabIndex > 0)
                     panel.fixFlexBasis((TabbedContainerView.Panel)view);
             });
+
+        child.installMargins(view);
+
+//        if(child.hasMargins()) {
+//            FlexPanel proxyPanel = new FlexPanel(container.isLinearVertical());
+//            proxyPanel.addFill(view);
+//            view = proxyPanel;
+//        }
+        add(panel, view, child, index);
     }
 
     @Override
     protected void removeImpl(int index, GComponent child, Widget view) {
-        if (child.hasMargins()) {
-            //удаляем ProxyPanel
-            view.getParent().removeFromParent();
-        }
+//        if (child.hasMargins()) {
+//            view.getParent().removeFromParent();
+//        }
         view.removeFromParent();
     }
 

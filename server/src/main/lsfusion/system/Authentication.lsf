@@ -575,7 +575,7 @@ DESIGN customUsersDialog { BOX { size = (1024, 768); } }
 FORM editProfile '{navigator.account.edit.profile}'
     OBJECTS u = CustomUser PANEL
     PROPERTIES(u) login READONLY
-    PROPERTIES(u) firstName, lastName, email, fontSize, colorThemeName
+    PROPERTIES(u) firstName, lastName, email, fontSize, colorThemeName, userLanguage
 
     FILTERS u = currentUser()
 ;
@@ -589,6 +589,7 @@ DESIGN editProfile {
         PROPERTY(email(u)) { fontSize = 36; }
         PROPERTY(fontSize(u)) { fontSize = 36; }
         PROPERTY(colorThemeName(u)) { fontSize = 36; }
+        PROPERTY(userLanguage(u)) { fontSize = 36; }
     }
 }
 

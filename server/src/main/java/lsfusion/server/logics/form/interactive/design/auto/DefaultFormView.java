@@ -5,11 +5,11 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormContainerSet;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -75,9 +75,11 @@ public class DefaultFormView extends FormView {
     protected transient final Table<Optional<PropertyGroupContainerView>, Group, ContainerView> groupPropertyContainers = HashBasedTable.create();
 
     public ContainerView objectsContainer;
-    public ContainerView toolbarBoxContainer;
     public ContainerView panelContainer;
     public ContainerView groupContainer;
+    public ContainerView toolbarBoxContainer;
+    public ContainerView toolbarLeftContainer;
+    public ContainerView toolbarRightContainer;
     public ContainerView toolbarContainer;
 
     private ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(idGenerator.idShift());
@@ -93,23 +95,29 @@ public class DefaultFormView extends FormView {
         creationPath = entity.getCreationPath();
         autoRefresh = entity.autoRefresh;
 
-        FormContainerSet formSet = FormContainerSet.fillContainers(this, containerFactory, version);
+        FormContainerSet formSet = FormContainerSet.fillContainers(mainContainer, containerFactory, version);
         
         objectsContainer = formSet.getObjectsContainer();
         addComponentToMapping(objectsContainer, version);
         
         toolbarBoxContainer = formSet.getToolbarBoxContainer();
         addComponentToMapping(toolbarBoxContainer, version);
-        
+
+        toolbarLeftContainer = formSet.getToolbarLeftContainer();
+        addComponentToMapping(toolbarLeftContainer, version);
+
+        toolbarRightContainer = formSet.getToolbarRightContainer();
+        addComponentToMapping(toolbarRightContainer, version);
+
+        toolbarContainer = formSet.getToolbarContainer();
+        registerComponent(toolbarContainers, toolbarContainer, null, version);
+
         panelContainer = formSet.getPanelContainer();
         registerComponent(panelContainers, panelContainer, null, version);
         
         groupContainer = formSet.getGroupContainer();
         registerComponent(groupContainers, groupContainer, null, version);
         
-        toolbarContainer = formSet.getToolbarContainer();
-        registerComponent(toolbarContainers, toolbarContainer, null, version);
-
         TreeGroupEntity prevTree = null;
         for (GroupObjectView groupObject : getNFGroupObjectsListIt(version)) {
             TreeGroupEntity newTree = groupObject.entity.treeGroup;
@@ -222,31 +230,15 @@ public class DefaultFormView extends FormView {
 
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
 
-        ContainerView toolbarLeftContainer = createContainer(null, DefaultFormView.getToolbarLeftContainerSID(), version);
-        toolbarLeftContainer.setType(ContainerType.CONTAINERH);
-        toolbarLeftContainer.childrenAlignment = Alignment.START;
-        toolbarLeftContainer.setFlex(0);
-        toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
-
-        ContainerView toolbarRightContainer = createContainer(null, DefaultFormView.getToolbarRightContainerSID(), version);
-        toolbarRightContainer.setType(ContainerType.CONTAINERH);
-        toolbarRightContainer.childrenAlignment = Alignment.END;
-        toolbarRightContainer.setFlex(1);
-        toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
-
         toolbarLeftContainer.add(editFunction, version);
         toolbarLeftContainer.add(logMessage, version); // otherwise it will go to OBJECTS container which has types COLUMNS and this type doesnt respect SHOWIF
 
-        toolbarRightContainer.add(toolbarContainer, version);
         toolbarRightContainer.add(refreshFunction, version);
         toolbarRightContainer.add(dropFunction, version);
         toolbarRightContainer.add(applyFunction, version);
         toolbarRightContainer.add(cancelFunction, version);
         toolbarRightContainer.add(okFunction, version);
         toolbarRightContainer.add(closeFunction, version);
-
-        toolbarBoxContainer.add(toolbarLeftContainer, version);
-        toolbarBoxContainer.add(toolbarRightContainer, version);
     }
 
     private void setupFormButton(PropertyDrawView action) {
@@ -257,13 +249,13 @@ public class DefaultFormView extends FormView {
     }
 
     private void addGroupObjectView(GroupObjectView groupObject, Version version) {
-        addGroupObjectView(groupObject, null, false, version);
+        addGroupObjectView(groupObject, null, null, version);
     }
-    private void addGroupObjectView(GroupObjectView groupObject, GroupObjectEntity neighbourGroupObject, boolean isRightNeigbour, Version version) {
+    private void addGroupObjectView(GroupObjectView groupObject, GroupObjectEntity neighbourGroupObject, LogicsModule.InsertType insertType, Version version) {
         if(!groupObject.entity.isInTree()) {
             GroupObjectContainerSet groupSet = GroupObjectContainerSet.create(groupObject, containerFactory, version);
 
-            addPropertyGroupContainerView(groupSet.getBoxContainer(), neighbourGroupObject, isRightNeigbour, version);
+            addPropertyGroupContainerView(groupSet.getBoxContainer(), neighbourGroupObject, insertType, version);
 
             registerComponent(boxContainers, groupSet.getBoxContainer(), groupObject, version);
             registerComponent(gridContainers, groupSet.getGridBoxContainer(), groupObject, version);
@@ -283,11 +275,13 @@ public class DefaultFormView extends FormView {
         }
     }
 
-    private void addPropertyGroupContainerView(ContainerView boxContainer, GroupObjectEntity neighbour, boolean isRightNeigbour, Version version) {
+    private void addPropertyGroupContainerView(ContainerView boxContainer, GroupObjectEntity neighbour, LogicsModule.InsertType insertType, Version version) {
         PropertyGroupContainerView neighbourView = neighbour != null ? (neighbour.isInTree() ? get(neighbour.treeGroup) : get(neighbour)) : null;
-        if(neighbourView != null) {
+        if (insertType == LogicsModule.InsertType.FIRST) {
+            objectsContainer.addFirst(boxContainer, version);
+        } else if (neighbourView != null) {
             ContainerView neighbourBox = getBoxContainer(neighbourView);
-            if(isRightNeigbour)
+            if (insertType == LogicsModule.InsertType.AFTER)
                 objectsContainer.addAfter(boxContainer, neighbourBox, version);
             else
                 objectsContainer.addBefore(boxContainer, neighbourBox, version);
@@ -317,12 +311,12 @@ public class DefaultFormView extends FormView {
 
     // сейчас во многом повторяет addGroupObjectView, потом надо рефакторить
     private void addTreeGroupView(TreeGroupView treeGroup, Version version) {
-        addTreeGroupView(treeGroup, null, false, version);
+        addTreeGroupView(treeGroup, null, null, version);
     }
-    private void addTreeGroupView(TreeGroupView treeGroup, GroupObjectEntity neighbour, boolean isRightNeigbour, Version version) {
+    private void addTreeGroupView(TreeGroupView treeGroup, GroupObjectEntity neighbour, LogicsModule.InsertType insertType, Version version) {
         TreeGroupContainerSet treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory, version);
         
-        addPropertyGroupContainerView(treeSet.getBoxContainer(), neighbour, isRightNeigbour, version);
+        addPropertyGroupContainerView(treeSet.getBoxContainer(), neighbour, insertType, version);
 
         registerComponent(boxContainers, treeSet.getBoxContainer(), treeGroup, version);
         registerComponent(gridContainers, treeSet.getGridContainer(), treeGroup, version);
@@ -364,22 +358,22 @@ public class DefaultFormView extends FormView {
     }
 
     @Override
-    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
-        GroupObjectView view = super.addGroupObject(groupObject, neighbour, isRightNeighbour, version);
-        addGroupObjectView(view, neighbour, isRightNeighbour != null && isRightNeighbour, version);
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, LogicsModule.InsertType insertType, Version version) {
+        GroupObjectView view = super.addGroupObject(groupObject, neighbour, insertType, version);
+        addGroupObjectView(view, neighbour, insertType, version);
         return view;
     }
 
     @Override
-    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, boolean isRightNeighbour, Version version) {
-        TreeGroupView view = super.addTreeGroup(treeGroup, neighbour, isRightNeighbour, version);
-        addTreeGroupView(view, neighbour, isRightNeighbour, version);
+    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, LogicsModule.InsertType insertType, Version version) {
+        TreeGroupView view = super.addTreeGroup(treeGroup, neighbour, insertType, version);
+        addTreeGroupView(view, neighbour, insertType, version);
         return view;
     }
 
     @Override
-    public PropertyDrawView addPropertyDraw(PropertyDrawEntity propertyDraw, Version version) {
-        PropertyDrawView view = super.addPropertyDraw(propertyDraw, version);
+    public PropertyDrawView addPropertyDraw(PropertyDrawEntity propertyDraw, boolean addFirst, Version version) {
+        PropertyDrawView view = super.addPropertyDraw(propertyDraw, addFirst, version);
         addPropertyDrawView(view, version);
         return view;
     }

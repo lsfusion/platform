@@ -184,7 +184,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     private String lastOptimizedJPropSID = null;
 
     public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
-    public enum InsertPosition {IN, BEFORE, AFTER, FIRST}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
@@ -348,7 +347,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public String transformStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            return ScriptedStringUtils.transformStringLiteral(s);
+            return ScriptedStringUtils.transformStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod());
         } catch (ScriptedStringUtils.TransformationError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
@@ -357,7 +356,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL);
+            return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
         } catch (ScriptedStringUtils.TransformationError | LocalizedString.FormatError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
@@ -1321,7 +1320,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             property.setShowChangeKey(showChangeKey);
     }
 
-    private static List<String> supportedBindings = Arrays.asList("dialog", "group", "editing", "showing");
+    private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "group", "editing", "showing");
     private Map<String, BindingMode> getBindingModesMap(Map<String, String> optionsMap) {
         Map<String, BindingMode> bindingModes = new HashMap<>();
         for(Map.Entry<String, String> option : optionsMap.entrySet()) {
@@ -1336,6 +1335,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                         break;
                     case "no":
                         bindingMode = BindingMode.NO;
+                        break;
+                    case "input":
+                        bindingMode = BindingMode.INPUT;
                         break;
                     default:
                         bindingMode = BindingMode.AUTO;
@@ -3657,7 +3659,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         MetaCodeFragment metaCode = findMetaCodeFragment(name, params.size());
         checks.checkMetaCodeParamCount(metaCode, params.size());
 
-        String code = metaCode.getCode(params);
+        String code = metaCode.getCode(params, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
         parser.runMetaCode(this, code, metaCode, MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta);
     }
 
@@ -4410,7 +4412,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public static class NavigatorElementOptions {
         public String imagePath;
         public NavigatorElement anchor;
-        public InsertPosition position;
+        public InsertType position;
         public String windowName;
     }
 
@@ -4498,12 +4500,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNavigatorElementWindow(element, options.windowName);
         setNavigatorElementImage(element, parent, options.imagePath);
 
-        if (parent != null && (!isEditOperation || options.position != InsertPosition.IN)) {
+        if (parent != null && (!isEditOperation || options.position != InsertType.IN)) {
             moveElement(element, parent, options.position, options.anchor, isEditOperation);
         }
     }
 
-    private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertPosition pos, NavigatorElement anchorElement, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
+    private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertType pos, NavigatorElement anchorElement, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         Version version = getVersion();
         checks.checkNavigatorElementMoveOperation(element, parentElement, anchorElement, isEditOperation, version);
 

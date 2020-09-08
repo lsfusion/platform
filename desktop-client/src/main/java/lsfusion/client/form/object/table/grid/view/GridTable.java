@@ -569,7 +569,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             // устанавливаем user pattern
             property.setUserFormat(getColumnUserPattern(i));
 
-            rowHeight = max(rowHeight, property.getValueHeight(this));
+            rowHeight = max(rowHeight, property.getValueHeight(this, currentGridPreferences.fontInfo != null ? currentGridPreferences.fontInfo.fontSize : null));
 
             hasFocusableCells |= property.focusable == null || property.focusable;
 

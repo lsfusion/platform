@@ -245,6 +245,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GPropertyDraw propertyDraw = initGwtComponent(clientPropertyDraw, new GPropertyDraw());
 
         propertyDraw.ID = clientPropertyDraw.ID;
+        propertyDraw.nativeSID = "p" + clientPropertyDraw.ID;
         propertyDraw.sID = clientPropertyDraw.getSID();
         propertyDraw.namespace = clientPropertyDraw.getNamespace();
         propertyDraw.caption = clientPropertyDraw.caption;
@@ -370,6 +371,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GInputBindingEvent convertBinding(lsfusion.interop.form.event.InputEvent event, Integer priority, Map<String, BindingMode> bindingModes) {
         return new GInputBindingEvent((GInputEvent)convertOrCast(event),
                         new GBindingEnv(priority != null && priority.equals(0) ? null : priority,
+                        convertOrCast(bindingModes != null ? bindingModes.get("preview") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("dialog") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("group") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("editing") : null),
@@ -511,6 +513,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         int clientID = clientGroupObject.ID;
         groupObject.ID = clientID;
+        groupObject.nativeSID = "g" + clientID;
         String clientSID = clientGroupObject.getSID();
         groupObject.sID = clientSID != null ? clientSID : "obj" + clientID;
 

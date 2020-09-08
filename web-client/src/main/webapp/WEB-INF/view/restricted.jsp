@@ -13,21 +13,15 @@
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
     </head>
     <body onload="document.loginForm.username.focus();">
-
-        <table class="content-table">
-            <tr></tr>
-            <tr>
-                <td>
-                    <div id="content">
-                        <div class="errorblock round">
-                            <%= ServerMessages.getString(request, "login.unsuccessful") %><br/>
-                            <%= ServerMessages.getString(request, "login.caused") %>: ${error}
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            <tr></tr>
-        </table>
-
-</body>
+        <div class="main">
+            <div class="header"></div>
+            <div class="content">
+                <div class="error-block restricted-error round">
+                    <%= ServerMessages.getString(request, "login.unsuccessful") %><br/>
+                    <%= ServerMessages.getString(request, "login.caused") %>: ${error}
+                </div>
+            </div>
+            <div class="footer"></div>
+        </div>
+    </body>
 </html>

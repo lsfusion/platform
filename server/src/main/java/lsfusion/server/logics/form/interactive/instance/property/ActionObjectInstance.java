@@ -28,11 +28,6 @@ public class ActionObjectInstance<P extends PropertyInterface> extends ActionOrP
         return env.execute(property, getInterfaceObjectValues(), new FormEnvironment<>(mapping, changingProperty, formInstance), pushAdd, stack);
     }
 
-    public PropertyObjectInstance<?> getDrawProperty() {
-//        return PropertyFact.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
-        return property.getWhereProperty().mapObjects(mapping);
-    }
-
     public ActionValueImplement<P> getValueImplement(FormInstance formInstance) {
         return new ActionValueImplement<>(property, getInterfaceObjectValues(), mapping, formInstance);
     }

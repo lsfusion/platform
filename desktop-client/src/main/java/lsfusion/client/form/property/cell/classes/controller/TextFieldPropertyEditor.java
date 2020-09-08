@@ -26,10 +26,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         setOpaque(true);
 
         if (property != null) {
-            if (property.design != null) {
-                property.design.installFont(this);
+            if (property.design != null)
                 ClientColorUtils.designComponent(this, property.design);
-            }
 
             Integer valueAlignment = property.getSwingValueAlignment();
             if (valueAlignment != null) {

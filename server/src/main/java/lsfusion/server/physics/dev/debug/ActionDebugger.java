@@ -34,7 +34,6 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import javax.tools.*;
@@ -300,7 +299,8 @@ public class ActionDebugger implements DebuggerService {
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object evalAction(Action action, ExecutionContext context, String namespace, String require, String priorities, String statements)
             throws SQLException, SQLHandledException {
-        return evalAction(context, namespace, require, priorities, "{" + StringEscapeUtils.unescapeJava(statements) + "}", null);
+        // StringEscapeUtils.unescapeJava call was removed, because statements string is not java string
+        return evalAction(context, namespace, require, priorities, "{" + statements + "}", null);
     }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
@@ -313,11 +313,10 @@ public class ActionDebugger implements DebuggerService {
         }
 
         final String valueName = "sfdjdfkljgfk";
-
-        String escapedExpression = StringEscapeUtils.unescapeJava(expression);
-        if (!escapedExpression.contains("ORDER")) // жестковато конечно пока, но будет работать
-            escapedExpression = "(" + escapedExpression + ")";
-        String actionText = "FOR " + valueName + " == " + escapedExpression + " DO watch();";
+        // StringEscapeUtils.unescapeJava call was removed, because expression string is not java string
+        if (!expression.contains("ORDER")) // жестковато конечно пока, но будет работать
+            expression = "(" + expression + ")";
+        String actionText = "FOR " + valueName + " == " + expression + " DO watch();";
         return evalAction(context, namespace, require, priorities, actionText, valueName);
     }
 

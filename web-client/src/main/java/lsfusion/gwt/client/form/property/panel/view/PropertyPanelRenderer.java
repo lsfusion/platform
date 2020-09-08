@@ -40,9 +40,13 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         // we need to wrap into simple panel to make layout independent from property value
         ResizableComplexPanel simplePanel = new ResizableComplexPanel();
-        value.setStatic(simplePanel, true);
-        panel.add(simplePanel, panel.getWidgetCount(), GFlexAlignment.STRETCH, 1); // getWidth(), getHeight()
+        panel.addFill(simplePanel); // getWidth(), getHeight()
 
+        if(property.autoSize) { // we still need a panel to append corners
+            simplePanel.getElement().getStyle().setPosition(Style.Position.RELATIVE); // for corners (setStatic sets position absolute, so we don't need to do this for setStatic)
+            value.setDynamic(simplePanel, true);
+        } else
+            value.setStatic(simplePanel, true);
         appendCorners(property, simplePanel); // it's a hack to add
 
         finalizeInit();

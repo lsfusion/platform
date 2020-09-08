@@ -32,6 +32,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     private String caption;
     private String toolTip;
+    private TooltipManager.TooltipHelper toolTipHandler;
 
     private boolean notNull;
     private boolean hasChangeAction;
@@ -42,6 +43,18 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.caption = caption;
         this.table = table;
         this.toolTip = toolTip;
+
+        toolTipHandler = new TooltipManager.TooltipHelper() {
+            @Override
+            public String getTooltip() {
+                return GGridPropertyTableHeader.this.toolTip;
+            }
+
+            @Override
+            public boolean stillShowTooltip() {
+                return table.isAttached() && table.isVisible();
+            }
+        };
     }
 
     public void setCaption(String caption, boolean notNull, boolean hasChangeAction) {
@@ -85,27 +98,9 @@ public class GGridPropertyTableHeader extends Header<String> {
                     target.getStyle().setCursor(Cursor.DEFAULT);
                 }
             }
-        } else if (MOUSEOVER.equals(eventType)) {
-            TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), new TooltipManager.TooltipHelper() {
-                @Override
-                public String getTooltip() {
-                    return toolTip;
-                }
+        }
 
-                @Override
-                public boolean stillShowTooltip() {
-                    return table.isAttached() && table.isVisible();
-                }
-            });
-        } else if (MOUSEOUT.equals(eventType)) {
-            TooltipManager.get().hideTooltip();
-        }
-        if (MOUSEMOVE.equals(eventType)) {
-            TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
-        }
-        if (MOUSEDOWN.equals(eventType)) {
-            TooltipManager.get().hideTooltip();
-        }
+        TooltipManager.checkTooltipEvent(event, toolTipHandler);
     }
 
     @Override

@@ -2,8 +2,6 @@ package lsfusion.server.logics.form.open.interactive;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
@@ -22,8 +20,8 @@ import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
+import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -131,7 +129,9 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             syncType = heuristicSyncType(context);
         ModalityType modalityType = getModalityType(syncType);
 
-        FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, modalityType.isModal(), contextFilters, readOnly);
+        ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
+
+        FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, modalityType.isModal(), contextFilters, readOnly);
         context.requestFormUserInteraction(newFormInstance, modalityType, forbidDuplicate, context.stack);
 
         if (syncType) {
@@ -139,7 +139,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
             ImList<RequestResult> result = null;
             if(formResult != FormCloseType.CLOSE) {
-                ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
                 MList<RequestResult> mResult = ListFact.mList(resolvedInputObjects.size());
                 for (int i = 0; i < resolvedInputObjects.size(); i++) {
                     ObjectEntity inputObject = resolvedInputObjects.get(i);

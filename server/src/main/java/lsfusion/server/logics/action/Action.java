@@ -425,9 +425,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
-
+    protected void finalizeChanges() {
         beforeAspects = ((MCol<ActionMapImplement<?, P>>)beforeAspects).immutableCol();
         afterAspects = ((MCol<ActionMapImplement<?, P>>)afterAspects).immutableCol();
         events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();
@@ -500,7 +498,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
-    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, Property filterProperty) {
+    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
         if(eventActionSID.equals(ServerResponse.CHANGE_WYS) || eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return getImplement();

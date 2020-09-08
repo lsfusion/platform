@@ -353,7 +353,7 @@
         scalegroup: 1,
         hoverinfo: 'label+value',
         textinfo: 'none'
-      }, {}, false),
+      }, {}, true),
       "HORIZONTAL_BARCHART": makePlotlyChart(true, {
         type: 'bar',
         orientation: 'h'

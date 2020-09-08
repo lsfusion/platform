@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.property;
 
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -58,7 +59,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, Property filterProperty) {
+    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties) {
         return new DefaultChangeObjectAction(getInterface().interfaceClass, object).getImplement(SetFact.singletonOrder(getInterface()));
     }
 

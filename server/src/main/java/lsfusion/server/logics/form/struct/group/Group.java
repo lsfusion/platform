@@ -69,6 +69,15 @@ public class Group extends AbstractNode {
         return children.getNFListIt(version);
     }
 
+    @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+
+        for(AbstractNode child : getChildrenListIt()) // getting children list automatically finalizes it
+            if(child instanceof Group)
+                child.finalizeAroundInit();
+    }
+
     public void add(AbstractNode prop, Version version) {
         Group prevParent = prop.getNFParent(version);
         if (prevParent != null) {
@@ -79,7 +88,7 @@ public class Group extends AbstractNode {
             prevParent.remove(prop, version);
         }
         children.add(prop, version);
-        prop.parent.set(this, version);
+        prop.setParent(this, version);
     }
 
     @IdentityStartLazy

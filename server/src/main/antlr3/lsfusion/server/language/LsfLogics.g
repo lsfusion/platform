@@ -71,6 +71,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.navigator.NavigatorElement;
     import lsfusion.server.logics.property.cases.CaseUnionProperty;
     import lsfusion.server.logics.property.set.Cycle;
+	import lsfusion.server.logics.LogicsModule.InsertType;
     import lsfusion.server.physics.admin.reflection.ReflectionPropertyType;
     import lsfusion.server.physics.dev.debug.BooleanDebug;
     import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -527,7 +528,7 @@ formTreeGroupObjectList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.neighbourObject, $opts.isRightNeighbour, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint());
+		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.neighbourObject, $opts.insertType, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint());
 	}
 }
 	:	'TREE'
@@ -546,7 +547,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
-		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
+		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.insertType); }
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
@@ -554,8 +555,8 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		)*
 	;
 	
-formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, boolean isRightNeighbour]
-	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $isRightNeighbour = $relative.isRightNeighbour; }
+formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, InsertType insertType]
+	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $insertType = $relative.insertType; }
 		)*
 	;
 
@@ -645,9 +646,10 @@ formGroupObjectPageSize returns [Integer value = null]
 	:	'PAGESIZE' size=intLiteral { $value = $size.val; }
 	;
 	
-formGroupObjectRelativePosition returns [GroupObjectEntity groupObject, boolean isRightNeighbour]
-	:	'AFTER' go=formGroupObjectEntity { $groupObject = $go.groupObject; $isRightNeighbour = true; }
-	|	'BEFORE' go=formGroupObjectEntity { $groupObject = $go.groupObject; $isRightNeighbour = false; }
+formGroupObjectRelativePosition returns [GroupObjectEntity groupObject, InsertType insertType = null]
+	:	'AFTER' go=formGroupObjectEntity { $groupObject = $go.groupObject; $insertType = InsertType.AFTER; }
+	|	'BEFORE' go=formGroupObjectEntity { $groupObject = $go.groupObject; $insertType = InsertType.BEFORE; }
+	|	'FIRST' { $insertType = InsertType.FIRST; }
 	;
 
 formGroupObjectUpdate returns [UpdateType updateType]
@@ -762,8 +764,9 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
 		|	'DRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
-		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
-		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
+		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setInsertType(InsertType.BEFORE); }
+		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setInsertType(InsertType.AFTER); }
+		|	'FIRST' { $options.setInsertType(InsertType.FIRST); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
 		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $prop.action); }
 		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
@@ -4445,7 +4448,7 @@ navigatorElementDescription returns [NavigatorElement element]
 navigatorElementOptions returns [NavigatorElementOptions options] 
 @init {
 	$options = new NavigatorElementOptions();
-	$options.position = InsertPosition.IN;
+	$options.position = InsertType.IN;
 }
 	:	
 	(	'WINDOW' wid=compoundID { $options.windowName = $wid.sid; }
@@ -4454,12 +4457,12 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	)*
 	;
 	
-navigatorElementInsertPosition returns [InsertPosition position, NavigatorElement anchor]
+navigatorElementInsertPosition returns [InsertType position, NavigatorElement anchor]
 @init {
 	$anchor = null;
 }
 	:	pos=insertRelativePositionLiteral { $position = $pos.val; } elem=navigatorElementSelector { $anchor = $elem.element; }
-	|	'FIRST' { $position = InsertPosition.FIRST; }
+	|	'FIRST' { $position = InsertType.FIRST; }
 	;
 
 editNavigatorElementStatement[NavigatorElement parentElement]
@@ -4555,13 +4558,13 @@ moveComponentStatement[ComponentView parentComponent]
 		componentStatementBody[insComp]
 	;
 	
-componentInsertPosition returns [InsertPosition position, ComponentView anchor]
+componentInsertPosition returns [InsertType position, ComponentView anchor]
 @init {
-	$position = InsertPosition.IN;
+	$position = InsertType.IN;
 	$anchor = null;
 }
 	:	(	(pos=insertRelativePositionLiteral { $position = $pos.val; } comp=componentSelector { $anchor = $comp.component; })
-		|	'FIRST' { $position = InsertPosition.FIRST; }
+		|	'FIRST' { $position = InsertType.FIRST; }
 		)?
 	;
 
@@ -5112,9 +5115,9 @@ codeLiteral returns [String val]
 	:	s=CODE_LITERAL { $val = $s.text; }
 	;
 
-insertRelativePositionLiteral returns [InsertPosition val]
-	:	'BEFORE' { $val = InsertPosition.BEFORE; }
-	|	'AFTER' { $val = InsertPosition.AFTER; }
+insertRelativePositionLiteral returns [InsertType val]
+	:	'BEFORE' { $val = InsertType.BEFORE; }
+	|	'AFTER' { $val = InsertType.AFTER; }
 	;
 
 containerTypeLiteral returns [ContainerType val]

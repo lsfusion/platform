@@ -54,6 +54,7 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
@@ -128,6 +129,17 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
      */
     public Integer getInitFilterPropertyDraw() throws RemoteException {
         return null; // deprecated
+    }
+
+    @Override
+    public Set<Integer> getInputGroupObjects() {
+        Set<Integer> inputObjects = new HashSet<>();
+        if(form.inputObjects != null) {
+            for (ObjectEntity objectEntity : form.inputObjects) {
+                inputObjects.add(objectEntity.groupTo.ID);
+            }
+        }
+        return inputObjects;
     }
 
     /**
@@ -794,7 +806,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     public Object[] getImmutableMethods() {
         try {
-            return new Object[]{getUserPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw()};
+            return new Object[]{getUserPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw(), getInputGroupObjects()};
         } catch (RemoteException e) {
             return null;
         }

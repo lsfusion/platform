@@ -123,19 +123,17 @@ public class PropertyPanelController {
         List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
         for (final ClientGroupObjectValue columnKey : columnKeys) {
             if (showIfs == null || showIfs.get(columnKey) != null) {
-                if (!property.hide) {
-                    PanelView view = property.getPanelView(form, columnKey);
+                PanelView view = views != null ? views.get(columnKey) : null;
+                if (view == null && !property.hide) {
+                    view = property.getPanelView(form, columnKey);
                     view.setReadOnly(property.isReadOnly());
-                    newViews.put(columnKey, view);
 
-                    view.getEditPropertyDispatcher().setUpdateEditValueCallback(new Callback<Object>() {
-                        @Override
-                        public void done(Object result) {
-                            values.put(columnKey, result);
-                        }
-                    });
+                    view.getEditPropertyDispatcher().setUpdateEditValueCallback(result -> values.put(columnKey, result));
 
                     panelController.addGroupObjectActions(view.getComponent());
+                }
+                if(view != null) {
+                    newViews.put(columnKey, view);
                 }
             }
         }

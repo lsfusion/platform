@@ -50,6 +50,8 @@ public class ClientColorUtils {
     }
 
     public static void designComponent(JComponent comp, ComponentDesign design) {
+        design.installFont(comp);
+
         if (design.background != null) {
             comp.setBackground(getDisplayColor(design.background));
             comp.setOpaque(true);

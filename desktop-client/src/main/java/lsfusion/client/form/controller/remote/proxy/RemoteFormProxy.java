@@ -18,6 +18,7 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterface> implements RemoteFormInterface {
@@ -79,6 +80,14 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
                     return result;
                 }
             });
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public Set<Integer> getInputGroupObjects() {
+        try {
+            return callImmutableMethod("getInputGroupObjects", target::getInputGroupObjects);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

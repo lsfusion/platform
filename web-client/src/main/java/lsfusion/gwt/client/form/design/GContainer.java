@@ -159,7 +159,7 @@ public class GContainer extends GComponent {
         }
 
         @Override
-        public String getSID() {
+        public String getNativeSID() {
             return sID;
         }
     };

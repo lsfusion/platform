@@ -38,7 +38,7 @@ import static lsfusion.client.form.property.cell.EditBindingMap.*;
 
 public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface {
     private final EditPropertyDispatcher editDispatcher;
-    protected final EditBindingMap editBindingMap = new EditBindingMap();
+    protected final EditBindingMap editBindingMap = new EditBindingMap(true);
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
     
     protected final ClientFormController form;

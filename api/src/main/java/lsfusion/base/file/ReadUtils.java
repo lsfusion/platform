@@ -127,9 +127,9 @@ public abstract class ReadUtils {
         }
         fileChooser.setCurrentDirectory(parentDir != null ? parentDir : SystemUtils.loadCurrentDirectory());
 
-        if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             result = fileChooser.getSelectedFile().getAbsolutePath();
-            SystemUtils.saveCurrentDirectory(new File(result.substring(0, result.lastIndexOf("\\"))));
+            SystemUtils.saveCurrentDirectory(new File(result).getParentFile());
         }
         return result;
     }

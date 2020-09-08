@@ -411,9 +411,11 @@ public abstract class UserPreferencesDialog extends JDialog {
         }
 
         Font tableFont = getInitialFont();
-        tableFont = tableFont.deriveFont(getFontStyle(), getFontSize(tableFont.getSize()));
+        int fontStyle = getFontStyle();
+        tableFont = tableFont.deriveFont(fontStyle, getFontSize(tableFont.getSize()));
         initialTable.setUserFont(tableFont);
-        initialTable.setFont(tableFont);
+        Font tableDisplayFont = tableFont.deriveFont(fontStyle, getFontSize(tableFont.getSize() > 0 ? tableFont.getSize() : getDefaultTableFontSize()));
+        initialTable.setFont(tableDisplayFont);
         
         initialTable.setUserPageSize(getPageSize());
 
@@ -453,9 +455,11 @@ public abstract class UserPreferencesDialog extends JDialog {
                 }
 
                 Font tableFont = getInitialFont();
-                tableFont = tableFont.deriveFont(getFontStyle(), getFontSize(tableFont.getSize()));
+                int fontStyle = getFontStyle();
+                tableFont = tableFont.deriveFont(fontStyle, getFontSize(tableFont.getSize()));
                 initialTable.setUserFont(tableFont);
-                initialTable.setUserPageSize(getPageSize());
+                Font tableDisplayFont = tableFont.deriveFont(fontStyle, getFontSize(tableFont.getSize() > 0 ? tableFont.getSize() : getDefaultTableFontSize()));
+                initialTable.setFont(tableDisplayFont);
 
                 Integer headerHeight = getHeaderHeight();
                 initialTable.setUserHeaderHeight(headerHeight);
@@ -492,7 +496,8 @@ public abstract class UserPreferencesDialog extends JDialog {
             // после обновления текущих настроек шрифт мог измениться
             FontInfo font = mergeFont();
             refreshValues(font);
-            initialTable.setFont(font.deriveFrom(initialTable));
+            FontInfo displayFont = font.fontSize > 0 ? font : font.derive(getDefaultTableFontSize());
+            initialTable.setFont(displayFont.deriveFrom(initialTable));
 
             initialTable.update((Boolean) null);
 
@@ -505,7 +510,8 @@ public abstract class UserPreferencesDialog extends JDialog {
         public void run() {
             FontInfo font = mergeFont();
             refreshValues(font);
-            initialTable.setFont(font.deriveFrom(initialTable));
+            FontInfo displayFont = font.fontSize > 0 ? font : font.derive(getDefaultTableFontSize());
+            initialTable.setFont(displayFont.deriveFrom(initialTable));
         }
     };
     
@@ -531,8 +537,9 @@ public abstract class UserPreferencesDialog extends JDialog {
                 invisibleListModel.addElement(new UserPreferencesPropertyListItem(property, currentPreferences.getUserCaption(property), currentPreferences.getUserPattern(property), getPropertyState(property)));
             }
         }
-        
-        fontSizeField.setText(font.getFontSize() + "");
+
+        int fontSize = font.getFontSize();
+        fontSizeField.setText(fontSize > 0 ? (fontSize + "") : "");
         isFontBoldCheckBox.setSelected(font.bold);
         isFontItalicCheckBox.setSelected(font.italic);
 
@@ -552,12 +559,15 @@ public abstract class UserPreferencesDialog extends JDialog {
             return FontInfo.createFrom(getInitialFont());
         }
     }
+    
+    private int getDefaultTableFontSize() {
+        return new JTable().getFont().getSize(); 
+    } 
 
     private Font getInitialFont() {
         FontInfo designFont = initialTable.getDesignFont();
         if (designFont == null) {
-            int defaultTableFontSize = new JTable().getFont().getSize();
-            return new Font(initialTable.getFont().getFontName(), Font.PLAIN, defaultTableFontSize);
+            return new Font(initialTable.getFont().getFontName(), Font.PLAIN, 0);
         }
         return new Font(designFont.fontFamily, designFont.getStyle(), designFont.fontSize);
     }
@@ -568,8 +578,9 @@ public abstract class UserPreferencesDialog extends JDialog {
 
     private int getFontSize(int oldSize) {
         try {
-            int fontSize = Integer.parseInt(fontSizeField.getText());
-            return fontSize != 0 ? fontSize : oldSize;
+            String fontSizeText = fontSizeField.getText();
+            int fontSize = "".equals(fontSizeText) ? -1 : Integer.parseInt(fontSizeText);
+            return fontSize >= 0 ? fontSize : oldSize;
         } catch (Exception e) {
             return oldSize;
         }

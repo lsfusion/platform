@@ -38,7 +38,7 @@ public class FlexSplitPanel extends SplitPanelBase {
         else
             secondChild = child;
         assert child.getAlignment() == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
-        GAbstractContainerView.add(panel, widget, first ? 0 : (firstWidget == null ? 1 : 2), child.getAlignment(), child.getFlex(), child, vertical);
+        GAbstractContainerView.add(panel, widget, child, first ? 0 : (firstWidget == null ? 1 : 2));
         Style style = widget.getElement().getStyle();
         style.setOverflowY(vertical ? Style.Overflow.AUTO : Style.Overflow.HIDDEN);
         style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);

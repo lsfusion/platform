@@ -40,7 +40,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
     private boolean dataUpdated;
-    private boolean columnsUpdated;
+    private boolean columnsUpdated = true; //could be no properties on init
 
     private GTreeTableTree tree;
 
@@ -97,7 +97,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         getElement().setPropertyObject("groupObject", groupObject);
 
         if(treeGroupController.isExpandOnClick())
-            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK), new GBindingEnv(100, null, GBindingMode.ONLY, null, null),
+            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK), new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null),
                     event -> {
                         GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
                         if (node != null && node.isExpandable()) {
@@ -757,6 +757,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public String getColumnSID(int column) {
         return "" + column;
+    }
+
+    @Override
+    public GPropertyDraw getProperty(int row, int column) {
+        GTreeGridRecord rowValue = getRowValue(row);
+        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), column);
     }
 
     @Override

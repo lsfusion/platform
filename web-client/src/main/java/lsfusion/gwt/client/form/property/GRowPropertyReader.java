@@ -19,7 +19,7 @@ public abstract class GRowPropertyReader implements GPropertyReader {
     }
 
     @Override
-    public String getSID() {
+    public String getNativeSID() {
         return sID;
     }
 

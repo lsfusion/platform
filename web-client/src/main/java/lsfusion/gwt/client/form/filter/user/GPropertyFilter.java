@@ -43,23 +43,4 @@ public class GPropertyFilter {
 
         return filterDTO;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof GPropertyFilter)) return false;
-        GPropertyFilter that = (GPropertyFilter) o;
-        return negation == that.negation &&
-                junction == that.junction &&
-                groupObject.equals(that.groupObject) &&
-                property.equals(that.property) &&
-                value.equals(that.value) &&
-                columnKey.equals(that.columnKey) &&
-                compare == that.compare;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(groupObject, property, value, columnKey, negation, compare, junction);
-    }
 }

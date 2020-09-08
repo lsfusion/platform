@@ -12,7 +12,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import java.sql.SQLException;
 
 public class DropAction extends FormFlowAction {
-    private static LP showIf = createShowIfProperty(new Property[] {FormEntity.showDrop}, new boolean[] {false});
+    private static LP showIf = createIfProperty(new Property[] {FormEntity.showDrop}, new boolean[] {false});
 
     public DropAction(BaseLogicsModule lm) {
         super(lm);

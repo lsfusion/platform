@@ -115,14 +115,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     public static String BKCOLOR = "lsfusion-bkcolor";
 
     protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
-        String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
+        String backgroundColor = getBackground(rowValue, columnIndex);
         td.setPropertyString(BKCOLOR, backgroundColor);
         GFormController.setBackgroundColor(td, backgroundColor, true);
 
-        String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
+        String foregroundColor = getForeground(rowValue, columnIndex);
         GFormController.setForegroundColor(td, foregroundColor, true);
 
-        Optional<Object> image = getImage(rowValue, rowIndex, columnIndex);
+        Optional<Object> image = getImage(rowValue, columnIndex);
         if(image != null)
             // assert that it is action and rendered with ActionCellRenderer
             // also since we know that its grid and not simple text (since there is dynamic image) and its td, we can unwrap td without having CellRenderer (however, it should be consistent with CellRenderer renderDynamic/Static)
@@ -152,8 +152,8 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         td.getStyle().setHeight(height, Style.Unit.PX);
     }
 
-    public abstract String getBackground(T rowValue, int row, int column);
-    public abstract String getForeground(T rowValue, int row, int column);
-    public abstract Optional<Object> getImage(T rowValue, int row, int column);
+    public abstract String getBackground(T rowValue, int column);
+    public abstract String getForeground(T rowValue, int column);
+    public abstract Optional<Object> getImage(T rowValue, int column);
 }
 

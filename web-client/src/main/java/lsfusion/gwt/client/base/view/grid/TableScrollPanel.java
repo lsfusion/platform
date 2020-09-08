@@ -14,13 +14,7 @@ public class TableScrollPanel extends SimplePanel {
         super();
 
         getElement().getStyle().setOutlineStyle(Style.OutlineStyle.NONE);
-
-//        SimplePanel inner = new SimplePanel();
-//        inner.setWidget(child);
-
         setWidget(child);
-
-//        scrollableElement = child.getElement();
 
         getElement().getStyle().setOverflow(overflow);
 

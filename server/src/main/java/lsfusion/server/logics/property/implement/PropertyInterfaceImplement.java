@@ -1,9 +1,6 @@
 package lsfusion.server.logics.property.implement;
 
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -55,7 +52,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     }
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
-    ActionMapImplement<?, P> mapEventAction(String eventSID, Property filterProperty);
+    ActionMapImplement<?, P> mapEventAction(String eventSID, ImList<Property> viewProperties);
 
     boolean mapHasAlotKeys();
     int mapEstComplexity();

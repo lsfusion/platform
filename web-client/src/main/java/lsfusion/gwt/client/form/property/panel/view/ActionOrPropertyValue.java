@@ -74,6 +74,15 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         setBaseSize(isProperty);
     }
+    public void setDynamic(Panel panel, boolean isProperty) {
+        panel.add(this);
+        com.google.gwt.dom.client.Element element = getElement();
+        element.getStyle().setWidth(100, Style.Unit.PCT);
+        element.getStyle().setHeight(100, Style.Unit.PCT);
+        borderWidget = panel;
+
+        setBaseSize(isProperty);
+    }
     public void setDynamic(boolean isProperty) {
         borderWidget = this;
 
@@ -90,7 +99,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         // if widget is wrapped into absolute positioned simple panel, we need to include paddings (since borderWidget doesn't include them)
         boolean isStatic = borderWidget != this;
-        FlexPanel.setBaseWidth(borderWidget,
+        FlexPanel.setBaseSize(borderWidget,
                 isStatic ? property.getValueWidthWithPadding(null) : property.getValueWidth(null),
                 isStatic ? property.getValueHeightWithPadding(null ) : property.getValueHeight(null));
     }
@@ -100,7 +109,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         Element target = DataGrid.getTargetAndCheck(getElement(), event);
         if(target == null)
             return;
-        if(!form.previewClickEvent(target, event))
+        if(!form.previewEvent(target, event))
             return;
 
         super.onBrowserEvent(event);
@@ -108,21 +117,21 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         if(!DataGrid.checkSinkEvents(event))
             return;
 
-        EventHandler handler = createEventHandler(event);
+        EventHandler eventHandler = createEventHandler(event);
 
         if(BrowserEvents.FOCUS.equals(event.getType())) {
-            onFocus(handler);
+            onFocus(eventHandler);
         } else if(BrowserEvents.BLUR.equals(event.getType())) {
-            onBlur(handler);
+            onBlur(eventHandler);
         }
-        if(handler.consumed)
+        if(eventHandler.consumed)
             return;
 
-        form.onPropertyBrowserEvent(handler, getRenderElement(), getFocusElement(),
-                () -> {}, // no outer context
-                () -> onEditEvent(handler),
-                () -> {}, // no outer context
-                () -> CopyPasteUtils.putIntoClipboard(getRenderElement()), () -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line)));
+        form.onPropertyBrowserEvent(eventHandler, getRenderElement(), getFocusElement(),
+                handler -> {}, // no outer context
+                this::onEditEvent,
+                handler -> {}, // no outer context
+                handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line)));
     }
 
     protected void onFocus(EventHandler handler) {
@@ -157,6 +166,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     @Override
+    public boolean isAlwaysSelected() {
+        return true;
+    }
+
+    @Override
     public boolean globalCaptionIsDrawn() {
         return false;
     }
@@ -174,7 +188,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     public UpdateContext getUpdateContext() {
         return this;
     }
-
     protected abstract void onPaste(Object objValue, String stringValue);
 
     public void pasteValue(final String value) {

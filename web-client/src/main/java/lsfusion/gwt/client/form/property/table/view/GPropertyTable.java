@@ -14,6 +14,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
@@ -44,7 +45,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     private void addEnterBinding(boolean shiftPressed) {
         form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
-                new GBindingEnv(-100, null, GBindingMode.ONLY, GBindingMode.NO, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
+                new GBindingEnv(-100, null, null, GBindingMode.ONLY, GBindingMode.NO, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
                 event -> ((GGridPropertyTable) GPropertyTable.this).selectNextCellInColumn(!shiftPressed),
                 null,
                 groupObject);
@@ -55,14 +56,26 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public abstract GPropertyDraw getSelectedProperty();
     public abstract GGroupObjectValue getSelectedColumnKey();
 
-    public abstract GPropertyDraw getProperty(Cell editCell);
+    @Override
+    protected void onSelectedChanged(TableCellElement td, int row, int column, boolean selected) {
+        GPropertyDraw property = getProperty(row, column);
+        if(property != null) {
+            if(selected)
+                CellRenderer.renderEditSelected(td, property);
+            else
+                CellRenderer.clearEditSelected(td, property);
+        }
+    }
+
+    public abstract GPropertyDraw getProperty(int row, int column);
+    public abstract GPropertyDraw getProperty(Cell cell);
 
     @Override
-    public boolean isChangeOnSingleClick(Cell cell) {
+    public boolean isChangeOnSingleClick(Cell cell, boolean rowChanged) {
         GPropertyDraw property = getProperty(cell);
         if(property != null && property.changeOnSingleClick != null)
             return property.changeOnSingleClick;
-        return super.isChangeOnSingleClick(cell);
+        return super.isChangeOnSingleClick(cell, rowChanged) || (!rowChanged && GFormController.isLinkEditMode() && property != null && property.hasEditObjectAction);
     }
 
     public abstract GGroupObjectValue getColumnKey(Cell editCell);
@@ -166,6 +179,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     @Override
     public Integer getStaticHeight() {
         return tableBuilder.getCellHeight();
+    }
+
+    @Override
+    public boolean isAlwaysSelected() {
+        return false;
     }
 
     @Override

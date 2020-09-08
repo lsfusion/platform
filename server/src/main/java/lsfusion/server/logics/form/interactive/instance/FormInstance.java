@@ -138,9 +138,6 @@ import static lsfusion.server.logics.form.interactive.instance.object.GroupObjec
 
 public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
 
-    private final static Function<PropertyReaderInstance, PropertyObjectInstance<?>> GET_PROPERTY_OBJECT_FROM_READER =
-            PropertyReaderInstance::getPropertyObjectInstance;
-
     private final Function<ContainerView, PropertyObjectInstance<?>> GET_CONTAINER_SHOWIF =
             new Function<ContainerView, PropertyObjectInstance<?>>() {
                 @Override
@@ -167,6 +164,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public final ImList<PropertyDrawInstance<?>> properties;
 
+    public final ImSet<ObjectEntity> inputObjects;
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Set<PropertyDrawInstance> isShown = new HashSet<>();
@@ -202,7 +200,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
+    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, ImSet<ObjectEntity> inputObjects, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
@@ -219,6 +217,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.entity = entity;
         this.logicsInstance = logicsInstance;
         this.BL = logicsInstance.getBusinessLogics();
+        this.inputObjects = inputObjects;
 
         this.securityPolicy = securityPolicy;
 
@@ -2272,7 +2271,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
     private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue, ImSet<ContextFilterInstance> additionalFilters, ExecutionStack outerStack) throws SQLException, SQLHandledException {
-        return new FormInstance(entity, this.logicsInstance,
+        return new FormInstance(entity, this.logicsInstance, SetFact.singleton(dialogEntity),
                                 this.session, securityPolicy,
                                 getFocusListener(), getClassListener(),
                                 MapFact.singleton(dialogEntity, dialogValue),
@@ -2373,44 +2372,66 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private final IncrementChangeProps environmentIncrement;
     private final ImMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> environmentIncrementSources;
 
-    private SessionModifier createModifier() {
-        FunctionSet<Property> noHints = getNoHints();
-        return new OverridePropSourceSessionModifier<SessionDataProperty>(toString(), environmentIncrement, noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier()) {
-            @Override
-            protected ImSet<Property> getSourceProperties(SessionDataProperty property) {
-                Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
-                if(source == null)
-                    return SetFact.EMPTY();
-                ImSet<Property> result = source.first.getUsedEnvironmentIncrementProps(source.second);
-                if(result == null)
-                    return SetFact.EMPTY();
-                return result;
-            }
+    public class FormModifier extends OverridePropSourceSessionModifier<SessionDataProperty> {
+
+        public FormModifier(String debugInfo, IncrementChangeProps overrideChange, FunctionSet<Property> forceDisableHintIncrement, FunctionSet<Property> forceDisableNoUpdate, FunctionSet<Property> forceHintIncrement, FunctionSet<Property> forceNoUpdate, SessionModifier modifier) {
+            super(debugInfo, overrideChange, forceDisableHintIncrement, forceDisableNoUpdate, forceHintIncrement, forceNoUpdate, modifier);
+        }
+
+        @Override
+        protected ImSet<Property> getSourceProperties(SessionDataProperty property) {
+            Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
+            if(source == null)
+                return SetFact.EMPTY();
+            ImSet<Property> result = source.first.getUsedEnvironmentIncrementProps(source.second);
+            if(result == null)
+                return SetFact.EMPTY();
+            return result;
+        }
 
             // нужно не в транзакции, так как если откатится, у ведомления начнут приходить не целостными из restart и это может привести к странному поведению
-            // поэтому по-хорошему надо делать явное обновление в restart (как updateSessionEventNotChangedOld), но пока делать не будем, а просто не будем update'ить в транзакции  
+            // поэтому по-хорошему надо делать явное обновление в restart (как updateSessionEventNotChangedOld), но пока делать не будем, а просто не будем update'ить в транзакции
 //            @Override
 //            protected boolean noUpdateInTransaction() {
 //                return false;
 //            }
 
-            @Override
-            protected void updateSource(SessionDataProperty property, boolean dataChanged, boolean forceUpdate) throws SQLException, SQLHandledException {
-                if(!getSQL().isInTransaction()) { // если в транзакции предполагается что все обновится само (в форме - refresh будет)
-                    Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
-                    source.first.updateEnvironmentIncrementProp(environmentIncrement, this, null, FormInstance.this, source.second, false, dataChanged);
-                } else
-                    ServerLoggers.exinfoLog("FAILED TO UPDATE SOURCE IN TRANSACTION " + property);
+        // recursion guard, just like in notifySourceChange (however this guard is needed optimization if property is really complex and thus uses a lot of prereads / materialized changes)
+        private ImSet<Pair<GroupObjectInstance, GroupObjectProp>> updateChangesRecursionGuard = SetFact.EMPTY();
+
+        public void updateEnvironmentIncrementProp(Pair<GroupObjectInstance, GroupObjectProp> source, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, boolean propsChanged, boolean dataChanged) throws SQLException, SQLHandledException {
+            if(!updateChangesRecursionGuard.contains(source)) {
+                ImSet<Pair<GroupObjectInstance, GroupObjectProp>> prevRecursionGuard = updateChangesRecursionGuard;
+                updateChangesRecursionGuard = updateChangesRecursionGuard.addExcl(source);
+                try {
+                    source.first.updateEnvironmentIncrementProp(environmentIncrement, this, changedProps, reallyChanged, source.second, propsChanged, dataChanged);
+                } finally {
+                    updateChangesRecursionGuard = prevRecursionGuard;
+                }
             }
-        };
+        }
+
+        @Override
+        protected void updateSource(SessionDataProperty property, boolean dataChanged, boolean forceUpdate) throws SQLException, SQLHandledException {
+            if(!getSQL().isInTransaction()) { // если в транзакции предполагается что все обновится само (в форме - refresh будет)
+                Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
+                updateEnvironmentIncrementProp(source, environmentIncrement, null, FormInstance.this, false, dataChanged);
+            } else
+                ServerLoggers.exinfoLog("FAILED TO UPDATE SOURCE IN TRANSACTION " + property);
+        }
     }
 
-    public Map<SessionModifier, SessionModifier> modifiers = new HashMap<>();
+    private FormModifier createModifier() {
+        FunctionSet<Property> noHints = getNoHints();
+        return new FormModifier(toString(), environmentIncrement, noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
+    }
+
+    public Map<SessionModifier, FormModifier> modifiers = new HashMap<>();
 
     @ManualLazy
-    public Modifier getModifier() {
+    public FormModifier getModifier() {
         SessionModifier sessionModifier = session.getModifier();
-        SessionModifier modifier = modifiers.get(sessionModifier);
+        FormModifier modifier = modifiers.get(sessionModifier);
         if (modifier == null) {
             modifier = createModifier();
             modifiers.put(sessionModifier, modifier);

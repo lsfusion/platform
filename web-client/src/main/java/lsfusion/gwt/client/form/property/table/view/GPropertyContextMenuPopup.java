@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.table.view;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -43,13 +42,6 @@ public class GPropertyContextMenuPopup {
             menuBar.addItem(menuItem);
         }
 
-        popup.setWidget(menuBar);
-        GwtClientUtils.showPopupInWindow(popup, x, y);
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                menuBar.focus();
-            }
-        });
+        GwtClientUtils.showPopupInWindow(popup, menuBar, x, y);
     }
 }

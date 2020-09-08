@@ -33,6 +33,10 @@ public class ClientFormLayout extends JPanel {
     @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
 
+    public JComponentPanel getComponentView(ClientContainer container) {
+        return getContainerView(container).getView();
+    }
+
     public ClientFormLayout(ClientFormController iform, ClientContainer imainContainer) {
         this.form = iform;
         this.mainContainer = imainContainer;
@@ -42,16 +46,14 @@ public class ClientFormLayout extends JPanel {
         setFocusCycleRoot(true);
         setFocusTraversalPolicy(policy);
 
-        // создаем все контейнеры на форме
-        addContainers(mainContainer);
-
         setLayout(new BorderLayout());
-        add(containerViews.get(mainContainer).getView(), BorderLayout.CENTER);
 
-        //todo: think about scrollpane, when window size is too small
-//        JScrollPane scroll = new JScrollPane(mainContainer);
-//        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-//        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        addContainers(mainContainer);
+        add(getComponentView(mainContainer), BorderLayout.CENTER);
+//        JScrollPane scroll = new JScrollPane();
+//        scroll.getVerticalScrollBar().setUnitIncrement(14);
+//        scroll.getHorizontalScrollBar().setUnitIncrement(14);
+//        scroll.setViewportView(getComponentView(mainContainer));
 //        add(scroll, BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference

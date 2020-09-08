@@ -47,13 +47,13 @@ public class GEditBindingMap implements Serializable {
         }
         return null;
     }
-    public static String getDefaultEventSID(Event event, EditEventFilter editEventFilter) {
+    public static String getDefaultEventSID(Event event, EditEventFilter editEventFilter, boolean hasEditObjectAction) {
+        if (hasEditObjectAction && isEditObjectEvent(event)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
+            return EDIT_OBJECT;
         if (GMouseStroke.isChangeEvent(event))
             return CHANGE;
         if (isGroupChangeKeyEvent(event))
             return GROUP_CHANGE;
-        if (isEditObjectEvent(event))
-            return EDIT_OBJECT;
         if (isCharModifyKeyEvent(event, editEventFilter))
             return CHANGE;
         return null;
@@ -64,10 +64,6 @@ public class GEditBindingMap implements Serializable {
         if (isCharModifyKeyEvent(event, editEventFilter))
             return true;
         return false;
-    }
-
-    public void setMouseAction(String actionSID) {
-        mouseBinding = actionSID;
     }
 
     public void setKeyAction(GKeyStroke key, String actionSID) {

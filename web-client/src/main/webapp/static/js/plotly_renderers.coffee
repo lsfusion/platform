@@ -260,7 +260,7 @@ callWithJQuery ($, Plotly) ->
             scalegroup: 1,
             hoverinfo: 'label+value',
             textinfo: 'none'
-        }, {}, false),
+        }, {}, true),
         "HORIZONTAL_BARCHART": makePlotlyChart(true, {type: 'bar', orientation: 'h'}, { barmode: 'group' }, true),
         "HORIZONTAL_STACKED_BARCHART": makePlotlyChart(true, { type: 'bar', orientation: 'h'}, { barmode: 'relative' }, true)
 

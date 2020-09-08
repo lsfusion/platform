@@ -2,10 +2,7 @@ package lsfusion.server.logics.property.implement;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -214,8 +211,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
-    public ActionMapImplement<?, T> mapEventAction(String eventSID, Property filterProperty) {
-        ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, filterProperty);
+    public ActionMapImplement<?, T> mapEventAction(String eventSID, ImList<Property> viewProperties) {
+        ActionMapImplement<?, P> eventAction = property.getEventAction(eventSID, viewProperties);
         return eventAction == null ? null : eventAction.map(mapping);
     }
 

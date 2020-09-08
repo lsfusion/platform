@@ -10,7 +10,6 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPrefere
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.provider.SessionInvalidatedException;
@@ -45,13 +44,19 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     public FormProviderImpl() {}
 
     public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException {
-        // 0 and 2 are indices from FormClientAction.methodNames array
+        // 0, 1, 3 are indices from FormClientAction.methodNames array
         byte[] formDesign = immutableMethods != null ? (byte[]) immutableMethods[1] : remoteForm.getRichDesignByteArray();
         FormUserPreferences formUP = immutableMethods != null ? (FormUserPreferences)immutableMethods[0] : remoteForm.getUserPreferences();
 
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(formDesign)));
 
         GForm gForm = new ClientComponentToGwtConverter(navigatorProvider.getLogicsName(sessionID)).convertOrCast(clientForm);
+
+        Set<Integer> inputObjects = remoteForm.getInputGroupObjects();
+        gForm.inputGroupObjects = new HashSet<>();
+        for(Integer inputObject : inputObjects) {
+            gForm.inputGroupObjects.add(gForm.getGroupObject(inputObject));
+        }
 
         gForm.sID = formSID;
         gForm.canonicalName = canonicalName;
@@ -103,9 +108,6 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
             }
             userFont.family = groupObj.grid.font.family;
         } else {
-            if (userFont.size == 0) {
-                userFont.size = GFont.DEFAULT_FONT_SIZE;
-            }
             userFont.family = GFont.DEFAULT_FONT_FAMILY;
         }
         gForm.addFont(userFont); // добавляем к используемым шрифтам с целью подготовить FontMetrics
