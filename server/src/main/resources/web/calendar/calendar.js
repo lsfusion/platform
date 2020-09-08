@@ -1,4 +1,7 @@
-function calendar(element, listJsObject, customChangeProperty) {
+function calendar(element, listJsObject, controller) {
+    let listJsObjectIndex = JSON.parse(JSON.stringify(listJsObject));
+    let index = 0;
+    listJsObjectIndex.forEach((item) => (item.index = index++));
     setTimeout(function () {
         element.style.position = 'absolute';
         element.style.top = '0px';
@@ -16,16 +19,11 @@ function calendar(element, listJsObject, customChangeProperty) {
             },
             editable: true,
             dayMaxEvents: true,
-            events: listJsObject,
+            events: listJsObjectIndex,
             eventChange: function(info) {
-                let object = null;
-                for (let o in listJsObject) {
-                    if (listJsObject[o]["#__key"] === info.event.extendedProps["#__key"]) {
-                        object = listJsObject[o];
-                    }
-                }
-                //getMonth()+1 because "getMonth()" is zero based
-                customChangeProperty.changeDateTimeProperty('start', object, info.event.start.getFullYear(), info.event.start.getMonth() + 1, info.event.start.getUTCDate(), info.event.start.getUTCHours(), info.event.start.getUTCMinutes(), info.event.start.getUTCSeconds());
+                controller.changeProperty('start', listJsObject[info.event.extendedProps.index], info.event.start.getFullYear(),
+                    info.event.start.getMonth() + 1,info.event.start.getUTCDate(), info.event.start.getUTCHours(),
+                    info.event.start.getUTCMinutes(),info.event.start.getUTCSeconds());
             }
         });
         calendar.render();
