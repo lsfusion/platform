@@ -10,6 +10,7 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.version.NFFact;
@@ -309,6 +310,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @IdentityInstanceLazy
+    public LA<?> getNewSessionFormEdit() {
+        return addSessionScopeAProp(FormSessionScope.NEWSESSION, getFormEdit());
     }
 
     @IdentityLazy

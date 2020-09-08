@@ -1602,7 +1602,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultEditObjectAction(BaseLogicsModule lm) {
         // formEdit(property(...))
-        return createJoinAction(lm.getFormEdit());
+        return createJoinAction(lm.getNewSessionFormEdit());
     }
     private <X extends PropertyInterface> ActionMapImplement<?, T> getDefaultAsyncUpdateAction(BaseLogicsModule lm, ImList<Property> viewProperties, PropertyMapImplement<?, T> resultValue) {
         for(int i=viewProperties.size()-1;i>=0;i--) {
