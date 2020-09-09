@@ -21,6 +21,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
 
     public GSimpleStateTableView(GFormController form, GGridController grid) {
         super(form, grid);
+        getDrawElement().getStyle().setProperty("zIndex", "0"); // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers
     }
 
     private NativeHashMap<String, Column> columnMap;

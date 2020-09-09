@@ -41,6 +41,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public ClassViewType viewType;
     public ListViewType listViewType;
     public PivotOptions pivotOptions;
+    public String customRenderFunction;
 
     public boolean asyncInit;
 
@@ -124,6 +125,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         viewType = pool.readObject(inStream);
         listViewType = pool.readObject(inStream);
         pivotOptions = pool.readObject(inStream);
+        customRenderFunction = pool.readString(inStream);
 
         asyncInit = pool.readBoolean(inStream);
 

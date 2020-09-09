@@ -1,7 +1,7 @@
 package lsfusion.interop.form.object.table.grid;
 
 public enum ListViewType {
-    GRID, PIVOT, MAP;
+    GRID, PIVOT, MAP, CUSTOM;
 
     public static ListViewType DEFAULT = GRID;
 
@@ -14,6 +14,8 @@ public enum ListViewType {
                 return "pivot";
             case MAP:
                 return "map";
+            case CUSTOM:
+                return "custom";
         }
         throw new UnsupportedOperationException();
     }
