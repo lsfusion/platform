@@ -174,6 +174,7 @@ public class GGridController extends GAbstractTableController {
 
     private GToolbarButton gridTableButton;
     private GToolbarButton pivotTableButton;
+    private GToolbarButton customViewButton;
     private GToolbarButton settingsButton;
     private GCountQuantityButton quantityButton;
     private GCalculateSumButton sumButton;
@@ -204,6 +205,18 @@ public class GGridController extends GAbstractTableController {
             }
         };
         addToToolbar(pivotTableButton);
+
+        if (groupObject.customRenderFunction != null){
+            customViewButton = new GToolbarButton("custom_view.png", messages.formGridCustomView()) {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> {
+                        changeMode(() -> setCustomTableView(), GListViewType.CUSTOM, false);
+                    };
+                }
+            };
+            addToToolbar(customViewButton);
+        }
 
         if(groupObject.isMap) {
             mapTableButton = new GToolbarButton("map.png", messages.formGridMapView()) {
