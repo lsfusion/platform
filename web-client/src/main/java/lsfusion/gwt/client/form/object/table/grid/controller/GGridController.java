@@ -129,6 +129,7 @@ public class GGridController extends GAbstractTableController {
         pivotTableButton.showBackground(false);
         if(mapTableButton != null)
             mapTableButton.showBackground(false);
+        customViewButton.showBackground(false);
     }
     private void setPivotTableView() {
         changeTableView(new GPivot(formController, this, getSelectedProperty()));
@@ -136,12 +137,14 @@ public class GGridController extends GAbstractTableController {
         gridTableButton.showBackground(false);
         if(mapTableButton != null)
             mapTableButton.showBackground(false);
+        customViewButton.showBackground(false);
     }
     private void setMapTableView() {
         changeTableView(new GMap(formController, this));
         mapTableButton.showBackground(true);
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
+        customViewButton.showBackground(false);
     }
 
     private void setCustomTableView() {
@@ -150,6 +153,7 @@ public class GGridController extends GAbstractTableController {
             mapTableButton.showBackground(false);
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
+        customViewButton.showBackground(true);
     }
 
     private boolean manual;
