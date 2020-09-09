@@ -1,16 +1,8 @@
 function calendar(element, listJsObject, controller) {
-    var listJsObjectIndex = listJsObject.map((obj, index) => {
-        var indexObj = Object.assign({}, obj);
-        return Object.assign(indexObj, {index: index});
-    });
+    var listJsObjectIndex = listJsObject.map((obj, index) => Object.assign({}, obj, {index: index}));
     setTimeout(function () {
-        element.style.position = 'absolute';
-        element.style.top = '0px';
-        element.style.left = '0px';
-        element.style.bottom = '0px';
-        element.style.right = '0px';
-
         var calendar = new FullCalendar.Calendar(element, {
+            height: 'parent',
             timeZone: 'UTC',
             firstDay: 1,
             headerToolbar: {

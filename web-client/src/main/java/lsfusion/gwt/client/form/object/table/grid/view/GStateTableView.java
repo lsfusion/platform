@@ -223,13 +223,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     private long lastRendererDropped = 0;
     protected void updateRendererState(boolean set) {
-        Runnable setFilter = () -> {
-            com.google.gwt.dom.client.Element element = getRendererAreaElement();
-            if (set)
-                element.getStyle().setProperty("filter", "opacity(0.5)");
-            else
-                element.getStyle().setProperty("filter", "opacity(1)");
-        };
+        Runnable setFilter = () -> setOpacity(set, getRendererAreaElement());
 
         if(set) {
             long wasRendererDropped = lastRendererDropped;
@@ -442,6 +436,15 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             convert.push(object);
         }
         return convert;
+    }
+
+    protected static void setOpacity(boolean updateState, Element element) {
+        if (updateState) {
+            element.getStyle().setProperty("filter", "opacity(0.5)");
+        } else {
+            //there is a bug with position:fixed and opacity parameter
+            element.getStyle().setProperty("filter", "");
+        }
     }
 
     static class WrapperObject extends JavaScriptObject {
