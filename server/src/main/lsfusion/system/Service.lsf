@@ -276,11 +276,6 @@ makeHeapDump '{service.make.heap.dump}'  INTERNAL  'lsfusion.server.physics.admi
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
-platformVersion = DATA TEXT();
-apiVersion = DATA INTEGER();
-synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
-onStarted() + { synchronizeVersions(); }
-
 CLASS Setting '{service.setting}';
 TABLE setting (Setting);
 
