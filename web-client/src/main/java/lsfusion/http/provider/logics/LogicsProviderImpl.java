@@ -55,6 +55,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         FileUtils.APP_CSS_FOLDER_URL = appPath + "/static/css/";
         FileUtils.APP_CLIENT_IMAGES_FOLDER_URL = appPath + "/main/static/images/";
         FileUtils.APP_TEMP_FOLDER_URL = appPath + "/WEB-INF/temp";
+        FileUtils.APP_PATH = appPath;
 
         setHost(host);
         setPort(Integer.parseInt(port));

@@ -148,7 +148,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public void update(Boolean updateState) {
         updateModify(false);
         if(updateState != null)
-            updateState(updateState);
+            GStateTableView.setOpacity(updateState, getTableElement());
     }
 
     private void updateModify(boolean modifyGroupObject) {
@@ -557,14 +557,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             for(GGroupObjectValue columnKey : columnKeys.get(property))
                 result.add(getSelectedColumn(property, columnKey));
         return result;
-    }
-
-    public void updateState(boolean updateState) {
-        Element element = getTableElement();
-        if(updateState)
-            element.getStyle().setProperty("opacity", "0.5");
-        else
-            element.getStyle().setProperty("opacity", "");
     }
 
     public void removeProperty(GPropertyDraw property) {

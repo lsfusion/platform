@@ -1,5 +1,6 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
 <%@ page isELIgnored="false" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 
@@ -106,6 +107,16 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
         <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"></script>
+
+        <c:forEach items="${filesUrls}" var="fileUrl">
+            <c:if test="${fileUrl.endsWith('js')}">
+                <script type="text/javascript" src="${fileUrl}"></script>
+            </c:if>
+            <c:if test="${fileUrl.endsWith('css')}">
+                <link rel="stylesheet" type="text/css" href="${fileUrl}"/>
+            </c:if>
+        </c:forEach>
+
     </head>
     <body>
         <script language="JavaScript">

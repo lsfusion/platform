@@ -35,6 +35,8 @@ public class ScriptingGroupObject {
     public GroupObjectEntity neighbourGroupObject;
     public LogicsModule.InsertType insertType;
 
+    public String customRenderFunction;
+
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> integrationSIDs) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
 
@@ -57,6 +59,10 @@ public class ScriptingGroupObject {
         } else {
             this.pivotOptions = pivotOptions;
         }
+    }
+
+    public void setCustomTypeRenderFunction(String customRenderFunction) {
+        this.customRenderFunction = customRenderFunction;
     }
 
     public void setPageSize(Integer pageSize) {

@@ -7,11 +7,9 @@ import com.google.gwt.dom.client.StyleElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RequiresResize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import org.vectomatic.dom.svg.OMSVGDocument;
 import org.vectomatic.dom.svg.OMSVGFEColorMatrixElement;
 import org.vectomatic.dom.svg.OMSVGFilterElement;
@@ -131,7 +129,6 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         if(map == null) {
             markerClusters = createMarkerClusters();
             map = createMap(renderElement, markerClusters);
-            renderElement.getStyle().setProperty("zIndex", "0"); // need this because leaflet uses z-indexes and therefore dialogs for example are shown below layers
         }
 
         Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();

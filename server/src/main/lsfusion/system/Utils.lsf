@@ -92,6 +92,9 @@ makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.
 resourceFile '{utils.resource.file}' = DATA LOCAL FILE ();
 readResource '{utils.read.resource}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourceAction' (STRING[100]);
 
+resourceFiles = DATA LOCAL RAWFILE (STRING);
+readResources  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcesAction' (STRING);
+
 // ---------------------------------- Выполнение cmd  ---------------------------------- //
 cmd '{utils.cmd}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction' (TEXT, BOOLEAN);
 cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL); }

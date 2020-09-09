@@ -131,6 +131,8 @@ public class ScriptingFormEntity {
             groupObj.setListViewType(groupObject.listViewType);
         if(groupObject.pivotOptions != null)
             groupObj.setPivotOptions(groupObject.pivotOptions);
+        if (groupObject.customRenderFunction != null)
+            groupObj.setCustomRenderFunction(groupObject.customRenderFunction);
 
         if (groupObject.pageSize != null) {
             groupObj.pageSize = groupObject.pageSize;

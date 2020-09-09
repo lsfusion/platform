@@ -1,5 +1,6 @@
 package lsfusion.interop.logics;
 
+import lsfusion.base.Pair;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -7,11 +8,15 @@ import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
+import org.apache.commons.net.util.Base64;
 import org.castor.core.util.Base64Decoder;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static lsfusion.base.BaseUtils.trimToNull;
 
@@ -43,10 +48,21 @@ public class LogicsSessionObject {
             if (jnlpUrls != null && contextPath != null) {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
             }
+            List<Pair<String, RawFileData>> files = getRawFileDataFromJson(json.optJSONArray("resourceFiles"));
 
-            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI, jnlpUrls);
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI, jnlpUrls, files);
         }
         return serverSettings;
+    }
+
+    private List<Pair<String, RawFileData>> getRawFileDataFromJson(JSONArray jsonArray) {
+        List<Pair<String, RawFileData>> files = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            String file = new String(Base64.decodeBase64(jsonArray.optJSONObject(i).optString("file")));
+            String fileName = jsonArray.optJSONObject(i).optString("name");
+            files.add(Pair.create(fileName, new RawFileData(file.getBytes())));
+        }
+        return files;
     }
 
     private RawFileData getRawFileData(String base64) {
