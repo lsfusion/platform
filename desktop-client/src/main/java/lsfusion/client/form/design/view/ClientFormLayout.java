@@ -49,12 +49,13 @@ public class ClientFormLayout extends JPanel {
         setLayout(new BorderLayout());
 
         addContainers(mainContainer);
-        add(getComponentView(mainContainer), BorderLayout.CENTER);
-//        JScrollPane scroll = new JScrollPane();
-//        scroll.getVerticalScrollBar().setUnitIncrement(14);
-//        scroll.getHorizontalScrollBar().setUnitIncrement(14);
-//        scroll.setViewportView(getComponentView(mainContainer));
-//        add(scroll, BorderLayout.CENTER);
+        
+        JScrollPane scroll = new JScrollPane();
+        scroll.getVerticalScrollBar().setUnitIncrement(14);
+        scroll.getHorizontalScrollBar().setUnitIncrement(14);
+        scroll.setViewportView(getComponentView(mainContainer));
+        scroll.setBorder(null);
+        add(scroll, BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {

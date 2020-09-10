@@ -1,7 +1,6 @@
 package lsfusion.client.form.object.panel.controller;
 
 import lsfusion.base.file.RawFileData;
-import lsfusion.base.lambda.Callback;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.JComponentPanel;
@@ -63,8 +62,7 @@ public class PropertyPanelController {
 
     public boolean requestFocusInWindow() {
         if (views != null && !views.isEmpty()) {
-            views.values().iterator().next().getFocusComponent().requestFocusInWindow();
-            return true;
+            return views.values().iterator().next().getFocusComponent().requestFocusInWindow();
         }
         return false;
     }

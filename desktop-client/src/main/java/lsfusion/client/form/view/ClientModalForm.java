@@ -134,6 +134,8 @@ public class ClientModalForm extends JDialog {
                     Component defaultComponent = form.getLayout().getFocusTraversalPolicy().getDefaultComponent(form.getLayout());
                     if (defaultComponent != null) {
                         defaultComponent.requestFocusInWindow();
+                    } else {
+                        form.focusFirstComponent();
                     }
 
                     removeWindowListener(this);

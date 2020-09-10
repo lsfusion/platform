@@ -105,4 +105,12 @@ public class ClientFormDockable extends ClientDockable {
             MainFrame.instance.setCurrentForm(clientForm);
     }
 
+    @Override
+    protected boolean focusDefaultComponent() {
+        boolean focusReceived = super.focusDefaultComponent();
+        if (!focusReceived) {
+            return clientForm.focusFirstComponent();
+        }
+        return false;
+    }
 }

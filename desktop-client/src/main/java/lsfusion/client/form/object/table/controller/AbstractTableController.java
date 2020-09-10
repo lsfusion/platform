@@ -7,7 +7,6 @@ import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.panel.controller.PanelController;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.view.ToolbarView;
-import lsfusion.client.form.property.ClientPropertyDraw;
 
 import java.awt.*;
 import java.util.List;
@@ -35,6 +34,10 @@ public abstract class AbstractTableController implements TableController {
     @Override
     public ClientFormController getFormController() {
         return formController;
+    }
+    
+    public PanelController getPanelController() {
+        return panel;
     }
 
     @Override
