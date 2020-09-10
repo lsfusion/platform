@@ -1,3 +1,10 @@
+## 4.0-beta2 (2020-09-10)
+##### Implemented enhancements:
+ - Custom javascript list view support [#195](https://github.com/lsfusion/platform/issues/195)
+ - Implement reversed internationalization [#247](https://github.com/lsfusion/platform/issues/247)
+##### Fixed bugs:
+ - Low performance when there is a very complex filter / order with a lot of prereads / materialized changes [#430](https://github.com/lsfusion/platform/issues/430)
+## ----- PREVIOUS RELEASES --------
 ## 4.0-beta1 (2020-08-21)
 ##### Implemented enhancements:
  - Implement support of edit object on double click and in "link mode" [#420](https://github.com/lsfusion/platform/issues/420)
@@ -5,7 +12,6 @@
  - Allow action images to be dynamic (calculated and not set with literal) [#418](https://github.com/lsfusion/platform/issues/418)
  - Add "register" and "forget password" functionality to login form [#279](https://github.com/lsfusion/platform/issues/279)
  - Timeout for EXTERNAL HTTP [#415](https://github.com/lsfusion/platform/issues/415)
-## ----- PREVIOUS RELEASES --------
 ## 4.0-beta0 (2020-07-24)
 ##### Implemented major enhancements:
  - Extended list view support (i.e. pivot, map, diagram) [#70](https://github.com/lsfusion/platform/issues/70)
