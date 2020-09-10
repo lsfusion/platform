@@ -15,6 +15,7 @@ import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -48,9 +49,11 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
         addCDockableStateListener(new CDockableAdapter() {
             @Override
             public void visibilityChanged(CDockable dockable) {
-                initDefaultComponent();
-                if (defaultComponent != null) {
-                    removeCDockableStateListener(this);
+                if (dockable.isVisible()) {
+                    initDefaultComponent();
+                    if (defaultComponent != null) {
+                        removeCDockableStateListener(this);
+                    }
                 }
             }
         });
@@ -59,6 +62,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
             @Override
             public void focusGained(CDockable dockable) {
                 initDefaultComponent();
+                SwingUtilities.invokeLater(ClientDockable.this::focusDefaultComponent);
                 if (defaultComponent != null) {
                     removeFocusListener(this);
                 }
@@ -71,13 +75,9 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
 
     private void initDefaultComponent() {
         if (defaultComponent == null) {
-            defaultComponent = focusDefaultComponent();
             FocusTraversalPolicy traversalPolicy = contentContainer.getFocusTraversalPolicy();
             if (traversalPolicy != null) {
                 defaultComponent = traversalPolicy.getDefaultComponent(contentContainer);
-                if (defaultComponent != null) {
-                    defaultComponent.requestFocusInWindow();
-                }
             }
         }
     }
@@ -135,22 +135,13 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
     public void requestFocusInWindow() {
         // to ensure dockable itself will be focused 
         getControl().getController().setFocusedDockable(new DefaultFocusRequest(intern(), null, true, true, true, true));
-
-        // When user uses desktop client theme with titles in every dockable (with tabs under dockable; other than Eclipse) 
-        // the newly opened form receives no focus. Dockable title receives it instead. 
-        focusDefaultComponent();
     }
 
-    private Component focusDefaultComponent() {
-        FocusTraversalPolicy traversalPolicy = contentContainer.getFocusTraversalPolicy();
-        if (traversalPolicy != null) {
-            Component defaultComponent = traversalPolicy.getDefaultComponent(contentContainer);
-            if (defaultComponent != null) {
-                defaultComponent.requestFocusInWindow();
-                return defaultComponent;
-            }
+    protected boolean focusDefaultComponent() {
+        if (defaultComponent != null) {
+            return defaultComponent.requestFocusInWindow();
         }
-        return null;
+        return false;
     }
 
     public void setBlockingDockable(ClientFormDockable blockingDockable) {

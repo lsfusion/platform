@@ -19,7 +19,7 @@ public class FormFocusTraversalPolicy extends LayoutFocusTraversalPolicy {
     @Override
     public Component getDefaultComponent(Container aContainer) {
         if (list.size() == 0) {
-            return super.getDefaultComponent(aContainer);
+            return null;
         }
         Component c = list.get(0);
         if (c instanceof Container) {

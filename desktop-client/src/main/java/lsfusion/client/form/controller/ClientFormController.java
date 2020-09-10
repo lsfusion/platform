@@ -133,8 +133,8 @@ public class ClientFormController implements AsyncListener {
 
     private final ClientFormLayout formLayout;
 
-    private final Map<ClientGroupObject, GridController> controllers = new HashMap<>();
-    private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new HashMap<>();
+    private final Map<ClientGroupObject, GridController> controllers = new LinkedHashMap<>();
+    private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new LinkedHashMap<>();
 
     private final Map<ClientGroupObject, List<JComponentPanel>> filterViews = new HashMap<>();
 
@@ -1736,5 +1736,32 @@ public class ClientFormController implements AsyncListener {
                 return !binding.showing();
         }
         return true;
+    }
+
+    public boolean focusFirstComponent() {
+        for (TreeGroupController treeController : treeControllers.values()) {
+            if (treeController.focusFirstComponent()) {
+                return true;
+            }
+        }
+
+        for (GridController controller : controllers.values()) {
+            if (controller.focusFirstComponent()) {
+                return true;
+            }
+        }
+
+        for (TreeGroupController treeController : treeControllers.values()) {
+            if (treeController.getPanelController().focusFirstComponent()) {
+                return true;
+            }
+        }
+
+        for (GridController controller : controllers.values()) {
+            if (controller.getPanelController().focusFirstComponent()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

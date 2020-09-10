@@ -21,8 +21,8 @@ import lsfusion.client.form.property.ClientPropertyReader;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class TreeGroupController extends AbstractTableController {
     public final ClientTreeGroup treeGroup;
@@ -310,5 +310,9 @@ public class TreeGroupController extends AbstractTableController {
 
     public ClientGroupObject getCurrentGroupObject() {
         return ((TreeGroupNode)tree.currentTreePath.getLastPathComponent()).group;
+    }
+
+    public boolean focusFirstComponent() {
+        return tree.requestFocusInWindow();
     }
 }

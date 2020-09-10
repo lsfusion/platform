@@ -25,14 +25,14 @@ public class PanelController {
         formLayout = iformLayout;
     }
 
-    public void requestFocusInWindow() {
-        // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
+    public boolean focusFirstComponent() {
         for (ClientPropertyDraw property : form.getPropertyDraws()) {
             PropertyPanelController propController = propertyControllers.get(property);
             if (propController != null && propController.requestFocusInWindow()) {
-                break;
+                return true;
             }
         }
+        return false;
     }
 
     public void addProperty(ClientPropertyDraw property) {
