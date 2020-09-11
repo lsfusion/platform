@@ -53,7 +53,7 @@ public class TooltipManager {
         mouseY = offsetY;
         currentText = tooltipText;
 
-        if(!isRedundantString(tooltipText)) {
+        if(tooltipText != null) {
             mouseIn = true;
 
             Scheduler.get().scheduleFixedDelay(() -> {
@@ -85,11 +85,11 @@ public class TooltipManager {
         currentText = "";
 
         if(tooltipHelper != null) {
-            final String tooltipText = tooltipHelper.getTooltip();
+            String tooltipText = tooltipHelper.getTooltip();
 
             // we want to delay tooltip hiding to check if the next tooltip showing is the same (this way we'll avoid blinking)
             Scheduler.get().scheduleFixedDelay(() -> {
-                if (!(mouseIn && tooltipText.equals(currentText))) {
+                if (!(mouseIn && GwtClientUtils.nullEquals(tooltipText, currentText))) {
                     if (tooltip != null) {
                         tooltip.hide();
                         tooltip = null;
