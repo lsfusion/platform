@@ -112,6 +112,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         outStream.writeBoolean(entity.isParent != null);
         outStream.writeBoolean(pool.context.view.entity.isMap(entity));
+        outStream.writeBoolean(pool.context.view.entity.isCalendar(entity));
 
         boolean needVScroll;
         if (needVerticalScroll == null) {

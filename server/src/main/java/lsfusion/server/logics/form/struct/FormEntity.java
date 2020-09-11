@@ -1069,6 +1069,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return false;
     }
 
+    @IdentityLazy
+    public boolean isCalendar(GroupObjectEntity entity) {
+        Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
+        for (PropertyDrawEntity property : propertyDrawsIt)
+            if (property.isList(this) && entity.equals(property.getToDraw(this))) {
+                String name = property.getSID();
+                if (name.matches("date\\(\\w*\\)") || name.matches("time\\(\\w*\\)"))
+                    return true;
+            }
+        return false;
+    }
+
     public void finalizeAroundInit() {
         groups.finalizeChanges();
         treeGroups.finalizeChanges();
