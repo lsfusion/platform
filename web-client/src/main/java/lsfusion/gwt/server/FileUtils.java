@@ -3,6 +3,7 @@ package lsfusion.gwt.server;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.client.base.view.ClientColorUtils;
@@ -191,13 +192,16 @@ public class FileUtils {
     }
 
     public static String saveFormFile(RawFileData fileData, FormSessionObject<?> sessionObject) { // multiple usages (form scoped), so should be deleted just right after form is closed
-        String fileName = BaseUtils.randomString(15);
-        File file = saveFile(fileName, fileData);
-        if(file != null) {
-            sessionObject.savedTempFiles.add(file);
-            return fileName;
+        String fileName = SystemUtils.generateID(fileData.getBytes());
+        if (!sessionObject.savedTempFiles.containsKey(fileName)) {
+            File file = saveFile(fileName, fileData);
+            if (file != null) {
+                sessionObject.savedTempFiles.put(fileName, file);
+            } else {
+                return null;
+            }
         }
-        return null;
+        return fileName;
     }
 
     private static File saveFile(String fileName, RawFileData fileData) {
