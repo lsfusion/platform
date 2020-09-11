@@ -95,7 +95,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
 
             for (int c = 0; c < propColumnKeys.size(); c++) {
                 GGroupObjectValue columnKey = propColumnKeys.get(c);
-                String columnName = property.propertyFormName + (columnKey.isEmpty() ? "" : "_" + c);
+                String columnName = property.integrationSID + (columnKey.isEmpty() ? "" : "_" + c);
                 columnMap.put(columnName, new Column(property, columnKey));
                 columns.push(fromString(columnName));
             }

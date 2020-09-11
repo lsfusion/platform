@@ -21,25 +21,16 @@ public class GCalendar extends GSimpleStateTableView {
         var thisObj = this;
         var controller = thisObj.@GCalendar::getController(*)();
 
-        function getKey(obj, keyName) {
-            var regexp = new RegExp(keyName + '\(\w*\)');
-            for (var key in obj) {
-                if (regexp.test(key)){
-                    return key;
-                }
-            }
-            return null;
-        }
-
-        function reMapList() {
+        function remapList() {
             var events = [];
             for (var i = 0; i < list.length; i++) {
-                var startKey = getKey(list[i], 'date') == null ? getKey(list[i], 'time') : getKey(list[i], 'date');
+                var start = list[i]['time'] == null ? 'date' : 'time';
+
                 var event = {
-                    'title': list[i][getKey(list[i], 'name')],
-                    'start': list[i][startKey],
+                    'title': list[i]['name'],
+                    'start': list[i][start],
                     'index': i,
-                    'startKey' : startKey
+                    'startKey' : start
                 };
                 events.push(event);
             }
@@ -58,7 +49,7 @@ public class GCalendar extends GSimpleStateTableView {
                 },
                 editable: true,
                 dayMaxEvents: 4,
-                events: reMapList(),
+                events: remapList(),
                 eventChange: function (info) {
                     controller.changeDateTimeProperty(info.event.extendedProps.startKey, list[info.event.extendedProps.index], info.event.start.getFullYear(),
                         info.event.start.getMonth() + 1, info.event.start.getUTCDate(), info.event.start.getUTCHours(),

@@ -1074,8 +1074,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
         for (PropertyDrawEntity property : propertyDrawsIt)
             if (property.isList(this) && entity.equals(property.getToDraw(this))) {
-                String name = property.getSID();
-                if (name.matches("date\\(\\w*\\)") || name.matches("time\\(\\w*\\)"))
+                String name = property.getIntegrationSID();
+                if (name != null && (name.equals("date") || name.equals("time")))
                     return true;
             }
         return false;
