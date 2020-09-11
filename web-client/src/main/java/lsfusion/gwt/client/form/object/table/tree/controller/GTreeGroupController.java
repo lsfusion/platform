@@ -207,7 +207,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public GGroupObjectValue getSelectedColumnKey() {
-        return null; // пока не поддерживаются группы в колонки
+        return GGroupObjectValue.EMPTY; // пока не поддерживаются группы в колонки
     }
 
     @Override
