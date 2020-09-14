@@ -265,15 +265,20 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         columnMap.foreachEntry((key, value) -> columnCaptionMap.putIfAbsent(value.property, key));
 
         List<List<GPropertyDraw>> pivotColumns = gridController.getPivotColumns();
+        List<List<GPropertyDraw>> pivotRows = gridController.getPivotRows();
+        List<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
+
+        if(pivotColumns.isEmpty() && pivotRows.isEmpty() && pivotMeasures.isEmpty() && selectedProperty != null) {
+            pivotRows.add(Collections.singletonList(selectedProperty));
+        }
+
         Object[] columns = getPivotCaptions(columnCaptionMap, pivotColumns, COLUMN);
         Integer[] splitCols = getPivotSplits(pivotColumns, COLUMN);
 
-        List<List<GPropertyDraw>> pivotRows = gridController.getPivotRows();
         Object[] rows = getPivotCaptions(columnCaptionMap, pivotRows, null);
         Integer[] splitRows = getPivotSplits(pivotRows, null);
 
         JsArrayString measures = JavaScriptObject.createArray().cast();
-        List<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
         for(GPropertyDraw property : pivotMeasures) {
             String columnCaption = columnCaptionMap.get(property);
             if(columnCaption != null) {
