@@ -93,16 +93,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>fileDownloadHandler</servlet-name>
-        <url-pattern>/downloadFile</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>actionFileDownloadHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>actionFileDownloadHandler</servlet-name>
-        <url-pattern>/downloadActionFile</url-pattern>
+        <url-pattern>/downloadFile/*</url-pattern>
     </servlet-mapping>
 
     <!--spring MVC-->
