@@ -178,7 +178,7 @@ public class FileUtils {
     }
 
     public static String saveApplicationFile(RawFileData fileData) { // for login page, logo and icon images
-        String fileName = BaseUtils.randomString(15);
+        String fileName = SystemUtils.generateID(fileData.getBytes());
         if(saveFile(fileName, fileData) != null)
             return fileName;
         return null;
