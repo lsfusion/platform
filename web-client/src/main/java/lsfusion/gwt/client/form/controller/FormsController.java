@@ -4,12 +4,10 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -38,7 +36,6 @@ public abstract class FormsController {
     private int focusOrderCount;
 
     private final WindowsController windowsController;
-    private final ResizableSimplePanel formsContainer;
 
     private final GToolbarButton linkEditButton;
 
@@ -67,8 +64,6 @@ public abstract class FormsController {
         };
         setCompactSize(fullScreenButton);
         toolbarView.addComponent(fullScreenButton);
-
-        formsContainer = new ResizableSimplePanel();
 
         tabsPanel = new FlexTabbedPanel("formsTabBar", toolbarView);
 
@@ -110,7 +105,7 @@ public abstract class FormsController {
     }
 
     public void updateFullScreenButton(){
-        fullScreenButton.setTitle(fullScreenMode ? messages.fullScreenModeDisable() : messages.fullScreenModeEnable() + " (ALT+ENTER)");
+        fullScreenButton.setTitle(fullScreenMode ? messages.fullScreenModeDisable() : messages.fullScreenModeEnable() + " (ALT+F11)");
         fullScreenButton.setModuleImagePath(fullScreenMode ? "minimize.png" : "maximize.png");
     }
 
@@ -120,11 +115,7 @@ public abstract class FormsController {
 
     public void setFullScreenMode(boolean fullScreenMode) {
         if (this.fullScreenMode == null || fullScreenMode != this.fullScreenMode) {
-            if (fullScreenMode) {
-                maximizeTabsPanel();
-            } else {
-                normalizeTabsPanel();
-            }
+            windowsController.setFullScreenMode(fullScreenMode);
             this.fullScreenMode = fullScreenMode;
             updateFullScreenButton();
         }
@@ -145,22 +136,9 @@ public abstract class FormsController {
 
         restoreFullScreen();
     }
-    public void updateRoot(Widget widget) {
-        RootLayoutPanel.get().clear();
-        RootLayoutPanel.get().add(widget);
-    }
-
-    public void maximizeTabsPanel(){
-        updateRoot(tabsPanel);
-    }
-
-    public void normalizeTabsPanel() {
-        formsContainer.setFillWidget(tabsPanel);
-        updateRoot(windowsController.getRootView());
-    }
 
     public Widget getView() {
-        return formsContainer;
+        return tabsPanel;
     }
 
     public FormContainer openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, Event initFilterEvent, WindowHiddenHandler hiddenHandler) {

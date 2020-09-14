@@ -284,6 +284,14 @@ public class SplitWindowElement extends WindowElement {
         setVisible(splitPanel.getWidgetCount() > 0);
     }
     
+    public void setBorderWindowsHidden(boolean hidden) {
+        for (WindowElement windowElement : windowDirections.keySet()) {
+            if (isChildVisible(windowElement) && windowDirections.get(windowElement) != CENTER) {
+                splitPanel.setWidgetHidden(windowElement.getView(), hidden);
+            }
+        }
+    }
+    
     @Override
     protected void setChildSize(WindowElement child) {
         if (isChildVisible(child)) {
