@@ -1062,8 +1062,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
         for(PropertyDrawEntity property : propertyDrawsIt)
             if(property.isList(this) && entity.equals(property.getToDraw(this))) {
-                String name = property.getSID();
-                if(name.equals("longitude") || name.equals("latitude") || name.equals("polygon"))
+                String name = property.getIntegrationSID();
+                if(name != null && (name.equals("longitude") || name.equals("latitude") || name.equals("polygon")))
                     return true;
             }
         return false;
@@ -1075,7 +1075,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         for (PropertyDrawEntity property : propertyDrawsIt)
             if (property.isList(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getIntegrationSID();
-                if (name != null && (name.equals("date") || name.equals("time")))
+                if (name != null && (name.equals("date") || name.equalsIgnoreCase("datetime")))
                     return true;
             }
         return false;

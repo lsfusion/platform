@@ -20,17 +20,16 @@ public class GCalendar extends GSimpleStateTableView {
     protected native void runFunction(Element element, JavaScriptObject list)/*-{
         var thisObj = this;
         var controller = thisObj.@GCalendar::getController(*)();
+        var start = list[0]['time'] == null ? 'date' : 'time';
+        var initialView = start === 'date' ? 'dayGridMonth' : 'dayGridWeek';
 
         function remapList() {
             var events = [];
             for (var i = 0; i < list.length; i++) {
-                var start = list[i]['time'] == null ? 'date' : 'time';
-
                 var event = {
                     'title': list[i]['name'],
                     'start': list[i][start],
-                    'index': i,
-                    'startKey' : start
+                    'index': i
                 };
                 events.push(event);
             }
@@ -39,19 +38,20 @@ public class GCalendar extends GSimpleStateTableView {
 
         setTimeout(function () {
             var calendar = new $wnd.FullCalendar.Calendar(element, {
+                initialView: initialView,
                 height: 'parent',
                 timeZone: 'UTC',
                 firstDay: 1,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,dayGridWeek,timeGridDay'
                 },
                 editable: true,
                 dayMaxEvents: 4,
                 events: remapList(),
                 eventChange: function (info) {
-                    controller.changeDateTimeProperty(info.event.extendedProps.startKey, list[info.event.extendedProps.index], info.event.start.getFullYear(),
+                    controller.changeDateTimeProperty(start, list[info.event.extendedProps.index], info.event.start.getFullYear(),
                         info.event.start.getMonth() + 1, info.event.start.getUTCDate(), info.event.start.getUTCHours(),
                         info.event.start.getUTCMinutes(), info.event.start.getUTCSeconds());
                 }
