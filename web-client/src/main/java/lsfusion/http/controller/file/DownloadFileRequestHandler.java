@@ -24,8 +24,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         String fileName = request.getParameter("name");
         String displayName = request.getParameter("displayName");
         String extension = request.getParameter("extension");
-        String actionfile = request.getParameter("filetype");
-        boolean actionFile = actionfile != null && actionfile.equals("action");
+        boolean actionFile = request.getRequestURI().equals("/downloadActionFile");
 
         File file = new File(FileUtils.APP_TEMP_FOLDER_URL, fileName);
         

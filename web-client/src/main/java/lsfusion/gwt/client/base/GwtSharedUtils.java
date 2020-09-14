@@ -327,7 +327,6 @@ public class GwtSharedUtils {
 
     public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
         return  (actionFile ? "downloadActionFile" : "downloadFile") +
-                ("?name=" + name + (displayName != null ? "&displayName=" + displayName : "") + (extension != null ? "&extension=" + extension : "")) +
-                (actionFile ? "&filetype=action" : "");
+                "?name=" + name + (displayName != null ? "&displayName=" + displayName : "") + (extension != null ? "&extension=" + extension : "");
     }
 }
