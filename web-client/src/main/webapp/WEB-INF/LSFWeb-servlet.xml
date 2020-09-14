@@ -41,8 +41,6 @@
 
     <bean id="fileDownloadHandler" class="lsfusion.http.controller.file.DownloadFileRequestHandler" />
 
-    <bean id="actionFileDownloadHandler" class="lsfusion.http.controller.file.DownloadFileRequestHandler" />
-
     <bean id="externalHandler" class="lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler"/>
 
     <bean id="externalFormHandler" class="lsfusion.http.controller.ExternalFormRequestHandler"/>

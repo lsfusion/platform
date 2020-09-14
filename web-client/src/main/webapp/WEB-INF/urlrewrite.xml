@@ -15,7 +15,7 @@
         <set type="expires">30 days</set>
     </rule>
 
-    <!-- webapp, gwt/public -->
+    <!-- webapp, gwt/public, files -->
     <rule match-type="regex">
         <from>.*\/static(\/.*)?</from>
         <set type="response-header" name="Cache-Control">public, max-age=86400</set>
