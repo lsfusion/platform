@@ -1,7 +1,10 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -262,12 +265,23 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return evt.ctrlKey;
     }-*/;
 
+    private static native Boolean eventGetShiftKey(NativeEvent evt) /*-{
+        return evt.shiftKey;
+    }-*/;
+    
+    private static native Boolean eventGetAltKey(NativeEvent evt) /*-{
+        return evt.altKey;
+    }-*/;
+
     public static void checkLinkEditModeEvents(FormsController formsController, NativeEvent event) {
         Boolean ctrlKey = eventGetCtrlKey(event);
         if(ctrlKey != null) {
-            if (!ctrlKey && GFormController.isLinkEditModeWithCtrl())
+            Boolean shiftKey = eventGetShiftKey(event);
+            Boolean altKey = eventGetAltKey(event);
+            boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
+            if (!onlyCtrl && GFormController.isLinkEditModeWithCtrl())
                 formsController.updateLinkEditMode(false, false);
-            if (ctrlKey && !GFormController.isLinkEditMode())
+            if (onlyCtrl && !GFormController.isLinkEditMode())
                 formsController.updateLinkEditMode(true, true);
         }
    }
