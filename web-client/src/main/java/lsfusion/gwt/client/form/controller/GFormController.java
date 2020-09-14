@@ -255,7 +255,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         NativeEvent nativeEvent = event.getNativeEvent();
         checkLinkEditModeEvents(formsController, nativeEvent);
 
-        if(GKeyStroke.isAltEnterEvent(nativeEvent)) {
+        if(GKeyStroke.isSwitchFullScreenModeEvent(nativeEvent)) {
             formsController.switchFullScreenMode();
         }
     }
