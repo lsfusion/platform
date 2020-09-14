@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 
@@ -9,7 +10,6 @@ import java.util.*;
 public abstract class WindowsController extends CustomSplitLayoutPanel {
     private Map<GAbstractWindow, WindowElement> windowElementsMapping = new HashMap<>();
     private SplitWindowElement rootElement;
-    private Widget rootView;
 
     public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
 
@@ -26,7 +26,7 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
 
         restoreWindowsSizes();
 
-        this.rootView = rootView;
+        RootLayoutPanel.get().add(rootView);
     }
 
     private void initializeNodes(List<GAbstractWindow> windows, WindowNode rootNode) {
@@ -181,8 +181,10 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         }
     }
 
-    public Widget getRootView() {
-        return rootView;
+    // in current layout formsWindow is always added as the CENTER widget.
+    // so to enable full screen mode we only need to hide all non-CENTER windows in root split panel
+    public void setFullScreenMode(boolean fullScreen) {
+        rootElement.setBorderWindowsHidden(fullScreen);
     }
 
     public abstract Widget getWindowView(GAbstractWindow window);
