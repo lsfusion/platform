@@ -1070,12 +1070,24 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @IdentityLazy
-    public boolean isCalendar(GroupObjectEntity entity) {
+    public boolean isCalendarDate(GroupObjectEntity entity) {
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
         for (PropertyDrawEntity property : propertyDrawsIt)
             if (property.isList(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getIntegrationSID();
-                if (name != null && (name.equals("date") || name.equalsIgnoreCase("datetime")))
+                if (name != null && (name.equals("date")))
+                    return true;
+            }
+        return false;
+    }
+
+    @IdentityLazy
+    public boolean isCalendarDatetime(GroupObjectEntity entity) {
+        Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
+        for (PropertyDrawEntity property : propertyDrawsIt)
+            if (property.isList(this) && entity.equals(property.getToDraw(this))) {
+                String name = property.getIntegrationSID();
+                if (name != null && (name.equalsIgnoreCase("dateTime")))
                     return true;
             }
         return false;

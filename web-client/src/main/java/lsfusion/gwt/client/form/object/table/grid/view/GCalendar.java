@@ -8,27 +8,29 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 
 public class GCalendar extends GSimpleStateTableView {
 
-    public GCalendar(GFormController form, GGridController grid) {
+    private final String calendarDateType;
+
+    public GCalendar(GFormController form, GGridController grid, String calendarDateType) {
         super(form, grid);
+        this.calendarDateType = calendarDateType;
     }
 
     @Override
     protected void render(Element element, Element recordElement, JsArray<JavaScriptObject> list) {
-        runFunction(element, list);
+        runFunction(element, list, calendarDateType);
     }
 
-    protected native void runFunction(Element element, JavaScriptObject list)/*-{
+    protected native void runFunction(Element element, JavaScriptObject list, String calendarDateType)/*-{
         var thisObj = this;
         var controller = thisObj.@GCalendar::getController(*)();
-        var start = list[0]['time'] == null ? 'date' : 'time';
-        var initialView = start === 'date' ? 'dayGridMonth' : 'dayGridWeek';
+        var initialView = calendarDateType === 'date' ? 'dayGridMonth' : 'dayGridWeek';
 
         function remapList() {
             var events = [];
             for (var i = 0; i < list.length; i++) {
                 var event = {
                     'title': list[i]['name'],
-                    'start': list[i][start],
+                    'start': list[i][calendarDateType],
                     'index': i
                 };
                 events.push(event);
@@ -51,7 +53,7 @@ public class GCalendar extends GSimpleStateTableView {
                 dayMaxEvents: 4,
                 events: remapList(),
                 eventChange: function (info) {
-                    controller.changeDateTimeProperty(start, list[info.event.extendedProps.index], info.event.start.getFullYear(),
+                    controller.changeDateTimeProperty(calendarDateType, list[info.event.extendedProps.index], info.event.start.getFullYear(),
                         info.event.start.getMonth() + 1, info.event.start.getUTCDate(), info.event.start.getUTCHours(),
                         info.event.start.getUTCMinutes(), info.event.start.getUTCSeconds());
                 }

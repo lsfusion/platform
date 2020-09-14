@@ -535,7 +535,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         groupObject.isRecursive = clientGroupObject.isRecursive;
         groupObject.isMap = clientGroupObject.isMap;
-        groupObject.isCalendar = clientGroupObject.isCalendar;
+        groupObject.isCalendarDate = clientGroupObject.isCalendarDate;
+        groupObject.isCalendarDatetime = clientGroupObject.isCalendarDatetime;
         groupObject.parent = convertOrCast(clientGroupObject.parent);
 
         for (ClientGroupObject clientUpGroup : clientGroupObject.upTreeGroups) {
