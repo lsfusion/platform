@@ -219,4 +219,8 @@ public class GKeyStroke implements Serializable {
 //                || event.getTypeInt() == Event.ONPASTE;
         return event.getTypeInt() == Event.ONPASTE;
     }
+    
+    public static boolean isSwitchFullScreenModeEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F11 && event.getAltKey();
+    }
 }
