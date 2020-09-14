@@ -38,7 +38,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public boolean isMap;
     public boolean isCalendarDate;
-    public boolean isCalendarDatetime;
+    public boolean isCalendarDateTime;
 
     public ClassViewType viewType;
     public ListViewType listViewType;
@@ -143,7 +143,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         isRecursive = inStream.readBoolean();
         isMap = inStream.readBoolean();
         isCalendarDate = inStream.readBoolean();
-        isCalendarDatetime = inStream.readBoolean();
+        isCalendarDateTime = inStream.readBoolean();
 
         Integer ps = pool.readInt(inStream);
         if (ps != null) {

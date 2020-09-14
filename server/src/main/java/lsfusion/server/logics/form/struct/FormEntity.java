@@ -1059,37 +1059,31 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public boolean isMap(GroupObjectEntity entity) {
-        Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
-        for(PropertyDrawEntity property : propertyDrawsIt)
-            if(property.isList(this) && entity.equals(property.getToDraw(this))) {
-                String name = property.getIntegrationSID();
-                if(name != null && (name.equals("longitude") || name.equals("latitude") || name.equals("polygon")))
-                    return true;
-            }
-        return false;
+        return hasField(entity, new ArrayList<>(Arrays.asList("longitude", "latitude", "polygon")));
     }
 
     @IdentityLazy
     public boolean isCalendarDate(GroupObjectEntity entity) {
-        Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
-        for (PropertyDrawEntity property : propertyDrawsIt)
-            if (property.isList(this) && entity.equals(property.getToDraw(this))) {
-                String name = property.getIntegrationSID();
-                if (name != null && (name.equals("date")))
-                    return true;
-            }
-        return false;
+        return hasField(entity, new ArrayList<>(Collections.singletonList("date")));
+    }
+    @IdentityLazy
+    public boolean isCalendarDateTime(GroupObjectEntity entity) {
+        return hasField(entity, new ArrayList<>(Collections.singletonList("time")));
     }
 
-    @IdentityLazy
-    public boolean isCalendarDatetime(GroupObjectEntity entity) {
+    private boolean hasField(GroupObjectEntity entity, List<String> fields) {
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
-        for (PropertyDrawEntity property : propertyDrawsIt)
+        for (PropertyDrawEntity property : propertyDrawsIt) {
             if (property.isList(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getIntegrationSID();
-                if (name != null && (name.equalsIgnoreCase("dateTime")))
-                    return true;
+                if (name != null) {
+                    for (String field : fields) {
+                        if (field.equalsIgnoreCase(name))
+                            return true;
+                    }
+                }
             }
+        }
         return false;
     }
 
