@@ -24,7 +24,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         String fileName = request.getParameter("name");
         String displayName = request.getParameter("displayName");
         String extension = request.getParameter("extension");
-        boolean actionFile = request.getRequestURI().equals("/downloadFile/action");
+        boolean staticFile = request.getRequestURI().equals("/downloadFile/static");
 
         File file = new File(FileUtils.APP_TEMP_FOLDER_URL, fileName);
         
@@ -36,7 +36,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
             ByteStreams.copy(fis, response.getOutputStream());
         }
         
-        if(actionFile)
+        if(!staticFile)
             FileUtils.deleteFile(file);
     }
 
