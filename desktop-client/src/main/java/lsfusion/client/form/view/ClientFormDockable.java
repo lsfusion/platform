@@ -108,7 +108,7 @@ public class ClientFormDockable extends ClientDockable {
     @Override
     protected boolean focusDefaultComponent() {
         boolean focusReceived = super.focusDefaultComponent();
-        if (!focusReceived) {
+        if (!focusReceived && clientForm != null) {
             return clientForm.focusFirstComponent();
         }
         return false;
