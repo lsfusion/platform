@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 
@@ -17,10 +18,10 @@ public class GCalendar extends GSimpleStateTableView {
 
     @Override
     protected void render(Element element, Element recordElement, JsArray<JavaScriptObject> list) {
-        runFunction(element, list, calendarDateType);
+        runFunction(element, list, calendarDateType, getCaptions(new NativeHashMap<>()));
     }
 
-    protected native void runFunction(Element element, JavaScriptObject list, String calendarDateType)/*-{
+    protected native void runFunction(Element element, JavaScriptObject list, String calendarDateType, JsArray<JavaScriptObject> jsArray)/*-{
         var thisObj = this;
         var controller = thisObj.@GCalendar::getController(*)();
         var initialView = calendarDateType === 'date' ? 'dayGridMonth' : 'dayGridWeek';
@@ -29,13 +30,28 @@ public class GCalendar extends GSimpleStateTableView {
             var events = [];
             for (var i = 0; i < list.length; i++) {
                 var event = {
-                    'title': list[i]['name'],
+                    'title': getTitle(list[i]),
                     'start': list[i][calendarDateType],
                     'index': i
                 };
                 events.push(event);
             }
             return events;
+        }
+
+        function getTitle(listElement) {
+            var title = '';
+            for (var x in jsArray) {
+                if (title !== '')
+                    continue;
+                title = x === 'name' ? listElement[x] : '';
+            }
+            if (title === '' && jsArray.length >= 2) {
+                for (var k = 0; k < 2; k++) {
+                    title = title + ' ' + listElement[jsArray[k]];
+                }
+            }
+            return title;
         }
 
         setTimeout(function () {

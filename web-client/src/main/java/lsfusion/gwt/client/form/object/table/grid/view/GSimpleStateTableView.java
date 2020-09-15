@@ -87,7 +87,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             array.push(fromString(value.toString()));
     }
 
-    private JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap) {
+    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap) {
         JsArray<JavaScriptObject> columns = JavaScriptObject.createArray().cast();
         for (int i = 0, size = properties.size() ; i < size; i++) {
             GPropertyDraw property = properties.get(i);
