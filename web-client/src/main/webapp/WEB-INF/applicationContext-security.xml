@@ -21,6 +21,9 @@
     <!-- for login.css, logo, favicon, etc. -->
     <http pattern="/static/noauth/**" security="none"/>
 
+    <!-- we need to download logo and icon -->
+    <http pattern="/downloadFile/static" security="none"/>
+
     <!-- for favicon.ico -->
     <http pattern="/favicon.ico" security="none"/>
 
@@ -36,8 +39,6 @@
     <http pattern="/forgot-password" security="none"/>
     <http pattern="/change-password" security="none"/>
 
-    <!-- we need to download logo and icon -->
-    <http pattern="/downloadFile" security="none"/>
     <!--for backward compatibility-->
     <http pattern="/client.jnlp" security="none"/>
     <!--for jar -->
