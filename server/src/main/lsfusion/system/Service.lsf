@@ -331,7 +331,8 @@ getServerSettings() {
 
     generateJnlpUrls();
     EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
-                anonymousUI=(valueSetting('enableUI')='2'), jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles());
+                sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
+                jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles());
 } @@noauth;
 
 selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);
