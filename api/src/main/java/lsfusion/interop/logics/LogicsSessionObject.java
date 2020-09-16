@@ -43,6 +43,7 @@ public class LogicsSessionObject {
             RawFileData logicsIcon = getRawFileData(trimToNull(json.optString("logicsIcon")));
             String platformVersion = trimToNull(json.optString("platformVersion"));
             Integer apiVersion = json.optInt("apiVersion");
+            int sessionConfigTimeout = json.optInt("sessionConfigTimeout");
             boolean anonymousUI = json.optBoolean("anonymousUI");
             String jnlpUrls = trimToNull(json.optString("jnlpUrls"));
             if (jnlpUrls != null && contextPath != null) {
@@ -50,7 +51,8 @@ public class LogicsSessionObject {
             }
             List<Pair<String, RawFileData>> files = getRawFileDataFromJson(json.optJSONArray("resourceFiles"));
 
-            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI, jnlpUrls, files);
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion,
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, files);
         }
         return serverSettings;
     }
@@ -67,9 +69,5 @@ public class LogicsSessionObject {
 
     private RawFileData getRawFileData(String base64) {
         return base64 != null ? new RawFileData(Base64Decoder.decode(base64)) : null;
-    }
-
-    public String getLogicsName(SessionInfo sessionInfo) throws RemoteException {
-        return getServerSettings(sessionInfo, null, false).logicsName;
     }
 }
