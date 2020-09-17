@@ -25,13 +25,15 @@ public class LSFUrlAuthenticationFilter extends OncePerRequestFilter {
         String password = request.getParameter("password");
 
         if (userName != null && password != null) {
+            String redirectUrl;
             try {
                 SecurityContextHolder.getContext().setAuthentication(MainController.getAuthentication(request, userName, password, authenticationProvider));
-                response.sendRedirect(MainController.getURLPreservingParameters(request.getRequestURI(), Arrays.asList("username", "password"), request));
+                redirectUrl = request.getRequestURI();
             } catch (Exception e) {
                 request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
-                response.sendRedirect(MainController.getURLPreservingParameters("/login", Arrays.asList("username", "password"), request));
+                redirectUrl = "/login";
             }
+            response.sendRedirect(MainController.getURLPreservingParameters(redirectUrl, Arrays.asList("username", "password"), request));
             return;
         }
         filterChain.doFilter(request, response);

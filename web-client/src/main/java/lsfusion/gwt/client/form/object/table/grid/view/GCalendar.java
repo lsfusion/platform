@@ -21,7 +21,7 @@ public class GCalendar extends GSimpleStateTableView {
         runFunction(element, list, calendarDateType, getCaptions(new NativeHashMap<>()));
     }
 
-    protected native void runFunction(Element element, JavaScriptObject objects, String calendarDateType, JsArray<JavaScriptObject> captions)/*-{
+    protected native void runFunction(Element element, JavaScriptObject objects, String calendarDateType, JsArray<JavaScriptObject> columns)/*-{
         var thisObj = this;
         var controller = thisObj.@GCalendar::getController(*)();
         var initialView = calendarDateType === 'date' ? 'dayGridMonth' : 'dayGridWeek';
@@ -41,14 +41,14 @@ public class GCalendar extends GSimpleStateTableView {
 
         function getTitle(object) {
             var title = '';
-            for (var x in captions) {
+            for (var x in columns) {
                 if (title !== '')
                     continue;
                 title = x === 'name' ? object[x] : '';
             }
-            if (title === '' && captions.length >= 2) {
+            if (title === '' && columns.length >= 2) {
                 for (var k = 0; k < 2; k++) {
-                    title = title + ' ' + object[captions[k]];
+                    title = title + ' ' + object[columns[k]];
                 }
             }
             return title;
