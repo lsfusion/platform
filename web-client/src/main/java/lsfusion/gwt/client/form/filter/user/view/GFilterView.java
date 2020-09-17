@@ -8,10 +8,7 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.view.DialogModalBox;
-import lsfusion.gwt.client.base.view.ImageButton;
-import lsfusion.gwt.client.base.view.ResizableFocusPanel;
-import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.GFontWidthString;
@@ -34,7 +31,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     private static final String APPLY = "filtapply.png";
     private static final String CANCEL = "filtcancel.png";
 
-    private DialogModalBox filterDialog;
+    private DialogWindowBox filterDialog;
 
     private ResizableVerticalPanel filterContainer;
 
@@ -114,8 +111,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
             for (GPropertyFilter condition : conditions) {
                 addCondition(condition, logicsSupplier);
             }
-            filterDialog = new DialogModalBox(new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
-            filterDialog.setGlassEnabled(true);
+            filterDialog = new DialogWindowBox(new GFilterDialogHeader(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]"));
             filterDialog.setWidget(this);
             filterDialog.center();
             focusOnValue();
@@ -125,14 +121,31 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         }
     }
 
+    public void closeDialog() {
+        controller.filterClosed();
+        filterDialog.close();
+        filterDialog = null;
+    }
+
+    private boolean hidden = false;
+
     public void hideDialog() {
-        controller.filterHidden();
-        filterDialog.hide();
+        if(filterDialog != null && !hidden) {
+            filterDialog.hide();
+            hidden = true;
+        }
+    }
+
+    public void restoreDialog() {
+        if(filterDialog != null && hidden) {
+            filterDialog.restoreDialog();
+            hidden = false;
+        }
     }
 
     public void allRemovedPressed() {
         controller.allRemovedPressed();
-        hideDialog();
+        closeDialog();
     }
 
     public void addNewCondition() {
@@ -213,11 +226,11 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
 
     public void applyFilter() {
         controller.applyFilters(new ArrayList<>(conditionViews.keySet()), true);
-        hideDialog();
+        closeDialog();
     }
 
     public void cancelFilter() {
-        hideDialog();
+        closeDialog();
     }
 
     public void startEditing(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
