@@ -765,6 +765,9 @@ public class ReportGenerator {
 
         JasperPrint print = report.createReport(type);
         print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
+        if(type == FormPrintType.XLSX) {
+            print.setProperty(XlsReportConfiguration.PROPERTY_MAXIMUM_ROWS_PER_SHEET, "1048576");
+        }
 
         JRAbstractExporter exporter = getExporter(type);
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
