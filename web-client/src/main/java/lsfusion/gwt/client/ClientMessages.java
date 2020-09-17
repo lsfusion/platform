@@ -33,6 +33,7 @@ public interface ClientMessages extends Messages {
     String formGridPivotView();
     String formGridMapView();
     String formGridCustomView();
+    String formGridCalendarView();
 
     String formGridManualUpdate();
     String formGridUpdate();

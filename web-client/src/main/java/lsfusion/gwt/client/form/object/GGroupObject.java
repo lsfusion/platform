@@ -40,6 +40,8 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public List<GGroupObject> upTreeGroups = new ArrayList<>();
 
     public boolean isMap;
+    public boolean isCalendarDate;
+    public boolean isCalendarDateTime;
 
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
