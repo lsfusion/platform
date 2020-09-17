@@ -127,7 +127,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     protected String namespace;
     protected String canonicalName;
     protected String propertyFormName; // PropertyDrawEntity.sID
-    protected String integrationSID;
 
     public String toolTip;
 
@@ -361,10 +360,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return propertyFormName;
     }
 
-    public String getIntegrationSID() {
-        return integrationSID;
-    }
-
     public Object parseChangeValueOrNull(String s) {
         if (changeWYSType == null) {
             return null;
@@ -505,7 +500,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         sID = pool.readString(inStream);
         canonicalName = pool.readString(inStream);
         propertyFormName = pool.readString(inStream);
-        integrationSID = pool.readString(inStream);
 
         toolTip = pool.readString(inStream);
 

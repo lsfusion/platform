@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,7 +119,10 @@ public class MainController {
 
         JSONObject jsonResponse = sendRequest(user, request, "Authentication.registerUser");
         if (jsonResponse.has("success")){
-            SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+            usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetails(request));
+            Authentication authentication = authenticationProvider.authenticate(usernamePasswordAuthenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
             return getRedirectUrl("/registration", null, request);
@@ -173,9 +175,9 @@ public class MainController {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
-            return getRedirectUrl("/change-password", Collections.singletonList("token"), request);
+            return getRedirectUrl("/change-password", "token", request);
         }
-        return getRedirectUrl("/login", Collections.singletonList("token"), request);
+        return getRedirectUrl("/login", "token", request);
     }
 
     private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
@@ -259,11 +261,11 @@ public class MainController {
                 request.getServletPath(), request.getQueryString() != null ? request.getQueryString() : "");
     }
 
-    public static String getURLPreservingParameters(String url, List<String> paramsToRemove, HttpServletRequest request) {
+    public static String getURLPreservingParameters(String url, String paramToRemove, HttpServletRequest request) {
         String queryString = request.getQueryString();
-        if (paramsToRemove != null && queryString != null){
+        if (paramToRemove != null){
             List<String> params = Arrays.asList(queryString.split("&"));
-            String paramString = params.stream().filter(s -> (paramsToRemove.stream().noneMatch(s::contains))).collect(Collectors.joining("&"));
+            String paramString = params.stream().filter(s -> !s.contains(paramToRemove)).collect(Collectors.joining("&"));
             return !paramString.isEmpty() ? url + "?" + paramString : url;
         } else {
             queryString = !BaseUtils.isRedundantString(queryString) ? "?" + queryString : "";
@@ -281,13 +283,7 @@ public class MainController {
         }
     }
 
-    public static String getRedirectUrl(String url, List<String> paramsToRemove, HttpServletRequest request) {
-        return "redirect:" + getURLPreservingParameters(url, paramsToRemove, request);
-    }
-
-    public static Authentication getAuthentication(HttpServletRequest request, String userName, String password, LSFRemoteAuthenticationProvider authenticationProvider) {
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userName, password);
-        usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetails(request));
-        return authenticationProvider.authenticate(usernamePasswordAuthenticationToken);
+    public static String getRedirectUrl(String url, String paramToRemove, HttpServletRequest request) {
+        return "redirect:" + getURLPreservingParameters(url, paramToRemove, request);
     }
 }
