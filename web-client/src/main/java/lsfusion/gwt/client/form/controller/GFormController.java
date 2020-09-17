@@ -563,6 +563,34 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         dispatcher.execute(new GainedFocus(), new ServerResponseCallback());
     }
 
+    public void hidePopup() {
+        for (GGridController controller : controllers.values()) {
+            if(controller.filter != null) {
+                controller.filter.hideDialog();
+            }
+        }
+
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            if(treeController.filter != null) {
+                treeController.filter.hideDialog();
+            }
+        }
+    }
+
+    public void restorePopup() {
+        for (GGridController controller : controllers.values()) {
+            if(controller.filter != null) {
+                controller.filter.restoreDialog();
+            }
+        }
+
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            if(treeController.filter != null) {
+                treeController.filter.restoreDialog();
+            }
+        }
+    }
+
     public void applyRemoteChanges(GFormChangesDTO changesDTO) {
         GFormChanges fc = GFormChanges.remap(form, changesDTO);
 
