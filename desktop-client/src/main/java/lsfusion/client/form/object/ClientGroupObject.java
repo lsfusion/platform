@@ -37,8 +37,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public boolean needVerticalScroll;
 
     public boolean isMap;
-    public boolean isCalendarDate;
-    public boolean isCalendarDateTime;
 
     public ClassViewType viewType;
     public ListViewType listViewType;
@@ -141,10 +139,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         calculations = pool.deserializeObject(inStream);
 
         isRecursive = inStream.readBoolean();
-        isMap = inStream.readBoolean();
-        isCalendarDate = inStream.readBoolean();
-        isCalendarDateTime = inStream.readBoolean();
-
+        isMap = inStream.readBoolean();        
+        
         Integer ps = pool.readInt(inStream);
         if (ps != null) {
             pageSize = ps;

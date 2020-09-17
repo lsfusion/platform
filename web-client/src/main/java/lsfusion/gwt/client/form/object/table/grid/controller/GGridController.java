@@ -113,9 +113,6 @@ public class GGridController extends GAbstractTableController {
                 case MAP:
                     setMapTableView();
                     break;
-                case CALENDAR:
-                    setCalendarTableView();
-                    break;
                 case GRID:
                 default:
                     setGridTableView();
@@ -134,8 +131,6 @@ public class GGridController extends GAbstractTableController {
             mapTableButton.showBackground(false);
         if (customViewButton != null)
             customViewButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
     }
     private void setPivotTableView() {
         changeTableView(new GPivot(formController, this, getSelectedProperty()));
@@ -145,8 +140,6 @@ public class GGridController extends GAbstractTableController {
             mapTableButton.showBackground(false);
         if (customViewButton != null)
             customViewButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
     }
     private void setMapTableView() {
         changeTableView(new GMap(formController, this));
@@ -155,27 +148,12 @@ public class GGridController extends GAbstractTableController {
         pivotTableButton.showBackground(false);
         if (customViewButton != null)
             customViewButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
-    }
-
-    private void setCalendarTableView() {
-        changeTableView(new GCalendar(formController, this, groupObject.isCalendarDate ? "date" : "dateTime"));
-        calendarTableButton.showBackground(true);
-        pivotTableButton.showBackground(false);
-        gridTableButton.showBackground(false);
-        if(mapTableButton != null)
-            mapTableButton.showBackground(false);
-        if (customViewButton != null)
-            customViewButton.showBackground(false);
     }
 
     private void setCustomTableView() {
         changeTableView(new GCustom(formController, this, groupObject.customRenderFunction));
         if(mapTableButton != null)
             mapTableButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
         customViewButton.showBackground(true);
@@ -211,7 +189,6 @@ public class GGridController extends GAbstractTableController {
     private GToolbarButton forceUpdateTableButton;
 
     private GToolbarButton mapTableButton;
-    private GToolbarButton calendarTableButton;
 
     private void configureToolbar() {
         assert isList();
@@ -258,18 +235,6 @@ public class GGridController extends GAbstractTableController {
                 }
             };
             addToToolbar(mapTableButton);
-        }
-
-        if(groupObject.isCalendarDate || groupObject.isCalendarDateTime) {
-            calendarTableButton = new GToolbarButton("custom_view.png", messages.formGridCalendarView()) {
-                @Override
-                public ClickHandler getClickHandler() {
-                    return event -> {
-                        changeMode(() -> setCalendarTableView(), GListViewType.CALENDAR, false);
-                    };
-                }
-            };
-            addToToolbar(calendarTableButton);
         }
 
         addToolbarSeparator();

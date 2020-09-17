@@ -48,7 +48,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String caption;
     public String canonicalName;
     public String propertyFormName;
-    public String integrationSID;
 
     public String toolTip;
     public String tableName;

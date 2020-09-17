@@ -108,10 +108,6 @@
         <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"></script>
 
-        <!-- calendar-->
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css"/>
-
         <c:forEach items="${filesUrls}" var="fileUrl">
             <c:if test="${fileUrl.endsWith('js')}">
                 <script type="text/javascript" src="${fileUrl}"></script>
