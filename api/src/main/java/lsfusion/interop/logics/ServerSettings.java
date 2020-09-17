@@ -20,19 +20,21 @@ public class ServerSettings {
     public RawFileData logicsIcon;
     public String platformVersion;
     public Integer apiVersion;
+    public int sessionConfigTimeout;
     public boolean anonymousUI;
     public String jnlpUrls;
     public List<Pair<String, RawFileData>> resourceFiles;
     public Set<String> filesUrls = null;
 
     public ServerSettings(String logicsName, String displayName, RawFileData logicsLogo, RawFileData logicsIcon, String platformVersion, Integer apiVersion,
-                          boolean anonymousUI, String jnlpUrls, List<Pair<String, RawFileData>> jsFiles) {
+                          int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, List<Pair<String, RawFileData>> jsFiles) {
         this.logicsName = logicsName;
         this.displayName = displayName;
         this.logicsLogo = logicsLogo;
         this.logicsIcon = logicsIcon;
         this.platformVersion = platformVersion;
         this.apiVersion = apiVersion;
+        this.sessionConfigTimeout = sessionConfigTimeout;
         this.anonymousUI = anonymousUI;
         this.jnlpUrls = jnlpUrls;
         this.resourceFiles = jsFiles;

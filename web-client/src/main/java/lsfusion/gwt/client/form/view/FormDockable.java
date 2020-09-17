@@ -171,7 +171,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
             TooltipManager.registerWidget(this, new TooltipManager.TooltipHelper() {
                 @Override
                 public String getTooltip() {
-                    return tooltip != null ? tooltip : null;
+                    return tooltip;
                 }
 
                 @Override

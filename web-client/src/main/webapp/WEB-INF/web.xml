@@ -5,10 +5,6 @@
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          version="2.5">
 
-    <session-config>
-        <session-timeout>180</session-timeout>
-    </session-config>
-
     <welcome-file-list>
         <welcome-file>main</welcome-file>
     </welcome-file-list>
@@ -93,7 +89,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>fileDownloadHandler</servlet-name>
-        <url-pattern>/downloadFile</url-pattern>
+        <url-pattern>/downloadFile/*</url-pattern>
     </servlet-mapping>
 
     <!--spring MVC-->

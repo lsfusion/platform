@@ -466,6 +466,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return editBindingMap == null ? null : editBindingMap.getContextMenuItems();
     }
 
+    public boolean isFocusable() {
+        return focusable == null || focusable;
+    }
+
     @Override
     public int hashCode() {
         return ID;

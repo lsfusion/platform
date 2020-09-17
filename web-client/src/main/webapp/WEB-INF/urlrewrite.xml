@@ -15,15 +15,9 @@
         <set type="expires">30 days</set>
     </rule>
 
-    <!-- webapp, gwt/public -->
-    <rule match-type="wildcard">
-        <from>**/static/**</from>
-        <set type="response-header" name="Cache-Control">public, max-age=86400</set>
-        <set type="expires">1 day</set>
-    </rule>
-    <!-- files are with random ids and are immutable-->
-    <rule match-type="wildcard">
-        <from>/downloadFile</from>
+    <!-- webapp, gwt/public, files -->
+    <rule match-type="regex">
+        <from>.*\/static(\/.*)?</from>
         <set type="response-header" name="Cache-Control">public, max-age=86400</set>
         <set type="expires">1 day</set>
     </rule>

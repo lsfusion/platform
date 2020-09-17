@@ -1594,7 +1594,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public ImOrderSet<PropertyDrawEntity> getPropertyEntitiesShownInGroup(final GroupObjectInstance group) {
         return properties.filterList(property -> {
-            return isStaticShown.contains(property) && property.isProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG
+            return isShown.contains(property) && property.isProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG
         }).toOrderExclSet().mapOrderSetValues(value -> ((PropertyDrawInstance<?>)value).entity);
     }
 

@@ -135,7 +135,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID);
         currentForms.remove(formSessionID);
         if(sessionObject.savedTempFiles != null) {
-            for (File file : sessionObject.savedTempFiles)
+            for (File file : sessionObject.savedTempFiles.values())
                 FileUtils.deleteFile(file);
         }
     }

@@ -2595,4 +2595,14 @@ public class Settings implements Cloneable {
     public void setPivotOnlySelectedColumn(boolean pivotOnlySelectedColumn) {
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
     }
+
+    private int sessionConfigTimeout = 0; //in seconds; 0 = no timeout
+
+    public int getSessionConfigTimeout() {
+        return sessionConfigTimeout;
+    }
+
+    public void setSessionConfigTimeout(int sessionConfigTimeout) {
+        this.sessionConfigTimeout = sessionConfigTimeout;
+    }
 }

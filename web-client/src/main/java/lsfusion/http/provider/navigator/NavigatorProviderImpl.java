@@ -10,6 +10,7 @@ import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.SessionInfo;
@@ -85,7 +86,10 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
         RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, getNavigatorInfo(request, connectionInfo));
 
-        return new NavigatorSessionObject(remoteNavigator, sessionObject.getLogicsName(getSessionInfo(request)));
+        ServerSettings serverSettings = sessionObject.getServerSettings(getSessionInfo(request), null, false);
+        if (serverSettings.sessionConfigTimeout > 0)
+            request.getSession().setMaxInactiveInterval(serverSettings.sessionConfigTimeout);
+        return new NavigatorSessionObject(remoteNavigator, serverSettings.logicsName);
     }
 
     @Override

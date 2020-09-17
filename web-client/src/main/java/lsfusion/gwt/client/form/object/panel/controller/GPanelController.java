@@ -102,7 +102,7 @@ public class GPanelController extends GPropertyController {
         for (GPropertyDraw property : formController.getPropertyDraws()) {
             GPropertyPanelController propController = propertyControllers.get(property);
             if (propController != null) {
-                if (propController.focusFirstWidget()) {
+                if (property.isFocusable() && propController.focusFirstWidget()) {
                     return true;
                 }
             }

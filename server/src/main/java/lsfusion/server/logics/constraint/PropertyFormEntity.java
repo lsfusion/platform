@@ -1,6 +1,7 @@
 package lsfusion.server.logics.constraint;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -30,17 +31,21 @@ public class PropertyFormEntity extends AutoFormEntity {
         addPropertyDraw(messageProperty, MapFact.EMPTYREV(), version);
 
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.logPolicy);
-        
+
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues((ValueClass value) -> {
             // need to specify baseClass anyway, because we need it when adding recognizeGroup
             return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false), true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
         });
-        
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet()); 
-        addGroupObject(groupObject, version);
 
-        // добавляем все свойства
-        ImOrderSet<ObjectEntity> objects = groupObject.getOrderObjects();
+        ImOrderSet<ObjectEntity> objects;
+        if(mapObjects.isEmpty()) // not to create GroupObjectEntity with no objects
+            objects = SetFact.EMPTYORDER();
+        else {
+            GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet());
+            addGroupObject(groupObject, version);
+
+            objects = groupObject.getOrderObjects();
+        }
 
         if(properties.isEmpty()) {
             for(ObjectEntity object : objects)
