@@ -55,6 +55,9 @@ public abstract class GUserFilters {
     }
 
     private void showDialog(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey, boolean replace, boolean alwaysAddNew) {
+        if(filterView != null) {
+            filterView.closeDialog();
+        }
         List<GPropertyFilter> conditions = replace ? new ArrayList<>() : new ArrayList<>(this.conditions);
         if(alwaysAddNew || conditions.isEmpty()) {
             conditions.add(getNewCondition(propertyDraw, columnKey));
