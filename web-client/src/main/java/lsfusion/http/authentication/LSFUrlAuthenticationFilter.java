@@ -21,16 +21,16 @@ public class LSFUrlAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String userName = request.getParameter("userName");
+        String userName = request.getParameter("username");
         String password = request.getParameter("password");
 
         if (userName != null && password != null) {
             try {
                 SecurityContextHolder.getContext().setAuthentication(MainController.getAuthentication(request, userName, password, authenticationProvider));
-                response.sendRedirect(MainController.getURLPreservingParameters(request.getRequestURI(), Arrays.asList("userName", "password"), request));
+                response.sendRedirect(MainController.getURLPreservingParameters(request.getRequestURI(), Arrays.asList("username", "password"), request));
             } catch (Exception e) {
                 request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
-                response.sendRedirect(MainController.getURLPreservingParameters("/login", Arrays.asList("userName", "password"), request));
+                response.sendRedirect(MainController.getURLPreservingParameters("/login", Arrays.asList("username", "password"), request));
             }
             return;
         }

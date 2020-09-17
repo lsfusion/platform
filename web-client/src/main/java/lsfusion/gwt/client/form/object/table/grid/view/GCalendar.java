@@ -21,17 +21,17 @@ public class GCalendar extends GSimpleStateTableView {
         runFunction(element, list, calendarDateType, getCaptions(new NativeHashMap<>()));
     }
 
-    protected native void runFunction(Element element, JavaScriptObject list, String calendarDateType, JsArray<JavaScriptObject> jsArray)/*-{
+    protected native void runFunction(Element element, JavaScriptObject objects, String calendarDateType, JsArray<JavaScriptObject> captions)/*-{
         var thisObj = this;
         var controller = thisObj.@GCalendar::getController(*)();
         var initialView = calendarDateType === 'date' ? 'dayGridMonth' : 'dayGridWeek';
 
         function remapList() {
             var events = [];
-            for (var i = 0; i < list.length; i++) {
+            for (var i = 0; i < objects.length; i++) {
                 var event = {
-                    'title': getTitle(list[i]),
-                    'start': list[i][calendarDateType],
+                    'title': getTitle(objects[i]),
+                    'start': objects[i][calendarDateType],
                     'index': i
                 };
                 events.push(event);
@@ -39,16 +39,16 @@ public class GCalendar extends GSimpleStateTableView {
             return events;
         }
 
-        function getTitle(listElement) {
+        function getTitle(object) {
             var title = '';
-            for (var x in jsArray) {
+            for (var x in captions) {
                 if (title !== '')
                     continue;
-                title = x === 'name' ? listElement[x] : '';
+                title = x === 'name' ? object[x] : '';
             }
-            if (title === '' && jsArray.length >= 2) {
+            if (title === '' && captions.length >= 2) {
                 for (var k = 0; k < 2; k++) {
-                    title = title + ' ' + listElement[jsArray[k]];
+                    title = title + ' ' + object[captions[k]];
                 }
             }
             return title;
@@ -69,7 +69,7 @@ public class GCalendar extends GSimpleStateTableView {
                 dayMaxEvents: 4,
                 events: remapList(),
                 eventChange: function (info) {
-                    controller.changeDateTimeProperty(calendarDateType, list[info.event.extendedProps.index], info.event.start.getFullYear(),
+                    controller.changeDateTimeProperty(calendarDateType, objects[info.event.extendedProps.index], info.event.start.getFullYear(),
                         info.event.start.getMonth() + 1, info.event.start.getUTCDate(), info.event.start.getUTCHours(),
                         info.event.start.getUTCMinutes(), info.event.start.getUTCSeconds());
                 }
