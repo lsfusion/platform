@@ -24,24 +24,9 @@ public class GCustom extends GSimpleStateTableView {
 
     protected native void runFunction(Element element, JavaScriptObject list, String renderFunction)/*-{
         var thisObj = this;
-        var controller = {
-            changeProperty: function (property, object, newValue) {
-                return thisObj.@GCustom::changeObjectProperty(*)(property, object, newValue);
-            },
-            changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
-                return thisObj.@GCustom::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);
-            }
-        };
+        var controller = thisObj.@GCustom::getController()();
 
         var fn = $wnd[renderFunction];
         fn(element, list, controller);
     }-*/;
-
-    private void changeObjectProperty(String property, JavaScriptObject object, Serializable newValue) {
-        changeProperty(property, newValue, fromObject(getKey(object)));
-    }
-
-    private void changeDateTimeProperty(String property, JavaScriptObject object, int year, int month, int day, int hour, int minute, int second) {
-        changeObjectProperty(property, object, new GDateTimeDTO(year, month, day, hour, minute, second));
-    }
 }

@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.Column;
 
 import java.io.Serializable;
@@ -86,7 +87,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             array.push(fromString(value.toString()));
     }
 
-    private JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap) {
+    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap) {
         JsArray<JavaScriptObject> columns = JavaScriptObject.createArray().cast();
         for (int i = 0, size = properties.size() ; i < size; i++) {
             GPropertyDraw property = properties.get(i);
@@ -94,7 +95,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
 
             for (int c = 0; c < propColumnKeys.size(); c++) {
                 GGroupObjectValue columnKey = propColumnKeys.get(c);
-                String columnName = property.propertyFormName + (columnKey.isEmpty() ? "" : "_" + c);
+                String columnName = property.integrationSID + (columnKey.isEmpty() ? "" : "_" + c);
                 columnMap.put(columnName, new Column(property, columnKey));
                 columns.push(fromString(columnName));
             }
@@ -130,4 +131,24 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         }
         return map;        
     }
+
+    protected void changeObjectProperty(String property, JavaScriptObject object, Serializable newValue) {
+        changeProperty(property, newValue, fromObject(getKey(object)));
+    }
+
+    protected void changeDateTimeProperty(String property, JavaScriptObject object, int year, int month, int day, int hour, int minute, int second) {
+        changeObjectProperty(property, object, new GDateTimeDTO(year, month, day, hour, minute, second));
+    }
+
+    protected native void getController()/*-{
+        var thisObj = this;
+        return {
+            changeProperty: function (property, object, newValue) {
+                return thisObj.@GSimpleStateTableView::changeObjectProperty(*)(property, object, newValue);
+            },
+            changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
+                return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);
+            }
+        };
+    }-*/;
 }
