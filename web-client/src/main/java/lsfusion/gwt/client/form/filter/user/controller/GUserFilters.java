@@ -24,6 +24,8 @@ public abstract class GUserFilters {
 
     private GTableController logicsSupplier;
 
+    public GFilterView filterView;
+
     public GUserFilters(GTableController logicsSupplier) {
         this.logicsSupplier = logicsSupplier;
 
@@ -57,7 +59,8 @@ public abstract class GUserFilters {
         if(alwaysAddNew || conditions.isEmpty()) {
             conditions.add(getNewCondition(propertyDraw, columnKey));
         }
-        new GFilterView(this).showDialog(conditions, logicsSupplier, keyEvent, propertyDraw, columnKey);
+        filterView = new GFilterView(this);
+        filterView.showDialog(conditions, logicsSupplier, keyEvent, propertyDraw, columnKey);
     }
 
     private void updateToolbarButton() {
@@ -134,7 +137,19 @@ public abstract class GUserFilters {
         showDialog(keyEvent, propertyDraw, columnKey, true, true);
     }
 
+    public void hideDialog() {
+        if (filterView != null) {
+            filterView.hideDialog();
+        }
+    }
+
+    public void restoreDialog() {
+        if (filterView != null) {
+            filterView.restoreDialog();
+        }
+    }
+
     public abstract void remoteApplyQuery();
-    public abstract void filterHidden();
+    public abstract void filterClosed();
     public abstract void checkCommitEditing();
 }

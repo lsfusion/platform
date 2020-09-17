@@ -72,7 +72,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
             }
 
                 @Override
-                public void filterHidden() {
+                public void filterClosed() {
                     focusFirstWidget();
                 }
 
