@@ -616,6 +616,7 @@ listViewType returns [ListViewType type, PivotOptions options, String customRend
 	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }
 	|   'MAP' {$type = ListViewType.MAP;}
 	|   'CUSTOM' function=stringLiteral {$type = ListViewType.CUSTOM; $customRenderFunction = $function.val;}
+	|   'CALENDAR' {$type = ListViewType.CALENDAR;}
     ;
 
 propertyGroupType returns [PropertyGroupType type]
