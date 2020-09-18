@@ -38,9 +38,6 @@ public class ClientModalForm extends JDialog {
 
         setLayout(new BorderLayout());
 
-        // делаем, чтобы не выглядел как диалог
-        getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
-
         form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, firstChanges, null, true, isDialog) {
             @Override
             public void onFormHidden() {
@@ -153,7 +150,7 @@ public class ClientModalForm extends JDialog {
         // так как у нас есть только size самого contentPane, а нам нужен у JDialog
         // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку
         if (!undecorated) {
-            preferredSize.width += 20;
+            preferredSize.width += 22;
             preferredSize.height += 40;
         }
 
