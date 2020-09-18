@@ -63,6 +63,8 @@
 
         <custom-filter ref="characterEncodingFilter" before="OAUTH2_AUTHORIZATION_REQUEST_FILTER"/>
         <custom-filter after="ANONYMOUS_FILTER" ref="anonymousFilter"/>
+
+        <custom-filter position="PRE_AUTH_FILTER" ref="urlAuthenticationFilter"/>
     </http>
 
     <!-- Security beans -->
@@ -99,6 +101,9 @@
 
     <!--Convert OAuth2 authentication token to LSFAuthenticationToken-->
     <b:bean id="oauth2ToLSFTokenFilter" class="lsfusion.http.authentication.OAuth2ToLSFTokenFilter"/>
+
+    <!--Authenticate by url get-params-->
+    <b:bean id="urlAuthenticationFilter" class="lsfusion.http.authentication.LSFUrlAuthenticationFilter"/>
 
     <!-- Authentication configuration -->
     

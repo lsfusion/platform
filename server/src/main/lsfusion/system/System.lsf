@@ -83,7 +83,8 @@ CLASS ListViewType {
     grid 'Grid',
     pivot 'Pivot',
     map 'Map',
-    custom 'Custom'
+    custom 'Custom',
+    calendar 'Calendar'
 }
 count '{form.grid.count}' = 1;
 isPivot(ListViewType t) = t == ListViewType.pivot;

@@ -251,6 +251,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.caption = clientPropertyDraw.caption;
         propertyDraw.canonicalName = clientPropertyDraw.getCanonicalName();
         propertyDraw.propertyFormName = clientPropertyDraw.getPropertyFormName();
+        propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
         propertyDraw.tableName = clientPropertyDraw.tableName;
@@ -534,6 +535,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         groupObject.isRecursive = clientGroupObject.isRecursive;
         groupObject.isMap = clientGroupObject.isMap;
+        groupObject.isCalendarDate = clientGroupObject.isCalendarDate;
+        groupObject.isCalendarDateTime = clientGroupObject.isCalendarDateTime;
         groupObject.parent = convertOrCast(clientGroupObject.parent);
 
         for (ClientGroupObject clientUpGroup : clientGroupObject.upTreeGroups) {
