@@ -123,8 +123,10 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
 
     public void closeDialog() {
         controller.filterClosed();
-        filterDialog.close();
-        filterDialog = null;
+        if(filterDialog != null) {
+            filterDialog.close();
+            filterDialog = null;
+        }
     }
 
     private boolean hidden = false;
