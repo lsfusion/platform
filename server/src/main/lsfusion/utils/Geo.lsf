@@ -28,7 +28,7 @@ nameShowUserMapProvider '{geo.name.show.user.map.provider}' () = staticCaption(s
 
 name '{geo.name.poi}'= ABSTRACT ISTRING[200] (POI) MATERIALIZED;
 
-nameCountry '{geo.name.country.poi}' (poi) = ABSTRACT ISTRING[50] (POI) MATERIALIZED;
+nameCountry '{geo.name.country.poi}' (poi) = ABSTRACT ISTRING[100] (POI) MATERIALIZED;
 
 mainAddress '{geo.main.address.poi}' = ABSTRACT ISTRING[150] (POI) MATERIALIZED;
 additionalAddress '{geo.additional.address.poi}' = ABSTRACT ISTRING[150] (POI) MATERIALIZED;
