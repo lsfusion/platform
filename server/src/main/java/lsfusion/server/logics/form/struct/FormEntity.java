@@ -1066,11 +1066,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public boolean isCalendarDate(GroupObjectEntity entity) {
-        return hasField(entity, new HashSet<>(Collections.singletonList("date")));
+        return hasField(entity, new HashSet<>(Collections.singletonList("date"))) || hasField(entity, new HashSet<>(Collections.singletonList("dateFrom")));
     }
     @IdentityLazy
     public boolean isCalendarDateTime(GroupObjectEntity entity) {
-        return hasField(entity, new HashSet<>(Collections.singletonList("dateTime")));
+        return hasField(entity, new HashSet<>(Collections.singletonList("dateTime"))) || hasField(entity, new HashSet<>(Collections.singletonList("dateTimeFrom")));
     }
 
     private boolean hasField(GroupObjectEntity entity, Set<String> fields) {
