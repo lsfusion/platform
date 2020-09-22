@@ -253,8 +253,6 @@ public class ClientFormController implements AsyncListener {
     private void initializeForm(byte[] firstChanges) throws Exception {
         initializeControllers();
 
-        initializeRegularFilters();
-
         initializeDefaultOrders(); // now it doesn't matter, because NavigatorForm will be removed, and first changes will always be not null, but still
 
         if(firstChanges != null) {
@@ -262,6 +260,9 @@ public class ClientFormController implements AsyncListener {
         } else {
             getRemoteChanges(false);
         }
+
+        //has to be after firstChanges because can eventually invoke remote call with own changes and form changes applies immediately before first changes
+        initializeRegularFilters();
 
         initializeUserOrders();
 
