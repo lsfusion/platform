@@ -17,6 +17,7 @@ import lsfusion.gwt.client.form.view.Column;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Predicate;
 
 public abstract class GSimpleStateTableView extends GStateTableView {
 
@@ -87,13 +88,14 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             array.push(fromString(value.toString()));
     }
 
-    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, List<GPropertyDraw> externalProperties) {
-        List<GPropertyDraw> properties = externalProperties != null ? externalProperties : this.properties;
+    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> predicateFilter) {
         JsArray<JavaScriptObject> columns = JavaScriptObject.createArray().cast();
         for (int i = 0, size = properties.size() ; i < size; i++) {
             GPropertyDraw property = properties.get(i);
-            List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
+            if (predicateFilter != null && predicateFilter.test(property))
+                continue;
 
+            List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
             for (int c = 0; c < propColumnKeys.size(); c++) {
                 GGroupObjectValue columnKey = propColumnKeys.get(c);
                 String columnName = property.integrationSID + (columnKey.isEmpty() ? "" : "_" + c);
@@ -119,6 +121,10 @@ public abstract class GSimpleStateTableView extends GStateTableView {
     protected boolean isReadOnly(String property, GGroupObjectValue object) {
         Column column = columnMap.get(property);
         return isReadOnly(column.property, object, column.columnKey);
+    }
+
+    protected boolean isReadOnly(String property, JavaScriptObject object) {
+        return isReadOnly(property, getKey(object));
     }
 
     protected GGroupObjectValue getKey(JavaScriptObject object) {
@@ -149,6 +155,9 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             },
             changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
                 return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);
+            },
+            isPropertyReadOnly: function (property, object) {
+                return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             }
         };
     }-*/;

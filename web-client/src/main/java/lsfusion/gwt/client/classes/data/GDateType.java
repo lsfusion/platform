@@ -65,4 +65,9 @@ public class GDateType extends GFormatType<DateTimeFormat> {
         }
         throw new ParseException("string " + value + "can not be converted to date", 0);
     }
+
+    @Override
+    public boolean isLogicalOrDateTime() {
+        return false;
+    }
 }

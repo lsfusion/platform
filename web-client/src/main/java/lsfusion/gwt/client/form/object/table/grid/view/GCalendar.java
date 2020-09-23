@@ -4,16 +4,11 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.classes.data.GDateTimeType;
-import lsfusion.gwt.client.classes.data.GDateType;
-import lsfusion.gwt.client.classes.data.GLogicalType;
-import lsfusion.gwt.client.classes.data.GTimeType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 public class GCalendar extends GSimpleStateTableView {
 
@@ -27,24 +22,18 @@ public class GCalendar extends GSimpleStateTableView {
 
     @Override
     protected void render(Element element, Element recordElement, JsArray<JavaScriptObject> list) {
-        JavaScriptObject events = remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), filterProperties(properties)));
         if (calendar == null) {
-            calendar = createCalendar(element, list, calendarDateType, events);
-        } else {
-            updateEvents(calendar, events); //'setOption(calendar, optionName, optionValue)' ??
+            calendar = createCalendar(element, list, calendarDateType);
         }
+        JavaScriptObject events = remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), filterIdProperties()));
+        updateEvents(calendar, events);
     }
 
-    protected List<GPropertyDraw> filterProperties(List<GPropertyDraw> properties) {
-        return properties.stream()
-                .filter(p -> !(p.baseType instanceof GLogicalType)
-                        && !(p.baseType instanceof GDateTimeType)
-                        && !(p.baseType instanceof GDateType)
-                        && !(p.baseType instanceof GTimeType))
-                .collect(Collectors.toList());
+    protected Predicate<GPropertyDraw> filterIdProperties() {
+        return p -> !p.baseType.isLogicalOrDateTime();
     }
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject objects, String calendarDateType, JavaScriptObject events)/*-{
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject objects, String calendarDateType)/*-{
         var thisObj = this;
         var controller = thisObj.@GCalendar::getController(*)();
         var calendar = new $wnd.FullCalendar.Calendar(element, {
@@ -57,10 +46,8 @@ public class GCalendar extends GSimpleStateTableView {
                 center: 'title',
                 right: 'dayGridMonth,dayGridWeek,timeGridDay'
             },
-            editable: true,
             dayMaxEvents: 4,
             defaultTimedEventDuration: "00:01",
-            events: events,
             eventChange: function (info) {
                 controller.changeDateTimeProperty(calendarDateType, objects[info.event.extendedProps.index], info.event.start.getFullYear(),
                     info.event.start.getMonth() + 1, info.event.start.getUTCDate(), info.event.start.getUTCHours(),
@@ -73,11 +60,14 @@ public class GCalendar extends GSimpleStateTableView {
 
     protected native JavaScriptObject remapList(JavaScriptObject objects, String calendarDateType, JsArray<JavaScriptObject> columns)/*-{
         var events = [];
+        var thisObj = this;
+        var controller = thisObj.@GCalendar::getController(*)();
         for (var i = 0; i < objects.length; i++) {
             var event = {
                 'title': getTitle(objects[i]),
-                'start': objects[i][calendarDateType + 'From'] == null ? objects[i][calendarDateType] : objects[i][calendarDateType + 'From'],
-                'end': objects[i][calendarDateType + 'To'] == null ? '' : objects[i][calendarDateType + 'To'],
+                'start': getEventStart(objects[i]),
+                'end': getEventEnd(objects[i]),
+                'editable': !controller.isPropertyReadOnly(calendarDateType ,objects[i]),
                 'index': i
             };
             events.push(event);
@@ -97,6 +87,14 @@ public class GCalendar extends GSimpleStateTableView {
                 }
             }
             return title;
+        }
+
+        function getEventStart(object) {
+            return object[calendarDateType + 'From'] == null ? object[calendarDateType] : object[calendarDateType + 'From'];
+        }
+
+        function getEventEnd(object) {
+            return object[calendarDateType + 'To'] == null ? '' : object[calendarDateType + 'To'];
         }
     }-*/;
 
