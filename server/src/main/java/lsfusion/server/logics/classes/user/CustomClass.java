@@ -156,6 +156,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     @Override
+    public LA getDefaultOpenAction() {
+        return null;
+    }
+
+    @Override
     public LocalizedString getCaption() {
         return caption;
     } 

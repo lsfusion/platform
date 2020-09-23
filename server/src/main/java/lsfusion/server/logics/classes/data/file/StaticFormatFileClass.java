@@ -4,9 +4,11 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
@@ -30,6 +32,11 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
 
     public RawFileData getDefaultValue() {
         return RawFileData.EMPTY;
+    }
+
+    @Override
+    public LA getDefaultOpenAction() {
+        return ThreadLocalContext.getBusinessLogics().LM.openRawFile;
     }
 
     public Class getReportJavaClass() {

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes;
 
 import lsfusion.server.data.stat.Stat;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -30,6 +31,8 @@ public interface ValueClass extends AClass {
     LocalizedString getCaption();
 
     Object getDefaultValue();
+
+    LA getDefaultOpenAction();
 
     Stat getTypeStat(boolean forJoin);
 
