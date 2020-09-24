@@ -809,3 +809,7 @@ input[type=checkbox]:focus {
 .linkEditMode .selectedCellHasEdit:hover {
     text-decoration: underline;
 }
+
+.linkEditMode .selectedFileCellHasEdit {
+    border: 1px solid var(--link-color);
+}

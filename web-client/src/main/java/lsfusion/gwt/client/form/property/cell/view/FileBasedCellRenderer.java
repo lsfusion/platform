@@ -50,6 +50,12 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             imgStyle.setProperty("maxWidth", "100%");
             imgStyle.setProperty("maxHeight", "100%");
 
+            if(property.hasEditObjectAction) {
+                img.addClassName("selectedFileCellHasEdit");
+            } else {
+                img.removeClassName("selectedFileCellHasEdit");
+            }
+
             img.setSrc(getFilePath(value));
         }
     }
