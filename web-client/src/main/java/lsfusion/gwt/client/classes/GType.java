@@ -50,7 +50,7 @@ public abstract class GType implements Serializable {
         return null;
     }
 
-    public boolean isLogicalOrDateTime(){
+    public boolean isId(){
         return true;
     }
 }

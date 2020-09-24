@@ -57,7 +57,7 @@ public class GTimeType extends GFormatType<DateTimeFormat> {
     }
 
     @Override
-    public boolean isLogicalOrDateTime() {
+    public boolean isId() {
         return false;
     }
 }

@@ -45,7 +45,7 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public boolean isLogicalOrDateTime() {
+    public boolean isId() {
         return false;
     }
 }

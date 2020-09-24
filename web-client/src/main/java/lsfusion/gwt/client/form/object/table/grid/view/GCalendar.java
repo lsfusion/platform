@@ -6,9 +6,6 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-
-import java.util.function.Predicate;
 
 public class GCalendar extends GSimpleStateTableView {
 
@@ -25,12 +22,8 @@ public class GCalendar extends GSimpleStateTableView {
         if (calendar == null) {
             calendar = createCalendar(element, list, calendarDateType);
         }
-        JavaScriptObject events = remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), filterIdProperties()));
+        JavaScriptObject events = remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), true));
         updateEvents(calendar, events);
-    }
-
-    protected Predicate<GPropertyDraw> filterIdProperties() {
-        return p -> !p.baseType.isLogicalOrDateTime();
     }
 
     protected native JavaScriptObject createCalendar(Element element, JavaScriptObject objects, String calendarDateType)/*-{
@@ -48,10 +41,16 @@ public class GCalendar extends GSimpleStateTableView {
             },
             dayMaxEvents: 4,
             defaultTimedEventDuration: "00:01",
+            allDayMaintainDuration: true,
             eventChange: function (info) {
-                controller.changeDateTimeProperty(calendarDateType, objects[info.event.extendedProps.index], info.event.start.getFullYear(),
+                controller.changeDateTimeProperty(info.event.extendedProps.startFieldName, objects[info.event.extendedProps.index], info.event.start.getFullYear(),
                     info.event.start.getMonth() + 1, info.event.start.getUTCDate(), info.event.start.getUTCHours(),
                     info.event.start.getUTCMinutes(), info.event.start.getUTCSeconds());
+                if (info.event.extendedProps.endFieldName != null) {
+                    controller.changeDateTimeProperty(info.event.extendedProps.endFieldName, objects[info.event.extendedProps.index], info.event.end.getFullYear(),
+                        info.event.end.getMonth() + 1, info.event.end.getUTCDate(), info.event.end.getUTCHours(),
+                        info.event.end.getUTCMinutes(), info.event.end.getUTCSeconds());
+                }
             }
         });
         calendar.render();
@@ -63,12 +62,17 @@ public class GCalendar extends GSimpleStateTableView {
         var thisObj = this;
         var controller = thisObj.@GCalendar::getController(*)();
         for (var i = 0; i < objects.length; i++) {
+            var startEventFieldName = getStartEventFieldName(objects[i]);
+            var endEventFieldName = getEndEventFieldName(objects[i]);
             var event = {
                 'title': getTitle(objects[i]),
-                'start': getEventStart(objects[i]),
-                'end': getEventEnd(objects[i]),
-                'editable': !controller.isPropertyReadOnly(calendarDateType ,objects[i]),
-                'index': i
+                'start': objects[i][startEventFieldName],
+                'end': endEventFieldName != null ? objects[i][endEventFieldName] : '',
+                'editable': !controller.isPropertyReadOnly(startEventFieldName, objects[i]),
+                'allDay': endEventFieldName != null,
+                'index': i,
+                'startFieldName': getStartEventFieldName(objects[i]),
+                'endFieldName': getEndEventFieldName(objects[i])
             };
             events.push(event);
         }
@@ -83,18 +87,33 @@ public class GCalendar extends GSimpleStateTableView {
             }
             if (title === '' && columns.length >= 2) {
                 for (var k = 0; k <= 2; k++) {
-                    title = title + ' ' + object[columns[k]];
+                    title = title + ' ' + (object[columns[k]] != null ? object[columns[k]] : '');
                 }
             }
             return title;
         }
 
-        function getEventStart(object) {
-            return object[calendarDateType + 'From'] == null ? object[calendarDateType] : object[calendarDateType + 'From'];
+        function getStartEventFieldName(object) {
+            if (object['dateFrom'] !== null && typeof object['dateFrom'] !== 'undefined') {
+                return 'dateFrom';
+            } else if (object['dateTimeFrom'] !== null && typeof object['dateTimeFrom'] !== 'undefined') {
+                return 'dateTimeFrom';
+            } else if (object['date'] !== null && typeof object['date'] !== 'undefined') {
+                return 'date';
+            } else if (object['dateTime'] !== null && typeof object['dateTime'] !== 'undefined') {
+                return 'dateTime';
+            }
+            return null;
         }
 
-        function getEventEnd(object) {
-            return object[calendarDateType + 'To'] == null ? '' : object[calendarDateType + 'To'];
+        function getEndEventFieldName(object) {
+            if (object['dateTo'] !== null && typeof object['dateTo'] !== 'undefined') {
+                return 'dateTo';
+            } else if (object['dateTimeTo'] !== null && typeof object['dateTimeTo'] !== 'undefined') {
+                return 'dateTimeTo';
+            } else {
+                return null;
+            }
         }
     }-*/;
 

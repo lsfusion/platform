@@ -47,7 +47,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
     private JsArray<JsArray<JavaScriptObject>> getData(NativeHashMap<String, Column> columnMap) {
         JsArray<JsArray<JavaScriptObject>> array = JavaScriptObject.createArray().cast();
 
-        array.push(getCaptions(columnMap, null));
+        array.push(getCaptions(columnMap, false));
 
         // getting values
         if(keys != null)
@@ -88,11 +88,11 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             array.push(fromString(value.toString()));
     }
 
-    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> predicateFilter) {
+    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, boolean filter) {
         JsArray<JavaScriptObject> columns = JavaScriptObject.createArray().cast();
         for (int i = 0, size = properties.size() ; i < size; i++) {
             GPropertyDraw property = properties.get(i);
-            if (predicateFilter != null && predicateFilter.test(property))
+            if (filter && !property.baseType.isId())
                 continue;
 
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);

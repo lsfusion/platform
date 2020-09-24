@@ -64,7 +64,7 @@ public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTi
     }
 
     @Override
-    public boolean isLogicalOrDateTime() {
+    public boolean isId() {
         return false;
     }
 }
