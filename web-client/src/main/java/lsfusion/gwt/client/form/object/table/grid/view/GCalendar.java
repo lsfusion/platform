@@ -39,34 +39,37 @@ public class GCalendar extends GSimpleStateTableView {
                 right: 'dayGridMonth,dayGridWeek,timeGridDay'
             },
             dayMaxEvents: 4,
+            //to prevent the expand of a single event without "end"-param to the next day "nextDayThreshold" should be equal to "defaultTimedEventDuration", which by default is 01:00:00
             nextDayThreshold: '01:00:00',
             eventChange: function (info) {
-                controller.changeDateTimeProperty(info.event.extendedProps.startFieldName, objects[info.event.extendedProps.index], info.event.start.getFullYear(),
-                    info.event.start.getMonth() + 1, info.event.start.getUTCDate(), info.event.start.getUTCHours(),
-                    info.event.start.getUTCMinutes(), info.event.start.getUTCSeconds());
+                changeProperty(info, 'start');
                 if (info.event.extendedProps.endFieldName != null) {
-                    controller.changeDateTimeProperty(info.event.extendedProps.endFieldName, objects[info.event.extendedProps.index], info.event.end.getFullYear(),
-                        info.event.end.getMonth() + 1, info.event.end.getUTCDate(), info.event.end.getUTCHours(),
-                        info.event.end.getUTCMinutes(), info.event.end.getUTCSeconds());
+                    changeProperty(info, 'end');
                 }
             }
         });
         calendar.render();
         return calendar;
+
+        function changeProperty(info, position) {
+            controller.changeDateTimeProperty(info.event.extendedProps[position + 'FieldName'], objects[info.event.extendedProps.index], info.event[position].getFullYear(),
+                info.event[position].getMonth() + 1, info.event[position].getUTCDate(), info.event[position].getUTCHours(),
+                info.event[position].getUTCMinutes(), info.event[position].getUTCSeconds());
+        }
     }-*/;
 
     protected native JavaScriptObject remapList(JavaScriptObject objects, String calendarDateType, JsArray<JavaScriptObject> columns, JavaScriptObject controller)/*-{
         var events = [];
         for (var i = 0; i < objects.length; i++) {
-            var startEventFieldName = getEventFieldName(objects[i], 'start');
-            var endEventFieldName = getEventFieldName(objects[i], 'end');
+            var startEventFieldName = getEventName(objects[i], '') != null ? getEventName(objects[i], '') : getEventName(objects[i], 'From');
+            var endEventFieldName = getEventName(objects[i], 'To');
             var event = {
                 'title': getTitle(objects[i]),
                 'start': objects[i][startEventFieldName],
                 'end': endEventFieldName != null ? objects[i][endEventFieldName] : '',
-                'editable': !controller.isPropertyReadOnly(startEventFieldName, objects[i]),
-                'durationEditable': endEventFieldName !== null,
-                'allDay': startEventFieldName === 'date' || startEventFieldName === 'dateFrom',
+                'editable': !controller.isPropertyReadOnly(startEventFieldName, objects[i]) && (endEventFieldName == null || !controller.isPropertyReadOnly(endEventFieldName, objects[i])),
+                'durationEditable': endEventFieldName !== null && !controller.isPropertyReadOnly(endEventFieldName, objects[i]),
+                'allDay': calendarDateType === 'date',
                 'index': i,
                 'startFieldName': startEventFieldName,
                 'endFieldName': endEventFieldName
@@ -90,19 +93,11 @@ public class GCalendar extends GSimpleStateTableView {
             return title;
         }
 
-        function getEventFieldName(object, type) {
-            if (type === 'start') {
-                if (object[calendarDateType] != null && typeof object[calendarDateType] != 'undefined') {
-                    return calendarDateType;
-                } else if (object[calendarDateType + 'From'] !== null && typeof object[calendarDateType + 'From'] !== 'undefined') {
-                    return calendarDateType + 'From';
-                }
-            } else if (type === 'end') {
-                if (object[calendarDateType + 'To'] !== null && typeof object[calendarDateType + 'To'] !== 'undefined') {
-                    return calendarDateType + 'To';
-                }  else {
-                    return null;
-                }
+        function getEventName(object, position) {
+            if (object[calendarDateType + position] !== null && typeof object[calendarDateType + position] !== 'undefined') {
+                return calendarDateType + position;
+            } else {
+                return null;
             }
         }
     }-*/;
