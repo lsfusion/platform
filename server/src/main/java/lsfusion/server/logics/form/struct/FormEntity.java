@@ -1073,11 +1073,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     private boolean hasField(GroupObjectEntity entity, String... fields) {
+        List<String> fieldsList = Arrays.asList(fields);
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
         for (PropertyDrawEntity property : propertyDrawsIt) {
             if (property.isList(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getIntegrationSID();
-                if (name != null && Arrays.asList(fields).contains(name)) {
+                if (name != null && fieldsList.contains(name)) {
                     return true;
                 }
             }

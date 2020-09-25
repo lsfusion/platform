@@ -47,7 +47,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
     private JsArray<JsArray<JavaScriptObject>> getData(NativeHashMap<String, Column> columnMap) {
         JsArray<JsArray<JavaScriptObject>> array = JavaScriptObject.createArray().cast();
 
-        array.push(getCaptions(columnMap, false));
+        array.push(getCaptions(columnMap, null));
 
         // getting values
         if(keys != null)
@@ -88,11 +88,11 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             array.push(fromString(value.toString()));
     }
 
-    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, boolean filter) {
+    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> filter) {
         JsArray<JavaScriptObject> columns = JavaScriptObject.createArray().cast();
         for (int i = 0, size = properties.size() ; i < size; i++) {
             GPropertyDraw property = properties.get(i);
-            if (filter && !property.baseType.isId())
+            if (filter!= null && filter.test(property))
                 continue;
 
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
@@ -147,7 +147,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         changeObjectProperty(property, object, new GDateTimeDTO(year, month, day, hour, minute, second));
     }
 
-    protected native void getController()/*-{
+    protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
             changeProperty: function (property, object, newValue) {
