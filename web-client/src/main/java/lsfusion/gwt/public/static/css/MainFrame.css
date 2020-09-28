@@ -439,25 +439,6 @@ input[type=checkbox]:focus {
     margin: 0 2px 0 0;
 }
 
-/* ------------ File upload dialog  ------------ */
-.dropFilesLabel {
-    margin-top: 6px;
-    padding-top: 28px;
-    padding-bottom: 28px;
-    font-size: 13px;
-    color: var(--focus-color);
-    font-weight: bold;
-    text-align: center;
-    display: block;
-    border: 2px dashed var(--component-border-color);
-    border-radius: 7px;
-}
-
-.dropFilesLabelHover {
-    border: 2px solid #444444;
-    color: #7c9647;
-}
-
 .gwt-ProgressBar-shell {
     border: 1px solid var(--component-border-color);
     background-color: #AAAAAA;
@@ -473,16 +454,6 @@ input[type=checkbox]:focus {
     padding: 0px;
     margin: 0px;
     color: white;
-}
-
-.upFileNameLabel {
-    white-space: nowrap;
-}
-
-.uploadDialogContainer {
-    padding: 5px;
-    outline: none;
-    height: 100%;
 }
 
 /* ------------ Loading blocker  ------------ */
