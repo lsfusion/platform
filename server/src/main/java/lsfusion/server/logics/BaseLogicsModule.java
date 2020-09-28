@@ -188,6 +188,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP isServer;
 
+    public LA openFile;
+    public LA openRawFile;
+    public LA openLink;
+    public LA openRawLink;
+
     public LP defaultBackgroundColor;
     public LP defaultOverrideBackgroundColor;
     public LP defaultForegroundColor;
@@ -484,6 +489,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         importedString = findProperty("importedString[STRING[10]]");
 
         isServer = findProperty("isServer[]");
+
+        openFile = findAction("open[FILE]");
+        openRawFile = findAction("open[RAWFILE]");
+        openLink = findAction("open[LINK]");
+        openRawLink = findAction("open[RAWLINK]");
 
         sleep = findAction("sleep[LONG]");
         applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc[]");

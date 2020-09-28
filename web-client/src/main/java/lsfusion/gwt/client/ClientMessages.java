@@ -23,6 +23,8 @@ public interface ClientMessages extends Messages {
     String panel();
     String hide();
 
+    String loading();
+
     String formRendererEmpty();
     String formRendererNotDefined();
     String formRendererRequired();
@@ -176,13 +178,6 @@ public interface ClientMessages extends Messages {
     String filterDataValue();
     String filterObjectValue();
     String filterPropertyValue();
-
-    String fileEditorTitle();
-    String fileEditorChooseFile();
-    String fileEditorChooseFileSuffix();
-    String fileEditorAddFiles();
-    String fileEditorDropFiles();
-    String fileEditorCancel();
 
     String multipleFilterComponentAll();
 

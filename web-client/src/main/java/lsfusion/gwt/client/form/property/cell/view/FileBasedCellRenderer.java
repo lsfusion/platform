@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
+import com.google.gwt.user.client.ui.HasAutoHorizontalAlignment;
+import com.google.gwt.user.client.ui.Label;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public abstract class FileBasedCellRenderer extends CellRenderer {
@@ -19,6 +19,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.setInnerText(null);
         element.removeAllChildren();
 
+        ImageElement img = null;
         if (value == null && property.isEditableNotNull()) {
             setBasedEmptyElement(element);
         } else {
@@ -26,15 +27,44 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             element.removeClassName("requiredValueString");
             element.setTitle("");
 
-            ImageElement img = element.appendChild(Document.get().createImageElement());
+            img = Document.get().createImageElement();
 
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
             imgStyle.setProperty("maxWidth", "100%");
             imgStyle.setProperty("maxHeight", "100%");
 
+            if(property.hasEditObjectAction) {
+                img.addClassName("selectedFileCellHasEdit");
+            } else {
+                img.removeClassName("selectedFileCellHasEdit");
+            }
+
             img.setSrc(getFilePath(value));
         }
+        element.appendChild(wrapImage(img));
+    }
+
+    private Element wrapImage(ImageElement img) {
+        Label dropFilesLabel = new Label();
+        dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
+        dropFilesLabel.setWidth("100%");
+
+        DataGrid.initSinkDragDropEvents(dropFilesLabel);
+
+        Element dropFilesLabelElement = dropFilesLabel.getElement();
+
+        InputElement inputElement = dropFilesLabelElement.appendChild(Document.get().createFileInputElement());
+        inputElement.setId("input");
+        inputElement.getStyle().setDisplay(Style.Display.NONE);
+
+        if(img != null) {
+            dropFilesLabelElement.appendChild(img);
+        } else {
+            dropFilesLabel.setText(REQUIRED_VALUE);
+        }
+
+        return dropFilesLabel.getElement();
     }
 
     @Override
@@ -47,7 +77,6 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     protected void setBasedEmptyElement(Element element) {
         element.getStyle().setPaddingRight(4, Style.Unit.PX);
         element.getStyle().setPaddingLeft(4, Style.Unit.PX);
-        element.setInnerText(REQUIRED_VALUE);
         element.setTitle(REQUIRED_VALUE);
         element.addClassName("requiredValueString");
     }
