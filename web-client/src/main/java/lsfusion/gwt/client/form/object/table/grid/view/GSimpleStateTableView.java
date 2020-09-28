@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.Column;
 
@@ -147,6 +148,10 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         changeObjectProperty(property, object, new GDateTimeDTO(year, month, day, hour, minute, second));
     }
 
+    protected void changeDateProperty(String property, JavaScriptObject object, int year, int month, int day) {
+        changeObjectProperty(property, object, new GDateDTO(year, month, day));
+    }
+
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
@@ -155,6 +160,9 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             },
             changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
                 return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);
+            },
+            changeDateProperty: function (property, object, year, month, day) {
+                return thisObj.@GSimpleStateTableView::changeDateProperty(*)(property, object, year, month, day);
             },
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

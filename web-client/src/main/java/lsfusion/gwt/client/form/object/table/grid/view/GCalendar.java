@@ -52,7 +52,8 @@ public class GCalendar extends GSimpleStateTableView {
         return calendar;
 
         function changeProperty(info, position) {
-            controller.changeDateTimeProperty(info.event.extendedProps[position + 'FieldName'], objects[info.event.extendedProps.index], info.event[position].getFullYear(),
+            var func = info.event.extendedProps[position + 'FieldName'].includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
+            controller[func](info.event.extendedProps[position + 'FieldName'], objects[info.event.extendedProps.index], info.event[position].getFullYear(),
                 info.event[position].getMonth() + 1, info.event[position].getUTCDate(), info.event[position].getUTCHours(),
                 info.event[position].getUTCMinutes(), info.event[position].getUTCSeconds());
         }
