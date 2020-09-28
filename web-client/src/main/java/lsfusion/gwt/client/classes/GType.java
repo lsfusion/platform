@@ -49,4 +49,8 @@ public abstract class GType implements Serializable {
     public GEditBindingMap.EditEventFilter getEditEventFilter() {
         return null;
     }
+
+    public boolean isId(){
+        return false;
+    }
 }

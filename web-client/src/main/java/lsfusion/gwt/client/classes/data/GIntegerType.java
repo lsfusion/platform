@@ -30,4 +30,9 @@ public class GIntegerType extends GIntegralType {
     public String toString() {
         return ClientMessages.Instance.get().typeIntegerCaption();
     }
+
+    @Override
+    public boolean isId() {
+        return true;
+    }
 }
