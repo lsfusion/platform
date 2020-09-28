@@ -1667,10 +1667,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         BaseLogicsModule lm = getBaseLM();
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
-            if (!(getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)) 
-                return null;
-
-            return getDefaultEditObjectAction(lm);
+            ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
+            LA defaultOpenAction = editClass != null ? editClass.getDefaultOpenAction(getBusinessLogics()) : null;
+            return defaultOpenAction != null ? createJoinAction(defaultOpenAction) : null;
         }
 
         if (!canBeChanged()) // optimization

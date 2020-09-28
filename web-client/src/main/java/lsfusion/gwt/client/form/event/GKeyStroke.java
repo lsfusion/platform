@@ -163,6 +163,10 @@ public class GKeyStroke implements Serializable {
         return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event))) || isCharDeleteKeyEvent(event));
     }
 
+    public static boolean isDropEvent(Event event) {
+        return event.getType().equals(BrowserEvents.DROP);
+    }
+
     // what events should be stealed by TextBasedEditor
     public static boolean isCharNavigateKeyEvent(NativeEvent event) {
         if (KEYDOWN.equals(event.getType())) {

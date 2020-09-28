@@ -3,6 +3,8 @@ package lsfusion.server.logics.classes.struct;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -74,6 +76,11 @@ public class ConcatenateValueClass implements ValueClass {
 
     public Object getDefaultValue() {
         throw new RuntimeException("not supported");
+    }
+
+    @Override
+    public LA getDefaultOpenAction(BusinessLogics BL) {
+        return null;
     }
 
     public Stat getTypeStat(boolean forJoin) {

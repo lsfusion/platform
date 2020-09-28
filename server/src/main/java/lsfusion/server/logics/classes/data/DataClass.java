@@ -20,6 +20,8 @@ import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -242,6 +244,11 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     public T getInfiniteValue(boolean min) {
         throw new RuntimeException("not supported");
+    }
+
+    @Override
+    public LA getDefaultOpenAction(BusinessLogics BL) {
+        return null;
     }
 
     public boolean calculateStat() {
