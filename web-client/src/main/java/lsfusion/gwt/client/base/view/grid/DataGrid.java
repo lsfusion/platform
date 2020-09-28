@@ -26,7 +26,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -322,7 +321,6 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         String eventType = event.getType();
         return getBrowserFocusEvents().contains(eventType) ||
                 getBrowserMouseEvents().contains(eventType) ||
-                GKeyStroke.isDropEvent(event) ||
                 checkSinkGlobalEvents(event);
     }
     public static boolean checkSinkGlobalEvents(Event event) {

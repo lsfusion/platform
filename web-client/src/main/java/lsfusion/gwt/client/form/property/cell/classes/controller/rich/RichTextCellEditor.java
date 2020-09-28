@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.InitializeEvent;
 import com.google.gwt.event.logical.shared.InitializeHandler;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.RichTextArea;
@@ -32,7 +31,7 @@ public class RichTextCellEditor extends DialogBasedCellEditor {
     }
 
     @Override
-    protected Widget createComponent(Event editEvent, Element parent, Object oldValue) {
+    protected Widget createComponent(Element parent, Object oldValue) {
         textArea = new RichTextArea();
         textArea.setHTML(EscapeUtils.sanitizeHtml(oldValue == null ? "" : oldValue.toString()));
         

@@ -41,16 +41,12 @@ public abstract class DialogBasedCellEditor implements WindowCellEditor {
 
     @Override
     public void startEditing(Event editEvent, Element parent, Object oldValue) {
-        Widget content = createComponent(editEvent, parent, oldValue);
+        Widget content = createComponent(parent, oldValue);
         if (width != -1 && height != -1) {
             content.setPixelSize(width, height);
         }
         dialog.setWidget(content);
         dialog.center();
-        afterStartEditing();
-    }
-
-    protected void afterStartEditing() {
     }
 
     protected final void commitEditing(Object value) {
@@ -63,5 +59,5 @@ public abstract class DialogBasedCellEditor implements WindowCellEditor {
         editManager.cancelEditing();
     }
 
-    protected abstract Widget createComponent(Event editEvent, Element parent, Object oldValue);
+    protected abstract Widget createComponent(Element parent, Object oldValue);
 }

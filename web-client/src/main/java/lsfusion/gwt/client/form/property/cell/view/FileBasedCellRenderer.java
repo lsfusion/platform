@@ -4,8 +4,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.ui.HasAutoHorizontalAlignment;
-import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public abstract class FileBasedCellRenderer extends CellRenderer {
@@ -28,22 +26,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             element.removeClassName("requiredValueString");
             element.setTitle("");
 
-            Label dropFilesLabel = new Label();
-            dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
-            dropFilesLabel.setWidth("100%");
-
-            dropFilesLabel.addDragOverHandler(event -> {
-            });
-            dropFilesLabel.addDragLeaveHandler(event -> {
-            });
-            dropFilesLabel.addDropHandler(event -> {
-            });
-
-            Element dropFilesLabelElement = dropFilesLabel.getElement();
-            element.appendChild(dropFilesLabelElement);
-
-
-            ImageElement img = dropFilesLabelElement.appendChild(Document.get().createImageElement());
+            ImageElement img = element.appendChild(Document.get().createImageElement());
 
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
