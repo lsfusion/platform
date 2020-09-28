@@ -62,9 +62,4 @@ public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTi
     public GEditBindingMap.EditEventFilter getEditEventFilter() {
         return GEditBindingMap.numberEventFilter;
     }
-
-    @Override
-    public boolean isId() {
-        return false;
-    }
 }

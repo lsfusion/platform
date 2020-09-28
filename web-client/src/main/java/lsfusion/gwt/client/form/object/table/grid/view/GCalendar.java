@@ -22,14 +22,14 @@ public class GCalendar extends GSimpleStateTableView {
     @Override
     protected void render(Element element, Element recordElement, JsArray<JavaScriptObject> list) {
         if (calendar == null) {
-            calendar = createCalendar(element, list, calendarDateType, controller);
+            calendar = createCalendar(element, list, controller);
         }
         updateEvents(calendar, remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> !gPropertyDraw.baseType.isId()), controller));
     }
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject objects, String calendarDateType, JavaScriptObject controller)/*-{
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject objects, JavaScriptObject controller)/*-{
         var calendar = new $wnd.FullCalendar.Calendar(element, {
-            initialView: calendarDateType === 'date' ? 'dayGridMonth' : 'dayGridWeek',
+            initialView: 'dayGridMonth',
             height: 'parent',
             timeZone: 'UTC',
             firstDay: 1,
@@ -52,10 +52,12 @@ public class GCalendar extends GSimpleStateTableView {
         return calendar;
 
         function changeProperty(info, position) {
-            var func = info.event.extendedProps[position + 'FieldName'].includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
-            controller[func](info.event.extendedProps[position + 'FieldName'], objects[info.event.extendedProps.index], info.event[position].getFullYear(),
-                info.event[position].getMonth() + 1, info.event[position].getUTCDate(), info.event[position].getUTCHours(),
-                info.event[position].getUTCMinutes(), info.event[position].getUTCSeconds());
+            var propertyName = info.event.extendedProps[position + 'FieldName'];
+            var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
+            var eventElement = info.event[position];
+            controller[controllerFunction](propertyName, objects[info.event.extendedProps.index], eventElement.getFullYear(),
+                eventElement.getMonth() + 1, eventElement.getUTCDate(), eventElement.getUTCHours(),
+                eventElement.getUTCMinutes(), eventElement.getUTCSeconds());
         }
     }-*/;
 

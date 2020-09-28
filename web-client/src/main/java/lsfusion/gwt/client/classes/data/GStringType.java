@@ -73,4 +73,9 @@ public class GStringType extends GDataType {
                 (blankPadded ? " " + messages.typeStringCaptionPadding() : "") + 
                 "(" + length + ")";
     }
+
+    @Override
+    public boolean isId() {
+        return true;
+    }
 }

@@ -30,4 +30,9 @@ public class GLongType extends GIntegralType {
     public String toString() {
         return ClientMessages.Instance.get().typeLongCaption();
     }
+
+    @Override
+    public boolean isId() {
+        return true;
+    }
 }

@@ -55,9 +55,4 @@ public class GTimeType extends GFormatType<DateTimeFormat> {
     public GEditBindingMap.EditEventFilter getEditEventFilter() {
         return GEditBindingMap.numberEventFilter;
     }
-
-    @Override
-    public boolean isId() {
-        return false;
-    }
 }

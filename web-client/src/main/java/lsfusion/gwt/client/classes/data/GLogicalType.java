@@ -43,9 +43,4 @@ public class GLogicalType extends GDataType {
     public String toString() {
         return ClientMessages.Instance.get().typeLogicalCaption();
     }
-
-    @Override
-    public boolean isId() {
-        return false;
-    }
 }

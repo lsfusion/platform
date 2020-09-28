@@ -51,6 +51,6 @@ public abstract class GType implements Serializable {
     }
 
     public boolean isId(){
-        return true;
+        return false;
     }
 }
