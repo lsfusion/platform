@@ -93,4 +93,9 @@ public class GNumericType extends GDoubleType {
     public String toString() {
         return ClientMessages.Instance.get().typeNumericCaption() + (precision.isUnlimited() ? "" : ("[" + precision + "," + scale + "]"));
     }
+
+    @Override
+    public boolean isId() {
+        return this.scale.getValue() == 0;
+    }
 }

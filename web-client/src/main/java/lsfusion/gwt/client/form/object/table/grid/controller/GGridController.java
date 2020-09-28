@@ -261,7 +261,7 @@ public class GGridController extends GAbstractTableController {
         }
 
         if(groupObject.isCalendarDate || groupObject.isCalendarDateTime) {
-            calendarTableButton = new GToolbarButton("custom_view.png", messages.formGridCalendarView()) {
+            calendarTableButton = new GToolbarButton("calendar_view.png", messages.formGridCalendarView()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> {

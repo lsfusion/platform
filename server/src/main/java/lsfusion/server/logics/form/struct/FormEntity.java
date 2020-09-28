@@ -76,9 +76,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -1061,24 +1059,26 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public boolean isMap(GroupObjectEntity entity) {
-        return hasField(entity, new HashSet<>(Arrays.asList("longitude", "latitude", "polygon")));
+        return hasField(entity, "longitude", "latitude", "polygon");
     }
 
     @IdentityLazy
     public boolean isCalendarDate(GroupObjectEntity entity) {
-        return hasField(entity, new HashSet<>(Collections.singletonList("date")));
-    }
-    @IdentityLazy
-    public boolean isCalendarDateTime(GroupObjectEntity entity) {
-        return hasField(entity, new HashSet<>(Collections.singletonList("dateTime")));
+        return hasField(entity, "date", "dateFrom");
     }
 
-    private boolean hasField(GroupObjectEntity entity, Set<String> fields) {
+    @IdentityLazy
+    public boolean isCalendarDateTime(GroupObjectEntity entity) {
+        return hasField(entity, "dateTime", "dateTimeFrom");
+    }
+
+    private boolean hasField(GroupObjectEntity entity, String... fields) {
+        List<String> fieldsList = Arrays.asList(fields);
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
         for (PropertyDrawEntity property : propertyDrawsIt) {
             if (property.isList(this) && entity.equals(property.getToDraw(this))) {
                 String name = property.getIntegrationSID();
-                if (name != null && fields.contains(name)) {
+                if (name != null && fieldsList.contains(name)) {
                     return true;
                 }
             }
