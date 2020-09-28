@@ -18,6 +18,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.setInnerText(null);
         element.removeAllChildren();
 
+        ImageElement img = null;
         if (value == null && property.isEditableNotNull()) {
             setBasedEmptyElement(element);
         } else {
@@ -25,7 +26,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             element.removeClassName("requiredValueString");
             element.setTitle("");
 
-            ImageElement img = Document.get().createImageElement();
+            img = Document.get().createImageElement();
 
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
@@ -39,9 +40,8 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             }
 
             img.setSrc(getFilePath(value));
-
-            element.appendChild(wrapImage(img));
         }
+        element.appendChild(wrapImage(img));
     }
 
     private Element wrapImage(ImageElement img) {
@@ -62,7 +62,11 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         inputElement.setId("input");
         inputElement.getStyle().setDisplay(Style.Display.NONE);
 
-        dropFilesLabelElement.appendChild(img);
+        if(img != null) {
+            dropFilesLabelElement.appendChild(img);
+        } else {
+            dropFilesLabel.setText(REQUIRED_VALUE);
+        }
 
         return dropFilesLabel.getElement();
     }
@@ -77,7 +81,6 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     protected void setBasedEmptyElement(Element element) {
         element.getStyle().setPaddingRight(4, Style.Unit.PX);
         element.getStyle().setPaddingLeft(4, Style.Unit.PX);
-        element.setInnerText(REQUIRED_VALUE);
         element.setTitle(REQUIRED_VALUE);
         element.addClassName("requiredValueString");
     }
