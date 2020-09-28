@@ -30,6 +30,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.flow.CaseAction;
@@ -156,8 +157,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     @Override
-    public LA getDefaultOpenAction() {
-        return null;
+    public LA getDefaultOpenAction(BusinessLogics BL) {
+        return BL.LM.getNewSessionFormEdit();
     }
 
     @Override

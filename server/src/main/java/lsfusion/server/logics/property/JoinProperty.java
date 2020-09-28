@@ -8,6 +8,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
@@ -19,7 +20,6 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAggAction;
 import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
@@ -294,7 +294,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
-            if((editClass != null && editClass.getDefaultOpenAction() != null) || editClass instanceof CustomClass) // just call edit action (see super implementation)
+            if((editClass != null && editClass.getDefaultOpenAction(ThreadLocalContext.getBusinessLogics()) != null)) // just call open action (see super implementation)
                 return super.getDefaultEventAction(eventActionSID, viewProperties);
 
             ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID);

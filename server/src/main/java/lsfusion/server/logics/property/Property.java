@@ -1668,13 +1668,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
-            LA defaultOpenAction = editClass != null ? editClass.getDefaultOpenAction() : null;
-            if(defaultOpenAction != null)
-                return createJoinAction(defaultOpenAction);
-            else if (!(editClass instanceof CustomClass))
-                return null;
-
-            return getDefaultEditObjectAction(lm);
+            LA defaultOpenAction = editClass != null ? editClass.getDefaultOpenAction(getBusinessLogics()) : null;
+            return defaultOpenAction != null ? createJoinAction(defaultOpenAction) : null;
         }
 
         if (!canBeChanged()) // optimization

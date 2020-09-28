@@ -25,25 +25,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             element.removeClassName("requiredValueString");
             element.setTitle("");
 
-            Label dropFilesLabel = new Label();
-            dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
-            dropFilesLabel.setWidth("100%");
-
-            dropFilesLabel.addDragOverHandler(event -> {
-            });
-            dropFilesLabel.addDragLeaveHandler(event -> {
-            });
-            dropFilesLabel.addDropHandler(event -> {
-            });
-
-            Element dropFilesLabelElement = dropFilesLabel.getElement();
-            element.appendChild(dropFilesLabelElement);
-
-            InputElement inputElement = dropFilesLabelElement.appendChild(Document.get().createFileInputElement());
-            inputElement.setId("input");
-            inputElement.getStyle().setDisplay(Style.Display.NONE);
-
-            ImageElement img = dropFilesLabelElement.appendChild(Document.get().createImageElement());
+            ImageElement img = Document.get().createImageElement();
 
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
@@ -57,7 +39,32 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             }
 
             img.setSrc(getFilePath(value));
+
+            element.appendChild(wrapImage(img));
         }
+    }
+
+    private Element wrapImage(ImageElement img) {
+        Label dropFilesLabel = new Label();
+        dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
+        dropFilesLabel.setWidth("100%");
+
+        dropFilesLabel.addDragOverHandler(event -> {
+        });
+        dropFilesLabel.addDragLeaveHandler(event -> {
+        });
+        dropFilesLabel.addDropHandler(event -> {
+        });
+
+        Element dropFilesLabelElement = dropFilesLabel.getElement();
+
+        InputElement inputElement = dropFilesLabelElement.appendChild(Document.get().createFileInputElement());
+        inputElement.setId("input");
+        inputElement.getStyle().setDisplay(Style.Display.NONE);
+
+        dropFilesLabelElement.appendChild(img);
+
+        return dropFilesLabel.getElement();
     }
 
     @Override

@@ -2,11 +2,11 @@ package lsfusion.server.logics.classes.data.file;
 
 import lsfusion.base.file.FileData;
 import lsfusion.interop.classes.DataType;
-import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.language.action.LA;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.data.DataClass;
 import org.apache.commons.net.util.Base64;
 
@@ -27,8 +27,8 @@ public class DynamicFormatFileClass extends FileClass<FileData> {
     }
 
     @Override
-    public LA getDefaultOpenAction() {
-        return ThreadLocalContext.getBusinessLogics().LM.openFile;
+    public LA getDefaultOpenAction(BusinessLogics BL) {
+        return BL.LM.openFile;
     }
 
     public Class getReportJavaClass() {
