@@ -263,6 +263,18 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         return browserMouseEvents;
     }
 
+    private static Set<String> browserDragDropEvents;
+    private static Set<String> getBrowserDragDropEvents() {
+        if(browserDragDropEvents == null) {
+            Set<String> eventTypes = new HashSet<>();
+            eventTypes.add(BrowserEvents.DRAGOVER);
+            eventTypes.add(BrowserEvents.DRAGLEAVE);
+            eventTypes.add(BrowserEvents.DROP);
+            browserDragDropEvents = eventTypes;
+        }
+        return browserDragDropEvents;
+    }
+
     // for tooltips on header
     private static Set<String> browserTooltipMouseEvents;
     public static Set<String> getBrowserTooltipMouseEvents() {
@@ -306,6 +318,11 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
     public static void initSinkMouseEvents(Widget widget) {
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserMouseEvents());
     }
+
+    public static void initSinkDragDropEvents(Widget widget) {
+        CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserDragDropEvents());
+    }
+
     public static Element getTargetAndCheck(Element element, Event event) {
         EventTarget eventTarget = event.getEventTarget();
         //it seems that now all this is not needed
@@ -322,7 +339,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         String eventType = event.getType();
         return getBrowserFocusEvents().contains(eventType) ||
                 getBrowserMouseEvents().contains(eventType) ||
-                GKeyStroke.isDropEvent(event) ||
+                getBrowserDragDropEvents().contains(eventType) ||
                 checkSinkGlobalEvents(event);
     }
     public static boolean checkSinkGlobalEvents(Event event) {

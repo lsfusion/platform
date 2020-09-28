@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasAutoHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public abstract class FileBasedCellRenderer extends CellRenderer {
@@ -49,12 +50,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
         dropFilesLabel.setWidth("100%");
 
-        dropFilesLabel.addDragOverHandler(event -> {
-        });
-        dropFilesLabel.addDragLeaveHandler(event -> {
-        });
-        dropFilesLabel.addDropHandler(event -> {
-        });
+        DataGrid.initSinkDragDropEvents(dropFilesLabel);
 
         Element dropFilesLabelElement = dropFilesLabel.getElement();
 
