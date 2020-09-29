@@ -2,7 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page isELIgnored="false" %>
-<%@ page import="lsfusion.http.controller.LoadExternalResources" %>
 
 <!DOCTYPE html>
 <html>
@@ -13,7 +12,12 @@
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
 <%--        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", null)%>
+        <script type="text/javascript" src="static/js/loadResources.js"></script>
+        <script>
+            loadResources([
+                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'
+            ]);
+        </script>
     </head>
     <body onload="document.loginForm.username.focus();">
         <div class="main">

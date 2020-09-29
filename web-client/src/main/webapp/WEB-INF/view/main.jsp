@@ -1,7 +1,6 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ page import="lsfusion.http.controller.LoadExternalResources" %>
 
 <!DOCTYPE html>
 
@@ -52,18 +51,52 @@
             }
         </style>
 
+        <script type="text/javascript" src="static/js/loadResources.js"></script>
+        <script>
+            loadResources([
+                // need jquery for pivot table
+                'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js',
+
+                // optional: mobile support with jqueryui-touch-punch
+                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+
+                // math for formulas in pivoting
+                'https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js',
+
+                //plotly libs : plotly_renderers
+                'https://cdn.plot.ly/plotly-basic-latest.min.js',
+                'https://cdn.plot.ly/plotly-locale-ru-latest.js',
+
+                // because d3_renderers doesn't work with v4+ d3 versions
+                'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js',
+
+                //map
+                'https://unpkg.com/leaflet@1.6.0/dist/leaflet.css',
+                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css',
+                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css',
+                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css',
+                'https://unpkg.com/leaflet@1.6.0/dist/leaflet.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js',
+
+                //calendar
+                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js', 'fullCalendar.js'],
+                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css', 'fullCalendar.css']
+            ]);
+
+        </script>
+
         <!-- need jquery for pivot table -->
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js", null)%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js", null)%>
 
         <!-- export pivot to excel -->
         <script type="text/javascript" src="static/js/tableToExcel.js"></script>
 
         <!-- optional: mobile support with jqueryui-touch-punch -->
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js", null)%>
 
         <!-- pivot table -->
         <link rel="stylesheet" type="text/css" href="static/css/pivot.css">
@@ -73,7 +106,6 @@
 
         <!-- math for formulas in pivoting -->
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js", null)%>
         <script type="text/javascript" src="static/js/utils.js"></script>
 
         <!-- subtotal.js libs : subtotal_renderers -->
@@ -83,9 +115,7 @@
 
         <!--  plotly libs : plotly_renderers  -->
 <%--        <script type="text/javascript" src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdn.plot.ly/plotly-basic-latest.min.js", null)%>
 <%--        <script type="text/javascript" src="https://cdn.plot.ly/plotly-locale-ru-latest.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdn.plot.ly/plotly-locale-ru-latest.js", null)%>
 
     <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
         <%-- + horizontal moved to the end --%>
@@ -96,7 +126,6 @@
 <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.css">--%>
 <%--  because d3_renderers doesn't work with v4+ d3 versions --%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js", null)%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>--%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>--%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>--%>
@@ -108,27 +137,17 @@
 
         <!--  map  -->
 <%--        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"/>--%>
-        <%=LoadExternalResources.getUrl("https://unpkg.com/leaflet@1.6.0/dist/leaflet.css", null)%>
 <%--        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"></link>--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css", null)%>
 <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css" />--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css", null)%>
 <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css", null)%>
 <%--        <script type="text/javascript" src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://unpkg.com/leaflet@1.6.0/dist/leaflet.js", null)%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js", null)%>
 <%--        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js", null)%>
 <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js", null)%>
 
         <!-- calendar-->
 <%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js"></script>--%>
-        <%=LoadExternalResources.getUrl("https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js", "fullCalendar.js")%>
 <%--        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css"/>--%>
-        <%=LoadExternalResources.getUrl("https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css", "fullCalendar.css")%>
 
         <c:forEach items="${filesUrls}" var="fileUrl">
             <c:if test="${fileUrl.endsWith('js')}">
