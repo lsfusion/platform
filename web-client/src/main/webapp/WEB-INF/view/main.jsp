@@ -54,24 +54,55 @@
         <script type="text/javascript" src="static/js/loadResources.js"></script>
         <script>
             loadResources([
-                // need jquery for pivot table
+
+                <!-- need jquery for pivot table -->
                 'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js',
 
-                // optional: mobile support with jqueryui-touch-punch
+                <!-- export pivot to excel -->
+                'static/js/tableToExcel.js',
+
+                <!-- optional: mobile support with jqueryui-touch-punch -->
                 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
 
-                // math for formulas in pivoting
-                'https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js',
+                <!-- pivot table -->
+                'static/css/pivot.css',
+                <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">--%>
+                'static/js/pivot.js',
+                'static/js/pivot.ru.js',
 
-                //plotly libs : plotly_renderers
+                <!-- math for formulas in pivoting -->
+                'https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js',
+                'static/js/utils.js',
+
+                <!-- subtotal.js libs : subtotal_renderers -->
+                'static/css/subtotal.css',
+                <%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>--%>
+                'static/js/subtotal.js',
+
+                <!--  plotly libs : plotly_renderers  -->
                 'https://cdn.plot.ly/plotly-basic-latest.min.js',
                 'https://cdn.plot.ly/plotly-locale-ru-latest.js',
 
-                // because d3_renderers doesn't work with v4+ d3 versions
-                'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js',
+                <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
+                <%-- + horizontal moved to the end --%>
+                'static/js/plotly_renderers.js',
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"></script>--%>
 
-                //map
+                <!--  c3 / d3 libs : d3_renderers -->
+                <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.css">--%>
+                <%--  because d3_renderers doesn't work with v4+ d3 versions --%>
+                'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js',
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>--%>
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>--%>
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>--%>
+                'static/js/d3_renderers.js',
+
+                <%--        <!--  google charts: gchart_renderers  -->--%>
+                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/gchart_renderers.min.js"></script>--%>
+                <%--        <script type="text/javascript" src="https://www.google.com/jsapi"></script>--%>
+
+                <!--  map  -->
                 'https://unpkg.com/leaflet@1.6.0/dist/leaflet.css',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css',
@@ -81,73 +112,13 @@
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js',
 
-                //calendar
+                <!-- calendar-->
                 ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js', 'fullCalendar.js'],
                 ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css', 'fullCalendar.css']
+
             ]);
 
         </script>
-
-        <!-- need jquery for pivot table -->
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>--%>
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>--%>
-
-        <!-- export pivot to excel -->
-        <script type="text/javascript" src="static/js/tableToExcel.js"></script>
-
-        <!-- optional: mobile support with jqueryui-touch-punch -->
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>--%>
-
-        <!-- pivot table -->
-        <link rel="stylesheet" type="text/css" href="static/css/pivot.css">
-<%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">--%>
-        <script type="text/javascript" src="static/js/pivot.js"></script>
-        <script type="text/javascript" src="static/js/pivot.ru.js"></script>
-
-        <!-- math for formulas in pivoting -->
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js"></script>--%>
-        <script type="text/javascript" src="static/js/utils.js"></script>
-
-        <!-- subtotal.js libs : subtotal_renderers -->
-        <link rel="stylesheet" type="text/css" href="static/css/subtotal.css">
-<%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>--%>
-        <script type="text/javascript" src="static/js/subtotal.js"></script>
-
-        <!--  plotly libs : plotly_renderers  -->
-<%--        <script type="text/javascript" src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>--%>
-<%--        <script type="text/javascript" src="https://cdn.plot.ly/plotly-locale-ru-latest.js"></script>--%>
-
-    <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
-        <%-- + horizontal moved to the end --%>
-        <script type="text/javascript" src="static/js/plotly_renderers.js"></script>
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"></script>--%>
-
-        <!--  c3 / d3 libs : d3_renderers -->
-<%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.css">--%>
-<%--  because d3_renderers doesn't work with v4+ d3 versions --%>
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>--%>
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>--%>
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>--%>
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>--%>
-        <script type="text/javascript" src="static/js/d3_renderers.js"></script>
-
-<%--        <!--  google charts: gchart_renderers  -->--%>
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/gchart_renderers.min.js"></script>--%>
-<%--        <script type="text/javascript" src="https://www.google.com/jsapi"></script>--%>
-
-        <!--  map  -->
-<%--        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"/>--%>
-<%--        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"></link>--%>
-<%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css" />--%>
-<%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />--%>
-<%--        <script type="text/javascript" src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>--%>
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>--%>
-<%--        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>--%>
-<%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"></script>--%>
-
-        <!-- calendar-->
-<%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js"></script>--%>
-<%--        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css"/>--%>
 
         <c:forEach items="${filesUrls}" var="fileUrl">
             <c:if test="${fileUrl.endsWith('js')}">

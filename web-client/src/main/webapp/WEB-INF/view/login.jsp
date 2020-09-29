@@ -11,7 +11,6 @@
         <link rel="shortcut icon" href="${logicsIcon}" />
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
-<%--        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">--%>
         <script type="text/javascript" src="static/js/loadResources.js"></script>
         <script>
             loadResources([
