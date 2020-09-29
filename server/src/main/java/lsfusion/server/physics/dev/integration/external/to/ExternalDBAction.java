@@ -71,6 +71,7 @@ public class ExternalDBAction extends ExternalAction {
         boolean isLocalDB = connectionString.equals("LOCAL");
         MutableObject connOwner = null;
         ExConnection exConn = null;
+        boolean prevReadOnly = false;
         Connection conn;
         if(isLocalDB) {
             DataAdapter adapter = dbManager.getAdapter();
@@ -78,6 +79,7 @@ public class ExternalDBAction extends ExternalAction {
             connOwner = new MutableObject();
             exConn = adapter.getPrivate(connOwner);
             conn = exConn.sql;
+            prevReadOnly = conn.isReadOnly();
         } else {
             syntax = DefaultSQLSyntax.getSyntax(connectionString);
             conn = DriverManager.getConnection(connectionString);
@@ -85,6 +87,8 @@ public class ExternalDBAction extends ExternalAction {
         List<String> tempTables = new ArrayList<>();
 
         try {
+            conn.setReadOnly(false);
+
             int tableParamNum = 0;
             ImOrderSet<PropertyInterface> orderInterfaces = paramInterfaces;
             MExclMap<String, ParseInterface> mParamObjects = MapFact.mExclMap(orderInterfaces.size());
@@ -152,9 +156,10 @@ public class ExternalDBAction extends ExternalAction {
             for(String table : tempTables)
                 SQLSession.dropTemporaryTableFromDB(conn, syntax, table, owner);
             if (conn != null) {
-                if(isLocalDB)
+                if(isLocalDB) {
+                    conn.setReadOnly(prevReadOnly);
                     dbManager.getAdapter().returnPrivate(connOwner, exConn);
-                else
+                } else
                     conn.close();
             }
         }
