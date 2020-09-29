@@ -3,12 +3,15 @@ package lsfusion.client.form.property.panel.view;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.EditBindingMap;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 import static lsfusion.interop.form.event.KeyStrokes.getEnter;
 
@@ -70,6 +73,25 @@ public class DataPanelViewTable extends SingleCellTable {
 
     public ClientFormController getForm() {
         return form;
+    }
+
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        //hack for keypress 'ENTER' (it should be checked before 'forward-traversal' from SwingUtils.setupSingleCellTable)
+        if (ks.equals(KeyStrokes.getEnter())) {
+            Container parent = getParent();
+            while (parent != null) {
+                if (parent instanceof ClientFormLayout) {
+                    if (((ClientFormLayout) parent).directProcessKeyBinding(ks, e, condition, pressed))
+                        return true;
+                    break;
+                } else {
+                    parent = parent.getParent();
+                }
+            }
+        }
+
+        return super.processKeyBinding(ks, e, condition, pressed);
     }
 
     @Override

@@ -222,6 +222,10 @@ public class ClientFormLayout extends JPanel {
         return super.processKeyBinding(ks, ke, condition, pressed);
     }
 
+    public boolean directProcessKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+        return processKeyBinding(ks, ke, condition, pressed);
+    }
+
     public boolean isBlocked() {
         return blocked;
     }
