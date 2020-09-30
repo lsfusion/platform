@@ -13,7 +13,7 @@ function loadResources(resources) {
 }
 
 function getElement(src, alternativeName) {
-    if (!src.startsWith('http') || isResourceAvailable(src)) {
+    if (!src.startsWith('http') || window.navigator.onLine) {
         if (src.endsWith('.js')) {
             return `<script type=\"text/javascript\" src=\"${src}\"></script>`;
         } else {
@@ -26,16 +26,5 @@ function getElement(src, alternativeName) {
         } else {
             return `<link rel=\"stylesheet\" type=\"text/css\" href=\"static/css/external/${src}\" />`;
         }
-    }
-}
-
-function isResourceAvailable(url){
-    let xhr = new XMLHttpRequest();
-    xhr.open("GET", url, false);
-    try {
-        xhr.send();
-        return xhr.status === 200;
-    } catch(e) {
-        return false;
     }
 }
