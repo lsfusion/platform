@@ -149,7 +149,7 @@ public class DialogBoxHelper {
         protected void onPreviewNativeEvent(Event.NativePreviewEvent event) {
             // в IE работает и так
             if (!GwtClientUtils.isIEUserAgent() && GKeyStroke.isCopyToClipboardEvent(event.getNativeEvent())) {
-                CopyPasteUtils.putSelectionIntoClipboard();
+                CopyPasteUtils.setClipboardData();
             }
 
             if (Event.ONKEYDOWN == event.getTypeInt()) {

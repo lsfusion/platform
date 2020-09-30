@@ -21,7 +21,7 @@ public class CopyPasteUtils {
         if (element != null && (selection.getRange() == null || selection.getRange().getText().isEmpty())) {
             Range range = new Range(element);
             selection.setRange(range);
-            setClipboardData(selection.getRange().getText());
+            setClipboardData();
             //DELAY
             Scheduler.get().scheduleFixedDelay(() -> {
                 range.collapse(true);
@@ -30,18 +30,8 @@ public class CopyPasteUtils {
             }, 100);
         }
     }
-    
-    public static void putSelectionIntoClipboard() {
-        Range range = selection.getRange();
-        if (range != null) {
-            String rangeText = range.getText();
-            if (!rangeText.isEmpty()) {
-                setClipboardData(rangeText);
-            }
-        }
-    }
 
-    public static native void setClipboardData(String text)
+    public static native void setClipboardData()
     /*-{
         $doc.execCommand('copy');
     }-*/;
