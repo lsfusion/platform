@@ -5,6 +5,7 @@ import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -129,7 +130,8 @@ public class ClientFormLayout extends JPanel {
                     autoShowHideContainers((ClientContainer) child);
                 }
 
-                if (childView.isVisible()) {
+                //difference between desktop and web: ClientFilter is not dialog box, it not extend ClientContainer and is in children list
+                if (childView.isVisible() && !(child instanceof ClientFilter)) {
                     hasVisible = true;
                 }
             }
