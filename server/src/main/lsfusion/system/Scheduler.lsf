@@ -177,8 +177,10 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(t
                                                 
 executeScheduledTask '{scheduler.execute.scheduled.task}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.ExecuteScheduledTaskAction' (ScheduledTask) CONFIRM;                                                                                                                                 
 setupScheduledTask '{scheduler.setup.scheduled.task}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.SetupScheduledTaskAction' (ScheduledTask) CONFIRM;                                         
-WHEN changedSchedulerTask(ScheduledTask t) DO EXEC setupScheduledTask(t);
-WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC setupScheduledTask(scheduledTask(td));
+WHEN changedSchedulerTask(ScheduledTask t) DO 
+    setupScheduledTask(t);
+WHEN DROPPED(ScheduledTaskDetail td IS ScheduledTaskDetail) AND PREV(active(td)) AND isStartedScheduler() DO 
+    setupScheduledTask(PREV(scheduledTask(td)));
            
 FORM scheduledTask '{scheduler.form.scheduled.task}'
 
