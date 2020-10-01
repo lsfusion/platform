@@ -22,12 +22,27 @@ public class GCalendar extends GSimpleStateTableView {
     @Override
     protected void render(Element element, Element recordElement, JsArray<JavaScriptObject> list) {
         if (calendar == null) {
-            calendar = createCalendar(element, list, controller);
+            //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
+            //to prevent this when calendar-element height less then ~350px
+            element.getParentElement().getStyle().setProperty("overflow", "auto");
+            element.getStyle().setProperty("minHeight", "400px");
+
+            calendar = createCalendar(element, list, controller, calendarDateType);
         }
         updateEvents(calendar, remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> !gPropertyDraw.baseType.isId()), controller));
     }
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject objects, JavaScriptObject controller)/*-{
+    @Override
+    public void onResize() {
+        if (calendar != null)
+            resize(calendar);
+    }
+
+    protected native void resize(JavaScriptObject calendar)/*-{
+        calendar.updateSize();
+    }-*/;
+
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject objects, JavaScriptObject controller, String calendarDateType)/*-{
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
@@ -36,11 +51,12 @@ public class GCalendar extends GSimpleStateTableView {
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,dayGridWeek,timeGridDay'
+                right: calendarDateType === 'dateTime' ? 'dayGridMonth,dayGridWeek,timeGridDay' : 'dayGridMonth,dayGridWeek'
             },
-            dayMaxEvents: 4,
+            dayMaxEvents: true,
             //to prevent the expand of a single event without "end"-param to the next day "nextDayThreshold" should be equal to "defaultTimedEventDuration", which by default is 01:00:00
             nextDayThreshold: '01:00:00',
+            eventOrder: 'start,index',
             eventChange: function (info) {
                 changeProperty(info, 'start');
                 if (info.event.extendedProps.endFieldName != null) {
@@ -90,7 +106,7 @@ public class GCalendar extends GSimpleStateTableView {
             }
             if (title === '' && columns.length >= 2) {
                 for (var k = 0; k <= 2; k++) {
-                    title = title + ' ' + (object[columns[k]] != null ? object[columns[k]] : '');
+                    title = title + ((object[columns[k]] != null && typeof object[columns[k]] !== 'object') ? (title !== '' ? ' - ' : '') + object[columns[k]] : '');
                 }
             }
             return title;

@@ -81,8 +81,8 @@
                 'static/js/subtotal.js',
 
                 <!--  plotly libs : plotly_renderers  -->
-                'https://cdn.plot.ly/plotly-basic-latest.min.js',
-                'https://cdn.plot.ly/plotly-locale-ru-latest.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.55.2/plotly-basic.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.55.2/plotly-locale-ru.js',
 
                 <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
                 <%-- + horizontal moved to the end --%>
