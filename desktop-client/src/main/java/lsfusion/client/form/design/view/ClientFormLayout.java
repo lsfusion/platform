@@ -177,25 +177,6 @@ public class ClientFormLayout extends JPanel {
         return false;
     }
 
-    public void addBinding(KeyStroke key, String id, AbstractAction action) {
-        Object oldId = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(key);
-
-        String resultId = id;
-        Action resultAction = new ClientActionProxy(form, action);
-        if (oldId != null) {
-            Action oldAction = getActionMap().get(oldId);
-            if (oldAction != null) {
-                MultiAction multiAction = new MultiAction(oldAction);
-                multiAction.addAction(resultAction);
-                resultId += " and " + oldId;
-                resultAction = multiAction;
-            }
-        }
-
-        getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, resultId);
-        getActionMap().put(resultId, resultAction);
-    }
-
     @Override
     public Dimension getMinimumSize() {
         //для таблиц с большим числом колонок возвращается огромное число и тогда Docking Frames пытается всё отдать под форму
