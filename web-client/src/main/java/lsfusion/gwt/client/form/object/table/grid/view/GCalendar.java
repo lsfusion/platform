@@ -29,7 +29,7 @@ public class GCalendar extends GSimpleStateTableView {
 
             calendar = createCalendar(element, list, controller, calendarDateType);
         }
-        updateEvents(calendar, remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> !gPropertyDraw.baseType.isId()), controller));
+        updateEvents(calendar, remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller));
     }
 
     @Override
@@ -106,7 +106,14 @@ public class GCalendar extends GSimpleStateTableView {
             }
             if (title === '' && columns.length >= 2) {
                 for (var k = 0; k <= 2; k++) {
-                    title = title + ((object[columns[k]] != null && typeof object[columns[k]] !== 'object') ? (title !== '' ? ' - ' : '') + object[columns[k]] : '');
+                    var value = object[columns[k]];
+                    if (value != null) {
+                        if (title !== ''){
+                            title = title + ' - ' + value;
+                        } else {
+                          title = value;
+                        }
+                    }
                 }
             }
             return title;
