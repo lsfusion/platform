@@ -93,7 +93,7 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         JsArray<JavaScriptObject> columns = JavaScriptObject.createArray().cast();
         for (int i = 0, size = properties.size() ; i < size; i++) {
             GPropertyDraw property = properties.get(i);
-            if (filter!= null && filter.test(property))
+            if (filter!= null && !filter.test(property))
                 continue;
 
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
@@ -104,7 +104,8 @@ public abstract class GSimpleStateTableView extends GStateTableView {
                 columns.push(fromString(columnName));
             }
         }
-        columns.push(fromString(keysFieldName));
+        if (filter == null)
+            columns.push(fromString(keysFieldName));
         return columns;
     }
     
