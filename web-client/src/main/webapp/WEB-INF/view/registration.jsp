@@ -70,7 +70,7 @@
                             <label for="email"><%= ServerMessages.getString(request, "email") %></label>
                             <input type="email" id="email" name="email" class="round full-width-box" required="required"/>
                         </div>
-                        <input name="submit" type="submit" class="action-button round blue" id="submit" disabled value="<%= ServerMessages.getString(request, "registration") %>"/>
+                        <input name="submit" type="submit" class="action-button round blue" id="submit" value="<%= ServerMessages.getString(request, "registration") %>"/>
                         <c:if test="${not empty REGISTRATION_EXCEPTION}">
                             <div class="error-block round full-width-box">
                                 <%= ServerMessages.getString(request, "registration.not.successful") %><br/>
