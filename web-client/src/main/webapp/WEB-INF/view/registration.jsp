@@ -13,14 +13,19 @@
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
         <script>
             const check = function () {
-                if (document.getElementById('password').value !==
-                    document.getElementById('repeatPassword').value) {
-                    document.getElementById('message').style.color = 'red';
-                    document.getElementById('message').innerHTML = '<%= ServerMessages.getString(request, "password.not.match") %>';
-                    document.getElementById('submit').disabled = true;
+                let messageElement = document.getElementById('message');
+                let submitElement = document.getElementById('submit');
+                if ((document.getElementById('password').value !== document.getElementById('repeatPassword').value)) {
+                    messageElement.style.color = 'red';
+                    messageElement.innerHTML = '<%= ServerMessages.getString(request, "password.not.match") %>';
+                    submitElement.disabled = true;
+                } else if (document.getElementById('username').value === '' || document.getElementById('firstName').value === '' ||
+                    document.getElementById('lastName').value === '' || document.getElementById('email').value === '') {
+                    messageElement.innerHTML = '';
+                    submitElement.disabled = true;
                 } else {
-                    document.getElementById('submit').disabled = false;
-                    document.getElementById('message').innerHTML = '';
+                    messageElement.innerHTML = '';
+                    submitElement.disabled = false;
                 }
             };
         </script>
@@ -47,28 +52,28 @@
                     <fieldset>
                         <div class="label-and-field">
                             <label for="username"><%= ServerMessages.getString(request, "login") %></label>
-                            <input type="text" id="username" name="username" class="round full-width-box" required="required"/>
+                            <input type="text" id="username" name="username" class="round full-width-box" required="required" onkeyup="check();"/>
                         </div>
                         <div class="label-and-field">
                             <label for="password"><%= ServerMessages.getString(request, "password") %></label>
-                            <input type="password" id="password" name="password" class="round full-width-box" required onkeyup='check();'/>
+                            <input type="password" id="password" name="password" class="round full-width-box" required onkeyup="check();"/>
                         </div>
                         <div class="label-and-field">
                             <label for="repeatPassword"><%= ServerMessages.getString(request, "password.repeat") %></label>
-                            <input type="password" id="repeatPassword" name="repeatPassword" class="round full-width-box" required onkeyup='check();'/>
+                            <input type="password" id="repeatPassword" name="repeatPassword" class="round full-width-box" required onkeyup="check();"/>
                             <span id='message'></span>
                         </div>
                         <div class="label-and-field">
                             <label for="firstName"><%= ServerMessages.getString(request, "first.name") %></label>
-                            <input type="text" id="firstName" name="firstName" class="round full-width-box" required="required"/>
+                            <input type="text" id="firstName" name="firstName" class="round full-width-box" required="required" onkeyup="check();"/>
                         </div>
                         <div class="label-and-field">
                             <label for="lastName"><%= ServerMessages.getString(request, "last.name") %></label>
-                            <input type="text" id="lastName" name="lastName" class="round full-width-box" required="required"/>
+                            <input type="text" id="lastName" name="lastName" class="round full-width-box" required="required" onkeyup="check();"/>
                         </div>
                         <div class="label-and-field">
                             <label for="email"><%= ServerMessages.getString(request, "email") %></label>
-                            <input type="email" id="email" name="email" class="round full-width-box" required="required"/>
+                            <input type="email" id="email" name="email" class="round full-width-box" required="required" onkeyup="check();"/>
                         </div>
                         <input name="submit" type="submit" class="action-button round blue" id="submit" disabled value="<%= ServerMessages.getString(request, "registration") %>"/>
                         <c:if test="${not empty REGISTRATION_EXCEPTION}">

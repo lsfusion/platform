@@ -114,6 +114,12 @@ form input[type="submit"] {
     color: white;
 }
 
+.blue:disabled{
+    background-color: #5081b3;
+    color: white;
+    cursor: default;
+}
+
 .label-and-field {
     margin-bottom: 16px;
 }

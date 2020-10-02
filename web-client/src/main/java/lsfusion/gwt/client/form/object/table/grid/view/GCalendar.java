@@ -27,9 +27,9 @@ public class GCalendar extends GSimpleStateTableView {
             element.getParentElement().getStyle().setProperty("overflow", "auto");
             element.getStyle().setProperty("minHeight", "400px");
 
-            calendar = createCalendar(element, list, controller, calendarDateType);
+            calendar = createCalendar(element, controller, calendarDateType);
         }
-        updateEvents(calendar, remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller));
+        updateEvents(calendar, list, remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller));
     }
 
     @Override
@@ -42,7 +42,7 @@ public class GCalendar extends GSimpleStateTableView {
         calendar.updateSize();
     }-*/;
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject objects, JavaScriptObject controller, String calendarDateType)/*-{
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType)/*-{
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
@@ -58,7 +58,7 @@ public class GCalendar extends GSimpleStateTableView {
             nextDayThreshold: '01:00:00',
             eventOrder: 'start,index',
             eventChange: function (info) {
-                changeProperty(info, 'start');
+                changeProperty(info, 'start', this.nonRemappedEvents);
                 if (info.event.extendedProps.endFieldName != null) {
                     changeProperty(info, 'end');
                 }
@@ -67,11 +67,11 @@ public class GCalendar extends GSimpleStateTableView {
         calendar.render();
         return calendar;
 
-        function changeProperty(info, position) {
+        function changeProperty(info, position, nonRemappedEvents) {
             var propertyName = info.event.extendedProps[position + 'FieldName'];
             var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
             var eventElement = info.event[position];
-            controller[controllerFunction](propertyName, objects[info.event.extendedProps.index], eventElement.getFullYear(),
+            controller[controllerFunction](propertyName, nonRemappedEvents[info.event.extendedProps.index], eventElement.getFullYear(),
                 eventElement.getMonth() + 1, eventElement.getUTCDate(), eventElement.getUTCHours(),
                 eventElement.getUTCMinutes(), eventElement.getUTCSeconds());
         }
@@ -99,10 +99,10 @@ public class GCalendar extends GSimpleStateTableView {
 
         function getTitle(object) {
             var title = '';
-            for (var x in columns) {
+            for (var i = 0; i < columns.length; i++) {
                 if (title !== '')
                     continue;
-                title = x === 'name' ? object[x] : '';
+                title = columns[i] === 'name' ? object[columns[i]] : '';
             }
             if (title === '' && columns.length >= 2) {
                 for (var k = 0; k <= 2; k++) {
@@ -128,7 +128,8 @@ public class GCalendar extends GSimpleStateTableView {
         }
     }-*/;
 
-    protected native void updateEvents(JavaScriptObject calendar, JavaScriptObject events)/*-{
+    protected native void updateEvents(JavaScriptObject calendar, JavaScriptObject nonRemappedEvents, JavaScriptObject events)/*-{
+        calendar.nonRemappedEvents = nonRemappedEvents;
         calendar.setOption('events', events);
     }-*/;
 }
