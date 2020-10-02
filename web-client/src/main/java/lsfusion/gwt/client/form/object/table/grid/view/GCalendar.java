@@ -29,7 +29,7 @@ public class GCalendar extends GSimpleStateTableView {
 
             calendar = createCalendar(element, controller, calendarDateType);
         }
-        updateEvents(calendar, list, remapList(list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller));
+        updateEvents(calendar, list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class GCalendar extends GSimpleStateTableView {
             nextDayThreshold: '01:00:00',
             eventOrder: 'start,index',
             eventChange: function (info) {
-                changeProperty(info, 'start', this.nonRemappedEvents);
+                changeProperty(info, 'start', this.objects);
                 if (info.event.extendedProps.endFieldName != null) {
                     changeProperty(info, 'end');
                 }
@@ -67,17 +67,17 @@ public class GCalendar extends GSimpleStateTableView {
         calendar.render();
         return calendar;
 
-        function changeProperty(info, position, nonRemappedEvents) {
+        function changeProperty(info, position, objects) {
             var propertyName = info.event.extendedProps[position + 'FieldName'];
             var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
             var eventElement = info.event[position];
-            controller[controllerFunction](propertyName, nonRemappedEvents[info.event.extendedProps.index], eventElement.getFullYear(),
+            controller[controllerFunction](propertyName, objects[info.event.extendedProps.index], eventElement.getFullYear(),
                 eventElement.getMonth() + 1, eventElement.getUTCDate(), eventElement.getUTCHours(),
                 eventElement.getUTCMinutes(), eventElement.getUTCSeconds());
         }
     }-*/;
 
-    protected native JavaScriptObject remapList(JavaScriptObject objects, String calendarDateType, JsArray<JavaScriptObject> columns, JavaScriptObject controller)/*-{
+    protected native JavaScriptObject updateEvents(JavaScriptObject calendar, JavaScriptObject objects, String calendarDateType, JsArray<JavaScriptObject> columns, JavaScriptObject controller)/*-{
         var events = [];
         for (var i = 0; i < objects.length; i++) {
             var startEventFieldName = getEventName(objects[i], '') != null ? getEventName(objects[i], '') : getEventName(objects[i], 'From');
@@ -95,7 +95,9 @@ public class GCalendar extends GSimpleStateTableView {
             };
             events.push(event);
         }
-        return events;
+
+        calendar.objects = objects;
+        calendar.setOption('events', events);
 
         function getTitle(object) {
             var title = '';
@@ -126,10 +128,5 @@ public class GCalendar extends GSimpleStateTableView {
                 return null;
             }
         }
-    }-*/;
-
-    protected native void updateEvents(JavaScriptObject calendar, JavaScriptObject nonRemappedEvents, JavaScriptObject events)/*-{
-        calendar.nonRemappedEvents = nonRemappedEvents;
-        calendar.setOption('events', events);
     }-*/;
 }
