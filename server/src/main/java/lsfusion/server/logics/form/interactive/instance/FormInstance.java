@@ -2105,7 +2105,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         boolean needed = !hidden && update;
 
-        boolean read = refresh || !wasShown || (toDraw != null && toDraw.toRefresh()) || propertyUpdated(propertyReader, toDraw, drawProperty, columnGroupGrids, changedDrawProps, changedProps, needed);
+        boolean read = refresh || !wasShown || (toDraw != null && toDraw.toRefresh()) || propertyUpdated(propertyReader, toDraw, drawProperty, columnGroupGrids, changedDrawProps, changedProps, !needed);
 
         if(needed)
             read = pendingRead.remove(propertyReader) || read;

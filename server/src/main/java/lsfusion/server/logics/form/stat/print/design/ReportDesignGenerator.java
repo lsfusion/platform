@@ -26,6 +26,7 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.type.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -64,6 +65,8 @@ public class ReportDesignGenerator {
     private int rowHeight = 18;
     private int charWidth = 8;
     private boolean toStretch = true;
+
+    private int defaultTableFontSize = new JTable().getFont().getSize(); //as in UserPreferencesDialog
     
     private FormPrintType printType;
     
@@ -252,7 +255,7 @@ public class ReportDesignGenerator {
         
         FontInfo font = getFont(group);
         if (font != null) {
-            groupCellStyle.setFontSize((float) font.fontSize);
+            groupCellStyle.setFontSize((float) (font.fontSize > 0 ? font.fontSize : defaultTableFontSize));
             groupCellStyle.setBold(font.isBold());
             groupCellStyle.setItalic(font.isItalic());
         }
