@@ -15,6 +15,7 @@ import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
+import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -155,7 +156,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     private static void renderCaption(Element captionElement, String caption) {
-        captionElement.setInnerText(caption == null ? "" : EscapeUtils.unicodeEscape(caption));
+        captionElement.setInnerHTML(caption == null ? "" : escapeLineBreakHTML(caption));
     }
 
     @Override

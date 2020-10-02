@@ -284,7 +284,7 @@ public class ReportDesignGenerator {
         if (reportField.hasExtraType(ReportFieldExtraType.HEADER)) {
             designCaptionText = ReportUtils.createFieldString(reportField.sID + headerSuffix);
         } else {
-            designCaptionText = '"' + reportField.caption + '"';
+            designCaptionText = '"' + ReportUtils.escapeLineBreak(reportField.caption) + '"';
         }
         JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.getExtraTypeClass(ReportFieldExtraType.HEADER));
         JRDesignTextField captionField = ReportUtils.createTextField(captionStyle, captionExpr, toStretch);
