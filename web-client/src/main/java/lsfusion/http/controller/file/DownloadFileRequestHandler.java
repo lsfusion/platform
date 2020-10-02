@@ -29,7 +29,8 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         File file = new File(FileUtils.APP_TEMP_FOLDER_URL, fileName);
         
         response.setContentType(MIMETypeUtils.MIMETypeForFileExtension(extension));
-        response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName != null ? displayName : fileName, extension)));
+        //inline = open in browser, attachment = download
+        response.addHeader("Content-Disposition", "attachment; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName != null ? displayName : fileName, extension)));
         // expiration will be set in urlRewrite.xml /downloadFile (just to have it at one place)
 
         try(FileInputStream fis = new FileInputStream(file)) {
