@@ -288,20 +288,7 @@ public class GBusyDialog extends WindowBox {
     }
 
     private void copyToClipboard() {
-        String message = "";
-        for (int i = 0; i < messagePanel.getWidgetCount(); i++) {
-            Widget widget = messagePanel.getWidget(i);
-            if (widget instanceof HTML)
-                message += ((HTML) widget).getText() + "\n";
-        }
-        setClipboardData2(message);
-    }
-
-    public void setClipboardData2(String text) {
-
-
-
-        CopyPasteUtils.setClipboardData(text);
+        CopyPasteUtils.putIntoClipboard(messagePanel.getElement());
     }
 
     private void exitAction() {

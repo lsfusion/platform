@@ -53,6 +53,7 @@ import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.InputEvent;
+import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -379,9 +380,15 @@ public class ClientFormController implements AsyncListener {
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
             if(filter.key != null) {
-                formLayout.addBinding(filter.key, "regularFilter" + filterGroup.getID() + filter.getID(), new AbstractAction() {
-                    public void actionPerformed(ActionEvent e) {
+                addBinding(new KeyInputEvent(filter.key), new Binding(filterGroup.groupObject, 0) {
+                    @Override
+                    public boolean pressed(KeyEvent ke) {
                         comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
+                        return true;
+                    }
+                    @Override
+                    public boolean showing() {
+                        return true;
                     }
                 });
             }
@@ -428,9 +435,15 @@ public class ClientFormController implements AsyncListener {
         addFilterView(filterGroup, checkBox);
 
         if(singleFilter.key != null) {
-            formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.getID() + singleFilter.getID(), new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
+            addBinding(new KeyInputEvent(singleFilter.key), new Binding(filterGroup.groupObject, 0) {
+                @Override
+                public boolean pressed(KeyEvent ke) {
                     checkBox.setSelected(!checkBox.isSelected());
+                    return true;
+                }
+                @Override
+                public boolean showing() {
+                    return true;
                 }
             });
         }

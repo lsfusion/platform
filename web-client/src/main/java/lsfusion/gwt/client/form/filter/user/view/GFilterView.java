@@ -171,6 +171,10 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         focusOnValue();
     }
 
+    public boolean dialogIsVisible() {
+        return filterDialog != null;
+    }
+
     @Override
     public void conditionChanged() {
         if(conditionViews.size() == 1) {

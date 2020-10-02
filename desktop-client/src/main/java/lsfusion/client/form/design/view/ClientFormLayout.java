@@ -5,6 +5,7 @@ import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -129,7 +130,8 @@ public class ClientFormLayout extends JPanel {
                     autoShowHideContainers((ClientContainer) child);
                 }
 
-                if (childView.isVisible()) {
+                //difference between desktop and web: ClientFilter is not dialog box, it not extend ClientContainer and is in children list
+                if (childView.isVisible() && !(child instanceof ClientFilter)) {
                     hasVisible = true;
                 }
             }
@@ -173,25 +175,6 @@ public class ClientFormLayout extends JPanel {
             }
         }
         return false;
-    }
-
-    public void addBinding(KeyStroke key, String id, AbstractAction action) {
-        Object oldId = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(key);
-
-        String resultId = id;
-        Action resultAction = new ClientActionProxy(form, action);
-        if (oldId != null) {
-            Action oldAction = getActionMap().get(oldId);
-            if (oldAction != null) {
-                MultiAction multiAction = new MultiAction(oldAction);
-                multiAction.addAction(resultAction);
-                resultId += " and " + oldId;
-                resultAction = multiAction;
-            }
-        }
-
-        getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, resultId);
-        getActionMap().put(resultId, resultAction);
     }
 
     @Override
