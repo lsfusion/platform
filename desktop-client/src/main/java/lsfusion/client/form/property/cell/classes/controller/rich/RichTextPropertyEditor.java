@@ -72,6 +72,9 @@ public class RichTextPropertyEditor extends JPanel implements PropertyEditor, Cl
         return true;
     }
 
+    @Override
+    public void cancelCellEditing() { }
+
     public void prepareTextEditor(boolean clear, boolean select) {
         if (clear) {
             richArea.setText("");

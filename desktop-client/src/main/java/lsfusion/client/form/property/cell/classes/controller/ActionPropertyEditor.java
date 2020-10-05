@@ -42,4 +42,7 @@ public class ActionPropertyEditor implements PropertyEditor {
     public boolean stopCellEditing() {
         return true;
     }
+
+    @Override
+    public void cancelCellEditing() { }
 }

@@ -113,6 +113,9 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         return true;
     }
 
+    @Override
+    public void cancelCellEditing() { }
+
     public void propertyChange(PropertyChangeEvent e) {
         String prop = e.getPropertyName();
 

@@ -67,6 +67,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor implements Prop
 
     @Override
     public void cancelCellEditing() {
+        propertyEditor.cancelCellEditing();
         super.cancelCellEditing();
     }
 }

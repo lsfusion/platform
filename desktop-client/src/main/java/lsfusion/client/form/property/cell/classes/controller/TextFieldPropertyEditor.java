@@ -68,7 +68,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         return true;
     }
 
-    @Override
+    public void cancelCellEditing() { }
+
     public Object getCellEditorValue() {
         return this.getValue();
     }

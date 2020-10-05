@@ -127,7 +127,13 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
 
     @Override
     public boolean stopCellEditing() {
+        cleanup();
         return true;
+    }
+
+    @Override
+    public void cancelCellEditing() {
+        cleanup();
     }
 
     @Override
