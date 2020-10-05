@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -40,7 +39,7 @@ public abstract class FormsController {
     private final GToolbarButton linkEditButton;
 
     private final GToolbarButton fullScreenButton;
-    private Boolean fullScreenMode = null;
+    private boolean fullScreenMode = false;
 
     public FormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
@@ -64,6 +63,7 @@ public abstract class FormsController {
         };
         setCompactSize(fullScreenButton);
         toolbarView.addComponent(fullScreenButton);
+        updateFullScreenButton();
 
         tabsPanel = new FlexTabbedPanel("formsTabBar", toolbarView);
 
@@ -95,15 +95,6 @@ public abstract class FormsController {
         linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable() + " (CTRL)");
     }
 
-    public void storeFullScreen(){
-        Storage storage = Storage.getLocalStorageIfSupported();
-        if (this.fullScreenMode) {
-            storage.setItem("full_screen", "");
-        } else {
-            storage.removeItem("full_screen");
-        }
-    }
-
     public void updateFullScreenButton(){
         fullScreenButton.setTitle(fullScreenMode ? messages.fullScreenModeDisable() : messages.fullScreenModeEnable() + " (ALT+F11)");
         fullScreenButton.setModuleImagePath(fullScreenMode ? "minimize.png" : "maximize.png");
@@ -114,16 +105,11 @@ public abstract class FormsController {
     }
 
     public void setFullScreenMode(boolean fullScreenMode) {
-        if (this.fullScreenMode == null || fullScreenMode != this.fullScreenMode) {
+        if (fullScreenMode != this.fullScreenMode) {
             windowsController.setFullScreenMode(fullScreenMode);
             this.fullScreenMode = fullScreenMode;
             updateFullScreenButton();
         }
-    }
-
-    public void restoreFullScreen() {
-        Storage storage = Storage.getLocalStorageIfSupported();
-        setFullScreenMode(storage != null && storage.getItem("full_screen") != null);
     }
 
     public void initRoot(FormsController formsController) {
@@ -133,8 +119,6 @@ public abstract class FormsController {
                 return currentForm.getForm();
             return null;
         });
-
-        restoreFullScreen();
     }
 
     public Widget getView() {
