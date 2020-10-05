@@ -50,7 +50,6 @@ import org.jboss.netty.util.internal.NonReentrantLock;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -272,6 +271,12 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
     public void clearForms() {
         formsController.getForms().clear();
+    }
+
+    @Override
+    public void clean() {
+        formsController.clean();
+        super.clean();
     }
     
     class ClientRectGradientPainter extends RectGradientPainter implements ColorThemeChangeListener {

@@ -22,7 +22,6 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.sf.jasperreports.engine.JRException;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +53,13 @@ public class FormsController implements ColorThemeChangeListener {
 
         control.addMultipleDockableFactory("page", dockableFactory);
         MainController.addColorThemeChangeListener(this);
+    }
+    
+    public void clean() {
+        // close forms to remove objects not cleaned by GC on restart
+        for (ClientDockable openedForm : new ArrayList<>(openedForms)) {
+            openedForm.setVisible(false);
+        }
     }
 
     public DockableRepository getForms() {
