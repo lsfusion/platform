@@ -51,4 +51,7 @@ public class LogicalPropertyEditor extends JCheckBox implements PropertyEditor {
     public boolean stopCellEditing(){
         return true;
     }
+
+    @Override
+    public void cancelCellEditing() { }
 }

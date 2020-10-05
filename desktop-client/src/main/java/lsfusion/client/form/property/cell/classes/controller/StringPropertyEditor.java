@@ -65,6 +65,9 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
         return true;
     }
 
+    @Override
+    public void cancelCellEditing() { }
+
     private void showErrorTooltip() {
         currentError = property.regexpMessage == null
                        ? getString("form.editor.incorrect.value")
