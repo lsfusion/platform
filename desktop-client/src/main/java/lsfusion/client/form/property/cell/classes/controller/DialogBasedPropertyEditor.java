@@ -46,6 +46,9 @@ public abstract class DialogBasedPropertyEditor implements PropertyEditor {
         return true;
     }
 
+    @Override
+    public void cancelCellEditing() { }
+
     protected class EditorStub extends JLabel {
         public EditorStub() {
             addFocusListener(new FocusAdapter() {

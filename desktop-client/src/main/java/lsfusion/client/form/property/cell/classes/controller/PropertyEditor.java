@@ -14,6 +14,7 @@ public interface PropertyEditor {
     Object getCellEditorValue();
 
     boolean stopCellEditing();
+    void cancelCellEditing();
 }
 
 
