@@ -167,6 +167,10 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             },
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            changeSimpleGroupObject: function (object) {
+                var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
+                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject);
             }
         };
     }-*/;

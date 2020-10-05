@@ -26,6 +26,7 @@ public class GCalendar extends GSimpleStateTableView {
             //to prevent this when calendar-element height less then ~350px
             element.getParentElement().getStyle().setProperty("overflow", "auto");
             element.getStyle().setProperty("minHeight", "400px");
+            element.getStyle().setProperty("cursor", "default");
 
             calendar = createCalendar(element, controller, calendarDateType);
         }
@@ -62,6 +63,14 @@ public class GCalendar extends GSimpleStateTableView {
                 if (info.event.extendedProps.endFieldName != null) {
                     changeProperty(info, 'end');
                 }
+            },
+            eventDidMount: function (info) {
+                if (typeof calendar.selectedEvent !== 'undefined' && info.event.extendedProps.index === calendar.selectedEvent)
+                    info.el.style.backgroundColor = 'red';
+            },
+            eventClick: function (info) {
+                controller.changeSimpleGroupObject(this.objects[info.event.extendedProps.index]);
+                calendar.selectedEvent = info.event.extendedProps.index;
             }
         });
         calendar.render();
