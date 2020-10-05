@@ -63,7 +63,7 @@ public class WriteAction extends SystemExplicitAction {
                     if(append && dialog) {
                         throw new RuntimeException("APPEND is not supported in WRITE CLIENT DIALOG");
                     } else {
-                        context.delayUserInteraction(new WriteClientAction(rawFileData, path, extension, append, dialog));
+                        context.requestUserInteraction(new WriteClientAction(rawFileData, path, extension, append, dialog));
                     }
                 } else {
                     WriteUtils.write(rawFileData, path, extension, false, append);
