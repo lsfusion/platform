@@ -51,7 +51,7 @@
             }
         </style>
 
-        <script type="text/javascript" src="static/js/loadResources.js"></script>
+        <script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
         <script>
             loadResources([
 
