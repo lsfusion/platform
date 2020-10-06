@@ -15,10 +15,16 @@
         <set type="expires">30 days</set>
     </rule>
 
-    <!-- webapp, gwt/public, files -->
+    <!-- webapp, gwt/public, static downloadFile -->
     <rule match-type="regex">
         <from>.*\/static(\/.*)?</from>
         <set type="response-header" name="Cache-Control">public, max-age=86400</set>
         <set type="expires">1 day</set>
+    </rule>
+    <!-- non static downloadFile, need for 'save as' dialog -->
+    <rule match-type="wildcard">
+        <from>/downloadFile</from>
+        <set type="response-header" name="Cache-Control">public, max-age=3600</set>
+        <set type="expires">1 hour</set>
     </rule>
 </urlrewrite>
