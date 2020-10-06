@@ -54,6 +54,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> propertyCaptions = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> propertyFooters = new NativeSIDMap<>();
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellBackgroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellForegroundValues = new NativeSIDMap<>();
@@ -75,6 +76,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return (GGridPropertyTableHeader) getHeader(i);
     }
 
+    protected GGridPropertyTableFooter getGridFooter(int i) {
+        return (GGridPropertyTableFooter) getFooter(i);
+    }
+
     public GGridSortableHeaderManager sortableHeaderManager;
     
     public GFont font;
@@ -82,7 +87,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected int preferredWidth;
 
     public GGridPropertyTable(GFormController iform, GGroupObject iGroupObject, GFont font) {
-        super(iform, iGroupObject, getDefaultStyle(), false, true, false);
+        super(iform, iGroupObject, getDefaultStyle(), false, false, false);
         
         this.font = font;
 
@@ -241,6 +246,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         propertyCaptions.put(propertyDraw, values);
     }
 
+    public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        propertyFooters.put(propertyDraw, values);
+    }
+
     public void headerClicked(GGridPropertyTableHeader header, boolean ctrlDown, boolean shiftDown) {
         sortableHeaderManager.headerClicked(getHeaderIndex(header), ctrlDown, shiftDown);
         updateHeadersDOM(false);
@@ -383,9 +392,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
         String columnCaption = getPropertyCaption(property, columnKey);
         GGridPropertyTableHeader header = getGridHeader(index);
-        header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
-        header.setToolTip(property.getTooltipText(columnCaption));
+        header.setCaption(columnCaption, property, property.notNull, property.hasChangeAction);
         header.setHeaderHeight(getHeaderHeight());
+    }
+
+    protected void updatePropertyFooter(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
+        Object columnFooter = getPropertyFooter(property, columnKey);
+        GGridPropertyTableFooter footer = getGridFooter(index);
+        footer.setValue(columnFooter);
     }
 
     public Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -401,6 +415,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             return userCaption;
 
         return getPropertyCaption(propertyCaptions.get(property), property, columnKey);
+    }
+
+    protected Object getPropertyFooter(GPropertyDraw property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, Object> propFooters = propertyFooters.get(property);
+        return propFooters != null ? propFooters.get(columnKey) : null;
     }
 
     protected int getHeaderHeight() {

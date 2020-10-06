@@ -15,23 +15,38 @@
  */
 package lsfusion.gwt.client.base.view.grid;
 
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableCellElement;
+import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableSet;
+import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 
 /**
  * A table column header or footer.
  */
 public abstract class Header<H> {
+    private TooltipManager.TooltipHelper tooltipHandler;
+    protected String tooltip;
 
-    public Header() {
+    public Header(GGridPropertyTable table, String tooltip) {
+        tooltipHandler = new TooltipManager.TooltipHelper() {
+            @Override
+            public String getTooltip() {
+                return Header.this.tooltip;
+            }
+
+            @Override
+            public boolean stillShowTooltip() {
+                return table.isAttached() && table.isVisible();
+            }
+        };
+        this.tooltip = tooltip;
+    }
+
+    protected static void renderCaption(Element captionElement, String caption) {
+        captionElement.setInnerHTML(caption == null ? "" : escapeLineBreakHTML(caption));
     }
 
     /**
@@ -41,7 +56,7 @@ public abstract class Header<H> {
      * @param event   the native browser event
      */
     public void onBrowserEvent(Element elem, NativeEvent event) {
-        //do nothing by default
+        TooltipManager.checkTooltipEvent(event, tooltipHandler);
     }
 
     public abstract void renderDom(TableCellElement th);

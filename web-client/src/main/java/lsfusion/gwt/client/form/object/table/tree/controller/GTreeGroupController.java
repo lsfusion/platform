@@ -150,6 +150,11 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
+    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        tree.updatePropertyFooters(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         tree.updateReadOnlyValues(formController.getProperty(reader.propertyID), values);
     }

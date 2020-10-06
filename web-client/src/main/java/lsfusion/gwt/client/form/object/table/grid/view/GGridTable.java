@@ -27,6 +27,7 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
@@ -63,6 +64,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private boolean rowsUpdated = false;
     private boolean columnsUpdated = true;  //could be no properties on init
     private boolean captionsUpdated = false;
+    private boolean footersUpdated = false;
     private boolean dataUpdated = false;
 
     private GGroupObject groupObject;
@@ -155,6 +157,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         updateColumns();
 
         updateCaptions();
+        updateFooters();
 
         updateRows(modifyGroupObject);
         
@@ -281,6 +284,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                         // we do update captions and columns together for optimization purposes
                         updatePropertyHeader(columnKey, property, currentIndex);
+                        updatePropertyFooter(columnKey, property, currentIndex);
 
                         property.setUserPattern(getUserPattern(property));
 
@@ -302,6 +306,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
             columnsUpdated = false;
             captionsUpdated = false;
+            footersUpdated = false;
         }
     }
 
@@ -361,6 +366,17 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
             headersChanged();
             captionsUpdated = false;
+        }
+    }
+
+    public void updateFooters() {
+        if (footersUpdated) {
+            for (int i = 0, size = getColumnCount(); i < size; ++i) {
+                GridColumn gridColumn = getGridColumn(i);
+                updatePropertyFooter(gridColumn.columnKey, gridColumn.property, i);
+            }
+            headersChanged();
+            footersUpdated = false;
         }
     }
 
@@ -487,8 +503,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
         GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, null, null);
+        GGridPropertyTableFooter footer = new GGridPropertyTableFooter(this, property, null, null);
 
-        insertColumn(index, column, header);
+        insertColumn(index, column, header, footer);
 
         return column;
     }
@@ -617,6 +634,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         super.updatePropertyCaptions(propertyDraw, values);
         captionsUpdated = true;
+    }
+
+    @Override
+    public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        super.updatePropertyFooters(propertyDraw, values);
+        footersUpdated = true;
     }
 
     public void updateShowIfValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
