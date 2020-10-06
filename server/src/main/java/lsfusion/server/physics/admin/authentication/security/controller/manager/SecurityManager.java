@@ -240,6 +240,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             DataObject userObject;
             if (authentication instanceof PasswordAuthentication) {
                 userObject = readUser(authentication.getUserName(), session);
+
+                boolean authenticated = false;
                 if (authenticationLM.useLDAP.read(session) != null) {
                     String server = (String) authenticationLM.serverLDAP.read(session);
                     Integer port = (Integer) authenticationLM.portLDAP.read(session);
@@ -249,6 +251,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix)
                                 .authenticate(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword());
                         if (ldapParameters.isConnected()) {
+                            authenticated = true;
                             if (userObject == null) {
                                 userObject = addUser(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword(), session);
                             }
@@ -262,9 +265,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         systemLogger.error("LDAP authentication failed", e);
                     }
                 }
-                if (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword(), stack)) {
+                if (!authenticated && (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword(), stack)))
                     throw new LoginException();
-                }
             } else {
                 String webClientAuthSecret = ((OAuth2Authentication) authentication).getAuthSecret();
                 if ((webClientAuthSecret == null || !webClientAuthSecret.equals(getWebClientSecret()))) {
