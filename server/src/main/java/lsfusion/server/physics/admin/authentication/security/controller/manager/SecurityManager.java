@@ -301,12 +301,12 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             Set<DataObject> userRoleSet = readUserRoleSet(session, userObject);
             if(!SystemProperties.lightStart || !userRoleSet.contains(adminUserRole)) {
                 for (DataObject userRole : userRoleSet) {
-                    Long userId = (Long)userRole.getValue();
-                    RoleSecurityPolicy policy = cachedSecurityPolicies.get(userId);
+                    Long userRoleId = (Long)userRole.getValue();
+                    RoleSecurityPolicy policy = cachedSecurityPolicies.get(userRoleId);
                     if (policy == null) {
-                        Object cachedSecuritySemaphore = getCachedSecuritySemaphore(userId);
+                        Object cachedSecuritySemaphore = getCachedSecuritySemaphore(userRoleId);
                         synchronized (cachedSecuritySemaphore) { // we use semaphore to prevent simultaneous reading security policy, since this process consumes a lot of time and memory, can be run really a lot of times concurrently (for example when reconnecting users after server restart)
-                            policy = cachedSecurityPolicies.get(userId);
+                            policy = cachedSecurityPolicies.get(userRoleId);
                             if (policy == null) { // double check
                                 policy = readSecurityPolicy(userRole, session);
                                 cachedSecurityPolicies.put((Long) userRole.getValue(), policy);

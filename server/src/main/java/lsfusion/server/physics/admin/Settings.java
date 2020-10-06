@@ -779,6 +779,26 @@ public class Settings implements Cloneable {
         this.limitComplexityGrowthCoeff = limitComplexityGrowthCoeff;
     }
 
+    private boolean disableActionForbidViewOnForbidChange = false;
+
+    public boolean isDisableActionForbidViewOnForbidChange() {
+        return disableActionForbidViewOnForbidChange;
+    }
+
+    public void setDisableActionForbidViewOnForbidChange(boolean disableActionForbidViewOnForbidChange) {
+        this.disableActionForbidViewOnForbidChange = disableActionForbidViewOnForbidChange;
+    }
+
+    private boolean disableDefaultChangeOnReadOnlyChange = false;
+
+    public boolean isDisableDefaultChangeOnReadOnlyChange() {
+        return disableDefaultChangeOnReadOnlyChange;
+    }
+
+    public void setDisableDefaultChangeOnReadOnlyChange(boolean disableDefaultChangeOnReadOnlyChange) {
+        this.disableDefaultChangeOnReadOnlyChange = disableDefaultChangeOnReadOnlyChange;
+    }
+
     public int getLimitExclusiveCount() {
         return limitExclusiveCount;
     }
