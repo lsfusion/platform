@@ -7,6 +7,8 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 
+import java.util.Objects;
+
 public class GCalendar extends GSimpleStateTableView {
 
     private final String calendarDateType;
@@ -43,6 +45,10 @@ public class GCalendar extends GSimpleStateTableView {
         calendar.updateSize();
     }-*/;
 
+    protected boolean isCurrentKey(JavaScriptObject object){
+        return Objects.equals(getKey(object), getCurrentKey());
+    }
+
     protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType)/*-{
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
@@ -66,7 +72,7 @@ public class GCalendar extends GSimpleStateTableView {
             },
             eventDidMount: function (info) {
                 if (typeof calendar.selectedEvent !== 'undefined' && info.event.extendedProps.index === calendar.selectedEvent)
-                    info.el.style.backgroundColor = 'red';
+                    info.el.classname += ' event-highlight';
             },
             eventClick: function (info) {
                 controller.changeSimpleGroupObject(this.objects[info.event.extendedProps.index]);
@@ -100,7 +106,8 @@ public class GCalendar extends GSimpleStateTableView {
                 'allDay': calendarDateType === 'date',
                 'index': i,
                 'startFieldName': startEventFieldName,
-                'endFieldName': endEventFieldName
+                'endFieldName': endEventFieldName,
+                'className': this.@GCalendar::isCurrentKey(*)(objects[i]) ? 'event-highlight' : ''
             };
             events.push(event);
         }

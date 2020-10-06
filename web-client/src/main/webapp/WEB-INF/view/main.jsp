@@ -114,7 +114,8 @@
 
                 <!-- calendar-->
                 ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js', 'fullCalendar.js'],
-                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css', 'fullCalendar.css']
+                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css', 'fullCalendar.css'],
+                'static/css/gCalendar.css'
 
             ]);
 
