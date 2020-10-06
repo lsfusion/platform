@@ -77,12 +77,8 @@ public class FileCellEditor implements CellEditor {
         if(GKeyStroke.isDropEvent(editEvent)) {
             drop(editEvent);
         } else {
-            click(parent, getInputElement());
+            click(parent, Document.get().createFileInputElement());
         }
-    }
-
-    protected Element getInputElement() {
-        return Document.get().getElementById("input");
     }
 
     private void drop(Event editEvent) {

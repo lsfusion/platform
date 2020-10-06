@@ -54,10 +54,6 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
 
         Element dropFilesLabelElement = dropFilesLabel.getElement();
 
-        InputElement inputElement = dropFilesLabelElement.appendChild(Document.get().createFileInputElement());
-        inputElement.setId("input");
-        inputElement.getStyle().setDisplay(Style.Display.NONE);
-
         if(img != null) {
             dropFilesLabelElement.appendChild(img);
         } else {
