@@ -388,7 +388,7 @@ onStarted() + {
         dataPermissionView(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE order(ur, policy('allowAll'));        
         dataPermissionChange(UserRole ur, propertyGroup('System_root')) <- Permission.permit WHERE order(ur, policy('allowAll'));        
         
-        dataPermissionEditObjects(UserRole ur, propertyGroup('System_root')) <- Permission.forbid WHERE forbidEditObjects(ur);    
+        dataPermissionEditObjects(userRoleSID('default'), propertyGroup('System_root')) <- Permission.forbid;    
         dataPermission(UserRole ur, navigatorElementCanonicalName('Authentication.changePasswordAction')) <- Permission.forbid WHERE forbidChangePassword(ur);
         dataPermission(UserRole ur, navigatorElementCanonicalName('Authentication.editProfile')) <- Permission.forbid WHERE forbidEditProfile(ur);
         
