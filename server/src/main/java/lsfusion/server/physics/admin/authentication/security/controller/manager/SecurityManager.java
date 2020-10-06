@@ -65,6 +65,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     @Deprecated
     public static SecurityPolicy baseServerSecurityPolicy = new SecurityPolicy();
 
+    private final HashMap<Long, Object> cachedSecuritySemaphores = new HashMap<>();
+    private synchronized Object getCachedSecuritySemaphore(Long user) {
+        return cachedSecuritySemaphores.computeIfAbsent(user, k -> new Object());
+    }
     public ConcurrentHashMap<Long, RoleSecurityPolicy> cachedSecurityPolicies = new ConcurrentHashMap<>();
 
     private BusinessLogics businessLogics;
@@ -297,10 +301,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             Set<DataObject> userRoleSet = readUserRoleSet(session, userObject);
             if(!SystemProperties.lightStart || !userRoleSet.contains(adminUserRole)) {
                 for (DataObject userRole : userRoleSet) {
-                    RoleSecurityPolicy policy = cachedSecurityPolicies.get(userRole.getValue());
+                    Long userId = (Long)userRole.getValue();
+                    RoleSecurityPolicy policy = cachedSecurityPolicies.get(userId);
                     if (policy == null) {
-                        policy = readSecurityPolicy(userRole, session);
-                        cachedSecurityPolicies.put((Long) userRole.getValue(), policy);
+                        Object cachedSecuritySemaphore = getCachedSecuritySemaphore(userId);
+                        synchronized (cachedSecuritySemaphore) { // we use semaphore to prevent simultaneous reading security policy, since this process consumes a lot of time and memory, can be run really a lot of times concurrently (for example when reconnecting users after server restart)
+                            policy = cachedSecurityPolicies.get(userId);
+                            if (policy == null) { // double check
+                                policy = readSecurityPolicy(userRole, session);
+                                cachedSecurityPolicies.put((Long) userRole.getValue(), policy);
+                            }
+                        }
                     }
                     policies.add(policy);
                 }
