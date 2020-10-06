@@ -1152,7 +1152,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     this.groupMode = null;
 
                     int pageSize = getPageSize();
-                    if(pageSize >= 0) { // pageSize -1 means that we're waiting for actual groups / pagesize
+                    // so far we'll consider that all lists are dynamic, i.e. show rows around current object
+//                    if(isDynamicList()) {
                         SeekOrderObjects orderSeeks;
                         if (seeks == SEEK_NULL)
                             orderSeeks = SEEK_HOME;
@@ -1192,7 +1193,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                             keys = keys.addOrderExcl(executeList);
                             downKeys = (executeList.size() == readSize);
                         }
-                    }
+//                    } else {
+//                        keys = SEEK_HOME.executeOrders(sql, env, modifier, baseClass, pageSize, true, reallyChanged);
+//                    }
                 }
             }
 
