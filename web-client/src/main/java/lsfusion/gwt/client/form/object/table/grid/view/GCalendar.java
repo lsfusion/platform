@@ -65,30 +65,34 @@ public class GCalendar extends GSimpleStateTableView {
             nextDayThreshold: '01:00:00',
             eventOrder: 'start,index',
             eventChange: function (info) {
-                if (info.event.start.getTime() !== info.oldEvent.start.getTime())
-                    changeProperty(info, 'start', this.objects);
-                if (info.event.end !== null && info.event.end.getTime() !== info.oldEvent.end.getTime())
-                    changeProperty(info, 'end', this.objects);
+                changeProperty(info, 'start', this.objects);
+                changeProperty(info, 'end', this.objects);
             },
             eventClick: function (info) {
-                controller.changeSimpleGroupObject(calendar.objects[info.event.extendedProps.index], false);
-                if (typeof calendar.currentEventIndex !== 'undefined') {
-                    calendar.getEvents()[calendar.currentEventIndex].setProp('classNames', '');
+                var currentEvent = info.event;
+                var oldEvent = calendar.currentEventIndex != null ? calendar.getEvents()[calendar.currentEventIndex] : null;
+                controller.changeSimpleGroupObject(calendar.objects[currentEvent.extendedProps.index], false);
+                if (oldEvent !== null) {
+                    oldEvent.setProp('classNames', '');
                 }
-                info.event.setProp('classNames', 'event-highlight');
-                calendar.currentEventIndex = info.event.extendedProps.index;
+                currentEvent.setProp('classNames', 'event-highlight');
+                calendar.currentEventIndex = currentEvent.extendedProps.index;
             }
         });
         calendar.render();
         return calendar;
 
         function changeProperty(info, position, objects) {
-            var propertyName = info.event.extendedProps[position + 'FieldName'];
-            var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
-            var eventElement = info.event[position];
-            controller[controllerFunction](propertyName, objects[info.event.extendedProps.index], eventElement.getFullYear(),
-                eventElement.getMonth() + 1, eventElement.getUTCDate(), eventElement.getUTCHours(),
-                eventElement.getUTCMinutes(), eventElement.getUTCSeconds());
+            var currentEvent = info.event;
+            var oldEvent = info.oldEvent;
+            if (currentEvent[position] !== null && currentEvent[position].getTime() !== oldEvent[position].getTime()) {
+                var propertyName = currentEvent.extendedProps[position + 'FieldName'];
+                var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
+                var eventElement = currentEvent[position];
+                controller[controllerFunction](propertyName, objects[currentEvent.extendedProps.index], eventElement.getFullYear(),
+                    eventElement.getMonth() + 1, eventElement.getUTCDate(), eventElement.getUTCHours(),
+                    eventElement.getUTCMinutes(), eventElement.getUTCSeconds());
+            }
         }
     }-*/;
 
