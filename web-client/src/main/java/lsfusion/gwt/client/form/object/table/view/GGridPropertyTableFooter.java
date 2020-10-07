@@ -1,17 +1,13 @@
 package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
 public class GGridPropertyTableFooter extends Header<String> {
-
-    private Element renderedCaptionElement;
 
     private GGridPropertyTable table;
     protected GPropertyDraw property;
@@ -33,30 +29,20 @@ public class GGridPropertyTableFooter extends Header<String> {
 
     @Override
     public void renderDom(TableCellElement th) {
-        renderedCaptionElement = renderTD(th);
+        renderTD(th);
         prevValue = value;
-    }
-
-    public Element renderTD(Element th) {
-        Style.TextAlign textAlign = property.getTextAlignStyle();
-        if (textAlign != null) {
-            th.getStyle().setTextAlign(textAlign);
-        }
-        Integer height = table.getStaticHeight();
-        if (height != null) {
-            GPropertyTableBuilder.setLineHeight(th, height);
-        }
-        renderCaption(th, getRenderedCaption());
-
-        return th;
     }
 
     @Override
     public void updateDom(TableCellElement th) {
         if (!nullEquals(this.value, prevValue)) {
-            renderCaption(renderedCaptionElement, getRenderedCaption());
+            renderTD(th);
             prevValue = value;
         }
+    }
+
+    public void renderTD(Element th) {
+        property.getCellRenderer().render(th, value, table, table);
     }
 
     private String getRenderedCaption() {

@@ -87,7 +87,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected int preferredWidth;
 
     public GGridPropertyTable(GFormController iform, GGroupObject iGroupObject, GFont font) {
-        super(iform, iGroupObject, getDefaultStyle(), false, false, false);
+        super(iform, iGroupObject, getDefaultStyle(), false, !iGroupObject.hasFooters, false);
         
         this.font = font;
 
@@ -397,9 +397,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     protected void updatePropertyFooter(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
-        Object columnFooter = getPropertyFooter(property, columnKey);
         GGridPropertyTableFooter footer = getGridFooter(index);
-        footer.setValue(columnFooter);
+        if(footer != null) {
+            footer.setValue(getPropertyFooter(property, columnKey));
+        }
     }
 
     public Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(GPropertyDraw property, GGroupObjectValue columnKey) {

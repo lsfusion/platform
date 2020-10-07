@@ -1086,6 +1086,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return false;
     }
 
+    @IdentityLazy
+    public boolean hasFooters(GroupObjectEntity entity) {
+        Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
+        for (PropertyDrawEntity property : propertyDrawsIt) {
+            if (property.hasFooter && entity.equals(property.getToDraw(this))) {
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public void finalizeAroundInit() {
         groups.finalizeChanges();
         treeGroups.finalizeChanges();
