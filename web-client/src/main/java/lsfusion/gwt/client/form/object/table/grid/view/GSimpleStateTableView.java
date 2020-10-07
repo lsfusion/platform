@@ -111,8 +111,8 @@ public abstract class GSimpleStateTableView extends GStateTableView {
     
     protected final static String keysFieldName = "#__key";
 
-    protected void changeSimpleGroupObject(JavaScriptObject object) {
-        changeGroupObject(toObject(object));
+    protected void changeSimpleGroupObject(JavaScriptObject object, boolean setDataUpdated) {
+        changeGroupObject(toObject(object), setDataUpdated);
     }
 
     protected void changeProperty(String property, Serializable newValue, JavaScriptObject object) {
@@ -167,6 +167,10 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             },
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            changeSimpleGroupObject: function (object, setDataUpdated) {
+                var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
+                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, setDataUpdated);
             }
         };
     }-*/;

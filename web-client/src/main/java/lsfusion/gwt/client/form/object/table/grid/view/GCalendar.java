@@ -7,6 +7,8 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 
+import java.util.Objects;
+
 public class GCalendar extends GSimpleStateTableView {
 
     private final String calendarDateType;
@@ -26,6 +28,7 @@ public class GCalendar extends GSimpleStateTableView {
             //to prevent this when calendar-element height less then ~350px
             element.getParentElement().getStyle().setProperty("overflow", "auto");
             element.getStyle().setProperty("minHeight", "400px");
+            element.getStyle().setProperty("cursor", "default");
 
             calendar = createCalendar(element, controller, calendarDateType);
         }
@@ -41,6 +44,10 @@ public class GCalendar extends GSimpleStateTableView {
     protected native void resize(JavaScriptObject calendar)/*-{
         calendar.updateSize();
     }-*/;
+
+    protected boolean isCurrentKey(JavaScriptObject object){
+        return Objects.equals(getKey(object), getCurrentKey());
+    }
 
     protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType)/*-{
         var calendar = new $wnd.FullCalendar.Calendar(element, {
@@ -59,21 +66,33 @@ public class GCalendar extends GSimpleStateTableView {
             eventOrder: 'start,index',
             eventChange: function (info) {
                 changeProperty(info, 'start', this.objects);
-                if (info.event.extendedProps.endFieldName != null) {
-                    changeProperty(info, 'end');
+                changeProperty(info, 'end', this.objects);
+            },
+            eventClick: function (info) {
+                var currentEvent = info.event;
+                var oldEvent = calendar.currentEventIndex != null ? calendar.getEvents()[calendar.currentEventIndex] : null;
+                controller.changeSimpleGroupObject(calendar.objects[currentEvent.extendedProps.index], false);
+                if (oldEvent !== null) {
+                    oldEvent.setProp('classNames', '');
                 }
+                currentEvent.setProp('classNames', 'event-highlight');
+                calendar.currentEventIndex = currentEvent.extendedProps.index;
             }
         });
         calendar.render();
         return calendar;
 
         function changeProperty(info, position, objects) {
-            var propertyName = info.event.extendedProps[position + 'FieldName'];
-            var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
-            var eventElement = info.event[position];
-            controller[controllerFunction](propertyName, objects[info.event.extendedProps.index], eventElement.getFullYear(),
-                eventElement.getMonth() + 1, eventElement.getUTCDate(), eventElement.getUTCHours(),
-                eventElement.getUTCMinutes(), eventElement.getUTCSeconds());
+            var currentEvent = info.event;
+            var oldEvent = info.oldEvent;
+            if (currentEvent[position] !== null && currentEvent[position].getTime() !== oldEvent[position].getTime()) {
+                var propertyName = currentEvent.extendedProps[position + 'FieldName'];
+                var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
+                var eventElement = currentEvent[position];
+                controller[controllerFunction](propertyName, objects[currentEvent.extendedProps.index], eventElement.getFullYear(),
+                    eventElement.getMonth() + 1, eventElement.getUTCDate(), eventElement.getUTCHours(),
+                    eventElement.getUTCMinutes(), eventElement.getUTCSeconds());
+            }
         }
     }-*/;
 
@@ -82,18 +101,22 @@ public class GCalendar extends GSimpleStateTableView {
         for (var i = 0; i < objects.length; i++) {
             var startEventFieldName = getEventName(objects[i], '') != null ? getEventName(objects[i], '') : getEventName(objects[i], 'From');
             var endEventFieldName = getEventName(objects[i], 'To');
+            var isCurrentKey = this.@GCalendar::isCurrentKey(*)(objects[i]);
             var event = {
                 'title': getTitle(objects[i]),
                 'start': objects[i][startEventFieldName],
-                'end': endEventFieldName != null ? objects[i][endEventFieldName] : '',
+                'end': endEventFieldName != null ? objects[i][endEventFieldName] : null,
                 'editable': !controller.isPropertyReadOnly(startEventFieldName, objects[i]) && (endEventFieldName == null || !controller.isPropertyReadOnly(endEventFieldName, objects[i])),
                 'durationEditable': endEventFieldName !== null && !controller.isPropertyReadOnly(endEventFieldName, objects[i]),
                 'allDay': calendarDateType === 'date',
                 'index': i,
                 'startFieldName': startEventFieldName,
-                'endFieldName': endEventFieldName
+                'endFieldName': endEventFieldName,
+                'classNames': isCurrentKey ? 'event-highlight' : ''
             };
             events.push(event);
+            if (isCurrentKey)
+                calendar.currentEventIndex = i;
         }
 
         calendar.objects = objects;

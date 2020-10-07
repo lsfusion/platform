@@ -121,9 +121,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     @Override
     public void setCurrentKey(GGroupObjectValue currentKey) {
-        this.currentKey = currentKey;
+        setCurrentKey(currentKey, true);
+    }
 
-        dataUpdated = true;
+    private void setCurrentKey(GGroupObjectValue currentKey, boolean setDataUpdated) {
+        this.currentKey = currentKey;
+        if (setDataUpdated)
+            dataUpdated = true;
     }
 
     // should correspond FormInstance.constructor - changePageSize method
@@ -388,8 +392,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return null;
     }
 
-    protected void changeGroupObject(GGroupObjectValue value) {
-        setCurrentKey(value);
+    protected void changeGroupObject(GGroupObjectValue value, boolean setDataUpdated) {
+        setCurrentKey(value, setDataUpdated);
         form.changeGroupObjectLater(grid.groupObject, value);
     }
 
