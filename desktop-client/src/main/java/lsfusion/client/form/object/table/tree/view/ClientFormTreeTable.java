@@ -1,6 +1,7 @@
 package lsfusion.client.form.object.table.tree.view;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.interop.form.event.KeyStrokes;
 import org.jdesktop.swingx.JXTree;
@@ -35,6 +36,15 @@ public abstract class ClientFormTreeTable extends JXTreeTable implements TableTr
         //remove default enter and shift-enter actions
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "none");
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getShiftEnter(), "none");
+    }
+
+    @Override
+    public void updateUI() {
+        // gridColor is never updated in updateUI() if it was once set.
+        // not using setter in order not to call repaint() once more - it will be called in updateUI() after color theme change
+        gridColor = SwingDefaults.getTableGridColor();
+        
+        super.updateUI();
     }
 
     /**

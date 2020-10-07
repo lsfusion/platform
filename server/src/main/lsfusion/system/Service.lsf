@@ -343,10 +343,12 @@ focusedCellBackgroundColor '{service.focused.cell.background.color}' = DATA COLO
 overrideFocusedCellBackgroundColor '{service.focused.cell.background.color}' = OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor();
 focusedCellBorderColor '{service.focused.cell.border.color}' = DATA COLOR (User);
 overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor();
+tableGridColor '{service.table.grid.color}' = DATA COLOR (User);
+overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(currentUser()), tableGridColor();  
 
 FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, currentDateTime, currentDateTimeSnapshot, defaultBackgroundColor, defaultForegroundColor, 
-                 selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
+                 selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
                  dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon,
                  initHeapSize, maxHeapSize, minHeapFreeRatio, maxHeapFreeRatio, vmargs
@@ -356,7 +358,7 @@ FORM settings '{service.form.settings}'
     
     OBJECTS uc=User
     PROPERTIES(uc) READONLY name, login
-    PROPERTIES(uc) selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor
+    PROPERTIES(uc) selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
     
     OBJECTS r = Setting
     PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
@@ -423,6 +425,7 @@ DESIGN settings {
                    MOVE PROPERTY(selectedCellBackgroundColor());
                    MOVE PROPERTY(focusedCellBackgroundColor());
                    MOVE PROPERTY(focusedCellBorderColor());
+                   MOVE PROPERTY(tableGridColor());
                } 
                NEW generalColors {
                    caption = '{service.form.settings.caption.general.colors}';

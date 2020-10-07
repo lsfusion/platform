@@ -261,8 +261,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             Color selectedCellBackground = (Color) businessLogics.serviceLM.overrideSelectedCellBackgroundColor.read(session);
             Color focusedCellBackground = (Color) businessLogics.serviceLM.overrideFocusedCellBackgroundColor.read(session);
             Color focusedCellBorder = (Color) businessLogics.serviceLM.overrideFocusedCellBorderColor.read(session);
+            Color tableGridColor = (Color) businessLogics.serviceLM.overrideTableGridColor.read(session);
             colorPreferences = new ColorPreferences(selectedRowBackground, selectedCellBackground,
-                    focusedCellBackground, focusedCellBorder);
+                    focusedCellBackground, focusedCellBorder, tableGridColor);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }

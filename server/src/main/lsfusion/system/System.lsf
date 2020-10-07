@@ -136,6 +136,7 @@ selectedRowBackgroundColor '{system.selected.row.background.color}' = DATA COLOR
 selectedCellBackgroundColor '{system.selected.cell.background.color}' = DATA COLOR ();
 focusedCellBackgroundColor '{system.focused.cell.background.color}' = DATA COLOR ();
 focusedCellBorderColor '{system.focused.cell.border.color}' = DATA COLOR ();
+tableGridColor '{system.table.grid.color}' = DATA COLOR ();
   
 customReportCharWidth '{system.report.char.width}' = DATA INTEGER ();
 customReportRowHeight '{system.report.row.height}' = DATA INTEGER ();

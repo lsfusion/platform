@@ -28,7 +28,8 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
                 converter.convertOrCast(clientSettings.colorPreferences.getSelectedRowBackground()),
                 converter.convertOrCast(clientSettings.colorPreferences.getSelectedCellBackground()),
                 converter.convertOrCast(clientSettings.colorPreferences.getFocusedCellBackground()),
-                converter.convertOrCast(clientSettings.colorPreferences.getFocusedCellBorderColor())
+                converter.convertOrCast(clientSettings.colorPreferences.getFocusedCellBorderColor()),
+                converter.convertOrCast(clientSettings.colorPreferences.getTableGridColor())
         );
         
         return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout,
