@@ -75,7 +75,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public void updateCurrentKey(GGroupObjectValue currentKey) {
-        tree.setCurrentKey(currentKey);
+        tree.setCurrentKey(currentKey, true);
     }
 
     @Override

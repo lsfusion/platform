@@ -383,7 +383,7 @@ public class GGridController extends GAbstractTableController {
     @Override
     public void updateCurrentKey(GGroupObjectValue currentKey) {
         if(isList())
-            table.setCurrentKey(currentKey);
+            table.setCurrentKey(currentKey, true);
     }
 
     public void update(long requestIndex, GFormChanges fc) {

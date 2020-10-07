@@ -722,7 +722,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
         setKeys(rowKeys);
         if(currentKeyChanged)
-            setCurrentKey(currentKey);
+            setCurrentKey(currentKey, true);
 
         updateModify(true);
     }

@@ -18,7 +18,7 @@ public interface GTableView {
 
     // SETTERS
     // keys
-    void setCurrentKey(GGroupObjectValue currentKey);
+    void setCurrentKey(GGroupObjectValue currentKey, boolean dataUpdated);
     void setKeys(ArrayList<GGroupObjectValue> keys);
 
     // columns

@@ -65,22 +65,26 @@ public class GCalendar extends GSimpleStateTableView {
             nextDayThreshold: '01:00:00',
             eventOrder: 'start,index',
             eventChange: function (info) {
-                changeProperty(info, 'start', this.objects);
-                if (info.event.extendedProps.endFieldName != null) {
-                    changeProperty(info, 'end');
+                if (info.event.classNames === info.oldEvent.classNames) {
+                    changeProperty(info, 'start', this.objects);
+                    if (info.event.extendedProps.endFieldName != null) {
+                        changeProperty(info, 'end', this.objects);
+                    }
                 }
             },
-            eventDidMount: function (info) {
-                if (typeof calendar.selectedEvent !== 'undefined' && info.event.extendedProps.index === calendar.selectedEvent)
-                    info.el.classname += ' event-highlight';
-            },
             eventClick: function (info) {
-                controller.changeSimpleGroupObject(this.objects[info.event.extendedProps.index]);
-                calendar.selectedEvent = info.event.extendedProps.index;
+                highlightEvent(info.event, calendar.getEvents()[calendar.currentEventIndex]);
             }
         });
         calendar.render();
         return calendar;
+
+        function highlightEvent(currentEvent, oldEvent) {
+            controller.changeSimpleGroupObject(calendar.objects[currentEvent.extendedProps.index], false);
+            oldEvent.setProp('classNames', '');
+            currentEvent.setProp('classNames', 'event-highlight');
+            calendar.currentEventIndex = currentEvent.extendedProps.index;
+        }
 
         function changeProperty(info, position, objects) {
             var propertyName = info.event.extendedProps[position + 'FieldName'];
@@ -97,6 +101,7 @@ public class GCalendar extends GSimpleStateTableView {
         for (var i = 0; i < objects.length; i++) {
             var startEventFieldName = getEventName(objects[i], '') != null ? getEventName(objects[i], '') : getEventName(objects[i], 'From');
             var endEventFieldName = getEventName(objects[i], 'To');
+            var isCurrentKey = this.@GCalendar::isCurrentKey(*)(objects[i]);
             var event = {
                 'title': getTitle(objects[i]),
                 'start': objects[i][startEventFieldName],
@@ -107,9 +112,11 @@ public class GCalendar extends GSimpleStateTableView {
                 'index': i,
                 'startFieldName': startEventFieldName,
                 'endFieldName': endEventFieldName,
-                'className': this.@GCalendar::isCurrentKey(*)(objects[i]) ? 'event-highlight' : ''
+                'classNames': isCurrentKey ? 'event-highlight' : ''
             };
             events.push(event);
+            if (isCurrentKey)
+                calendar.currentEventIndex = i;
         }
 
         calendar.objects = objects;
