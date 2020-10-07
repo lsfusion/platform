@@ -1,4 +1,16 @@
 .event-highlight {
-    border-color: red;
-    background-color: red;
+    border-color: var(--selection-color);
+    background-color: var(--selection-color);
+}
+.fc-h-event .fc-event-main {
+    color: var(--text-color);
+}
+.fc-theme-standard {
+    background: var(--component-background-color);
+}
+.fc-daygrid-dot-event .fc-event-title {
+    color: var(--text-color);
+}
+.fc-direction-ltr .fc-daygrid-event .fc-event-time {
+    color: var(--text-color);
 }
