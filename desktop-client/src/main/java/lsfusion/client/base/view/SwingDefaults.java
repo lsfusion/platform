@@ -44,6 +44,7 @@ public class SwingDefaults {
     private static Border focusedTableCellBorder;
     private static Color focusedTableRowBackground;
     private static Color tableSelectionBackground;
+    private static Color tableGridColor;
     private static Color notDefinedForeground;
     private static Color logPanelErrorColor;
     private static Color titledBorderTitleColor;
@@ -103,6 +104,7 @@ public class SwingDefaults {
         focusedTableCellBorder = null;
         focusedTableRowBackground = null;
         tableSelectionBackground = null;
+        tableGridColor = null;
         valueHeight = null;
         tableCellMargins = null;
         tableHeaderHeight = null;
@@ -258,6 +260,14 @@ public class SwingDefaults {
             tableSelectionBackground = preferredBackground != null ? preferredBackground : getColor("Table.selectionInactiveBackground");
         }
         return tableSelectionBackground; 
+    }
+    
+    public static Color getTableGridColor() {
+        if (tableGridColor == null) {
+            Color preferredColor = getDisplayColor(colorPreferences != null ? colorPreferences.getTableGridColor() : null);
+            tableGridColor = preferredColor != null ? preferredColor : getColor("TableHeader.separatorColor");
+        }
+        return tableGridColor;
     }
 
     public static Color getNotDefinedForeground() {

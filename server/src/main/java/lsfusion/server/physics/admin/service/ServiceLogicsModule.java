@@ -38,6 +38,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP overrideSelectedCellBackgroundColor;
     public LP overrideFocusedCellBackgroundColor;
     public LP overrideFocusedCellBorderColor;
+    public LP overrideTableGridColor;
 
     public LP nameSetting;
     public LP overBaseValueSettingUserRole;
@@ -71,6 +72,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         overrideSelectedCellBackgroundColor = findProperty("overrideSelectedCellBackgroundColor[]");
         overrideFocusedCellBackgroundColor = findProperty("overrideFocusedCellBackgroundColor[]");
         overrideFocusedCellBorderColor = findProperty("overrideFocusedCellBorderColor[]");
+        overrideTableGridColor = findProperty("overrideTableGridColor[]");
 
         nameSetting = findProperty("name[Setting]");
         overBaseValueSettingUserRole = findProperty("overBaseValue[Setting, UserRole]");

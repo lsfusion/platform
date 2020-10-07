@@ -9,6 +9,7 @@ public class GColorPreferences implements Serializable {
     private ColorDTO selectedCellBackground;
     private ColorDTO focusedCellBackground;
     private ColorDTO focusedCellBorderColor;
+    private ColorDTO tableGridColor;
 
 
     @SuppressWarnings("unused")
@@ -16,11 +17,13 @@ public class GColorPreferences implements Serializable {
     }
 
     public GColorPreferences(ColorDTO selectedRowBackground, ColorDTO selectedCellBackground,
-                             ColorDTO focusedCellBackground, ColorDTO focusedCellBorderColor) {
+                             ColorDTO focusedCellBackground, ColorDTO focusedCellBorderColor,
+                             ColorDTO tableGridColor) {
         this.selectedRowBackground = selectedRowBackground;
         this.selectedCellBackground = selectedCellBackground;
         this.focusedCellBackground = focusedCellBackground;
         this.focusedCellBorderColor = focusedCellBorderColor;
+        this.tableGridColor = tableGridColor;
     }
 
     public ColorDTO getSelectedRowBackground() {
@@ -37,5 +40,9 @@ public class GColorPreferences implements Serializable {
 
     public ColorDTO getFocusedCellBorderColor() {
         return focusedCellBorderColor;
+    }
+    
+    public ColorDTO getTableGridColor() {
+        return tableGridColor;
     }
 }

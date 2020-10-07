@@ -328,6 +328,15 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         initializeActionMap();
     }
 
+    @Override
+    public void updateUI() {
+        // gridColor is never updated in updateUI() if it was once set.
+        // not using setter in order not to call repaint() once more - it will be called in updateUI() after color theme change 
+        gridColor = SwingDefaults.getTableGridColor();
+        
+        super.updateUI();
+    }
+
     public int getHeaderHeight() {
         Integer userHeaderHeight = getUserHeaderHeight();
         if (userHeaderHeight != null && userHeaderHeight >= 0) {

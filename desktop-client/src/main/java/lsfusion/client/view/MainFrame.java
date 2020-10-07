@@ -108,6 +108,7 @@ public abstract class MainFrame extends JFrame {
             MainController.showNotDefinedStrings = clientSettings.showNotDefinedStrings;
             MainController.colorPreferences = clientSettings.colorPreferences;
             SwingDefaults.resetClientSettingsProperties();
+            MainController.setClientSettingsDependentUIDefaults();
 
             Locale userLocale = userPreferences.locale;
             Locale.setDefault(userLocale);

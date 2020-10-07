@@ -55,7 +55,7 @@ import java.rmi.server.RMIClassLoader;
 import java.util.List;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.*;
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.client.StartupProperties.*;
 
 public class MainController {
@@ -541,9 +541,7 @@ public class MainController {
     
     // properties which depend on current color theme. 
     public static void setUIDefaults() {
-        UIManager.put("Table.gridColor", SwingDefaults.getColor("TableHeader.separatorColor"));
         UIManager.put("TableHeader.background", SwingDefaults.getColor("Panel.background"));
-        UIManager.put("Tree.selectionInactiveBackground", SwingDefaults.getFocusedTableRowBackground()); // JTree in TreeGroupTable draws inactive background on selection
         UIManager.put("Table.cellFocusColor", SwingDefaults.getSelectionBorderColor()); // mostly for tree table. has no effect as tree has no focus 
         UIManager.put("TitledBorder.titleColor", SwingDefaults.getTitledBorderTitleColor());
         
@@ -570,6 +568,16 @@ public class MainController {
         UIManager.put("Button.hoverBackground", SwingDefaults.getButtonHoverBackground());
         UIManager.put("Button.default.pressedBackground", SwingDefaults.getButtonPressedBackground());
         UIManager.put("Button.pressedBackground", SwingDefaults.getButtonPressedBackground());
+
+        setClientSettingsDependentUIDefaults();
+    }
+    
+    // properties which depend on client settings and are stored in UIDefaults (not read in runtime)
+    public static void setClientSettingsDependentUIDefaults() {
+        UIManager.put("Tree.selectionInactiveBackground", SwingDefaults.getFocusedTableRowBackground()); // JTree in TreeGroupTable draws inactive background on selection
+        UIManager.put("Table.gridColor", SwingDefaults.getTableGridColor()); // Actually doesn't fully work. We have to update gridColor in JTable's updateUI() for existing tables
+        UIManager.put("TableHeader.separatorColor", SwingDefaults.getTableGridColor());
+        UIManager.put("TableHeader.bottomSeparatorColor", SwingDefaults.getTableGridColor());
     }
 
     public static void changeColorTheme(ColorTheme newColorTheme) {

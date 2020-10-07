@@ -8,14 +8,17 @@ public class ColorPreferences implements Serializable {
     private Color selectedCellBackground;
     private Color focusedCellBackground;
     private Color focusedCellBorderColor;
+    private Color tableGridColor;
 
 
     public ColorPreferences(Color selectedRowBackground, Color selectedCellBackground, 
-                            Color focusedCellBackground, Color focusedCellBorderColor) {
+                            Color focusedCellBackground, Color focusedCellBorderColor,
+                            Color tableGridColor) {
         this.selectedRowBackground = selectedRowBackground;
         this.selectedCellBackground = selectedCellBackground;
         this.focusedCellBackground = focusedCellBackground;
         this.focusedCellBorderColor = focusedCellBorderColor;
+        this.tableGridColor = tableGridColor;
     }
 
     public Color getSelectedRowBackground() {
@@ -32,5 +35,9 @@ public class ColorPreferences implements Serializable {
     
     public Color getFocusedCellBorderColor() {
         return focusedCellBorderColor;
+    }
+    
+    public Color getTableGridColor() {
+        return tableGridColor;
     }
 }
