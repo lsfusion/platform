@@ -568,7 +568,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 if (captions != null) { // asserting that there is only one value columnKeys is EMPTY
                     String value = GwtSharedUtils.nullTrim(captions.firstValue());
                     GGridPropertyTableHeader header = getGridHeader(i);
-                    header.setCaption(value, property, false, false);
+                    header.setCaption(value, false, false);
+                    header.setToolTip(property.getTooltipText(value));
                 }
                 rowHeight = Math.max(rowHeight, property.getValueHeightWithPadding(font));
             }

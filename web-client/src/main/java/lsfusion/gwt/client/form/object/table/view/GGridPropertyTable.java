@@ -392,7 +392,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
         String columnCaption = getPropertyCaption(property, columnKey);
         GGridPropertyTableHeader header = getGridHeader(index);
-        header.setCaption(columnCaption, property, property.notNull, property.hasChangeAction);
+        header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
+        header.setToolTip(property.getTooltipText(columnCaption));
         header.setHeaderHeight(getHeaderHeight());
     }
 

@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.grid.Header;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.function.Consumer;
@@ -14,6 +14,7 @@ import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
+import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -30,6 +31,8 @@ public class GGridPropertyTableHeader extends Header<String> {
     private Element renderedCaptionElement;
 
     private String caption;
+    private String toolTip;
+    private TooltipManager.TooltipHelper toolTipHandler;
 
     private boolean notNull;
     private boolean hasChangeAction;
@@ -37,16 +40,31 @@ public class GGridPropertyTableHeader extends Header<String> {
     private int headerHeight;
 
     public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip) {
-        super(table, toolTip);
         this.caption = caption;
         this.table = table;
+        this.toolTip = toolTip;
+
+        toolTipHandler = new TooltipManager.TooltipHelper() {
+            @Override
+            public String getTooltip() {
+                return GGridPropertyTableHeader.this.toolTip;
+            }
+
+            @Override
+            public boolean stillShowTooltip() {
+                return table.isAttached() && table.isVisible();
+            }
+        };
     }
 
-    public void setCaption(String caption, GPropertyDraw property, boolean notNull, boolean hasChangeAction) {
+    public void setCaption(String caption, boolean notNull, boolean hasChangeAction) {
         this.caption = caption;
         this.notNull = notNull;
         this.hasChangeAction = hasChangeAction;
-        this.tooltip = property.getTooltipText(caption);
+    }
+
+    public void setToolTip(String toolTip) {
+        this.toolTip = toolTip;
     }
 
     public void setHeaderHeight(int headerHeight) {
@@ -82,7 +100,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             }
         }
 
-        super.onBrowserEvent(target, event);
+        TooltipManager.checkTooltipEvent(event, toolTipHandler);
     }
 
     @Override
@@ -134,6 +152,10 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     public static void changeDirection(ImageElement img, boolean sortDir) {
         GwtClientUtils.setThemeImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
+    }
+
+    private static void renderCaption(Element captionElement, String caption) {
+        captionElement.setInnerHTML(caption == null ? "" : escapeLineBreakHTML(caption));
     }
 
     @Override

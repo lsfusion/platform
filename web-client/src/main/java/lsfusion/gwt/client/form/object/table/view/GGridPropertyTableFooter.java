@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.object.table.view;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -16,7 +15,6 @@ public class GGridPropertyTableFooter extends Header<String> {
     protected Object value;
 
     public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, Object value, String toolTip) {
-        super(table, toolTip);
         this.table = table;
         this.property = property;
         this.value = value;
@@ -24,7 +22,6 @@ public class GGridPropertyTableFooter extends Header<String> {
 
     public void setValue(Object value) {
         this.value = value;
-        this.tooltip = property.getTooltipText(getRenderedCaption());
     }
 
     @Override
