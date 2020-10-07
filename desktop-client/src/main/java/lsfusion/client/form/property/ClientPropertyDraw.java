@@ -44,6 +44,7 @@ import java.util.Map;
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.base.EscapeUtils.escapeLineBreakHTML;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
@@ -656,8 +657,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return String.format(TOOL_TIP_FORMAT, propCaption, changeKeyText);
         } else {
             String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
-            String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
-            String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
+            String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
+            String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
             
             if (baseType instanceof ClientActionClass) {
                 return String.format(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
@@ -666,7 +667,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
                 String returnClass = this.returnClass.toString();
-                String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
+                String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
                 
                 return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
                         propCaption, changeKeyText, canonicalName, tableName, ifaceObjects, ifaceClasses, returnClass,

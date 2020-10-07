@@ -15,16 +15,11 @@
  */
 package lsfusion.gwt.client.base.view.grid;
 
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableCellElement;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableSet;
+import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 
 /**
  * A table column header or footer.
@@ -44,7 +39,7 @@ public abstract class Header<H> {
         //do nothing by default
     }
 
-    public abstract void renderDom(TableCellElement th);
+    public abstract void renderAndUpdateDom(TableCellElement th);
 
     public abstract void updateDom(TableCellElement th);
 }

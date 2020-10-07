@@ -524,8 +524,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
      * @param col    the column to be added
      * @param header the associated {@link Header}
      */
-    public void addColumn(Column<T, ?> col, Header<?> header) {
-        insertColumn(getColumnCount(), col, header);
+    public void addColumn(Column<T, ?> col, Header<?> header, Header<?> footer) {
+        insertColumn(getColumnCount(), col, header, footer);
     }
 
     /**
@@ -536,9 +536,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
      * @param col         the column to be added
      * @param header      the associated {@link Header}
      */
-    public void insertColumn(int beforeIndex, Column<T, ?> col, Header<?> header) {
-        Header<?> footer = null;
-
+    public void insertColumn(int beforeIndex, Column<T, ?> col, Header<?> header, Header<?> footer) {
         if (noHeaders && header != null) {
             throw new UnsupportedOperationException("the table isn't allowed to have header");
         }
@@ -868,7 +866,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         if(!noHeaders)
             updateHeaderTablePadding(tableHeader, tableHeaderScroller);
         if(!noFooters)
-            updateHeaderTablePadding(tableHeader, tableFooterScroller);
+            updateHeaderTablePadding(tableFooter, tableFooterScroller);
         if(!noScrollers)
             updateTableRightOuterBorder();
     }

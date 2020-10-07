@@ -16,11 +16,6 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.jsni.JSNIHelper;
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Default implementation of {@link HeaderBuilder} that renders columns.
@@ -102,7 +97,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
      */
     protected final <H> void renderHeader(TableCellElement th, Header<H> header) {
         th.setPropertyObject(HEADER_ATTRIBUTE, header);
-        header.renderDom(th);
+        header.renderAndUpdateDom(th);
     }
 
     public Header<?> getHeader(Element elem) {

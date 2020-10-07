@@ -8,7 +8,6 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 
-import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.util.ArrayList;
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.toCaption;
+import static lsfusion.client.base.EscapeUtils.escapeLineBreakHTML;
 
 public class GridTableModel extends AbstractTableModel {
     private Object[][] data = new Object[0][0];
@@ -170,9 +170,9 @@ public class GridTableModel extends AbstractTableModel {
         //заполняем имена колонок
         for (int i = 0; i < columnNames.length; ++i) {
             Map<ClientGroupObjectValue, Object> propColumnCaptions = columnCaptions.get(columnProps[i]);
-            columnNames[i] = propColumnCaptions != null ?
+            columnNames[i] = escapeLineBreakHTML(propColumnCaptions != null ?
                     columnProps[i].getDynamicCaption(propColumnCaptions.get(columnKeys[i])) :
-                    toCaption(columnProps[i].getHTMLCaption());
+                    toCaption(columnProps[i].getHTMLCaption()));
         }
     }
 
