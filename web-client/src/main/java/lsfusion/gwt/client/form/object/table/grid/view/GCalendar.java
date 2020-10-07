@@ -65,26 +65,22 @@ public class GCalendar extends GSimpleStateTableView {
             nextDayThreshold: '01:00:00',
             eventOrder: 'start,index',
             eventChange: function (info) {
-                if (info.event.classNames === info.oldEvent.classNames) {
+                if (info.event.start.getTime() !== info.oldEvent.start.getTime())
                     changeProperty(info, 'start', this.objects);
-                    if (info.event.extendedProps.endFieldName != null) {
-                        changeProperty(info, 'end', this.objects);
-                    }
-                }
+                if (info.event.end !== null && info.event.end.getTime() !== info.oldEvent.end.getTime())
+                    changeProperty(info, 'end', this.objects);
             },
             eventClick: function (info) {
-                highlightEvent(info.event, calendar.getEvents()[calendar.currentEventIndex]);
+                controller.changeSimpleGroupObject(calendar.objects[info.event.extendedProps.index], false);
+                if (typeof calendar.currentEventIndex !== 'undefined') {
+                    calendar.getEvents()[calendar.currentEventIndex].setProp('classNames', '');
+                }
+                info.event.setProp('classNames', 'event-highlight');
+                calendar.currentEventIndex = info.event.extendedProps.index;
             }
         });
         calendar.render();
         return calendar;
-
-        function highlightEvent(currentEvent, oldEvent) {
-            controller.changeSimpleGroupObject(calendar.objects[currentEvent.extendedProps.index], false);
-            oldEvent.setProp('classNames', '');
-            currentEvent.setProp('classNames', 'event-highlight');
-            calendar.currentEventIndex = currentEvent.extendedProps.index;
-        }
 
         function changeProperty(info, position, objects) {
             var propertyName = info.event.extendedProps[position + 'FieldName'];
@@ -105,7 +101,7 @@ public class GCalendar extends GSimpleStateTableView {
             var event = {
                 'title': getTitle(objects[i]),
                 'start': objects[i][startEventFieldName],
-                'end': endEventFieldName != null ? objects[i][endEventFieldName] : '',
+                'end': endEventFieldName != null ? objects[i][endEventFieldName] : null,
                 'editable': !controller.isPropertyReadOnly(startEventFieldName, objects[i]) && (endEventFieldName == null || !controller.isPropertyReadOnly(endEventFieldName, objects[i])),
                 'durationEditable': endEventFieldName !== null && !controller.isPropertyReadOnly(endEventFieldName, objects[i]),
                 'allDay': calendarDateType === 'date',

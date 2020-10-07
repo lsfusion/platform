@@ -42,10 +42,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     // plus what's more important we shouldn't change selectedRow, before update'in rows, otherwise we'll have inconsistent selectedRow - rows state
     protected GGroupObjectValue currentKey;
 
-    public void setCurrentKey(GGroupObjectValue currentKey, boolean dataUpdated) {
+    public void setCurrentKey(GGroupObjectValue currentKey) {
         this.currentKey = currentKey;
 
-        this.currentRowUpdated = dataUpdated;
+        this.currentRowUpdated = true;
     }
 
     @Override
@@ -173,7 +173,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected void checkUpdateCurrentRow() {
         // assert rowUpdated AND ! it's important to do this before update rows to have relevant selectedKey
         if(!currentRowUpdated)
-            setCurrentKey(getSelectedKey(), true);
+            setCurrentKey(getSelectedKey());
     }
 
     private boolean currentRowUpdated = false;
