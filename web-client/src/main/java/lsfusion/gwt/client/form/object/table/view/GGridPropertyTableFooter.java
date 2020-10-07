@@ -28,21 +28,17 @@ public class GGridPropertyTableFooter extends Header<String> {
     }
 
     @Override
-    public void renderDom(TableCellElement th) {
-        renderTD(th);
+    public void renderAndUpdateDom(TableCellElement th) {
+        property.getCellRenderer().render(th, value, table, table);
         prevValue = value;
     }
 
     @Override
     public void updateDom(TableCellElement th) {
         if (!nullEquals(this.value, prevValue)) {
-            renderTD(th);
+            property.getCellRenderer().renderDynamic(th, value, table);
             prevValue = value;
         }
-    }
-
-    public void renderTD(Element th) {
-        property.getCellRenderer().render(th, value, table, table);
     }
 
     private String getRenderedCaption() {

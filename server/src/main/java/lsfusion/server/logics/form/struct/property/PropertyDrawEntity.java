@@ -87,7 +87,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private Object propertyExtras = MapFact.mMap(MapFact.override());
     private boolean finalizedPropertyExtras;
-    public boolean hasFooter;
 
     @LongMutable
     public ImMap<PropertyDrawExtraType, PropertyObjectEntity<?>> getPropertyExtras() {

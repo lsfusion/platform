@@ -1090,7 +1090,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public boolean hasFooters(GroupObjectEntity entity) {
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
         for (PropertyDrawEntity property : propertyDrawsIt) {
-            if (property.hasFooter && entity.equals(property.getToDraw(this))) {
+            if (property.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null && entity.equals(property.getToDraw(this))) {
                     return true;
             }
         }

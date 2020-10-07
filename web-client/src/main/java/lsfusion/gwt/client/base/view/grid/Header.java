@@ -59,7 +59,7 @@ public abstract class Header<H> {
         TooltipManager.checkTooltipEvent(event, tooltipHandler);
     }
 
-    public abstract void renderDom(TableCellElement th);
+    public abstract void renderAndUpdateDom(TableCellElement th);
 
     public abstract void updateDom(TableCellElement th);
 }

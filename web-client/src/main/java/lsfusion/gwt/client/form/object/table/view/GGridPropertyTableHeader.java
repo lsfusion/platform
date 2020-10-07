@@ -86,7 +86,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     @Override
-    public void renderDom(TableCellElement th) {
+    public void renderAndUpdateDom(TableCellElement th) {
         Boolean sortDir = table.getSortDirection(this);
 
         renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, false);
@@ -142,7 +142,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         if (!nullEquals(sortDir, renderedSortDir)) {
             GwtClientUtils.removeAllChildren(th);
-            renderDom(th);
+            renderAndUpdateDom(th);
         } else if (!nullEquals(this.caption, renderedCaption)) {
             renderCaption(renderedCaptionElement, caption);
             renderedCaption = caption;

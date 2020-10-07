@@ -453,7 +453,6 @@ public class ScriptingFormEntity {
         PropertyObjectEntity footer = options.getFooter();
         if(footer != null) {
             property.setPropertyExtra(footer, PropertyDrawExtraType.FOOTER);
-            property.hasFooter = true;
         }
 
         property.setPropertyExtra(options.getShowIf(), PropertyDrawExtraType.SHOWIF);
