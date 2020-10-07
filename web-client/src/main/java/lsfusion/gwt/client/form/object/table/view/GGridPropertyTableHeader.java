@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.object.table.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.grid.Header;
@@ -15,6 +14,7 @@ import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
+import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -104,7 +104,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     @Override
-    public void renderDom(TableCellElement th) {
+    public void renderAndUpdateDom(TableCellElement th) {
         Boolean sortDir = table.getSortDirection(this);
 
         renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, false);
@@ -155,7 +155,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     private static void renderCaption(Element captionElement, String caption) {
-        captionElement.setInnerText(caption == null ? "" : EscapeUtils.unicodeEscape(caption));
+        captionElement.setInnerHTML(caption == null ? "" : escapeLineBreakHTML(caption));
     }
 
     @Override
@@ -164,7 +164,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         if (!nullEquals(sortDir, renderedSortDir)) {
             GwtClientUtils.removeAllChildren(th);
-            renderDom(th);
+            renderAndUpdateDom(th);
         } else if (!nullEquals(this.caption, renderedCaption)) {
             renderCaption(renderedCaptionElement, caption);
             renderedCaption = caption;

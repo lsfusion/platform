@@ -71,5 +71,9 @@ class ReportUtils {
         return null;
     }
     
-    public static final String EXCEL_SEPARATOR_PROBLEM_REGEX = ".*\\.#+";   
+    public static final String EXCEL_SEPARATOR_PROBLEM_REGEX = ".*\\.#+";
+
+    public static String escapeLineBreak(String value) {
+        return value.replace("\n", "\\n");
+    }
 }

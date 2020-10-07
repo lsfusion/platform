@@ -420,6 +420,11 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+        table.updatePropertyFooters(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
         table.updateReadOnlyValues(formController.getProperty(reader.propertyID), values);
     }

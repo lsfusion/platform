@@ -40,6 +40,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public boolean isCalendarDate;
     public boolean isCalendarDateTime;
 
+    public boolean hasFooters;
+
     public ClassViewType viewType;
     public ListViewType listViewType;
     public PivotOptions pivotOptions;
@@ -144,6 +146,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         isMap = inStream.readBoolean();
         isCalendarDate = inStream.readBoolean();
         isCalendarDateTime = inStream.readBoolean();
+
+        hasFooters = inStream.readBoolean();
 
         Integer ps = pool.readInt(inStream);
         if (ps != null) {

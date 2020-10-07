@@ -26,6 +26,7 @@ import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
@@ -64,7 +65,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
         GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, messages.formTree(), null);
-        addColumn(column, header);
+        addColumn(column, header, null);
 
         hierarchicalWidth = treeGroup.calculateSize();
 
@@ -151,8 +152,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 GridColumn gridColumn = new GridColumn(property);
                 String propertyCaption = property.getCaptionOrEmpty();
                 GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption));
+                GGridPropertyTableFooter footer = groupObject.hasFooters ? new GGridPropertyTableFooter(this, property, null, null) : null;
 
-                insertColumn(index, gridColumn, header);
+                insertColumn(index, gridColumn, header, footer);
 
                 columnsUpdated = true;
             }

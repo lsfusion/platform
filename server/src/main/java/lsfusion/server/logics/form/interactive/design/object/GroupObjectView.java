@@ -115,6 +115,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         outStream.writeBoolean(pool.context.view.entity.isCalendarDate(entity));
         outStream.writeBoolean(pool.context.view.entity.isCalendarDateTime(entity));
 
+        outStream.writeBoolean(pool.context.view.entity.hasFooters(entity));
+
         boolean needVScroll;
         if (needVerticalScroll == null) {
             needVScroll = (entity.pageSize != null && entity.pageSize == 0);

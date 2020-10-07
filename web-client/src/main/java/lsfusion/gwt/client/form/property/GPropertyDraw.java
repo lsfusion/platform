@@ -38,6 +38,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
@@ -314,8 +315,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, keyBindingText);
         } else {
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
-            String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
-            String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
+            String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
+            String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
             
             if (baseType instanceof GActionType) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
@@ -324,7 +325,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String returnClass = this.returnClass.toString();
                 String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
-                String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
+                String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
                 
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedToolTipFormat(),
                         propCaption, keyBindingText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,

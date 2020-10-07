@@ -132,7 +132,9 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
                 th.setClassName(cellClass);
             }
 
-            renderHeader(th, header);
+            if(header != null) {
+                renderHeader(th, header);
+            }
 
             tr.appendChild(th);
         }

@@ -539,6 +539,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.isCalendarDateTime = clientGroupObject.isCalendarDateTime;
         groupObject.parent = convertOrCast(clientGroupObject.parent);
 
+        groupObject.hasFooters = clientGroupObject.hasFooters;
+
         for (ClientGroupObject clientUpGroup : clientGroupObject.upTreeGroups) {
             GGroupObject upGroup = convertOrCast(clientUpGroup);
             groupObject.upTreeGroups.add(upGroup);

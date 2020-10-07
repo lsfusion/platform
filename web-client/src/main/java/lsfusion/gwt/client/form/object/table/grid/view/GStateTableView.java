@@ -177,6 +177,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updatePropertyFooters(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> values) {
+    }
+
+    @Override
     public void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, Object> values) {
         this.lastAggrs.get(properties.indexOf(property)).set(index, values);
 
