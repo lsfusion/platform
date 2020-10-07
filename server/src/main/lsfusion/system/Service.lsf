@@ -330,6 +330,8 @@ getServerSettings() {
                 jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles());
 } @@noauth;
 
+// colors
+
 selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);
 overrideSelectedRowBackgroundColor '{service.selected.row.background.color}' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor();
 selectedCellBackgroundColor '{service.selected.cell.background.color}' = DATA COLOR (User);
@@ -340,6 +342,24 @@ focusedCellBorderColor '{service.focused.cell.border.color}' = DATA COLOR (User)
 overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor();
 tableGridColor '{service.table.grid.color}' = DATA COLOR (User);
 overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(currentUser()), tableGridColor();  
+
+EXTEND FORM editProfile
+    PROPERTIES(u) selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+;
+
+DESIGN editProfile {
+    design {
+        NEW colors { 
+            type = COLUMNS;
+            columns = 2;
+            MOVE PROPERTY(selectedRowBackgroundColor(u)) { fontSize = 24; }
+            MOVE PROPERTY(selectedCellBackgroundColor(u)) { fontSize = 24; }
+            MOVE PROPERTY(focusedCellBackgroundColor(u)) { fontSize = 24; }
+            MOVE PROPERTY(focusedCellBorderColor(u)) { fontSize = 24; }
+            MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
+        }
+    }
+} 
 
 FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, currentDateTime, currentDateTimeSnapshot, defaultBackgroundColor, defaultForegroundColor, 

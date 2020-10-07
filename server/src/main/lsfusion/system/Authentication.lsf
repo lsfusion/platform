@@ -575,22 +575,29 @@ DESIGN customUsersDialog { BOX { size = (1024, 768); } }
 FORM editProfile '{navigator.account.edit.profile}'
     OBJECTS u = CustomUser PANEL
     PROPERTIES(u) login READONLY
-    PROPERTIES(u) firstName, lastName, email, fontSize, colorThemeName, userLanguage
+    PROPERTIES(u) firstName, lastName, email, userLanguage,
+                  fontSize, colorThemeName
 
     FILTERS u = currentUser()
 ;
 
 DESIGN editProfile {
-    GROUP(,u) {
-        type = CONTAINERV;
-        PROPERTY(login(u)) { fontSize = 36; }
-        PROPERTY(firstName(u)) { fontSize = 36; }
-        PROPERTY(lastName(u)) { fontSize = 36; }
-        PROPERTY(email(u)) { fontSize = 36; }
-        PROPERTY(fontSize(u)) { fontSize = 36; }
-        PROPERTY(colorThemeName(u)) { fontSize = 36; }
-        PROPERTY(userLanguage(u)) { fontSize = 36; }
+    OBJECTS {
+        NEW commons {
+            caption = '{navigator.account.edit.profile.commons}';
+            MOVE PROPERTY(login(u)) { fontSize = 36; }
+            MOVE PROPERTY(firstName(u)) { fontSize = 36; }
+            MOVE PROPERTY(lastName(u)) { fontSize = 36; }
+            MOVE PROPERTY(email(u)) { fontSize = 36; }
+            MOVE PROPERTY(userLanguage(u)) { fontSize = 36; }
+        }
+        NEW design {
+            caption = '{navigator.account.edit.profile.design}';
+            MOVE PROPERTY(fontSize(u)) { fontSize = 24; }
+            MOVE PROPERTY(colorThemeName(u)) { fontSize = 24; }
+        }
     }
+    
 }
 
 // ---------------- Relogin ------------------- //
