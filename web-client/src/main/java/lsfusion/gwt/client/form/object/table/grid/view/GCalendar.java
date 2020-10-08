@@ -69,14 +69,12 @@ public class GCalendar extends GSimpleStateTableView {
                 changeProperty(info, 'end', this.objects);
             },
             datesSet: function (dateInfo) {
-                calendar.currentViewStartDate = calendar.currentViewStartDate == null ? dateInfo.start : calendar.currentViewStartDate;
-                var currentEvent = calendar.getEvents()[calendar.currentEventIndex];
-                if (currentEvent != null && (currentEvent.start < dateInfo.start || currentEvent.start > dateInfo.end)) {
-                    var visibleEvents = getVisibleEvents(dateInfo);
-                    if (visibleEvents.firstEvent !== null)
-                        changeCurrentEvent(calendar.currentViewStartDate >= dateInfo.start ? visibleEvents.lastEvent : visibleEvents.firstEvent);
+                var oldEvent = calendar.getEvents()[calendar.currentEventIndex];
+                if (oldEvent != null && (oldEvent.start < dateInfo.start || oldEvent.start > dateInfo.end)) {
+                    var event = oldEvent.start <= dateInfo.start ? getEvent(dateInfo, true) : getEvent(dateInfo, false);
+                    if (event !== null)
+                        changeCurrentEvent(event);
                 }
-                calendar.currentViewStartDate = dateInfo.start;
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event);
@@ -85,13 +83,15 @@ public class GCalendar extends GSimpleStateTableView {
         calendar.render();
         return calendar;
 
-        function getVisibleEvents(dateInfo) {
+        function getEvent(dateInfo, getFirst) {
+            var visibleEvents = null;
             var events = calendar.getEvents();
-            var visibleEvents = { firstEvent: null, lastEvent: null };
             for (var i = 0; i < events.length; i++) {
                 if (events[i].start >= dateInfo.start && events[i].start <= dateInfo.end) {
-                    visibleEvents.firstEvent = visibleEvents.firstEvent === null ? events[i] : (visibleEvents.firstEvent.start > events[i].start ? events[i] : visibleEvents.firstEvent);
-                    visibleEvents.lastEvent = visibleEvents.lastEvent === null ? events[i] : (visibleEvents.lastEvent.start < events[i].start ? events[i] : visibleEvents.lastEvent);
+                    if (getFirst)
+                        visibleEvents = visibleEvents === null ? events[i] : (visibleEvents.start > events[i].start ? events[i] : visibleEvents);
+                    else
+                        visibleEvents = visibleEvents === null ? events[i] : (visibleEvents.start < events[i].start ? events[i] : visibleEvents);
                 }
             }
             return visibleEvents;
