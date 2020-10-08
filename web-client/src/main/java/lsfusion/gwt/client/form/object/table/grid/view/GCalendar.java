@@ -70,13 +70,16 @@ public class GCalendar extends GSimpleStateTableView {
             },
             datesSet: function (dateInfo) {
                 calendar.currentViewStartDate = calendar.currentViewStartDate == null ? dateInfo.start : calendar.currentViewStartDate;
-                var visibleEvents = getVisibleEvents(dateInfo);
-                if (visibleEvents !== null)
-                    highlightEvent(visibleEvents[calendar.currentViewStartDate >= dateInfo.start ? (visibleEvents.length - 1) : 0]);
+                var currentEvent = calendar.getEvents()[calendar.currentEventIndex];
+                if (currentEvent != null && (currentEvent.start < dateInfo.start || currentEvent.start > dateInfo.end)) {
+                    var visibleEvents = getVisibleEvents(dateInfo);
+                    if (visibleEvents.firstEvent !== null)
+                        changeCurrentEvent(calendar.currentViewStartDate >= dateInfo.start ? visibleEvents.lastEvent : visibleEvents.firstEvent);
+                }
                 calendar.currentViewStartDate = dateInfo.start;
             },
             eventClick: function (info) {
-                highlightEvent(info.event);
+                changeCurrentEvent(info.event);
             }
         });
         calendar.render();
@@ -84,16 +87,17 @@ public class GCalendar extends GSimpleStateTableView {
 
         function getVisibleEvents(dateInfo) {
             var events = calendar.getEvents();
-            var visibleEvents = [];
+            var visibleEvents = { firstEvent: null, lastEvent: null };
             for (var i = 0; i < events.length; i++) {
-                if (events[i].start >= dateInfo.start && events[i].start <= dateInfo.end)
-                    visibleEvents.push(events[i]);
+                if (events[i].start >= dateInfo.start && events[i].start <= dateInfo.end) {
+                    visibleEvents.firstEvent = visibleEvents.firstEvent === null ? events[i] : (visibleEvents.firstEvent.start > events[i].start ? events[i] : visibleEvents.firstEvent);
+                    visibleEvents.lastEvent = visibleEvents.lastEvent === null ? events[i] : (visibleEvents.lastEvent.start < events[i].start ? events[i] : visibleEvents.lastEvent);
+                }
             }
-            visibleEvents.sort(function (a, b) { return a.start - b.start; });
-            return visibleEvents.length > 0 ? visibleEvents : null;
+            return visibleEvents;
         }
 
-        function highlightEvent(currentEvent) {
+        function changeCurrentEvent(currentEvent) {
             var oldEvent = calendar.currentEventIndex != null ? calendar.getEvents()[calendar.currentEventIndex] : null;
             controller.changeSimpleGroupObject(calendar.objects[currentEvent.extendedProps.index], false);
             if (oldEvent !== null)
