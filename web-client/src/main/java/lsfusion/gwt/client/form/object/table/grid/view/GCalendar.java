@@ -68,19 +68,39 @@ public class GCalendar extends GSimpleStateTableView {
                 changeProperty(info, 'start', this.objects);
                 changeProperty(info, 'end', this.objects);
             },
+            datesSet: function (dateInfo) {
+                calendar.currentViewStartDate = calendar.currentViewStartDate == null ? dateInfo.start : calendar.currentViewStartDate;
+                var visibleEvents = getVisibleEvents(dateInfo);
+                if (visibleEvents !== null)
+                    highlightEvent(visibleEvents[calendar.currentViewStartDate >= dateInfo.start ? (visibleEvents.length - 1) : 0]);
+                calendar.currentViewStartDate = dateInfo.start;
+            },
             eventClick: function (info) {
-                var currentEvent = info.event;
-                var oldEvent = calendar.currentEventIndex != null ? calendar.getEvents()[calendar.currentEventIndex] : null;
-                controller.changeSimpleGroupObject(calendar.objects[currentEvent.extendedProps.index], false);
-                if (oldEvent !== null) {
-                    oldEvent.setProp('classNames', '');
-                }
-                currentEvent.setProp('classNames', 'event-highlight');
-                calendar.currentEventIndex = currentEvent.extendedProps.index;
+                highlightEvent(info.event);
             }
         });
         calendar.render();
         return calendar;
+
+        function getVisibleEvents(dateInfo) {
+            var events = calendar.getEvents();
+            var visibleEvents = [];
+            for (var i = 0; i < events.length; i++) {
+                if (events[i].start >= dateInfo.start && events[i].start <= dateInfo.end)
+                    visibleEvents.push(events[i]);
+            }
+            visibleEvents.sort(function (a, b) { return a.start - b.start; });
+            return visibleEvents.length > 0 ? visibleEvents : null;
+        }
+
+        function highlightEvent(currentEvent) {
+            var oldEvent = calendar.currentEventIndex != null ? calendar.getEvents()[calendar.currentEventIndex] : null;
+            controller.changeSimpleGroupObject(calendar.objects[currentEvent.extendedProps.index], false);
+            if (oldEvent !== null)
+                oldEvent.setProp('classNames', '');
+            currentEvent.setProp('classNames', 'event-highlight');
+            calendar.currentEventIndex = currentEvent.extendedProps.index;
+        }
 
         function changeProperty(info, position, objects) {
             var currentEvent = info.event;
