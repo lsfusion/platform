@@ -30,6 +30,8 @@ import static lsfusion.client.base.view.SwingDefaults.getTableCellMargins;
 public class DatePropertyEditor extends JDateChooser implements PropertyEditor, ClientPropertyTableEditorComponent {
     protected final SimpleDateFormat format;
 
+    private PropertyTableCellEditor tableEditor;
+
     public DatePropertyEditor(Object value, SimpleDateFormat format, ClientPropertyDraw property) {
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(property, format));
         this.format = format;
@@ -63,6 +65,8 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         // передаем вниз нажатую клавишу, чтобы по нажатию кнопки она уже начинала вводить в объект
         if (condition == WHEN_FOCUSED) {
             return ((DatePropertyEditorComponent) dateEditor).publicProcessKeyBinding(ks, ke, condition, pressed);
+        } else if (ke.getKeyCode() == KeyEvent.VK_ENTER && tableEditor != null)  {
+            return tableEditor.stopCellEditing();
         } else {
             return super.processKeyBinding(ks, ke, condition, pressed);
         }
@@ -106,7 +110,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
     }
 
     public void setTableEditor(PropertyTableCellEditor tableEditor) {
-        //пока не нужен
+        this.tableEditor = tableEditor;
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
