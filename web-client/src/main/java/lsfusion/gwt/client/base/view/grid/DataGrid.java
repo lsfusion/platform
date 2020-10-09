@@ -21,12 +21,14 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -35,7 +37,6 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.*;
 import java.util.function.Function;
 
-import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
@@ -859,7 +860,7 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
 
     private void updateHeaderTableMinimumWidth(TableWrapperWidget headerWidget) {
         if(minWidthUnit != null)
-            setBlockMinWidth(minWidthValue + (hasVerticalScroll ? nativeScrollbarWidth : 0), headerWidget);
+            setBlockMinWidth(minWidthValue + (hasVerticalScroll ? nativeScrollbarWidth + 1 : 0), headerWidget); // 1 for right outer border margin
     }
 
     private void updateTableMargins() {
