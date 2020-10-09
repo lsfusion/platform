@@ -51,11 +51,16 @@ public class ClientFormLayout extends JPanel {
 
         addContainers(mainContainer);
         
-        JScrollPane scroll = new JScrollPane();
+        JScrollPane scroll = new JScrollPane() {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                setBorder(null); // is set on every color theme change in installDefaults()
+            }
+        };
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.getHorizontalScrollBar().setUnitIncrement(14);
         scroll.setViewportView(getComponentView(mainContainer));
-        scroll.setBorder(null);
         add(scroll, BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
