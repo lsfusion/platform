@@ -12,6 +12,8 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.util.Optional;
 
+import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
+
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
  */
@@ -29,9 +31,9 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         // Cache styles for faster access.
         GridStyle style = table.getStyle();
         rowStyle = style.dataGridRow();
-        cellStyle = style.dataGridCell();
+        cellStyle = style.dataGridCell() + " " + customDataGridStyle.dataGridCell();
         firstColumnStyle = " " + style.dataGridFirstCell();
-        lastColumnStyle = " " + style.dataGridLastCell();
+        lastColumnStyle = " " + style.dataGridLastCell() + " " + customDataGridStyle.dataGridLastCell();
     }
 
     public boolean setCellHeight(int cellHeight) {

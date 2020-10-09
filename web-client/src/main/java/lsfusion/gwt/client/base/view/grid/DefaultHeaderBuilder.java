@@ -20,6 +20,8 @@ import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
 
+import static lsfusion.gwt.client.view.StyleDefaults.customDataGridStyle;
+
 /**
  * Default implementation of {@link HeaderBuilder} that renders columns.
  *
@@ -45,7 +47,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.style.dataGridHeaderCell();
+            return grid.style.dataGridHeaderCell() + " " + customDataGridStyle.dataGridHeaderCell();
         }
 
         @Override
@@ -55,7 +57,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getLastCellStyle() {
-            return grid.style.dataGridLastHeaderCell();
+            return grid.style.dataGridLastHeaderCell() + " " + customDataGridStyle.dataGridLastHeaderCell();
         }
     }
 
@@ -78,7 +80,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public String getCellStyle() {
-            return grid.style.dataGridFooterCell();
+            return grid.style.dataGridFooterCell() + " " + customDataGridStyle.dataGridFooterCell();
         }
 
         @Override

@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.view;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.StyleElement;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
 import static lsfusion.gwt.client.base.view.ColorUtils.*;
@@ -20,21 +22,27 @@ public class StyleDefaults {
     public static final int BUTTON_HORIZONTAL_PADDING = 14;
 
     public static final int DEFAULT_FONT_PT_SIZE = 9;
+
+    private static String selectedRowBackgroundColor;
+    private static String focusedCellBackgroundColor;
+    private static String focusedCellBorderColor;
+    private static String tableGridColor;
+
+    private static StyleElement customDataTableGridStyleElement;
     
-    public static String selectedRowBackgroundColor;
-    public static String focusedCellBackgroundColor;
-    public static String focusedCellBorderColor;
+    private static int[] componentBackgroundRGB;
     
-    public static int[] componentBackgroundRGB;
-    
-    public static int[] pivotGroupLevelDarkenStepRGB;
+    private static int[] pivotGroupLevelDarkenStepRGB;
 
     public static void reset() {
         selectedRowBackgroundColor = null;
         focusedCellBackgroundColor = null;
         focusedCellBorderColor = null;
+        tableGridColor = null;
         componentBackgroundRGB = null;
         pivotGroupLevelDarkenStepRGB = null;
+        
+        appendClientSettingsCSS();
     }
 
     private static String getSelectedColor(boolean canBeMixed) {
@@ -84,6 +92,16 @@ public class StyleDefaults {
         return focusedCellBorderColor;
     }
     
+    public static String getTableGridColor() {
+        if (tableGridColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
+            ColorDTO preferredColor = MainFrame.colorPreferences.getTableGridColor();
+            if (preferredColor != null) {
+                tableGridColor = getDisplayColor(preferredColor.toString());
+            }
+        }
+        return tableGridColor;
+    }
+    
     public static int[] getComponentBackgroundRGB() {
         if (componentBackgroundRGB == null) {
             int cbRGB = toRGB(getComponentBackground(colorTheme));
@@ -108,6 +126,71 @@ public class StyleDefaults {
         }
         return pivotGroupLevelDarkenStepRGB;
     }
+    
+    
+    public static void appendClientSettingsCSS() {
+        String tableGridColor = StyleDefaults.getTableGridColor();
+        if (tableGridColor != null) {
+            if (customDataTableGridStyleElement == null) {
+                customDataTableGridStyleElement = Document.get().createStyleElement();
+                customDataTableGridStyleElement.setType("text/css");
+                Document.get().getElementsByTagName("head").getItem(0).appendChild(customDataTableGridStyleElement);
+            }
+
+            String tableGridBorder = "1px solid " + tableGridColor;
+            customDataTableGridStyleElement.setInnerHTML(
+                    "." + customDataGridStyle.dataGridHeaderCell() + " { " +
+                    "border-bottom: " + tableGridBorder + ";\n" +
+                    "border-left: " + tableGridBorder + "; }\n" +
+                    "." + customDataGridStyle.dataGridLastHeaderCell() + " { " +
+                    "border-right: " + tableGridBorder + "; }\n" +
+                    "." + customDataGridStyle.dataGridFooterCell() + " { " +
+                    "border-top: " + tableGridBorder + ";\n" +
+                    "border-bottom: " + tableGridBorder + ";\n" +
+                    "border-left: " + tableGridBorder + "; }\n" +
+                    "." + customDataGridStyle.dataGridCell() + " { " +
+                    "border-bottom: " + tableGridBorder + ";\n" +
+                    "border-left: " + tableGridBorder + "; }\n" +
+                    "." + customDataGridStyle.dataGridLastCell() + " { " +
+                    "border-right: " + tableGridBorder + "; }");
+        }
+    }
+
+    public static CustomGridStyle customDataGridStyle = new CustomGridStyle() {
+        @Override
+        public String dataGridHeaderCell() {
+            return "custom-dataGridHeaderCell";
+        }
+
+        @Override
+        public String dataGridLastHeaderCell() {
+            return "custom-dataGridLastHeaderCell";
+        }
+
+        @Override
+        public String dataGridFooterCell() {
+            return "custom-dataGridFooterCell";
+        }
+
+        @Override
+        public String dataGridCell() {
+            return "custom-dataGridCell";
+        }
+
+        @Override
+        public String dataGridLastCell() {
+            return "custom-dataGridLastCell";
+        }
+    };
+
+    public interface CustomGridStyle {
+        String dataGridHeaderCell();
+        String dataGridLastHeaderCell();
+        String dataGridFooterCell();
+        String dataGridCell();
+        String dataGridLastCell();
+    }
+    
 
     // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.
     // maybe getComputedStyle(document.documentElement).getPropertyValue() should be used instead where possible

@@ -202,6 +202,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 pivotOnlySelectedColumn = result.pivotOnlySelectedColumn;
                 changeColorTheme(result.colorTheme);
                 colorPreferences = result.colorPreferences;
+                StyleDefaults.appendClientSettingsCSS();
             }
         });
 
