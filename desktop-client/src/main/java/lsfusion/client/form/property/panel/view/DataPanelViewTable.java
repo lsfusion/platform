@@ -78,7 +78,7 @@ public class DataPanelViewTable extends SingleCellTable {
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         //hack for keypress 'ENTER' (it should be checked before 'forward-traversal' from SwingUtils.setupSingleCellTable)
-        if (ks.equals(KeyStrokes.getEnter())) {
+        if (form.isDialog() && ks.equals(KeyStrokes.getEnter())) {
             Container parent = getParent();
             while (parent != null) {
                 if (parent instanceof ClientFormLayout) {
