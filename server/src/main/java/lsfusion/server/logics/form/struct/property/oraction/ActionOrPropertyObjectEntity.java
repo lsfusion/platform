@@ -40,6 +40,7 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
         this.creationScript = creationScript==null ? null : creationScript.substring(0, Math.min(10000, creationScript.length()));
         this.creationPath = creationPath;
         assert !mapping.containsNull();
+        assert property.interfaces.equals(mapping.keys());
     }
 
     public ImSet<ObjectEntity> getObjectInstances() {

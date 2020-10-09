@@ -41,9 +41,6 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         if(entity == null || !entity.viewType.isList())
             return null;
         
-        if(!mapping.valuesSet().containsAll(entity.getObjects())) // in theory it can work when there are not all objects, but for now we'll do without it  
-            return null;
-        
         // [FILTER group]
         return this.property.getGroupChange(entity, mapping);
     }
