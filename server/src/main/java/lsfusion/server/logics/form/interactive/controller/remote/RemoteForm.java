@@ -739,6 +739,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             delayedHideFormSent = true;
         }
 
+        // the first check can cause some undesirable effects when we have sync call and after there is an async call
+        // (for example there is difference in web and desktop client behaviour: DIALOG some change that requires a lot of time to update form, from which the call is made - then that form will have "gained focus" event, in web that call will be before continue, and in desktop after)
+        // in that case sync call will get no data, and all the work async call will do the work (in upper example, in web there will be no busy dialog, and in desktop there will be oone)
+        // however so far it doesn't seem to be a problem (to solve it we have to pass if the call is sync / async and delay getting remote changes only for async changes)
         if (numberOfFormChangesRequests.get() > 1 || delayedGetRemoteChanges) {
             return returnRemoteChangesResponse(requestIndex, pendingActions, delayedHideForm, stack);
         }
