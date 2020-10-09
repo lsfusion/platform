@@ -771,8 +771,12 @@ public class PropertyFact {
     }
 
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionMapImplement<?, L>> actions, ImSet<SessionDataProperty> localsInScope) {
-        if(actions.size()==1)
-            return actions.single();
+        if(actions.size()==1 && localsInScope.isEmpty()) {
+            ActionMapImplement<?, L> singleAction = actions.single();
+            assert innerInterfaces.containsAll(singleAction.mapping.valuesSet());
+            if(singleAction.mapping.size() == innerInterfaces.size())
+                return singleAction;
+        }
 
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         ListAction action = new ListAction(LocalizedString.NONAME, listInterfaces, actions, localsInScope);
