@@ -115,7 +115,9 @@
                 <!-- calendar-->
                 ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js', 'fullCalendar.js'],
                 ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.css', 'fullCalendar.css'],
-                'static/css/gCalendar.css'
+                'static/css/gCalendar.css',
+                'https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js',
+                'https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js'
 
             ]);
 

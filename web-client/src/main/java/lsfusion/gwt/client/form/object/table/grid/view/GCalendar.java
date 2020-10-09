@@ -32,8 +32,13 @@ public class GCalendar extends GSimpleStateTableView {
 
             calendar = createCalendar(element, controller, calendarDateType);
         }
+        setRecordElement(calendar, recordElement);
         updateEvents(calendar, list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller);
     }
+
+    protected native void setRecordElement(JavaScriptObject calendar, Element recordElement)/*-{
+        calendar.recordElement = recordElement;
+    }-*/;
 
     @Override
     public void onResize() {
@@ -71,30 +76,35 @@ public class GCalendar extends GSimpleStateTableView {
             datesSet: function (dateInfo) {
                 var oldEvent = calendar.getEvents()[calendar.currentEventIndex];
                 if (oldEvent != null && (oldEvent.start < dateInfo.start || oldEvent.start > dateInfo.end)) {
-                    var event = oldEvent.start <= dateInfo.start ? getEvent(dateInfo, true) : getEvent(dateInfo, false);
+                    var event = getEvent(dateInfo, oldEvent.start <= dateInfo.start);
                     if (event !== null)
                         changeCurrentEvent(event);
                 }
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event);
+                if (calendar.recordElement != null && calendar.view.type === 'dayGridMonth') {
+                    $wnd.tippy(info.el, {
+                        content: calendar.recordElement,
+                        showOnCreate: true,
+                        trigger: 'click',
+                        interactive: true,
+                        allowHTML: true
+                    });
+                }
             }
         });
         calendar.render();
         return calendar;
 
         function getEvent(dateInfo, getFirst) {
-            var visibleEvents = null;
+            var event = null;
             var events = calendar.getEvents();
             for (var i = 0; i < events.length; i++) {
-                if (events[i].start >= dateInfo.start && events[i].start <= dateInfo.end) {
-                    if (getFirst)
-                        visibleEvents = visibleEvents === null ? events[i] : (visibleEvents.start > events[i].start ? events[i] : visibleEvents);
-                    else
-                        visibleEvents = visibleEvents === null ? events[i] : (visibleEvents.start < events[i].start ? events[i] : visibleEvents);
-                }
+                if (events[i].start >= dateInfo.start && events[i].start <= dateInfo.end)
+                    event = event !== null ? ((getFirst ? event.start > events[i].start : event.start < events[i].start) ? events[i] : event) : events[i];
             }
-            return visibleEvents;
+            return event;
         }
 
         function changeCurrentEvent(currentEvent) {
