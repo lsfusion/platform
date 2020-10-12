@@ -782,7 +782,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             if (treeGroup != null) {
                 GroupObjectInstance subGroup = treeGroup.getDownTreeGroup(this);
                 if (subGroup != null) {
-                    //если не последняя группа
+                    subGroup.applyFilters();
                     mPropertyExprs.exclAdd("expandable2", subGroup.getHasSubElementsExpr(mapKeys, modifier, reallyChanged));
                 }
             }
@@ -915,7 +915,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         boolean updateFilters = refresh || toRefresh() || (updated & UPDATED_FILTER) != 0;
         ImSet<GroupObjectInstance> sThis = SetFact.singleton(this);
-        filters = getSetFilters();
+        applyFilters();
 
         if (!updateFilters) // изменились "верхние" объекты для фильтров
             for (FilterInstance filt : filters)
@@ -1071,6 +1071,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             return readKeys(result, updateFilters, updatePageSize, currentObject, seeks, direction, sql, env, modifier, execEnv, baseClass, reallyChanged);
 
         return null; // ничего не изменилось
+    }
+
+    public void applyFilters() {
+        filters = getSetFilters();
     }
 
     public Pair<SeekObjects, Integer> updateScroll() {

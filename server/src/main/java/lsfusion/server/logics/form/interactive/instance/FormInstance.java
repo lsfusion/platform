@@ -373,8 +373,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
 
-        applyFilters();
-
         this.session.registerForm(this);
         
         boolean adjNoCancel, adjManageSession;
