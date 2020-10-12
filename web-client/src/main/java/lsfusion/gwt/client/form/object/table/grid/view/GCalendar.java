@@ -83,28 +83,33 @@ public class GCalendar extends GSimpleStateTableView {
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event);
-                if (calendar.recordElement != null && calendar.view.type === 'dayGridMonth') {
-                    $wnd.tippy(info.el, {
-                        content: calendar.recordElement,
-                        showOnCreate: true,
-                        trigger: 'click',
-                        interactive: true,
-                        allowHTML: true
-                    });
-                }
+                setTooltip(info.el);
             }
         });
         calendar.render();
         return calendar;
 
+        function setTooltip(el) {
+            if (calendar.recordElement != null) {
+                $wnd.tippy(el, {
+                    content: calendar.recordElement,
+                    showOnCreate: true,
+                    trigger: 'click',
+                    interactive: true,
+                    allowHTML: true
+                });
+            }
+        }
+
         function getEvent(dateInfo, getFirst) {
-            var event = null;
+            var resultEvent = null;
             var events = calendar.getEvents();
             for (var i = 0; i < events.length; i++) {
-                if (events[i].start >= dateInfo.start && events[i].start <= dateInfo.end)
-                    event = event !== null ? ((getFirst ? event.start > events[i].start : event.start < events[i].start) ? events[i] : event) : events[i];
+                var event = events[i];
+                if (event.start >= dateInfo.start && event.start <= dateInfo.end)
+                    resultEvent = resultEvent !== null ? ((getFirst ? resultEvent.start > event.start : resultEvent.start < event.start) ? event : resultEvent) : event;
             }
-            return event;
+            return resultEvent;
         }
 
         function changeCurrentEvent(currentEvent) {
