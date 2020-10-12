@@ -5,7 +5,6 @@ import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -100,7 +99,7 @@ public class TreeGroupContainerSet {
         set.boxContainer.add(treeGroup.getUserFilter(), version);
         set.boxContainer.add(set.panelContainer, version);
 
-        set.gridContainer.setType(ContainerType.HORIZONTAL_SPLIT_PANE);
+        set.gridContainer.setType(ContainerType.CONTAINERH);
         set.gridContainer.setAlignment(FlexAlignment.STRETCH);
         set.gridContainer.setFlex(1);
         set.gridContainer.add(treeGroup, version);

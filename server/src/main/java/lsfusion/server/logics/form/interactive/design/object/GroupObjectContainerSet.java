@@ -5,10 +5,8 @@ import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 // в этот класс вынесено автоматическое создание контейнеров при создании GroupObject
 // сейчас полный клон TreeGroupContainerSet, потом надо рефакторить
@@ -116,7 +114,7 @@ public class GroupObjectContainerSet {
         set.boxContainer.add(group.getUserFilter(), version);
         set.boxContainer.add(set.panelContainer, version);
 
-        set.gridBoxContainer.setType(ContainerType.HORIZONTAL_SPLIT_PANE);
+        set.gridBoxContainer.setType(ContainerType.CONTAINERH);
         set.gridBoxContainer.setAlignment(FlexAlignment.STRETCH);
         set.gridBoxContainer.setFlex(1);
         set.gridBoxContainer.add(group.getGrid(), version);
