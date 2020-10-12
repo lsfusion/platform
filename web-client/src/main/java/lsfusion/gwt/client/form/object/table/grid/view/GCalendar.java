@@ -106,8 +106,8 @@ public class GCalendar extends GSimpleStateTableView {
             var events = calendar.getEvents();
             for (var i = 0; i < events.length; i++) {
                 var event = events[i];
-                if (event.start >= dateInfo.start && event.start <= dateInfo.end)
-                    resultEvent = resultEvent !== null ? ((getFirst ? resultEvent.start > event.start : resultEvent.start < event.start) ? event : resultEvent) : event;
+                if ((event.start >= dateInfo.start && event.start <= dateInfo.end) && (resultEvent == null || ((getFirst ? resultEvent.start > event.start : resultEvent.start < event.start))))
+                    resultEvent = event;
             }
             return resultEvent;
         }
