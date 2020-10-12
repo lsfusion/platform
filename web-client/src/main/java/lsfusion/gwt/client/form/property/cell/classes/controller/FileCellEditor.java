@@ -101,6 +101,7 @@ public class FileCellEditor implements CellEditor {
                     instance.@FileCellEditor::cancel(*)();
                     needToCancel = false;
                 }
+                parent.onfocus = null;
             }, 300)
         }
 
