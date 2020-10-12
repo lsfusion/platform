@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -196,6 +193,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         initializeAutoRefresh();
 
         DataGrid.initSinkMouseEvents(this);
+
+        initLinkEditModeTimer();
     }
 
     @Override
@@ -273,12 +272,30 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return evt.altKey;
     }-*/;
 
+    private static boolean pressedCtrl = false;
+    private void initLinkEditModeTimer() {
+        Timer t = new Timer() {
+            @Override
+            public void run() {
+                if (pressedCtrl) {
+                    pressedCtrl = false;
+                } else {
+                    if (GFormController.isLinkEditModeWithCtrl()) {
+                        formsController.updateLinkEditMode(false, false);
+                    }
+                }
+            }
+        };
+        t.scheduleRepeating(500); //delta between first and second events ~500ms, between next ~30ms
+    }
+
     public static void checkLinkEditModeEvents(FormsController formsController, NativeEvent event) {
         Boolean ctrlKey = eventGetCtrlKey(event);
         if(ctrlKey != null) {
             Boolean shiftKey = eventGetShiftKey(event);
             Boolean altKey = eventGetAltKey(event);
             boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
+            pressedCtrl = onlyCtrl;
             if (!onlyCtrl && GFormController.isLinkEditModeWithCtrl())
                 formsController.updateLinkEditMode(false, false);
             if (onlyCtrl && !GFormController.isLinkEditMode())
