@@ -1,4 +1,4 @@
-MODULE EvalScript;
+MODULE Eval;
 
 REQUIRE System, Service, Time;
 
