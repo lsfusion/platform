@@ -1265,10 +1265,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return mResultSet.immutableOrder();
     }
 
-    public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> readKeys(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return SEEK_HOME.executeOrders(session, env, modifier, baseClass, 0, true, null);
-    }
-
     private GroupObjectInstance() {
         propertyBackground = null;
         propertyForeground = null;
