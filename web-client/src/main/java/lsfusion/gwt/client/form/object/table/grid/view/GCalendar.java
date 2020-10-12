@@ -32,8 +32,13 @@ public class GCalendar extends GSimpleStateTableView {
 
             calendar = createCalendar(element, controller, calendarDateType);
         }
+        setRecordElement(calendar, recordElement);
         updateEvents(calendar, list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller);
     }
+
+    protected native void setRecordElement(JavaScriptObject calendar, Element recordElement)/*-{
+        calendar.recordElement = recordElement;
+    }-*/;
 
     @Override
     public void onResize() {
@@ -68,19 +73,53 @@ public class GCalendar extends GSimpleStateTableView {
                 changeProperty(info, 'start', this.objects);
                 changeProperty(info, 'end', this.objects);
             },
-            eventClick: function (info) {
-                var currentEvent = info.event;
-                var oldEvent = calendar.currentEventIndex != null ? calendar.getEvents()[calendar.currentEventIndex] : null;
-                controller.changeSimpleGroupObject(calendar.objects[currentEvent.extendedProps.index], false);
-                if (oldEvent !== null) {
-                    oldEvent.setProp('classNames', '');
+            datesSet: function (dateInfo) {
+                var oldEvent = calendar.getEvents()[calendar.currentEventIndex];
+                if (oldEvent != null && (oldEvent.start < dateInfo.start || oldEvent.start > dateInfo.end)) {
+                    var event = getEvent(dateInfo, oldEvent.start <= dateInfo.start);
+                    if (event !== null)
+                        changeCurrentEvent(event);
                 }
-                currentEvent.setProp('classNames', 'event-highlight');
-                calendar.currentEventIndex = currentEvent.extendedProps.index;
+            },
+            eventClick: function (info) {
+                changeCurrentEvent(info.event);
+                setTooltip(info.el);
             }
         });
         calendar.render();
         return calendar;
+
+        function setTooltip(el) {
+            if (calendar.recordElement != null) {
+                $wnd.tippy(el, {
+                    content: calendar.recordElement,
+                    showOnCreate: true,
+                    trigger: 'click',
+                    interactive: true,
+                    allowHTML: true
+                });
+            }
+        }
+
+        function getEvent(dateInfo, getFirst) {
+            var resultEvent = null;
+            var events = calendar.getEvents();
+            for (var i = 0; i < events.length; i++) {
+                var event = events[i];
+                if ((event.start >= dateInfo.start && event.start <= dateInfo.end) && (resultEvent == null || ((getFirst ? resultEvent.start > event.start : resultEvent.start < event.start))))
+                    resultEvent = event;
+            }
+            return resultEvent;
+        }
+
+        function changeCurrentEvent(currentEvent) {
+            var oldEvent = calendar.currentEventIndex != null ? calendar.getEvents()[calendar.currentEventIndex] : null;
+            controller.changeSimpleGroupObject(calendar.objects[currentEvent.extendedProps.index], false);
+            if (oldEvent !== null)
+                oldEvent.setProp('classNames', '');
+            currentEvent.setProp('classNames', 'event-highlight');
+            calendar.currentEventIndex = currentEvent.extendedProps.index;
+        }
 
         function changeProperty(info, position, objects) {
             var currentEvent = info.event;

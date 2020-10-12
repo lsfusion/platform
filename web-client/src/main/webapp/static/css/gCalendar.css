@@ -14,3 +14,7 @@
 .fc-direction-ltr .fc-daygrid-event .fc-event-time {
     color: var(--text-color);
 }
+.tippy-box {
+    background-color: var(--selection-color);
+    color: var(--text-color);
+}
