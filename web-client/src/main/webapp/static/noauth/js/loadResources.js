@@ -6,6 +6,7 @@ function loadResources(resources) {
             alternativeName = resources[i][1];
             src = resources[i][0];
         } else {
+            alternativeName = null;
             src = resources[i];
         }
         document.write(getElement(src, alternativeName));
