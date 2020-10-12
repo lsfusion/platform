@@ -25,7 +25,6 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -1112,12 +1111,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         
         for(RegularFilterGroupEntity regularFilterGroup : getRegularFilterGroupsIt())
             regularFilterGroup.finalizeAroundInit();
-
-        try {
-            getRichDesign().finalizeAroundInit();
-        } catch (ScriptParsingException e) {
-            throw new ScriptParsingException("error finalizing form " + this + ":\n" + e.getMessage());
-        }
+        
+        getRichDesign().finalizeAroundInit();
 
         proceedAllEventActions((action, drawAction) -> {
         }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)

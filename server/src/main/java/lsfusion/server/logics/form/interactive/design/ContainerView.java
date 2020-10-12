@@ -8,7 +8,6 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
-import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -238,10 +237,6 @@ public class ContainerView extends ComponentView {
         
         for(ComponentView child : getChildrenIt())
             child.finalizeAroundInit();
-
-        if (isSplit() && getChildrenList().size() != 2) {
-            throw new ScriptParsingException("Split container is allowed to have exactly two children: " + getSID());
-        }
     }
 
     @Override
