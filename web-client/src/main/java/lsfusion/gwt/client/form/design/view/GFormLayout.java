@@ -153,13 +153,14 @@ public class GFormLayout extends ResizableSimplePanel {
         for (int i = 0; i < childCnt; ++i) {
             GComponent child = containerView.getChild(i);
             Widget childView = containerView.getChildView(i);
-            if (child instanceof GContainer) {
-                autoShowHideContainers((GContainer) child);
-            }
 
-            if (childView.isVisible()) {
+            if(child instanceof GGrid)
+                child = ((GGrid)child).record;
+            if (child instanceof GContainer)
+                autoShowHideContainers((GContainer) child);
+
+            if (childView.isVisible()) // it's important to be after child autoShowHideContainers
                 hasVisible = true;
-            }
         }
         containerView.getView().setVisible(hasVisible);
         containerView.updateLayout();
