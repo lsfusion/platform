@@ -459,7 +459,7 @@ DESIGN customUser {
         }
     }
     NEW container BEFORE TOOLBARBOX {
-        type = SPLITH;
+        type = CONTAINERH;
         fill = 1;
         MOVE BOX(u) {
             flex = 0.3;
