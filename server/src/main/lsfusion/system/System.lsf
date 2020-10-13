@@ -55,8 +55,9 @@ webHost = DATA LOCAL NESTED TEXT();
 webPort = DATA LOCAL NESTED INTEGER();
 contextPath = DATA LOCAL NESTED TEXT();
 servletPath = DATA LOCAL NESTED TEXT();
+pathInfo = DATA LOCAL NESTED TEXT();
 webPath() = scheme() + '://' + webHost() + ':' + webPort() + contextPath();
-url() = webPath() + servletPath(); 
+url() = webPath() + servletPath() + pathInfo(); 
 
 messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();

@@ -151,6 +151,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> webPort;
     public LP<?> contextPath;
     public LP<?> servletPath;
+    public LP<?> pathInfo;
 
     public LP messageCaughtException;
     public LP javaStackTraceCaughtException;
@@ -470,6 +471,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         webPort = findProperty("webPort[]");
         contextPath = findProperty("contextPath[]");
         servletPath = findProperty("servletPath[]");
+        pathInfo = findProperty("pathInfo[]");
 
         messageCaughtException = findProperty("messageCaughtException[]");
         javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");
