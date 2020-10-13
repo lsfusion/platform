@@ -27,7 +27,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
     private static class GroupMarker {
 
-        public final String title;
+        public final String name;
         public final String color;
         public final Object line;
         public final String icon;
@@ -40,7 +40,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         public boolean isReadOnly;
 
         public GroupMarker(JavaScriptObject object) {
-            title = getTitle(object);
+            name = getName(object);
             color = getMarkerColor(object);
             line = getLine(object);
             icon = getIcon(object);
@@ -141,8 +141,8 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             if(!groupMarker.isReadOnly)
                 updateEditing(marker, isPoly);
 
-            if (oldGroupMarker == null || !groupMarker.title.equals(oldGroupMarker.title)) {
-                updateTitle(marker, groupMarker.title);
+            if (groupMarker.name != null && (oldGroupMarker == null || !groupMarker.name.equals(oldGroupMarker.name))) {
+                updateName(marker, groupMarker.name);
             }
 
             if(groupMarker.line != null)
@@ -164,18 +164,8 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             fitBounds(map, GwtSharedUtils.toArray(markers.values()));
     }
 
-    protected native static String getTitle(JavaScriptObject object)/*-{
-        var keys = Object.keys(object);
-        var title = keys.includes('name') ? object.name : '';
-
-        if (title === '' && keys.length >= 2) {
-            for (var k = 0; k <= 2; k++) {
-                var value = object[keys[k]];
-                if (value != null)
-                    title = title !== '' ? title + ' - ' + value : value;
-            }
-        }
-        return title;
+    protected native static String getName(JavaScriptObject object)/*-{
+        return Object.keys(object).includes('name') ? object.name : null;
     }-*/;
 
     private boolean getReadOnly(GGroupObjectValue key, GroupMarker groupMarker) {
@@ -424,15 +414,16 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         }
     }-*/;
 
-    protected native void updateTitle(JavaScriptObject marker, String title)/*-{
-    if (marker.getTooltip() == null)
-        marker.bindTooltip(title, {
+    protected native void updateName(JavaScriptObject marker, String name)/*-{
+    var tooltip = marker.getTooltip();
+    if (tooltip == null)
+        marker.bindTooltip(name, {
             permanent: true,
             offset: new $wnd.L.Point(0, 10),
             direction: 'bottom'
         });
     else
-        marker.getTooltip().setContent(title);
+        tooltip.setContent(name);
     }-*/;
 
     protected native void fitBounds(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
