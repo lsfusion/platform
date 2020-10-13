@@ -678,7 +678,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         addPropertyDraw(group, false, version, SetFact.singletonOrder(object));
     }
 
-    protected void addPropertyDraw(AbstractNode group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
+    protected void addPropertyDraw(Group group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
         ImSet<ObjectEntity> objectsSet = objects.getSet();
         ImFilterRevValueMap<ObjectEntity, ValueClassWrapper> mObjectToClass = objectsSet.mapFilterRevValues();
         for(int i=0,size=objectsSet.size();i<size;i++) {

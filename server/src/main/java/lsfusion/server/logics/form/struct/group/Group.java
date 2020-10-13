@@ -201,4 +201,12 @@ public class Group extends AbstractNode {
     public boolean isNamed() {
         return canonicalName != null;
     }
+
+    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> classLists, Version version) {
+        return getActionOrProperties(classLists, classLists.group(key -> key.valueClass), version);
+    }
+
+    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ValueClass valueClass, Version version) {
+        return getActionOrProperties(valueClass != null ? SetFact.singleton(new ValueClassWrapper(valueClass)) : SetFact.EMPTY(), version);
+    }
 }

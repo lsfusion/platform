@@ -32,6 +32,7 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.ApplyGlobalEvent;
@@ -357,10 +358,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }    
     final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
 
-    // вся оптимизация в общем то для drillDown
     protected ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
-        if(valueClasses.size() == 1) { // доп оптимизация для DrillDown
-            if(interfaces.size() == 1 && isInInterface(MapFact.singleton(interfaces.single(), valueClasses.single().valueClass.getUpSet()), true))
+        if(valueClasses.size() == 1) { // optimization primarily for DrillDown
+            if(interfaces.size() == 1 && isInValueClassInterface(getOrderInterfaces(), valueClasses.toOrderSet()))
                 return ListFact.singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
             return ListFact.EMPTY();
         }
@@ -398,8 +398,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if (interfaces.size() == classes.size()) {
                 final ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
                 for (ImOrderSet<T> mapping : new ListPermutations<>(getOrderInterfaces())) {
-                    ImMap<T, AndClassSet> propertyInterface = mapping.mapOrderValues((i, value) -> orderClasses.get(i).valueClass.getUpSet());
-                    if (isInInterface(propertyInterface, true)) {
+                    if (isInValueClassInterface(mapping, orderClasses)) {
                         mResultList.add(createClassImplement(orderClasses, mapping));
                     }
                 }
@@ -407,7 +406,18 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
         return mResultList.immutableList();
     }
-    
+
+    private boolean isInValueClassInterface(ImOrderSet<T> mapping, ImOrderSet<ValueClassWrapper> orderClasses) {
+        // if isAny true for very abstract classes (for example Object) there are too many props added, which has a really bad performance
+        int classCount = 0;
+        for(ValueClassWrapper orderClass : orderClasses) {
+            ValueClass valueClass = orderClass.valueClass;
+            if(valueClass instanceof CustomClass)
+                classCount += ((CustomClass) valueClass).getAllChildren().size();
+        }
+        return isInInterface(mapping.mapOrderValues((i, value) -> orderClasses.get(i).valueClass.getUpSet()), classCount < 100);
+    }
+
     protected abstract ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping);
 
     public T getInterfaceById(int iID) {
