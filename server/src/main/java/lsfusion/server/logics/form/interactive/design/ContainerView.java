@@ -239,8 +239,18 @@ public class ContainerView extends ComponentView {
         for(ComponentView child : getChildrenIt())
             child.finalizeAroundInit();
 
-        if (isSplit() && getChildrenList().size() != 2) {
-            throw new ScriptParsingException("Split container is allowed to have exactly two children: " + getSID());
+        ImList<ComponentView> childrenList = getChildrenList();
+        if (isSplit() && childrenList.size() != 2) {
+            StringBuilder childrenString = new StringBuilder("");
+            for (int i = 0; i < childrenList.size(); i++) {
+                childrenString.append(childrenList.get(i).getSID());
+                if (i != childrenList.size() - 1) {
+                    childrenString.append(", ");
+                }
+            }
+            throw new ScriptParsingException("Split container is allowed to have exactly two children:\n" +
+                    "\tcontainer: " + getSID() + "\n" +
+                    "\tchildren: " + childrenString.toString());
         }
     }
 
