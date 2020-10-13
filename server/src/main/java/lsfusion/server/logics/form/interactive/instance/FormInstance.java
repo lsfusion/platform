@@ -373,6 +373,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
 
+        applyFilters(); // we need to apply filters, because on init may be some actions using filters (EXPAND UP) + readKeys in tree uses down group to calculate expand / collapse column
+
         this.session.registerForm(this);
         
         boolean adjNoCancel, adjManageSession;
@@ -1715,14 +1717,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return updated.dataUpdated(changedProps, this, getModifier(), hidden, groupObjects);
     }
 
-    @Deprecated
-    void applyFilters() {
+    private void applyFilters() {
         for (GroupObjectInstance group : getGroups())
-            group.filters = group.getSetFilters();
+            group.applyFilters();
     }
 
-    @Deprecated
-    void applyOrders() {
+    private void applyOrders() {
         for (GroupObjectInstance group : getGroups())
             group.orders = group.getSetOrders();
     }

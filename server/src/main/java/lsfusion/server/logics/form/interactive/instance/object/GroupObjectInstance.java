@@ -782,7 +782,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             if (treeGroup != null) {
                 GroupObjectInstance subGroup = treeGroup.getDownTreeGroup(this);
                 if (subGroup != null) {
-                    subGroup.applyFilters();
                     mPropertyExprs.exclAdd("expandable2", subGroup.getHasSubElementsExpr(mapKeys, modifier, reallyChanged));
                 }
             }
