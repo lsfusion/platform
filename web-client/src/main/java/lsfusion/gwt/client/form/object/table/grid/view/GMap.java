@@ -119,7 +119,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
             JavaScriptObject marker = oldMarkers.remove(key);
             if(marker == null) {
-                marker = createMarker(map, recordElement, groupMarker.polygon != null, fromObject(key), markerClusters, groupMarker.title);
+                marker = createMarker(map, recordElement, groupMarker.polygon != null, fromObject(key), markerClusters);
                 markers.put(key, marker);
                 markerCreated = true;
             }
@@ -141,7 +141,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             if(!groupMarker.isReadOnly)
                 updateEditing(marker, isPoly);
 
-            if (oldGroupMarker != null && !groupMarker.title.equals(oldGroupMarker.title) && !oldGroupMarker.isReadOnly) {
+            if (oldGroupMarker == null || !groupMarker.title.equals(oldGroupMarker.title)) {
                 updateTitle(marker, groupMarker.title);
             }
 
@@ -255,7 +255,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         return L.latLng(latitude, longitude);
     }-*/;
 
-    protected native JavaScriptObject createMarker(JavaScriptObject map, com.google.gwt.dom.client.Element popupElement, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters, String title)/*-{
+    protected native JavaScriptObject createMarker(JavaScriptObject map, com.google.gwt.dom.client.Element popupElement, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters)/*-{
         var L = $wnd.L;
 
         var thisObject = this;
@@ -281,12 +281,6 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
                 thisObject.@GMap::changePointProperty(*)(key, latlng.lat, latlng.lng);
             });
         }
-
-        marker.bindTooltip(title, {
-            permanent: true,
-            offset: new L.Point(0, 10),
-            direction: 'bottom'
-        });
 
         if (popupElement !== null)
             marker.bindPopup(popupElement, {maxWidth: Number.MAX_SAFE_INTEGER});
@@ -431,6 +425,13 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
     }-*/;
 
     protected native void updateTitle(JavaScriptObject marker, String title)/*-{
+    if (marker.getTooltip() == null)
+        marker.bindTooltip(title, {
+            permanent: true,
+            offset: new $wnd.L.Point(0, 10),
+            direction: 'bottom'
+        });
+    else
         marker.getTooltip().setContent(title);
     }-*/;
 
