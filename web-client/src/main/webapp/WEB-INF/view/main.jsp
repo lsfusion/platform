@@ -111,6 +111,7 @@
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js',
+                'static/css/gMap.css',
 
                 <!-- calendar-->
                 ['https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.js', 'fullCalendar.js'],

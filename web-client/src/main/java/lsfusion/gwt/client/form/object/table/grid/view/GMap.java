@@ -27,6 +27,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
     private static class GroupMarker {
 
+        public final String name;
         public final String color;
         public final Object line;
         public final String icon;
@@ -39,6 +40,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         public boolean isReadOnly;
 
         public GroupMarker(JavaScriptObject object) {
+            name = getName(object);
             color = getMarkerColor(object);
             line = getLine(object);
             icon = getIcon(object);
@@ -138,6 +140,10 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
             if(!groupMarker.isReadOnly)
                 updateEditing(marker, isPoly);
+
+            if (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.name, oldGroupMarker.name))) {
+                updateName(marker, groupMarker.name);
+            }
 
             if(groupMarker.line != null)
                 routes.computeIfAbsent(groupMarker.line, o -> JavaScriptObject.createArray().cast()).push(marker);
@@ -307,6 +313,10 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         return element.icon;
     }-*/;
 
+    protected native static String getName(JavaScriptObject element)/*-{
+        return element.name;
+    }-*/;
+
     protected native JavaScriptObject createLine(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
         var L = $wnd.L;
 
@@ -402,6 +412,20 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             }
             marker.editing.enable()
         }
+    }-*/;
+
+    protected native void updateName(JavaScriptObject marker, String name)/*-{
+        var tooltip = marker.getTooltip();
+        if (tooltip == null && name != null)
+            marker.bindTooltip(name, {
+                permanent: true,
+                offset: new $wnd.L.Point(0, 10),
+                direction: 'bottom'
+            });
+        if (tooltip != null && name == null)
+            marker.unbindTooltip();
+        if (tooltip != null && name != null)
+            tooltip.setContent(name);
     }-*/;
 
     protected native void fitBounds(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{

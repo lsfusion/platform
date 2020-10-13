@@ -171,13 +171,8 @@ public class GCalendar extends GSimpleStateTableView {
             if (title === '' && columns.length >= 2) {
                 for (var k = 0; k <= 2; k++) {
                     var value = object[columns[k]];
-                    if (value != null) {
-                        if (title !== ''){
-                            title = title + ' - ' + value;
-                        } else {
-                          title = value;
-                        }
-                    }
+                    if (value != null)
+                        title = title !== '' ? title + ' - ' + value : value;
                 }
             }
             return title;
