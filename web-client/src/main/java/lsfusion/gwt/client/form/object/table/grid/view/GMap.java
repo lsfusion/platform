@@ -27,6 +27,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
     private static class GroupMarker {
 
+        public final String title;
         public final String color;
         public final Object line;
         public final String icon;
@@ -39,6 +40,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         public boolean isReadOnly;
 
         public GroupMarker(JavaScriptObject object) {
+            title = getTitle(object);
             color = getMarkerColor(object);
             line = getLine(object);
             icon = getIcon(object);
@@ -117,7 +119,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
             JavaScriptObject marker = oldMarkers.remove(key);
             if(marker == null) {
-                marker = createMarker(map, recordElement, groupMarker.polygon != null, fromObject(key), markerClusters);
+                marker = createMarker(map, recordElement, groupMarker.polygon != null, fromObject(key), markerClusters, groupMarker.title);
                 markers.put(key, marker);
                 markerCreated = true;
             }
@@ -139,6 +141,10 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             if(!groupMarker.isReadOnly)
                 updateEditing(marker, isPoly);
 
+            if (oldGroupMarker != null && !groupMarker.title.equals(oldGroupMarker.title) && !oldGroupMarker.isReadOnly) {
+                updateTitle(marker, groupMarker.title);
+            }
+
             if(groupMarker.line != null)
                 routes.computeIfAbsent(groupMarker.line, o -> JavaScriptObject.createArray().cast()).push(marker);
         }
@@ -157,6 +163,20 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         if(markerCreated && !markers.isEmpty())
             fitBounds(map, GwtSharedUtils.toArray(markers.values()));
     }
+
+    protected native static String getTitle(JavaScriptObject object)/*-{
+        var keys = Object.keys(object);
+        var title = keys.includes('name') ? object.name : '';
+
+        if (title === '' && keys.length >= 2) {
+            for (var k = 0; k <= 2; k++) {
+                var value = object[keys[k]];
+                if (value != null)
+                    title = title !== '' ? title + ' - ' + value : value;
+            }
+        }
+        return title;
+    }-*/;
 
     private boolean getReadOnly(GGroupObjectValue key, GroupMarker groupMarker) {
         if(Objects.equals(key, getCurrentKey())) {
@@ -235,7 +255,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         return L.latLng(latitude, longitude);
     }-*/;
 
-    protected native JavaScriptObject createMarker(JavaScriptObject map, com.google.gwt.dom.client.Element popupElement, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters)/*-{
+    protected native JavaScriptObject createMarker(JavaScriptObject map, com.google.gwt.dom.client.Element popupElement, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters, String title)/*-{
         var L = $wnd.L;
 
         var thisObject = this;
@@ -261,6 +281,12 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
                 thisObject.@GMap::changePointProperty(*)(key, latlng.lat, latlng.lng);
             });
         }
+
+        marker.bindTooltip(title, {
+            permanent: true,
+            offset: new L.Point(0, 10),
+            direction: 'bottom'
+        });
 
         if (popupElement !== null)
             marker.bindPopup(popupElement, {maxWidth: Number.MAX_SAFE_INTEGER});
@@ -402,6 +428,10 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             }
             marker.editing.enable()
         }
+    }-*/;
+
+    protected native void updateTitle(JavaScriptObject marker, String title)/*-{
+        marker.getTooltip().setContent(title);
     }-*/;
 
     protected native void fitBounds(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
