@@ -10,4 +10,8 @@ public abstract class GroupPropertiesTask extends BLGroupSingleSplitTask<ActionO
         return getBL().getOrderActionOrProperties().getSet();
     }
 
+    @Override
+    protected int getSplitCount() {
+        return 1000;
+    }
 }

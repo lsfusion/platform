@@ -16,7 +16,7 @@ public abstract class GroupSplitTask<T> extends GroupProgramTask {
     protected abstract ImSet<T> getObjects();
     
     protected int getSplitCount() {
-        return 1000;
+        return 100;
     }
     
     @Override
