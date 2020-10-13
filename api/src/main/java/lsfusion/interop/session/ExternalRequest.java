@@ -22,6 +22,7 @@ public class ExternalRequest implements Serializable {
     public final Integer webPort;
     public final String contextPath;
     public final String servletPath;
+    public final String pathInfo;
     public final String query;
 
     public ExternalRequest() {
@@ -38,18 +39,18 @@ public class ExternalRequest implements Serializable {
 
     public ExternalRequest(String[] returnNames, Object[] params, String charsetName) {
         this(returnNames, params, charsetName, new String[0], new String[0], null,
-                null, null, null, null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null, null, null);
     }
 
     public ExternalRequest(String query) {
         this(new String[0], new Object[0], "utf-8", new String[0], new String[0], null,
-                null, null, null, null, null, null, null, null, null, query);
+                null, null, null, null, null, null, null, null, null, null, query);
     }
 
     public ExternalRequest(String[] returnNames, Object[] params, String charsetName,
                            String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
                            String appHost, Integer appPort, String exportName, String scheme, String webHost,
-                           Integer webPort, String contextPath, String servletPath, String query) {
+                           Integer webPort, String contextPath, String servletPath, String pathInfo, String query) {
         this.returnNames = returnNames;
         this.params = params;
         this.charsetName = charsetName;
@@ -65,6 +66,7 @@ public class ExternalRequest implements Serializable {
         this.webPort = webPort;
         this.contextPath = contextPath;
         this.servletPath = servletPath;
+        this.pathInfo = pathInfo;
         this.query = query;
     }
 }

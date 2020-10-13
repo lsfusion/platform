@@ -195,6 +195,9 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         if (request.servletPath != null) {
             businessLogics.LM.servletPath.change(request.servletPath, session);
         }
+        if (request.pathInfo != null) {
+            businessLogics.LM.pathInfo.change(request.pathInfo, session);
+        }
     }
 
     private ExternalResponse readResult(String[] returnNames, Action<?> property) throws SQLException, SQLHandledException {
