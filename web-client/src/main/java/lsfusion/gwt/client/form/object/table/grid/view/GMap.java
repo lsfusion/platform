@@ -141,7 +141,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             if(!groupMarker.isReadOnly)
                 updateEditing(marker, isPoly);
 
-            if (groupMarker.name != null && (oldGroupMarker == null || !groupMarker.name.equals(oldGroupMarker.name))) {
+            if (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.name, oldGroupMarker.name))) {
                 updateName(marker, groupMarker.name);
             }
 
@@ -163,10 +163,6 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         if(markerCreated && !markers.isEmpty())
             fitBounds(map, GwtSharedUtils.toArray(markers.values()));
     }
-
-    protected native static String getName(JavaScriptObject object)/*-{
-        return Object.keys(object).includes('name') ? object.name : null;
-    }-*/;
 
     private boolean getReadOnly(GGroupObjectValue key, GroupMarker groupMarker) {
         if(Objects.equals(key, getCurrentKey())) {
@@ -317,6 +313,10 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         return element.icon;
     }-*/;
 
+    protected native static String getName(JavaScriptObject element)/*-{
+        return element.name;
+    }-*/;
+
     protected native JavaScriptObject createLine(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
         var L = $wnd.L;
 
@@ -415,15 +415,17 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
     }-*/;
 
     protected native void updateName(JavaScriptObject marker, String name)/*-{
-    var tooltip = marker.getTooltip();
-    if (tooltip == null)
-        marker.bindTooltip(name, {
-            permanent: true,
-            offset: new $wnd.L.Point(0, 10),
-            direction: 'bottom'
-        });
-    else
-        tooltip.setContent(name);
+        var tooltip = marker.getTooltip();
+        if (tooltip == null && name != null)
+            marker.bindTooltip(name, {
+                permanent: true,
+                offset: new $wnd.L.Point(0, 10),
+                direction: 'bottom'
+            });
+        if (tooltip != null && name == null)
+            marker.unbindTooltip();
+        if (tooltip != null && name != null)
+            tooltip.setContent(name);
     }-*/;
 
     protected native void fitBounds(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
