@@ -141,10 +141,17 @@ public final class Log {
         if (MainFrame.instance == null) {
             return;
         }
-        
+
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
-        JLabel titlePanel = new JLabel(toHtml(message));
+
+        JTextPane titlePanel = new JTextPane();
+        titlePanel.setContentType("text/html");
+        titlePanel.setText(toHtml(message));
+        titlePanel.setEditable(false);
+        titlePanel.setBackground(null);
+        titlePanel.setBorder(null);
+
         double screenWidth = (MainFrame.instance != null ? MainFrame.instance.getRootPane().getWidth() : Toolkit.getDefaultToolkit().getScreenSize().width)  * 0.9;
         double titleWidth = titlePanel.getPreferredSize().getWidth();
         double titleHeight = titlePanel.getPreferredSize().getHeight();
