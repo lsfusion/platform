@@ -270,7 +270,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
     @Override
     protected Long getConnectionId() {
-        return null;//???
+        return null;
     }
 
     @Override

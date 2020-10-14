@@ -53,7 +53,7 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     public Long getCurrentConnection() {
-        return logicsInstance.getBusinessLogics().systemEventsLM.connection.ID;
+        return null;
     }
 
     public Long getCurrentUser() {
