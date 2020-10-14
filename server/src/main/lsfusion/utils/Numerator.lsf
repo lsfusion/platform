@@ -16,7 +16,7 @@ TABLE numerator (Numerator);
 
 name '{numerator.name.numerator}' = DATA ISTRING[100](Numerator) CHARWIDTH 20;
 
-series '{numerator.series.numerator}' = DATA BPSTRING[2] (Numerator) IN id CHARWIDTH 3 NOFLEX;
+series '{numerator.series.numerator}' = DATA STRING[10] (Numerator) IN id CHARWIDTH 5 NOFLEX;
 
 minValue '{numerator.min.value.numerator}' = DATA LONG (Numerator) IN id CHARWIDTH 15;
 maxValue '{numerator.max.value.numerator}' = DATA LONG (Numerator) IN id CHARWIDTH 15;
@@ -118,9 +118,9 @@ NAVIGATOR {
 
 GROUP numbered '{numerator.numerator}' : id;
 
-META defineNumberedAbstract(class)
+META defineNumberedAbstract(class, stype)
     number '{numerator.number.numerator}' = ABSTRACT STRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 8;
-    series '{numerator.series.numerator}' = ABSTRACT BPSTRING[2] (class) IN numbered MATERIALIZED CHARWIDTH 3 NOFLEX; 
+    series '{numerator.series.numerator}' = ABSTRACT stype (class) IN numbered MATERIALIZED CHARWIDTH 3 NOFLEX; 
 
     seriesNumber '{numerator.series.number.numerator}' (class o) = 
         CONCAT '', series(o), number(o) 
@@ -143,9 +143,9 @@ DESIGN options{
     }
 }
 
-META defineNumbered(class)
+META defineNumbered(class, stype)
     number '{numerator.number.numerator}' = DATA STRING[28] (class) IN numbered INDEXED CHARWIDTH 8;
-    series '{numerator.series.numerator}' = DATA BPSTRING[2] (class) IN numbered CHARWIDTH 3 NOFLEX;
+    series '{numerator.series.numerator}' = DATA stype (class) IN numbered CHARWIDTH 3 NOFLEX;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
          INLINE DO number(o) <- lower(number(o));
@@ -214,59 +214,6 @@ META defineNumeratedDefaultPrefix(class, captionV, seriesV, prefix)
 
 END
 
-//------------------------------------------ Для двух объектов ---------------------------------------------//
-
-META defineNumerated(object1, object2)
-
-    number '{numerator.number.numerator}' = DATA STRING[28] (###object1, ###object2) CHARWIDTH 8;
-    series '{numerator.series.numerator}' = DATA BPSTRING[2] (###object1, ###object2) CHARWIDTH 3 NOFLEX;
-    seriesNumber '{numerator.series.number.numerator}' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) CHARWIDTH 8 MATERIALIZED;
-
-    numerator = DATA Numerator (###object1, ###object2);
-    nameNumerator '{numerator.numerator}' (###object1 object1, ###object2 object2) = name(numerator(object1, object2)) CHARWIDTH 7;
-
-    setValueSessionNumerated '{numerator.generate.number}'(###object1 object1, ###object2 object2)  { 
-        number(object1, object2) <- curStringValue(numerator(object1, object2));
-        series(object1, object2) <- series(numerator(object1, object2));
-        EXEC incrementValueSession(numerator(object1, object2));
-    } ASON CONTEXTMENU number[###object1,###object2];
-
-    WHEN CHANGED(numerator(###object1 object1, ###object2 object2)) AND
-         NOT CHANGED(number(object1, object2)) AND
-         NOT CHANGED(series(object1, object2))
-         DO EXEC setValueSessionNumerated(object1, object2) ;
-
-END
-
-META defineNumeratedDefault (object1, object2, property, captionV, seriesV)
-
-    defaultNumerator###object1###object2 = DATA Numerator ();
-    nameDefaultNumerator###object1###object2 captionV = nameNumerator(defaultNumerator###object1###object2());
-
-    EXTEND FORM defaultNumerators
-        PROPERTIES() nameDefaultNumerator###object1###object2
-    ;
-    DESIGN defaultNumerators {
-        defaultContainer {
-            MOVE PROPERTY(nameDefaultNumerator###object1###object2);
-        }
-    }
-
-    loadDefaultNumerators() += () {
-        NEW n = Numerator {
-            nameNumerator(n) <- captionV;
-            seriesNumerator(n) <- seriesV;
-            minValueNumerator(n) <- 1L;
-            maxValueNumerator(n) <- 99999L;
-            stringLengthNumerator(n) <- 5;
-
-            defaultNumerator###object1###object2() <- n;
-        }
-    };
-
-    numerator###object1###object2 (object1, object2) <- defaultNumerator###object1###object2 () WHEN SET(property(object1, object2));
-END
-
 META defineNumeratedID(object, caption, prefix)
     default##prefix##Numerator##object = DATA Numerator ();
     nameDefault##prefix##Numerator##object caption = name(default##prefix##Numerator##object()) IN defaultNumerator;
@@ -279,7 +226,7 @@ META defineNumeratedID(object, caption, prefix)
 END
 
 META defineNumeratedID(object, caption)
-@defineNumeratedID(object, caption, );
+    @defineNumeratedID(object, caption, );
 END
 // --------------------------------------------- Стандартные значения ---------------------------- //
 
