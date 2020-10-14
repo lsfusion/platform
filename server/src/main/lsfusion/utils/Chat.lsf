@@ -104,10 +104,11 @@ onStarted() + {
             id(c) <- 'system';
             dataName(c) <- '{chat.name.all}'; 
         }
+
+        in(Chat c, User u) <- TRUE WHERE login(u) AND lastActivity(u) AND c = chat('system');
         
-        in(Chat c, User u) <- TRUE WHERE (login( u) AND lastActivity(u)) AND  c == chat('system');
-    
-        status(Message m, CustomUser u) <- MessageStatus.seen WHERE system(m) AND overIn(chat(m), u);
+        DELETE Message m WHERE system(m) AND NOT dateTime(m) >= subtractDay(currentDateTime(), 30); 
+        status(Message m, CustomUser u) <- MessageStatus.seen IF overIn(chat(m), u) AND login(u) WHERE system(m);
         APPLY;
     }
  
