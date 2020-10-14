@@ -528,17 +528,17 @@ END
 
 // ------- Number ----- //
 
-META defineDocumentAbstractHeaderNumber(objectClass)
-    @defineNumberedAbstract(objectClass);
+META defineDocumentAbstractHeaderNumber(objectClass, stype)
+    @defineNumberedAbstract(objectClass, stype);
 END
 
-META defineDocumentHeaderNumber (objectClass)
-    @defineNumbered(objectClass);
+META defineDocumentHeaderNumber (objectClass, stype)
+    @defineNumbered(objectClass, stype);
 END
 
-META defineDocumentInterfaceHeaderNumber(objectClass)
-    @defineDocumentAbstractHeaderNumber(objectClass);
-    @defineDocumentHeaderNumber(User###objectClass);
+META defineDocumentInterfaceHeaderNumber(objectClass, stype)
+    @defineDocumentAbstractHeaderNumber(objectClass, stype);
+    @defineDocumentHeaderNumber(User###objectClass, stype);
     number(User##objectClass o) += number(o);
     series(User##objectClass o) += series(o);
 END
@@ -554,20 +554,20 @@ META defineDocumentInterfaceDetailNumber (object, detailClass)
     @defineDocumentDetailNumber(user###object, User###detailClass);
 END
 
-META defineDocumentAbstractNumber(object, detailClass)
-    @defineDocumentAbstractHeaderNumber(###object);
+META defineDocumentAbstractNumber(object, detailClass, stype)
+    @defineDocumentAbstractHeaderNumber(###object, stype);
     @defineDocumentDetailNumber(object, detailClass);
 END
-META defineDocumentInterfaceNumber(object, detailClass)
-    @defineDocumentInterfaceHeaderNumber(###object);
+META defineDocumentInterfaceNumber(object, detailClass, stype)
+    @defineDocumentInterfaceHeaderNumber(###object, stype);
     @defineDocumentInterfaceDetailNumber(object, detailClass);
 END
 
-META defineDocumentAbstractNumber(object)
-    @defineDocumentAbstractNumber(object, ###object##Detail);
+META defineDocumentAbstractNumber(object, stype)
+    @defineDocumentAbstractNumber(object, ###object##Detail, stype);
 END
-META defineDocumentInterfaceNumber(object)
-    @defineDocumentInterfaceNumber(object, ###object##Detail);
+META defineDocumentInterfaceNumber(object, stype)
+    @defineDocumentInterfaceNumber(object, ###object##Detail, stype);
 END
 
 // -- Skip -- //
