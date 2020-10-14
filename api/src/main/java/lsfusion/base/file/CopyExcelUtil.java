@@ -43,18 +43,21 @@ public final class CopyExcelUtil {
         // manage a list of merged zone in order to not insert two times a merged zone
         Set<String> mergedRegions = new TreeSet<>();
         List<CellRangeAddress> sheetMergedRegions = sheet.getMergedRegions();
-        for (int i = sheet.getFirstRowNum(); i <= sheet.getLastRowNum(); i++) {
-            HSSFRow srcRow = sheet.getRow(i);
-            HSSFRow destRow = newSheet.createRow(i);
-            if (srcRow != null) {
-                copyHSSFRow(newSheet, srcRow, destRow, styleMap, sheetMergedRegions, mergedRegions);
-                if (srcRow.getLastCellNum() > maxColumnNum) {
-                    maxColumnNum = srcRow.getLastCellNum();
+        int firstRowNum = sheet.getFirstRowNum();
+        if(firstRowNum > 0) {
+            for (int i = firstRowNum; i <= sheet.getLastRowNum(); i++) {
+                HSSFRow srcRow = sheet.getRow(i);
+                HSSFRow destRow = newSheet.createRow(i);
+                if (srcRow != null) {
+                    copyHSSFRow(newSheet, srcRow, destRow, styleMap, sheetMergedRegions, mergedRegions);
+                    if (srcRow.getLastCellNum() > maxColumnNum) {
+                        maxColumnNum = srcRow.getLastCellNum();
+                    }
                 }
             }
-        }
-        for (int i = 0; i <= maxColumnNum; i++) {
-            newSheet.setColumnWidth(i, sheet.getColumnWidth(i));
+            for (int i = 0; i <= maxColumnNum; i++) {
+                newSheet.setColumnWidth(i, sheet.getColumnWidth(i));
+            }
         }
         copyFreezePane(newSheet, sheet);
     }
@@ -214,20 +217,23 @@ public final class CopyExcelUtil {
         // manage a list of merged zone in order to not insert two times a merged zone
         Set<String> mergedRegions = new TreeSet<>();
         List<CellRangeAddress> sheetMergedRegions = sheet.getMergedRegions();
-        for (int i = sheet.getFirstRowNum(); i <= sheet.getLastRowNum(); i++) {
-            XSSFRow srcRow = sheet.getRow(i);
-            XSSFRow destRow = newSheet.createRow(i);
-            if (srcRow != null) {
-                //BaseUtils.systemLogger.info("copy row " + i);
-                CopyExcelUtil.copyXSSFRow(newSheet, srcRow, destRow, styleMap, sheetMergedRegions, mergedRegions);
-                if (srcRow.getLastCellNum() > maxColumnNum) {
-                    maxColumnNum = srcRow.getLastCellNum();
+        int firstRowNum = sheet.getFirstRowNum();
+        if(firstRowNum >= 0) {
+            for (int i = firstRowNum; i <= sheet.getLastRowNum(); i++) {
+                XSSFRow srcRow = sheet.getRow(i);
+                XSSFRow destRow = newSheet.createRow(i);
+                if (srcRow != null) {
+                    //BaseUtils.systemLogger.info("copy row " + i);
+                    CopyExcelUtil.copyXSSFRow(newSheet, srcRow, destRow, styleMap, sheetMergedRegions, mergedRegions);
+                    if (srcRow.getLastCellNum() > maxColumnNum) {
+                        maxColumnNum = srcRow.getLastCellNum();
+                    }
                 }
             }
-        }
-        for (int i = 0; i <= maxColumnNum; i++) {
-            if(newSheet.getColumnWidth(i) != sheet.getColumnWidth(i)) {
-                newSheet.setColumnWidth(i, sheet.getColumnWidth(i));
+            for (int i = 0; i <= maxColumnNum; i++) {
+                if(newSheet.getColumnWidth(i) != sheet.getColumnWidth(i)) {
+                    newSheet.setColumnWidth(i, sheet.getColumnWidth(i));
+                }
             }
         }
 
