@@ -71,7 +71,7 @@ public class ClientNumericClass extends ClientDoubleClass {
 
     @Override
     public String toString() {
-        return ClientResourceBundle.getString("logics.classes.number") + (precision.isUnlimited() ? "" : ('[' + precision.value + ',' + scale.value + ']'));
+        return ClientResourceBundle.getString("logics.classes.number") + (precision.isUnlimited() ? "" : ("[" + precision.value + "," + scale.value + "]"));
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
