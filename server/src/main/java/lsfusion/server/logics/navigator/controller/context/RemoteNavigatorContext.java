@@ -89,6 +89,11 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             }
 
             @Override
+            public Long getCurrentConnection() {
+                return RemoteNavigatorContext.this.getCurrentConnection();
+            }
+
+            @Override
             public Long getCurrentUser() {
                 return RemoteNavigatorContext.this.getCurrentUser();
             }

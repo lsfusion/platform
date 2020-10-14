@@ -13,6 +13,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ import java.util.Map;
 public class RemoteLoggerAspect {
     private final static Logger logger = ServerLoggers.remoteLogger;
 
-    public static final Map<Long, UserActivity> userActivityMap = MapFact.getGlobalConcurrentHashMap();
+    public static final Map<Long, LocalDateTime> connectionActivityMap = MapFact.getGlobalConcurrentHashMap();
     public static final Map<String, Map<Long, List<Long>>> pingInfoMap = MapFact.getGlobalConcurrentHashMap();
     private static final Map<Long, Timestamp> dateTimeCallMap = MapFact.getGlobalConcurrentHashMap();
     private static Map<Long, Boolean> remoteLoggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
@@ -39,9 +40,9 @@ public class RemoteLoggerAspect {
 
             Context context = ThreadLocalContext.get();
             Long user = context.getCurrentUser();
-            Long computer = context.getCurrentComputer();
-//            Long connection = context.getCurrentConnection();
-            userActivityMap.put(user, new UserActivity(computer, startTime));
+            Long connection = context.getCurrentConnection();
+            if (connection != null)
+                connectionActivityMap.put(connection, LocalDateTime.now());
 
             boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
 
