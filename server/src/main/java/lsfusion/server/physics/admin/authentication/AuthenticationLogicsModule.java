@@ -41,8 +41,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP customUserUpcaseLogin;
     public LP sha256PasswordCustomUser;
     public LP calculatedHash;
-    public LP lastActivityCustomUser;
-    public LP lastComputerCustomUser;
     public LP currentUser;
     public LP currentUserName;
     public LP nameContact;
@@ -161,9 +159,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         sha256PasswordCustomUser.setEchoSymbols(true);
 
         calculatedHash = findProperty("calculatedHash[]");
-
-        lastActivityCustomUser = findProperty("lastActivity[CustomUser]");
-        lastComputerCustomUser = findProperty("lastComputer[CustomUser]");
 
         secret = findProperty("secret[]");
 

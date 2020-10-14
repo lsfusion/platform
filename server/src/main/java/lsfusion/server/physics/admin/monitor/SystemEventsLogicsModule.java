@@ -69,6 +69,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP<PropertyInterface> connectionStatusConnection;
     public LP connectTimeConnection;
     public LP launchConnection;
+    public LP lastActivity;
 
     public LP currentConnection;
 
@@ -153,6 +154,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         screenSizeConnection = findProperty("screenSize[Connection]");
         clientTypeConnection = findProperty("clientType[Connection]");
         connectionStatusConnection = (LP<PropertyInterface>) findProperty("connectionStatus[Connection]");
+        lastActivity = findProperty("lastActivity[Connection]");
 
         connectTimeConnection = findProperty("connectTime[Connection]");
         launchConnection = findProperty("launch[Connection]");

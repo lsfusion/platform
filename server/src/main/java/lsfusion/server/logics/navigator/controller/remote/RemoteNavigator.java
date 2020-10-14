@@ -55,7 +55,6 @@ import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConn
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
-import lsfusion.server.physics.admin.log.UserActivity;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -70,6 +69,7 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
 
@@ -313,15 +313,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     public static void updateUserLastActivity(BusinessLogics businessLogics, DataSession session, ExecutionStack stack) {
         try {
 
-            Map<Long, UserActivity> userActivityMap;
-            userActivityMap = new HashMap<>(RemoteLoggerAspect.userActivityMap);
-            RemoteLoggerAspect.userActivityMap.clear();
+            Map<Long, LocalDateTime> connectionActivityMap = new HashMap<>(RemoteLoggerAspect.connectionActivityMap);
+            RemoteLoggerAspect.connectionActivityMap.clear();
 
-            for (Map.Entry<Long, UserActivity> userActivity : userActivityMap.entrySet()) {
-                DataObject customUserObject = session.getDataObject(businessLogics.authenticationLM.customUser, userActivity.getKey());
-                businessLogics.authenticationLM.lastActivityCustomUser.change(getWriteDateTime(new Timestamp(userActivity.getValue().time)), session, customUserObject);
-                businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
-
+            for (Map.Entry<Long, LocalDateTime> connectionActivity : connectionActivityMap.entrySet()) {
+                DataObject connection = session.getDataObject(businessLogics.systemEventsLM.connection, connectionActivity.getKey());
+                businessLogics.systemEventsLM.lastActivity.change(connectionActivity.getValue(), session, connection);
             }
             session.applyException(businessLogics, stack);
         } catch (Exception e) {
