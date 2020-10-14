@@ -31,6 +31,11 @@ public abstract class RemoteConnectionContext extends AbstractContext {
     }
 
     @Override
+    public Long getCurrentConnection() {
+        return getConnectionObject().getConnectionId();
+    }
+
+    @Override
     public Long getCurrentUser() {
         return getConnectionObject().getCurrentUser();
     }

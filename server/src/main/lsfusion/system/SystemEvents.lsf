@@ -106,6 +106,12 @@ freeMemory '{system.events.free.memory.connection}' = DATA INTEGER (Connection);
 javaVersion '{system.events.java.version.connection}' = DATA STRING[100] (Connection);
 is64Java '{system.events.is64java.connection}' = DATA BOOLEAN (Connection);
 screenSize '{system.events.screen.size.connection}' = DATA STRING[20] (Connection);
+lastActivity '{authentication.last.activity.user}' = DATA DATETIME (Connection);
+lastActivity '{authentication.last.activity.user}' (CustomUser cu) = GROUP MAX lastActivity(Connection c) BY user(c);
+lastActivityComputer(CustomUser cu) = GROUP LAST computer(Connection c) ORDER lastActivity(cu);
+hostnamelastActivityComputer '{authentication.hostname.last.computer.user}' (CustomUser user) = hostname(lastActivityComputer(user));
+
+EXTEND FORM customUsers PROPERTIES(u) lastActivity, hostnamelastActivityComputer READONLY; 
 
 countConnection '{system.events.count.connection}' = GROUP SUM 1 BY user(Connection connection) MATERIALIZED; 
 CONSTRAINT DROPPED(CustomUser u IS CustomUser) AND PREV(countConnection(u))

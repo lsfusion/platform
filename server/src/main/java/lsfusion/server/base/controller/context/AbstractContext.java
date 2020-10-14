@@ -220,6 +220,7 @@ public abstract class AbstractContext implements Context {
     // used in global context (when there is no sql / data session), otherwise use SQLSession.contextProvider
     public abstract Long getCurrentComputer();
     public abstract Long getCurrentUser();
+    public abstract Long getCurrentConnection();
 
     // needed for settings
     public abstract Long getCurrentUserRole();

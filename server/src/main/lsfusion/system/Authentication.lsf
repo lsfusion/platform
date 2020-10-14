@@ -289,11 +289,6 @@ clearPassResetToken () + {
 isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
 isLockedLogin (login) = isLocked(customUser(login));
 
-// Last activity
-lastActivity '{authentication.last.activity.user}' = DATA DATETIME (CustomUser);
-lastComputer = DATA Computer (CustomUser);
-hostnameLastComputer '{authentication.hostname.last.computer.user}' (CustomUser user) = hostname(lastComputer(user));
-
 // Current User
 currentUser = NATIVE User ();
 currentUserName '{authentication.current.user.name}' () = name[Contact](currentUser());
@@ -477,8 +472,6 @@ FORM customUsers '{authentication.users}'
     PROPERTIES(u) READONLYIF isReadonly() name, login, email
     PROPERTIES(u) READONLYIF isReadonly() isLocked
     PROPERTIES(u) READONLYIF isReadonly() useBusyDialogCustom, useRequestTimeout, devMode, allowExcessAllocatedBytes, fontSize
-    
-    PROPERTIES(u) READONLY lastActivity, hostnameLastComputer
                   
     PROPERTIES(u) NEWSESSION NEW, EDIT, DELETE 
 

@@ -70,6 +70,10 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
         return form.form.session.sql.contextProvider.getCurrentComputer();
     }
 
+    public Long getCurrentConnection() {
+        return form.form.session.sql.contextProvider.getCurrentConnection();
+    }
+
     public Long getCurrentUser() {
         return form.form.session.sql.contextProvider.getCurrentUser();
     }

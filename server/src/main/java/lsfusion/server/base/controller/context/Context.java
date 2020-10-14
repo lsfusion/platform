@@ -56,6 +56,7 @@ public interface Context {
     FocusListener getFocusListener();
     CustomClassListener getClassListener();
     Long getCurrentComputer();
+    Long getCurrentConnection();
     Long getCurrentUser();
     Long getCurrentUserRole();
 
