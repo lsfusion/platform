@@ -146,6 +146,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private LoadingManager loadingManager = MainFrame.busyDialog ? new GBusyDialogDisplayer(this) : new LoadingBlocker(this);
 
+    private static Timer linkEditModeTimer;
+
     public FormsController getFormsController() {
         return formsController;
     }
@@ -274,19 +276,21 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private static boolean pressedCtrl = false;
     private void initLinkEditModeTimer() {
-        Timer t = new Timer() {
-            @Override
-            public void run() {
-                if (pressedCtrl) {
-                    pressedCtrl = false;
-                } else {
-                    if (GFormController.isLinkEditModeWithCtrl()) {
-                        formsController.updateLinkEditMode(false, false);
+        if(linkEditModeTimer == null) {
+            linkEditModeTimer = new Timer() {
+                @Override
+                public void run() {
+                    if (pressedCtrl) {
+                        pressedCtrl = false;
+                    } else {
+                        if (GFormController.isLinkEditModeWithCtrl()) {
+                            formsController.updateLinkEditMode(false, false);
+                        }
                     }
                 }
-            }
-        };
-        t.scheduleRepeating(500); //delta between first and second events ~500ms, between next ~30ms
+            };
+            linkEditModeTimer.scheduleRepeating(500); //delta between first and second events ~500ms, between next ~30ms
+        }
     }
 
     public static void checkLinkEditModeEvents(FormsController formsController, NativeEvent event) {
