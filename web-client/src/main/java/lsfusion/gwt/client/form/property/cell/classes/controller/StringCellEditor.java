@@ -25,7 +25,8 @@ public class StringCellEditor extends TextBasedCellEditor {
             return "";
         }
 
-        return isVarString ? (String)value : GwtSharedUtils.rtrim(value.toString());
+        String stringValue = value.toString();
+        return isVarString ? stringValue : GwtSharedUtils.rtrim(stringValue);
     }
 
     @Override

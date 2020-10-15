@@ -46,8 +46,7 @@ public class IntegralCellEditor extends TextBasedCellEditor {
 
     @Override
     protected String tryFormatInputText(Object value) {
-        if (value != null) {
-            assert value instanceof Number;
+        if (value instanceof Number) {
             return type.formatDouble(((Number) value).doubleValue());
         }
         return "";

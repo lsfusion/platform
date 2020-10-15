@@ -52,7 +52,7 @@ public class ColorCellEditor extends PopupBasedCellEditor {
 
     @Override
     public void startEditing(Event editEvent, Element parent, Object oldValue) {
-        if (oldValue != null) {
+        if (oldValue instanceof ColorDTO) {
             try {
                 colorPicker.setHex(((ColorDTO)oldValue).value);
             } catch (Exception e) {

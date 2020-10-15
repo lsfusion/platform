@@ -1712,7 +1712,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
 
             this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
-            cellEditor.startEditing(event, getEditElement(), hasOldValue ? oldValue : editContext.getValue());
+            if(!hasOldValue) // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
+                oldValue = editContext.getValue();
+            cellEditor.startEditing(event, getEditElement(), oldValue);
         } else
             cancel.run();
     }
