@@ -120,7 +120,7 @@ lower (TEXT p1) = FORMULA 'lower($1)';
 
 isWordInCSV = FORMULA NULL BOOLEAN PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN 1 ELSE NULL END';
 
-getWord (TEXT p1, TEXT p2, INTEGER p3) = FORMULA TEXT '(string_to_array($1,$2))[($3)]';
+getWord (TEXT p1, TEXT p2, INTEGER p3) = FORMULA NULL TEXT '(string_to_array($1,$2))[($3)]';
 wordCount (TEXT p1, TEXT p2) = FORMULA INTEGER 'array_length((string_to_array($1,$2)),1)';
 
 istartsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
