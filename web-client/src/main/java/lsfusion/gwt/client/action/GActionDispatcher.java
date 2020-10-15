@@ -43,5 +43,7 @@ public interface GActionDispatcher {
     
     void execute(GChangeColorThemeAction action);
 
+    void execute(GResetWindowsLayoutAction action);
+
     Object execute(GHttpClientAction action) throws RequestException;
 }

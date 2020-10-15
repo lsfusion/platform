@@ -43,10 +43,7 @@ public class SimpleWindowElement extends WindowElement {
                 }
 
                 // если горизональному окну нужно больше места по горизонтали, чем ему предоставили, добавляем к высоте высоту скроллбара
-                if ((window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isHorizontal()) ||
-                        (window instanceof GPanelNavigatorWindow && ((GPanelNavigatorWindow) window).isHorizontal())) {
-                    height += AbstractNativeScrollbar.getNativeScrollbarHeight();
-                }
+                height += getScrollbarHeightIfNeeded(width);
             }
             if (height > pixelHeight &&
                     !(window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isVertical()) &&
@@ -57,6 +54,20 @@ public class SimpleWindowElement extends WindowElement {
         if (parent != null) {
             parent.setChildSize(this);
         }
+    }
+    
+    private int getScrollbarHeightIfNeeded(int viewWidth) {
+        if (((window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isHorizontal()) ||
+                (window instanceof GPanelNavigatorWindow && ((GPanelNavigatorWindow) window).isHorizontal())) &&
+                viewWidth > getPixelWidth()) {
+            return AbstractNativeScrollbar.getNativeScrollbarHeight();
+        }
+        return 0;
+    }
+
+    @Override
+    public double getInitialHeight() {
+        return super.getInitialHeight() + getScrollbarHeightIfNeeded(getView().getOffsetWidth());
     }
 
     @Override

@@ -256,6 +256,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public void execute(GResetWindowsLayoutAction action) {
+    }
+
+    @Override
     public Object execute(GHttpClientAction action) {
         pauseDispatching();
         XMLHttpRequest request = XMLHttpRequest.create();
