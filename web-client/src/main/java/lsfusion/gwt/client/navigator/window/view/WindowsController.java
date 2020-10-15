@@ -160,6 +160,11 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
             }
         }
     }
+    
+    public void resetLayout() {
+        setDefaultVisible();
+        rootElement.resetDefaultSizes();
+    }
 
     private void setDefaultVisible() {
         for (GAbstractWindow window : windowElementsMapping.keySet()) {
@@ -173,8 +178,7 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
     public void setInitialSize(GAbstractWindow window, int width, int height) {
         WindowElement windowElement = windowElementsMapping.get(window);
         if (windowElement != null && windowElement.getView().isAttached()) {
-            if ((windowElement.parent != null && windowElement.parent.parent != null) // не в главном сплите
-                    && width != 0 && height != 0) {
+            if (width != 0 && height != 0) {
                 windowElement.changeInitialSize(width, height);
                 window.initialSizeSet = true;
             }

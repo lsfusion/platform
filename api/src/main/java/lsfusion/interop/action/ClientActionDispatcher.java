@@ -68,6 +68,8 @@ public interface ClientActionDispatcher {
     void execute(MaximizeFormClientAction action);
     
     void execute(ChangeColorThemeClientAction action);
+    
+    void execute(ResetWindowsLayoutClientAction action);
 
     EventBus getEventBus();
 

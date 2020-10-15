@@ -203,6 +203,11 @@ public abstract class FormsController {
         }
     }
 
+    public void resetWindowsLayout() {
+        setFullScreenMode(false);
+        windowsController.resetLayout();
+    }
+
     public abstract void executeNavigatorAction(GNavigatorAction action, NativeEvent nativeEvent);
 
     public abstract void executeNotificationAction(String actionSID, int type);

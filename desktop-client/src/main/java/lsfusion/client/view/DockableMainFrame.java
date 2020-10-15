@@ -278,7 +278,26 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         formsController.clean();
         super.clean();
     }
-    
+
+    // copy-pasted from previous method 
+    public void resetWindowsLayout() {
+        // deploy почему-то вываливается с ошибкой... похоже на баг в DockingFrames,
+        // но т.к. в данном случае мы контролируем, что ложить в лэйаут, то просто выраубаем валидацию..
+        // mainControl.getContentArea().deploy(createGrid()); <=> ...dropTree(.., true)
+        mainControl.getContentArea().getCenter().dropTree(createGrid().toTree(), false);
+
+        setDefaultVisible();
+        navigatorController.update();
+
+        // удаляем файл с расположением, чтобы этим же действием лечить возможные нестыковки синхронизации в разных версиях DockingFrames
+        File layoutFile = new File(baseDir, "layout.data");
+        if (layoutFile.exists()) {
+            try {
+                layoutFile.delete();
+            } catch (SecurityException ignored) {}
+        }
+    }
+
     class ClientRectGradientPainter extends RectGradientPainter implements ColorThemeChangeListener {
         public ClientRectGradientPainter(EclipseTabPane pane, Dockable dockable) {
             super(pane, dockable);

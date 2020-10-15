@@ -373,6 +373,8 @@ FORM dialogColorThemes '{authentication.color.themes}'
     LIST ColorTheme OBJECT o
 ;
 
+resetWindowsLayout '{authentication.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
+
 // -------------------------- Forms ---------------------------- //
 
 // sync user logins saved on client 
@@ -570,6 +572,7 @@ FORM editProfile '{navigator.account.edit.profile}'
     PROPERTIES(u) login READONLY
     PROPERTIES(u) firstName, lastName, email, userLanguage,
                   fontSize, colorThemeName
+    PROPERTIES() resetWindowsLayout               
 
     FILTERS u = currentUser()
 ;
@@ -588,6 +591,7 @@ DESIGN editProfile {
             caption = '{navigator.account.edit.profile.design}';
             MOVE PROPERTY(fontSize(u)) { fontSize = 24; }
             MOVE PROPERTY(colorThemeName(u)) { fontSize = 24; }
+            MOVE PROPERTY(resetWindowsLayout());
         }
     }
     

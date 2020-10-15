@@ -117,6 +117,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         MainFrame.changeColorTheme(action.colorTheme);
     }
 
+    @Override
+    public void execute(GResetWindowsLayoutAction action) {
+        form.resetWindowsLayout();
+    }
+
     // editing (INPUT) functionality
 
     protected Event editEvent;

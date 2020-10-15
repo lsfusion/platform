@@ -1,6 +1,5 @@
 package lsfusion.gwt.server.convert;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
@@ -218,5 +217,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ChangeColorThemeClientAction.class)
     public GChangeColorThemeAction convertAction(ChangeColorThemeClientAction action) {
         return new GChangeColorThemeAction(GColorTheme.valueOf(action.colorTheme.name()));
+    }
+
+    @Converter(from = ResetWindowsLayoutClientAction.class)
+    public GResetWindowsLayoutAction convertAction(ResetWindowsLayoutClientAction action) {
+        return new GResetWindowsLayoutAction();
     }
 }

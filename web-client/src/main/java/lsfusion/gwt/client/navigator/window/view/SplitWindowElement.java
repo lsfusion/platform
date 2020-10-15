@@ -367,4 +367,21 @@ public class SplitWindowElement extends WindowElement {
             child.restoreWindowsSizes(storage);
         }
     }
+    
+    public void resetDefaultSizes() {
+        for (WindowElement windowElement : children.keySet()) {
+            if (children.get(windowElement)) {
+                DockLayoutPanel.Direction direction = windowDirections.get(windowElement);
+                if (direction == NORTH || direction == SOUTH) {
+                    splitPanel.setWidgetSize(windowElement.getView(), windowElement.getInitialHeight());
+                } else if (direction != CENTER) {
+                    splitPanel.setWidgetSize(windowElement.getView(), windowElement.getInitialWidth());
+                }
+
+                if (windowElement instanceof SplitWindowElement) {
+                    ((SplitWindowElement) windowElement).resetDefaultSizes();
+                }
+            }
+        }
+    }
 }

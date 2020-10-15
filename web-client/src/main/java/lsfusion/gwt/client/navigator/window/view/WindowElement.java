@@ -42,9 +42,14 @@ public abstract class WindowElement {
     public void setWindowVisible(WindowElement window) {}
     public void setWindowInvisible(WindowElement window) {}
     
+    protected double initialWidth;
+    protected double initialHeight;
+    
     public Widget initializeView() {
         pixelWidth = Window.getClientWidth() / 100 * width;
         pixelHeight = Window.getClientHeight() / 100 * height;
+        initialWidth = pixelWidth;
+        initialHeight = pixelHeight;
         return getView();
     }
 
@@ -66,6 +71,14 @@ public abstract class WindowElement {
     protected double getPixelWidth() {
         return pixelWidth;
     }
+    
+    public double getInitialWidth() {
+        return initialWidth;
+    }
+    
+    public double getInitialHeight() {
+        return initialHeight;
+    } 
 
     public void changeInitialSize(int width, int height) {
         if (!sizeStored) {
