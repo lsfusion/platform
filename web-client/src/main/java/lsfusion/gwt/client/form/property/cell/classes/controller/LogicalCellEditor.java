@@ -14,7 +14,7 @@ public class LogicalCellEditor implements KeepCellEditor {
 
     @Override
     public void startEditing(Event editEvent, Element parent, Object oldValue) {
-        Boolean currentValue = (Boolean) oldValue;
+        Boolean currentValue = oldValue instanceof Boolean && (Boolean) oldValue;
         editManager.commitEditing(currentValue == null || !currentValue ? true : null);
     }
 }

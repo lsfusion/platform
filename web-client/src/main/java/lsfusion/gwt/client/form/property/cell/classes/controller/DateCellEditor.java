@@ -107,10 +107,10 @@ public class DateCellEditor extends PopupBasedCellEditor {
     }
 
     protected Date valueAsDate(Object value) {
-        if (value == null) {
-            return null;
+        if (value instanceof GDateDTO) {
+            return ((GDateDTO) value).toDate();
         }
-        return ((GDateDTO) value).toDate();
+        return null;
     }
 
     protected void onDateChanged(ValueChangeEvent<Date> event) {
