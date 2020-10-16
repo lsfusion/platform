@@ -786,7 +786,7 @@ public abstract class GroupingDialog extends JDialog {
         workbook.close();
 
         if(!isPivot)
-            Runtime.getRuntime().exec("cmd.exe /c start " + file);
+            Desktop.getDesktop().open(file);
         
         return file;
     }
@@ -813,7 +813,7 @@ public abstract class GroupingDialog extends JDialog {
         }
 
         if(!isPivot)
-            Runtime.getRuntime().exec("cmd.exe /c start " + file);
+            Desktop.getDesktop().open(file);
 
         return file;
     }
