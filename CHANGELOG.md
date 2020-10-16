@@ -1,10 +1,17 @@
+## 4.0-beta3 (2020-10-16)
+##### Implemented enhancements:
+ - Support of FOOTERS clause in interactive form view in web-client [#473](https://github.com/lsfusion/platform/issues/473)
+ - Support of \n in property headers [#472](https://github.com/lsfusion/platform/issues/472)
+ - Make libraries to be downloaded directly from the web-client when internet is unavailable [#267](https://github.com/lsfusion/platform/issues/267)
+ - Calendar view support [#240](https://github.com/lsfusion/platform/issues/240)
+ - Support username and password parameters authentication in UI url [#462](https://github.com/lsfusion/platform/issues/462)
+## ----- PREVIOUS RELEASES --------
 ## 4.0-beta2 (2020-09-10)
 ##### Implemented enhancements:
  - Custom javascript list view support [#195](https://github.com/lsfusion/platform/issues/195)
  - Implement reversed internationalization [#247](https://github.com/lsfusion/platform/issues/247)
 ##### Fixed bugs:
  - Low performance when there is a very complex filter / order with a lot of prereads / materialized changes [#430](https://github.com/lsfusion/platform/issues/430)
-## ----- PREVIOUS RELEASES --------
 ## 4.0-beta1 (2020-08-21)
 ##### Implemented enhancements:
  - Implement support of edit object on double click and in "link mode" [#420](https://github.com/lsfusion/platform/issues/420)
