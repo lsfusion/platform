@@ -14,6 +14,7 @@ import net.sf.jasperreports.export.XlsReportConfiguration;
 import net.sf.jasperreports.swing.JRViewer;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -57,15 +58,24 @@ public class ClientReportDockable extends ClientDockable {
     }
 
     private JRViewer prepareViewer(final JRViewer viewer) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                viewer.setZoomRatio(1);
-            }
-        });
+        SwingUtilities.invokeLater(() -> viewer.setZoomRatio(1));
         return viewer;
     }
 
     @Override
     public void onOpened() {
+    }
+
+    @Override
+    protected boolean focusDefaultComponent() {
+        Container container = getContentPane();
+        FocusTraversalPolicy traversalPolicy = container.getFocusTraversalPolicy();
+        if (traversalPolicy != null) {
+            Component defaultComponent = traversalPolicy.getDefaultComponent(container);
+            if (defaultComponent != null) {
+                return defaultComponent.requestFocusInWindow();
+            }
+        }
+        return false;
     }
 }
