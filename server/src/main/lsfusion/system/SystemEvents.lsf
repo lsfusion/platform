@@ -109,7 +109,7 @@ screenSize '{system.events.screen.size.connection}' = DATA STRING[20] (Connectio
 lastActivity '{authentication.last.activity.user}' = DATA DATETIME (Connection);
 lastActivity '{authentication.last.activity.user}' (CustomUser cu) = GROUP MAX lastActivity(Connection c) BY user(c);
 lastActivityComputer(CustomUser cu) = GROUP LAST computer(Connection c) IF user(c) == cu ORDER lastActivity(c), c;
-hostnamelastActivityComputer '{authentication.hostname.last.computer.user}' (CustomUser user) = hostname(lastActivityComputer(user));
+hostnamelastActivityComputer '{authentication.hostname.last.computer.user}' (CustomUser user) = hostname(lastActivityComputer(user)) CHARWIDTH 10;
 
 EXTEND FORM customUsers PROPERTIES(u) lastActivity, hostnamelastActivityComputer READONLY; 
 
@@ -319,7 +319,7 @@ FORM connections '{system.events.form.connections}'
     PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
                             javaVersion, is64Java, screenSize, processor, architecture, cores, physicalMemory,
                             totalMemory, maximumMemory, freeMemory, nameClientType, nameConnectionStatus, connectTime,
-                            disconnectTime, shutdown GRID CHANGEABLE
+                            lastActivity, disconnectTime, shutdown GRID CHANGEABLE
 
     OBJECTS n=Form
     PROPERTIES (n) READONLY caption, canonicalName
