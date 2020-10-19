@@ -236,6 +236,32 @@ RETURN v_int_value;
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION convert_to_numeric(v_input text)
+RETURNS NUMERIC AS $$
+DECLARE v_int_value NUMERIC DEFAULT NULL;
+BEGIN
+    BEGIN
+        v_int_value := v_input::NUMERIC;
+    EXCEPTION WHEN OTHERS THEN
+        RETURN 0;
+    END;
+RETURN v_int_value;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION convert_to_numeric_null(v_input text)
+RETURNS NUMERIC AS $$
+DECLARE v_int_value NUMERIC DEFAULT NULL;
+BEGIN
+    BEGIN
+        v_int_value := v_input::NUMERIC;
+    EXCEPTION WHEN OTHERS THEN
+        RETURN NULL;
+    END;
+RETURN v_int_value;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION convert_numeric_to_string(num IN NUMERIC)
 RETURNS VARCHAR AS $$
   DECLARE

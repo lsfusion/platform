@@ -213,7 +213,8 @@ count(INTEGER i, INTEGER count) = iterate(i, 1, count);
 
 toChar (object, format) = FORMULA TEXT 'to_char(($1),($2))'; 
 toInteger (i) = FORMULA INTEGER PG 'convert_to_integer($1)', MS 'dbo.convert_to_integer($1)';
-toNumeric (i) = FORMULA NUMERIC[38,19] PG 'convert_to_integer($1)', MS 'dbo.convert_to_integer($1)';
+toNumeric (i) = FORMULA NUMERIC[38,19] PG 'convert_to_numeric($1)', MS 'dbo.convert_to_integer($1)';
+toNumericNull (i) = FORMULA NUMERIC[38,19] PG 'convert_to_numeric_null($1)', MS 'dbo.convert_to_integer($1)';
 
 // ---------------------------------------Побитовые операции --------------------------------- //
 bitwiseAnd = FORMULA INTEGER '$1 & $2';
