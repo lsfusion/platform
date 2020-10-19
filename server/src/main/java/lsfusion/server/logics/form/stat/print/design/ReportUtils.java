@@ -44,6 +44,13 @@ class ReportUtils {
         return field;
     }
 
+    public static JRDesignImage createImageField(JRDesignStyle style, JRDesignExpression expr) {
+        JRDesignImage field = new JRDesignImage(null);
+        field.setStyle(style);
+        field.setExpression(expr);
+        return field;
+    }
+
     public static JRDesignField createField(String name, String className) {
         JRDesignField field = new JRDesignField();
         field.setName(name);

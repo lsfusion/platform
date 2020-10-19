@@ -1,10 +1,7 @@
 package lsfusion.server.logics.form.stat.print.design;
 
 import net.sf.jasperreports.engine.JRBand;
-import net.sf.jasperreports.engine.design.JRDesignBand;
-import net.sf.jasperreports.engine.design.JRDesignSection;
-import net.sf.jasperreports.engine.design.JRDesignTextField;
-import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.type.SplitTypeEnum;
 
 import java.util.ArrayList;
@@ -15,11 +12,11 @@ import java.util.Map;
 public abstract class ReportLayout {
     public static class ReportFieldJasperElement { 
         public JRDesignTextField caption;
-        public JRDesignTextField textField;
+        public JRDesignElement designField;
         
-        public ReportFieldJasperElement(JRDesignTextField caption, JRDesignTextField textField) {
+        public ReportFieldJasperElement(JRDesignTextField caption, JRDesignElement designField) {
             this.caption = caption;
-            this.textField = textField;  
+            this.designField = designField;
         }
     }
     
@@ -30,26 +27,26 @@ public abstract class ReportLayout {
     }
 
     protected List<ReportDrawField> reportFields = new ArrayList<>();
-    protected Map<ReportDrawField, ReportFieldJasperElement> textFields = new HashMap<>();
+    protected Map<ReportDrawField, ReportFieldJasperElement> designFields = new HashMap<>();
 
-    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
+    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text) {
         reportFields.add(reportField);
-        textFields.put(reportField, new ReportFieldJasperElement(caption, text));
+        designFields.put(reportField, new ReportFieldJasperElement(caption, text));
     }
 
     public int doLayout(int pageWidth) {
         int rowCount = AbstractRowLayout.doLayout(reportFields, pageWidth);
 
         for (ReportDrawField reportField : reportFields) {
-            textFields.get(reportField).caption.setX(reportField.left);
-            textFields.get(reportField).caption.setY(reportField.row * rowHeight);
-            textFields.get(reportField).caption.setWidth(reportField.width);
-            textFields.get(reportField).caption.setHeight(rowHeight);
+            designFields.get(reportField).caption.setX(reportField.left);
+            designFields.get(reportField).caption.setY(reportField.row * rowHeight);
+            designFields.get(reportField).caption.setWidth(reportField.width);
+            designFields.get(reportField).caption.setHeight(rowHeight);
 
-            textFields.get(reportField).textField.setX(reportField.left);
-            textFields.get(reportField).textField.setY(reportField.row * rowHeight);
-            textFields.get(reportField).textField.setWidth(reportField.width);
-            textFields.get(reportField).textField.setHeight(rowHeight);
+            designFields.get(reportField).designField.setX(reportField.left);
+            designFields.get(reportField).designField.setY(reportField.row * rowHeight);
+            designFields.get(reportField).designField.setWidth(reportField.width);
+            designFields.get(reportField).designField.setHeight(rowHeight);
         }
 
         return rowCount;
@@ -85,7 +82,8 @@ class ReportDetailLayout extends ReportLayout {
         ((JRDesignSection)design.getDetailSection()).addBand(detailBand);
     }
 
-    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
+    @Override
+    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text) {
         super.add(reportField, caption, text);
 
         pageHeadBand.addElement(caption);
@@ -121,7 +119,8 @@ class ReportGroupRowLayout extends ReportGroupLayout {
         section.setBand(groupBand);
     }
 
-    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
+    @Override
+    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text) {
         super.add(reportField, caption, text);
 
         groupBand.addElement(caption);
@@ -172,15 +171,15 @@ class ReportGroupRowLayout extends ReportGroupLayout {
 
         for (ReportDrawFieldWithCaption reportFieldWithCaption : fields) {
             ReportDrawField reportField = reportFieldWithCaption.field;
-            textFields.get(reportField).caption.setX(reportField.left);
-            textFields.get(reportField).caption.setY(reportField.row * rowHeight);
-            textFields.get(reportField).caption.setWidth(reportField.getCaptionWidth());
-            textFields.get(reportField).caption.setHeight(rowHeight);
+            designFields.get(reportField).caption.setX(reportField.left);
+            designFields.get(reportField).caption.setY(reportField.row * rowHeight);
+            designFields.get(reportField).caption.setWidth(reportField.getCaptionWidth());
+            designFields.get(reportField).caption.setHeight(rowHeight);
 
-            textFields.get(reportField).textField.setX(reportField.getCaptionWidth() + reportField.left);
-            textFields.get(reportField).textField.setY(reportField.row * rowHeight);
-            textFields.get(reportField).textField.setWidth(reportField.width - reportField.getCaptionWidth());
-            textFields.get(reportField).textField.setHeight(rowHeight);
+            designFields.get(reportField).designField.setX(reportField.getCaptionWidth() + reportField.left);
+            designFields.get(reportField).designField.setY(reportField.row * rowHeight);
+            designFields.get(reportField).designField.setWidth(reportField.width - reportField.getCaptionWidth());
+            designFields.get(reportField).designField.setHeight(rowHeight);
         }
 
         groupBand.setHeight(rowCount * rowHeight);
@@ -205,7 +204,8 @@ class ReportGroupColumnLayout extends ReportGroupLayout {
         designSection.addBand(textGroupBand);
     }
 
-    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
+    @Override
+    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text) {
         super.add(reportField, caption, text);
 
         captionGroupBand.addElement(caption);

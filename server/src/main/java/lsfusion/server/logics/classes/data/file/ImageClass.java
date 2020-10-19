@@ -5,6 +5,7 @@ import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -53,6 +54,16 @@ public class ImageClass extends StaticFormatFileClass {
     @Override
     public String getExtension() {
         return "jpg";
+    }
+
+    @Override
+    public Class getReportJavaClass() {
+        return InputStream.class;
+    }
+
+    @Override
+    public int getReportPreferredWidth() {
+        return 60;
     }
 
     @Override

@@ -28,6 +28,7 @@ import net.sf.jasperreports.engine.type.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -63,6 +64,7 @@ public class ReportDesignGenerator {
     private static final int neighboursGap = 5;
 
     private int rowHeight = 18;
+    private static final int imageRowHeight = 50;
     private int charWidth = 8;
     private boolean toStretch = true;
 
@@ -197,6 +199,14 @@ public class ReportDesignGenerator {
 
             // adding report fields
             if(!drawFields.isEmpty()) {
+
+                for (ReportDrawField drawField : drawFields) {
+                    if (isImageField(drawField)) {
+                        rowHeight = imageRowHeight;
+                        break;
+                    }
+                }
+
                 // creating layouts
                 ReportLayout reportLayout;
                 if (isDetail) { // is detail
@@ -293,16 +303,28 @@ public class ReportDesignGenerator {
         captionField.setKey(reportField.columnGroupName == null ? null : reportField.columnGroupName + ".caption");
 
         JRDesignExpression dataExpr = ReportUtils.createExpression(ReportUtils.createFieldString(reportField.sID), reportField.valueClass);
-        JRDesignTextField dataField = ReportUtils.createTextField(style, dataExpr, toStretch);
-        dataField.setHorizontalTextAlign(reportField.alignment);
+
+        JRDesignElement dataField;
+        if(isImageField(reportField)) {
+            JRDesignImage imageField = ReportUtils.createImageField(style, dataExpr);
+            imageField.setHorizontalImageAlign(HorizontalImageAlignEnum.CENTER);
+            dataField = imageField;
+        } else {
+            JRDesignTextField textField = ReportUtils.createTextField(style, dataExpr, toStretch);
+            textField.setHorizontalTextAlign(reportField.alignment);
+            textField.setBlankWhenNull(true);
+            setPattern(textField, reportField);
+            setBackground(textField, reportField);
+            setForeground(textField, reportField);
+            dataField = textField;
+        }
         dataField.setPositionType(PositionTypeEnum.FLOAT);
-        dataField.setBlankWhenNull(true);
         dataField.setKey(reportField.columnGroupName);
-        setPattern(dataField, reportField);        
-        setBackground(dataField, reportField);
-        setForeground(dataField, reportField);
-        
         layout.add(reportField, captionField, dataField);
+    }
+
+    private boolean isImageField(ReportDrawField reportField) {
+        return reportField.valueClass == InputStream.class; //IMAGEFILE
     }
 
     private void setPattern(JRDesignTextField dataField, ReportDrawField reportField) {
