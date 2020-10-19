@@ -1,9 +1,11 @@
 package lsfusion.interop.form.print;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.file.RawFileData;
 import net.sf.jasperreports.engine.JRField;
 import net.sf.jasperreports.engine.JRRewindableDataSource;
 
+import java.io.InputStream;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -83,6 +85,8 @@ public class ReportDataSource implements JRRewindableDataSource {
                 } else {
                     value = localDateTimeToSqlTimestamp((LocalDateTime) value);
                 }
+            } else if (InputStream.class.getName().equals(jrField.getValueClassName())) { //IMAGEFILE
+                value = ((RawFileData) value).getInputStream();
             }
         }
 
