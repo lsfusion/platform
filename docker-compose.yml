@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: 11111
 
   server:
-    image: alexonchik/lsf-server:latest
+    image: lsfusion/server:latest
     depends_on:
       - db
     volumes:
@@ -25,7 +25,7 @@ services:
       LSFUSION_DB_HOST: localhost
 
   web:
-    image: alexonchik/lsf-web-client:latest
+    image: lsfusion/client:latest
     depends_on:
       - server
     ports:
