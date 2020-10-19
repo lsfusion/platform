@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:12-3.0
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    network_mode: host
+    environment:
+      POSTGRES_PASSWORD: 11111
+
+  server:
+    image: alexonchik/lsf-server:latest
+    depends_on:
+      - db
+    volumes:
+      - ./src:/var/lib/lsfusion/src
+    ports:
+      - 7652:7652
+    network_mode: host
+    environment:
+      LSFUSION_DB_PASSWORD: 11111
+      LSFUSION_DB_HOST: localhost
+
+  web:
+    image: alexonchik/lsf-web-client:latest
+    depends_on:
+      - server
+    ports:
+      - 8080:8080
+    network_mode: host
+    environment:
+      LSFUSION_SERVER_HOST: localhost
+      LSFUSION_SERVER_PORT: 7652
