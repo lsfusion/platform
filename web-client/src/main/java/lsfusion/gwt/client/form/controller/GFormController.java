@@ -1368,6 +1368,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return isDialog;
     }
 
+    @Override
+    public void onResize() {
+        if (!formHidden) {
+            super.onResize();
+        }
+    }
+
     public GForm getForm() {
         return form;
     }
