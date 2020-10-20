@@ -26,4 +26,4 @@ COPY entrypoint.sh entrypoint.sh
 
 EXPOSE 8080
 RUN chmod +x entrypoint.sh
-ENTRYPOINT [ "/usr/share/$APT_PACKAGE/entrypoint.sh" ]
+ENTRYPOINT "/usr/share/$APT_PACKAGE/entrypoint.sh"
