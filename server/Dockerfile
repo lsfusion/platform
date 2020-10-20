@@ -2,7 +2,7 @@ FROM openjdk:11.0.8-jdk
 
 ARG APT_PACKAGE
 ARG APT_VERSION
-ENV package=$APT_PACKAGE
+ENV APT_PACKAGE=$APT_PACKAGE
 
 RUN apt-get update; \
     apt-get install -y --no-install-recommends \
@@ -26,4 +26,4 @@ COPY entrypoint.sh entrypoint.sh
 
 EXPOSE 7652
 RUN chmod +x entrypoint.sh
-ENTRYPOINT [ "/usr/share/$package/entrypoint.sh" ]
+ENTRYPOINT "/usr/share/$APT_PACKAGE/entrypoint.sh"
