@@ -12,7 +12,9 @@ services:
       POSTGRES_PASSWORD: 11111
 
   server:
-    image: lsfusion/server:latest //version
+    image: lsfusion/server:latest
+#    image: lsfusion/server:4.0-beta3-1
+#    // version
     depends_on:
       - db
     volumes:
@@ -25,7 +27,9 @@ services:
       LSFUSION_DB_HOST: localhost
 
   web:
-    image: lsfusion/client:latest //version
+    image: lsfusion/client:latest
+#    image: lsfusion/client:4.0-beta3-1
+#    //version
     depends_on:
       - server
     ports:
