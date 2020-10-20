@@ -1,9 +1,5 @@
 FROM openjdk:11.0.8-jdk
 
-ARG APT_PACKAGE
-ARG APT_VERSION
-ENV APT_PACKAGE=$APT_PACKAGE
-
 RUN apt-get update; \
     apt-get install -y --no-install-recommends \
             apt-transport-https \
@@ -14,16 +10,16 @@ RUN apt-get update; \
     echo deb https://download.lsfusion.org/apt all main > /etc/apt/sources.list.d/lsfusion.list; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-            $APT_PACKAGE=$APT_VERSION \
+            lsfusion4-server=4.0-beta3-1 \
             ; \
 # cleanup
-    rm  /usr/share/$APT_PACKAGE/conf/settings.properties; \
+    rm  /usr/share/lsfusion4-server/conf/settings.properties; \
     rm -rf /var/lib/apt/lists/*;
 
-WORKDIR /usr/share/$APT_PACKAGE
+WORKDIR /usr/share/lsfusion4-server
 
 COPY entrypoint.sh entrypoint.sh
 
 EXPOSE 7652
 RUN chmod +x entrypoint.sh
-ENTRYPOINT "/usr/share/$APT_PACKAGE/entrypoint.sh"
+ENTRYPOINT "/usr/share/lsfusion4-server/entrypoint.sh"
