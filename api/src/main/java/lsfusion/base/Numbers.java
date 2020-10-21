@@ -273,6 +273,7 @@ public class Numbers {
                 case "PLN":
                 case "UAH":
                 case "CNY":
+                case "UZS":
                     return 2;
                 case "ton":
                 case "kg":
@@ -338,6 +339,7 @@ public class Numbers {
                 case "PLN":
                 case "UAH":
                 case "CNY":
+                case "UZS":
                 case "ton":
                 case "kg":
                 case "gr":
@@ -360,6 +362,7 @@ public class Numbers {
             case "PLN2":
             case "UAH2":
             case "CNY2":
+            case "UZS2":
             case "ton3":
             case "kg3":
             case "gr3":
@@ -425,6 +428,8 @@ public class Numbers {
                 case "PLN2":
                 case "CNY":
                 case "CNY2":
+                case "UZS":
+                case "UZS2":
                     return false;
             }
         }
