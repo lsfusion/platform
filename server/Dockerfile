@@ -1,3 +1,4 @@
+# lsfusion4-server=4.0-beta3-1
 FROM openjdk:11.0.8-jdk
 
 RUN apt-get update; \
