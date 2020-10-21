@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: postgis/postgis:12-3.0
+    image: postgres:12.4
     volumes:
       - ./data:/var/lib/postgresql/data # host/path:container/path
     ports:
