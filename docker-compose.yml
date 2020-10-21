@@ -16,7 +16,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ./src:/var/lib/lsfusion/src # host/path:container/path
+      - ./src:/var/lib/lsfusion # host/path:container/path
     ports:
       - 7652:7652
     network_mode: host
