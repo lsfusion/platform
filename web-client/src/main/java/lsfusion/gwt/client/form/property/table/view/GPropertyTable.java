@@ -1,13 +1,14 @@
 package lsfusion.gwt.client.form.property.table.view;
 
-import com.google.gwt.dom.client.*;
-import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.*;
+import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
@@ -20,10 +21,6 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-
-import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<T> implements RenderContext, UpdateContext {
 
@@ -38,17 +35,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
         //  Have the enter key work the same as the tab key
         if(groupObject != null) {
-            addEnterBinding(false);
-            addEnterBinding(true);
+            form.addEnterBindings(GBindingMode.ONLY, ((GGridPropertyTable) GPropertyTable.this)::selectNextCellInColumn, groupObject);
         }
-    }
-
-    private void addEnterBinding(boolean shiftPressed) {
-        form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
-                new GBindingEnv(-100, null, null, GBindingMode.ONLY, GBindingMode.NO, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
-                event -> ((GGridPropertyTable) GPropertyTable.this).selectNextCellInColumn(!shiftPressed),
-                null,
-                groupObject);
     }
 
     public abstract boolean isReadOnly(Cell cell);
