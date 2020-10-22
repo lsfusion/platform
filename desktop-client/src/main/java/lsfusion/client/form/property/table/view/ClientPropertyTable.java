@@ -111,6 +111,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     
     @Override
     public Object getEditValue() {
+        if(!checkEditBounds())
+            return null;
         return getValueAt(editRow, editCol);
     }
 
@@ -156,6 +158,11 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
     public abstract int getCurrentRow();
 
+    // edit cell can be out of bounds because of grid change
+    private boolean checkEditBounds() {
+        return editRow < getRowCount() && editCol < getColumnCount();
+    }
+
     public boolean requestValue(ClientType valueType, Object oldValue) {
         quickLog("formTable.requestValue: " + valueType);
 
@@ -171,6 +178,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             return false;
         }
 
+        // is checked in upper call
+        assert checkEditBounds();
         prepareTextEditor();
 
         editorComp.requestFocusInWindow();
@@ -180,7 +189,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         return true;
     }
 
-    void prepareTextEditor() {
+    public void prepareTextEditor() {
         ClientPropertyDraw property = getProperty(editRow, editCol);
         if (editorComp instanceof JTextComponent) {
             JTextComponent textEditor = (JTextComponent) editorComp;
@@ -213,7 +222,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     }
 
     public void updateEditValue(Object value) {
-        setValueAt(value, editRow, editCol);
+        if(checkEditBounds())
+            setValueAt(value, editRow, editCol);
     }
 
     @Override
