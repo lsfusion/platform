@@ -1,9 +1,14 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
-import lsfusion.gwt.client.GFormChanges;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GBindingEnv;
+import lsfusion.gwt.client.form.event.GBindingMode;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.property.*;
@@ -16,7 +21,25 @@ public class GPanelController extends GPropertyController {
 
     public GPanelController(GFormController formController) {
         super(formController);
+
+        addEnterBinding(true);
+        addEnterBinding(false);
     }
+
+    private void addEnterBinding(boolean shiftPressed) {
+        formController.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
+                new GBindingEnv(-100, null, null, GBindingMode.ALL, GBindingMode.NO, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
+                event -> getNextSelectedElement(formController.getElement(), shiftPressed).focus(),
+                null, null);
+    }
+
+    private native Element getNextSelectedElement(Element formController, boolean shiftPressed) /*-{
+        var elements = Array.prototype.filter.call(formController.querySelectorAll('div'), function (item) {
+            return item.tabIndex >= "0"
+        });
+        var index = elements.indexOf($doc.activeElement);
+        return shiftPressed ? (elements[index - 1] || elements[elements.length - 1]) : (elements[index + 1] || elements[0]);
+    }-*/;
 
     @Override
     public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
