@@ -1540,6 +1540,19 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         bindings.remove(index);
     }
 
+    public void addEnterBindings(GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
+        addEnterBinding(false, bindGroup, selectNextElement, groupObject);
+        addEnterBinding(true, bindGroup, selectNextElement, groupObject);
+    }
+
+    private void addEnterBinding(boolean shiftPressed, GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
+        addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
+                new GBindingEnv(-100, null, null, bindGroup, GBindingMode.NO, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
+                event -> selectNextElement.accept(!shiftPressed),
+                null,
+                groupObject);
+    }
+
     private GGroupObject getGroupObject(Element elementTarget) {
         while (elementTarget != null) {     // пытаемся найти GroupObject, к которому относится элемент с фокусом
             GGroupObject targetGO = (GGroupObject) elementTarget.getPropertyObject("groupObject");
