@@ -126,6 +126,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 renderer = properties.get(i).getCellRenderer();
 
             for (GGroupObjectValue columnKey : propColumnKeys) {
+                if (checkShowIf(i, columnKey)) // property is hidden
+                    continue;
+
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
                 pushValue(rowValues, propValues, fullKey, renderer);
@@ -154,6 +157,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             List<NativeHashMap<GGroupObjectValue, Object>> propLastAggrs = lastAggrs.get(baseOrder);
 
             for (GGroupObjectValue columnKey : propColumnKeys) {
+                if(checkShowIf(baseOrder, columnKey))
+                    continue;
+
                 String caption = GGridPropertyTable.getPropertyCaption(propCaptions, property, columnKey);
 
                 columnMap.put(caption, new Column(property, columnKey));

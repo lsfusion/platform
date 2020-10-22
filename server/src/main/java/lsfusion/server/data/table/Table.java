@@ -909,7 +909,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             @Override
             public void fillFollowSet(MSet<DataWhere> fillSet) {
                 super.fillFollowSet(fillSet);
-                fillSet.add((DataWhere) Join.this.getWhere());
+                fillSet.add((DataWhere) Join.this.getWhere()); // ClassCast can be when property is materialized in wrong classes table (when there are wrong explicit classes : f(B b) = b IS A MATERIALIZED)
             }
 
             public Table.Join getInnerJoin() {

@@ -266,8 +266,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             for (int i = 0; i < columnGroups.size(); i++) {
                 for (GGroupObjectValue columnKey : columnGroupsColumnKeys.get(i)) {
                     for (GPropertyDraw property : columnGroups.get(i)) {
-                        NativeHashMap<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
-                        if (propShowIfs != null && propShowIfs.get(columnKey) == null) // property is hidden
+                        if (checkShowIf(property, columnKey))
                             continue;
 
                         GridColumn column = removeFromColumnsMap(columnsMap, property, columnKey);
@@ -308,6 +307,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             captionsUpdated = false;
             footersUpdated = false;
         }
+    }
+
+    private boolean checkShowIf(GPropertyDraw property, GGroupObjectValue columnKey) {
+        // property is hidden
+        NativeHashMap<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
+        return propShowIfs != null && propShowIfs.get(columnKey) == null;
     }
 
     @Override
