@@ -67,6 +67,9 @@ public abstract class GSimpleStateTableView extends GStateTableView {
 
             for (int j = 0; j < propColumnKeys.size(); j++) {
                 GGroupObjectValue columnKey = propColumnKeys.get(j);
+                if(checkShowIf(i, columnKey))
+                    continue;
+
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
                 pushValue(rowValues, property, propValues.get(fullKey));
@@ -99,6 +102,9 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
             for (int c = 0; c < propColumnKeys.size(); c++) {
                 GGroupObjectValue columnKey = propColumnKeys.get(c);
+                if(checkShowIf(i, columnKey))
+                    continue;
+
                 String columnName = property.integrationSID + (columnKey.isEmpty() ? "" : "_" + c);
                 columnMap.put(columnName, new Column(property, columnKey));
                 columns.push(fromString(columnName));

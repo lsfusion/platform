@@ -47,6 +47,12 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, Object>> values = new ArrayList<>();
     protected List<List<NativeHashMap<GGroupObjectValue, Object>>> lastAggrs = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, Object>> readOnlys = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, Object>> showIfs = new ArrayList<>();
+
+    protected boolean checkShowIf(int property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, Object> propertyShowIfs = showIfs.get(property);
+        return propertyShowIfs != null && propertyShowIfs.get(columnKey) == null;
+    }
 
     public final native JsArrayMixed clone(JsArrayMixed array) /*-{
         n = array.length;
@@ -159,6 +165,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.columnKeys.add(index, null);
                 this.values.add(index, null);
                 this.readOnlys.add(index, null);
+                this.showIfs.add(index, null);
 
                 List<NativeHashMap<GGroupObjectValue, Object>> list = new ArrayList<>();
                 for (int i = 0; i < property.lastReaders.size(); i++)
@@ -200,6 +207,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         lastAggrs.remove(index);
         values.remove(index);
         readOnlys.remove(index);
+        showIfs.remove(index);
 
         dataUpdated = true;
     }
@@ -306,7 +314,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     @Override
     public void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> values) {
+        this.showIfs.set(properties.indexOf(property), values);
 
+        this.dataUpdated = true;
     }
 
     @Override
