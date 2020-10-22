@@ -1,9 +1,10 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
-import lsfusion.gwt.client.GFormChanges;
+import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.property.*;
@@ -16,7 +17,21 @@ public class GPanelController extends GPropertyController {
 
     public GPanelController(GFormController formController) {
         super(formController);
+
+        formController.addEnterBindings(GBindingMode.ALL, this::selectNextElement, null);
     }
+
+    private void selectNextElement(boolean forward) {
+        getNextSelectedElement(formController.getElement(), forward).focus();
+    }
+
+    private native Element getNextSelectedElement(Element formController, boolean forward) /*-{
+        var elements = Array.prototype.filter.call(formController.querySelectorAll('div'), function (item) {
+            return item.tabIndex >= "0"
+        });
+        var index = elements.indexOf($doc.activeElement);
+        return forward ? (elements[index + 1] || elements[0]) : (elements[index - 1] || elements[elements.length - 1]);
+    }-*/;
 
     @Override
     public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
