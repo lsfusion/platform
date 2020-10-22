@@ -21,4 +21,8 @@ public enum ListViewType {
         }
         throw new UnsupportedOperationException();
     }
+
+    public boolean isPivot() {
+        return this == PIVOT;
+    }
 }
