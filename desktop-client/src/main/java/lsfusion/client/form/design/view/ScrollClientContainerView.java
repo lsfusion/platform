@@ -17,7 +17,13 @@ public class ScrollClientContainerView extends AbstractClientContainerView {
         super(formLayout, container);
         assert container.isScroll();
         
-        scroll = new JScrollPane();
+        scroll = new JScrollPane() {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                setBorder(null); // is set on every color theme change in installDefaults()
+            }
+        };
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.getHorizontalScrollBar().setUnitIncrement(14);
         ClientColorUtils.designComponent(scroll, container.design);
