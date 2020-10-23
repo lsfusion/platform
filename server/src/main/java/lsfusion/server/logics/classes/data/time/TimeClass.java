@@ -45,7 +45,7 @@ public class TimeClass extends DataClass<LocalTime> {
     }
 
     protected Class getReportJavaClass() {
-        return Time.class;
+        return java.util.Date.class;
     }
 
     public LocalTime parseString(String s) throws ParseException {

@@ -46,7 +46,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     }
 
     public Class getReportJavaClass() {
-        return Timestamp.class;
+        return java.util.Date.class;
     }
 
     public void fillReportDrawField(ReportDrawField reportField) {

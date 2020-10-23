@@ -75,6 +75,8 @@ public class ReportDataSource implements JRRewindableDataSource {
             if (Date.class.getName().equals(jrField.getValueClassName())) {
                 if (value instanceof LocalDateTime)
                     value = stampToDate(localDateTimeToSqlTimestamp((LocalDateTime) value));
+                else if (value instanceof LocalTime)
+                    value = timeToDate(localTimeToSqlTime((LocalTime) value));
                 else
                     value = localDateToSqlDate((LocalDate) value);
             } else if (Time.class.getName().equals(jrField.getValueClassName())) {
