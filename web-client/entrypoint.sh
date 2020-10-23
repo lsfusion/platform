@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-if ! [ -e /usr/share/lsfusion4-client/conf/Catalina/localhost/ROOT.xml ]; then
+if ! [ -e conf/Catalina/localhost/ROOT.xml ]; then
   echo >&2 "lsFusion client is not configured - configuring..."
 
     if [ -z "$LSFUSION_SERVER_HOST" ]; then
@@ -13,13 +13,16 @@ if ! [ -e /usr/share/lsfusion4-client/conf/Catalina/localhost/ROOT.xml ]; then
   	exit 1
     fi
 
-  cat > /usr/share/lsfusion4-client/conf/Catalina/localhost/ROOT.xml <<EOF
+  mkdir -p conf/Catalina/localhost
+  rm -rf webapps
+
+  cat > conf/Catalina/localhost/ROOT.xml <<EOF
 <?xml version='1.0' encoding='utf-8'?>
-<Context path="" docBase="../lsfusion">
+<Context path="" docBase="../deploy/client.war">
   <Parameter name="host" value="$LSFUSION_SERVER_HOST" override="false"/>
   <Parameter name="port" value="$LSFUSION_SERVER_PORT" override="false"/>
 </Context>
 EOF
 fi
 
-sh /usr/share/lsfusion4-client/bin/catalina.sh run
+exec bin/catalina.sh run

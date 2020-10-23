@@ -16,6 +16,8 @@ if ! [ -e conf/settings.properties ]; then
   	exit 1
   fi
 
+  mkdir -p conf
+
   cat > conf/settings.properties <<EOF
 db.server=$LSFUSION_DB_HOST
 db.name=$LSFUSION_DB_NAME
@@ -24,4 +26,4 @@ db.password=$LSFUSION_DB_PASSWORD
 EOF
 fi
 
-exec java -cp "/var/lib/lsfusion:/var/lib/lsfusion/*:server.jar" lsfusion.server.logics.BusinessLogicsBootstrap
+exec java -cp ".:server.jar" lsfusion.server.logics.BusinessLogicsBootstrap
