@@ -10,6 +10,7 @@ import jxl.CellView;
 import jxl.WorkbookSettings;
 import jxl.biff.DisplayFormat;
 import jxl.format.BorderLineStyle;
+import jxl.format.Format;
 import jxl.write.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
@@ -1016,11 +1017,11 @@ public abstract class GroupingDialog extends JDialog {
                 Object value = treeTable.getValueAt(parent, column);
                 int length = 0;
                 if (value instanceof BigDecimal || value instanceof Double) {
-                    length = new DecimalFormat("#,##0.00").format(value).length();
-                    sheet.addCell(new jxl.write.Number(column, currentRow, Double.valueOf(value.toString()), createCellFormat(NumberFormats.THOUSANDS_FLOAT, false)));    
+                    length = new DecimalFormat("#,##0.0####").format(value).length();
+                    sheet.addCell(new jxl.write.Number(column, currentRow, ((Number) value).doubleValue(), createCellFormat(new BuiltInFormat("#,##0.0####"), false)));
                 } else if (value instanceof Number) {
                     length = new DecimalFormat("#,##0").format(value).length();
-                    sheet.addCell(new jxl.write.Number(column, currentRow, Double.valueOf(value.toString()), createCellFormat(NumberFormats.THOUSANDS_INTEGER, false)));
+                    sheet.addCell(new jxl.write.Number(column, currentRow, ((Number) value).doubleValue(), createCellFormat(NumberFormats.THOUSANDS_INTEGER, false)));
                 } else if (value instanceof LocalTime) {
                     length = ((LocalTime) value).format(DateTimeFormatter.ofPattern("H:mm:ss")).length();
                     sheet.addCell(new jxl.write.DateTime(column, currentRow, localTimeToSqlTime((LocalTime) value), createCellFormat(DateFormats.FORMAT8, false)));
@@ -1082,9 +1083,9 @@ public abstract class GroupingDialog extends JDialog {
             for (int column = 0; column <= row.size(); column++) {
                 Object value = treeTable.getValueAt(parent, column);
                 if (value instanceof BigDecimal || value instanceof Double) {
-                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "#,##0.00")).setCellValue(Double.parseDouble(value.toString()));
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "#,##0.0####")).setCellValue(((Number) value).doubleValue());
                 } else if (value instanceof Number) {
-                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "#,##0")).setCellValue(Double.parseDouble(value.toString()));
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "#,##0")).setCellValue(((Number) value).doubleValue());
                 } else if (value instanceof LocalTime) {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "H:mm:ss")).setCellValue(((LocalTime) value).atDate(LocalDate.now()));
                 } else if (value instanceof LocalDate) {
@@ -1282,6 +1283,34 @@ public abstract class GroupingDialog extends JDialog {
         public PivotColumn(Integer number, Boolean selected) {
             this.number = number;
             this.selected = selected;
+        }
+    }
+
+    //modified from NumberFormats.BuiltInFormat
+    private static class BuiltInFormat implements DisplayFormat, Format {
+        private String formatString;
+
+        public BuiltInFormat(String s) {
+            formatString = s;
+        }
+
+        public int getFormatIndex() {
+            return 0;
+        }
+
+        public boolean isInitialized() {
+            return true;
+        }
+
+        public boolean isBuiltIn() {
+            return true;
+        }
+
+        public void initialize(int pos) {
+        }
+
+        public String getFormatString() {
+            return formatString;
         }
     }
 }
