@@ -9,6 +9,7 @@ public interface ClientMessages extends Messages {
     String ok();
     String close();
     String cancel();
+    String reset();
     String more();
     String logout();
 
