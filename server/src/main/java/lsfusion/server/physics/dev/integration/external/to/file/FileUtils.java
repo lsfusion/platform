@@ -382,6 +382,7 @@ public class FileUtils {
             ftpPath.charset = charset;
         }
         FTPClient ftpClient = new FTPClient();
+        ftpClient.setDataTimeout(120000);
         try {
             if(connectFTPClient(ftpClient, ftpPath, 60000)) { //1 minute = 60 sec
                 if (ftpPath.remoteFile == null || ftpPath.remoteFile.isEmpty() || ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
