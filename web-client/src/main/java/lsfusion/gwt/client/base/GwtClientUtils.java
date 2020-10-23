@@ -741,6 +741,10 @@ public class GwtClientUtils {
         return $doc.activeElement;
     }-*/;
 
+    public static native Element log(String i) /*-{
+        console.log(i);
+    }-*/;
+
     public static String getParentForm(Element element) {
         BodyElement body = Document.get().getBody();
         while (element != body) {
