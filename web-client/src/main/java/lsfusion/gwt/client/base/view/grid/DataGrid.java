@@ -1642,8 +1642,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
                     changeColumn(col);
                     changeRow(row);
 
-                    if(changeEvent && !isChangeOnSingleClick.apply(rowChanged))
-                        handler.consume(false, true); // we'll propagate events upper, to process bindings if there are any (for example CTRL+CLICK)
+                    if(changeEvent && !isChangeOnSingleClick.apply(rowChanged)) // we'll propagate native events to enable (support) "text selection" feature
+                        handler.consume(true, true); // we'll propagate events upper, to process bindings if there are any (for example CTRL+CLICK)
                 }
 //                else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus
 //                        !CellBasedWidgetImpl.get().isFocusable(Element.as(event.getEventTarget())))

@@ -1874,9 +1874,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if(handler.consumed)
             return;
 
-        //commented to return selection
-        //if(GMouseStroke.isDownEvent(handler.event)) // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
-        //    handler.consume(false, true); // but we want to propagate event upper (to GFormController to proceed bindings)
+        // if we consume mouse down we disable "text selection" feature
+//        if(GMouseStroke.isDownEvent(handler.event)) // we want to cancel focusing (to avoid blinking if change event IS CLICK) + native selection odd behaviour (when some events are consumed, and some - not)
+//            handler.consume(false, true); // but we want to propagate event upper (to GFormController to proceed bindings)
     }
     
     public void resetWindowsLayout() {
