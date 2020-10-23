@@ -34,9 +34,13 @@ public class ColorCellEditor extends PopupBasedCellEditor {
         Button btnCancel = new Button(messages.cancel());
         btnCancel.addClickHandler(event -> onCancel());
 
+        Button btnReset = new Button(messages.reset());
+        btnReset.addClickHandler(event -> reset());
+
         FlowPanel bottomPane = new FlowPanel();
         bottomPane.add(btnOk);
         bottomPane.add(btnCancel);
+        bottomPane.add(btnReset);
 
         ResizableVerticalPanel mainPane = new ResizableVerticalPanel();
         mainPane.add(colorPicker);
@@ -48,6 +52,10 @@ public class ColorCellEditor extends PopupBasedCellEditor {
 
     public void commit() {
         commitEditing(new ColorDTO(colorPicker.getHexColor()));
+    }
+
+    public void reset() {
+        commitEditing((ColorDTO) null);
     }
 
     @Override
