@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.*;
@@ -77,7 +78,7 @@ public class FileCellEditor implements CellEditor {
         if(GKeyStroke.isDropEvent(editEvent)) {
             drop(editEvent);
         } else {
-            click(parent, Document.get().createFileInputElement());
+            click(parent, createFileInputElement());
         }
     }
 
@@ -107,6 +108,18 @@ public class FileCellEditor implements CellEditor {
 
         inputElement.click();
     }-*/;
+
+    private InputElement createFileInputElement() {
+        InputElement inputElement = Document.get().createFileInputElement();
+        if(validContentTypes != null) {
+            String accept = "";
+            for(String type : validContentTypes) {
+                accept += (accept.isEmpty() ? "" : ",") + type;
+            }
+            inputElement.setAccept(accept);
+        }
+        return inputElement;
+    }
 
     private Uploader createUploader() {
         LoadingBox loadingBox = new LoadingBox(this::cancel);
