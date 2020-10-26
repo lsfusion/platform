@@ -1,7 +1,7 @@
 # lsfusion-server-4.0-beta3.jar
 FROM openjdk:11.0.8-jdk
 
-ADD https://download.lsfusion.org/java/lsfusion-server-4.0-beta3.jar lsfusion/server.jar
+ADD https://download.lsfusion.org/java/lsfusion-server-4.0-beta3.jar server.jar
 
 WORKDIR /lsfusion
 
