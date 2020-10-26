@@ -16,21 +16,35 @@ services:
     depends_on:
       - db
     volumes:
-      - ./src:/lsfusion/src # host/path:container/path
+      - ./docker-server:/lsfusion # host/path:container/path
     ports:
       - 7652:7652
     network_mode: host
-    environment:
-      LSFUSION_DB_PASSWORD: 11111
-      LSFUSION_DB_HOST: localhost
+# use default credentials if dont define environment variables or modifying settings.properties in ./docker-server/conf
+# available variables names: DB_SERVER, DB_PASSWORD, DB_USER, DB_NAME
+# environment variables can be used separately
+# priority: default -> settings.properties -> environment variables
+# for example
+#    environment:
+#      DB_PASSWORD: 11111
+#      DB_SERVER: localhost
+#      DB_USER: postgres
+#      DB_NAME: lsfusion
 
-  web:
+  client:
     image: lsfusion/client:4.0-beta3-1
     depends_on:
       - server
+    volumes:
+      - ./docker-client/Catalina:/usr/local/tomcat/conf/Catalina # host/path:container/path
     ports:
       - 8080:8080
     network_mode: host
-    environment:
-      LSFUSION_SERVER_HOST: localhost
-      LSFUSION_SERVER_PORT: 7652
+# use default credentials if dont define environment variables or modifying ROOT.xml in ./docker-client/Catalina/localhost.
+# available variables names: SERVER_HOST, SERVER_PORT
+# if use environment variables - use SERVER_HOST and SERVER_PORT both
+# priority: default -> ROOT.xml -> environment variables
+# for example
+#    environment:
+#      SERVER_HOST: localhost
+#      SERVER_PORT: 7652
