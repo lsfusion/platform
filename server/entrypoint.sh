@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 if ! [ -e conf/settings.properties ]; then
-  mkdir -p conf
+  mkdir conf
   cat > conf/settings.properties <<EOF
 db.server=localhost
 db.name=lsfusion
@@ -26,6 +26,10 @@ fi
 
 if ! [ -z "$DB_PASSWORD" ]; then
     command+=" -Ddb.password=$DB_PASSWORD"
+fi
+
+if ! [ -z "$JAVA_OPTIONS" ]; then
+    export JAVA_OPTS="$JAVA_OPTIONS"
 fi
 
 command+=" lsfusion.server.logics.BusinessLogicsBootstrap"

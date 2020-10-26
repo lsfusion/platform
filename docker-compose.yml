@@ -21,7 +21,7 @@ services:
       - 7652:7652
     network_mode: host
 # use default credentials if dont define environment variables or modifying settings.properties in ./docker-server/conf
-# available variables names: DB_SERVER, DB_PASSWORD, DB_USER, DB_NAME
+# available variables names: DB_SERVER, DB_PASSWORD, DB_USER, DB_NAME, JAVA_OPTIONS
 # environment variables can be used separately
 # priority: default -> settings.properties -> environment variables
 # for example
@@ -30,13 +30,14 @@ services:
 #      DB_SERVER: localhost
 #      DB_USER: postgres
 #      DB_NAME: lsfusion
+#      JAVA_OPTIONS: -Xmx4000m
 
   client:
     image: lsfusion/client:4.0-beta3-1
     depends_on:
       - server
     volumes:
-      - ./docker-client/Catalina:/usr/local/tomcat/conf/Catalina # host/path:container/path
+      - ./docker-client:/usr/local/tomcat/conf/Catalina # host/path:container/path
     ports:
       - 8080:8080
     network_mode: host
@@ -48,3 +49,4 @@ services:
 #    environment:
 #      SERVER_HOST: localhost
 #      SERVER_PORT: 7652
+#      JAVA_OPTIONS: -Xmx4000m
