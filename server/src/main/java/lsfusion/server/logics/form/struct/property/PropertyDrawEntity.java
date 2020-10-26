@@ -288,21 +288,24 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if(eventActionImplement != null)
             return eventActionImplement.mapObjects(getEditMapping());
 
-        // default implementations for group change and change wys
-        if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) {
+        // default implementations for group change, change wys and reset
+        if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId) || RESET.equals(actionId)) {
             ActionObjectEntity<?> eventAction = getEventAction(CHANGE, form);
             if (eventAction != null) {
                 if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
                     return eventAction.getGroupChange(getToDraw(form));
-                else { // if CHANGE action requests DataClass, then use this action
-                    assert CHANGE_WYS.equals(actionId);
+                else if(CHANGE_WYS.equals(actionId)){ // if CHANGE action requests DataClass, then use this action
                     if (eventAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default
                         return eventAction;
                     else {
-                        ActionMapImplement<?, P> defaultWYSAction = eventProperty.getDefaultWYSAction();
+                        ActionMapImplement<?, P> defaultWYSAction = eventProperty.getDefaultContextMenuAction(true);
                         if(defaultWYSAction != null) // assert getSimpleRequestInputType != null
                             return defaultWYSAction.mapObjects(getEditMapping());
                     }
+                } else {
+                    ActionMapImplement<?, P> defaultResetAction = eventProperty.getDefaultContextMenuAction(false);
+                    if (defaultResetAction != null)
+                        return defaultResetAction.mapObjects(getEditMapping());
                 }
             }
         }

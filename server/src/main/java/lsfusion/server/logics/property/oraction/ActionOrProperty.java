@@ -150,6 +150,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         setContextMenuAction(ServerResponse.GROUP_CHANGE, LocalizedString.create("{logics.property.groupchange}"));
         setContextMenuAction(ServerResponse.EDIT_OBJECT, LocalizedString.create("{logics.property.editobject}"));
+        setContextMenuAction(ServerResponse.RESET, LocalizedString.create("{logics.property.reset}"));
 
 //        notFinalized.put(this, ExceptionUtils.getStackTrace());
     }
@@ -282,7 +283,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             return eventAction;
         }
 
-        if(GROUP_CHANGE.equals(eventActionSID))
+        if(GROUP_CHANGE.equals(eventActionSID) || RESET.equals(eventActionSID))
             return null;
 
         assert CHANGE.equals(eventActionSID) || CHANGE_WYS.equals(eventActionSID) || EDIT_OBJECT.equals(eventActionSID);
@@ -292,7 +293,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ImList<Property> viewProperties);
 
-    public ActionMapImplement<?, T> getDefaultWYSAction() {
+    public ActionMapImplement<?, T> getDefaultContextMenuAction(boolean wys) {
         return null;
     }
 
