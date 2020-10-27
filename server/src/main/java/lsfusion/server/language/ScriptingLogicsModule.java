@@ -816,14 +816,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormEntity(this, form);
     }
 
-    public LP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedDProp(String returnClass, List<String> paramClasses, List<ResolveClassSet> signature, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkNoInline(innerProp);
 
         ValueClass value = findClass(returnClass);
-        ValueClass[] params = new ValueClass[paramClasses.size()];
-        for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = findClass(paramClasses.get(i));
-        }
+        ValueClass[] params = getParams(paramClasses, signature);
 
         if (sessionProp) {
             return addSDProp(LocalizedString.NONAME, isLocalScope, value, nestedType, params);
@@ -833,20 +830,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LP<?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, List<ResolveClassSet> signature, boolean isExclusive, boolean isChecked, boolean isLast, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass value = findClass(returnClass);
-        ValueClass[] params = new ValueClass[paramClasses.size()];
-        for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = findClass(paramClasses.get(i));
-        }
+        ValueClass[] params = getParams(paramClasses, signature);
         return addAUProp(null, false, isExclusive, isChecked, isLast, type, LocalizedString.NONAME, value, params);
     }
 
-    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass[] params = new ValueClass[paramClasses.size()];
-        for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = findClass(paramClasses.get(i));
-        }
+    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, List<String> paramClasses, List<ResolveClassSet> signature, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass[] params = getParams(paramClasses, signature);
         LA<?> result;
         if (type == ListCaseAction.AbstractType.LIST) {
             result = addAbstractListAProp(isChecked, isLast, params);
@@ -854,6 +845,24 @@ public class ScriptingLogicsModule extends LogicsModule {
             result = addAbstractCaseAProp(type, isExclusive, isChecked, isLast, params);
         }
         return result;
+    }
+
+    private ValueClass[] getParams(List<String> paramClasses, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass[] params;
+        if(paramClasses == null) {
+            params = new ValueClass[signature.size()];
+            for (int i = 0; i < signature.size(); i++) {
+                ResolveClassSet signatureParam = signature.get(i);
+                checks.checkSignatureParam(signatureParam);
+                params[i] = signatureParam.getCommonClass();
+            }
+        } else {
+            params = new ValueClass[paramClasses.size()];
+            for (int i = 0; i < paramClasses.size(); i++) {
+                params[i] = findClass(paramClasses.get(i));
+            }
+        }
+        return params;
     }
 
     // todo [dale]: выделить общий код    
@@ -1077,18 +1086,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                 paramClasses.add(null);
             } else {
                 paramClasses.add(param.cls.getResolveSet());
-            }
-        }
-        return paramClasses;
-    }
-
-    public List<String> getClassIdsFromTypedParams(List<TypedParameter> params) {
-        List<String> paramClasses = new ArrayList<>();
-        for (TypedParameter param : params) {
-            if (param.cls == null) {
-                paramClasses.add(null);
-            } else {
-                paramClasses.add(param.cls.getParsedName());
             }
         }
         return paramClasses;
@@ -2182,7 +2179,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LP<?>> res = new ArrayList<>();
         for (String name : names) {
-            LP<?> lcp = addScriptedDProp(returnClassName, paramClassNames, true, false, true, nestedType);
+            LP<?> lcp = addScriptedDProp(returnClassName, paramClassNames, new ArrayList<>(), true, false, true, nestedType);
             addLocal(lcp, new LocalPropertyData(name, signature));
             lcp.property.setDebugInfo(new PropertyDebugInfo(point, false));
             res.add(lcp);

@@ -1349,7 +1349,7 @@ scope {
 			$actionStatement::topCaption = caption = $declaration.caption;
 		}
         (
-            (   ciADB=contextIndependentActionDB { if(inMainParseState()) { action = $ciADB.action; signature = $ciADB.signature; } }
+            (   ciADB=contextIndependentActionDB[context] { if(inMainParseState()) { action = $ciADB.action; signature = $ciADB.signature; } }
                 ((aopt=actionOptions[action, actionName, caption, context, signature] { as = $aopt.as; } ) | ';')
             )
         |
@@ -1697,7 +1697,7 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 	}
 }
 	: 	dataDef=dataPropertyDefinition[context, innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
-	|	abstractDef=abstractPropertyDefinition[innerPD] { $property = $abstractDef.property; $signature = $abstractDef.signature; }
+	|	abstractDef=abstractPropertyDefinition[context, innerPD] { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
 	|	aggrDef=aggrPropertyDefinition[context, dynamic, innerPD] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
@@ -1840,15 +1840,8 @@ dataPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [L
 }
 @after {
 	if (inMainParseState()) {
-	    List<String> params;
-	    if($paramClassNames.ids == null) {
-	        $signature = self.getClassesFromTypedParams(context);
-	        params = self.getClassIdsFromTypedParams(context);
-	    } else {
-		    $signature = self.createClassSetsFromClassNames($paramClassNames.ids);
-		    params = $paramClassNames.ids;
-		}
-		$property = self.addScriptedDProp($returnClass.sid, params, localProp, innerPD, false, nestedType);
+	    $signature = $paramClassNames.ids == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames($paramClassNames.ids);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, $signature, localProp, innerPD, false, nestedType);
 	}
 }
 	:	'DATA'
@@ -1867,7 +1860,7 @@ nestedLocalModifier returns[LocalNestedType nestedType = null]
         )?
 	;
 
-abstractPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
+abstractPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
 	boolean isLast = false;
@@ -1876,8 +1869,8 @@ abstractPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveCl
 }
 @after {
 	if (inMainParseState()) {
-		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive, isChecked, isLast, innerPD);
+        $signature = $paramClassNames.ids == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames($paramClassNames.ids);
+        $property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, $signature, isExclusive, isChecked, isLast, innerPD);
 	}
 }
 	:	'ABSTRACT'
@@ -1890,12 +1883,12 @@ abstractPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveCl
 		)?
 		('FULL' { isChecked = true; })?
 		returnClass=classId
-		'('
+		('('
 			paramClassNames=classIdList
-		')'
+		')')?
 	;
 
-abstractActionDefinition returns [LA action, List<ResolveClassSet> signature]
+abstractActionDefinition[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
 	boolean isLast = false;
@@ -1904,8 +1897,8 @@ abstractActionDefinition returns [LA action, List<ResolveClassSet> signature]
 }
 @after {
 	if (inMainParseState()) {
-		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$action = self.addScriptedAbstractAction(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
+		$signature = $paramClassNames.ids == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames($paramClassNames.ids);
+		$action = self.addScriptedAbstractAction(type, $paramClassNames.ids, $signature, isExclusive, isChecked, isLast);
 	}
 }
 	:	'ABSTRACT'
@@ -1919,9 +1912,9 @@ abstractActionDefinition returns [LA action, List<ResolveClassSet> signature]
 		)
 		)?
 		('FULL' { isChecked = true; })?
-		'(' 
+		('('
 			paramClassNames=classIdList
-		')'	
+		')')?
 	;
 	
 overridePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2993,7 +2986,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $action = $emptyADB.action; }
 	;
 
-contextIndependentActionDB returns [LA action, List<ResolveClassSet> signature]
+contextIndependentActionDB[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 	Boolean needToCreateDelegate = null;
@@ -3008,7 +3001,7 @@ contextIndependentActionDB returns [LA action, List<ResolveClassSet> signature]
 	}
 }
 	:	customADB=customActionDefinitionBody { $action = $customADB.action; $signature = $customADB.signature; }
-    |	abstractActionDef=abstractActionDefinition { $action = $abstractActionDef.action; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
+    |	abstractActionDef=abstractActionDefinition[context] { $action = $abstractActionDef.action; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
 	;
 
 mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [MappedForm mapped, List<FormActionProps> props = new ArrayList<>(), FormEntity form]
