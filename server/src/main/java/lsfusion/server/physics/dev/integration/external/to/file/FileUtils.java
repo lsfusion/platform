@@ -109,11 +109,7 @@ public class FileUtils {
                 throw new RuntimeException("Incorrect login or password. Renaming file from ftp failed");
             }
         } finally {
-            try {
-                disconnectFTPClient(ftpClient);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            disconnectFTPClient(ftpClient);
         }
     }
 
@@ -255,11 +251,7 @@ public class FileUtils {
                 result = "Incorrect login or password. Writing file from ftp failed";
             }
         } finally {
-            try {
-                disconnectFTPClient(ftpClient);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            disconnectFTPClient(ftpClient);
         }
         return result;
     }
@@ -433,10 +425,16 @@ public class FileUtils {
         return login;
     }
 
-    private static void disconnectFTPClient(FTPClient ftpClient) throws IOException {
+    private static void disconnectFTPClient(FTPClient ftpClient) {
         if (ftpClient.isConnected()) {
-            ftpClient.logout();
-            ftpClient.disconnect();
+            new Thread(() -> {
+                try {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
     }
 }
