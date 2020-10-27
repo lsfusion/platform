@@ -90,7 +90,7 @@ public class GCalendar extends GSimpleStateTableView {
         return calendar;
 
         function setTooltip(el) {
-            if (calendar.recordElement != null) {
+            if (calendar.recordElement != null && !el._tippy) {
                 $wnd.tippy(el, {
                     content: calendar.recordElement,
                     showOnCreate: true,

@@ -151,6 +151,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         for(Map.Entry<GGroupObjectValue, JavaScriptObject> oldMarker : oldMarkers.entrySet()) {
             removeMarker(oldMarker.getValue(), markerClusters);
             markers.remove(oldMarker.getKey());
+            groupMarkers.remove(oldMarker.getKey());
         }
 
         for(JavaScriptObject line : lines)
