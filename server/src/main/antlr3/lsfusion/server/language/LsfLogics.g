@@ -1696,7 +1696,7 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 		self.propertyDefinitionCreated($property, point);
 	}
 }
-	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
+	: 	dataDef=dataPropertyDefinition[context, innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition[innerPD] { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
 	|	aggrDef=aggrPropertyDefinition[context, dynamic, innerPD] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
@@ -1832,23 +1832,31 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	;
 
 
-dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
+dataPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean localProp = false;
 	LocalNestedType nestedType = null;
+
 }
 @after {
 	if (inMainParseState()) {
-		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, nestedType);
+	    List<String> params;
+	    if($paramClassNames.ids == null) {
+	        $signature = self.getClassesFromTypedParams(context);
+	        params = self.getClassIdsFromTypedParams(context);
+	    } else {
+		    $signature = self.createClassSetsFromClassNames($paramClassNames.ids);
+		    params = $paramClassNames.ids;
+		}
+		$property = self.addScriptedDProp($returnClass.sid, params, localProp, innerPD, false, nestedType);
 	}
 }
 	:	'DATA'
 		('LOCAL' nlm=nestedLocalModifier { localProp = true; nestedType = $nlm.nestedType; })?
 		returnClass=classId
-		'('
+		('('
 			paramClassNames=classIdList
-		')'
+		')')?
 	;
 
 nestedLocalModifier returns[LocalNestedType nestedType = null]

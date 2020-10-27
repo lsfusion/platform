@@ -1082,6 +1082,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramClasses;
     }
 
+    public List<String> getClassIdsFromTypedParams(List<TypedParameter> params) {
+        List<String> paramClasses = new ArrayList<>();
+        for (TypedParameter param : params) {
+            if (param.cls == null) {
+                paramClasses.add(null);
+            } else {
+                paramClasses.add(param.cls.getParsedName());
+            }
+        }
+        return paramClasses;
+    }
+
     public ImList<ValueClass> getValueClassesFromTypedParams(List<TypedParameter> params) {
         MList<ValueClass> mResult = ListFact.mList(params.size());
         for (TypedParameter param : params) {
