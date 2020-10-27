@@ -74,7 +74,6 @@ import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.OrderClass;
-import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -83,8 +82,6 @@ import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.interactive.action.change.AbstractDefaultChangeAction;
-import lsfusion.server.logics.form.interactive.action.change.DefaultResetObjectAction;
 import lsfusion.server.logics.form.interactive.action.change.DefaultWYSObjectAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
@@ -1685,13 +1682,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     @Override
     @IdentityStrongLazy // STRONG for using in security policy
-    public ActionMapImplement<?, T> getDefaultContextMenuAction(boolean wys) {
+    public ActionMapImplement<?, T> getDefaultWYSAction() {
         ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // because in property draw definition also FULL is used (and not ASSERTFULL)
         if(interfaceClasses.size() < interfaces.size()) // we don't have all classes
             return null;
 
         ValueClass valueClass = getValueClass(ClassType.tryEditPolicy);
-        if (wys ? !(valueClass instanceof CustomClass) : !(valueClass instanceof FileClass))
+        if (!(valueClass instanceof CustomClass))
             return null;
 
         if (!canBeChanged())
@@ -1699,10 +1696,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-
-        AbstractDefaultChangeAction<T> changeAction =
-                    wys ? new DefaultWYSObjectAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, (CustomClass) valueClass)
-                        : new DefaultResetObjectAction<>(LocalizedString.NONAME, this, listInterfaces, listValues);
+        DefaultWYSObjectAction<T> changeAction = new DefaultWYSObjectAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, (CustomClass) valueClass);
         return changeAction.getImplement(listInterfaces);
     }
 
