@@ -61,7 +61,9 @@ public class ClientFormLayout extends JPanel {
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.getHorizontalScrollBar().setUnitIncrement(14);
         scroll.setViewportView(getComponentView(mainContainer));
-        add(scroll, BorderLayout.CENTER);
+        // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
+        JLayer<JScrollPane> scrollLayer = new JLayer<>(scroll, new MouseWheelScrollLayerUI());
+        add(scrollLayer, BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {

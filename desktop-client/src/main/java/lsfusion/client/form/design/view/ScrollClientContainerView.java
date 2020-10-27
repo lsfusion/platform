@@ -29,7 +29,9 @@ public class ScrollClientContainerView extends AbstractClientContainerView {
         ClientColorUtils.designComponent(scroll, container.design);
 
         panel = new ContainerViewPanel();
-        panel.add(scroll, BorderLayout.CENTER);
+        // to forward a mouse wheel event in nested scroll pane to the parent scroll pane
+        JLayer<JScrollPane> scrollLayer = new JLayer<>(scroll, new MouseWheelScrollLayerUI());
+        panel.add(scrollLayer, BorderLayout.CENTER);
     }
 
     @Override
