@@ -2037,6 +2037,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return null;
     }
 
+    public boolean supportsReset() {
+        return false;
+    }
+
     public boolean isFull(AlgInfoType calcType) { // обозначает что можно вывести классы всех параметров, используется в частности для материализации (stored, hints) чтобы знать типы колонок, или даже в subQuery (для статистики)
         return isFull(interfaces, calcType);
     }

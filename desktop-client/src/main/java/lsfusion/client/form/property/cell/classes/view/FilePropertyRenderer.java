@@ -15,7 +15,7 @@ public abstract class FilePropertyRenderer extends LabelPropertyRenderer {
 
     public void setValue(Object value) {
         if (value != null) {
-            getComponent().setText(null);
+            getComponent().setText("");
         } else {
             getComponent().setIcon(null);
         }
