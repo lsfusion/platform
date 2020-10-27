@@ -445,6 +445,15 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="setupResetFileTask" class="lsfusion.server.physics.admin.systemevents.SetupResetFileTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="finalizeTask"/>
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="setupPropertyPolicyFormsTask" class="lsfusion.server.physics.admin.authentication.security.controller.init.policy.SetupPropertyPolicyFormsTask">
         <property name="dependencies">
             <set>
@@ -467,6 +476,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="setupDrillDownTask"/>
+                <ref bean="setupResetFileTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

@@ -60,6 +60,7 @@ public enum ClassType {
     // остальные
     public static final ClassType casePolicy = signaturePolicy; // вообще тут конечно, либо ASSERT из FULL убрать или NOPREV добавить, но такой вариант долгое время существовал
     public static final ClassType drillDownPolicy = signaturePolicy; // в явную есть проверки что только для isFull работать (хотя формально необязательно)
+    public static final ClassType resetPolicy = signaturePolicy; // as drillDownPolicy
     public static final ClassType aroundPolicy = signaturePolicy; // наследование ннтерфейса, как правило PREV'ов нет, но в общем-то никто не запрещает
 
     public static final ClassType valuePolicy = signaturePolicy; 
