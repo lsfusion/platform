@@ -194,6 +194,7 @@ public abstract class ReadUtils {
         } finally {
             try {
                 if (ftpClient.isConnected()) {
+                    ftpClient.setSoTimeout(10000);
                     ftpClient.logout();
                     ftpClient.disconnect();
                 }
