@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:12.4
     volumes:
-      - ./data:/var/lib/postgresql/data # host/path:container/path
+      - ./docker-db:/var/lib/postgresql/data # host/path:container/path
     ports:
       - 5432:5432
     network_mode: host
@@ -37,7 +37,7 @@ services:
     depends_on:
       - server
     volumes:
-      - ./docker-client:/usr/local/tomcat/conf/Catalina # host/path:container/path
+      - ./docker-client-conf:/usr/local/tomcat/conf/Catalina # host/path:container/path
     ports:
       - 8080:8080
     network_mode: host

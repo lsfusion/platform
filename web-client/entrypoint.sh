@@ -9,6 +9,7 @@ if ! [ -e conf/Catalina/localhost/ROOT.xml ]; then
   <Parameter name="port" value="${SERVER_PORT:-7652}" override="false"/>
 </Context>
 EOF
+# there are no parameters in catalina.sh and we use server.xml for configuring tomcat via docker environment variables
   elif ! [ -z "$SERVER_HOST" ] && ! [ -z "$SERVER_PORT" ]; then
     sed -i -e "/unpackWARs=\"true\" autoDeploy=\"true\">/a\
     <Context path=\"\"> \
