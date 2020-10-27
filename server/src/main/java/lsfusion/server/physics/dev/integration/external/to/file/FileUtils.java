@@ -427,14 +427,15 @@ public class FileUtils {
 
     private static void disconnectFTPClient(FTPClient ftpClient) {
         if (ftpClient.isConnected()) {
-            new Thread(() -> {
+//            new Thread(() -> {
                 try {
+                    ftpClient.setSoTimeout(10000);
                     ftpClient.logout();
                     ftpClient.disconnect();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }).start();
+//            }).start();
         }
     }
 }
