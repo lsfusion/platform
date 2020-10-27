@@ -12,6 +12,7 @@ services:
       POSTGRES_PASSWORD: 11111
 
   server:
+# jenkins use regex for replace image version in next line before build. Check jenkins branch on change
     image: lsfusion/server:4.0-beta3-1
     depends_on:
       - db
@@ -33,6 +34,7 @@ services:
 #      JAVA_OPTS: -Xmx4000m
 
   client:
+# jenkins use regex for replace image version in next line before build. Check jenkins branch on change
     image: lsfusion/client:4.0-beta3-1
     depends_on:
       - server
