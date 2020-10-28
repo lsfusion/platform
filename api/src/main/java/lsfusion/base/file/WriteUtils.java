@@ -110,6 +110,7 @@ public class WriteUtils {
         } finally {
             try {
                 if (ftpClient.isConnected()) {
+                    ftpClient.setSoTimeout(10000);
                     ftpClient.logout();
                     ftpClient.disconnect();
                 }
