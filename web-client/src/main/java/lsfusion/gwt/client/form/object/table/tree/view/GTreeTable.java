@@ -98,7 +98,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         getElement().setPropertyObject("groupObject", groupObject);
 
         if(treeGroupController.isExpandOnClick())
-            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK), new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null),
+            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null),
+                    () -> {
+                        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
+                        return node != null && node.isExpandable();
+                    },
                     event -> {
                         GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
                         if (node != null && node.isExpandable()) {
