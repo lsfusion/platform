@@ -22,4 +22,5 @@ public interface EditContext {
     boolean isFocusable();
     Object forceSetFocus();
     void restoreSetFocus(Object forceSetFocus);
+    boolean isSetLastBlurred();
 }
