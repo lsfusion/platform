@@ -99,13 +99,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         if(treeGroupController.isExpandOnClick())
             form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null),
-                    () -> {
-                        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
-                        return node != null && node.isExpandable();
-                    },
+                    () -> isSelectedNodeExpandable(tree.getNodeByRecord(getSelectedRowValue())),
                     event -> {
                         GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
-                        if (node != null && node.isExpandable()) {
+                        if (isSelectedNodeExpandable(node)) {
                             if (!node.isOpen()) {
                                 fireExpandNode(node);
                             } else {
@@ -113,6 +110,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                             }
                         }
                     }, this, groupObject);
+    }
+
+    private static boolean isSelectedNodeExpandable(GTreeTableNode node) {
+        return node != null && node.isExpandable();
     }
 
     private static GGroupObject lastGroupObject(GTreeGroup treeGroup) {
