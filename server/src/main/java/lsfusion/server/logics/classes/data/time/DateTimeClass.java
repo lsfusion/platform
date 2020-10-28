@@ -22,7 +22,8 @@ import org.apache.poi.ss.usermodel.CellValue;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -35,6 +36,8 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
 
     public final static DateTimeClass instance = new DateTimeClass();
 
+    private final static String dateTimePattern = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)).toPattern();
+
     static {
         DataClass.storeClass(instance);
     }
@@ -42,17 +45,19 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
     private DateTimeClass() { super(LocalizedString.create("{classes.date.with.time}")); }
 
     public int getReportPreferredWidth() {
-        return 75;
+        return 80;
     }
 
     public Class getReportJavaClass() {
         return java.util.Date.class;
     }
 
+    @Override
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
+        reportField.pattern = dateTimePattern;
     }
 
     public byte getTypeID() {

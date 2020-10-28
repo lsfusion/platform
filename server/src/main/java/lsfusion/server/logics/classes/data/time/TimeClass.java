@@ -10,6 +10,7 @@ import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -20,6 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -29,6 +32,8 @@ import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 
 public class TimeClass extends DataClass<LocalTime> {
     public final static TimeClass instance = new TimeClass();
+
+    private final static String timePattern = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.MEDIUM)).toPattern();
 
     static {
         DataClass.storeClass(instance);
@@ -46,6 +51,13 @@ public class TimeClass extends DataClass<LocalTime> {
 
     protected Class getReportJavaClass() {
         return java.util.Date.class;
+    }
+
+    @Override
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
+
+        reportField.pattern = timePattern;
     }
 
     public LocalTime parseString(String s) throws ParseException {
