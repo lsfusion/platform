@@ -1517,10 +1517,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return addBinding(event::isEvent, env, pressed, component, groupObject);
     }
     public int addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event, env, null, pressed, component, groupObject);
+    }
+    public int addBinding(BindingCheck event, GBindingEnv env, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
             @Override
             public boolean showing() {
                 return component != null ? isShowing(component) : true;
+            }
+
+            @Override
+            public boolean enabled() {
+                return enabled != null ? enabled.get() : super.enabled();
             }
 
             @Override
