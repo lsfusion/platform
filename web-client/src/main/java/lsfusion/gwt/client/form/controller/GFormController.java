@@ -99,6 +99,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -374,7 +375,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         filterCheck.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
         if (filter.key != null)
-            addBinding(new GKeyInputEvent(filter.key), (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
+            addBinding(new GKeyInputEvent(filter.key), null, (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
     }
 
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
@@ -390,7 +391,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             final int filterIndex = i;
             filterBox.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
             if (filter.key != null)
-                addBinding(new GKeyInputEvent(filter.key), (event) -> {
+                addBinding(new GKeyInputEvent(filter.key), null, (event) -> {
                     filterBox.setSelectedIndex(filterIndex + 1);
                     setRegularFilter(filterGroup, filterIndex);
                 }, filterBox, filterGroup.groupObject);
@@ -1502,7 +1503,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public ArrayList<Integer> addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
         ArrayList<Integer> result = new ArrayList<>();
         for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
-            result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject));
+            result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, null, bindingExec, widget, propertyDraw.groupObject));
         return result;
     }
     public void removePropertyBindings(ArrayList<Integer> indices) {
@@ -1510,17 +1511,26 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             removeBinding(index);
     }
 
-    public int addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
+    public int addBinding(GInputEvent event, Callable<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event, GBindingEnv.AUTO, enabled, pressed, component, groupObject);
     }
-    public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event::isEvent, env, pressed, component, groupObject);
+    public int addBinding(GInputEvent event, GBindingEnv env, Callable<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event::isEvent, env, enabled, pressed, component, groupObject);
     }
-    public int addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+    public int addBinding(BindingCheck event, GBindingEnv env, Callable<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
             @Override
             public boolean showing() {
                 return component != null ? isShowing(component) : true;
+            }
+
+            @Override
+            public boolean enabled() {
+                try {
+                    return enabled != null ? enabled.call() : super.enabled();
+                } catch (Exception e) {
+                    return false;
+                }
             }
 
             @Override
@@ -1548,6 +1558,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private void addEnterBinding(boolean shiftPressed, GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
         addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
                 new GBindingEnv(-100, null, null, bindGroup, GBindingMode.NO, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
+                null,
                 event -> selectNextElement.accept(!shiftPressed),
                 null,
                 groupObject);
