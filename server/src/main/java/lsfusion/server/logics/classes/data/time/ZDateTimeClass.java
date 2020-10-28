@@ -36,6 +36,8 @@ public class ZDateTimeClass extends DataClass<Instant> {
 
     public final static ZDateTimeClass instance = new ZDateTimeClass();
 
+    private final static String dateTimePattern = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)).toPattern();
+
     static {
         DataClass.storeClass(instance);
     }
@@ -43,7 +45,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
     private ZDateTimeClass() { super(LocalizedString.create("{classes.date.with.time.with.zone}")); }
 
     public int getReportPreferredWidth() {
-        return 75;
+        return 80;
     }
 
     public Class getReportJavaClass() {
@@ -54,6 +56,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
         super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
+        reportField.pattern = dateTimePattern;
     }
 
     public byte getTypeID() {
