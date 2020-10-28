@@ -1784,9 +1784,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 forceSetFocus = null;
             }
 
-            if(blurred) // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
-                MainFrame.setLastBlurredElement(editContext.getFocusElement());
-            else {
+            if(blurred) { // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
+                if(editContext.isSetLastBlurred())
+                    MainFrame.setLastBlurredElement(editContext.getFocusElement());
+            } else {
                 if (focusedElement != null)
                     focusedElement.focus();
             }

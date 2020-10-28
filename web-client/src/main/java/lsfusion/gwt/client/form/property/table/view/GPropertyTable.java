@@ -150,6 +150,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
                     }
 
                     @Override
+                    public boolean isSetLastBlurred() {
+                        return true;
+                    }
+
+                    @Override
                     public Object forceSetFocus() {
                         int selectedColumn = getSelectedColumn();
                         setSelectedColumn(editCell.getColumnIndex());

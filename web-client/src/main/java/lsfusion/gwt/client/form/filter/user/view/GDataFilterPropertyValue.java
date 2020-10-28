@@ -64,6 +64,11 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
+    public boolean isSetLastBlurred() {
+        return false;
+    }
+
+    @Override
     public Object forceSetFocus() {
         throw new UnsupportedOperationException();
     }

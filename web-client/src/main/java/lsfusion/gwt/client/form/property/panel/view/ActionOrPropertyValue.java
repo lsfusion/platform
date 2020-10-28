@@ -140,8 +140,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     protected void onBlur(EventHandler handler) {
-        form.previewBlurEvent(handler.event);
-
         borderWidget.removeStyleName("panelRendererValueFocused");
     }
 
