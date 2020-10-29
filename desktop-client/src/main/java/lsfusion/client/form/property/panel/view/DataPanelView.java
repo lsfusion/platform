@@ -83,7 +83,7 @@ public class DataPanelView extends JPanel implements PanelView {
                         public void run() {
                             ClientFormLayout focusLayout = SwingUtils.getClientFormLayout(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
                             ClientFormLayout curLayout = SwingUtils.getClientFormLayout(table);
-                            if ((curLayout != null) && (curLayout.equals(focusLayout))) {
+                            if ((curLayout != null) && (curLayout.equals(focusLayout)) && SwingUtils.isRecursivelyVisible(table)) {
                                 forceChangeValue(event.getValue());
                             }
                         }
