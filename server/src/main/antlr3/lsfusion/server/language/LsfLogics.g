@@ -3000,7 +3000,7 @@ contextIndependentActionDB[List<TypedParameter> context] returns [LA action, Lis
         self.topContextActionDefinitionBodyCreated(laWithParams);
 	}
 }
-	:	customADB=customActionDefinitionBody { $action = $customADB.action; $signature = $customADB.signature; }
+	:	internalADB=internalActionDefinitionBody[context] { $action = $internalADB.action; $signature = $internalADB.signature; }
     |	abstractActionDef=abstractActionDefinition[context] { $action = $abstractActionDef.action; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
 	;
 
@@ -3332,18 +3332,21 @@ idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<Strin
 		(',' id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); })*
 	;
 	
-customActionDefinitionBody returns [LA action, List<ResolveClassSet> signature]
+internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
 }
 @after {
 	if (inMainParseState()) {
+
+	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
+
 	    if($code.val == null)
-	        $action = self.addScriptedCustomAction($classN.val, classes, allowNullValue);
+	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
-		    $action = self.addScriptedCustomAction($code.val, allowNullValue);
-		$signature = (classes == null ? Collections.<ResolveClassSet>nCopies($action.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes)); 
+		    $action = self.addScriptedInternalAction($code.val, allowNullValue);
+		$signature = classes == null ? (contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($action.listInterfaces.size(), null) : contextParams) : self.createClassSetsFromClassNames(classes);
 	}
 }
 	:	'INTERNAL'
