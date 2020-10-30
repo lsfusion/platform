@@ -19,6 +19,7 @@ public class GCalendar extends GSimpleStateTableView {
         super(form, grid);
         this.calendarDateType = calendarDateType;
         this.controller = getController();
+        changePageSize(150);
     }
 
     @Override
@@ -31,9 +32,10 @@ public class GCalendar extends GSimpleStateTableView {
             element.getStyle().setProperty("cursor", "default");
 
             calendar = createCalendar(element, controller, calendarDateType);
+            goToInitialDate(list);
         }
         setRecordElement(calendar, recordElement);
-        updateEvents(calendar, list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller);
+        updateEvents(calendar, list, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller);
     }
 
     protected native void setRecordElement(JavaScriptObject calendar, Element recordElement)/*-{
@@ -48,6 +50,16 @@ public class GCalendar extends GSimpleStateTableView {
 
     protected native void resize(JavaScriptObject calendar)/*-{
         calendar.updateSize();
+    }-*/;
+
+    protected native void goToInitialDate(JavaScriptObject objects)/*-{
+        for (var i = 0; i < objects.length; i++) {
+            var startEventFieldName = this.@GCalendar::getEventName(*)(objects[i], 'From');
+            if (this.@GCalendar::isCurrentKey(*)(objects[i])) {
+                this.@GCalendar::calendar.gotoDate(objects[i][startEventFieldName]);
+                break;
+            }
+        }
     }-*/;
 
     protected boolean isCurrentKey(JavaScriptObject object){
@@ -135,11 +147,11 @@ public class GCalendar extends GSimpleStateTableView {
         }
     }-*/;
 
-    protected native JavaScriptObject updateEvents(JavaScriptObject calendar, JavaScriptObject objects, String calendarDateType, JsArray<JavaScriptObject> columns, JavaScriptObject controller)/*-{
+    protected native JavaScriptObject updateEvents(JavaScriptObject calendar, JavaScriptObject objects, JsArray<JavaScriptObject> columns, JavaScriptObject controller)/*-{
         var events = [];
         for (var i = 0; i < objects.length; i++) {
-            var startEventFieldName = getEventName(objects[i], '') != null ? getEventName(objects[i], '') : getEventName(objects[i], 'From');
-            var endEventFieldName = getEventName(objects[i], 'To');
+            var startEventFieldName = this.@GCalendar::getEventName(*)(objects[i], 'From');
+            var endEventFieldName = this.@GCalendar::getEventName(*)(objects[i], 'To');
             var isCurrentKey = this.@GCalendar::isCurrentKey(*)(objects[i]);
             var event = {
                 'title': getTitle(objects[i]),
@@ -147,7 +159,7 @@ public class GCalendar extends GSimpleStateTableView {
                 'end': endEventFieldName != null ? objects[i][endEventFieldName] : null,
                 'editable': !controller.isPropertyReadOnly(startEventFieldName, objects[i]) && (endEventFieldName == null || !controller.isPropertyReadOnly(endEventFieldName, objects[i])),
                 'durationEditable': endEventFieldName !== null && !controller.isPropertyReadOnly(endEventFieldName, objects[i]),
-                'allDay': calendarDateType === 'date',
+                'allDay': this.@GCalendar::calendarDateType === 'date',
                 'index': i,
                 'startFieldName': startEventFieldName,
                 'endFieldName': endEventFieldName,
@@ -177,13 +189,13 @@ public class GCalendar extends GSimpleStateTableView {
             }
             return title;
         }
+    }-*/;
 
-        function getEventName(object, position) {
-            if (object[calendarDateType + position] !== null && typeof object[calendarDateType + position] !== 'undefined') {
-                return calendarDateType + position;
-            } else {
-                return null;
-            }
-        }
+    protected native String getEventName(JavaScriptObject object, String position)/*-{
+        var calendarDateType = this.@GCalendar::calendarDateType;
+        if (object[calendarDateType + ''] != null)
+            return calendarDateType;
+        else
+            return calendarDateType + position;
     }-*/;
 }

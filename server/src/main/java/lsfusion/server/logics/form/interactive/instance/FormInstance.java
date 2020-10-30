@@ -237,6 +237,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             GroupObjectInstance groupObject = groupObjects.get(i);
             GroupObjectEntity groupEntity = groupObject.entity;
 
+            PropertyDrawEntity calendarDateProperty = entity.getField(groupEntity, "date", "dateFrom", "dateTime", "dateTimeFrom");
+            if (calendarDateProperty != null)
+                groupObject.setCalendarDateProperty(instanceFactory.getInstance(calendarDateProperty));
+
             groupObject.order = i;
             groupObject.setClassListener(classListener);
             if(groupObject.pageSize == null)
