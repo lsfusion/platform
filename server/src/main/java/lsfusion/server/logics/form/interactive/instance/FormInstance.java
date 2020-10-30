@@ -1965,6 +1965,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
             showIfs = MapFact.imFilter(mRestShowIfs, showIfs);
+        } else {
+            pendingRead.removeAll(showIfs.keys().toJavaCol());
         }
 
         MExclMap<PropertyDrawInstance.ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> mShowIfValues = MapFact.mExclMap();
