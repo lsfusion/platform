@@ -41,7 +41,7 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
 
         StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();
         FormImportData importData = new FormImportData(formEntity, context);
-        if(file != null) {
+        if(file != null && file.getLength() > 0) {
             T rootNode = getRootNode(file, root);
             hierarchy.getIntegrationHierarchy().importNode(rootNode, MapFact.EMPTY(), importData);
         }
