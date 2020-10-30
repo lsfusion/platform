@@ -2410,7 +2410,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ImSet<Pair<GroupObjectInstance, GroupObjectProp>> prevRecursionGuard = updateChangesRecursionGuard;
                 updateChangesRecursionGuard = updateChangesRecursionGuard.addExcl(source);
                 try {
-                    source.first.updateEnvironmentIncrementProp(environmentIncrement, this, changedProps, reallyChanged, source.second, propsChanged, dataChanged);
+                    source.first.updateEnvironmentIncrementProp(environmentIncrement, this, changedProps, reallyChanged, source.second, propsChanged, dataChanged, FormInstance.this::isHidden);
                 } finally {
                     updateChangesRecursionGuard = prevRecursionGuard;
                 }

@@ -850,6 +850,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @IdentityStrongLazy
     public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
         PropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
+        if(prop.equals(GroupObjectProp.FILTER))
+            groupObject.isFilterExplicitlyUsed = true;
         return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
 
