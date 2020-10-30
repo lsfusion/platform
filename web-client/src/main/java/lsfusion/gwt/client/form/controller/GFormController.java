@@ -229,8 +229,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void checkMouseEvent(EventHandler handler, boolean preview) {
-        if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event))
+        if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event)) {
+            preventDefaultIfNeeded(handler.event);
             processBinding(handler, preview);
+        }
     }
     public void checkKeyEvent(EventHandler handler, boolean preview) {
         if(GKeyStroke.isKeyEvent(handler.event))
@@ -254,6 +256,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         checkKeyEvent(handler, true);
     }
+
+    private native void preventDefaultIfNeeded(NativeEvent event) /*-{
+        if(event.type === 'mousedown' && event.detail > 1)
+            event.preventDefault();
+    }-*/;
 
     public static void checkKeyEvents(DomEvent event, FormsController formsController) {
         NativeEvent nativeEvent = event.getNativeEvent();
