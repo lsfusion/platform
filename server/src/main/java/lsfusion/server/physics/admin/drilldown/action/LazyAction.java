@@ -37,7 +37,7 @@ public class LazyAction extends SystemExplicitAction {
 
         List<ObjectValue> objectValues  = new ArrayList<>();
 
-        for(ClassPropertyInterface entry : interfaces)
+        for(ClassPropertyInterface entry : getReflectionOrderInterfaces())
             objectValues.add(context.getKeyValue(entry));
         
         evaluatedProperty.execute(context, objectValues.toArray(new ObjectValue[objectValues.size()]));
