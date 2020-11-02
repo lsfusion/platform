@@ -129,12 +129,8 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_SPACE;
     }
 
-    public static boolean isCtrlKeyDownEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_CTRL;
-    }
-
-    public static boolean isCtrlKeyUpEvent(NativeEvent event) {
-        return KEYUP.equals(event.getType()) && event.getKeyCode() == KEY_CTRL;
+    public static boolean isKeyDownEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType());
     }
 
     public static boolean isAltEnterEvent(NativeEvent event) {

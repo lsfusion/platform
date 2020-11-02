@@ -305,10 +305,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             Boolean altKey = eventGetAltKey(event);
             boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
             pressedCtrl = onlyCtrl;
-            if (!onlyCtrl && GFormController.isLinkEditModeWithCtrl())
+            if (!onlyCtrl && (GFormController.isLinkEditModeWithCtrl() || GFormController.linkEditModeDelayTimer != null))
                 formsController.updateLinkEditMode(false, false);
-            if (onlyCtrl && !GFormController.isLinkEditMode())
+            if (onlyCtrl && GKeyStroke.isKeyDownEvent(event) && !GFormController.isLinkEditMode()) {
                 formsController.updateLinkEditMode(true, true);
+            }
         }
    }
 
@@ -328,6 +329,28 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             globalElement.addClassName("linkEditMode");
         else
             globalElement.removeClassName("linkEditMode");
+    }
+
+    public static Timer linkEditModeDelayTimer;
+
+    public static void scheduleLinkEditModeDelayTimer(Runnable setLinkEditMode) {
+        if(linkEditModeDelayTimer == null) {
+            linkEditModeDelayTimer = new Timer() {
+                @Override
+                public void run() {
+                    setLinkEditMode.run();
+                    linkEditModeDelayTimer = null;
+                }
+            };
+            linkEditModeDelayTimer.schedule(250);
+        }
+    }
+
+    public static void cancelLinkEditModeDelayTimer() {
+        if (linkEditModeDelayTimer != null) {
+            linkEditModeDelayTimer.cancel();
+            linkEditModeDelayTimer = null;
+        }
     }
 
     // will handle key events in upper container which will be better from UX point of view

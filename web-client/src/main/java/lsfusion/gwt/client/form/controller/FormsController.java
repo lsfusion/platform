@@ -90,6 +90,15 @@ public abstract class FormsController {
     private boolean isAdding = false;
 
     public void updateLinkEditMode(boolean linkEditMode, boolean linkEditModeWithCtrl) {
+        if(!GFormController.isLinkEditModeWithCtrl() && linkEditModeWithCtrl) {
+            GFormController.scheduleLinkEditModeDelayTimer(() -> setLinkEditMode(linkEditMode, true));
+        } else {
+            GFormController.cancelLinkEditModeDelayTimer();
+            setLinkEditMode(linkEditMode, linkEditModeWithCtrl);
+        }
+    }
+
+    private void setLinkEditMode(boolean linkEditMode, boolean linkEditModeWithCtrl) {
         GFormController.setLinkEditMode(linkEditMode, linkEditModeWithCtrl);
         linkEditButton.showBackground(linkEditMode);
         linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable() + " (CTRL)");
