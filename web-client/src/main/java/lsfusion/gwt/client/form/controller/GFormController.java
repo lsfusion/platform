@@ -230,7 +230,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void checkMouseEvent(EventHandler handler, boolean preview) {
         if(GMouseStroke.isDblDownEvent(handler.event))
-            handler.consume(); //need to prevent selection by double mousedown event
+            handler.event.preventDefault(); //need to prevent selection by double mousedown event
         else if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event))
             processBinding(handler, preview);
     }
