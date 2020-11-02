@@ -148,7 +148,7 @@
             <artifactId>jxl</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.java-native</groupId>
+            <groupId>jssc</groupId>
             <artifactId>jssc</artifactId>
         </dependency>
 
