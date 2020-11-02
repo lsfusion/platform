@@ -607,6 +607,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, prefix + " cannot be used in EVAL module");
     }
 
+    public void emitSignatureParamError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "all params should have explicit classes defined");
+    }
+
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);

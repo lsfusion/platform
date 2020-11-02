@@ -639,4 +639,10 @@ public class ScriptingLogicsModuleChecks {
             errLog.emitUseNullInsteadOfFalseError(parser);
         }
     }
+
+    public void checkSignatureParam(ResolveClassSet signatureParam) throws ScriptingErrorLog.SemanticErrorException {
+        if(signatureParam == null) {
+            errLog.emitSignatureParamError(parser);
+        }
+    }
 }
