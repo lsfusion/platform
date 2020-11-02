@@ -10,7 +10,6 @@ import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.group.Group;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -152,11 +151,11 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
     
     @Override
-    public LP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedDProp(String returnClass, List<String> paramClasses, List<ResolveClassSet> signature, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
         if (!sessionProp) {
             nestedType = LocalNestedType.ALL;
         }
-        return super.addScriptedDProp(returnClass, paramClasses, true, innerProp, isLocalScope, nestedType);
+        return super.addScriptedDProp(returnClass, paramClasses, signature, true, innerProp, isLocalScope, nestedType);
     }
     
     private void emitEvalError(String errorPrefix) throws ScriptingErrorLog.SemanticErrorException {

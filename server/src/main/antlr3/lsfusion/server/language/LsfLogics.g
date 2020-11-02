@@ -1349,7 +1349,7 @@ scope {
 			$actionStatement::topCaption = caption = $declaration.caption;
 		}
         (
-            (   ciADB=contextIndependentActionDB { if(inMainParseState()) { action = $ciADB.action; signature = $ciADB.signature; } }
+            (   ciADB=contextIndependentActionDB[context] { if(inMainParseState()) { action = $ciADB.action; signature = $ciADB.signature; } }
                 ((aopt=actionOptions[action, actionName, caption, context, signature] { as = $aopt.as; } ) | ';')
             )
         |
@@ -1696,8 +1696,8 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 		self.propertyDefinitionCreated($property, point);
 	}
 }
-	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
-	|	abstractDef=abstractPropertyDefinition[innerPD] { $property = $abstractDef.property; $signature = $abstractDef.signature; }
+	: 	dataDef=dataPropertyDefinition[context, innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
+	|	abstractDef=abstractPropertyDefinition[context, innerPD] { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
 	|	aggrDef=aggrPropertyDefinition[context, dynamic, innerPD] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
@@ -1832,23 +1832,24 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	;
 
 
-dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
+dataPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean localProp = false;
 	LocalNestedType nestedType = null;
+
 }
 @after {
 	if (inMainParseState()) {
-		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, nestedType);
+	    $signature = $paramClassNames.ids == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames($paramClassNames.ids);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, $signature, localProp, innerPD, false, nestedType);
 	}
 }
 	:	'DATA'
 		('LOCAL' nlm=nestedLocalModifier { localProp = true; nestedType = $nlm.nestedType; })?
 		returnClass=classId
-		'('
+		('('
 			paramClassNames=classIdList
-		')'
+		')')?
 	;
 
 nestedLocalModifier returns[LocalNestedType nestedType = null]
@@ -1859,7 +1860,7 @@ nestedLocalModifier returns[LocalNestedType nestedType = null]
         )?
 	;
 
-abstractPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
+abstractPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
 	boolean isLast = false;
@@ -1868,8 +1869,8 @@ abstractPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveCl
 }
 @after {
 	if (inMainParseState()) {
-		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive, isChecked, isLast, innerPD);
+        $signature = $paramClassNames.ids == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames($paramClassNames.ids);
+        $property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, $signature, isExclusive, isChecked, isLast, innerPD);
 	}
 }
 	:	'ABSTRACT'
@@ -1882,12 +1883,12 @@ abstractPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveCl
 		)?
 		('FULL' { isChecked = true; })?
 		returnClass=classId
-		'('
+		('('
 			paramClassNames=classIdList
-		')'
+		')')?
 	;
 
-abstractActionDefinition returns [LA action, List<ResolveClassSet> signature]
+abstractActionDefinition[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
 	boolean isLast = false;
@@ -1896,8 +1897,8 @@ abstractActionDefinition returns [LA action, List<ResolveClassSet> signature]
 }
 @after {
 	if (inMainParseState()) {
-		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$action = self.addScriptedAbstractAction(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
+		$signature = $paramClassNames.ids == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames($paramClassNames.ids);
+		$action = self.addScriptedAbstractAction(type, $paramClassNames.ids, $signature, isExclusive, isChecked, isLast);
 	}
 }
 	:	'ABSTRACT'
@@ -1911,9 +1912,9 @@ abstractActionDefinition returns [LA action, List<ResolveClassSet> signature]
 		)
 		)?
 		('FULL' { isChecked = true; })?
-		'(' 
+		('('
 			paramClassNames=classIdList
-		')'	
+		')')?
 	;
 	
 overridePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2985,7 +2986,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $action = $emptyADB.action; }
 	;
 
-contextIndependentActionDB returns [LA action, List<ResolveClassSet> signature]
+contextIndependentActionDB[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 	Boolean needToCreateDelegate = null;
@@ -2999,8 +3000,8 @@ contextIndependentActionDB returns [LA action, List<ResolveClassSet> signature]
         self.topContextActionDefinitionBodyCreated(laWithParams);
 	}
 }
-	:	customADB=customActionDefinitionBody { $action = $customADB.action; $signature = $customADB.signature; }
-    |	abstractActionDef=abstractActionDefinition { $action = $abstractActionDef.action; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
+	:	internalADB=internalActionDefinitionBody[context] { $action = $internalADB.action; $signature = $internalADB.signature; }
+    |	abstractActionDef=abstractActionDefinition[context] { $action = $abstractActionDef.action; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
 	;
 
 mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [MappedForm mapped, List<FormActionProps> props = new ArrayList<>(), FormEntity form]
@@ -3331,18 +3332,21 @@ idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<Strin
 		(',' id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); })*
 	;
 	
-customActionDefinitionBody returns [LA action, List<ResolveClassSet> signature]
+internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
 }
 @after {
 	if (inMainParseState()) {
+
+	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
+
 	    if($code.val == null)
-	        $action = self.addScriptedCustomAction($classN.val, classes, allowNullValue);
+	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
-		    $action = self.addScriptedCustomAction($code.val, allowNullValue);
-		$signature = (classes == null ? Collections.<ResolveClassSet>nCopies($action.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes)); 
+		    $action = self.addScriptedInternalAction($code.val, allowNullValue);
+		$signature = classes == null ? (contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($action.listInterfaces.size(), null) : contextParams) : self.createClassSetsFromClassNames(classes);
 	}
 }
 	:	'INTERNAL'
