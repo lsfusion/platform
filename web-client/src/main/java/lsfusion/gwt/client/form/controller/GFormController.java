@@ -13,7 +13,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
@@ -249,7 +248,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void checkPreviewEvent(EventHandler handler) {
         if(MainFrame.isModalPopup())
             return;
-        
+
         checkMouseEvent(handler, true);
         if(handler.consumed)
             return;
@@ -310,7 +309,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if (onlyCtrl && !GFormController.isLinkEditMode())
                 formsController.updateLinkEditMode(true, true);
         }
-   }
+    }
 
     private static boolean linkEditMode;
     private static boolean linkEditModeWithCtrl;
@@ -323,11 +322,28 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public static void setLinkEditMode(boolean enabled, boolean enabledWithCtrl) {
         linkEditMode = enabled;
         linkEditModeWithCtrl = enabledWithCtrl;
-        com.google.gwt.user.client.Element globalElement = RootPanel.get().getElement();
-        if(enabled)
-            globalElement.addClassName("linkEditMode");
-        else
-            globalElement.removeClassName("linkEditMode");
+    }
+
+    public static Timer linkEditModeStylesTimer;
+
+    public static void scheduleLinkEditModeStylesTimer(Runnable setLinkEditModeStyles) {
+        if(linkEditModeStylesTimer == null) {
+            linkEditModeStylesTimer = new Timer() {
+                @Override
+                public void run() {
+                    setLinkEditModeStyles.run();
+                    linkEditModeStylesTimer = null;
+                }
+            };
+            linkEditModeStylesTimer.schedule(250);
+        }
+    }
+
+    public static void cancelLinkEditModeStylesTimer() {
+        if (linkEditModeStylesTimer != null) {
+            linkEditModeStylesTimer.cancel();
+            linkEditModeStylesTimer = null;
+        }
     }
 
     // will handle key events in upper container which will be better from UX point of view
