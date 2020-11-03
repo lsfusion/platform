@@ -13,7 +13,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
@@ -249,7 +248,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void checkPreviewEvent(EventHandler handler) {
         if(MainFrame.isModalPopup())
             return;
-        
+
         checkMouseEvent(handler, true);
         if(handler.consumed)
             return;
@@ -305,13 +304,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             Boolean altKey = eventGetAltKey(event);
             boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
             pressedCtrl = onlyCtrl;
-            if (!onlyCtrl && (GFormController.isLinkEditModeWithCtrl() || GFormController.linkEditModeDelayTimer != null))
+            if (!onlyCtrl && GFormController.isLinkEditModeWithCtrl())
                 formsController.updateLinkEditMode(false, false);
-            if (onlyCtrl && GKeyStroke.isKeyDownEvent(event) && !GFormController.isLinkEditMode()) {
+            if (onlyCtrl && !GFormController.isLinkEditMode())
                 formsController.updateLinkEditMode(true, true);
-            }
         }
-   }
+    }
 
     private static boolean linkEditMode;
     private static boolean linkEditModeWithCtrl;
@@ -324,32 +322,27 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public static void setLinkEditMode(boolean enabled, boolean enabledWithCtrl) {
         linkEditMode = enabled;
         linkEditModeWithCtrl = enabledWithCtrl;
-        com.google.gwt.user.client.Element globalElement = RootPanel.get().getElement();
-        if(enabled)
-            globalElement.addClassName("linkEditMode");
-        else
-            globalElement.removeClassName("linkEditMode");
     }
 
-    public static Timer linkEditModeDelayTimer;
+    public static Timer linkEditModeStylesTimer;
 
-    public static void scheduleLinkEditModeDelayTimer(Runnable setLinkEditMode) {
-        if(linkEditModeDelayTimer == null) {
-            linkEditModeDelayTimer = new Timer() {
+    public static void scheduleLinkEditModeStylesTimer(Runnable setLinkEditModeStyles) {
+        if(linkEditModeStylesTimer == null) {
+            linkEditModeStylesTimer = new Timer() {
                 @Override
                 public void run() {
-                    setLinkEditMode.run();
-                    linkEditModeDelayTimer = null;
+                    setLinkEditModeStyles.run();
+                    linkEditModeStylesTimer = null;
                 }
             };
-            linkEditModeDelayTimer.schedule(250);
+            linkEditModeStylesTimer.schedule(250);
         }
     }
 
-    public static void cancelLinkEditModeDelayTimer() {
-        if (linkEditModeDelayTimer != null) {
-            linkEditModeDelayTimer.cancel();
-            linkEditModeDelayTimer = null;
+    public static void cancelLinkEditModeStylesTimer() {
+        if (linkEditModeStylesTimer != null) {
+            linkEditModeStylesTimer.cancel();
+            linkEditModeStylesTimer = null;
         }
     }
 

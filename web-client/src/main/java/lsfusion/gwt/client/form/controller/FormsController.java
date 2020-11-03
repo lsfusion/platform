@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
@@ -91,17 +92,22 @@ public abstract class FormsController {
 
     public void updateLinkEditMode(boolean linkEditMode, boolean linkEditModeWithCtrl) {
         if(!GFormController.isLinkEditModeWithCtrl() && linkEditModeWithCtrl) {
-            GFormController.scheduleLinkEditModeDelayTimer(() -> setLinkEditMode(linkEditMode, true));
+            GFormController.scheduleLinkEditModeStylesTimer(() -> setLinkEditModeStyles(linkEditMode));
         } else {
-            GFormController.cancelLinkEditModeDelayTimer();
-            setLinkEditMode(linkEditMode, linkEditModeWithCtrl);
+            GFormController.cancelLinkEditModeStylesTimer();
+            setLinkEditModeStyles(linkEditMode);
         }
+        GFormController.setLinkEditMode(linkEditMode, linkEditModeWithCtrl);
     }
 
-    private void setLinkEditMode(boolean linkEditMode, boolean linkEditModeWithCtrl) {
-        GFormController.setLinkEditMode(linkEditMode, linkEditModeWithCtrl);
+    private void setLinkEditModeStyles(boolean linkEditMode) {
         linkEditButton.showBackground(linkEditMode);
         linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable() + " (CTRL)");
+        Element globalElement = RootPanel.get().getElement();
+        if(linkEditMode)
+            globalElement.addClassName("linkEditMode");
+        else
+            globalElement.removeClassName("linkEditMode");
     }
 
     public void updateFullScreenButton(){
