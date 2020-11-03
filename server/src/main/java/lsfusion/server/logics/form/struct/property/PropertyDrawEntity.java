@@ -495,6 +495,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
     }
 
+    public boolean isNFList(FormEntity formEntity, Version version) {
+        GroupObjectEntity toDraw = getNFToDraw(formEntity, version);
+        return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
+    }
+
     static public String createSID(String name, List<String> mapping) {
         StringBuilder sidBuilder = new StringBuilder();
         sidBuilder.append(name);
