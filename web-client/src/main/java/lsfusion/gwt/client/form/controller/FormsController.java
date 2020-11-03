@@ -97,11 +97,11 @@ public abstract class FormsController {
             GFormController.cancelLinkEditModeStylesTimer();
             setLinkEditModeStyles(linkEditMode);
         }
+        linkEditButton.showBackground(linkEditMode);
         GFormController.setLinkEditMode(linkEditMode, linkEditModeWithCtrl);
     }
 
     private void setLinkEditModeStyles(boolean linkEditMode) {
-        linkEditButton.showBackground(linkEditMode);
         linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable() + " (CTRL)");
         Element globalElement = RootPanel.get().getElement();
         if(linkEditMode)
