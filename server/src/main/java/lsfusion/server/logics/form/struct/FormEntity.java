@@ -731,12 +731,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public GroupObjectEntity getNFApplyObject(ImSet<ObjectEntity> objects, Version version) {
+        return getNFApplyObject(objects, SetFact.EMPTY(), version);
+    }
+
+    public GroupObjectEntity getNFApplyObject(ImSet<ObjectEntity> objects, ImSet<GroupObjectEntity> excludeGroupObjects, Version version) {
         GroupObjectEntity result = null;
         for (GroupObjectEntity group : getNFGroupsListIt(version)) {
-            for (ObjectEntity object : group.getObjects()) {
-                if (objects.contains(object)) {
-                    result = group;
-                    break;
+            if (!excludeGroupObjects.contains(group)) {
+                for (ObjectEntity object : group.getObjects()) {
+                    if (objects.contains(object)) {
+                        result = group;
+                        break;
+                    }
                 }
             }
         }
