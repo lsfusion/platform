@@ -266,6 +266,14 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.scriptIndex = scriptIndex;
     }
 
+    public void setPropertyBackground(PropertyObjectEntity<?> propertyBackground) {
+        this.propertyBackground = propertyBackground;
+    }
+
+    public void setPropertyForeground(PropertyObjectEntity<?> propertyForeground) {
+        this.propertyForeground = propertyForeground;
+    }
+
     public void setIntegrationSID(String integrationSID) {
         this.integrationSID = integrationSID;
     }

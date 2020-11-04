@@ -59,9 +59,8 @@ public class GridDataRecord {
     }
 
     public String getBackground(String column) {
-        return rowBackground != null
-               ? rowBackground
-               : backgrounds == null ? null : backgrounds.get(column);
+        String background = backgrounds != null ? backgrounds.get(column) : null;
+        return background != null ? background : rowBackground;
     }
 
     public void setForeground(String column, Object color) {
@@ -73,9 +72,8 @@ public class GridDataRecord {
     }
 
     public String getForeground(String column) {
-        return rowForeground != null
-               ? rowForeground
-               : foregrounds == null ? null : foregrounds.get(column);
+        String foreground = foregrounds != null ? foregrounds.get(column) : null;
+        return foreground != null ? foreground : rowForeground;
     }
 
     public void setReadOnly(String column, Object readOnly) {

@@ -35,6 +35,9 @@ public class ScriptingGroupObject {
     public GroupObjectEntity neighbourGroupObject;
     public LogicsModule.InsertType insertType;
 
+    public PropertyObjectEntity background;
+    public PropertyObjectEntity foreground;
+
     public String customRenderFunction;
 
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> integrationSIDs) {
@@ -76,6 +79,14 @@ public class ScriptingGroupObject {
     public void setNeighbourGroupObject(GroupObjectEntity neighbourGroupObject, LogicsModule.InsertType insertType) {
         this.neighbourGroupObject = neighbourGroupObject;
         this.insertType = insertType;
+    }
+
+    public void setBackground(PropertyObjectEntity background) {
+        this.background = background;
+    }
+
+    public void setForeground(PropertyObjectEntity foreground) {
+        this.foreground = foreground;
     }
 
     public void setPropertyGroupName(String propertyGroupName) {
