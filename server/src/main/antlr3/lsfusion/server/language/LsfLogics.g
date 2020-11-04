@@ -548,6 +548,8 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.insertType); }
+		|	background=formGroupObjectBackground { $groupObject.setBackground($background.background); }
+		|	foreground=formGroupObjectForeground { $groupObject.setForeground($foreground.foreground); }
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
@@ -653,6 +655,14 @@ formGroupObjectRelativePosition returns [GroupObjectEntity groupObject, InsertTy
 	|	'BEFORE' go=formGroupObjectEntity { $groupObject = $go.groupObject; $insertType = InsertType.BEFORE; }
 	|	'FIRST' { $insertType = InsertType.FIRST; }
 	;
+
+formGroupObjectBackground returns [PropertyObjectEntity background]
+    :	'BACKGROUND' propObj=formPropertyObject { background = $propObj.property; }
+    ;
+
+formGroupObjectForeground returns [PropertyObjectEntity foreground]
+    :	'FOREGROUND' propObj=formPropertyObject { foreground = $propObj.property; }
+    ;
 
 formGroupObjectUpdate returns [UpdateType updateType]
 @init {
