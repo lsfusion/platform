@@ -64,21 +64,11 @@ public class GridTableModel extends AbstractTableModel {
                 data[i][j] = propValues == null ? null : propValues.get(cellKey);
                 readOnly[i][j] = readOnlyValues != null && readOnlyValues.get(cellKey) != null;
 
-                if (rowBackground != null) {
-                    backgroundColor[i][j] = (Color) rowBackground;
-                } else if (backgroundValues != null) {
-                    backgroundColor[i][j] = (Color) backgroundValues.get(cellKey);
-                } else {
-                    backgroundColor[i][j] = null;
-                }
+                Color background = backgroundValues != null ? (Color) backgroundValues.get(cellKey) : null;
+                backgroundColor[i][j] = background != null ? background : (Color) rowBackground;
 
-                if (rowForeground != null) {
-                    foregroundColor[i][j] = (Color) rowForeground;
-                } else if (foregroundValues != null) {
-                    foregroundColor[i][j] = (Color) foregroundValues.get(cellKey);
-                } else {
-                    foregroundColor[i][j] = null;
-                }
+                Color foreground = foregroundValues != null ? (Color) foregroundValues.get(cellKey) : null;
+                foregroundColor[i][j] = foreground != null ? foreground : (Color) rowForeground;
 
                 if(imageValues != null) {
                     images[i][j] = ImagePropertyRenderer.convertValue((RawFileData) imageValues.get(cellKey));
