@@ -9,6 +9,8 @@ import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -22,8 +24,11 @@ import java.util.function.Predicate;
 
 public abstract class GSimpleStateTableView extends GStateTableView {
 
+    private final GFormController formController;
+
     public GSimpleStateTableView(GFormController form, GGridController grid) {
         super(form, grid);
+        this.formController = form;
         getDrawElement().getStyle().setProperty("zIndex", "0"); // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers
     }
 
@@ -159,6 +164,17 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         changeObjectProperty(property, object, new GDateDTO(year, month, day));
     }
 
+    protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter) {
+        ArrayList<GPropertyFilter> filters = new ArrayList<>();
+        Object leftBorder = isDateTimeFilter ? new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0) : new GDateDTO(startYear, startMonth, startDay) ;
+        Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endMonth);
+
+        Column column = columnMap.get(property);
+        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS));
+        filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
+        formController.setViewFilters(filters);
+    }
+
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
@@ -177,6 +193,9 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             changeSimpleGroupObject: function (object, setDataUpdated) {
                 var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, setDataUpdated);
+            },
+            setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter) {
+                thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter);
             }
         };
     }-*/;

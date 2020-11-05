@@ -1150,7 +1150,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
 
-        dispatcher.execute(new SetUserFilters(filters), new ServerResponseCallback());
+        dispatcher.execute(new SetUserFilters(filters, false), new ServerResponseCallback());
+    }
+
+    public void setViewFilters(ArrayList<GPropertyFilter> conditions) {
+        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
+
+        for (GPropertyFilter filter : conditions) {
+            filters.add(filter.getFilterDTO());
+        }
+
+        dispatcher.execute(new SetUserFilters(filters, true), new ServerResponseCallback());
     }
 
     public void quickFilter(Event event, int initialFilterPropertyID) {

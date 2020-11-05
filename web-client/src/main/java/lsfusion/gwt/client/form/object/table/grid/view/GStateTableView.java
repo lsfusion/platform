@@ -76,12 +76,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         drawWidget = new DivWidget();
         addFill(drawWidget);
 
-        initPageSizeWidget(pageSize);
+        initPageSizeWidget();
     }
 
-    public void initPageSizeWidget(int initPageSize) {
+    private final Label messageLabel = new Label();
+
+    public void initPageSizeWidget() {
         FlexPanel messageAndButton = new FlexPanel();
-        Label messageLabel = new Label(ClientMessages.Instance.get().formGridPageSizeHit(initPageSize));
         messageLabel.getElement().getStyle().setPaddingRight(4, Style.Unit.PX);
         messageAndButton.addCentered(messageLabel);
 
@@ -138,11 +139,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     // should correspond FormInstance.constructor - changePageSize method
     private int pageSize = 1000;
-
-    public void changePageSize(int pageSize) {
-        this.pageSize = pageSize;
-        initPageSizeWidget(pageSize);
-    }
 
     public int getPageSize() {
         return pageSize;
@@ -239,6 +235,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
     protected abstract void updateView();
     protected void updatePageSizeState(boolean hit) {
+        messageLabel.setText(ClientMessages.Instance.get().formGridPageSizeHit(keys == null ? getPageSize() : keys.size() )); //need to show current objects size
         getPageSizeWidget().setVisible(hit);
     }
     protected abstract Element getRendererAreaElement();

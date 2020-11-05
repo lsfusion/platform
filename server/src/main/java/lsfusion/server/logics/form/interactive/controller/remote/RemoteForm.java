@@ -584,6 +584,22 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
+    public ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, final byte[][] filters) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            List<FilterInstance> filtersInstances = new ArrayList<>();
+            GroupObjectInstance applyObject = null;
+            for (byte[] state : filters) {
+                FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
+                applyObject = filter.getApplyObject();
+                if(applyObject != null) {
+                    filtersInstances.add(filter);
+                }
+            }
+            if (applyObject != null)
+                applyObject.addViewFilters(filtersInstances);
+        });
+    }
+
     public String getCanonicalName() {
         return form.entity.getCanonicalName();
     }

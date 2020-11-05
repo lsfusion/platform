@@ -14,16 +14,16 @@ public class GCalendar extends GSimpleStateTableView {
     private final String calendarDateType;
     private JavaScriptObject calendar;
     private final JavaScriptObject controller;
-
+    private JsArray<JavaScriptObject> list;
     public GCalendar(GFormController form, GGridController grid, String calendarDateType) {
         super(form, grid);
         this.calendarDateType = calendarDateType;
         this.controller = getController();
-        changePageSize(150);
     }
 
     @Override
     protected void render(Element element, Element recordElement, JsArray<JavaScriptObject> list) {
+        this.list = list;
         if (calendar == null) {
             //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
             //to prevent this when calendar-element height less then ~350px
@@ -31,8 +31,7 @@ public class GCalendar extends GSimpleStateTableView {
             element.getStyle().setProperty("minHeight", "400px");
             element.getStyle().setProperty("cursor", "default");
 
-            calendar = createCalendar(element, controller, calendarDateType);
-            goToInitialDate(list);
+            calendar = createCalendar(element, controller, calendarDateType, getEventName(list, "From"));
         }
         setRecordElement(calendar, recordElement);
         updateEvents(calendar, list, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller);
@@ -52,26 +51,29 @@ public class GCalendar extends GSimpleStateTableView {
         calendar.updateSize();
     }-*/;
 
-    protected native void goToInitialDate(JavaScriptObject objects)/*-{
+    protected native String getInitialDate()/*-{
+        var objects = this.@GCalendar::list;
+        var initialObjectIndex;
+        var startEventFieldName = this.@GCalendar::getEventName(*)(objects, 'From');
         for (var i = 0; i < objects.length; i++) {
-            var startEventFieldName = this.@GCalendar::getEventName(*)(objects[i], 'From');
             if (this.@GCalendar::isCurrentKey(*)(objects[i])) {
-                this.@GCalendar::calendar.gotoDate(objects[i][startEventFieldName]);
-                break;
+                initialObjectIndex = i;
             }
         }
+        return objects[initialObjectIndex == null ? objects.length - 1 : initialObjectIndex][startEventFieldName];
     }-*/;
 
     protected boolean isCurrentKey(JavaScriptObject object){
         return Objects.equals(getKey(object), getCurrentKey());
     }
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType)/*-{
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType, String datePropertyName)/*-{
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
             timeZone: 'UTC',
             firstDay: 1,
+            initialDate: this.@GCalendar::getInitialDate(*)(),
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -85,43 +87,31 @@ public class GCalendar extends GSimpleStateTableView {
                 changeProperty(info, 'start', this.objects);
                 changeProperty(info, 'end', this.objects);
             },
-            datesSet: function (dateInfo) {
-                var oldEvent = calendar.getEvents()[calendar.currentEventIndex];
-                if (oldEvent != null && (oldEvent.start < dateInfo.start || oldEvent.start > dateInfo.end)) {
-                    var event = getEvent(dateInfo, oldEvent.start <= dateInfo.start);
-                    if (event !== null)
-                        changeCurrentEvent(event);
-                }
+            datesSet: function () {
+                var isDateTimeFilter = datePropertyName.toLowerCase().includes('time');
+                var filterLeftBorder = calendar.view.activeStart;
+                var filterRightBorder = calendar.view.activeEnd;
+                controller.setViewFilter(filterLeftBorder.getFullYear(), filterLeftBorder.getMonth() + 1, filterLeftBorder.getUTCDate(),
+                    filterRightBorder.getFullYear(), filterRightBorder.getMonth() + 1, filterRightBorder.getUTCDate(), datePropertyName, isDateTimeFilter);
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event);
-                setTooltip(info.el);
+
+                setTooltip(info.el).show();
             }
         });
         calendar.render();
         return calendar;
 
         function setTooltip(el) {
-            if (calendar.recordElement != null && !el._tippy) {
-                $wnd.tippy(el, {
+            if (calendar.recordElement != null) {
+                return $wnd.tippy(el, {
                     content: calendar.recordElement,
-                    showOnCreate: true,
-                    trigger: 'click',
+                    trigger: 'manual',
                     interactive: true,
                     allowHTML: true
                 });
             }
-        }
-
-        function getEvent(dateInfo, getFirst) {
-            var resultEvent = null;
-            var events = calendar.getEvents();
-            for (var i = 0; i < events.length; i++) {
-                var event = events[i];
-                if ((event.start >= dateInfo.start && event.start <= dateInfo.end) && (resultEvent == null || ((getFirst ? resultEvent.start > event.start : resultEvent.start < event.start))))
-                    resultEvent = event;
-            }
-            return resultEvent;
         }
 
         function changeCurrentEvent(currentEvent) {
@@ -149,9 +139,9 @@ public class GCalendar extends GSimpleStateTableView {
 
     protected native JavaScriptObject updateEvents(JavaScriptObject calendar, JavaScriptObject objects, JsArray<JavaScriptObject> columns, JavaScriptObject controller)/*-{
         var events = [];
+        var startEventFieldName = this.@GCalendar::getEventName(*)(objects, 'From');
+        var endEventFieldName = this.@GCalendar::getEventName(*)(objects, 'To');
         for (var i = 0; i < objects.length; i++) {
-            var startEventFieldName = this.@GCalendar::getEventName(*)(objects[i], 'From');
-            var endEventFieldName = this.@GCalendar::getEventName(*)(objects[i], 'To');
             var isCurrentKey = this.@GCalendar::isCurrentKey(*)(objects[i]);
             var event = {
                 'title': getTitle(objects[i]),
@@ -191,11 +181,14 @@ public class GCalendar extends GSimpleStateTableView {
         }
     }-*/;
 
-    protected native String getEventName(JavaScriptObject object, String position)/*-{
+    protected native String getEventName(JavaScriptObject objects, String position)/*-{
         var calendarDateType = this.@GCalendar::calendarDateType;
-        if (object[calendarDateType + ''] != null)
-            return calendarDateType;
-        else
-            return calendarDateType + position;
+        if (objects.length > 0) {
+            if (objects[0][calendarDateType + ''] != null)
+                return calendarDateType;
+            else
+                return calendarDateType + position;
+        } else
+            return null;
     }-*/;
 }

@@ -62,7 +62,10 @@ public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUs
                     throw Throwables.propagate(e);
                 }
 
-                return remoteForm.setUserFilters(action.requestIndex, action.lastReceivedRequestIndex, filters.toArray(new byte[filters.size()][]));
+                if (action.isViewFilter)
+                    return remoteForm.setViewFilters(action.requestIndex, action.lastReceivedRequestIndex, filters.toArray(new byte[filters.size()][]));
+                else
+                    return remoteForm.setUserFilters(action.requestIndex, action.lastReceivedRequestIndex, filters.toArray(new byte[filters.size()][]));
             }
         });
     }

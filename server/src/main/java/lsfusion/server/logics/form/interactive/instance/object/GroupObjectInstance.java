@@ -227,8 +227,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(setFilters==null) {
             FilterInstance userComboFilter = combineUserFilters(userFilters);
             ImSet<FilterInstance> userComboSet = userComboFilter != null ? SetFact.singleton(userComboFilter) : userFilters.immutableOrder().getSet();
-            setFilters = fixedFilters.merge(userComboSet).merge(SetFact.fromJavaSet(regularFilters)).merge(SetFact.fromJavaSet(tempFilters));
+            setFilters = fixedFilters.merge(userComboSet).merge(SetFact.fromJavaSet(regularFilters));
         }
+
+        if (listViewType == ListViewType.CALENDAR) {
+            setFilters = setFilters.merge(SetFact.fromJavaSet(viewFilters));
+        }
+
         return setFilters;
     }
 
@@ -301,15 +306,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         updated |= UPDATED_FILTER;
     }
 
-    private Set<FilterInstance> tempFilters = new HashSet<>();
-    public void clearTempFilters() {
-        tempFilters.clear();
+    private Set<FilterInstance> viewFilters = new HashSet<>();
+    public void clearViewFilters() {
+        viewFilters.clear();
 
         setFilters = null;
         updated |= UPDATED_FILTER;
     }
-    public void addTempFilter(FilterInstance addFilter) {
-        tempFilters.add(addFilter);
+
+    public void addViewFilters(List<FilterInstance> filters) {
+        clearViewFilters();
+        viewFilters.addAll(filters);
 
         setFilters = null;
         updated |= UPDATED_FILTER;
@@ -330,9 +337,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImOrderMap<OrderInstance,Boolean> getSetOrders() {
         if(setOrders==null)
             setOrders = userOrders.mergeOrder(fixedOrders).mergeOrder(getOrderObjects().toOrderMap(false));
-
-        if (listViewType == ListViewType.CALENDAR)
-            return MapFact.singletonOrder(calendarDateProperty.getOrder(), false);
 
         return setOrders;
     }
