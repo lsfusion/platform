@@ -1725,13 +1725,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private Integer scrollLeft = null;
 
-    private void saveScrollLeft() {
-        scrollLeft = getTableDataScroller().getScrollLeft();
+    private void saveScrollLeft(Element tableDataScroller) {
+        scrollLeft = tableDataScroller.getScrollLeft();
     }
 
     private void restoreScrollLeft() {
-        if(scrollLeft != null) {
-            getTableDataScroller().setScrollLeft(scrollLeft);
+        Element tableDataScroller = getTableDataScroller();
+        if(tableDataScroller != null && scrollLeft != null) {
+            tableDataScroller.setScrollLeft(scrollLeft);
             scrollLeft = null;
         }
     }
@@ -1919,16 +1920,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private void colAttrHeaderClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey, boolean dblClick) {
         if(dblClick) {
-            if (isSortColumn(isSubtotal, columnKeyValues)) {
-                saveScrollLeft();
+            Element tableDataScroller = getTableDataScroller(); //if tableDataScroller == null, updateView is not finished
+            if (tableDataScroller != null && isSortColumn(isSubtotal, columnKeyValues)) {
+                saveScrollLeft(tableDataScroller);
                 modifySortCols(columnKeyValues, ctrlKey, shiftKey);
                 if (!shiftKey && !ctrlKey) {
                     unwrapOthers(rendererElement, th);
                 }
                 th.removeAllChildren();
                 renderColAttrCell(th, fromObject(getObjectValue(columnKeyValues, columnKeyValues.length() - 1)), columnKeyValues, isSubtotal, false, false);
-
-                updateView(true, null);
+                
+                updateViewWithTimer();
             }
         } else {
             if(GFormController.isLinkEditMode() && columnKeyValues.length() > 0) {
@@ -1950,8 +1952,18 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
         th.removeAllChildren();
         GGridPropertyTableHeader.renderTD(th, rowHeight, shiftKey ? null : sortCol == null || !sortCol.getDirection(), columnCaption);
-
-        updateView(true, null);
+        
+        updateViewWithTimer();
+    }
+    
+    private void updateViewWithTimer() {
+        //timer need to render th before updateView
+        new com.google.gwt.user.client.Timer() {
+            @Override
+            public void run() {
+                updateView(true, null);
+            }
+        }.schedule(0);
     }
 
     private SortCol modifySortCols(Object keys, boolean ctrlKey, boolean shiftKey) {
