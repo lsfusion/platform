@@ -9,6 +9,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -31,6 +32,18 @@ public class ContainerView extends ComponentView {
     public int columns = 4;
     
     public PropertyObjectEntity<?> showIf;
+
+    // temp hack ???
+    public GridView recordContainer;
+    @Override
+    public ComponentView getHiddenContainer() {
+        ComponentView container = super.getHiddenContainer();
+        if(recordContainer != null) {
+            assert container == null;
+            return recordContainer;
+        }
+        return container;
+    }
 
     // extras
     public PropertyObjectEntity<?> propertyCaption;

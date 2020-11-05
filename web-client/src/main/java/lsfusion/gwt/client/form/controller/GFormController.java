@@ -651,7 +651,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         update(fc, changesDTO.requestIndex);
 
-        formLayout.hideEmptyContainerViews();
+        formLayout.hideEmptyContainerViews(changesDTO.requestIndex);
 
         activateElements(fc);
 
@@ -828,7 +828,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
     }
 
-    public void changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
+    public long changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
         long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key), new ServerResponseCallback() {
             @Override
             public void preProcess() {
@@ -836,6 +836,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
         pendingChangeCurrentObjectsRequests.put(group, requestIndex);
+        return requestIndex;
     }
 
     // has to be called setCurrentKey before

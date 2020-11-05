@@ -33,7 +33,7 @@ public class GFormLayout extends ResizableSimplePanel {
         this.mainContainer = mainContainer;
 
         addContainers(mainContainer);
-        setFillWidget(getComponentView(mainContainer));
+        setFillWidget(getContainerView(mainContainer).getView());
         
         getWidget().getElement().getStyle().setOverflow(Style.Overflow.AUTO);
     }
@@ -142,11 +142,11 @@ public class GFormLayout extends ResizableSimplePanel {
         return baseComponentViews.get(component);
     }
 
-    public void hideEmptyContainerViews() {
-        autoShowHideContainers(mainContainer);
+    public void hideEmptyContainerViews(int requestIndex) {
+        autoShowHideContainers(mainContainer, requestIndex);
     }
 
-    private void autoShowHideContainers(GContainer container) {
+    private void autoShowHideContainers(GContainer container, long requestIndex) {
         GAbstractContainerView containerView = getContainerView(container);
         int childCnt = containerView.getChildrenCount();
         boolean hasVisible = false;
@@ -157,13 +157,13 @@ public class GFormLayout extends ResizableSimplePanel {
             if(child instanceof GGrid)
                 child = ((GGrid)child).record;
             if (child instanceof GContainer)
-                autoShowHideContainers((GContainer) child);
+                autoShowHideContainers((GContainer) child, requestIndex);
 
             if (childView.isVisible()) // it's important to be after child autoShowHideContainers
                 hasVisible = true;
         }
         containerView.getView().setVisible(hasVisible);
-        containerView.updateLayout();
+        containerView.updateLayout(requestIndex);
     }
 
     @Override

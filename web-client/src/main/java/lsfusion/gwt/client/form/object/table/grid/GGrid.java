@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid;
 
 import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 
 public class GGrid extends GComponent {
@@ -8,5 +9,5 @@ public class GGrid extends GComponent {
     public boolean quickSearch;
     public int headerHeight;
 
-    public GComponent record;
+    public GContainer record;
 }

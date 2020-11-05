@@ -379,6 +379,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         dropButton = getNFProperty(entity.dropActionPropertyDraw, version);
     }
 
+    public ContainerView createContainer() {
+        return createContainer(null);
+    }
+
     public ContainerView createContainer(Version version) {
         return createContainer(null, version);
     }
