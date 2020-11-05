@@ -87,7 +87,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
         logInfo = readLogInfo(session, user, businessLogics, hostName, remoteAddress);
         locale = readLocale(session, user, businessLogics, clientLanguage, clientCountry, stack);
         userRole = (Long) businessLogics.securityLM.firstRoleUser.read(session, user);
-        transactionTimeout = (Integer) businessLogics.securityLM.transactTimeoutUser.read(session, user);
+        transactionTimeout = (Integer) businessLogics.serviceLM.transactTimeoutUser.read(session, user);
     }
 
     public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -220,7 +220,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
 
     public static LogInfo readLogInfo(DataSession session, DataObject user, BusinessLogics businessLogics, String computerName, String remoteAddress) throws SQLException, SQLHandledException {
         String userName = (String) businessLogics.authenticationLM.nameContact.read(session, user);
-        boolean allowExcessAllocatedBytes = businessLogics.authenticationLM.allowExcessAllocatedBytes.read(session, user) != null;
+        boolean allowExcessAllocatedBytes = businessLogics.serviceLM.allowExcessAllocatedBytes.read(session, user) != null;
         String userRoles = (String) businessLogics.securityLM.userRolesUser.read(session, user);
         return new LogInfo(allowExcessAllocatedBytes, userName, userRoles, computerName, remoteAddress);
     }
