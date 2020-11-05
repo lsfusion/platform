@@ -697,22 +697,24 @@ EXTEND FORM editProfile
 ;
 
 DESIGN editProfile {
-    NEW design {
-        caption = '{navigator.account.edit.profile.design}';
-        
-        MOVE PROPERTY(fontSize(u)) { fontSize = 24; }
-        MOVE PROPERTY(colorThemeName(u)) { fontSize = 24; }
-        
-        MOVE PROPERTY(resetWindowsLayout());
-        
-        NEW colors { 
-            type = COLUMNS;
-            columns = 2;
-            MOVE PROPERTY(selectedRowBackgroundColor(u)) { fontSize = 24; }
-            MOVE PROPERTY(selectedCellBackgroundColor(u)) { fontSize = 24; }
-            MOVE PROPERTY(focusedCellBackgroundColor(u)) { fontSize = 24; }
-            MOVE PROPERTY(focusedCellBorderColor(u)) { fontSize = 24; }
-            MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
+    OBJECTS {
+        NEW design {
+            caption = '{navigator.account.edit.profile.design}';
+            
+            MOVE PROPERTY(fontSize(u)) { fontSize = 24; }
+            MOVE PROPERTY(colorThemeName(u)) { fontSize = 24; }
+            
+            MOVE PROPERTY(resetWindowsLayout());
+            
+            NEW colors { 
+                type = COLUMNS;
+                columns = 2;
+                MOVE PROPERTY(selectedRowBackgroundColor(u)) { fontSize = 24; }
+                MOVE PROPERTY(selectedCellBackgroundColor(u)) { fontSize = 24; }
+                MOVE PROPERTY(focusedCellBackgroundColor(u)) { fontSize = 24; }
+                MOVE PROPERTY(focusedCellBorderColor(u)) { fontSize = 24; }
+                MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
+            }
         }
     }
 } 
