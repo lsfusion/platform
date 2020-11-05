@@ -3,6 +3,7 @@ package lsfusion.client.form.object.table.grid;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 
 import java.io.DataInputStream;
@@ -17,7 +18,7 @@ public class ClientGrid extends ClientComponent {
 
     public ClientGroupObject groupObject;
 
-    public ClientComponent record;
+    public ClientContainer record;
 
     public ClientGrid() {
     }

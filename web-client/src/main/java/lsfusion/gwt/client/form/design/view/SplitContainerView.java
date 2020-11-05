@@ -46,8 +46,8 @@ public class SplitContainerView<P extends Panel> extends GAbstractContainerView 
         return view;
     }
 
-    public void updateLayout() {
-        super.updateLayout();
+    public void updateLayout(long requestIndex) {
+        super.updateLayout(requestIndex);
         splitPane.update();
     }
 

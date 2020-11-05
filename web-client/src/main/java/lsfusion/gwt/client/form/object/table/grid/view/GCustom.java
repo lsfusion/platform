@@ -5,11 +5,8 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
-import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 
-import java.io.Serializable;
-
-public class GCustom extends GSimpleStateTableView {
+public class GCustom extends GTippySimpleStateTableView {
     private final String renderFunction;
 
     public GCustom(GFormController form, GGridController grid, String renderFunction) {
@@ -18,15 +15,11 @@ public class GCustom extends GSimpleStateTableView {
     }
 
     @Override
-    protected void render(Element element, Element recordElement, JsArray<JavaScriptObject> list) {
-        runFunction(element, list, renderFunction);
+    protected void render(Element element, JsArray<JavaScriptObject> list) {
+        runFunction(element, list, renderFunction, controller);
     }
 
-    protected native void runFunction(Element element, JavaScriptObject list, String renderFunction)/*-{
-        var thisObj = this;
-        var controller = thisObj.@GCustom::getController()();
-
-        var fn = $wnd[renderFunction];
-        fn(element, list, controller);
+    protected native void runFunction(Element element, JavaScriptObject list, String renderFunction, JavaScriptObject controller)/*-{
+        $wnd[renderFunction](element, list, controller);
     }-*/;
 }

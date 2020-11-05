@@ -13,6 +13,8 @@ import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -72,10 +74,11 @@ public class GGridController extends GAbstractTableController {
             Widget gridView = gridContainerView;
 
             // proceeding recordView
-            GComponent record = groupObject.grid.record;
+            GContainer record = groupObject.grid.record;
             if(record != null) {
-                Widget recordView = getFormLayout().getComponentView(record);
-                this.recordView = recordView;
+                GAbstractContainerView recordView = getFormLayout().getContainerView(record);
+                recordView.addUpdateLayoutListener(requestIndex -> table.updateRecordLayout(requestIndex));
+                this.recordView = recordView.getView();
 
                 // we need to add recordview somewhere, to attach it (events, listeners, etc.)
                 ResizableComplexPanel virtualGridView = new ResizableComplexPanel();
@@ -84,7 +87,7 @@ public class GGridController extends GAbstractTableController {
 
                 // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
                 ResizableSimplePanel virtualRecordView = new ResizableSimplePanel();
-                virtualRecordView.add(recordView);
+                virtualRecordView.add(this.recordView);
                 virtualRecordView.setVisible(false);
                 virtualGridView.add(virtualRecordView);
 

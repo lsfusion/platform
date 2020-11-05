@@ -19,7 +19,7 @@ import org.vectomatic.dom.svg.utils.OMSVGParser;
 
 import java.util.*;
 
-public class GMap extends GSimpleStateTableView implements RequiresResize {
+public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
 
     public GMap(GFormController form, GGridController grid) {
         super(form, grid);
@@ -98,7 +98,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
     private Map<GGroupObjectValue, GroupMarker> groupMarkers = new HashMap<>();
     private ArrayList<JavaScriptObject> lines = new ArrayList<>(); // later also should be
     @Override
-    protected void render(Element renderElement, com.google.gwt.dom.client.Element recordElement, JsArray<JavaScriptObject> listObjects) {
+    protected void render(Element renderElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
             markerClusters = createMarkerClusters();
             map = createMap(renderElement, markerClusters);
@@ -119,7 +119,7 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
 
             JavaScriptObject marker = oldMarkers.remove(key);
             if(marker == null) {
-                marker = createMarker(map, recordElement, groupMarker.polygon != null, fromObject(key), markerClusters);
+                marker = createMarker(map, groupMarker.polygon != null, fromObject(key), markerClusters);
                 markers.put(key, marker);
                 markerCreated = true;
             }
@@ -241,7 +241,27 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
         return L.latLng(latitude, longitude);
     }-*/;
 
-    protected native JavaScriptObject createMarker(JavaScriptObject map, com.google.gwt.dom.client.Element popupElement, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters)/*-{
+    protected JavaScriptObject showPopup(JavaScriptObject popupElementClicked, Element popupElement) {
+        return showMapPopup(popupElementClicked, popupElement);
+    }
+
+    protected void hidePopup(JavaScriptObject popup) {
+        hideMapPopup(popup);
+    }
+
+    protected native JavaScriptObject showMapPopup(JavaScriptObject marker, Element popupElement)/*-{
+        marker.bindPopup(popupElement).openPopup();
+        return marker;
+    }-*/;
+
+    protected native void hideMapPopup(JavaScriptObject marker)/*-{
+        if(marker.isPopupOpen())
+            marker.closePopup();
+        marker.unbindPopup();
+    }-*/;
+
+
+    protected native JavaScriptObject createMarker(JavaScriptObject map, boolean polygon, JavaScriptObject key, JavaScriptObject markerClusters)/*-{
         var L = $wnd.L;
 
         var thisObject = this;
@@ -268,10 +288,8 @@ public class GMap extends GSimpleStateTableView implements RequiresResize {
             });
         }
 
-        if (popupElement !== null)
-            marker.bindPopup(popupElement, {maxWidth: Number.MAX_SAFE_INTEGER});
         marker.on('click', function (e) {
-            thisObject.@GMap::changeSimpleGroupObject(*)(key, true);
+            thisObject.@GMap::changeSimpleGroupObject(*)(key, false, marker); // we want "full rerender", at least for now
         });
 
 //        marker = marker.addTo(map);

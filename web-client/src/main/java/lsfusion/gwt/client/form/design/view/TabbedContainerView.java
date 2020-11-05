@@ -106,8 +106,8 @@ public class TabbedContainerView extends GAbstractContainerView {
     }
 
     @Override
-    public void updateLayout() {
-        super.updateLayout();
+    public void updateLayout(long requestIndex) {
+        super.updateLayout(requestIndex);
         int childCnt = childrenViews.size();
         for (int i = 0; i < childCnt; i++) {
             GComponent child = children.get(i);
