@@ -55,16 +55,16 @@ onUserRegister(User user) + {
 
 // Forms
 FORM userRolesDialog '{security.user.roles}'
-    OBJECTS ur=UserRole
+    OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
     
     LIST UserRole OBJECT ur
 ;
 
 EXTEND FORM customUser
-    OBJECTS ur=UserRole
+    OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
-    PROPERTIES(u,ur) in
+    PROPERTIES(u, ur) in
 ;
 
 DESIGN customUser {
@@ -76,11 +76,9 @@ DESIGN customUser {
     }
 }
 
-// Transaction timeout
-transactTimeout '{security.transact.timeout}' = DATA INTEGER (UserRole);
-transactTimeout '{security.transact.timeout}' (User user) = GROUP MAX transactTimeout(UserRole ur) IF has(user, ur);
-
-copy (UserRole from, UserRole to) +{ transactTimeout(to) <- transactTimeout(from); }
+EXTEND FORM customUsers
+    PROPERTIES(u) READONLY userRoles AFTER login(u)
+; 
 
 // ------------------- User permissions ------------------ //
 
@@ -404,7 +402,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur) name, sid
     PROPERTIES(ur) NEW, DELETE
     
-    PROPERTIES(ur) showDetailedInfo, forbidDuplicateForms, transactTimeout, defaultForms, maximizeDefaultForms
+    PROPERTIES(ur) showDetailedInfo, forbidDuplicateForms, defaultForms, maximizeDefaultForms
 
     // Navigator elements
     TREE navigatorElements te = NavigatorElement PARENT parent(te)

@@ -44,8 +44,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP currentUser;
     public LP currentUserName;
     public LP nameContact;
-    public LP currentUserAllowExcessAllocatedBytes;
-    public LP allowExcessAllocatedBytes;
 
     public LP currentAuthToken;
     public LP secret;
@@ -77,8 +75,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP oauth2UserNameAttributeName;
     public LP oauth2ClientName;
 
-    public LP useBusyDialog;
-    public LP useRequestTimeout;
     public LP devMode;
 
     public LP language;
@@ -140,8 +136,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         nameContact = findProperty("name[Contact]");
         currentUserName = findProperty("currentUserName[]");
-        allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
-        currentUserAllowExcessAllocatedBytes = findProperty("currentUserAllowExcessAllocatedBytes[]");
 
         // Компьютер
         hostnameComputer = findProperty("hostname[Computer]");
@@ -182,10 +176,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         oauth2UserInfoUri = findProperty("userInfoUri[OAuth2]");
         oauth2UserNameAttributeName = findProperty("userNameAttributeName[OAuth2]");
         oauth2ClientName = findProperty("clientName[OAuth2]");
-
-        useBusyDialog = findProperty("useBusyDialog[]");
-        useRequestTimeout = findProperty("useRequestTimeout[]");
-        devMode = findProperty("devMode[]");
 
         language = findProperty("language[CustomUser]");
         country = findProperty("country[CustomUser]");

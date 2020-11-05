@@ -32,8 +32,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP hasUserRole;
     public LA<?> createSystemUserRoles;
 
-    public LP transactTimeoutUser;
-
     public FormEntity propertyPolicyForm;
     public FormEntity actionPolicyForm;
 
@@ -53,7 +51,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         super.initMainLogic();
         // ---- Роли
         userRoleSID = findProperty("userRoleSID[STRING[30]]");
-        transactTimeoutUser = findProperty("transactTimeout[User]");
 
         // Список ролей для пользователей
         firstRoleUser = findProperty("firstRole[User]");
