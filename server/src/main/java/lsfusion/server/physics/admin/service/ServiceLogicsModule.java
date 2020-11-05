@@ -43,6 +43,14 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP nameSetting;
     public LP overBaseValueSettingUserRole;
 
+    public LP useBusyDialog;
+    public LP useRequestTimeout;
+    public LP devMode;
+
+    public LP allowExcessAllocatedBytes;
+
+    public LP transactTimeoutUser;
+
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/system/Service.lsf"), "/system/Service.lsf", baseLM, BL);
     }
@@ -76,5 +84,13 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
         nameSetting = findProperty("name[Setting]");
         overBaseValueSettingUserRole = findProperty("overBaseValue[Setting, UserRole]");
+
+        useBusyDialog = findProperty("useBusyDialog[]");
+        useRequestTimeout = findProperty("useRequestTimeout[]");
+        devMode = findProperty("devMode[]");
+
+        allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
+
+        transactTimeoutUser = findProperty("transactTimeout[User]");
     }
 }

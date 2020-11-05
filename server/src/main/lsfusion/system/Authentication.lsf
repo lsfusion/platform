@@ -333,20 +333,8 @@ getCurrentUserLocale() {
 timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimezone(), serverTimezone();
 twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart(), serverTwoDigitYearStart();
 
-// Technical settings
-useBusyDialogCustom '{authentication.use.busy.dialog.user}' = DATA BOOLEAN (CustomUser);
-useBusyDialog () = useBusyDialogCustom(currentUser());
+// GUI settings -- should be moved to Service (but needs migration)
 
-allowExcessAllocatedBytes '{authentication.allow.excess.allocated.bytes.user}' = DATA BOOLEAN (CustomUser);
-currentUserAllowExcessAllocatedBytes () = allowExcessAllocatedBytes(currentUser()) OR login(currentUser()) == 'admin';
-
-useRequestTimeout '{authentication.use.request.timeout.user}' = DATA BOOLEAN(CustomUser); 
-useRequestTimeout() = useRequestTimeout(currentUser());
-
-devMode '{authentication.dev.mode.user}' = DATA BOOLEAN(CustomUser); // for debug purposes 
-devMode = devMode(currentUser());
-
-// GUI settings
 fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser); 
 
 CLASS ColorTheme '{authentication.color.theme}' {
@@ -373,8 +361,6 @@ FORM dialogColorThemes '{authentication.color.themes}'
     LIST ColorTheme OBJECT o
 ;
 
-resetWindowsLayout '{authentication.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
-
 // -------------------------- Forms ---------------------------- //
 
 // sync user logins saved on client 
@@ -390,9 +376,7 @@ FORM customUser '{authentication.custom.user}'
     PROPERTIES(u) login, sha256Password ON CHANGE changeSHA256Password(u), isLocked ,
                   firstName, lastName, email, phone, postAddress, birthday,
                   useClientLocale, userLanguage SHOWIF NOT useClientLocale(u), userCountry SHOWIF NOT useClientLocale(u), 
-                  userTimeZone, userTwoDigitYearStart,
-                  useBusyDialogCustom, useRequestTimeout, devMode, allowExcessAllocatedBytes, 
-                  fontSize
+                  userTimeZone, userTwoDigitYearStart
 
     EDIT CustomUser OBJECT u
 ;
@@ -430,19 +414,6 @@ DESIGN customUser {
                     MOVE PROPERTY(userTimeZone(u));
                     MOVE PROPERTY(userTwoDigitYearStart(u));
                 }
-                NEW system {
-                    alignment = STRETCH;
-                    caption = '{authentication.custom.user.system}';
-                    MOVE PROPERTY(useBusyDialogCustom(u));
-                    MOVE PROPERTY(useRequestTimeout(u));
-                    MOVE PROPERTY(devMode(u));
-                    MOVE PROPERTY(allowExcessAllocatedBytes(u));
-                }
-                NEW GUI {
-                    alignment = STRETCH;
-                    caption = '{authentication.custom.user.gui}';
-                    MOVE PROPERTY(fontSize(u));
-                }
                 NEW security {
                     alignment = STRETCH;
                     caption = '{authentication.custom.user.security}';
@@ -473,8 +444,7 @@ FORM customUsers '{authentication.users}'
 
     PROPERTIES(u) READONLYIF isReadonly() name, login, email
     PROPERTIES(u) READONLYIF isReadonly() isLocked
-    PROPERTIES(u) READONLYIF isReadonly() useBusyDialogCustom, useRequestTimeout, devMode, allowExcessAllocatedBytes, fontSize
-                  
+
     PROPERTIES(u) NEWSESSION NEW, EDIT, DELETE 
 
     OBJECTS lu = CustomUser
@@ -570,9 +540,7 @@ DESIGN customUsersDialog { BOX { size = (1024, 768); } }
 FORM editProfile '{navigator.account.edit.profile}'
     OBJECTS u = CustomUser PANEL
     PROPERTIES(u) login READONLY
-    PROPERTIES(u) firstName, lastName, email, userLanguage,
-                  fontSize, colorThemeName
-    PROPERTIES() resetWindowsLayout               
+    PROPERTIES(u) firstName, lastName, email, userLanguage
 
     FILTERS u = currentUser()
 ;
@@ -586,12 +554,6 @@ DESIGN editProfile {
             MOVE PROPERTY(lastName(u)) { fontSize = 36; }
             MOVE PROPERTY(email(u)) { fontSize = 36; }
             MOVE PROPERTY(userLanguage(u)) { fontSize = 36; }
-        }
-        NEW design {
-            caption = '{navigator.account.edit.profile.design}';
-            MOVE PROPERTY(fontSize(u)) { fontSize = 24; }
-            MOVE PROPERTY(colorThemeName(u)) { fontSize = 24; }
-            MOVE PROPERTY(resetWindowsLayout());
         }
     }
     

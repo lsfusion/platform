@@ -169,50 +169,7 @@ shutdown '{system.events.shutdown}' (CustomUser user)  {
 
 hasConnectedConnections (CustomUser user) = GROUP SUM 1 IF user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection;
 
-fileUserLogs = DATA FILE (Connection);
-userLogs ()  INTERNAL  'lsfusion.server.physics.admin.monitor.action.UserLogsAction' ();
-requestUserLogs '{system.events.request.user.logs.custom.user}' (CustomUser user)  {
-    IF hasConnectedConnections(user) THEN { 
-        FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-            NEWSESSION { fileUserLogs(conn) <- NULL; apply(); } 
-            NEWSESSION NEWTHREAD userLogs(); CONNECTION conn;
-        }
-    } ELSE {
-        MESSAGE '{system.events.user.not.connected}';
-    }
-}
-openUserLogs '{system.events.open.user.logs.custom.user}' (CustomUser user)  { 
-    IF hasConnectedConnections(user) THEN {
-        FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileUserLogs(conn) DO {
-            open(fileUserLogs(conn), userLogin(conn) + '-log');
-        } ELSE {
-            MESSAGE '{system.events.open.user.logs.message}';
-        }
-    } ELSE {
-        MESSAGE '{system.events.user.not.connected}';
-    }
-}
-
-fileThreadDump = DATA FILE (Connection);
-threadDump ()  INTERNAL  'lsfusion.server.physics.admin.monitor.action.ThreadDumpAction' ();
-requestThreadDump '{system.events.request.thread.dump.custom.user}' (CustomUser user)  { 
-    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-        NEWSESSION { fileThreadDump(conn) <- NULL; apply(); } 
-        NEWSESSION NEWTHREAD threadDump(); CONNECTION conn;
-    }
-}
-openThreadDump '{system.events.open.thread.dump.custom.user}' (CustomUser user)  { 
-    IF hasConnectedConnections(user) THEN {
-        FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileThreadDump(conn) DO {
-            open(fileThreadDump(conn), userLogin(conn) + '-dump');
-        } ELSE {
-            MESSAGE '{system.events.open.thread.dump.message}';
-        }
-    }
-}
-
-EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown, 
-                                      requestUserLogs, openUserLogs, requestThreadDump, openThreadDump;
+EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown;
 
 @defineLog (Connection, '{system.events.define.log.of.connections}', log, connectDate);
 
