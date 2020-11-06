@@ -4,12 +4,12 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 
 import java.util.ArrayList;
 
-public class SetUserFilters extends FormRequestCountingAction<ServerResponseResult> {
+public class SetViewFilters extends FormRequestCountingAction<ServerResponseResult> {
     public ArrayList<GPropertyFilterDTO> filters;
 
-    public SetUserFilters() {}
+    public SetViewFilters() {}
 
-    public SetUserFilters(ArrayList<GPropertyFilterDTO> filters) {
+    public SetViewFilters(ArrayList<GPropertyFilterDTO> filters) {
         this.filters = filters;
     }
 }

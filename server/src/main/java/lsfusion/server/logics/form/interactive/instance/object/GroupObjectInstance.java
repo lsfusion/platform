@@ -228,12 +228,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             FilterInstance userComboFilter = combineUserFilters(userFilters);
             ImSet<FilterInstance> userComboSet = userComboFilter != null ? SetFact.singleton(userComboFilter) : userFilters.immutableOrder().getSet();
             setFilters = fixedFilters.merge(userComboSet).merge(SetFact.fromJavaSet(regularFilters));
-        }
 
-        if (listViewType == ListViewType.CALENDAR) {
-            setFilters = setFilters.merge(SetFact.fromJavaSet(viewFilters));
+            if (listViewType == ListViewType.CALENDAR)
+                setFilters = setFilters.merge(SetFact.fromJavaSet(viewFilters));
         }
-
         return setFilters;
     }
 
@@ -291,7 +289,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         updated |= UPDATED_FILTER;
     }
 
-    private Set<FilterInstance> regularFilters = new HashSet<>();
+    private final Set<FilterInstance> regularFilters = new HashSet<>();
     public void addRegularFilter(FilterInstance filter) {
         regularFilters.add(filter);
 
@@ -306,16 +304,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         updated |= UPDATED_FILTER;
     }
 
-    private Set<FilterInstance> viewFilters = new HashSet<>();
-    public void clearViewFilters() {
+    private final Set<FilterInstance> viewFilters = new HashSet<>();
+    public void setViewFilters(List<FilterInstance> filters) {
         viewFilters.clear();
-
-        setFilters = null;
-        updated |= UPDATED_FILTER;
-    }
-
-    public void addViewFilters(List<FilterInstance> filters) {
-        clearViewFilters();
         viewFilters.addAll(filters);
 
         setFilters = null;

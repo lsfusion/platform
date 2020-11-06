@@ -591,12 +591,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             for (byte[] state : filters) {
                 FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
                 applyObject = filter.getApplyObject();
-                if(applyObject != null) {
-                    filtersInstances.add(filter);
-                }
+                filtersInstances.add(filter);
             }
             if (applyObject != null)
-                applyObject.addViewFilters(filtersInstances);
+                applyObject.setViewFilters(filtersInstances);
         });
     }
 

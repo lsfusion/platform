@@ -1150,7 +1150,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
 
-        dispatcher.execute(new SetUserFilters(filters, false), new ServerResponseCallback());
+        dispatcher.execute(new SetUserFilters(filters), new ServerResponseCallback());
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions) {
@@ -1160,7 +1160,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             filters.add(filter.getFilterDTO());
         }
 
-        dispatcher.execute(new SetUserFilters(filters, true), new ServerResponseCallback());
+        dispatcher.execute(new SetViewFilters(filters), new ServerResponseCallback());
     }
 
     public void quickFilter(Event event, int initialFilterPropertyID) {

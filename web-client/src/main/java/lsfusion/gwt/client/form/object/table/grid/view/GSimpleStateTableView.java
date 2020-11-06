@@ -196,6 +196,9 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             },
             setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter) {
                 thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter);
+            },
+            getCurrentDay: function () {
+                return thisObj.@GSimpleStateTableView::getValues(*)(thisObj.@GSimpleStateTableView::getCurrentKey()())[0];
             }
         };
     }-*/;
