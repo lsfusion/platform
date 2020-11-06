@@ -198,19 +198,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return container.getNF(version);
     }
 
-    // temp hack ???
-    public NFProperty<GridView> recordContainer = NFFact.property();
-    public GridView getRecordContainer() {
-        return recordContainer.get();
-    }
-    public GridView getNFRecordContainer(Version version) {
-        return recordContainer.getNF(version);
-    }
     public ComponentView getHiddenContainer() { // when used for hidden optimization
-        ContainerView container = getContainer();
-        if(container == null)
-            return getRecordContainer();
-        return container;
+        return getContainer();
     }
     public ContainerView getTabbedContainer() { // when it is known that component is a tab of a tabbed pane
         ContainerView container = getContainer();
@@ -327,6 +316,5 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public void finalizeAroundInit() {
         container.finalizeChanges();
-        recordContainer.finalizeChanges();
     }
 }

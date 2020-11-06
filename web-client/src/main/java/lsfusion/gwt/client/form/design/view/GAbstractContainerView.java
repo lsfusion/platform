@@ -4,7 +4,6 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexCaptionPanel;
@@ -40,7 +39,7 @@ public abstract class GAbstractContainerView {
         addImpl(index, child, view);
 
         if(child.autoSize && view instanceof GridPanel)
-            updateLayoutListeners.add(() -> ((GridPanel)view).autoSize());
+            addUpdateLayoutListener(requestIndex -> ((GridPanel)view).autoSize());
     }
 
     public void remove(GComponent child) {
@@ -171,14 +170,17 @@ public abstract class GAbstractContainerView {
         }
     }
 
-    private interface UpdateLayoutListener {
-        void updateLayout();
+    public interface UpdateLayoutListener {
+        void updateLayout(long requestIndex);
     }
 
     private List<UpdateLayoutListener> updateLayoutListeners = new ArrayList<>();
-    public void updateLayout() {
+    public void addUpdateLayoutListener(UpdateLayoutListener listener) {
+        updateLayoutListeners.add(listener);
+    }
+    public void updateLayout(long requestIndex) {
         for(UpdateLayoutListener updateLayoutListener : updateLayoutListeners)
-            updateLayoutListener.updateLayout();
+            updateLayoutListener.updateLayout(requestIndex);
     }
 
     private static Integer getSize(boolean vertical, boolean mainAxis, GComponent component) {

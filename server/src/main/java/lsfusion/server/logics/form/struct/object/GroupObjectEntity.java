@@ -185,6 +185,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public PropertyObjectEntity<?> propertyBackground;
     public PropertyObjectEntity<?> propertyForeground;
 
+    public boolean isFilterExplicitlyUsed; // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
+
     private boolean finalizedProps = false;
     private Object props = MapFact.mExclMap();
     @NFLazy
@@ -262,6 +264,14 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public void setScriptIndex(Pair<Integer, Integer> scriptIndex) {
         this.scriptIndex = scriptIndex;
+    }
+
+    public void setPropertyBackground(PropertyObjectEntity<?> propertyBackground) {
+        this.propertyBackground = propertyBackground;
+    }
+
+    public void setPropertyForeground(PropertyObjectEntity<?> propertyForeground) {
+        this.propertyForeground = propertyForeground;
     }
 
     public void setIntegrationSID(String integrationSID) {

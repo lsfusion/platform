@@ -1,8 +1,8 @@
-package lsfusion.server.physics.admin.drilldown.action;
+package lsfusion.server.physics.admin.systemevents;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.action.LA;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -15,12 +15,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LazyAction extends SystemExplicitAction {
+public class ResetAction extends SystemExplicitAction {
     private final Property sourceProperty;
-    private LA evaluatedProperty = null;
-       
-    public LazyAction(LocalizedString caption, Property sourceProperty) {
-        super(caption, new LP(sourceProperty).getInterfaceClasses(ClassType.drillDownPolicy));
+
+    public ResetAction(LocalizedString caption, Property sourceProperty) {
+        super(caption, new LP(sourceProperty).getInterfaceClasses(ClassType.resetPolicy));
         this.sourceProperty = sourceProperty;       
     }
 
@@ -31,15 +30,10 @@ public class LazyAction extends SystemExplicitAction {
     
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if(evaluatedProperty == null) {
-            evaluatedProperty = context.getBL().LM.addDDAProp(sourceProperty);
-        }
+        List<DataObject> objectValues  = new ArrayList<>();
+        for(ClassPropertyInterface entry : interfaces)
+            objectValues.add((DataObject) context.getKeyValue(entry));
 
-        List<ObjectValue> objectValues  = new ArrayList<>();
-
-        for(ClassPropertyInterface entry : getReflectionOrderInterfaces())
-            objectValues.add(context.getKeyValue(entry));
-        
-        evaluatedProperty.execute(context, objectValues.toArray(new ObjectValue[objectValues.size()]));
+        new LP(sourceProperty).change(NullValue.instance, context, objectValues.toArray(new DataObject[0]));
     }
 }

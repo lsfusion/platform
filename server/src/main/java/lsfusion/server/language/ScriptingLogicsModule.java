@@ -816,14 +816,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormEntity(this, form);
     }
 
-    public LP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedDProp(String returnClass, List<String> paramClasses, List<ResolveClassSet> signature, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkNoInline(innerProp);
 
         ValueClass value = findClass(returnClass);
-        ValueClass[] params = new ValueClass[paramClasses.size()];
-        for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = findClass(paramClasses.get(i));
-        }
+        ValueClass[] params = getParams(paramClasses, signature, true);
 
         if (sessionProp) {
             return addSDProp(LocalizedString.NONAME, isLocalScope, value, nestedType, params);
@@ -833,20 +830,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LP<?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, List<ResolveClassSet> signature, boolean isExclusive, boolean isChecked, boolean isLast, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass value = findClass(returnClass);
-        ValueClass[] params = new ValueClass[paramClasses.size()];
-        for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = findClass(paramClasses.get(i));
-        }
+        ValueClass[] params = getParams(paramClasses, signature, true);
         return addAUProp(null, false, isExclusive, isChecked, isLast, type, LocalizedString.NONAME, value, params);
     }
 
-    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass[] params = new ValueClass[paramClasses.size()];
-        for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = findClass(paramClasses.get(i));
-        }
+    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, List<String> paramClasses, List<ResolveClassSet> signature, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass[] params = getParams(paramClasses, signature, true);
         LA<?> result;
         if (type == ListCaseAction.AbstractType.LIST) {
             result = addAbstractListAProp(isChecked, isLast, params);
@@ -854,6 +845,26 @@ public class ScriptingLogicsModule extends LogicsModule {
             result = addAbstractCaseAProp(type, isExclusive, isChecked, isLast, params);
         }
         return result;
+    }
+
+    private ValueClass[] getParams(List<String> paramClasses, List<ResolveClassSet> signature, boolean checkSignature) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass[] params;
+        if(paramClasses == null) {
+            params = new ValueClass[signature.size()];
+            for (int i = 0; i < signature.size(); i++) {
+                ResolveClassSet signatureParam = signature.get(i);
+                if(checkSignature) {
+                    checks.checkSignatureParam(signatureParam);
+                }
+                params[i] = signatureParam.getCommonClass();
+            }
+        } else {
+            params = new ValueClass[paramClasses.size()];
+            for (int i = 0; i < paramClasses.size(); i++) {
+                params[i] = findClass(paramClasses.get(i));
+            }
+        }
+        return params;
     }
 
     // todo [dale]: выделить общий код    
@@ -1727,26 +1738,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LA addScriptedCustomAction(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+    public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
             Object instanceObject = null;
             Class<?> javaClass = Class.forName(javaClassName);
-            if (classes == null || classes.isEmpty()) {
+            if ((paramClasses == null || paramClasses.isEmpty()) && signature.isEmpty()) {
                 try {
                     instanceObject = javaClass.getConstructor(this.getClass()).newInstance(this);
-                } catch (NoSuchMethodException e) {
+                } catch (NoSuchMethodException ignored) {
                 }
             }
             if(instanceObject == null) {
-                ValueClass[] classList; 
-                if(classes != null) {
-                    classList = new ValueClass[classes.size()];
-                    for (int i = 0; i < classes.size(); i++) {
-                        classList[i] = findClass(classes.get(i));
-                    }
-                } else
-                    classList = new ValueClass[0];
-                instanceObject = javaClass.getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, classList);
+                ValueClass[] params = getParams(paramClasses, signature, false);
+                instanceObject = javaClass.getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, params);
             }
             Action instance = (Action)instanceObject;
             if (instance instanceof ExplicitAction && allowNullValue) {
@@ -1761,7 +1765,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public LA addScriptedCustomAction(String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+    public LA addScriptedInternalAction(String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         String script = "";
         try {
 
@@ -2170,7 +2174,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LP<?>> res = new ArrayList<>();
         for (String name : names) {
-            LP<?> lcp = addScriptedDProp(returnClassName, paramClassNames, true, false, true, nestedType);
+            LP<?> lcp = addScriptedDProp(returnClassName, paramClassNames, new ArrayList<>(), true, false, true, nestedType);
             addLocal(lcp, new LocalPropertyData(name, signature));
             lcp.property.setDebugInfo(new PropertyDebugInfo(point, false));
             res.add(lcp);

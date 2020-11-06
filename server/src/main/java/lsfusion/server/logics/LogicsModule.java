@@ -128,6 +128,7 @@ import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.drilldown.action.LazyAction;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
+import lsfusion.server.physics.admin.systemevents.ResetAction;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -1670,6 +1671,35 @@ public abstract class LogicsModule {
 
     public LP getIsActiveFormProperty() {
         return baseLM.getIsActiveFormProperty();
+    }
+
+    // ------------------- RESET FILE ----------------- //
+
+    public void setupResetProperty(Property property) {
+        if (property.supportsReset()) {
+            LA<?> resetFormProperty = addResetAProp(property);
+            Action formProperty = resetFormProperty.action;
+            property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
+            property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
+        }
+    }
+
+    public LA<?> addResetAProp(Property property) {
+        LA result = addAProp(null, new ResetAction(LocalizedString.create("{logics.property.reset}"), property));
+        if (property.isNamed()) {
+            List<ResolveClassSet> signature = new ArrayList<>();
+            String name = nameForResetAction(property, signature);
+            makeActionPublic(result, name, signature);
+        }
+        return result;
+    }
+
+    private String nameForResetAction(Property property, List<ResolveClassSet> signature) {
+        assert property.isNamed();
+        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
+        String name = PropertyCanonicalNameUtils.resetPrefix + parser.getNamespace() + "_" + property.getName();
+        signature.addAll(parser.getSignature());
+        return name;
     }
 
     // ---------------------- VALUE ---------------------- //

@@ -95,132 +95,12 @@ hostnameServerComputer '{service.server.computer}' () = hostname(serverComputer(
 
 @defineMode(hostnameServerComputer, 'lsfusion.server.physics.admin.service.action.SetHostnameServerComputerAction', STRING[100], '{service.define.mode.set.repeatable.read.hostname.server.computer}', '{service.define.mode.refresh.repeatable.read.hostname.server.computer}');
 
-setExplainAnalyzeMode '{service.set.explain.analyze.mode}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExplainAnalyzeModeUserAction' (BOOLEAN, User);
-explainAnalyzeMode '{service.explain.analyze.mode}' = DATA BOOLEAN (User);
-refreshExplainAnalyzeMode '{service.refresh.explain.analyze.mode}'(User user)  { 
-    setExplainAnalyzeMode(explainAnalyzeMode(user), user);  
-}
-WHEN CHANGED(explainAnalyzeMode(User user)) DO {
-    refreshExplainAnalyzeMode(user);
-}
-
-turnExplainAnalizeOnCurrentUser '{service.turn.explain.analyze.on.current.user}' ()  { 
-    explainAnalyzeMode(User user) <- TRUE WHERE user == currentUser();     
-}
-
-setLoggerDebugEnabled '{service.set.logger.debug.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetLoggerDebugEnabledUserAction' (BOOLEAN, User);
-loggerDebugEnabled '{service.logger.debug.enabled}' = DATA BOOLEAN (User);
-refreshLoggerDebugEnabled ''(User user)  { 
-    setLoggerDebugEnabled(loggerDebugEnabled(user), user);
-}
-WHEN CHANGED(loggerDebugEnabled(User user)) DO {
-    refreshLoggerDebugEnabled(user);
-}
-
-setExplainTemporaryTablesEnabled '{service.set.explain.temporary.tables.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExplainTemporaryTablesEnabledUserAction' (BOOLEAN, User);
-explainTemporaryTablesEnabled '{service.explain.temporary.tables.enabled}' = DATA BOOLEAN (User);
-refreshExplainTemporaryTablesEnabled '' (User user)  { 
-    setExplainTemporaryTablesEnabled(explainTemporaryTablesEnabled(user), user);
-}
-WHEN CHANGED(explainTemporaryTablesEnabled(User user)) DO {
-    refreshExplainTemporaryTablesEnabled(user);
-}
-
-setRemoteLoggerDebugEnabled '{service.set.remote.logger.debug.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetRemoteLoggerDebugEnabledUserAction' (BOOLEAN, User);
-remoteLoggerDebugEnabled '{service.remote.logger.debug.enabled}' = DATA BOOLEAN (User);
-refreshRemoteLoggerDebugEnabled ''(User user)  { 
-    setRemoteLoggerDebugEnabled(remoteLoggerDebugEnabled(user), user);
-}
-WHEN CHANGED(remoteLoggerDebugEnabled(User user)) DO {
-    refreshRemoteLoggerDebugEnabled(user);
-}
-
-setExLogEnabled '{service.set.ex.log.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExLogUserAction' (BOOLEAN, User);
-remoteExLogEnabled '{service.remote.ex.log.enabled}' = DATA BOOLEAN (User);
-refreshExLogEnabled ''(User user)  { 
-    setExLogEnabled(remoteExLogEnabled(user), user);
-}
-WHEN CHANGED(remoteExLogEnabled(User user)) DO {
-    refreshExLogEnabled(user);
-}
-
-setPausableLogEnabled '{service.set.pausable.log.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetPausableLogUserAction' (BOOLEAN, User);
-remotePausableLogEnabled '{service.remote.pausable.log.enabled}' = DATA BOOLEAN (User);
-refreshPausableLogEnabled ''(User user)  { 
-    setPausableLogEnabled(remotePausableLogEnabled(user), user);
-}
-WHEN CHANGED(remotePausableLogEnabled(User user)) DO {
-    refreshPausableLogEnabled(user);
-}
-
-setExplainAllocationEnabled '{service.set.explain.allocation.enabled}' INTERNAL 'lsfusion.server.physics.admin.service.action.SetExplainAllocationEnabledUserAction' (BOOLEAN, User);
-explainAllocationEnabled '{service.explain.allocation.enabled}' = DATA BOOLEAN (User);
-refreshExplainAllocationEnabled '' (User user) {
-    setExplainAllocationEnabled(explainAllocationEnabled(user), user);
-}
-WHEN CHANGED(explainAllocationEnabled(User user)) DO {
-    refreshExplainAllocationEnabled(user);
-}
-
-CLASS TypeExecEnv {
-    materialize '{service.type.exec.env.materialize}', 
-    disablenestloop '{service.type.exec.env.disablenestloop}', 
-    none '{service.type.exec.env.none}'
-}
-TABLE typeExecEnv(TypeExecEnv);
-
-captionExecEnv '{service.caption.exec.env}' (Object type) = staticCaption (type);
-id (TypeExecEnv type) = CASE EXCLUSIVE
-                        WHEN type == TypeExecEnv.materialize THEN 2
-                        WHEN type == TypeExecEnv.disablenestloop THEN 1
-                        WHEN type == TypeExecEnv.none THEN 0 IN base;
-
-setExecEnv '{service.set.exec.env}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExecEnvUserAction' (INTEGER, User);
-execEnv '{service.exec.env.user}' = DATA TypeExecEnv (User);
-refreshExecEnv '{service.refresh.exec.env.user}'(User user)  { 
-    setExecEnv(id(execEnv(user)), user);  
-}
-WHEN CHANGED(execEnv(User user)) DO {
-    refreshExecEnv(user);
-}
-nameExecEnv '{service.exec.env.user}' (User user) = captionExecEnv(execEnv(user)) IN base;
-
 @defineLog (Email, '{service.define.log.of.incoming.email}', log, dateSent);
 
 countDaysClearFusionTempFiles '{service.count.days.clear.fusion.temp.files}' = DATA INTEGER (); 
 clearFusionTempFiles  INTERNAL  'lsfusion.server.physics.admin.service.action.ClearFusionTempFilesAction' ();
 EXTEND FORM options PROPERTIES countDaysClearFusionTempFiles();
     DESIGN options { log { MOVE PROPERTY(countDaysClearFusionTempFiles());} }    
-
-setVolatileStatsEnabled '{service.set.volatile.stats.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetVolatileStatsEnabledUserAction' (BOOLEAN, User);
-volatileStatsEnabled '{service.volatile.stats.enabled}' = DATA BOOLEAN (User);
-refreshVolatileStatsEnabled ''(User user)  { 
-    setVolatileStatsEnabled(volatileStatsEnabled(user), user);
-}
-WHEN CHANGED(volatileStatsEnabled(User user)) DO {
-    refreshVolatileStatsEnabled(user);
-}
-
-onStarted() + { 
-    FOR explainAnalyzeMode(User u) DO 
-        refreshExplainAnalyzeMode(u);
-    FOR loggerDebugEnabled(User u) DO 
-        refreshLoggerDebugEnabled(u);
-    FOR explainTemporaryTablesEnabled(User u) DO 
-        refreshExplainTemporaryTablesEnabled(u);
-    FOR volatileStatsEnabled(User u) DO 
-        refreshVolatileStatsEnabled(u);
-    FOR remoteLoggerDebugEnabled(User u) DO 
-        refreshRemoteLoggerDebugEnabled(u);
-    FOR remoteExLogEnabled(User u) DO 
-        refreshExLogEnabled(u);
-    FOR remotePausableLogEnabled(User u) DO 
-        refreshPausableLogEnabled(u);
-    FOR explainAllocationEnabled(User u) DO
-        refreshExplainAllocationEnabled(u);
-    FOR execEnv(User u) DO 
-        refreshExecEnv(u);
-} 
 
 setReupdateMode '{service.set.reupdate.mode}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetReupdateModeAction' (BOOLEAN);
 reupdateMode '{service.reupdate.mode}' = DATA BOOLEAN ();
@@ -281,205 +161,15 @@ apiVersion = DATA INTEGER();
 synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
 onStarted() + { synchronizeVersions(); }
 
-CLASS Setting '{service.setting}';
-TABLE setting (Setting);
-
-name '{service.name.setting}' = DATA ISTRING[100] (Setting);
-setting (name) = GROUP AGGR Setting setting BY name(setting);
-baseValue '{service.base.value.setting}' = DATA STRING[100] (Setting);
-
-TABLE settingUserRole(Setting, UserRole);
-baseValue '{service.base.value.setting.user.role}' = DATA STRING[100] (Setting, UserRole);
-overBaseValue '{service.over.base.value.setting.user}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
-defaultValue '{service.default.value.setting}' = DATA STRING[100] (Setting);
-value '{service.value.setting.user.role}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
-value (Setting p) = OVERRIDE baseValue(p), defaultValue(p);
-valueSetting (ISTRING[100] name) = value(setting(name)); 
-
-pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PushSettingAction' (STRING[100], STRING[100]);
-popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PopSettingAction' (STRING[100]);
-
-writeDefaultSettings '{service.write.default.settings}'  INTERNAL  'lsfusion.server.physics.admin.service.action.WriteDefaultSettingsAction' ();
-updateSetting '{service.update.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.UpdateSettingAction' (Setting, UserRole, BOOLEAN);
-
-updateGlobalSetting(Setting r) {
-    updateSetting(r, NULL, TRUE); // system user and users without role
-    FOR UserRole ur IS UserRole DO // need this even in onStarted, because onStarted is executed after initializing RMI Manager, that's why roleSettings can be already clone, and we need to update it too
-        updateSetting(r, ur, NULL);    
-}
-
-onStarted() + {  
-    writeDefaultSettings();
-
-    FOR baseValue(Setting r) DO 
-        updateGlobalSetting(r);
-
-    FOR baseValue(Setting r, UserRole ur) DO 
-        updateSetting(r, ur, TRUE); 
-}
-
-WHEN CHANGED (baseValue(Setting r)) DO
-    updateGlobalSetting(r);
-    
-WHEN CHANGED (baseValue(Setting r, UserRole ur)) 
-    DO updateSetting(r, ur, TRUE);
-
-getServerSettings() {
-    readResources('/web/.*');
-    LOCAL jsonResourceFiles = JSONFILE ();
-    EXPORT FROM file = resourceFiles(STRING str), name = str WHERE resourceFiles(str) TO jsonResourceFiles;
-
-    generateJnlpUrls();
-    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
-                sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
-                jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles());
-} @@noauth;
-
-// colors
-
-selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);
-overrideSelectedRowBackgroundColor '{service.selected.row.background.color}' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor();
-selectedCellBackgroundColor '{service.selected.cell.background.color}' = DATA COLOR (User);
-overrideSelectedCellBackgroundColor '{service.selected.cell.background.color}' = OVERRIDE selectedCellBackgroundColor(currentUser()), selectedCellBackgroundColor();
-focusedCellBackgroundColor '{service.focused.cell.background.color}' = DATA COLOR (User);
-overrideFocusedCellBackgroundColor '{service.focused.cell.background.color}' = OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor();
-focusedCellBorderColor '{service.focused.cell.border.color}' = DATA COLOR (User);
-overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor();
-tableGridColor '{service.table.grid.color}' = DATA COLOR (User);
-overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(currentUser()), tableGridColor();  
-
-EXTEND FORM editProfile
-    PROPERTIES(u) selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
-;
-
-DESIGN editProfile {
-    design {
-        NEW colors { 
-            type = COLUMNS;
-            columns = 2;
-            MOVE PROPERTY(selectedRowBackgroundColor(u)) { fontSize = 24; }
-            MOVE PROPERTY(selectedCellBackgroundColor(u)) { fontSize = 24; }
-            MOVE PROPERTY(focusedCellBackgroundColor(u)) { fontSize = 24; }
-            MOVE PROPERTY(focusedCellBorderColor(u)) { fontSize = 24; }
-            MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
-        }
-    }
-} 
-
-FORM settings '{service.form.settings}'
-    PROPERTIES() currentDate, currentDateTime, currentDateTimeSnapshot, defaultBackgroundColor, defaultForegroundColor, 
-                 selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor,
-                 reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
-                 dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon,
-                 initHeapSize, maxHeapSize, minHeapFreeRatio, maxHeapFreeRatio, vmargs
-    OBJECTS u=User
-    PROPERTIES(u) READONLY name, login, userRoles
-    PROPERTIES(u) explainAnalyzeMode, loggerDebugEnabled, explainTemporaryTablesEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, explainAllocationEnabled, nameExecEnv, volatileStatsEnabled
-    
-    OBJECTS uc=User
-    PROPERTIES(uc) READONLY name, login
-    PROPERTIES(uc) selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
-    
-    OBJECTS r = Setting
-    PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
-    OBJECTS ur = UserRole
-    PROPERTIES(ur) READONLY name, sid 
-    PROPERTIES(r,ur) value READONLY, baseValue
-    FILTERGROUP override FILTER '{service.form.settings.only.override}' baseValue(r) OR baseValue(r, ur) 'F9'
-    
-    OBJECTS m = MemoryLimit
-    PROPERTIES(m) name, maxHeapSize, vmargs
-    PROPERTIES(m) TOOLBAR NEW, DELETE 
-;
-
-DESIGN settings {
-    NEW tabs {
-        type = TABBED;
-        fill = 1;
-        NEW pane {
-            caption = '{service.form.settings.caption.general}';
-            type = COLUMNS;
-            columns = 3;
-            NEW leftColumn {
-                NEW current {
-                    caption = '{service.form.settings.caption.current}';
-                    MOVE PROPERTY(currentDate());
-                    MOVE PROPERTY(currentDateTime());
-                    MOVE PROPERTY(currentDateTimeSnapshot());
-                    MOVE PROPERTY(hostnameServerComputer());
-                }
-                NEW report {
-                    caption = '{service.form.settings.caption.reports}';
-                    MOVE PROPERTY(reportCharWidth());
-                    MOVE PROPERTY(reportRowHeight());
-                    MOVE PROPERTY(reportNotToStretch());
-                }        
-                NEW logoContainer {
-                    caption = '{system.logics.gui.preferences}';
-                    MOVE PROPERTY(dataLogicsName());
-                    MOVE PROPERTY(displayName());
-                    MOVE PROPERTY(loadLogicsLogo());
-                    MOVE PROPERTY(openLogicsLogo());
-                    MOVE PROPERTY(resetLogicsLogo());
-                    MOVE PROPERTY(loadLogicsIcon());
-                    MOVE PROPERTY(openLogicsIcon());
-                    MOVE PROPERTY(resetLogicsIcon());
-                }                                       
-            }
-            NEW rightColumn {                 
-                NEW virtualMachine {
-                    caption = '{service.form.settings.caption.virtual.machine}';
-                }                      
-            }
-        }
-        
-        MOVE BOX(u);
-        NEW colorsPane {
-            caption = '{service.form.settings.caption.colors}';
-            MOVE BOX(uc);
-            NEW bottomPane {
-                type = CONTAINERH;
-                NEW defaultColors {
-                   caption = '{service.form.settings.caption.default.colors}';
-                   MOVE PROPERTY(selectedRowBackgroundColor());
-                   MOVE PROPERTY(selectedCellBackgroundColor());
-                   MOVE PROPERTY(focusedCellBackgroundColor());
-                   MOVE PROPERTY(focusedCellBorderColor());
-                   MOVE PROPERTY(tableGridColor());
-               } 
-               NEW generalColors {
-                   caption = '{service.form.settings.caption.general.colors}';
-                   MOVE PROPERTY(defaultBackgroundColor());
-                   MOVE PROPERTY(defaultForegroundColor());
-               }
-            }
-            
-        }
-        
-        NEW parameters {
-            caption = '{service.form.settings.caption.parameters}';
-            MOVE BOX(r);
-            MOVE BOX(ur);
-        }
-        NEW clientVMOptions {
-            caption = '{service.form.settings.caption.client.vm.options}';
-            MOVE PROPERTY(initHeapSize());
-            MOVE PROPERTY(maxHeapSize());
-            MOVE PROPERTY(minHeapFreeRatio());
-            MOVE PROPERTY(maxHeapFreeRatio());
-            MOVE PROPERTY(vmargs());
-            
-            MOVE BOX(m);
-        }
-    }
-    MOVE TOOLBARBOX;
-}
+// maintenance
 
 FORM maintenance '{service.form.maintenance}'
     PROPERTIES() scheduledRestart, forbidLogin, restartServer SHOWIF notRestartPushed(), cancelRestartServer SHOWIF restartPushed(),
                  uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB, uploadToDBAction,
-                 turnExplainAnalizeOnCurrentUser, clearApplicationLog, serviceDBAction, recalculateClassesAction, recalculateAction, recalculateFollowsAction, 
-                 recalculateStatsAction, overCalculateStatsAction, maxQuantityOverCalculate, checkClassesAction, checkAggregationsAction, checkIndicesAction,
+                 clearApplicationLog, 
+                 serviceDBAction, recalculateClassesAction, recalculateAction, recalculateFollowsAction, maxQuantityOverCalculate,
+                 checkClassesAction, checkAggregationsAction, checkIndicesAction,  
+                 recalculateStatsAction, overCalculateStatsAction,
                  packAction, analyzeDBAction, vacuumDBAction, disableTILMode, reupdateMode, singleTransaction, threadCountMultiThread, serviceDBMultiThreadAction,
                  recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
                  recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction, checkClassesMultiThreadAction, checkAggregationsMultiThreadAction,      
@@ -511,7 +201,6 @@ DESIGN maintenance {
             }
             NEW log {
                 caption = '{service.form.maintenance.caption.logging}';
-                MOVE PROPERTY(turnExplainAnalizeOnCurrentUser());
                 MOVE PROPERTY(clearApplicationLog());
             }                                                          
         }
@@ -581,8 +270,456 @@ DESIGN maintenance {
 
 NAVIGATOR { 
     system {
-        NEW Service.settings FIRST;
         NEW maintenance AFTER performance;
     }
 }
 
+// settings form
+
+FORM settings '{service.form.settings}'
+    PROPERTIES() currentDate, currentDateTime, currentDateTimeSnapshot, defaultBackgroundColor, defaultForegroundColor, 
+                 reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
+                 dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon
+;
+
+DESIGN settings {
+    OBJECTS {
+        NEW tabs {
+            type = TABBED;
+            fill = 1;
+            NEW pane {
+                caption = '{service.form.settings.caption.general}';
+                type = COLUMNS;
+                columns = 3;
+                NEW leftColumn {
+                    NEW current {
+                        caption = '{service.form.settings.caption.current}';
+                        MOVE PROPERTY(currentDate());
+                        MOVE PROPERTY(currentDateTime());
+                        MOVE PROPERTY(currentDateTimeSnapshot());
+                        MOVE PROPERTY(hostnameServerComputer());
+                    }
+                    NEW report {
+                        caption = '{service.form.settings.caption.reports}';
+                        MOVE PROPERTY(reportCharWidth());
+                        MOVE PROPERTY(reportRowHeight());
+                        MOVE PROPERTY(reportNotToStretch());
+                    }        
+                    NEW logoContainer {
+                        caption = '{system.logics.gui.preferences}';
+                        MOVE PROPERTY(dataLogicsName());
+                        MOVE PROPERTY(displayName());
+                        MOVE PROPERTY(loadLogicsLogo());
+                        MOVE PROPERTY(openLogicsLogo());
+                        MOVE PROPERTY(resetLogicsLogo());
+                        MOVE PROPERTY(loadLogicsIcon());
+                        MOVE PROPERTY(openLogicsIcon());
+                        MOVE PROPERTY(resetLogicsIcon());
+                    }                                       
+                }
+            }
+        }
+    }
+}
+
+NAVIGATOR { 
+    system {
+        NEW Service.settings FIRST;
+    }
+}
+
+// memory
+
+EXTEND FORM settings
+    PROPERTIES() initHeapSize, maxHeapSize, minHeapFreeRatio, maxHeapFreeRatio, vmargs
+
+    OBJECTS m = MemoryLimit
+    PROPERTIES(m) name, maxHeapSize, vmargs
+    PROPERTIES(m) TOOLBAR NEW, DELETE 
+;
+
+DESIGN settings {
+    tabs {
+        NEW clientVMOptions {
+            caption = '{service.form.settings.caption.client.vm.options}';
+            MOVE PROPERTY(initHeapSize());
+            MOVE PROPERTY(maxHeapSize());
+            MOVE PROPERTY(minHeapFreeRatio());
+            MOVE PROPERTY(maxHeapFreeRatio());
+            MOVE PROPERTY(vmargs());
+            
+            MOVE BOX(m);
+        }
+    }
+}
+
+// settings
+
+CLASS Setting '{service.setting}';
+TABLE setting (Setting);
+
+name '{service.name.setting}' = DATA ISTRING[100] (Setting);
+setting (name) = GROUP AGGR Setting setting BY name(setting);
+baseValue '{service.base.value.setting}' = DATA STRING[100] (Setting);
+
+TABLE settingUserRole(Setting, UserRole);
+baseValue '{service.base.value.setting.user.role}' = DATA STRING[100] (Setting, UserRole);
+overBaseValue '{service.over.base.value.setting.user}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
+defaultValue '{service.default.value.setting}' = DATA STRING[100] (Setting);
+value '{service.value.setting.user.role}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
+value (Setting p) = OVERRIDE baseValue(p), defaultValue(p);
+valueSetting (ISTRING[100] name) = value(setting(name)); 
+
+pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PushSettingAction' (STRING[100], STRING[100]);
+popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PopSettingAction' (STRING[100]);
+
+writeDefaultSettings '{service.write.default.settings}'  INTERNAL  'lsfusion.server.physics.admin.service.action.WriteDefaultSettingsAction' ();
+updateSetting '{service.update.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.UpdateSettingAction' (Setting, UserRole, BOOLEAN);
+
+updateGlobalSetting(Setting r) {
+    updateSetting(r, NULL, TRUE); // system user and users without role
+    FOR UserRole ur IS UserRole DO // need this even in onStarted, because onStarted is executed after initializing RMI Manager, that's why roleSettings can be already clone, and we need to update it too
+        updateSetting(r, ur, NULL);    
+}
+
+onStarted() + {  
+    writeDefaultSettings();
+
+    FOR baseValue(Setting r) DO 
+        updateGlobalSetting(r);
+
+    FOR baseValue(Setting r, UserRole ur) DO 
+        updateSetting(r, ur, TRUE); 
+}
+
+WHEN CHANGED (baseValue(Setting r)) DO
+    updateGlobalSetting(r);
+    
+WHEN CHANGED (baseValue(Setting r, UserRole ur)) 
+    DO updateSetting(r, ur, TRUE);
+
+EXTEND FORM settings
+    OBJECTS r = Setting
+    PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
+    
+    OBJECTS ur = UserRole
+    PROPERTIES(ur) READONLY name, sid 
+    PROPERTIES(r, ur) value READONLY, baseValue
+    
+    FILTERGROUP override FILTER '{service.form.settings.only.override}' baseValue(r) OR baseValue(r, ur) 'F9'
+;
+
+DESIGN settings {
+    tabs {
+        NEW parameters {
+            caption = '{service.form.settings.caption.parameters}';
+            MOVE BOX(r);
+            MOVE BOX(ur);
+        }
+    }
+}
+
+getServerSettings() {
+    readResources('/web/.*');
+    LOCAL jsonResourceFiles = JSONFILE ();
+    EXPORT FROM file = resourceFiles(STRING str), name = str WHERE resourceFiles(str) TO jsonResourceFiles;
+
+    generateJnlpUrls();
+    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
+                sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
+                jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles());
+} @@noauth;
+
+// logging for user
+
+setExplainAnalyzeMode '{service.set.explain.analyze.mode}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExplainAnalyzeModeUserAction' (BOOLEAN, User);
+explainAnalyzeMode '{service.explain.analyze.mode}' = DATA BOOLEAN (User);
+refreshExplainAnalyzeMode '{service.refresh.explain.analyze.mode}'(User user)  { 
+    setExplainAnalyzeMode(explainAnalyzeMode(user), user);  
+}
+WHEN CHANGED(explainAnalyzeMode(User user)) DO {
+    refreshExplainAnalyzeMode(user);
+}
+
+turnExplainAnalizeOnCurrentUser '{service.turn.explain.analyze.on.current.user}' ()  { 
+    explainAnalyzeMode(User user) <- TRUE WHERE user == currentUser();     
+}
+
+setLoggerDebugEnabled '{service.set.logger.debug.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetLoggerDebugEnabledUserAction' (BOOLEAN, User);
+loggerDebugEnabled '{service.logger.debug.enabled}' = DATA BOOLEAN (User);
+refreshLoggerDebugEnabled ''(User user)  { 
+    setLoggerDebugEnabled(loggerDebugEnabled(user), user);
+}
+WHEN CHANGED(loggerDebugEnabled(User user)) DO {
+    refreshLoggerDebugEnabled(user);
+}
+
+setExplainTemporaryTablesEnabled '{service.set.explain.temporary.tables.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExplainTemporaryTablesEnabledUserAction' (BOOLEAN, User);
+explainTemporaryTablesEnabled '{service.explain.temporary.tables.enabled}' = DATA BOOLEAN (User);
+refreshExplainTemporaryTablesEnabled '' (User user)  { 
+    setExplainTemporaryTablesEnabled(explainTemporaryTablesEnabled(user), user);
+}
+WHEN CHANGED(explainTemporaryTablesEnabled(User user)) DO {
+    refreshExplainTemporaryTablesEnabled(user);
+}
+
+setRemoteLoggerDebugEnabled '{service.set.remote.logger.debug.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetRemoteLoggerDebugEnabledUserAction' (BOOLEAN, User);
+remoteLoggerDebugEnabled '{service.remote.logger.debug.enabled}' = DATA BOOLEAN (User);
+refreshRemoteLoggerDebugEnabled ''(User user)  { 
+    setRemoteLoggerDebugEnabled(remoteLoggerDebugEnabled(user), user);
+}
+WHEN CHANGED(remoteLoggerDebugEnabled(User user)) DO {
+    refreshRemoteLoggerDebugEnabled(user);
+}
+
+setExLogEnabled '{service.set.ex.log.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExLogUserAction' (BOOLEAN, User);
+remoteExLogEnabled '{service.remote.ex.log.enabled}' = DATA BOOLEAN (User);
+refreshExLogEnabled ''(User user)  { 
+    setExLogEnabled(remoteExLogEnabled(user), user);
+}
+WHEN CHANGED(remoteExLogEnabled(User user)) DO {
+    refreshExLogEnabled(user);
+}
+
+setPausableLogEnabled '{service.set.pausable.log.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetPausableLogUserAction' (BOOLEAN, User);
+remotePausableLogEnabled '{service.remote.pausable.log.enabled}' = DATA BOOLEAN (User);
+refreshPausableLogEnabled ''(User user)  { 
+    setPausableLogEnabled(remotePausableLogEnabled(user), user);
+}
+WHEN CHANGED(remotePausableLogEnabled(User user)) DO {
+    refreshPausableLogEnabled(user);
+}
+
+setExplainAllocationEnabled '{service.set.explain.allocation.enabled}' INTERNAL 'lsfusion.server.physics.admin.service.action.SetExplainAllocationEnabledUserAction' (BOOLEAN, User);
+explainAllocationEnabled '{service.explain.allocation.enabled}' = DATA BOOLEAN (User);
+refreshExplainAllocationEnabled '' (User user) {
+    setExplainAllocationEnabled(explainAllocationEnabled(user), user);
+}
+WHEN CHANGED(explainAllocationEnabled(User user)) DO {
+    refreshExplainAllocationEnabled(user);
+}
+
+onStarted() + {
+    FOR explainAnalyzeMode(User u) DO 
+        refreshExplainAnalyzeMode(u);
+    FOR loggerDebugEnabled(User u) DO 
+        refreshLoggerDebugEnabled(u);
+    FOR explainTemporaryTablesEnabled(User u) DO 
+        refreshExplainTemporaryTablesEnabled(u);
+    FOR remoteLoggerDebugEnabled(User u) DO 
+        refreshRemoteLoggerDebugEnabled(u);
+    FOR remoteExLogEnabled(User u) DO 
+        refreshExLogEnabled(u);
+    FOR remotePausableLogEnabled(User u) DO 
+        refreshPausableLogEnabled(u);
+    FOR explainAllocationEnabled(User u) DO
+        refreshExplainAllocationEnabled(u);
+}
+
+// client logs
+
+fileUserLogs = DATA FILE (Connection);
+userLogs ()  INTERNAL  'lsfusion.server.physics.admin.monitor.action.UserLogsAction' ();
+requestUserLogs '{system.events.request.user.logs.custom.user}' (CustomUser user)  {
+    IF hasConnectedConnections(user) THEN { 
+        FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+            NEWSESSION { fileUserLogs(conn) <- NULL; apply(); } 
+            NEWSESSION NEWTHREAD userLogs(); CONNECTION conn;
+        }
+    } ELSE {
+        MESSAGE '{system.events.user.not.connected}';
+    }
+}
+openUserLogs '{system.events.open.user.logs.custom.user}' (CustomUser user)  { 
+    IF hasConnectedConnections(user) THEN {
+        FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileUserLogs(conn) DO {
+            open(fileUserLogs(conn), userLogin(conn) + '-log');
+        } ELSE {
+            MESSAGE '{system.events.open.user.logs.message}';
+        }
+    } ELSE {
+        MESSAGE '{system.events.user.not.connected}';
+    }
+}
+
+fileThreadDump = DATA FILE (Connection);
+threadDump ()  INTERNAL  'lsfusion.server.physics.admin.monitor.action.ThreadDumpAction' ();
+requestThreadDump '{system.events.request.thread.dump.custom.user}' (CustomUser user)  { 
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+        NEWSESSION { fileThreadDump(conn) <- NULL; apply(); } 
+        NEWSESSION NEWTHREAD threadDump(); CONNECTION conn;
+    }
+}
+openThreadDump '{system.events.open.thread.dump.custom.user}' (CustomUser user)  { 
+    IF hasConnectedConnections(user) THEN {
+        FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileThreadDump(conn) DO {
+            open(fileThreadDump(conn), userLogin(conn) + '-dump');
+        } ELSE {
+            MESSAGE '{system.events.open.thread.dump.message}';
+        }
+    }
+}
+
+EXTEND FORM settings
+    OBJECTS ul = User
+    PROPERTIES(ul) READONLY name, login, userRoles
+    PROPERTIES(ul) explainAnalyzeMode, loggerDebugEnabled, explainTemporaryTablesEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, explainAllocationEnabled
+    PROPERTIES(ul) GRID requestUserLogs, openUserLogs, requestThreadDump, openThreadDump
+;
+
+DESIGN settings {
+    tabs {
+        MOVE BOX(ul) {
+            caption = '{service.settings.logging}';
+        } 
+    }
+}
+
+// runtime settings for user
+
+CLASS TypeExecEnv {
+    materialize '{service.type.exec.env.materialize}', 
+    disablenestloop '{service.type.exec.env.disablenestloop}', 
+    none '{service.type.exec.env.none}'
+}
+TABLE typeExecEnv(TypeExecEnv);
+
+captionExecEnv '{service.caption.exec.env}' (Object type) = staticCaption (type);
+id (TypeExecEnv type) = CASE EXCLUSIVE
+                        WHEN type == TypeExecEnv.materialize THEN 2
+                        WHEN type == TypeExecEnv.disablenestloop THEN 1
+                        WHEN type == TypeExecEnv.none THEN 0 IN base;
+
+setExecEnv '{service.set.exec.env}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExecEnvUserAction' (INTEGER, User);
+execEnv '{service.exec.env.user}' = DATA TypeExecEnv (User);
+refreshExecEnv '{service.refresh.exec.env.user}'(User user)  { 
+    setExecEnv(id(execEnv(user)), user);  
+}
+WHEN CHANGED(execEnv(User user)) DO {
+    refreshExecEnv(user);
+}
+nameExecEnv '{service.exec.env.user}' (User user) = captionExecEnv(execEnv(user)) IN base;
+
+setVolatileStatsEnabled '{service.set.volatile.stats.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetVolatileStatsEnabledUserAction' (BOOLEAN, User);
+volatileStatsEnabled '{service.volatile.stats.enabled}' = DATA BOOLEAN (User);
+refreshVolatileStatsEnabled ''(User user)  { 
+    setVolatileStatsEnabled(volatileStatsEnabled(user), user);
+}
+WHEN CHANGED(volatileStatsEnabled(User user)) DO {
+    refreshVolatileStatsEnabled(user);
+}
+
+onStarted() + { 
+    FOR volatileStatsEnabled(User u) DO 
+        refreshVolatileStatsEnabled(u);
+    FOR execEnv(User u) DO 
+        refreshExecEnv(u);
+} 
+
+useBusyDialogCustom '{service.use.busy.dialog.user}' = DATA BOOLEAN (CustomUser);
+useBusyDialog () = useBusyDialogCustom(currentUser());
+
+allowExcessAllocatedBytes '{service.allow.excess.allocated.bytes.user}' = DATA BOOLEAN (CustomUser);
+
+useRequestTimeout '{service.use.request.timeout.user}' = DATA BOOLEAN (CustomUser); 
+useRequestTimeout() = useRequestTimeout(currentUser());
+
+devMode '{service.dev.mode.user}' = DATA BOOLEAN (CustomUser); // for debug purposes 
+devMode = devMode(currentUser());
+
+transactTimeout '{service.transact.timeout}' (User user) = DATA INTEGER (CustomUser);
+
+EXTEND FORM settings
+    OBJECTS u = User
+    PROPERTIES(u) READONLY name, login, userRoles
+    PROPERTIES(u) nameExecEnv, volatileStatsEnabled
+    PROPERTIES(u) GRID useBusyDialogCustom, useRequestTimeout, devMode, allowExcessAllocatedBytes, transactTimeout
+;
+
+DESIGN settings {
+    tabs {
+        MOVE BOX(u) {
+            caption = '{service.settings.runtime}';
+        }
+    }
+}
+
+// GUI for user
+
+selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);
+overrideSelectedRowBackgroundColor '{service.selected.row.background.color}' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor();
+selectedCellBackgroundColor '{service.selected.cell.background.color}' = DATA COLOR (User);
+overrideSelectedCellBackgroundColor '{service.selected.cell.background.color}' = OVERRIDE selectedCellBackgroundColor(currentUser()), selectedCellBackgroundColor();
+focusedCellBackgroundColor '{service.focused.cell.background.color}' = DATA COLOR (User);
+overrideFocusedCellBackgroundColor '{service.focused.cell.background.color}' = OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor();
+focusedCellBorderColor '{service.focused.cell.border.color}' = DATA COLOR (User);
+overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor();
+tableGridColor '{service.table.grid.color}' = DATA COLOR (User);
+overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(currentUser()), tableGridColor();  
+
+resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
+
+EXTEND FORM settings
+    PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+
+    OBJECTS uc = CustomUser
+    PROPERTIES(uc) READONLY name, login, userRoles
+    PROPERTIES(uc) fontSize, colorThemeName,
+                   selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+;
+
+DESIGN settings {
+    tabs {
+        NEW colorsPane {
+            caption = '{service.form.settings.caption.design}';
+            NEW colorsHeaderPane {
+                type = CONTAINERH;
+                NEW defaultColors {
+                    type = COLUMNS;
+                    columns = 2;
+                    caption = '{service.form.settings.caption.default.colors}';
+                    MOVE PROPERTY(selectedRowBackgroundColor());
+                    MOVE PROPERTY(selectedCellBackgroundColor());
+                    MOVE PROPERTY(focusedCellBackgroundColor());
+                    MOVE PROPERTY(focusedCellBorderColor());
+                    MOVE PROPERTY(tableGridColor());
+               } 
+               NEW generalColors {
+                    caption = '{service.form.settings.caption.general.colors}';
+                    MOVE PROPERTY(defaultBackgroundColor());
+                    MOVE PROPERTY(defaultForegroundColor());
+               }
+            }
+            MOVE BOX(uc);
+        }
+    }
+}
+
+EXTEND FORM editProfile
+    PROPERTIES()  resetWindowsLayout
+    PROPERTIES(u) fontSize, colorThemeName,
+                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+;
+
+DESIGN editProfile {
+    OBJECTS {
+        NEW design {
+            caption = '{navigator.account.edit.profile.design}';
+            
+            MOVE PROPERTY(fontSize(u)) { fontSize = 24; }
+            MOVE PROPERTY(colorThemeName(u)) { fontSize = 24; }
+            
+            MOVE PROPERTY(resetWindowsLayout());
+            
+            NEW colors { 
+                type = COLUMNS;
+                columns = 2;
+                MOVE PROPERTY(selectedRowBackgroundColor(u)) { fontSize = 24; }
+                MOVE PROPERTY(selectedCellBackgroundColor(u)) { fontSize = 24; }
+                MOVE PROPERTY(focusedCellBackgroundColor(u)) { fontSize = 24; }
+                MOVE PROPERTY(focusedCellBorderColor(u)) { fontSize = 24; }
+                MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
+            }
+        }
+    }
+} 

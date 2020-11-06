@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GImageType;
@@ -22,12 +23,16 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 
-public abstract class GSimpleStateTableView extends GStateTableView {
+public abstract class GSimpleStateTableView<P> extends GStateTableView {
+
+    protected final JavaScriptObject controller;
 
     private final GFormController formController;
 
     public GSimpleStateTableView(GFormController form, GGridController grid) {
         super(form, grid);
+
+        this.controller = getController();
         this.formController = form;
         getDrawElement().getStyle().setProperty("zIndex", "0"); // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers
     }
@@ -39,10 +44,13 @@ public abstract class GSimpleStateTableView extends GStateTableView {
         columnMap = new NativeHashMap<>();
         JsArray<JavaScriptObject> list = convertToObjectsMixed(getData(columnMap));
 
-        render(getDrawElement(), getRecordElement(), list);
+        if(popupObject != null && !isCurrentKey(popupKey)) // if another current key set hiding popup
+            hidePopup();
+
+        render(getDrawElement(), list);
     }
 
-    protected abstract void render(Element element, com.google.gwt.dom.client.Element recordElement, JsArray<JavaScriptObject> list);
+    protected abstract void render(Element element, JsArray<JavaScriptObject> list);
 
     @Override
     protected Element getRendererAreaElement() {
@@ -122,8 +130,58 @@ public abstract class GSimpleStateTableView extends GStateTableView {
     
     protected final static String keysFieldName = "#__key";
 
-    protected void changeSimpleGroupObject(JavaScriptObject object, boolean setDataUpdated) {
-        changeGroupObject(toObject(object), setDataUpdated);
+    protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
+        GGroupObjectValue key = toObject(object);
+        long requestIndex = changeGroupObject(key, rendered);
+
+        Widget recordView;
+        if(elementClicked != null && (recordView = grid.recordView) != null) {
+            if(popupObject != null)
+                hidePopup();
+
+            popupKey = key;
+            popupElementClicked = elementClicked;
+
+            if (recordView.isVisible())
+                showPopup();
+            else
+                popupRequestIndex = requestIndex;
+        }
+    }
+
+    private void showPopup() {
+        popupObject = showPopup(popupElementClicked, grid.recordView.getElement());
+
+        popupRequestIndex = -2; // we are no longer waiting for popup
+        popupElementClicked = null; // in theory it's better to do it on popupObject close, but this way is also ok
+    }
+
+    private void hidePopup() {
+        hidePopup(popupObject);
+
+        popupObject = null;
+        popupKey = null;
+    }
+
+    protected abstract JavaScriptObject showPopup(P popupElementClicked, Element popupElement);
+
+    protected abstract void hidePopup(JavaScriptObject popup);
+
+    private JavaScriptObject popupObject;
+    private P popupElementClicked = null;
+    private GGroupObjectValue popupKey = null;
+    private long popupRequestIndex = -2;
+
+    @Override
+    public void updateRecordLayout(long requestIndex) {
+        Widget recordView = grid.recordView;
+        if(popupObject == null) { // no popup
+            if(requestIndex <= popupRequestIndex && recordView.isVisible()) // but has to be
+                showPopup();
+        } else {
+            if(!recordView.isVisible())
+                hidePopup();
+        }
     }
 
     protected void changeProperty(String property, Serializable newValue, JavaScriptObject object) {
@@ -190,9 +248,9 @@ public abstract class GSimpleStateTableView extends GStateTableView {
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
-            changeSimpleGroupObject: function (object, setDataUpdated) {
+            changeSimpleGroupObject: function (object, rendered, elementClicked) {
                 var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
-                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, setDataUpdated);
+                return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
             },
             setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter) {
                 thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter);

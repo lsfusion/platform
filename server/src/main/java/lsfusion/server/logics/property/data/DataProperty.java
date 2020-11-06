@@ -29,6 +29,7 @@ import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.event.ChangeEvent;
@@ -293,6 +294,11 @@ public abstract class DataProperty extends AbstractDataProperty {
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new DataDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.data}"), this, LM
         );
+    }
+
+    @Override
+    public boolean supportsReset() {
+        return getType() instanceof FileClass;
     }
 
     @Override

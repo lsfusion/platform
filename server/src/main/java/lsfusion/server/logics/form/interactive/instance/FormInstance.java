@@ -500,7 +500,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         List<GroupObjectUserPreferences> goGeneralPreferences = new ArrayList<>();
         try {
 
-            ObjectValue formValue = BL.reflectionLM.formByCanonicalName.readClasses(session, new DataObject(entity.getCanonicalName(), StringClass.get(50)));
+            ObjectValue formValue = BL.reflectionLM.formByCanonicalName.readClasses(session, new DataObject(entity.getCanonicalName(), StringClass.get(100)));
             if (formValue.isNull())
                 return null;
             DataObject formObject = (DataObject) formValue;
@@ -667,7 +667,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet()) {
                 ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(
                         dataSession,
-                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 50)),
+                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 100)),
                         new DataObject(entry.getKey(), StringClass.get(false, false, 100)));
                 if (propertyDrawObjectValue instanceof DataObject) {
                     DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
@@ -693,7 +693,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getCanonicalName() + ") не найден");
                 }
             }
-            DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
+            DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(100)), new DataObject(entity.getCanonicalName(), StringClass.get(100)));
             if (completeOverride) {
                 for (DataObject user : userObjectList) {
                     changeUserGOPreferences(preferences, dataSession, groupObjectObject, user);
@@ -1191,7 +1191,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         
         Map<String, FormGrouping> groupings = new LinkedHashMap<>();
         
-        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
+        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(100)), new DataObject(entity.getCanonicalName(), StringClass.get(100)));
         
         if (groupObjectObjectValue instanceof DataObject) {
             KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
@@ -1235,7 +1235,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         
         try (DataSession dataSession = session.createSession()) {
-            ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
+            ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(100)), new DataObject(entity.getCanonicalName(), StringClass.get(100)));
             if (!(groupObjectObjectValue instanceof DataObject)) {
                 throw new RuntimeException("Объект " + grouping.groupObjectSID + " (" + entity.getCanonicalName() + ") не найден");
             }
@@ -1261,7 +1261,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
                 ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(dataSession,
-                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 50)),
+                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 100)),
                         new DataObject(propGrouping.propertySID, StringClass.get(false, false, 100)));
                 if (propertyDrawObjectValue instanceof DataObject) {
                     DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
@@ -1971,6 +1971,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
             showIfs = MapFact.imFilter(mRestShowIfs, showIfs);
+        } else {
+            pendingRead.removeAll(showIfs.keys().toJavaCol());
         }
 
         MExclMap<PropertyDrawInstance.ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> mShowIfValues = MapFact.mExclMap();
@@ -2414,7 +2416,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ImSet<Pair<GroupObjectInstance, GroupObjectProp>> prevRecursionGuard = updateChangesRecursionGuard;
                 updateChangesRecursionGuard = updateChangesRecursionGuard.addExcl(source);
                 try {
-                    source.first.updateEnvironmentIncrementProp(environmentIncrement, this, changedProps, reallyChanged, source.second, propsChanged, dataChanged);
+                    source.first.updateEnvironmentIncrementProp(environmentIncrement, this, changedProps, reallyChanged, source.second, propsChanged, dataChanged, FormInstance.this::isHidden);
                 } finally {
                     updateChangesRecursionGuard = prevRecursionGuard;
                 }

@@ -117,13 +117,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return pageSizeWidget;
     }
 
-    protected Element getRecordElement() {
-        Widget recordView = grid.recordView;
-        if(recordView != null)
-            return recordView.getElement();
-        return null;
-    }
-
     private boolean dataUpdated = false;
 
     @Override
@@ -131,9 +124,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         setCurrentKey(currentKey, true);
     }
 
-    private void setCurrentKey(GGroupObjectValue currentKey, boolean setDataUpdated) {
+    private void setCurrentKey(GGroupObjectValue currentKey, boolean rendered) {
         this.currentKey = currentKey;
-        if (setDataUpdated)
+        if (!rendered)
             dataUpdated = true;
     }
 
@@ -334,6 +327,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return currentKey; // for executing actions used for wysiwyg
     }
 
+    protected boolean isCurrentKey(GGroupObjectValue object){
+        return Objects.equals(object, getCurrentKey());
+    }
+
+
     @Override
     public GPropertyDraw getCurrentProperty() {
         if(!properties.isEmpty())
@@ -405,9 +403,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return null;
     }
 
-    protected void changeGroupObject(GGroupObjectValue value, boolean setDataUpdated) {
-        setCurrentKey(value, setDataUpdated);
-        form.changeGroupObjectLater(grid.groupObject, value);
+    protected long changeGroupObject(GGroupObjectValue value, boolean rendered) {
+        setCurrentKey(value, rendered);
+        return form.changeGroupObject(grid.groupObject, value);
     }
 
     protected Object getValue(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

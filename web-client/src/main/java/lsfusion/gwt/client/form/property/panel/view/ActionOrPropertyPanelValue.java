@@ -89,8 +89,19 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
+    public boolean isSetLastBlurred() {
+        return true;
+    }
+
+    @Override
     public void restoreSetFocus(Object forceSetFocus) {
         this.forceSetFocus = false;
+    }
+
+    protected void onBlur(EventHandler handler) {
+        form.previewBlurEvent(handler.event);
+
+        super.onBlur(handler);
     }
 
     @Override

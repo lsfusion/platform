@@ -2,11 +2,13 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.struct.FormEntity;
 
 import java.io.DataInputStream;
@@ -21,16 +23,17 @@ public class GridView extends ComponentView {
 
     public GroupObjectView groupObject;
 
-    protected NFProperty<ComponentView> record = NFFact.property();
-    public ComponentView getRecord() {
-        return record.get();
+    protected ContainerView record; // lazy creation, since its usage is pretty rear
+    public ContainerView getRecord() { // assert that grid view is "finalized"
+        return record;
     }
-    public ComponentView getNFRecord(Version version) {
-        return record.getNF(version);
-    }
-    public void setRecord(ComponentView component, Version version) {
-        this.record.set(component, version);
-        component.recordContainer.set(this, version);
+    @NFLazy
+    public ContainerView getNFRecord(FormView formView) {
+        if(record == null) {
+            record = formView.createContainer();
+            record.recordContainer = this;
+        }
+        return record;
     }
 
     public GridView() {
@@ -80,7 +83,7 @@ public class GridView extends ComponentView {
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
 
-        record = NFFact.finalProperty(pool.deserializeObject(inStream));
+        record = pool.deserializeObject(inStream);
 
         groupObject = pool.deserializeObject(inStream);
     }
@@ -89,6 +92,7 @@ public class GridView extends ComponentView {
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
 
-        record.finalizeChanges();
+        if(record != null)
+            record.finalizeAroundInit();
     }
 }

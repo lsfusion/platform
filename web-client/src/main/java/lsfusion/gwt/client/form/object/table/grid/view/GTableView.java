@@ -79,4 +79,6 @@ public interface GTableView {
     GGroupObjectUserPreferences getGeneralGridPreferences();
 
     int getPageSize();
+
+    default void updateRecordLayout(long requestIndex) {}
 }

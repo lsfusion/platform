@@ -85,6 +85,7 @@ import lsfusion.server.physics.admin.profiler.ProfiledObject;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static lsfusion.base.BaseUtils.immutableCast;
 
@@ -381,6 +382,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public final static int UPDATED_PAGESIZE = (1 << 8);
 
     public final static int UPDATED_FORCE = (1 << 9);
+    public final static int UPDATED_FILTERPROP = (1 << 10);
 
     public int updated = UPDATED_ORDER | UPDATED_FILTER;
 
@@ -846,6 +848,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private boolean pendingUpdateObjects;
     private boolean pendingUpdateFilters;
     private boolean pendingUpdateObject;
+    private boolean pendingUpdateFilterProp;
     private boolean pendingUpdatePageSize;
 
     public final Set<PropertyReaderInstance> pendingUpdateProps = new HashSet<>();
@@ -869,12 +872,20 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return usedEnvironmentIncrementProps.get(propType);
     }
             
-    public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectProp propType, boolean propsChanged, boolean dataChanged) throws SQLException, SQLHandledException {
+    public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectProp propType, boolean propsChanged, boolean dataChanged, Predicate<GroupObjectInstance> hidden) throws SQLException, SQLHandledException {
         PropertyRevImplement<ClassPropertyInterface, ObjectInstance> mappedProp = props.get(propType);
         if(mappedProp != null) {
             MSet<Property> mUsedProps = null;
             if(propsChanged)
                 mUsedProps = SetFact.mSet();
+            else {
+                if(propType.equals(GroupObjectProp.FILTER) &&
+                    !entity.isFilterExplicitlyUsed &&
+                    (hidden.test(this) || isPending())) {
+                    updated = updated | UPDATED_FILTERPROP;
+                    return;
+                }
+            }
             
             final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             PropertyChange<ClassPropertyInterface> change;
@@ -899,7 +910,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     throw new UnsupportedOperationException();
             }
             environmentIncrement.add(mappedProp.property, change, dataChanged);
-            if(propsChanged)
+            if(mUsedProps != null)
                 usedEnvironmentIncrementProps.add(propType, mUsedProps.immutable());
 
             if(changedProps != null)
@@ -942,8 +953,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     break;
                 }
 
-        if(updateFilters) // изменились фильтры, надо обновить свойства созданные при помощи соответствующих операторов форм, сейчас будет определенная избыточность для dataUpdated (так как через eventChange уже должны изменится), но пока не критично
-            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.FILTER), environmentIncrement, changedProps, reallyChanged, true, true);
+        if(updateFilters)
+            updateFilterProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
 
         // ORDERS
 
@@ -965,8 +976,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     break;
                 }
 
-        if(updateOrders) // изменились порядки, надо обновить свойства созданные при помощи соответствующих операторов форм, сейчас будет определенная избыточность для dataUpdated (так как через eventChange уже должны изменится), но пока не критично
-            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
+        if(updateOrders)
+            updateOrderProperty(modifier, environmentIncrement, changedProps, reallyChanged);
 
         boolean updateKeys = updateFilters || updateOrders || (setGroupMode == null && userSeeks != null);
 
@@ -1027,19 +1038,23 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         boolean updateObject = (updated & UPDATED_OBJECT) != 0;
+        boolean updateFilterProp = updateFilters || (updated & UPDATED_FILTERPROP) != 0;
 
         if(toRefresh())
             result.updateStateObjects.add(this, isPending());
         if(!hidden && toUpdate()) {
-            updateKeys |= pendingUpdateKeys; updateObjects |= pendingUpdateObjects; updateObject |= pendingUpdateObject; updatePageSize |= pendingUpdatePageSize; updateFilters |= pendingUpdateFilters;
+            updateKeys |= pendingUpdateKeys; updateObjects |= pendingUpdateObjects; updateObject |= pendingUpdateObject; updateFilterProp |= pendingUpdateFilterProp; updatePageSize |= pendingUpdatePageSize; updateFilters |= pendingUpdateFilters;
             checkPending(result, () -> { pendingUpdateKeys = false; pendingUpdateScroll = false; } );
-            pendingUpdateObjects = false; pendingUpdateObject = false; pendingUpdatePageSize = false; pendingUpdateFilters = false;
+            pendingUpdateObjects = false; pendingUpdateObject = false; pendingUpdateFilterProp = false; pendingUpdatePageSize = false; pendingUpdateFilters = false;
         } else {
             boolean finalUpdateKeys = updateKeys; boolean changedScroll = updateObject || updatePageSize;
             checkPending(result, () -> { pendingUpdateKeys |= finalUpdateKeys; if(changedScroll) pendingUpdateScroll = updateScroll() != null; });
-            pendingUpdateObjects |= updateObjects; pendingUpdateObject |= updateObject; pendingUpdatePageSize |= updatePageSize; pendingUpdateFilters |= updateFilters;
+            pendingUpdateObjects |= updateObjects; pendingUpdateObject |= updateObject; pendingUpdateFilterProp |= updateFilterProp; pendingUpdatePageSize |= updatePageSize; pendingUpdateFilters |= updateFilters;
             return null;
         }
+
+        if(updateFilterProp)
+            updateFilterProperty(false, modifier, environmentIncrement, changedProps, reallyChanged);
 
         ImMap<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
         SeekObjects seeks = null;
@@ -1247,6 +1262,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private void updateViewProperty(ExecutionEnvironment execEnv, PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
         execEnv.getSession().dropChanges((SessionDataProperty)viewProperty.property);
         execEnv.change(viewProperty.property, change);
+    }
+
+    public void updateOrderProperty(FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
+    }
+
+    public void updateFilterProperty(boolean isFilterExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        if (entity.isFilterExplicitlyUsed == isFilterExplicitlyUsed)
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.FILTER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
     public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> seekObjects(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, int readSize) throws SQLException, SQLHandledException {

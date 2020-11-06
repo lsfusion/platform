@@ -26,7 +26,7 @@ public class GKeyStroke implements Serializable {
     public static final int KEY_F12 = KEY_F1 + 11;
 
     public static final int KEY_MINUS = 45;
-    
+
     public static final int KEY_0 = 48;
     public static final int KEY_9 = 57;
 
@@ -129,14 +129,6 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_SPACE;
     }
 
-    public static boolean isCtrlKeyDownEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_CTRL;
-    }
-
-    public static boolean isCtrlKeyUpEvent(NativeEvent event) {
-        return KEYUP.equals(event.getType()) && event.getKeyCode() == KEY_CTRL;
-    }
-
     public static boolean isAltEnterEvent(NativeEvent event) {
         return isEnterKeyEvent(event) && event.getAltKey();
     }
@@ -223,7 +215,7 @@ public class GKeyStroke implements Serializable {
 //                || event.getTypeInt() == Event.ONPASTE;
         return event.getTypeInt() == Event.ONPASTE;
     }
-    
+
     public static boolean isSwitchFullScreenModeEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F11 && event.getAltKey();
     }

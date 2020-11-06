@@ -80,8 +80,7 @@ public class ScriptingFormView {
         assert component != null && parentComponent != null;
 
         if(parentComponent instanceof GridView) {
-            moveComponentToGrid(component, (GridView) parentComponent, version);
-            return;
+            parentComponent = ((GridView) parentComponent).getNFRecord(view);
         }
 
         if (parentComponent instanceof ContainerView) {
@@ -89,13 +88,6 @@ public class ScriptingFormView {
             return;
         }
         errLog.emitComponentMustBeAContainerError(parser, parentComponent.getSID());
-    }
-
-    public void moveComponentToGrid(ComponentView component, GridView parentComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        assert component != null && parentComponent != null;
-
-        component.removeFromParent(version);
-        parentComponent.setRecord(component, version);
     }
 
     public void moveComponentToContainer(ComponentView component, ContainerView parent, LogicsModule.InsertType pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {

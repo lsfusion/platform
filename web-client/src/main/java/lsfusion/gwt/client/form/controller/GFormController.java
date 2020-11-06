@@ -13,7 +13,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
@@ -229,7 +228,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void checkMouseEvent(EventHandler handler, boolean preview) {
-        if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event))
+        if(GMouseStroke.isDblDownEvent(handler.event))
+            handler.event.preventDefault(); //need to prevent selection by double mousedown event
+        else if(GMouseStroke.isChangeEvent(handler.event) || GMouseStroke.isDoubleChangeEvent(handler.event))
             processBinding(handler, preview);
     }
     public void checkKeyEvent(EventHandler handler, boolean preview) {
@@ -247,7 +248,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void checkPreviewEvent(EventHandler handler) {
         if(MainFrame.isModalPopup())
             return;
-        
+
         checkMouseEvent(handler, true);
         if(handler.consumed)
             return;
@@ -308,7 +309,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             if (onlyCtrl && !GFormController.isLinkEditMode())
                 formsController.updateLinkEditMode(true, true);
         }
-   }
+    }
 
     private static boolean linkEditMode;
     private static boolean linkEditModeWithCtrl;
@@ -321,11 +322,28 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public static void setLinkEditMode(boolean enabled, boolean enabledWithCtrl) {
         linkEditMode = enabled;
         linkEditModeWithCtrl = enabledWithCtrl;
-        com.google.gwt.user.client.Element globalElement = RootPanel.get().getElement();
-        if(enabled)
-            globalElement.addClassName("linkEditMode");
-        else
-            globalElement.removeClassName("linkEditMode");
+    }
+
+    public static Timer linkEditModeStylesTimer;
+
+    public static void scheduleLinkEditModeStylesTimer(Runnable setLinkEditModeStyles) {
+        if(linkEditModeStylesTimer == null) {
+            linkEditModeStylesTimer = new Timer() {
+                @Override
+                public void run() {
+                    setLinkEditModeStyles.run();
+                    linkEditModeStylesTimer = null;
+                }
+            };
+            linkEditModeStylesTimer.schedule(250);
+        }
+    }
+
+    public static void cancelLinkEditModeStylesTimer() {
+        if (linkEditModeStylesTimer != null) {
+            linkEditModeStylesTimer.cancel();
+            linkEditModeStylesTimer = null;
+        }
     }
 
     // will handle key events in upper container which will be better from UX point of view
@@ -633,7 +651,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         update(fc, changesDTO.requestIndex);
 
-        formLayout.hideEmptyContainerViews();
+        formLayout.hideEmptyContainerViews(changesDTO.requestIndex);
 
         activateElements(fc);
 
@@ -810,7 +828,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
     }
 
-    public void changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
+    public long changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
         long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key), new ServerResponseCallback() {
             @Override
             public void preProcess() {
@@ -818,6 +836,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
         pendingChangeCurrentObjectsRequests.put(group, requestIndex);
+        return requestIndex;
     }
 
     // has to be called setCurrentKey before
@@ -1527,10 +1546,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return addBinding(event::isEvent, env, pressed, component, groupObject);
     }
     public int addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event, env, null, pressed, component, groupObject);
+    }
+    public int addBinding(BindingCheck event, GBindingEnv env, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
             @Override
             public boolean showing() {
                 return component != null ? isShowing(component) : true;
+            }
+
+            @Override
+            public boolean enabled() {
+                return enabled != null ? enabled.get() : super.enabled();
             }
 
             @Override
@@ -1786,9 +1813,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 forceSetFocus = null;
             }
 
-            if(blurred) // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
-                MainFrame.setLastBlurredElement(editContext.getFocusElement());
-            else {
+            if(blurred) { // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
+                if(editContext.isSetLastBlurred())
+                    MainFrame.setLastBlurredElement(editContext.getFocusElement());
+            } else {
                 if (focusedElement != null)
                     focusedElement.focus();
             }

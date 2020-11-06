@@ -245,7 +245,7 @@ DESIGN scheduledTask {
             }
             NEW logContainer {
                 caption = '{scheduler.form.scheduled.task.caption.log}';
-                type = CONTAINERH;
+                type = SPLITH;
                 MOVE BOX(tl);
                 MOVE BOX(ctl);
             }
