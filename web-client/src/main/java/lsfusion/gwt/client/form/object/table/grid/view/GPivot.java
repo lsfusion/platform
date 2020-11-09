@@ -17,6 +17,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
+import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
@@ -514,6 +515,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 //    private boolean isTable = true;
 
     private void onRefresh(WrapperObject config, JsArrayString rows, JsArrayString cols, WrapperObject inclusions, String aggregatorName, String rendererName) {
+        logSortCols(this.config, "onRefresh old config");
+        logSortCols(config, "onRefresh new config");
         updateSortCols(this.config, config);
         this.config = config;
 
@@ -1724,16 +1727,25 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private Integer scrollLeft = null;
+    private int scrollLeftCounter = 0;
 
-    private void saveScrollLeft(Element tableDataScroller) {
-        scrollLeft = tableDataScroller.getScrollLeft();
+    private void saveScrollLeft() {
+        Element tableDataScroller = getTableDataScroller();
+        if(tableDataScroller != null) {
+            scrollLeft = tableDataScroller.getScrollLeft();
+            scrollLeftCounter++;
+        }
+
     }
 
     private void restoreScrollLeft() {
         Element tableDataScroller = getTableDataScroller();
         if(tableDataScroller != null && scrollLeft != null) {
             tableDataScroller.setScrollLeft(scrollLeft);
-            scrollLeft = null;
+            if(scrollLeftCounter == 0) {
+                scrollLeft = null;
+            } else
+                scrollLeftCounter--;
         }
     }
 
@@ -1770,11 +1782,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             },
 
             rowAttrHeaderClickHandler: function (event, th, rowKeyValues, attrName) {
-                instance.@GPivot::rowAttrHeaderClickAction(*)(rowKeyValues, attrName, event.detail > 1);
+                instance.@GPivot::rowAttrHeaderClickAction(*)(rowKeyValues, attrName, isOdd(event.detail));
             },
 
             colAttrHeaderClickHandler: function (event, element, colKeyValues, isSubtotal) {
-                instance.@GPivot::colAttrHeaderClickAction(*)(colKeyValues, element, isSubtotal, event.ctrlKey, event.shiftKey, event.detail > 1);
+                instance.@GPivot::colAttrHeaderClickAction(*)(colKeyValues, element, isSubtotal, event.ctrlKey, event.shiftKey, isOdd(event.detail));
             },
             
             colAxisHeaderDblClickHandler: function (event, element, attrName) {
@@ -1809,6 +1821,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
             }
         }
+
+        //2 double clicks will be handled as 4 clicks with detail = 1, 2, 3, 4
+        function isOdd(num) { return num % 2 === 0; }
+
     }-*/;
 
     private void cellDblClickAction(JsArrayMixed rowKeyValues, JsArrayMixed colKeyValues, int x, int y) {
@@ -1920,17 +1936,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private void colAttrHeaderClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey, boolean dblClick) {
         if(dblClick) {
-            Element tableDataScroller = getTableDataScroller(); //if tableDataScroller == null, updateView is not finished
-            if (tableDataScroller != null && isSortColumn(isSubtotal, columnKeyValues)) {
-                saveScrollLeft(tableDataScroller);
+            if (isSortColumn(isSubtotal, columnKeyValues)) {
+                saveScrollLeft();
                 modifySortCols(columnKeyValues, ctrlKey, shiftKey);
                 if (!shiftKey && !ctrlKey) {
                     unwrapOthers(rendererElement, th);
                 }
                 th.removeAllChildren();
                 renderColAttrCell(th, fromObject(getObjectValue(columnKeyValues, columnKeyValues.length() - 1)), columnKeyValues, isSubtotal, false, false);
-                
-                updateViewWithTimer();
+
+                //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
+                updateViewLater();
             }
         } else {
             if(GFormController.isLinkEditMode() && columnKeyValues.length() > 0) {
@@ -1939,8 +1955,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 if (column != null && rowIndex != null) {
                     form.executeEventAction(column.property, keys.get(rowIndex), GEditBindingMap.EDIT_OBJECT);
                 }
-
-                updateView(true, null);
             }
         }
     }
@@ -1952,18 +1966,20 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
         th.removeAllChildren();
         GGridPropertyTableHeader.renderTD(th, rowHeight, shiftKey ? null : sortCol == null || !sortCol.getDirection(), columnCaption);
-        
-        updateViewWithTimer();
+
+        //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
+        updateViewLater();
     }
     
-    private void updateViewWithTimer() {
-        //timer need to render th before updateView
-        new com.google.gwt.user.client.Timer() {
+    private void updateViewLater() {
+
+
+        DeferredRunner.get().reschedule("updateView", new DeferredRunner.AbstractCommand() {
             @Override
-            public void run() {
+            public void execute() {
                 updateView(true, null);
             }
-        }.schedule(0);
+        }, 0);
     }
 
     private SortCol modifySortCols(Object keys, boolean ctrlKey, boolean shiftKey) {
@@ -1987,6 +2003,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             boolean direction = sortCol != null ? sortCol.getDirection() : false;
             sortCols = JsArrayMixed.createArray().cast();
             sortCols.push(createSortCol(keys, !direction));
+            log("modifySortCols from " + direction + " to " + !direction);
         }
 
         config = overrideSortCols(config, sortCols);
