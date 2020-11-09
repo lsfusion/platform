@@ -168,7 +168,7 @@ public abstract class ReadUtils {
     private static void copyFTPToFile(String path, File file) throws IOException {
         FTPPath properties = FTPPath.parseFTPPath(path);
         FTPClient ftpClient = new FTPClient();
-        ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+        ftpClient.setConnectTimeout(120000); //2 min
         if (properties.charset != null)
             ftpClient.setControlEncoding(properties.charset);
         try {
