@@ -1,20 +1,231 @@
+.fc {
+    font-size: inherit;
+    margin-top: 1px;
+    background: var(--background-color);
+}
+
+.fc-h-event, .fc-v-event, .fc-daygrid-event {
+    background-color: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
+}
+
+.fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title {
+    padding: 2px 3px;
+}
+
 .event-highlight {
-    border-color: var(--selection-color);
+    background-color: var(--selection-color);
+    border: 1px solid var(--component-border-color);
+}
+
+.fc-h-event .fc-event-main, .fc-v-event .fc-event-main {
+    color: var(--text-color);
+}
+
+.fc-timegrid-event {
+    font-size: inherit;
+}
+
+.fc-timegrid-event .fc-event-time {
+    font-size: inherit;
+}
+
+.fc-timegrid-event .fc-event-main {
+    padding: 0 3px;
+}
+
+.fc-timegrid-event-harness-inset .fc-timegrid-event, .fc-timegrid-event.fc-event-mirror {
+    box-shadow: none;
+}
+
+.fc-event:hover {
+    background-color: var(--component-background-color);
+}
+
+.event-highlight:hover { /* should come after .fc-event:hover */  
     background-color: var(--selection-color);
 }
-.fc-h-event .fc-event-main {
-    color: var(--text-color);
-}
-.fc-theme-standard {
+
+.fc .fc-scrollgrid {
     background: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--table-border-radius);
 }
+
+.fc-scrollgrid-section-header {
+    background: var(--background-color);
+}
+
+.fc-theme-standard th, .fc-theme-standard td {
+    border: none;
+    border-top: 1px solid var(--grid-separator-border-color);
+    border-left: 1px solid var(--grid-separator-border-color);
+}
+
 .fc-daygrid-dot-event .fc-event-title {
     color: var(--text-color);
+    font-weight: normal;
 }
+
+.fc .fc-toolbar-title {
+    font-weight: normal;
+    font-size: inherit;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+    margin-bottom: 5px;
+}
+
+.fc table {
+    font-size: inherit;
+}
+
+.fc .fc-col-header-cell-cushion {
+    font-weight: normal;
+    color: var(--text-color);
+}
+
+.fc .fc-col-header-cell-cushion:hover {
+    text-decoration: none;
+}
+
+a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
+    color: var(--text-color);
+}
+
+.fc .fc-button {
+    height: 22px;
+    padding: 0 14px;
+    font-size: inherit;
+    tab-index: 0;
+}
+
+.fc .fc-button .fc-icon {
+    vertical-align: initial;
+    font-size: inherit;
+}
+
+.fc .fc-button:disabled {
+    opacity: 1;
+}
+
+.fc .fc-button:focus {
+    box-shadow: none;
+}
+
+.fc .fc-button-primary {
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--button-border-radius);
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.fc .fc-button-primary:focus {
+    background-color: var(--selection-color);
+    border: 1px solid var(--focus-color);
+}
+
+.fc .fc-button-primary:hover {
+    background-color: var(--button-hover-background-color);
+    color: var(--text-color);
+}
+
+.fc .fc-button-primary:hover:not(focus) { /* we want focus to have higher priority than hover*/
+    border: 1px solid var(--component-hover-border-color);
+}
+
+.fc .fc-button-primary:active { /* should come after ':hover' and ':focus' */
+    background-color: var(--button-active-background-color);
+}
+
+.fc .fc-button-primary:disabled {
+    cursor: default;
+    color: var(--disabled-text-color);
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
+}
+
+.fc .fc-button-primary:disabled:hover {
+    background: var(--background-color);
+}
+
+.fc .fc-button-primary:not(:disabled):active, .fc .fc-button-primary:not(:disabled).fc-button-active {
+    background-color: var(--selection-color);
+    color: var(--text-color);
+    border-color: var(--component-border-color);
+    cursor: default;
+}
+
+.fc .fc-button-primary:not(:disabled):active:focus, .fc .fc-button-primary:not(:disabled).fc-button-active:focus {
+    box-shadow: none;
+}
+
+.fc .fc-button-primary:not(:disabled):active:hover, .fc .fc-button-primary:not(:disabled).fc-button-active:hover {
+    background: var(--background-color);
+    border: 1px solid var(--focus-color);
+}
+
+.fc-daygrid-event {
+    font-size: inherit;
+}
+
+.fc .fc-daygrid-day-number {
+    text-decoration: none;
+    padding: 3px 4px;
+}
+
 .fc-direction-ltr .fc-daygrid-event .fc-event-time {
     color: var(--text-color);
 }
-.tippy-box {
-    background-color: var(--selection-color);
+
+.fc-daygrid-event-dot {
+    border: calc(var(--fc-daygrid-event-dot-width, 8px) / 2) solid var(--focus-color);
+}
+
+.fc .fc-daygrid-day-bottom {
+    font-size: inherit;
+    margin: 4px 3px 0;
+}
+
+.fc .fc-daygrid-more-link {
+    font-size: inherit;
     color: var(--text-color);
+}
+
+.tippy-box {
+    background-color: var(--background-color);
+    border: 1px solid var(--dialog-outer-border-color);
+    border-radius: var(--panel-border-radius);
+    color: var(--text-color);
+    font-size: inherit;
+}
+
+.tippy-box[data-placement^=top]>.tippy-arrow:before {
+    bottom: -8px;
+}
+
+.tippy-arrow {
+    color: var(--background-color);
+}
+
+.fc .fc-popover {
+    background-color: var(--background-color);
+    border: 1px solid var(--dialog-outer-border-color);
+    border-radius: var(--panel-border-radius);
+}
+
+.fc .fc-popover-header {
+    color: var(--text-color);
+    background-color: var(--dialog-border-color);
+    border-bottom: 1px solid var(--dialog-outer-border-color);
+    padding: 2px 4px;
+}
+
+.fc .fc-more-popover .fc-popover-body {
+    min-width: 170px;
+}
+
+.fc .propertyPanelRendererValue {
+    box-sizing: unset;
 }
