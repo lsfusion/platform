@@ -1056,6 +1056,10 @@ public abstract class LogicsModule {
         return baseLM.addDivideProp();
     }
 
+    protected LP addRoundProp(boolean hasScale) {
+        return baseLM.addRoundProp(hasScale);
+    }
+
     // ------------------- cast ----------------- //
 
     protected <P extends PropertyInterface> LP addCastProp(DataClass castClass) {
