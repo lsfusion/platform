@@ -90,8 +90,11 @@ public abstract class ImportPlainIterator {
                 if (actual != null) {
                     actualField = actual.first;
                     f = actual.second;
-                } else
+                } else if (f < actualFields.size()) {
                     actualField = actualFields.get(f);
+                } else {
+                    throw new RuntimeException("IMPORT error: field " + field + " doesn't exist in file");
+                }
                 f++;
             }
             mMapping.mapValue(i, actualField);
