@@ -457,6 +457,7 @@ button {
 
 .gwt-PopupPanel {
     border: 1px solid var(--dialog-outer-border-color);
+    border-radius: var(--panel-border-radius);
     background: var(--background-color);
 }
 
