@@ -139,6 +139,7 @@ shutdown '{system.events.shutdown}' (Connection connection)  {
 
 platformVersion = DATA TEXT();
 apiVersion = DATA INTEGER();
+revisionVersion = DATA INTEGER();
 synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
 
 onStarted() + { 
@@ -147,7 +148,7 @@ onStarted() + {
     NEW launch = Launch {
         computer(launch) <- currentComputer();
         time(launch) <- currentDateTime();
-        revision(launch) <- CONCAT ' ', platformVersion(), '(' + apiVersion() + ')';
+        revision(launch) <- CONCAT ' ', platformVersion(), '(' + apiVersion() + ')', revisionVersion();
         currentLaunch() <- launch;
     }
 
