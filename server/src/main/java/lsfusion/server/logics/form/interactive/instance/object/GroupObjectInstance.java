@@ -1239,6 +1239,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public ListViewType listViewType;
     public void changeListViewType(ExecutionEnvironment execEnv, ConcreteCustomClass listViewType, ListViewType value) throws SQLException, SQLHandledException {
+        setFilters = null; //to remove view filters when switch from calendar to grid
         this.listViewType = value;
         execEnv.change(entity.getListViewType(listViewType).property, new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));
     }

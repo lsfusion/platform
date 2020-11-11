@@ -233,6 +233,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         formController.setViewFilters(filters);
     }
 
+    private String getPropertyValue(String property) {
+        Column column = columnMap.get(property);
+        return column != null ? getValue(column.property, getCurrentKey(), column.columnKey).toString() : null;
+    }
+
     protected native JavaScriptObject getController()/*-{
         var thisObj = this;
         return {
@@ -255,8 +260,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter) {
                 thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter);
             },
-            getCurrentDay: function () {
-                return thisObj.@GSimpleStateTableView::getValues(*)(thisObj.@GSimpleStateTableView::getCurrentKey()())[0];
+            getCurrentDay: function (propertyName) {
+                return thisObj.@GSimpleStateTableView::getPropertyValue(*)(propertyName);
             }
         };
     }-*/;
