@@ -116,4 +116,16 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
         }
         return registrations.values().iterator();
     }
+
+    private boolean forbidAccessRegistrationPage;
+
+    public void setForbidAccessRegistrationPage(boolean forbidAccessRegistrationPage) {
+        this.forbidAccessRegistrationPage = forbidAccessRegistrationPage;
+    }
+
+    @SuppressWarnings("unused")
+    //used in applicationContext-security to forbid access to registration page when selfRegistrationRole is disabled
+    public boolean isForbidAccessRegistrationPage(){
+        return forbidAccessRegistrationPage;
+    }
 }
