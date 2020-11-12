@@ -100,7 +100,7 @@ public class FileUtils {
         FTPPath destProperties = FTPPath.parseFTPPath(destPath);
         FTPClient ftpClient = new FTPClient();
         try {
-            if (connectFTPClient(ftpClient, srcProperties, 3600000)) { //1 hour = 3600 sec
+            if (connectFTPClient(ftpClient, srcProperties, 60000)) { //1 minute = 60 sec
                 boolean done = ftpClient.rename(appendExtension(srcProperties.remoteFile, extension), appendExtension(destProperties.remoteFile, extension));
                 if (!done) {
                     throw new RuntimeException("Error occurred while renaming file to ftp : " + ftpClient.getReplyCode());
@@ -232,7 +232,7 @@ public class FileUtils {
         FTPClient ftpClient = new FTPClient();
         try {
 
-            if (connectFTPClient(ftpClient, ftpPath, 3600000)) { //1 hour = 3600 sec
+            if (connectFTPClient(ftpClient, ftpPath, 60000)) { //1 minute = 60 sec
                 boolean dirExists = true;
                 String[] directories = ftpPath.remoteFile.split("/");
                 for (String dir : directories) {
