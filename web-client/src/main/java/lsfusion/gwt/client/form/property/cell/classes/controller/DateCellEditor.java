@@ -11,7 +11,10 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.datepicker.client.CalendarModel;
 import com.google.gwt.user.datepicker.client.DatePicker;
+import com.google.gwt.user.datepicker.client.DefaultCalendarView;
+import com.google.gwt.user.datepicker.client.DefaultMonthSelector;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
@@ -29,7 +32,7 @@ public class DateCellEditor extends PopupBasedCellEditor {
 
     private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat();
 
-    protected DatePicker datePicker;
+    protected GDatePicker datePicker;
     protected TextBox editBox;
 
     public DateCellEditor(EditManager editManager, GPropertyDraw property) {
@@ -62,7 +65,7 @@ public class DateCellEditor extends PopupBasedCellEditor {
         editBox.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
         panel.add(editBox);
 
-        datePicker = new DatePicker();
+        datePicker = new GDatePicker();
         panel.add(datePicker);
 
         return panel;
@@ -130,5 +133,15 @@ public class DateCellEditor extends PopupBasedCellEditor {
 
     protected Object parseString(String value) throws ParseException {
         return GDateType.instance.parseString(value, property.pattern);
+    }
+    
+    public static class GDatePicker extends DatePicker {
+        public GDatePicker() {
+            super(new DefaultMonthSelector(), new DefaultCalendarView(), new CalendarModel() {
+                protected DateTimeFormat getMonthAndYearFormatter() {
+                    return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.YEAR_MONTH);
+                }
+            });
+        }
     }
 }
