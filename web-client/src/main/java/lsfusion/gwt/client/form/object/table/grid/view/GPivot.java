@@ -2068,22 +2068,31 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return true;
     }-*/;
     
-    private native void updateSortCols(WrapperObject oldConfig, WrapperObject newConfig) /*-{
+    private native void updateSortCols(WrapperObject currentConfig, WrapperObject newConfig) /*-{
         var instance = this
         var sortCols = newConfig.sortCols;
         var newSortCols = [];
         for (var i = 0; i < sortCols.length; ++i) {
             if (typeof sortCols[i].value === 'string') {
                 if (newConfig.rows.includes(sortCols[i].value)) {
+                    instance.@GPivot::updateDirection(*)(currentConfig, sortCols[i]);
                     newSortCols.push(sortCols[i]);
                 }
-            } else if (instance.@GPivot::arraysEquals(*)(oldConfig.cols, newConfig.cols)) {
+            } else if (instance.@GPivot::arraysEquals(*)(currentConfig.cols, newConfig.cols)) {
+                instance.@GPivot::updateDirection(*)(currentConfig, sortCols[i])
                 newSortCols.push(sortCols[i]);
             }
         }
         newConfig.sortCols = newSortCols;
     }-*/;
 
+    private native void updateDirection(WrapperObject currentConfig, SortCol col) /*-{
+        var currentSortCol = this.@GPivot::findSortCol(*)(currentConfig.sortCols, col.value)
+        if (currentSortCol != null) {
+            col.direction = currentSortCol.direction
+        }
+    }-*/;
+    
     private ArrayList<String> toArrayList(JsArrayMixed jsArray) {
         ArrayList<String> arrayList = new ArrayList<>();
         for(int i = 0; i < jsArray.length(); i++) {
