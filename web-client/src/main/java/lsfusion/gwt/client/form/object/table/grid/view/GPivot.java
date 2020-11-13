@@ -515,8 +515,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 //    private boolean isTable = true;
 
     private void onRefresh(WrapperObject config, JsArrayString rows, JsArrayString cols, WrapperObject inclusions, String aggregatorName, String rendererName) {
-        logSortCols(this.config, "onRefresh old config");
-        logSortCols(config, "onRefresh new config");
         updateSortCols(this.config, config);
         this.config = config;
 
@@ -2003,7 +2001,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             boolean direction = sortCol != null ? sortCol.getDirection() : false;
             sortCols = JsArrayMixed.createArray().cast();
             sortCols.push(createSortCol(keys, !direction));
-            log("modifySortCols from " + direction + " to " + !direction);
         }
 
         config = overrideSortCols(config, sortCols);
