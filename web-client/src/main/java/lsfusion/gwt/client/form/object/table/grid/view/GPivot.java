@@ -2065,6 +2065,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return true;
     }-*/;
     
+    // Updates the sorting columns list and saves this list in newConfig. 
+    // currentConfig has actual sorting directions, newConfig has actual rows/cols lists
+    // updateSortCols combines this actual data to form the new sorting columns list      
     private native void updateSortCols(WrapperObject currentConfig, WrapperObject newConfig) /*-{
         var instance = this
         var sortCols = newConfig.sortCols;
