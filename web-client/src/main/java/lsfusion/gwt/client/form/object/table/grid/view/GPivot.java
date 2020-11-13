@@ -1724,15 +1724,24 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private Integer scrollLeft = null;
+    private int scrollLeftCounter = 0;
 
     private void saveScrollLeft() {
-        scrollLeft = getTableDataScroller().getScrollLeft();
+        Element tableDataScroller = getTableDataScroller();
+        if(tableDataScroller != null) {
+            scrollLeft = tableDataScroller.getScrollLeft();
+            scrollLeftCounter++;
+        }
     }
 
     private void restoreScrollLeft() {
-        if(scrollLeft != null) {
-            getTableDataScroller().setScrollLeft(scrollLeft);
-            scrollLeft = null;
+        Element tableDataScroller = getTableDataScroller();
+        if(tableDataScroller != null && scrollLeft != null) {
+            tableDataScroller.setScrollLeft(scrollLeft);
+            if(scrollLeftCounter == 0) {
+                scrollLeft = null;
+            } else
+                scrollLeftCounter--;
         }
     }
 
