@@ -1,16 +1,22 @@
 package lsfusion.server.physics.dev.integration.external.to.mail;
 
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.flow.LSFException;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
@@ -34,6 +40,7 @@ import java.util.regex.Pattern;
 
 import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.nullTrim;
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
@@ -48,6 +55,10 @@ public class SendEmailAction extends SystemExplicitAction {
 
     private final List<PropertyInterfaceImplement> attachFileNames = new ArrayList<>();
     private final List<PropertyInterfaceImplement> attachFiles = new ArrayList<>();
+
+    private final List<LP> attachFileNameProps = new ArrayList<>();
+    private final List<LP> attachFileProps = new ArrayList<>();
+
     private final List<PropertyInterfaceImplement> inlineFiles = new ArrayList<>();
     private final Boolean syncType;
 
@@ -80,6 +91,11 @@ public class SendEmailAction extends SystemExplicitAction {
     public void addAttachmentFile(PropertyInterfaceImplement fileName, PropertyInterfaceImplement file) {
         attachFileNames.add(fileName);
         attachFiles.add(file);
+    }
+
+    public void addAttachmentFileProp(LP fileNameProp, LP fileProp) {
+        attachFileNameProps.add(fileNameProp);
+        attachFileProps.add(fileProp);
     }
 
     public void addInlineFile(PropertyInterfaceImplement file) {
@@ -166,18 +182,15 @@ public class SendEmailAction extends SystemExplicitAction {
     }
     
     private void proceedFiles(ExecutionContext<ClassPropertyInterface> context, List<EmailSender.AttachmentFile> attachments, List<String> customInlines) throws SQLException, SQLHandledException {
+        int attachmentCount = 0;
         for (int i = 0; i < attachFileNames.size(); i++) {
-            String name;
+            attachmentCount++;
             PropertyInterfaceImplement attachFileNameProp = attachFileNames.get(i);
-            if (attachFileNameProp != null) {
-                 name = (String) attachFileNameProp.read(context, context.getKeys());
-            } else {
-                 name = "attachment" + (i + 1);
-            }
+            String name = nvl(attachFileNameProp != null ? (String) attachFileNameProp.read(context, context.getKeys()) : null, "attachment" + attachmentCount);
 
             ObjectValue fileObject = attachFiles.get(i).readClasses(context);
             if (fileObject instanceof DataObject) {
-                Type objectType = ((DataObject)fileObject).getType();
+                Type objectType = fileObject.getType();
                 String extension;
                 RawFileData rawFile;
                 if (objectType instanceof StaticFormatFileClass) {
@@ -192,11 +205,15 @@ public class SendEmailAction extends SystemExplicitAction {
             }
         }
 
+        for (int i = 0; i < attachFileProps.size(); i++) {
+            attachments.addAll(getAttachFiles(context, attachFileProps.get(i), attachFileNameProps.get(i), attachmentCount));
+        }
+
         for (PropertyInterfaceImplement inlineFile : this.inlineFiles) {
             ObjectValue inlineObject = inlineFile.readClasses(context);
             if (inlineObject instanceof DataObject) {
                 Object inlineValue = inlineObject.getValue();
-                Type type = ((DataObject) inlineObject).getType();
+                Type type = inlineObject.getType();
                 String inlineText;
                 if(type instanceof FileClass) {
                     RawFileData rawFile;
@@ -212,6 +229,43 @@ public class SendEmailAction extends SystemExplicitAction {
                 customInlines.add(inlineText);
             }
         }
+    }
+
+    private List<EmailSender.AttachmentFile> getAttachFiles(ExecutionContext context, LP attachFileLP, LP attachFileNameLP, int attachmentCount) throws SQLException, SQLHandledException {
+        List<EmailSender.AttachmentFile> attachments = new ArrayList<>();
+        KeyExpr iExpr = new KeyExpr("i");
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.singletonRev("i", iExpr));
+        Modifier modifier = context.getModifier();
+        query.addProperty("file", attachFileLP.getExpr(modifier, iExpr));
+        if (attachFileNameLP != null) {
+            query.addProperty("fileName", attachFileNameLP.getExpr(modifier, iExpr));
+        }
+        query.and(attachFileLP.getExpr(modifier, iExpr).getWhere());
+
+        ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context);
+
+        for (int i = 0; i < result.size(); i++) {
+            attachmentCount++;
+            ObjectValue fileObject = result.getValue(i).get("file");
+            if (fileObject instanceof DataObject) {
+                Type type = fileObject.getType();
+                RawFileData rawFile;
+                String extension;
+                if (type instanceof StaticFormatFileClass) {
+                    rawFile = (RawFileData) fileObject.getValue();
+                    extension = ((StaticFormatFileClass) type).getOpenExtension(rawFile);
+                } else {
+                    FileData file = (FileData) fileObject.getValue();
+                    rawFile = file.getRawFile();
+                    extension = file.getExtension();
+                }
+
+                String fileName = nvl((String) result.getValue(i).get("fileName").getValue(), "attachment" + attachmentCount);
+                attachments.add(new EmailSender.AttachmentFile(rawFile, fileName + "." + extension, extension));
+            }
+        }
+
+        return attachments;
     }
 
     private void logError(ExecutionContext context, String errorMessage) {
