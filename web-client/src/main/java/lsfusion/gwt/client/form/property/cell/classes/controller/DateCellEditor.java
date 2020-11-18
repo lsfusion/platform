@@ -1,10 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -49,8 +48,7 @@ public class DateCellEditor extends PopupBasedCellEditor {
             @Override
             public void onKeyPress(KeyPressEvent event) {
                 if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-                    GwtClientUtils.stopPropagation(event);
-                    onEnterPressed();
+                    onCommitEvent(event);
                 }
             }
         });
@@ -120,7 +118,8 @@ public class DateCellEditor extends PopupBasedCellEditor {
         commitEditing(GDateDTO.fromDate(event.getValue()));
     }
 
-    protected void onEnterPressed() {
+    protected void onCommitEvent(DomEvent event) {
+        GwtClientUtils.stopPropagation(event);
         commit();
     }
 
@@ -135,13 +134,23 @@ public class DateCellEditor extends PopupBasedCellEditor {
         return GDateType.instance.parseString(value, property.pattern);
     }
     
-    public static class GDatePicker extends DatePicker {
+    public class GDatePicker extends DatePicker {
         public GDatePicker() {
             super(new DefaultMonthSelector(), new DefaultCalendarView(), new CalendarModel() {
                 protected DateTimeFormat getMonthAndYearFormatter() {
                     return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.YEAR_MONTH);
                 }
             });
+            
+            getView().addDomHandler(event -> {
+                EventTarget eventTarget = event.getNativeEvent().getEventTarget();
+                if (eventTarget != null) {
+                    String className = Element.as(eventTarget).getClassName();
+                    if (className.contains("datePickerDay") && !className.contains("datePickerDayIsFiller")) {
+                        DateCellEditor.this.onCommitEvent(event);
+                    }
+                }
+            }, DoubleClickEvent.getType());
         }
     }
 }
