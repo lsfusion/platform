@@ -239,7 +239,7 @@ DESIGN scheduledTask {
                     }
                 }
                 MOVE PROPERTY(script(td)) {
-                    panelCaptionAbove = TRUE;
+                    panelCaptionVertical = TRUE;
                     fill = 0.5;
                 }
             }
