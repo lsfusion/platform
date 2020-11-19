@@ -368,7 +368,7 @@ DESIGN fullChat {
                     type = CONTAINERV;
                     MOVE PROPERTY(newMessage(c)) {
                         fill = 1; 
-                        panelCaptionAbove = TRUE;
+                        panelCaptionVertical = TRUE;
                     }   
                                                   
                     NEW bottomSend {
@@ -506,7 +506,7 @@ DESIGN shortChat {
             fill = 0.7;
         }
         MOVE PROPERTY(reply(m)) {
-            panelCaptionAbove = TRUE;   
+            panelCaptionVertical = TRUE;   
             fill = 0.3;
         }
         NEW buttons {
