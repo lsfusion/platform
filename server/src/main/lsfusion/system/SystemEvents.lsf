@@ -324,12 +324,12 @@ DESIGN exceptions {
                 MOVE PROPERTY(javaStackTrace(e)) {
                     fill = 0.5;
                     valueSize = ( -1, 200);
-                    panelCaptionAbove = TRUE;
+                    panelCaptionVertical = TRUE;
                 }
                 MOVE PROPERTY(lsfStackTrace(e)) {
                     fill = 0.5;
                     valueSize = ( -1, 200);
-                    panelCaptionAbove = TRUE;
+                    panelCaptionVertical = TRUE;
                 }
             }
             MOVE TOOLBARBOX;
@@ -365,7 +365,7 @@ DESIGN changes {
                 MOVE PROPERTY(pChanges) {
                     fill = 0.5;
                     valueSize = ( -1, 200);
-                    panelCaptionAbove = TRUE;
+                    panelCaptionVertical = TRUE;
                 }
             }
             MOVE TOOLBARBOX;
