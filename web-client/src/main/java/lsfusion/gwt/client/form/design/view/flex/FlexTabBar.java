@@ -41,6 +41,10 @@ public class FlexTabBar extends Composite implements TabBar {
         setStyleName("gwt-TabBar");
         panel.getElement().getStyle().setProperty("flexWrap", "wrap");
 
+        addInitialWidgets();
+    }
+
+    private void addInitialWidgets(){
         Label first = new Label();
         Label rest = new Label();
 
@@ -102,6 +106,13 @@ public class FlexTabBar extends Composite implements TabBar {
             selectedTab = null;
         }
         panel.remove(toRemove);
+    }
+
+    @Override
+    public void removeAllTabs() {
+        selectedTab = null;
+        panel.clear();
+        addInitialWidgets();
     }
 
     /**

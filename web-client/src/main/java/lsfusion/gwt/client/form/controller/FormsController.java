@@ -3,11 +3,17 @@ package lsfusion.gwt.client.form.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
+import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -149,11 +155,32 @@ public abstract class FormsController {
 
         FormContainer formContainer = modalityType.isModalWindow() ? new ModalForm(this) : new FormDockable(this);
 
+        if (formContainer instanceof FormDockable)
+            addContextMenuHandler((FormDockable) formContainer);
+
         initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
 
         formContainer.show();
 
         return formContainer;
+    }
+
+    private void addContextMenuHandler(FormDockable formContainer) {
+        formContainer.getTabWidget().addDomHandler(new ContextMenuHandler() {
+            @Override
+            public void onContextMenu(ContextMenuEvent event) {
+                GwtClientUtils.stopPropagation(event);
+
+                PopupDialogPanel popup = new PopupDialogPanel();
+                final MenuBar menuBar = new MenuBar(true);
+                MenuItem menuItem = new MenuItem(messages.closeAllTabs(), () -> {
+                    popup.hide();
+                    removeAllTabs();
+                });
+                menuBar.addItem(menuItem);
+                GwtClientUtils.showPopupInWindow(popup, menuBar, event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY());
+            }
+        }, ContextMenuEvent.getType());
     }
 
     public void initForm(FormContainer<?> formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, Event initFilterEvent) {
@@ -199,6 +226,12 @@ public abstract class FormsController {
 
         forms.remove(index);
         formFocusOrder.remove(index);
+    }
+
+    public void removeAllTabs() {
+        tabsPanel.removeAllTabs();
+        forms.clear();
+        formFocusOrder.clear();
     }
 
     public void ensureTabSelected() {

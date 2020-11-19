@@ -131,6 +131,11 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
         return false;
     }
 
+    public void removeAllTabs() {
+        tabBar.removeAllTabs();
+        deck.clear();
+    }
+
     @Override
     public Widget getWidget(int index) {
         return deck.getWidget(index);
