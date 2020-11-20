@@ -23,6 +23,8 @@ import org.moxieapps.gwt.uploader.client.Uploader;
 
 import java.util.ArrayList;
 
+import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
+
 public class FileCellEditor implements CellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private EditManager editManager;
@@ -44,7 +46,8 @@ public class FileCellEditor implements CellEditor {
         JsArray validFiles = JsArray.createArray().cast();
         for (int i = 0; i < files.length(); i++) {
             File file = files.get(i).cast();
-            if ((validContentTypes == null || validContentTypes.contains(file.getType())) && (validFiles.length() == 0)) {
+            String type = file.getType(); //some input files may have empty type
+            if ((validContentTypes == null || isRedundantString(type) || validContentTypes.contains(type)) && (validFiles.length() == 0)) {
                 validFiles.push(file);
             }
         }
