@@ -108,13 +108,6 @@ public class FlexTabBar extends Composite implements TabBar {
         panel.remove(toRemove);
     }
 
-    @Override
-    public void removeAllTabs() {
-        selectedTab = null;
-        panel.clear();
-        addInitialWidgets();
-    }
-
     /**
      * Programmatically selects the specified tab and fires events. Use index -1
      * to specify that no tab should be selected.

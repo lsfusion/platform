@@ -131,8 +131,8 @@ public class FormsController implements ColorThemeChangeListener {
     private void addCloseAllTabsAction(ClientFormDockable page) {
         CButton cButton = new CButton(getString("form.close.all.tabs"), null);
         cButton.addActionListener(actionEvent -> {
-            for (ClientDockable openedForm : new ArrayList<>(openedForms)) {
-                openedForm.onClosing();
+            for (int i = openedForms.size() - 1; i >= 0; i--) {
+                openedForms.get(i).onClosing();
             }
         });
         page.addAction(cButton);

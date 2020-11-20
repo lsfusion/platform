@@ -12,6 +12,4 @@ public interface TabBar {
     boolean selectTab(int index);
 
     void setTabText(int index, String caption);
-
-    void removeAllTabs();
 }

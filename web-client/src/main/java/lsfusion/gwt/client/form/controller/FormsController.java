@@ -219,19 +219,19 @@ public abstract class FormsController {
     public void removeDockable(FormDockable dockable) {
         int index = forms.indexOf(dockable);
 
-        assert !isRemoving;
+        assert !isRemoving || dockable.isClosing();
         isRemoving = true;
         tabsPanel.remove(index);
-        assert !isRemoving;
+        assert !isRemoving || dockable.isClosing();
 
         forms.remove(index);
         formFocusOrder.remove(index);
     }
 
-    public void removeAllTabs() {
-        tabsPanel.removeAllTabs();
-        forms.clear();
-        formFocusOrder.clear();
+    private void removeAllTabs() {
+        for (int i = forms.size() - 1; i >= 0; i--) {
+            forms.get(i).closePressed();
+        }
     }
 
     public void ensureTabSelected() {
