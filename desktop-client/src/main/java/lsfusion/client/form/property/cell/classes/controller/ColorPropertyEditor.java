@@ -5,10 +5,7 @@ import com.google.common.base.Throwables;
 import lsfusion.client.ClientResourceBundle;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 
@@ -28,31 +25,18 @@ public class ColorPropertyEditor extends DialogBasedPropertyEditor {
 
         colorChooser = initialColor != null ? new JColorChooser(initialColor) : new JColorChooser();
 
-        colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                setBackground(colorChooser.getColor());
-            }
-        });
+        colorChooser.getSelectionModel().addChangeListener(e -> setBackground(colorChooser.getColor()));
 
-        ActionListener okListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setChoosenColor(colorChooser.getColor());
-            }
+        ActionListener okListener = e -> setChosenColor(colorChooser.getColor());
+
+        ActionListener cancelListener = e -> {
+            isColorChosen = false;
+            setBackground(initialColor);
         };
 
-        ActionListener cancelListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                isColorChosen = false;
-                setBackground(initialColor);
-            }
-        };
-
-        ActionListener nullifyListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                chooserDialog.setVisible(false);
-                setChoosenColor(null);
-            }
+        ActionListener nullifyListener = e -> {
+            chooserDialog.setVisible(false);
+            setChosenColor(null);
         };
 
         chooserDialog = JColorChooser.createDialog(null, ClientResourceBundle.getString("form.choose.color"), true, colorChooser, okListener, cancelListener);
@@ -60,21 +44,20 @@ public class ColorPropertyEditor extends DialogBasedPropertyEditor {
         //довольно дико конечно, но пока не хочется замарачиваться со своим диалогом...
         Preconditions.checkState(chooserDialog.getClass().getName().equals("javax.swing.ColorChooserDialog"));
         try {
-            JButton nullifyButton = new JButton("Nullify");
-            nullifyButton.addActionListener(nullifyListener);
-
             Field cancelBtnField = chooserDialog.getClass().getDeclaredField("cancelButton");
             cancelBtnField.setAccessible(true);
 
             JButton cancelButton = (JButton) cancelBtnField.get(chooserDialog);
             Container buttonPane = cancelButton.getParent();
-            buttonPane.add(nullifyButton, null, 2);
+            
+            JButton resetButton = ((JButton) buttonPane.getComponent(2));
+            resetButton.addActionListener(nullifyListener);
         } catch (Exception e) {
             Throwables.propagate(e);
         }
     }
 
-    private void setChoosenColor(Color chosenColor) {
+    private void setChosenColor(Color chosenColor) {
         this.isColorChosen = true;
         this.chosenColor = chosenColor;
         this.setBackground(chosenColor);
