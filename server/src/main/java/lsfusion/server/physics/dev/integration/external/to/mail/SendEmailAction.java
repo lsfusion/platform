@@ -185,23 +185,11 @@ public class SendEmailAction extends SystemExplicitAction {
         int attachmentCount = 0;
         for (int i = 0; i < attachFileNames.size(); i++) {
             attachmentCount++;
-            PropertyInterfaceImplement attachFileNameProp = attachFileNames.get(i);
-            String name = nvl(attachFileNameProp != null ? (String) attachFileNameProp.read(context, context.getKeys()) : null, "attachment" + attachmentCount);
-
             ObjectValue fileObject = attachFiles.get(i).readClasses(context);
             if (fileObject instanceof DataObject) {
-                Type objectType = fileObject.getType();
-                String extension;
-                RawFileData rawFile;
-                if (objectType instanceof StaticFormatFileClass) {
-                    rawFile = (RawFileData) fileObject.getValue();
-                    extension = ((StaticFormatFileClass) objectType).getOpenExtension(rawFile);
-                } else {
-                    FileData file = (FileData) fileObject.getValue();
-                    extension = file.getExtension();
-                    rawFile = file.getRawFile();
-                }
-                attachments.add(new EmailSender.AttachmentFile(rawFile, name + "." + extension, extension));
+                PropertyInterfaceImplement attachFileNameProp = attachFileNames.get(i);
+                String name = nvl(attachFileNameProp != null ? (String) attachFileNameProp.read(context, context.getKeys()) : null, "attachment" + attachmentCount);
+                attachments.add(getAttachFile(fileObject, name));
             }
         }
 
@@ -248,24 +236,27 @@ public class SendEmailAction extends SystemExplicitAction {
             attachmentCount++;
             ObjectValue fileObject = result.getValue(i).get("file");
             if (fileObject instanceof DataObject) {
-                Type type = fileObject.getType();
-                RawFileData rawFile;
-                String extension;
-                if (type instanceof StaticFormatFileClass) {
-                    rawFile = (RawFileData) fileObject.getValue();
-                    extension = ((StaticFormatFileClass) type).getOpenExtension(rawFile);
-                } else {
-                    FileData file = (FileData) fileObject.getValue();
-                    rawFile = file.getRawFile();
-                    extension = file.getExtension();
-                }
-
-                String fileName = nvl((String) result.getValue(i).get("fileName").getValue(), "attachment" + attachmentCount);
-                attachments.add(new EmailSender.AttachmentFile(rawFile, fileName + "." + extension, extension));
+                String name = nvl((String) result.getValue(i).get("fileName").getValue(), "attachment" + attachmentCount);
+                attachments.add(getAttachFile(fileObject, name));
             }
         }
 
         return attachments;
+    }
+
+    private EmailSender.AttachmentFile getAttachFile(ObjectValue fileObject, String name) {
+        Type objectType = fileObject.getType();
+        RawFileData rawFile;
+        String extension;
+        if (objectType instanceof StaticFormatFileClass) {
+            rawFile = (RawFileData) fileObject.getValue();
+            extension = ((StaticFormatFileClass) objectType).getOpenExtension(rawFile);
+        } else {
+            FileData file = (FileData) fileObject.getValue();
+            rawFile = file.getRawFile();
+            extension = file.getExtension();
+        }
+        return new EmailSender.AttachmentFile(rawFile, name + "." + extension, extension);
     }
 
     private void logError(ExecutionContext context, String errorMessage) {
