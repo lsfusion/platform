@@ -49,7 +49,7 @@ public class KeyController {
 
     public static Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object> getRowData(GridTable table, int rowIndex) {
         Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object> map = new HashMap<>();
-        for (Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn : table.getVisibleProperties()) {
+        for (Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn : table.getVisibleProperties(false)) {
             map.put(propertyColumn, table.getValueAt(rowIndex, table.getModel().getPropertyIndex(propertyColumn.first, propertyColumn.second)));
         }
         return map;
