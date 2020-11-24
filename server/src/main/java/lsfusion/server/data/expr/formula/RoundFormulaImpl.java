@@ -2,6 +2,7 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.value.AbstractValueExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
@@ -23,8 +24,8 @@ public class RoundFormulaImpl implements FormulaJoinImpl {
         if (hasScale(source)) {
             if (source instanceof ListExprType) {
                 Expr scaleExpr = ((ListExprType) source).exprs.get(1);
-                if (scaleExpr instanceof AbstractValueExpr) {
-                    Object scale = ((AbstractValueExpr) scaleExpr).getObject();
+                if (scaleExpr instanceof StaticValueExpr) {
+                    Object scale = ((StaticValueExpr) scaleExpr).getObject();
                     if (scale instanceof Integer) {
                         result = (Integer) scale;
                     }
