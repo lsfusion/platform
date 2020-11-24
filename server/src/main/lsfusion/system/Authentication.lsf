@@ -291,7 +291,7 @@ isLockedLogin (login) = isLocked(customUser(login));
 
 // Current User
 currentUser = NATIVE User ();
-currentUserName '{authentication.current.user.name}' () = name(currentUser());
+currentUserName '{authentication.current.user.name}' () = name[Contact](currentUser());
 
 // User management
 logOut (restart, reconnect)  INTERNAL  'lsfusion.server.physics.admin.authentication.action.LogOutAction' (BOOLEAN, BOOLEAN);

@@ -1919,9 +1919,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                              List<LPWithParams> recipProps,
                                              List<LPWithParams> attachFileNames,
                                              List<LPWithParams> attachFiles,
-                                             List<NamedPropertyUsage> attachFileNameProps,
-                                             List<NamedPropertyUsage> attachFileProps,
-                                             Boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
+                                             Boolean syncType) {
 
         List<LAPWithParams> allProps = new ArrayList<>();
 
@@ -1977,13 +1975,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         for (LPWithParams fileName : attachFileNames) {
             eaProp.addAttachmentFile(fileName != null ? allImplements.get(i++) : null, allImplements.get(i++));
-        }
-
-        for (int j = 0; j < attachFileNameProps.size(); j++) {
-            NamedPropertyUsage fileNamePropUsage = attachFileNameProps.get(j);
-            NamedPropertyUsage filePropUsage = attachFileProps.get(j);
-            eaProp.addAttachmentFileProp(fileNamePropUsage != null ? findLPParamByPropertyUsage(fileNamePropUsage, ListFact.singleton(IntegerClass.instance)) : null,
-                    filePropUsage != null ? findLPParamByPropertyUsage(filePropUsage, ListFact.singleton(IntegerClass.instance)) : null);
         }
 
         return new LAWithParams(eaLA, mergeAllParams(allProps));
