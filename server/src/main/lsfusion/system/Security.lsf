@@ -234,18 +234,6 @@ showDetailedInfo (CustomUser u) = GROUP MAX showDetailedInfo(UserRole ur) IF has
 disableRole '{security.user.role.disable.role}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 disableRole(STRING roleSID) = disableRole(userRoleSID(roleSID));
 
-isRoleDisabled(JSONFILE roleSID) {
-    IMPORT FROM roleSID FIELDS STRING[100] role DO {
-        LOCAL isRoleDisabled = BOOLEAN();
-        IF disableRole(role) THEN {
-            isRoleDisabled() <- TRUE;  
-        } ELSE {
-            isRoleDisabled() <- NULL;
-        }
-        EXPORT FROM isRoleDisabled();
-    }
-} @@api @@noauth;
-
 // Default forms
 defaultNumber '{security.default.forms.number}' = DATA INTEGER (UserRole, NavigatorElement);
 defaultNumber (User user, NavigatorElement navigatorElement) = 

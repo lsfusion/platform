@@ -31,6 +31,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP inCustomUserUserRole;
     public LP hasUserRole;
     public LA<?> createSystemUserRoles;
+    public LP disableRole;
 
     public FormEntity propertyPolicyForm;
     public FormEntity actionPolicyForm;
@@ -59,6 +60,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         hasUserRole = findProperty("has[User,UserRole]");
 
         createSystemUserRoles = findAction("createSystemUserRoles[]");
+
+        disableRole = findProperty("disableRole[UserRole]");
 
         // ---- Политики для доменной логики
 

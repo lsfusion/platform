@@ -76,14 +76,7 @@ public class MainController {
         }
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
-        JSONArray roleSID = new JSONArray();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("role", "selfRegister");
-        roleSID.put(jsonObject);
-        JSONObject jsonResponse = sendRequest(roleSID, request, "Security.isRoleDisabled");
-
-        clientRegistrationRepository.setForbidAccessRegistrationPage(jsonResponse.has("isRoleDisabled"));
-        model.addAttribute("disableRegistration", jsonResponse.has("isRoleDisabled"));
+        model.addAttribute("disableRegistration", serverSettings.disableRegistration);
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));

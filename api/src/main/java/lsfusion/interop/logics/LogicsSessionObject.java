@@ -50,9 +50,10 @@ public class LogicsSessionObject {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
             }
             List<Pair<String, RawFileData>> files = getRawFileDataFromJson(json.optJSONArray("resourceFiles"));
+            boolean disableRegistration = json.optBoolean("disableRegistration");
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, files);
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration);
         }
         return serverSettings;
     }
