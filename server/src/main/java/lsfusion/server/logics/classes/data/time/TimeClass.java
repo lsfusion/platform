@@ -21,11 +21,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.FormatStyle;
+import java.util.Locale;
 
 import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
@@ -33,7 +34,7 @@ import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 public class TimeClass extends DataClass<LocalTime> {
     public final static TimeClass instance = new TimeClass();
 
-    private final static String timePattern = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.MEDIUM)).toPattern();
+    private final static String timePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(null, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
 
     static {
         DataClass.storeClass(instance);

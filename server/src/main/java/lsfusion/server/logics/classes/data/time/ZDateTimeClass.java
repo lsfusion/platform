@@ -22,12 +22,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.format.FormatStyle;
+import java.util.Locale;
 
 import static lsfusion.base.DateConverter.instantToSqlTimestamp;
 import static lsfusion.base.DateConverter.sqlTimestampToInstant;
@@ -36,7 +38,7 @@ public class ZDateTimeClass extends DataClass<Instant> {
 
     public final static ZDateTimeClass instance = new ZDateTimeClass();
 
-    private final static String dateTimePattern = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)).toPattern();
+    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
 
     static {
         DataClass.storeClass(instance);
