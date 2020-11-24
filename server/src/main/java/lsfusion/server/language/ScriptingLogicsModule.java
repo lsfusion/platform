@@ -4136,6 +4136,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(new LP<>(component.getActiveTab().property));
     }
 
+    public LPWithParams addScriptedRoundProp(LPWithParams expr, LPWithParams scaleExpr) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> propParams = new ArrayList<>();
+        propParams.add(expr);
+        boolean hasScale = scaleExpr != null;
+        if (hasScale) {
+            propParams.add(scaleExpr);
+        }
+        return addScriptedJProp(hasScale ? baseLM.roundScale : baseLM.round, propParams);
+    }
+
     public void addScriptedFollows(NamedPropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         LP mainProp = findLPByPropertyUsage(mainPropUsage, namedParams);
         checks.checkParamCount(mainProp, namedParams.size());
