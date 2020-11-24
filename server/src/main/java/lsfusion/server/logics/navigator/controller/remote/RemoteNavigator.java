@@ -246,12 +246,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         try (DataSession session = createSession()) {
             currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
             fontSize = (Integer) businessLogics.authenticationLM.userFontSize.read(session, user);
-            useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
-            useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
+            useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.serviceLM.useBusyDialog.read(session) != null;
+            useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.serviceLM.useRequestTimeout.read(session) != null;
             forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCustomUser.read(session, user) != null;
             showDetailedInfo = businessLogics.securityLM.showDetailedInfoCustomUser.read(session, user) != null;
 
-            devMode = SystemProperties.inDevMode || businessLogics.authenticationLM.devMode.read(session) != null;
+            devMode = SystemProperties.inDevMode || businessLogics.serviceLM.devMode.read(session) != null;
 
             String colorThemeStaticName = (String) businessLogics.authenticationLM.colorThemeStaticName.read(session, user);
             String colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null; 

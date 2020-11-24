@@ -1970,7 +1970,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
         updateViewLater();
     }
-    
+
     private void updateViewLater() {
 
 
@@ -2068,20 +2068,32 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return true;
     }-*/;
     
-    private native void updateSortCols(WrapperObject oldConfig, WrapperObject newConfig) /*-{
+    // Updates the sorting columns list and saves this list in newConfig.
+    // currentConfig has actual sorting directions, newConfig has actual rows/cols lists
+    // updateSortCols combines this actual data to form the new sorting columns list
+    private native void updateSortCols(WrapperObject currentConfig, WrapperObject newConfig) /*-{
         var instance = this
         var sortCols = newConfig.sortCols;
         var newSortCols = [];
         for (var i = 0; i < sortCols.length; ++i) {
             if (typeof sortCols[i].value === 'string') {
                 if (newConfig.rows.includes(sortCols[i].value)) {
+                    instance.@GPivot::updateDirection(*)(currentConfig, sortCols[i]);
                     newSortCols.push(sortCols[i]);
                 }
-            } else if (instance.@GPivot::arraysEquals(*)(oldConfig.cols, newConfig.cols)) {
+            } else if (instance.@GPivot::arraysEquals(*)(currentConfig.cols, newConfig.cols)) {
+                instance.@GPivot::updateDirection(*)(currentConfig, sortCols[i])
                 newSortCols.push(sortCols[i]);
             }
         }
         newConfig.sortCols = newSortCols;
+    }-*/;
+
+    private native void updateDirection(WrapperObject currentConfig, SortCol col) /*-{
+        var currentSortCol = this.@GPivot::findSortCol(*)(currentConfig.sortCols, col.value)
+        if (currentSortCol != null) {
+            col.direction = currentSortCol.direction
+        }
     }-*/;
 
     private ArrayList<String> toArrayList(JsArrayMixed jsArray) {

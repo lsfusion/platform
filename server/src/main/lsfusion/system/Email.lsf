@@ -220,7 +220,7 @@ DESIGN mail {
                         MOVE PROPERTY(message(e)) {
                             fill = 1;
                             valueSize = ( -1, 200);
-                            panelCaptionAbove = TRUE;
+                            panelCaptionVertical = TRUE;
                         }
                     }
                     NEW attachment {
@@ -229,7 +229,7 @@ DESIGN mail {
                         type = CONTAINERH;
                         MOVE BOX(ae);
                         MOVE PROPERTY (lastError(ae)){ 
-                            panelCaptionAbove = TRUE;
+                            panelCaptionVertical = TRUE;
                             fill = 0.3;
                         };
                     }

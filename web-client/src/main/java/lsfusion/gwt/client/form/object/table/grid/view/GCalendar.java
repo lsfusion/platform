@@ -3,11 +3,10 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
-
-import java.util.Objects;
 
 public class GCalendar extends GTippySimpleStateTableView {
 
@@ -27,8 +26,9 @@ public class GCalendar extends GTippySimpleStateTableView {
             element.getParentElement().getStyle().setProperty("overflow", "auto");
             element.getStyle().setProperty("minHeight", "400px");
             element.getStyle().setProperty("cursor", "default");
+            String locale = LocaleInfo.getCurrentLocale().getLocaleName();
 
-            calendar = createCalendar(element, controller, calendarDateType);
+            calendar = createCalendar(element, controller, calendarDateType, locale);
         }
         updateEvents(calendar, list, calendarDateType, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller);
     }
@@ -47,11 +47,12 @@ public class GCalendar extends GTippySimpleStateTableView {
         return isCurrentKey(getKey(object));
     }
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType)/*-{
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType, String locale)/*-{
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
             timeZone: 'UTC',
+            locale: locale,
             firstDay: 1,
             headerToolbar: {
                 left: 'prev,next today',

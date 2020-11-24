@@ -36,19 +36,19 @@ DESIGN exception {
             type = SPLITV;
             MOVE PROPERTY(valueMessage) {
                 fill = 1;
-                panelCaptionAbove = TRUE;
+                panelCaptionVertical = TRUE;
                 caption = '{eval.script.form.exception.caption.value.message}';
             }
             NEW stacks {
                 fill = 3;
                 type = SPLITH;
                 MOVE PROPERTY(valueJavaStack) {
-                    panelCaptionAbove = TRUE;
+                    panelCaptionVertical = TRUE;
                     fill = 1;
                     caption = '{eval.script.form.exception.caption.java.stack}';
                 }
                 MOVE PROPERTY(valueLsfStack) {
-                    panelCaptionAbove = TRUE;
+                    panelCaptionVertical = TRUE;
                     fill = 1;
                     caption = '{eval.script.form.exception.caption.lsf.stack}';
                 }
@@ -206,7 +206,7 @@ DESIGN interpreter {
                 MOVE PROPERTY(name(s)) { font = 'bold 24'; alignment = STRETCH; }
             }
             MOVE PROPERTY(text(s)) {
-                panelCaptionAbove = TRUE;    
+                panelCaptionVertical = TRUE;    
                 fill = 1;
             }
             NEW run {

@@ -2039,9 +2039,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 timeLM.currentZDateTimeSnapshot.change(newZDataDateTime, session);
                 session.applyException(this, stack);
             } catch (Exception e) {
-                logger.error(String.format("ChangeCurrentDate error: %s", e));
+                logger.error(String.format("ChangeCurrentDateTime error: %s", e));
             }
-        }, true, Settings.get().getCheckCurrentDataDateTime(), true, "Changing current date");
+        }, true, Settings.get().getCheckCurrentDataDateTime(), true, "Changing current dateTime");
     }
 
 

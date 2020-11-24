@@ -225,15 +225,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         updateRendererState(this.updateState); // update state with server response
     }
 
-    protected native void log(String text) /*-{
-        console.log(text);
-    }-*/;
-
-    protected native void logSortCols(WrapperObject config, String prefix) /*-{
-        console.log(prefix);
-        console.log(config['sortCols']);
-    }-*/;
-
     protected abstract void updateView();
     protected void updatePageSizeState(boolean hit) {
         getPageSizeWidget().setVisible(hit);

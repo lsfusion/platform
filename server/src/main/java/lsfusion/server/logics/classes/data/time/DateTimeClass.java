@@ -22,12 +22,13 @@ import org.apache.poi.ss.usermodel.CellValue;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.FormatStyle;
+import java.util.Locale;
 
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.getWriteDateTime;
@@ -36,7 +37,7 @@ public class DateTimeClass extends DataClass<LocalDateTime> {
 
     public final static DateTimeClass instance = new DateTimeClass();
 
-    private final static String dateTimePattern = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)).toPattern();
+    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
 
     static {
         DataClass.storeClass(instance);
