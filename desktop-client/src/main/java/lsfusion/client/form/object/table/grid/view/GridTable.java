@@ -800,10 +800,14 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         this.tabVertical = tabVertical;
     }
 
-    public List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> getVisibleProperties() {
-        //возвращает все свойства, за исключеним тех, что формируют группы в колонки без единого значения
+    public List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> getVisibleProperties(boolean withUserOrder) {
+        //возвращает все свойства, за исключением тех, что формируют группы в колонки без единого значения
         List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> props = new ArrayList<>();
-        for (ClientPropertyDraw property : properties) {
+        List<ClientPropertyDraw> propList = new ArrayList<>(properties);
+        if (withUserOrder && hasUserPreferences()) {
+            propList.sort(getCurrentPreferences().getUserOrderComparator());
+        }
+        for (ClientPropertyDraw property : propList) {
             for (ClientGroupObjectValue columnKey : columnKeys.get(property)) {
                 if (model.getPropertyIndex(property, columnKey) != -1) {
                     props.add(new Pair<>(property, columnKey));
@@ -1620,7 +1624,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     public boolean hasUserPreferences() {
-        return currentGridPreferences.hasUserPreferences();
+        return currentGridPreferences != null && currentGridPreferences.hasUserPreferences();
     }
 
     public void setHasUserPreferences(boolean hasUserPreferences) {
