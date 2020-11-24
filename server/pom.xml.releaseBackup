@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>platform-assemble</artifactId>
-        <version>5.0-SNAPSHOT</version>
+        <version>3.beta.0-SNAPSHOT</version>
         <relativePath>../build/platform-assemble/pom.xml</relativePath>
     </parent>
 
@@ -80,10 +80,6 @@
     </build>
 
     <dependencies>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>lsfusion.platform</groupId>
             <artifactId>api</artifactId>
@@ -197,12 +193,24 @@
             <artifactId>jdom</artifactId>
         </dependency>
         <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.healthmarketscience.jackcess</groupId>
             <artifactId>jackcess</artifactId>
         </dependency>
         <dependency>
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
         </dependency>
         <dependency>
             <groupId>net.iryndin</groupId>
@@ -238,16 +246,17 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient-android</artifactId>
         </dependency>
-        <!--this plugin fix errors of default ImageIO (for image resizing)-->
-        <dependency>
-            <groupId>com.twelvemonkeys.imageio</groupId>
-            <artifactId>imageio-jpeg</artifactId>
-        </dependency>
+
 
         <dependency>
             <groupId>com.google.code.geocoder-java</groupId>
             <artifactId>geocoder-java</artifactId>
-            <version>0.16</version>
+            <version>0.11</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.fax4j</groupId>
+            <artifactId>fax4j</artifactId>
+            <version>0.43.1</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -263,59 +272,6 @@
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
             <version>0.4.7</version>
-        </dependency>
-        <!--for reading huge xlsx-->
-        <dependency>
-            <groupId>com.monitorjbl</groupId>
-            <artifactId>xlsx-streamer</artifactId>
-            <version>2.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.opencsv</groupId>
-            <artifactId>opencsv</artifactId>
-            <version>4.4</version>
-        </dependency>
-        <!--jwt token generation-->
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
-            <version>0.9.1</version>
-        </dependency>
-        <!-- you need to override scope provided if you really need to use these dependencies -->
-        <!--text recognition-->
-        <dependency>
-            <groupId>net.sourceforge.tess4j</groupId>
-            <artifactId>tess4j</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!--need to print pdf files-->
-        <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-        </dependency>
-        <!--connection with fax-->
-        <dependency>
-            <groupId>net.sf.fax4j</groupId>
-            <artifactId>fax4j</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!--java 11 dependencies-->
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
         </dependency>
     </dependencies>
 </project>
