@@ -41,10 +41,6 @@ public class FlexTabBar extends Composite implements TabBar {
         setStyleName("gwt-TabBar");
         panel.getElement().getStyle().setProperty("flexWrap", "wrap");
 
-        addInitialWidgets();
-    }
-
-    private void addInitialWidgets(){
         Label first = new Label();
         Label rest = new Label();
 

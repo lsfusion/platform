@@ -3,7 +3,6 @@ package lsfusion.client.form.controller;
 import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CWorkingArea;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
-import bibliothek.gui.dock.common.action.CButton;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.event.CDockableLocationEvent;
 import bibliothek.gui.dock.common.event.CDockableLocationListener;
@@ -26,8 +25,6 @@ import net.sf.jasperreports.engine.JRException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static lsfusion.client.ClientResourceBundle.getString;
 
 public class FormsController implements ColorThemeChangeListener {
     private CControl control;
@@ -124,18 +121,8 @@ public class FormsController implements ColorThemeChangeListener {
             page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener, firstChanges);
             openForm(page);
         }
-        addCloseAllTabsAction(page);
+        page.addAction(new CloseAllAction(openedForms));
         return page;
-    }
-
-    private void addCloseAllTabsAction(ClientFormDockable page) {
-        CButton cButton = new CButton(getString("form.close.all.tabs"), null);
-        cButton.addActionListener(actionEvent -> {
-            for (int i = openedForms.size() - 1; i >= 0; i--) {
-                openedForms.get(i).onClosing();
-            }
-        });
-        page.addAction(cButton);
     }
 
     public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {

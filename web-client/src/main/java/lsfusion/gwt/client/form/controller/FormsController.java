@@ -173,11 +173,10 @@ public abstract class FormsController {
 
                 PopupDialogPanel popup = new PopupDialogPanel();
                 final MenuBar menuBar = new MenuBar(true);
-                MenuItem menuItem = new MenuItem(messages.closeAllTabs(), () -> {
+                menuBar.addItem(new MenuItem(messages.closeAllTabs(), () -> {
                     popup.hide();
-                    removeAllTabs();
-                });
-                menuBar.addItem(menuItem);
+                    closeAllTabs();
+                }));
                 GwtClientUtils.showPopupInWindow(popup, menuBar, event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY());
             }
         }, ContextMenuEvent.getType());
@@ -228,7 +227,7 @@ public abstract class FormsController {
         formFocusOrder.remove(index);
     }
 
-    private void removeAllTabs() {
+    private void closeAllTabs() {
         for (int i = forms.size() - 1; i >= 0; i--) {
             forms.get(i).closePressed();
         }
