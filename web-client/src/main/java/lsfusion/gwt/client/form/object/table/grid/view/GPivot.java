@@ -2093,13 +2093,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }-*/;
 
-    private native void updateDirection(WrapperObject currentConfig, SortCol col) /*-{
-        var currentSortCol = this.@GPivot::findSortCol(*)(currentConfig.sortCols, col.value)
-        if (currentSortCol != null) {
-            col.direction = currentSortCol.direction
-        }
-    }-*/;
-
     private ArrayList<String> toArrayList(JsArrayMixed jsArray) {
         ArrayList<String> arrayList = new ArrayList<>();
         for(int i = 0; i < jsArray.length(); i++) {
