@@ -1694,6 +1694,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
+	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
 	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); }
 	;
 
@@ -2105,6 +2106,15 @@ activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	}
 }
 	: 	'ACTIVE' 'TAB' fc = formComponentID
+	;
+
+roundPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inMainParseState()) {
+		property = self.addScriptedRoundProp($expr.property, $scaleExpr.property);
+	}
+}
+	:	'ROUND' '(' expr=propertyExpression[context, dynamic] (',' scaleExpr = propertyExpression[context, dynamic] )? ')'
 	;
 
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]

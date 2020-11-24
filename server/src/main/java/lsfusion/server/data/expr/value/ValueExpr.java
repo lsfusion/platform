@@ -200,4 +200,9 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     public int getStaticEqualClass() {
         return 0;
     }
+
+    @Override
+    public Object getObject() {
+        return object;
+    }
 }
