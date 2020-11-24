@@ -71,7 +71,7 @@ FORM messenger '{messenger.messenger}'
 
 DESIGN messengers {                   
     MOVE PROPERTY(newMessage(c)) {
-        panelCaptionAbove = TRUE;
+        panelCaptionVertical = TRUE;
     }
     MOVE PROPERTY(sendMessage(c));                              
     MOVE TOOLBARBOX; 

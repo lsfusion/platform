@@ -10,7 +10,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
+import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
@@ -24,7 +24,7 @@ import java.util.zip.ZipOutputStream;
 
 public class UserLogsAction extends InternalAction {
 
-    public UserLogsAction(SystemEventsLogicsModule LM) {
+    public UserLogsAction(ServiceLogicsModule LM) {
         super(LM);
     }
 

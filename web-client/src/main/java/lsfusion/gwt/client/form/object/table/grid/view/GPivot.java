@@ -1968,7 +1968,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
         updateViewLater();
     }
-    
+
     private void updateViewLater() {
 
 
@@ -2065,6 +2065,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return true;
     }-*/;
     
+    // Updates the sorting columns list and saves this list in newConfig.
+    // currentConfig has actual sorting directions, newConfig has actual rows/cols lists
+    // updateSortCols combines this actual data to form the new sorting columns list
     private native void updateSortCols(WrapperObject currentConfig, WrapperObject newConfig) /*-{
         var instance = this
         var sortCols = newConfig.sortCols;
@@ -2089,7 +2092,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             col.direction = currentSortCol.direction
         }
     }-*/;
-    
+
+    private native void updateDirection(WrapperObject currentConfig, SortCol col) /*-{
+        var currentSortCol = this.@GPivot::findSortCol(*)(currentConfig.sortCols, col.value)
+        if (currentSortCol != null) {
+            col.direction = currentSortCol.direction
+        }
+    }-*/;
+
     private ArrayList<String> toArrayList(JsArrayMixed jsArray) {
         ArrayList<String> arrayList = new ArrayList<>();
         for(int i = 0; i < jsArray.length(); i++) {

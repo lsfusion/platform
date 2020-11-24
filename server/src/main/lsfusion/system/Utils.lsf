@@ -281,7 +281,7 @@ DESIGN dialogString {
             fill = 1;
             caption = '{utils.caption.enter.string}';
             font = 'bold 64';
-            panelCaptionAbove = TRUE;
+            panelCaptionVertical = TRUE;
         }
     }
 }
@@ -298,7 +298,7 @@ DESIGN dialogDate {
             fill = 1;
             caption = '{utils.caption.enter.date}';
             font = 'bold 64';
-            panelCaptionAbove = TRUE;
+            panelCaptionVertical = TRUE;
         }
     }
 
@@ -313,7 +313,7 @@ DESIGN dialogInteger {
     PROPERTY (objValue) {
         caption = '{utils.caption.enter.integer}';
         font = 'bold 64';
-        panelCaptionAbove = TRUE;
+        panelCaptionVertical = TRUE;
     }
 }
 
@@ -326,7 +326,7 @@ DESIGN dialogNumeric {
     PROPERTY (objValue) {
         caption = '{utils.caption.enter.numeric}';
         font = 'bold 64';
-        panelCaptionAbove = TRUE;
+        panelCaptionVertical = TRUE;
     }
 }
 
