@@ -110,6 +110,11 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
     }
 
     public final void changeOrder(T columnKey, Order modiType, boolean alreadySet) {
+        changeOrderDirection(columnKey, modiType);
+        orderChanged(columnKey, modiType, alreadySet);
+    }
+
+    private void changeOrderDirection(T columnKey, Order modiType) {
         if (columnKey == null || noSort(columnKey)) {
             return;
         }
@@ -130,23 +135,21 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
                 orderDirections.remove(columnKey);
                 break;
         }
-
-        orderChanged(columnKey, modiType, alreadySet);
     }
 
     public final boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<T, Boolean> set, boolean alreadySet) {
         if(!BaseUtils.hashEquals(orderDirections, set)) {
             if(!alreadySet) {
                 orderDirections.clear();
-                ordersCleared(groupObject);
-            } /*else
-                assert orderDirections.isEmpty();*/
+            }
 
             for(Map.Entry<T, Boolean> entry : set.entrySet()) {
-                changeOrder(entry.getKey(), Order.ADD, alreadySet);
+                changeOrderDirection(entry.getKey(), Order.ADD);
                 if(!entry.getValue())
-                    changeOrder(entry.getKey(), Order.DIR, alreadySet);
+                    changeOrderDirection(entry.getKey(), Order.DIR);
             }
+
+            ordersSet(groupObject, set);
 
             return true;
         }
@@ -157,14 +160,9 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         return columnKey instanceof Pair && ((Pair) columnKey).first instanceof ClientPropertyDraw && ((ClientPropertyDraw) ((Pair) columnKey).first).noSort;
     }
 
-    public final void clearOrders(ClientGroupObject groupObject) {
-        orderDirections.clear();
-        ordersCleared(groupObject);
-    }
-
     protected abstract void orderChanged(T columnKey, Order modiType, boolean alreadySet);
 
-    protected abstract void ordersCleared(ClientGroupObject groupObject);
+    protected abstract void ordersSet(ClientGroupObject groupObject, LinkedHashMap<T, Boolean> orders);
 
     protected abstract T getColumnKey(int column);
 
