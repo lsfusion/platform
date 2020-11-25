@@ -67,6 +67,10 @@ public class DeferredRunner {
         reschedule(groupObjectChangeCommandID(groupObject), cmd);
     }
 
+    public void scheduleDelayedCloseAllTabs(Command cmd) {
+        reschedule("closeAllTabs", cmd);
+    }
+
     public void cancelDelayedGroupObjectChange(GGroupObject groupObject) {
         if (groupObject != null) {
             cancel(groupObjectChangeCommandID(groupObject));

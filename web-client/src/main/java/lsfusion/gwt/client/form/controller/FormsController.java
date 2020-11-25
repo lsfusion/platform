@@ -15,6 +15,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -155,9 +156,6 @@ public abstract class FormsController {
 
         FormContainer formContainer = modalityType.isModalWindow() ? new ModalForm(this) : new FormDockable(this);
 
-        if (formContainer instanceof FormDockable)
-            addContextMenuHandler((FormDockable) formContainer);
-
         initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), initFilterEvent);
 
         formContainer.show();
@@ -165,7 +163,7 @@ public abstract class FormsController {
         return formContainer;
     }
 
-    private void addContextMenuHandler(FormDockable formContainer) {
+    public void addContextMenuHandler(FormDockable formContainer) {
         formContainer.getTabWidget().addDomHandler(new ContextMenuHandler() {
             @Override
             public void onContextMenu(ContextMenuEvent event) {
@@ -218,19 +216,27 @@ public abstract class FormsController {
     public void removeDockable(FormDockable dockable) {
         int index = forms.indexOf(dockable);
 
-        assert !isRemoving || dockable.isClosing();
+        assert !isRemoving;
         isRemoving = true;
         tabsPanel.remove(index);
-        assert !isRemoving || dockable.isClosing();
+        assert !isRemoving; // checking that the active tab is closed
 
         forms.remove(index);
         formFocusOrder.remove(index);
     }
 
+    //close all tabs until tab with changes
     private void closeAllTabs() {
-        for (int i = forms.size() - 1; i >= 0; i--) {
-            forms.get(i).closePressed();
-        }
+        DeferredRunner.get().scheduleDelayedCloseAllTabs(new DeferredRunner.AbstractCommand() {
+            @Override
+            public void execute() {
+                int selectedTab = tabsPanel.getSelectedTab();
+                if (selectedTab == -1 || MainFrame.isModalPopup())
+                    return;
+                forms.get(selectedTab).closePressed();
+                closeAllTabs();
+            }
+        });
     }
 
     public void ensureTabSelected() {

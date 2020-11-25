@@ -16,13 +16,13 @@ import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
 public final class FormDockable extends FormContainer<FormDockable.ContentWidget> {
     private TabWidget tabWidget;
     private FormDockable blockingForm; //GFormController
-    private boolean closing = false;
 
     public FormDockable(FormsController formsController) {
         super(formsController);
 
         tabWidget = new TabWidget("");
         tabWidget.setBlocked(false);
+        formsController.addContextMenuHandler(this);
     }
 
     @Override
@@ -64,13 +64,8 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
         contentWidget.setBlocked(false);
     }
 
-    public boolean isClosing() {
-        return closing;
-    }
-
     public void closePressed() {
         form.closePressed();
-        closing = true;
     }
 
     public Widget getTabWidget() {
