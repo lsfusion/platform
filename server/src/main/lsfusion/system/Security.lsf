@@ -213,7 +213,7 @@ namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e))
 captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.default) CHARWIDTH 10;
 
 permit (User u, NavigatorElement ne) = 
-    (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.permit) OR NOT 
+    (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.permit AND NOT disableRole(ur)) OR NOT 
     (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.forbid AND NOT disableRole(ur));              
 
 backgroundPermission (UserRole ur, NavigatorElement e)= 
