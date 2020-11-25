@@ -76,6 +76,8 @@ public class MainController {
         }
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
+        model.addAttribute("disableRegistration", serverSettings.disableRegistration);
+
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));

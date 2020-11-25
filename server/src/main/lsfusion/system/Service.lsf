@@ -422,7 +422,7 @@ getServerSettings() {
     generateJnlpUrls();
     EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
                 sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
-                jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles());
+                jnlpUrls=exportText(), resourceFiles=STRING(jsonResourceFiles()), disableRegistration=disableRole('selfRegister');
 } @@noauth;
 
 // logging for user

@@ -404,6 +404,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         if(userObject != null) {
             userRoleQuery.and(securityLM.hasUserRole.getExpr(session.getModifier(), userObject.getExpr(), userRoleExpr).getWhere());
         }
+        userRoleQuery.and(securityLM.disableRole.getExpr(session.getModifier(), userRoleExpr).getWhere().not());
         ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> queryResult = userRoleQuery.executeClasses(session);
         for (int i = 0, size = queryResult.size(); i < size; i++) {
             userRoleSet.add(queryResult.getKey(i).get("userRole"));
