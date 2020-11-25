@@ -53,6 +53,9 @@ onUserRegister(User user) + {
     in(user, userRoleSID('selfRegister')) <- TRUE;
 }
 
+disableRole '{security.user.role.disable.role}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
+disableRole(STRING roleSID) = disableRole(userRoleSID(roleSID));
+
 // Forms
 FORM userRolesDialog '{security.user.roles}'
     OBJECTS ur = UserRole
@@ -210,8 +213,8 @@ namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e))
 captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.default) CHARWIDTH 10;
 
 permit (User u, NavigatorElement ne) = 
-    (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.permit) OR NOT 
-    (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.forbid);                  
+    (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.permit AND NOT disableRole(ur)) OR NOT 
+    (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.forbid AND NOT disableRole(ur));              
 
 backgroundPermission (UserRole ur, NavigatorElement e)= 
     childPermissionBackground() IF GROUP SUM 1 IF level(NavigatorElement child, e) AND dataPermission(ur, child) AND 
@@ -402,7 +405,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur) name, sid
     PROPERTIES(ur) NEW, DELETE
     
-    PROPERTIES(ur) showDetailedInfo, forbidDuplicateForms, defaultForms, maximizeDefaultForms
+    PROPERTIES(ur) showDetailedInfo, forbidDuplicateForms, defaultForms, maximizeDefaultForms, disableRole
 
     // Navigator elements
     TREE navigatorElements te = NavigatorElement PARENT parent(te)
