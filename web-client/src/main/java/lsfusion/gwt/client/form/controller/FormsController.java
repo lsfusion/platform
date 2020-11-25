@@ -15,7 +15,6 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -215,28 +214,25 @@ public abstract class FormsController {
 
     public void removeDockable(FormDockable dockable) {
         int index = forms.indexOf(dockable);
+        boolean isTabSelected = forms.get(tabsPanel.getSelectedTab()).equals(dockable);
 
-        assert !isRemoving;
-        isRemoving = true;
-        tabsPanel.remove(index);
-        assert !isRemoving; // checking that the active tab is closed
+        if (isTabSelected){
+            assert !isRemoving;
+            isRemoving = true;
+            tabsPanel.remove(index);
+            assert !isRemoving; // checking that the active tab is closing
+        } else {
+            tabsPanel.remove(index);
+        }
 
         forms.remove(index);
         formFocusOrder.remove(index);
     }
 
-    //close all tabs until tab with changes
     private void closeAllTabs() {
-        DeferredRunner.get().scheduleDelayedCloseAllTabs(new DeferredRunner.AbstractCommand() {
-            @Override
-            public void execute() {
-                int selectedTab = tabsPanel.getSelectedTab();
-                if (selectedTab == -1 || MainFrame.isModalPopup())
-                    return;
-                forms.get(selectedTab).closePressed();
-                closeAllTabs();
-            }
-        });
+        for (int i = forms.size() - 1; i >= 0; i--) {
+            forms.get(i).closePressed();
+        }
     }
 
     public void ensureTabSelected() {
