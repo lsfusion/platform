@@ -186,14 +186,13 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
 
             @Override
-            protected void ordersCleared(final ClientGroupObject groupObject) {
+            protected void ordersSet(ClientGroupObject groupObject, LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orders) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        GridTable.this.ordersCleared(groupObject);
+                        GridTable.this.ordersSet(groupObject, orders);
                     }
                 });
-
             }
 
             @Override
@@ -368,8 +367,17 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         tableHeader.repaint();
     }
 
-    private void ordersCleared(ClientGroupObject groupObject) {
-        form.clearPropertyOrders(groupObject);
+    private void ordersSet(ClientGroupObject groupObject, LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orders) {
+        List<Integer> propertyList = new ArrayList<>();
+        List<byte[]> columnKeyList = new ArrayList<>();
+        List<Boolean> orderList = new ArrayList<>();
+        for(Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> entry : orders.entrySet()) {
+            propertyList.add(entry.getKey().first.ID);
+            columnKeyList.add(entry.getKey().second.serialize());
+            orderList.add(entry.getValue());
+        }
+
+        form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
         tableHeader.resizeAndRepaint();
         tableHeader.repaint();
     }

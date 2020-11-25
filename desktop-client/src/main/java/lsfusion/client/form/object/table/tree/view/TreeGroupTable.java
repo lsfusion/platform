@@ -139,11 +139,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             }
 
             @Override
-            protected void ordersCleared(final ClientGroupObject groupObject) {
+            protected void ordersSet(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        TreeGroupTable.this.ordersCleared(groupObject);
+                        TreeGroupTable.this.ordersSet(groupObject, orders);
                     }
                 });
             }
@@ -291,8 +291,18 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return treeGroup.autoSize ? getPreferredSize() : SwingDefaults.getTablePreferredSize();
     }
 
-    private void ordersCleared(ClientGroupObject groupObject) {
-        form.clearPropertyOrders(groupObject);
+    private void ordersSet(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
+        List<Integer> propertyList = new ArrayList<>();
+        List<byte[]> columnKeyList = new ArrayList<>();
+        List<Boolean> orderList = new ArrayList<>();
+        for(Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
+            propertyList.add(entry.getKey().ID);
+            columnKeyList.add(ClientGroupObjectValue.EMPTY.serialize());
+            orderList.add(entry.getValue());
+        }
+
+        form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
+
         tableHeader.resizeAndRepaint();
     }
 
