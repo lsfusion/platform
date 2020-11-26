@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -216,23 +217,37 @@ public abstract class FormsController {
         int index = forms.indexOf(dockable);
         boolean isTabSelected = forms.get(tabsPanel.getSelectedTab()).equals(dockable);
 
-        if (isTabSelected){
+        if (isTabSelected) {
             assert !isRemoving;
             isRemoving = true;
-            tabsPanel.remove(index);
-            assert !isRemoving; // checking that the active tab is closing
-        } else {
-            tabsPanel.remove(index);
         }
+
+        tabsPanel.remove(index);
+        assert !isRemoving; // checking that the active tab is closing
 
         forms.remove(index);
         formFocusOrder.remove(index);
     }
 
     private void closeAllTabs() {
-        for (int i = forms.size() - 1; i >= 0; i--) {
-            forms.get(i).closePressed();
-        }
+        Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
+            private int size = forms.size();
+            @Override
+            public boolean execute() {
+                if (MainFrame.isModalPopup())
+                    return true;
+
+                if (size > 0) {
+                    FormDockable lastTab = forms.get(size - 1);
+                    selectTab(lastTab);
+                    lastTab.closePressed();
+                    size--;
+                    return true;
+                }
+
+                return false;
+            }
+        }, 50);
     }
 
     public void ensureTabSelected() {
