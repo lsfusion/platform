@@ -4,12 +4,16 @@
     background: var(--background-color);
 }
 
+.fc .fc-cell-shaded, .fc .fc-day-disabled {
+    background: var(--component-border-color);
+}
+
 .fc-h-event, .fc-v-event, .fc-daygrid-event {
     background-color: var(--component-background-color);
     border: 1px solid var(--component-border-color);
 }
 
-.fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title {
+.fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title, .fc-daygrid-dot-event {
     padding: 2px 3px;
 }
 
@@ -20,6 +24,22 @@
 
 .fc-h-event .fc-event-main, .fc-v-event .fc-event-main {
     color: var(--text-color);
+}
+
+.fc .fc-timegrid .fc-col-header {
+    border-right: 1px solid var(--grid-separator-border-color);
+}
+
+.fc .fc-timegrid .fc-daygrid-body {
+    border-right: 1px solid var(--grid-separator-border-color);
+}
+
+.fc .fc-timegrid-body {
+    border-right: 1px solid var(--grid-separator-border-color);
+}
+
+.fc .fc-timegrid-divider {
+    padding: 0 0 1px;
 }
 
 .fc-timegrid-event {
@@ -57,9 +77,13 @@
 }
 
 .fc-theme-standard th, .fc-theme-standard td {
-    border: none;
-    border-top: 1px solid var(--grid-separator-border-color);
-    border-left: 1px solid var(--grid-separator-border-color);
+    border-width: 1px 0 0 1px;
+    border-style: solid;
+    border-color: var(--grid-separator-border-color);
+}
+
+.fc-theme-standard th {
+    border-bottom: 1px solid var(--grid-separator-border-color);
 }
 
 .fc-daygrid-dot-event .fc-event-title {
@@ -180,7 +204,7 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
 }
 
 .fc-daygrid-event-dot {
-    border: calc(var(--fc-daygrid-event-dot-width, 8px) / 2) solid var(--focus-color);
+    display: none;
 }
 
 .fc .fc-daygrid-day-bottom {
