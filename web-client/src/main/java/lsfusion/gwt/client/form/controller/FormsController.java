@@ -237,7 +237,7 @@ public abstract class FormsController {
                 if (MainFrame.isModalPopup())
                     return true;
 
-                if (size > 0 && size < forms.size()) { // check if some tab not closed by user while running "closeAllTabs"
+                if (size > 0 && size <= forms.size()) { // check if some tab not closed by user while running "closeAllTabs"
                     FormDockable lastTab = forms.get(size - 1);
                     selectTab(lastTab);
                     lastTab.closePressed();

@@ -27,6 +27,7 @@ public class CloseAllAction extends CDropDownItem<CloseAllAction.Action> {
         public Action(List<ClientDockable> openedForms) {
             addActionListener(actionEvent -> {
                 for (int i = openedForms.size() - 1; i >= 0; i--) {
+                    openedForms.get(i).requestFocusInWindow();
                     openedForms.get(i).onClosing();
                 }
             });
