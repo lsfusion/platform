@@ -126,8 +126,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
 
             @Override
-            protected void ordersCleared(GGroupObject groupObject) {
-                form.clearPropertyOrders(groupObject);
+            protected void ordersSet(GGroupObject groupObject, LinkedHashMap<Map<GPropertyDraw, GGroupObjectValue>, Boolean> orders) {
+                List<Integer> propertyList = new ArrayList<>();
+                List<GGroupObjectValue> columnKeyList = new ArrayList<>();
+                List<Boolean> orderList = new ArrayList<>();
+                for(Map.Entry<Map<GPropertyDraw, GGroupObjectValue>, Boolean> entry : orders.entrySet()) {
+                    propertyList.add(entry.getKey().keySet().iterator().next().ID);
+                    columnKeyList.add(entry.getKey().values().iterator().next());
+                    orderList.add(entry.getValue());
+                }
+                form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
             }
 
             @Override

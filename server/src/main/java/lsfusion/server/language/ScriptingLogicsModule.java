@@ -1919,7 +1919,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                                              List<LPWithParams> recipProps,
                                              List<LPWithParams> attachFileNames,
                                              List<LPWithParams> attachFiles,
-                                             Boolean syncType) {
+                                             List<NamedPropertyUsage> attachFileNameProps,
+                                             List<NamedPropertyUsage> attachFileProps,
+                                             Boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
 
         List<LAPWithParams> allProps = new ArrayList<>();
 
@@ -1975,6 +1977,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         for (LPWithParams fileName : attachFileNames) {
             eaProp.addAttachmentFile(fileName != null ? allImplements.get(i++) : null, allImplements.get(i++));
+        }
+
+        for (int j = 0; j < attachFileNameProps.size(); j++) {
+            NamedPropertyUsage fileNamePropUsage = attachFileNameProps.get(j);
+            NamedPropertyUsage filePropUsage = attachFileProps.get(j);
+            eaProp.addAttachmentFileProp(fileNamePropUsage != null ? findLPParamByPropertyUsage(fileNamePropUsage, ListFact.singleton(IntegerClass.instance)) : null,
+                    filePropUsage != null ? findLPParamByPropertyUsage(filePropUsage, ListFact.singleton(IntegerClass.instance)) : null);
         }
 
         return new LAWithParams(eaLA, mergeAllParams(allProps));
@@ -4134,6 +4143,16 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedActiveTabProp(ComponentView component) {
         return new LPWithParams(new LP<>(component.getActiveTab().property));
+    }
+
+    public LPWithParams addScriptedRoundProp(LPWithParams expr, LPWithParams scaleExpr) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> propParams = new ArrayList<>();
+        propParams.add(expr);
+        boolean hasScale = scaleExpr != null;
+        if (hasScale) {
+            propParams.add(scaleExpr);
+        }
+        return addScriptedJProp(hasScale ? baseLM.roundScale : baseLM.round, propParams);
     }
 
     public void addScriptedFollows(NamedPropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {

@@ -13,4 +13,6 @@ public abstract class AbstractValueExpr<C extends ConcreteClass> extends StaticE
     public boolean isAlwaysSafeString() {
         return objectClass.getType().isSafeString(null);
     }
+
+    public abstract Object getObject();
 }

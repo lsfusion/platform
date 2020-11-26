@@ -309,6 +309,8 @@ public class MainController {
     }
     
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
+        UIManager.getDefaults().addResourceBundle("SwingResourceBundle");
+        
 //        FocusOwnerTracer.installFocusTracer();
 
         ToolTipManager.sharedInstance().setInitialDelay(1500);

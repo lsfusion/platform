@@ -105,11 +105,11 @@ DESIGN translation {
         type = CONTAINERH;
         MOVE PROPERTY(translationInput()) {
             fill = 1;
-            panelCaptionAbove = TRUE;
+            panelCaptionVertical = TRUE;
         }
         MOVE PROPERTY(translationResult()) {
             fill = 1;
-            panelCaptionAbove = TRUE;
+            panelCaptionVertical = TRUE;
         }
     }
     MOVE PROPERTY(translateText()) { font = 'bold 24'; }
@@ -154,13 +154,13 @@ DESIGN dictionary {
             MOVE PROPERTY(translationInput()) {
                 fill = 1;
                 caption = '{i18n.form.dictionary.caption.phrase}';
-                panelCaptionAbove = TRUE;
+                panelCaptionVertical = TRUE;
                 font = 'bold 24';
             }
             MOVE PROPERTY(translationResult()){
                 fill = 1;
                 caption = '{i18n.translation}';
-                panelCaptionAbove = TRUE;
+                panelCaptionVertical = TRUE;
                 font = 'bold 24';
             }
         }

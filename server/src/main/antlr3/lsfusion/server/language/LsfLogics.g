@@ -1694,6 +1694,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
+	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
 	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); }
 	;
 
@@ -2105,6 +2106,15 @@ activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	}
 }
 	: 	'ACTIVE' 'TAB' fc = formComponentID
+	;
+
+roundPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inMainParseState()) {
+		property = self.addScriptedRoundProp($expr.property, $scaleExpr.property);
+	}
+}
+	:	'ROUND' '(' expr=propertyExpression[context, dynamic] (',' scaleExpr = propertyExpression[context, dynamic] )? ')'
 	;
 
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
@@ -3459,10 +3469,14 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 	List<LPWithParams> attachFileNames = new ArrayList<>();
 	List<LPWithParams> attachFiles = new ArrayList<>();
+
+    List<NamedPropertyUsage> attachFileNameProps = new ArrayList<>();
+    List<NamedPropertyUsage> attachFileProps = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedEmailProp(fromProp, subjProp, bodyProp, recipTypes, recipProps, attachFileNames, attachFiles, syncType);
+		$action = self.addScriptedEmailProp(fromProp, subjProp, bodyProp, recipTypes, recipProps, attachFileNames, attachFiles,
+		                                    attachFileNameProps, attachFileProps, syncType);
 	}
 }
 	:	'EMAIL'
@@ -3473,11 +3487,18 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 			recipExpr=propertyExpression[context, dynamic] { recipProps.add($recipExpr.property); }
 		)+
 		('BODY' bodyExpr=propertyExpression[context, dynamic] { bodyProp = $bodyExpr.property; })?
-		(	(	'ATTACH' attachFile=propertyExpression[context, dynamic] { attachFiles.add($attachFile.property); }
-				{ LPWithParams attachFileName = null;}
+		(   'ATTACH'
+		    (
+                (attachFile=propertyExpression[context, dynamic] { attachFiles.add($attachFile.property); }
+                { LPWithParams attachFileName = null;}
                 ('NAME' attachFileNameExpr=propertyExpression[context, dynamic] { attachFileName = $attachFileNameExpr.property; } )?
-                { attachFileNames.add(attachFileName); }
-			)
+                { attachFileNames.add(attachFileName); })
+            |
+                ('LIST'
+                attachFileProp = propertyUsage { attachFileProps.add($attachFileProp.propUsage); }
+                { NamedPropertyUsage attachFileNamesProp = null; }
+                ('NAME' attachFileNameProp = propertyUsage { attachFileNameProps.add($attachFileNameProp.propUsage); })?)
+            )
 		)*
 		(sync = syncTypeLiteral{ syncType = $sync.val; })?
 	;

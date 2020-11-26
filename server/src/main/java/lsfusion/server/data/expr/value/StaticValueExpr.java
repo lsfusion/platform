@@ -124,6 +124,11 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
         return super.isAlwaysSafeString();
     }
 
+    @Override
+    public Object getObject() {
+        return object;
+    }
+
     private Object getLocalizedObject(Object object) {
         Object adjObject = object;
         if(objectClass instanceof StringClass) {

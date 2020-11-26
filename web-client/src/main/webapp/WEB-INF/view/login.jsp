@@ -63,20 +63,22 @@
                         </c:if>
                     </fieldset>
                 </form>
-                <div class="reg-block">
-                    <%= ServerMessages.getString(request, "no.account") %>
-                    &#32;
-                    <a class="link" href="${registrationPage}"><%= ServerMessages.getString(request, "register") %></a>.
-                </div>
-                <c:if test="${not empty urls}">
-                    <div class="oauth-block">                                                                                
-                        <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
-                        <div class="oauth-links">
-                            <c:forEach var="url" items="${urls}">
-                                <a href="${url.value}" class="oauth-link fa fa-${url.key}" title="${url.key}"></a>
-                            </c:forEach>
-                        </div>
+                <c:if test="${! disableRegistration}">
+                    <div class="reg-block">
+                        <%= ServerMessages.getString(request, "no.account") %>
+                        &#32;
+                        <a class="link" href="${registrationPage}"><%= ServerMessages.getString(request, "register") %></a>.
                     </div>
+                    <c:if test="${not empty urls}">
+                        <div class="oauth-block">
+                            <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
+                            <div class="oauth-links">
+                                <c:forEach var="url" items="${urls}">
+                                    <a href="${url.value}" class="oauth-link fa fa-${url.key}" title="${url.key}"></a>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </c:if>
                 </c:if>
             </div>
             <div class="footer">
