@@ -52,6 +52,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupMode;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -453,7 +454,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.trace(String.format("setPropertyOrders: [ID: %1$d]", groupObject.getID()));
             }
 
-            form.getGroupObjectInstance(groupObjectID).clearOrders();
+            groupObject.clearOrders();
 
             for(int i = 0; i < propertyList.size(); i++) {
                 Integer propertyID = propertyList.get(i);
@@ -461,12 +462,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 Boolean order = orderList.get(i);
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
                 if(propertyDraw != null) {
-
                     ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
-
-                    propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys), Order.ADD);
+                    PropertyObjectInstance property = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys);
+                    propertyDraw.toDraw.changeOrder(property, Order.ADD);
                     if(!order)
-                        propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys), Order.DIR);
+                        propertyDraw.toDraw.changeOrder(property, Order.DIR);
                 }
             }
 
