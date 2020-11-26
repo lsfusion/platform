@@ -47,7 +47,7 @@ public class FileCellEditor implements CellEditor {
         for (int i = 0; i < files.length(); i++) {
             File file = files.get(i).cast();
             String type = file.getType(); //some input files may have empty type
-            if ((validContentTypes == null || isRedundantString(type) || validContentTypes.contains(type)) && (validFiles.length() == 0)) {
+            if ((validContentTypes == null || emptyValidContentType() || isRedundantString(type) || validContentTypes.contains(type)) && (validFiles.length() == 0)) {
                 validFiles.push(file);
             }
         }
@@ -59,6 +59,10 @@ public class FileCellEditor implements CellEditor {
             newVersionUploader.startUpload();
         }
         return hasValidFiles;
+    }
+
+    private boolean emptyValidContentType() {
+        return validContentTypes.size() == 1 && validContentTypes.get(0).isEmpty();
     }
 
     public void commit() {
