@@ -39,6 +39,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public boolean isMap;
     public boolean isCalendarDate;
     public boolean isCalendarDateTime;
+    public boolean isCalendarPeriod;
 
     public boolean hasFooters;
 
@@ -146,6 +147,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         isMap = inStream.readBoolean();
         isCalendarDate = inStream.readBoolean();
         isCalendarDateTime = inStream.readBoolean();
+        isCalendarPeriod= inStream.readBoolean();
 
         hasFooters = inStream.readBoolean();
 

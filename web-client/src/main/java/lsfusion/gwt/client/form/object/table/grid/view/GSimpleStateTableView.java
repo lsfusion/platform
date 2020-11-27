@@ -235,7 +235,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     private String getPropertyValue(String property) {
         Column column = columnMap.get(property);
-        return column != null ? getValue(column.property, getCurrentKey(), column.columnKey).toString() : null;
+        return column != null && getValue(column.property, getCurrentKey(), column.columnKey) != null ?
+                getValue(column.property, getCurrentKey(), column.columnKey).toString() : null;
     }
 
     protected native JavaScriptObject getController()/*-{

@@ -537,6 +537,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.isMap = clientGroupObject.isMap;
         groupObject.isCalendarDate = clientGroupObject.isCalendarDate;
         groupObject.isCalendarDateTime = clientGroupObject.isCalendarDateTime;
+        groupObject.isCalendarPeriod = clientGroupObject.isCalendarPeriod;
         groupObject.parent = convertOrCast(clientGroupObject.parent);
 
         groupObject.hasFooters = clientGroupObject.hasFooters;

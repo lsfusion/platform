@@ -1072,6 +1072,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getField(entity, "dateTime", "dateTimeFrom") != null;
     }
 
+    @IdentityLazy
+    public boolean isCalendarPeriod(GroupObjectEntity entity) {
+        return getField(entity, "dateFrom", "dateTimeFrom") != null;
+    }
+
     public PropertyDrawEntity getField(GroupObjectEntity entity, String... fields) {
         List<String> fieldsList = Arrays.asList(fields);
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();

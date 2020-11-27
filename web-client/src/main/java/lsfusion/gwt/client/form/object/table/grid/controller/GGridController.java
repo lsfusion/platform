@@ -162,8 +162,19 @@ public class GGridController extends GAbstractTableController {
             calendarTableButton.showBackground(false);
     }
 
+    private String getCalendarDateType() {
+
+        if (groupObject.isCalendarDate)
+            return !groupObject.isCalendarPeriod ? "date" : "dateFrom";
+
+        if (groupObject.isCalendarDateTime)
+            return !groupObject.isCalendarPeriod ? "dateTime" : "dateTimeFrom";
+
+        return null;
+    }
+
     private void setCalendarTableView() {
-        changeTableView(new GCalendar(formController, this, groupObject.isCalendarDate ? "date" : "dateTime"));
+        changeTableView(new GCalendar(formController, this, getCalendarDateType()));
         calendarTableButton.showBackground(true);
         pivotTableButton.showBackground(false);
         gridTableButton.showBackground(false);
@@ -263,7 +274,7 @@ public class GGridController extends GAbstractTableController {
             addToToolbar(mapTableButton);
         }
 
-        if(groupObject.isCalendarDate || groupObject.isCalendarDateTime) {
+        if(getCalendarDateType() != null) {
             calendarTableButton = new GToolbarButton("calendar_view.png", messages.formGridCalendarView()) {
                 @Override
                 public ClickHandler getClickHandler() {

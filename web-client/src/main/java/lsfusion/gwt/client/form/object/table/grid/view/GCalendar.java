@@ -11,7 +11,6 @@ public class GCalendar extends GTippySimpleStateTableView {
 
     private final String calendarDateType;
     private JavaScriptObject calendar;
-    private JsArray<JavaScriptObject> list;
 
     public GCalendar(GFormController form, GGridController grid, String calendarDateType) {
         super(form, grid);
@@ -20,7 +19,6 @@ public class GCalendar extends GTippySimpleStateTableView {
 
     @Override
     protected void render(Element element, JsArray<JavaScriptObject> list) {
-        this.list = list;
         if (calendar == null) {
             //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
             //to prevent this when calendar-element height less then ~350px
@@ -28,7 +26,7 @@ public class GCalendar extends GTippySimpleStateTableView {
             element.getStyle().setProperty("minHeight", "400px");
             element.getStyle().setProperty("cursor", "default");
 
-            calendar = createCalendar(element, controller, getEventName("From"));
+            calendar = createCalendar(element, controller, calendarDateType);
         }
         updateEvents(calendar, list, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller);
     }
@@ -38,20 +36,6 @@ public class GCalendar extends GTippySimpleStateTableView {
         if (calendar != null)
             resize(calendar);
     }
-
-    protected native String getEventName(String position)/*-{
-        var list = this.@GCalendar::list;
-        if (list.length < 1)
-            return null;
-        var calendarDateType = this.@GCalendar::calendarDateType;
-        var object = list.find(function (element) {
-            return !!element
-        });
-        if (object[calendarDateType + ''] != null)
-            return calendarDateType;
-        else
-            return calendarDateType + position;
-    }-*/;
 
     protected native void resize(JavaScriptObject calendar)/*-{
         calendar.updateSize();
@@ -67,11 +51,11 @@ public class GCalendar extends GTippySimpleStateTableView {
             height: 'parent',
             timeZone: 'UTC',
             firstDay: 1,
-            initialDate: calendarDateType != null ? controller.getCurrentDay(calendarDateType) : new Date().toISOString(),
+            initialDate: controller.getCurrentDay(calendarDateType),
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: calendarDateType != null && calendarDateType.includes('dateTime') ? 'dayGridMonth,dayGridWeek,timeGridDay' : 'dayGridMonth,dayGridWeek'
+                right: calendarDateType.includes('dateTime') ? 'dayGridMonth,dayGridWeek,timeGridDay' : 'dayGridMonth,dayGridWeek'
             },
             dayMaxEvents: true,
             //to prevent the expand of a single event without "end"-param to the next day "nextDayThreshold" should be equal to "defaultTimedEventDuration", which by default is 01:00:00
@@ -82,12 +66,10 @@ public class GCalendar extends GTippySimpleStateTableView {
                 changeProperty(info, 'end', this.objects);
             },
             datesSet: function () {
-                if (calendarDateType != null) {
-                    var filterLeftBorder = parseCalendarDateElement(calendar.view.activeStart);
-                    var filterRightBorder = parseCalendarDateElement(calendar.view.activeEnd);
-                    controller.setViewFilter(filterLeftBorder.year, filterLeftBorder.month, filterLeftBorder.day, filterRightBorder.year,
-                        filterRightBorder.month, filterRightBorder.day, calendarDateType, calendarDateType.toLowerCase().includes('time'));
-                }
+                var filterLeftBorder = parseCalendarDateElement(calendar.view.activeStart);
+                var filterRightBorder = parseCalendarDateElement(calendar.view.activeEnd);
+                controller.setViewFilter(filterLeftBorder.year, filterLeftBorder.month, filterLeftBorder.day, filterRightBorder.year,
+                    filterRightBorder.month, filterRightBorder.day, calendarDateType, calendarDateType.toLowerCase().includes('time'));
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event, info.el);
@@ -137,8 +119,8 @@ public class GCalendar extends GTippySimpleStateTableView {
         var events = [];
         var calendarDateType = this.@GCalendar::calendarDateType;
         calendar.currentEventIndex = null;
-        var startEventFieldName = this.@GCalendar::getEventName(*)('From');
-        var endEventFieldName = this.@GCalendar::getEventName(*)('To');
+        var startEventFieldName = calendarDateType;
+        var endEventFieldName = startEventFieldName.includes('From') ? startEventFieldName.replace('From', 'To') : null;
         for (var i = 0; i < objects.length; i++) {
             var object = objects[i]
             var isCurrentKey = this.@GCalendar::isCurrentObjectKey(*)(object);
@@ -148,7 +130,7 @@ public class GCalendar extends GTippySimpleStateTableView {
                 'end': endEventFieldName != null ? object[endEventFieldName] : null,
                 'editable': !controller.isPropertyReadOnly(startEventFieldName, object) && (endEventFieldName == null || !controller.isPropertyReadOnly(endEventFieldName, object)),
                 'durationEditable': endEventFieldName !== null && !controller.isPropertyReadOnly(endEventFieldName, object),
-                'allDay': calendarDateType === 'date',
+                'allDay': calendarDateType === 'date' || calendarDateType === 'dateFrom',
                 'index': i,
                 'startFieldName': startEventFieldName,
                 'endFieldName': endEventFieldName,
