@@ -111,7 +111,7 @@ public class FormsController implements ColorThemeChangeListener {
         if (MainController.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
             ClientDockable dockable = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
             if (dockable instanceof ClientFormDockable)
-                page = (ClientFormDockable) dockable; 
+                page = (ClientFormDockable) dockable;
         }
         
         if(page != null) {
@@ -121,6 +121,7 @@ public class FormsController implements ColorThemeChangeListener {
             page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener, firstChanges);
             openForm(page);
         }
+        page.addAction(new CloseAllAction(openedForms));
         return page;
     }
 
