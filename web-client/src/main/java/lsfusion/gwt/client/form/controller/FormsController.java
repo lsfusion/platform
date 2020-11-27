@@ -247,7 +247,7 @@ public abstract class FormsController {
 
                 return false;
             }
-        }, 50);
+        }, 20);
     }
 
     public void ensureTabSelected() {
