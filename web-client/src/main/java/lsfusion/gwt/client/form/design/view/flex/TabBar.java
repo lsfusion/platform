@@ -1,8 +1,5 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
-import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 public interface TabBar {

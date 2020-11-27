@@ -12,6 +12,7 @@ public interface ClientMessages extends Messages {
     String reset();
     String more();
     String logout();
+    String closeAllTabs();
 
     String error();
     String internalServerError();
