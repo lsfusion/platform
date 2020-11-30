@@ -2554,7 +2554,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
     |   persistentSetting [ps]
 	|	complexSetting [ps]
 	|	prereadSetting [ps]
-	|	noHintSetting [ps]
+	|	hintSettings [ps]
 	|	tableSetting [ps]
 	|   defaultCompareSetting [property]
 	|	autosetSetting [property]
@@ -2605,8 +2605,8 @@ prereadSetting [PropertySettings ps]
 	:	'PREREAD' { ps.isPreread = true; }
 	;
 
-noHintSetting [PropertySettings ps]
-	:	'NOHINT' { ps.noHint = true; }
+hintSettings [PropertySettings ps]
+	:	('HINT' { ps.isHint = true; } | 'NOHINT' { ps.isHint = false; } )
 	;
 
 tableSetting [PropertySettings ps]

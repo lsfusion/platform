@@ -924,11 +924,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return false;
     }
 
-    public boolean noHint = false;
+    public Boolean hint;
+    public void setHint(Boolean hint) {
+        this.hint = hint;
+    }
+    public boolean isHint() {
+        return hint != null && hint;
+    }
     @IdentityLazy
     public boolean isNoHint() {
-        if(noHint)
-            return true;
+        if(hint != null)
+            return !hint;
 
         for(Property property : getDepends())
             if(property.isNoHint())
