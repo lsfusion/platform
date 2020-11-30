@@ -273,7 +273,7 @@ public class AutoHintsAspect {
             if(queryType.needChange())
                 changed = result.getExpr("changed").getWhere();
 
-            if(catchHint.forceHintIncrement(property) && hintHasChanges(changed, property, propChanges)) // сразу кидаем exception
+            if((catchHint.forceHintIncrement(property) || property.isHint()) && hintHasChanges(changed, property, propChanges)) // сразу кидаем exception
                 throw new HintException(new IncrementHint(property, true));
             boolean allowNoUpdate = catchHint.allowNoUpdate(property);
             if(allowNoUpdate && catchHint.forceNoUpdate(property) && hintHasChanges(changed, property, propChanges))

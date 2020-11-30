@@ -1158,9 +1158,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             property.property.setComplex(ps.isComplex);
         if(ps.isPreread)
             property.property.setPreread(ps.isPreread);
-
-        if(ps.noHint)
-            property.property.noHint = true;
+        if(ps.isHint != null)
+            property.property.setHint(ps.isHint);
 
         BooleanDebug notNull = ps.notNull;
         if (notNull != null) {
