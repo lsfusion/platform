@@ -85,11 +85,9 @@ import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.obj
 
 public class BaseLogicsModule extends ScriptingLogicsModule {
     // classes
-    // classes
     public BaseClass baseClass;
 
     // groups
-    public Group actionGroup;
     public Group drillDownGroup; // для того чтобы в reflection'е можно было для всех drillDown одну политику безопасности проставлять
     public Group propertyPolicyGroup; // для того чтобы в reflection'е можно было для всех propertyPolicy одну политику безопасности проставлять
 

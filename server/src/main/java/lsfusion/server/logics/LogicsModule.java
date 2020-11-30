@@ -1660,7 +1660,7 @@ public abstract class LogicsModule {
     }
 
     public LA<?> addLazyAProp(Property property) {
-        LA result = addAProp(null, new LazyAction(LocalizedString.create("{logics.property.drilldown.action}"), property));
+        LA result = addAProp(baseLM.drillDownGroup, new LazyAction(LocalizedString.create("{logics.property.drilldown.action}"), property));
         if (property.isNamed()) {
             List<ResolveClassSet> signature = new ArrayList<>();
             String name = nameForDrillDownAction(property, signature);
