@@ -24,6 +24,8 @@
     
     <set-configuration-property name="locale.cookie" value="LSFUSION_LOCALE"/>
 
+    <set-property name="user.agent" value="gecko1_8,safari"/>
+    
     <!-- note:
          Раскомментить при разработке для быстрой компиляции.
          При этом будет работать только в firefox и только с английской локалью
