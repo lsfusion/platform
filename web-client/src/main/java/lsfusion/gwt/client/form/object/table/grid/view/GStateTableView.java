@@ -329,7 +329,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return Objects.equals(object, getCurrentKey());
     }
 
-
     @Override
     public GPropertyDraw getCurrentProperty() {
         if(!properties.isEmpty())

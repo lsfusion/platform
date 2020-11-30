@@ -43,10 +43,6 @@ public class GCalendar extends GTippySimpleStateTableView {
         calendar.updateSize();
     }-*/;
 
-    protected boolean isCurrentObjectKey(JavaScriptObject object){
-        return isCurrentKey(getKey(object));
-    }
-
     protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType, String locale)/*-{
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
@@ -127,7 +123,7 @@ public class GCalendar extends GTippySimpleStateTableView {
             var object = objects[i]
             var startEventFieldName = getEventName(object, '') != null ? getEventName(object, '') : getEventName(object, 'From');
             var endEventFieldName = getEventName(object, 'To');
-            var isCurrentKey = this.@GCalendar::isCurrentObjectKey(*)(object);
+            var isCurrentKey = this.@GSimpleStateTableView::isCurrentObjectKey(*)(object);
             var event = {
                 'title': getTitle(object),
                 'start': object[startEventFieldName],
