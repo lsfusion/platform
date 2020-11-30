@@ -11,11 +11,11 @@ public class GCalendar extends GTippySimpleStateTableView {
 
     private final String calendarDateType;
     private JavaScriptObject calendar;
-    private int pageSize = 10;
 
     public GCalendar(GFormController form, GGridController grid, String calendarDateType) {
         super(form, grid);
         this.calendarDateType = calendarDateType;
+        setPageSize(10);
     }
 
     @Override
@@ -36,15 +36,6 @@ public class GCalendar extends GTippySimpleStateTableView {
     public void onResize() {
         if (calendar != null)
             resize(calendar);
-    }
-
-    @Override
-    public int getPageSize() {
-        return this.pageSize;
-    }
-
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
     }
 
     protected native void resize(JavaScriptObject calendar)/*-{
