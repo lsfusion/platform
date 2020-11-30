@@ -1,6 +1,6 @@
 <p align="center">
   <span>English</span> |
-  <a href="https://github.com/lsfusion/platform/README_ru.md#lsfusion">Russian</a>
+  <a href="https://github.com/lsfusion/platform/tree/master/README_ru.md#lsFusion">Russian</a>
 </p>
 
 # lsFusion <a href="http://lsfusion.org" target="_blank"><img src="https://lsfusion.org/themes/lsfusion/assets/images/i-logo-lsfusion.svg" align="right"/></a>  

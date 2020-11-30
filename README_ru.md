@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/lsfusion/platform/README.md#lsfusion">English</a> |
+  <a href="https://github.com/lsfusion/platform#lsFusion">English</a> |
   <span>Русский</span>
 </p>
 
