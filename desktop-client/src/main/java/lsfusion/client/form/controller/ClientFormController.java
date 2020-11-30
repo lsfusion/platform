@@ -1715,7 +1715,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private boolean equalGroup(ClientGroupObject groupObject, Binding binding) {
-        return groupObject != null && groupObject.equals(binding.groupObject);
+        return Objects.equals(groupObject, binding.groupObject);
     }
 
     private boolean bindEditing(Binding binding, KeyEvent ke) {
