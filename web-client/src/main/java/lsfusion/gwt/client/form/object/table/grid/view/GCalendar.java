@@ -11,6 +11,7 @@ public class GCalendar extends GTippySimpleStateTableView {
 
     private final String calendarDateType;
     private JavaScriptObject calendar;
+    private int pageSize = 10;
 
     public GCalendar(GFormController form, GGridController grid, String calendarDateType) {
         super(form, grid);
@@ -20,7 +21,6 @@ public class GCalendar extends GTippySimpleStateTableView {
     @Override
     protected void render(Element element, JsArray<JavaScriptObject> list) {
         if (calendar == null) {
-            changePageSize(10);
             //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
             //to prevent this when calendar-element height less then ~350px
             element.getParentElement().getStyle().setProperty("overflow", "auto");
@@ -36,6 +36,15 @@ public class GCalendar extends GTippySimpleStateTableView {
     public void onResize() {
         if (calendar != null)
             resize(calendar);
+    }
+
+    @Override
+    public int getPageSize() {
+        return this.pageSize;
+    }
+
+    protected void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 
     protected native void resize(JavaScriptObject calendar)/*-{

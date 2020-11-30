@@ -223,7 +223,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter) {
-        changePageSize(1000);
         ArrayList<GPropertyFilter> filters = new ArrayList<>();
         Object leftBorder = isDateTimeFilter ? new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0) : new GDateDTO(startYear, startMonth, startDay) ;
         Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endMonth);
@@ -260,6 +259,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
             },
             setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter) {
+                thisObj.@GCalendar::setPageSize(*)(1000);
                 thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter);
             },
             getCurrentDay: function (propertyName) {

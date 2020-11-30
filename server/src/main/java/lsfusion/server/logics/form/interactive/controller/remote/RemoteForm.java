@@ -593,8 +593,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 applyObject = filter.getApplyObject();
                 filtersInstances.add(filter);
             }
-            if (applyObject != null)
+            if (applyObject != null) {
                 applyObject.setViewFilters(filtersInstances);
+                form.changePageSize(applyObject, 1000);
+            }
         });
     }
 
