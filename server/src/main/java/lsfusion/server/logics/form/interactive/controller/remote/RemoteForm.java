@@ -584,7 +584,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, final byte[][] filters) throws RemoteException {
+    public ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, final byte[][] filters, int pageSize) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             List<FilterInstance> filtersInstances = new ArrayList<>();
             GroupObjectInstance applyObject = null;
@@ -594,8 +594,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 filtersInstances.add(filter);
             }
             if (applyObject != null) {
-                applyObject.setViewFilters(filtersInstances);
-                form.changePageSize(applyObject, 1000);
+                applyObject.setViewFilters(filtersInstances, pageSize);
             }
         });
     }

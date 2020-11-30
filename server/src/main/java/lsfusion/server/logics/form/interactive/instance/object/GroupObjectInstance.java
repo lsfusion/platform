@@ -306,9 +306,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     private final Set<FilterInstance> viewFilters = new HashSet<>();
-    public void setViewFilters(List<FilterInstance> filters) {
+    public void setViewFilters(List<FilterInstance> filters, int pageSize) {
         viewFilters.clear();
         viewFilters.addAll(filters);
+        setPageSize(pageSize);
 
         setFilters = null;
         updated |= UPDATED_FILTER;

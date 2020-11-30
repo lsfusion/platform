@@ -83,7 +83,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, int groupID, int filterID) throws RemoteException;
 
-    ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, byte[][] filters) throws RemoteException;
+    ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, byte[][] filters, int pageSize) throws RemoteException;
 
     // group object shortcut actions (system toolbar)
 

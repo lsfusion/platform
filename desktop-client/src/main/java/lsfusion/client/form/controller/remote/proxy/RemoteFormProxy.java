@@ -190,9 +190,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, final byte[][] filters) throws RemoteException {
+    public ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, final byte[][] filters, int pageSize) throws RemoteException {
         logRemoteMethodStartVoidCall("setViewFilter");
-        ServerResponse result = target.setViewFilters(requestIndex, lastReceivedRequestIndex, filters);
+        ServerResponse result = target.setViewFilters(requestIndex, lastReceivedRequestIndex, filters, pageSize);
         logRemoteMethodEndCall("setViewFilter", result);
         return result;
     }

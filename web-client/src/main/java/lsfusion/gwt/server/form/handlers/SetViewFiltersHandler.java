@@ -17,6 +17,6 @@ public class SetViewFiltersHandler extends FormServerResponseActionHandler<SetVi
     @Override
     public ServerResponseResult executeEx(final SetViewFilters action, ExecutionContext context) throws RemoteException {
         return getServerResponseResult(action, remoteForm ->
-                remoteForm.setViewFilters(action.requestIndex, action.lastReceivedRequestIndex, SetUserFiltersHandler.serializeFilters(action.filters)));
+                remoteForm.setViewFilters(action.requestIndex, action.lastReceivedRequestIndex, SetUserFiltersHandler.serializeFilters(action.filters), action.pageSize));
     }
 }

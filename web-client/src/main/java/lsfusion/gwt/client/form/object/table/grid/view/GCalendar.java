@@ -43,7 +43,7 @@ public class GCalendar extends GTippySimpleStateTableView {
         return this.pageSize;
     }
 
-    protected void setPageSize(int pageSize) {
+    public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
 
@@ -79,7 +79,7 @@ public class GCalendar extends GTippySimpleStateTableView {
                 var filterLeftBorder = parseCalendarDateElement(calendar.view.activeStart);
                 var filterRightBorder = parseCalendarDateElement(calendar.view.activeEnd);
                 controller.setViewFilter(filterLeftBorder.year, filterLeftBorder.month, filterLeftBorder.day, filterRightBorder.year,
-                    filterRightBorder.month, filterRightBorder.day, calendarDateType, calendarDateType.toLowerCase().includes('time'));
+                    filterRightBorder.month, filterRightBorder.day, calendarDateType, calendarDateType.toLowerCase().includes('time'), 1000);
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event, info.el);

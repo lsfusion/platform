@@ -222,7 +222,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         changeObjectProperty(property, object, new GDateDTO(year, month, day));
     }
 
-    protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter) {
+    protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter, int pageSize) {
         ArrayList<GPropertyFilter> filters = new ArrayList<>();
         Object leftBorder = isDateTimeFilter ? new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0) : new GDateDTO(startYear, startMonth, startDay) ;
         Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endMonth);
@@ -230,7 +230,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Column column = columnMap.get(property);
         filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, leftBorder, GCompare.GREATER_EQUALS));
         filters.add(new GPropertyFilter(grid.groupObject, column.property, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
-        formController.setViewFilters(filters);
+        formController.setViewFilters(filters, pageSize);
+        setPageSize(pageSize);
     }
 
     private String getPropertyValue(String property) {
@@ -258,9 +259,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
             },
-            setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter) {
-                thisObj.@GCalendar::setPageSize(*)(1000);
-                thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter);
+            setViewFilter: function (startYear, startMonth, startDay, endYear, endMonth, endDay,property, isDateTimeFilter, pageSize) {
+                thisObj.@GSimpleStateTableView::setViewFilter(*)(startYear, startMonth, startDay, endYear, endMonth, endDay, property, isDateTimeFilter, pageSize);
             },
             getCurrentDay: function (propertyName) {
                 return thisObj.@GSimpleStateTableView::getPropertyValue(*)(propertyName);
