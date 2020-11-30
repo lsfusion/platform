@@ -193,6 +193,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return isReadOnly(property, getKey(object));
     }
 
+    protected boolean isCurrentObjectKey(JavaScriptObject object){
+        return isCurrentKey(getKey(object));
+    }
+
     protected GGroupObjectValue getKey(JavaScriptObject object) {
         return toObject(getValue(object, keysFieldName));
     }
@@ -228,6 +232,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             changeDateProperty: function (property, object, year, month, day) {
                 return thisObj.@GSimpleStateTableView::changeDateProperty(*)(property, object, year, month, day);
+            },
+            isCurrent: function (object) {
+                return thisObj.@GSimpleStateTableView::isCurrentObjectKey(*)(object);
             },
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
