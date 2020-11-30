@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/lsfusion/platform#lsFusion">English</a> |
+  <a href="https://github.com/lsfusion/platform#lsfusion-">English</a> |
   <span>Русский</span>
 </p>
 
@@ -7,12 +7,19 @@
 
 Бесплатная открытая платформа разработки информационных систем на основе одноименного языка пятого поколения.
 
+Использование механизмов инкрементальных вычислений, комбинаторного, реактивного и событийного программирования, возможность записи и итерирования по всем значениям функций, множественные наследование и полиморфизм, отказ от инкапсуляции и ряд других принципиально новых идей позволяет на порядок повысить скорость и качество разработки, а также быстродействие создаваемых систем по сравнению с традиционными подходами.
+
 ## Ссылки
 
 - [Страница проекта](https://ru.lsfusion.org/)
 - [Документация](https://ru-documentation.lsfusion.org/)
 - [Блог](https://habr.com/ru/company/lsfusion/blog/)
 - [Q&A](https://ru.stackoverflow.com/questions/tagged/lsfusion)
+- [Репозиторий](https://github.com/lsfusion/platform)
+
+## Обратная связь
+- [Issue tracker](https://github.com/lsfusion/platform/issues) 
+- [Сообщество в Slack](https://slack.lsfusion.org)
 
 ## Лицензия
 
