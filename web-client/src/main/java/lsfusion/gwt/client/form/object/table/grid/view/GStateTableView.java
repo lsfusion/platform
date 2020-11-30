@@ -130,8 +130,12 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             dataUpdated = true;
     }
 
+    private int pageSize = getDefaultPageSize();
+
     // should correspond FormInstance.constructor - changePageSize method
-    private int pageSize = 1000;
+    public int getDefaultPageSize() {
+        return 1000;
+    }
 
     public int getPageSize() {
         return pageSize;

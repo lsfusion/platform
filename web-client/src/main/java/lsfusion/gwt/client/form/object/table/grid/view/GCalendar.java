@@ -15,7 +15,11 @@ public class GCalendar extends GTippySimpleStateTableView {
     public GCalendar(GFormController form, GGridController grid, String calendarDateType) {
         super(form, grid);
         this.calendarDateType = calendarDateType;
-        setPageSize(10);
+    }
+
+    @Override
+    public int getDefaultPageSize() {
+        return 10;
     }
 
     @Override

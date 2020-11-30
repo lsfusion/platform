@@ -274,9 +274,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
                             groupObject.changeGroupMode(GroupMode.create(pivotColumns, measureColumns, groupEntity.pivotOptions.getAggregation(), instanceFactory));
                         }
-                        groupObject.setPageSize(1000); // GStateTableView.pageSize
-                    } else
-                        changePageSize(groupObject, 1000); // GStateTableView.pageSize
+                        changePageSize(groupObject, 1000); // GStateTableView.getDefaultPageSize
+                    } else if (listViewType == ListViewType.CALENDAR)
+                        changePageSize(groupObject, 10); // GCalendar.getDefaultPageSize
+                    else
+                        changePageSize(groupObject, 1000); // GStateTableView.getDefaultPageSize
                 }
 
                 changeListViewType(groupObject, listViewType);
