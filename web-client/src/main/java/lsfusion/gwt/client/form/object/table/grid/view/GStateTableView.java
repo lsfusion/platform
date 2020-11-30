@@ -137,6 +137,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return pageSize;
     }
 
+    public void changePageSize(int pageSize) {
+        this.pageSize = pageSize;
+        this.grid.changePageSize(pageSize);
+    }
+
     protected boolean isPageSizeHit() {
         return keys != null && keys.size() >= getPageSize();
     }

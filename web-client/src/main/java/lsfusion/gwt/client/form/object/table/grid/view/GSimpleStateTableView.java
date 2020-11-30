@@ -223,6 +223,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected void setViewFilter(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, String property, boolean isDateTimeFilter) {
+        changePageSize(1000);
         ArrayList<GPropertyFilter> filters = new ArrayList<>();
         Object leftBorder = isDateTimeFilter ? new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0) : new GDateDTO(startYear, startMonth, startDay) ;
         Object rightBorder = isDateTimeFilter ? new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0) : new GDateDTO(endYear, endMonth, endMonth);
@@ -235,8 +236,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     private String getPropertyValue(String property) {
         Column column = columnMap.get(property);
-        return column != null && getValue(column.property, getCurrentKey(), column.columnKey) != null ?
-                getValue(column.property, getCurrentKey(), column.columnKey).toString() : null;
+        Object value = column != null ? getValue(column.property, getCurrentKey(), column.columnKey) : null;
+        return value != null ? value.toString() : null;
     }
 
     protected native JavaScriptObject getController()/*-{
