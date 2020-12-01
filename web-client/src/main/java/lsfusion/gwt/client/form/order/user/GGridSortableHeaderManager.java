@@ -46,8 +46,11 @@ public abstract class GGridSortableHeaderManager<T> {
     }
 
     public final void changeOrder(T columnKey, GOrder modiType) {
+        changeOrder(columnKey, modiType, false);
+    }
+    public final void changeOrder(T columnKey, GOrder modiType, boolean alreadySet) {
         changeOrderDirection(columnKey, modiType);
-        orderChanged(columnKey, modiType);
+        orderChanged(columnKey, modiType, alreadySet);
     }
 
     private void changeOrderDirection(T columnKey, GOrder modiType) {
@@ -75,16 +78,18 @@ public abstract class GGridSortableHeaderManager<T> {
 
     public final boolean changeOrders(GGroupObject groupObject, LinkedHashMap<T, Boolean> set, boolean alreadySet) {
         if(!GwtSharedUtils.hashEquals(orderDirections, set)) {
-            orderDirections.clear();
-            for(Map.Entry<T, Boolean> entry : set.entrySet()) {
-                changeOrderDirection(entry.getKey(), GOrder.ADD);
-                if(!entry.getValue())
-                    changeOrderDirection(entry.getKey(), GOrder.DIR);
+            if(!alreadySet) {
+                orderDirections.clear();
             }
 
-            if (!alreadySet)
-                ordersSet(groupObject, set);
+            for(Map.Entry<T, Boolean> entry : set.entrySet()) {
+                changeOrder(entry.getKey(), GOrder.ADD, alreadySet);
+                if(!entry.getValue())
+                    changeOrder(entry.getKey(), GOrder.DIR, alreadySet);
+            }
 
+            ordersSet(groupObject, set);
+                
             return true;
         }
         return false;
@@ -104,7 +109,7 @@ public abstract class GGridSortableHeaderManager<T> {
         return orderDirections;
     }
 
-    protected abstract void orderChanged(T columnKey, GOrder modiType);
+    protected abstract void orderChanged(T columnKey, GOrder modiType, boolean alreadySet);
 
     protected abstract void ordersSet(GGroupObject groupObject, LinkedHashMap<T, Boolean> orders);
 

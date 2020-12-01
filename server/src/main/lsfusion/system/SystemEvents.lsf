@@ -51,7 +51,7 @@ computer '{system.events.computer.launch}' = DATA Computer (Launch);
 hostname '{system.events.hostname.launch}' (Launch launch) = hostname(computer(launch));
 time '{system.events.time.launch}'= DATA DATETIME (Launch);
 date '{system.events.date.launch}' (Launch l) = DATE(time(l));
-revision '{system.events.revision.launch}'= DATA STRING (Launch);
+revision '{system.events.revision.launch}'= DATA STRING[10] (Launch);
 
 @defineLog (Launch, '{system.events.define.log.of.launches}', log, date);
 
@@ -137,18 +137,16 @@ shutdown '{system.events.shutdown}' (Connection connection)  {
         }
 } CONFIRM;
 
-platformVersion = DATA TEXT();
-apiVersion = DATA INTEGER();
-revisionVersion = DATA INTEGER();
-synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
+currentRevision = DATA LOCAL STRING[10]();
+getCurrentRevision INTERNAL 'lsfusion.server.physics.admin.monitor.action.GetCurrentRevisionAction' ();
 
 onStarted() + { 
     writeDefaultCredentials();
-    synchronizeVersions();
+    getCurrentRevision();
     NEW launch = Launch {
         computer(launch) <- currentComputer();
         time(launch) <- currentDateTime();
-        revision(launch) <- CONCAT ' ', platformVersion(), '(' + apiVersion() + ')', revisionVersion();
+        revision(launch) <- currentRevision();
         currentLaunch() <- launch;
     }
 

@@ -129,11 +129,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
 
         sortableHeaderManager = new TableSortableHeaderManager<ClientPropertyDraw>(this, true) {
-            protected void orderChanged(final ClientPropertyDraw columnKey, final Order modiType) {
+            protected void orderChanged(final ClientPropertyDraw columnKey, final Order modiType, boolean alreadySet) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        TreeGroupTable.this.orderChanged(columnKey, modiType);
+                        TreeGroupTable.this.orderChanged(columnKey, modiType, alreadySet);
                     }
                 });
             }
@@ -271,8 +271,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         currentTreePath = new TreePath(rootNode);
     }
 
-    private void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
-        form.changePropertyOrder(columnKey, modiType, ClientGroupObjectValue.EMPTY);
+    private void orderChanged(ClientPropertyDraw columnKey, Order modiType, boolean alreadySet) {
+        form.changePropertyOrder(columnKey, modiType, ClientGroupObjectValue.EMPTY, alreadySet);
         tableHeader.resizeAndRepaint();
     }
 

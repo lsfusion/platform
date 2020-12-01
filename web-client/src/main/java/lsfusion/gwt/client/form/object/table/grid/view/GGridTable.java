@@ -121,8 +121,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
             @Override
-            protected void orderChanged(Map<GPropertyDraw, GGroupObjectValue> columnKey, GOrder modiType) {
-                form.changePropertyOrder(columnKey.keySet().iterator().next(), columnKey.values().iterator().next(), modiType);
+            protected void orderChanged(Map<GPropertyDraw, GGroupObjectValue> columnKey, GOrder modiType, boolean alreadySet) {
+                form.changePropertyOrder(columnKey.keySet().iterator().next(), columnKey.values().iterator().next(), modiType, alreadySet);
             }
 
             @Override
