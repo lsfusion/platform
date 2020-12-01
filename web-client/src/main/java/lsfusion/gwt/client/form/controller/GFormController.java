@@ -1094,10 +1094,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
     }
 
-    public void changePropertyOrder(GPropertyDraw property, GGroupObjectValue columnKey, GOrder modiType, boolean alreadySet) {
-        if (!alreadySet) {
-            syncDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType), new ServerResponseCallback());
-        }
+    public void changePropertyOrder(GPropertyDraw property, GGroupObjectValue columnKey, GOrder modiType) {
+        syncDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType), new ServerResponseCallback());
     }
 
     public void setPropertyOrders(GGroupObject groupObject, List<Integer> propertyList, List<GGroupObjectValue> columnKeyList, List<Boolean> orderList) {

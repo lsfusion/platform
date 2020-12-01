@@ -1135,17 +1135,15 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey, boolean alreadySet) {
-        if (!alreadySet) {
-            commitOrCancelCurrentEditing();
+    public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) {
+        commitOrCancelCurrentEditing();
 
-            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changePropertyOrder - " + property.getLogName()) {
-                @Override
-                protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.changePropertyOrder(requestIndex, lastReceivedRequestIndex, property.getID(), modiType.serialize(), columnKey.serialize());
-                }
-            });
-        }
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changePropertyOrder - " + property.getLogName()) {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.changePropertyOrder(requestIndex, lastReceivedRequestIndex, property.getID(), modiType.serialize(), columnKey.serialize());
+            }
+        });
     }
 
     public void setPropertyOrders(final ClientGroupObject groupObject, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) {
