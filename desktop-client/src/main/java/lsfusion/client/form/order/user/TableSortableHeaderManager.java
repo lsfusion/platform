@@ -106,12 +106,8 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
     }
 
     public final void changeOrder(T columnKey, Order modiType) {
-        changeOrder(columnKey, modiType, false);
-    }
-
-    public final void changeOrder(T columnKey, Order modiType, boolean alreadySet) {
         changeOrderDirection(columnKey, modiType);
-        orderChanged(columnKey, modiType, alreadySet);
+        orderChanged(columnKey, modiType);
     }
 
     private void changeOrderDirection(T columnKey, Order modiType) {
@@ -139,17 +135,15 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
 
     public final boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<T, Boolean> set, boolean alreadySet) {
         if(!BaseUtils.hashEquals(orderDirections, set)) {
-            if(!alreadySet) {
-                orderDirections.clear();
-            }
-
+            orderDirections.clear();
             for(Map.Entry<T, Boolean> entry : set.entrySet()) {
                 changeOrderDirection(entry.getKey(), Order.ADD);
                 if(!entry.getValue())
                     changeOrderDirection(entry.getKey(), Order.DIR);
             }
 
-            ordersSet(groupObject, set);
+            if(!alreadySet)
+                ordersSet(groupObject, set);
 
             return true;
         }
@@ -160,7 +154,7 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         return columnKey instanceof Pair && ((Pair) columnKey).first instanceof ClientPropertyDraw && ((ClientPropertyDraw) ((Pair) columnKey).first).noSort;
     }
 
-    protected abstract void orderChanged(T columnKey, Order modiType, boolean alreadySet);
+    protected abstract void orderChanged(T columnKey, Order modiType);
 
     protected abstract void ordersSet(ClientGroupObject groupObject, LinkedHashMap<T, Boolean> orders);
 
