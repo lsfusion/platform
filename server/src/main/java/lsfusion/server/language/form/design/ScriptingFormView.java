@@ -96,6 +96,10 @@ public class ScriptingFormView {
             errLog.emitIllegalInsertBeforeAfterElementError(parser, component.getSID(), parent.getSID(), anchorComponent.getSID());
         }
 
+        if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isNFList(view.entity, version)) {
+            errLog.emitIllegalGridPropertyMoveError(parser, component.getSID());
+        }
+
         if (component instanceof ContainerView) {
             ContainerView container = (ContainerView) component;
             if (container.isNFAncestorOf(parent, version)) {

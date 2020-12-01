@@ -80,8 +80,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         sortableHeaderManager = new GGridSortableHeaderManager<GPropertyDraw>(this, true) {
             @Override
-            protected void orderChanged(GPropertyDraw columnKey, GOrder modiType, boolean alreadySet) {
-                form.changePropertyOrder(columnKey, GGroupObjectValue.EMPTY, modiType, alreadySet);
+            protected void orderChanged(GPropertyDraw columnKey, GOrder modiType) {
+                form.changePropertyOrder(columnKey, GGroupObjectValue.EMPTY, modiType);
             }
 
             @Override

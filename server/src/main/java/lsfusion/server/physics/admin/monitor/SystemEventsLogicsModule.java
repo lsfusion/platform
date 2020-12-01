@@ -74,10 +74,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP currentConnection;
 
     public LP currentLaunch;
-    public LP computerLaunch;
-    public LP timeLaunch;
-    public LP revisionLaunch;
-    public LP currentRevision;
 
     public LP messageException;
     public LP dateException;
@@ -163,12 +159,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         connectTimeConnection = findProperty("connectTime[Connection]");
         launchConnection = findProperty("launch[Connection]");
 
-        // Логирование старта сервера
         currentLaunch = findProperty("currentLaunch[]");
-        computerLaunch = findProperty("computer[Launch]");
-        timeLaunch = findProperty("time[Launch]");
-        revisionLaunch = findProperty("revision[Launch]");
-        currentRevision = findProperty("currentRevision[]");
 
         // Ошибки выполнения
         messageException = findProperty("message[Exception]");
