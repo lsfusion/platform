@@ -8,8 +8,8 @@ import bibliothek.gui.dock.common.action.CAction;
 import bibliothek.gui.dock.common.action.core.CommonDropDownItem;
 import bibliothek.gui.dock.common.intern.action.CDropDownItem;
 import lsfusion.client.base.view.ClientDockable;
+import lsfusion.client.base.view.ClientImages;
 
-import javax.swing.*;
 import java.util.List;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -32,7 +32,7 @@ public class CloseAllAction extends CDropDownItem<CloseAllAction.Action> {
                 }
             });
             setText(getString("form.close.all.tabs"));
-            setIcon(new ImageIcon(this.getClass().getResource("/images/closeAllTabs.png")));
+            setIcon(ClientImages.get("closeAllTabs.png"));
         }
 
         @Override
