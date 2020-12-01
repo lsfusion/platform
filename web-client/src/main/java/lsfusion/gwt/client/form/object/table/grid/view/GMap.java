@@ -333,7 +333,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }-*/;
 
     protected native static String getName(JavaScriptObject element)/*-{
-        return element.name;
+        return element.name.toString();
     }-*/;
 
     protected native JavaScriptObject createLine(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
