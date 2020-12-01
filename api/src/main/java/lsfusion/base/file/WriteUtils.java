@@ -83,7 +83,7 @@ public class WriteUtils {
         FTPPath properties = FTPPath.parseFTPPath(path);
         String remoteFile = appendExtension(properties.remoteFile, extension);
         FTPClient ftpClient = new FTPClient();
-        ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+        ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
         if (properties.charset != null)
             ftpClient.setControlEncoding(properties.charset);
         try {

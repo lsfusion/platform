@@ -39,7 +39,7 @@ public class GridSelectionController {
     }
 
     private List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> getProperties() {
-        return table.getVisibleProperties();
+        return table.getVisibleProperties(true);
     }
 
     private int indexOf(Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn) {
@@ -313,7 +313,8 @@ public class GridSelectionController {
         List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> visibleProperties = getProperties();
 
         for (int i = 0; i < visibleProperties.size(); i++) {
-            if (selectedCells.get(visibleProperties.get(i)) != null && !selectedCells.get(visibleProperties.get(i)).isEmpty()) {
+            Map<ClientGroupObjectValue, Object> visibleSelectedProperty = selectedCells.get(visibleProperties.get(i));
+            if (visibleSelectedProperty != null && !visibleSelectedProperty.isEmpty()) {
                 if (firstPropertyIndex == -1)
                     firstPropertyIndex = i;
                 lastPropertyIndex = i;

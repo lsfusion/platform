@@ -69,7 +69,7 @@ formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interacti
 formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormCancelAction' () CHANGEKEY 'shift ESCAPE' IMAGE 'cancel.png';
 formEditReport '{action.form.edit}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.EditReportAction' () CHANGEKEY 'ctrl E' IMAGE 'editReport.png';
 formDrop '{action.form.drop}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.DropAction' () CHANGEKEY 'alt DELETE';
-formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.RefreshAction' () CHANGEKEY 'F5' IMAGE 'refresh.png';
+formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.RefreshAction' () CHANGEKEY 'F5;priority=-100' IMAGE 'refresh.png';
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkAction' () CHANGEKEY 'ctrl ENTER' CHANGEMOUSE 'DBLCLK;priority=1000;dialog=only;group=input;preview=only' IMAGE 'ok.png';
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
 

@@ -3,23 +3,29 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.StyleElement;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.StyleElement;
 import com.google.gwt.user.client.ui.RequiresResize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.view.StyleDefaults;
 import org.vectomatic.dom.svg.OMSVGDocument;
 import org.vectomatic.dom.svg.OMSVGFEColorMatrixElement;
 import org.vectomatic.dom.svg.OMSVGFilterElement;
 import org.vectomatic.dom.svg.OMSVGSVGElement;
 import org.vectomatic.dom.svg.utils.OMSVGParser;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
+    // No need to support color themes here as we apply svg filters to the icon anyway.
+    private final String DEFAULT_MARKER_ICON_URL = GwtClientUtils.getModuleImagePath("map_marker.png");
 
     public GMap(GFormController form, GGridController grid) {
         super(form, grid);
@@ -132,8 +138,13 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.latitude, oldGroupMarker.latitude) && GwtClientUtils.nullEquals(groupMarker.longitude, oldGroupMarker.longitude) && GwtClientUtils.nullEquals(groupMarker.polygon, oldGroupMarker.polygon)))
                 updateLatLng(marker, groupMarker.latitude, groupMarker.longitude, getLatLngs(groupMarker.polygon));
 
-            if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color))))
-                updateIcon(marker, groupMarker.icon, createFilter(groupMarker.color));
+            if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color)))) {
+                String iconFilterStyle = createFilter(groupMarker.color);
+                if (iconFilterStyle == null) {
+                    iconFilterStyle = createFilter(StyleDefaults.getFocusColor(true));
+                }
+                updateIcon(marker, groupMarker.icon, iconFilterStyle);
+            }
 
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color)))
                 updateColor(marker, groupMarker.color);
@@ -411,7 +422,10 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
     protected native void updateIcon(JavaScriptObject marker, String icon, String filterStyle)/*-{
         var L = $wnd.L;
-        var iconUrl = icon != null ? icon : L.Icon.Default.prototype._getIconUrl('icon');
+        var iconUrl = icon != null ? icon : this.@GMap::DEFAULT_MARKER_ICON_URL;
+        if (iconUrl == null) {
+            iconUrl = L.Icon.Default.prototype._getIconUrl('icon'); 
+        }
         var myIcon = L.divIcon({
             html: "<img src=" + iconUrl + " alt=\"\" tabindex=\"0\">",
             className: filterStyle ? filterStyle : ''

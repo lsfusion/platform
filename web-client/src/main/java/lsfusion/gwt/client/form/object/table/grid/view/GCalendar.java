@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -30,8 +31,9 @@ public class GCalendar extends GTippySimpleStateTableView {
             element.getParentElement().getStyle().setProperty("overflow", "auto");
             element.getStyle().setProperty("minHeight", "400px");
             element.getStyle().setProperty("cursor", "default");
+            String locale = LocaleInfo.getCurrentLocale().getLocaleName();
 
-            calendar = createCalendar(element, controller, calendarDateType);
+            calendar = createCalendar(element, controller, calendarDateType, locale);
         }
         updateEvents(calendar, list, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()), controller);
     }
@@ -46,15 +48,12 @@ public class GCalendar extends GTippySimpleStateTableView {
         calendar.updateSize();
     }-*/;
 
-    protected boolean isCurrentObjectKey(JavaScriptObject object){
-        return isCurrentKey(getKey(object));
-    }
-
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType)/*-{
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType, String locale)/*-{
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
             timeZone: 'UTC',
+            locale: locale,
             firstDay: 1,
             initialDate: controller.getCurrentDay(calendarDateType),
             headerToolbar: {
@@ -128,7 +127,7 @@ public class GCalendar extends GTippySimpleStateTableView {
         var endEventFieldName = startEventFieldName.includes('From') ? startEventFieldName.replace('From', 'To') : null;
         for (var i = 0; i < objects.length; i++) {
             var object = objects[i]
-            var isCurrentKey = this.@GCalendar::isCurrentObjectKey(*)(object);
+            var isCurrentKey = this.@GSimpleStateTableView::isCurrentObjectKey(*)(object);
             var event = {
                 'title': getTitle(object),
                 'start': object[startEventFieldName],

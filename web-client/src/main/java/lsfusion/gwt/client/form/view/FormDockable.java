@@ -22,6 +22,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
 
         tabWidget = new TabWidget("");
         tabWidget.setBlocked(false);
+        formsController.addContextMenuHandler(this);
     }
 
     @Override
@@ -63,7 +64,7 @@ public final class FormDockable extends FormContainer<FormDockable.ContentWidget
         contentWidget.setBlocked(false);
     }
 
-    private void closePressed() {
+    public void closePressed() {
         form.closePressed();
     }
 

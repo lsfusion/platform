@@ -169,10 +169,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
     }
 
     @Override
-    public ServerResponse clearPropertyOrders(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException {
-        logRemoteMethodStartVoidCall("clearPropertyOrders");
-        ServerResponse result = target.clearPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObjectID);
-        logRemoteMethodEndCall("clearPropertyOrders", result);
+    public ServerResponse setPropertyOrders(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) throws RemoteException {
+        logRemoteMethodStartVoidCall("setPropertyOrders");
+        ServerResponse result = target.setPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObjectID, propertyList, columnKeyList, orderList);
+        logRemoteMethodEndCall("setPropertyOrders", result);
         return result;
     }
 

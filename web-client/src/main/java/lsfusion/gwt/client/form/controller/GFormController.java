@@ -1100,8 +1100,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void clearPropertyOrders(GGroupObject groupObject) {
-        syncDispatch(new ClearPropertyOrders(groupObject.ID), new ServerResponseCallback());
+    public void setPropertyOrders(GGroupObject groupObject, List<Integer> propertyList, List<GGroupObjectValue> columnKeyList, List<Boolean> orderList) {
+        syncDispatch(new SetPropertyOrders(groupObject.ID, propertyList, columnKeyList, orderList), new ServerResponseCallback());
     }
 
     public void expandGroupObjectRecursive(GGroupObject group, boolean current) {

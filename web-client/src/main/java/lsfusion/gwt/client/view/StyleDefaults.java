@@ -79,6 +79,15 @@ public class StyleDefaults {
         }
         return focusedCellBackgroundColor;
     }
+
+    public static String getFocusColor(boolean canBeMixed) {
+        if (canBeMixed) {
+            // should be the same as '--focus-color' in <theme>.css.
+            // can't use 'var(--focus-color)' because this color may be mixed with other color (converted to int)
+            return colorTheme.isLight() ? "#0489BA" : "#0790c3";
+        } else
+            return "var(--focus-color)";
+    }
     
     public static String getFocusedCellBorderColor() {
         if (focusedCellBorderColor == null) {
@@ -86,7 +95,7 @@ public class StyleDefaults {
             if (preferredColor != null) {
                 focusedCellBorderColor = getDisplayColor(preferredColor.toString());
             } else {
-                focusedCellBorderColor = "var(--focus-color)";
+                focusedCellBorderColor = getFocusColor(false);
             }
         }
         return focusedCellBorderColor;

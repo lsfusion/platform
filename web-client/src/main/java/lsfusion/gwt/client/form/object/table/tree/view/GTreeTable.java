@@ -85,8 +85,17 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             }
 
             @Override
-            protected void ordersCleared(GGroupObject groupObject) {
-                form.clearPropertyOrders(groupObject);
+            protected void ordersSet(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders) {
+                List<Integer> propertyList = new ArrayList<>();
+                List<GGroupObjectValue> columnKeyList = new ArrayList<>();
+                List<Boolean> orderList = new ArrayList<>();
+                for(Map.Entry<GPropertyDraw, Boolean> entry : orders.entrySet()) {
+                    propertyList.add(entry.getKey().ID);
+                    columnKeyList.add(GGroupObjectValue.EMPTY);
+                    orderList.add(entry.getValue());
+                }
+
+                form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
             }
 
             @Override

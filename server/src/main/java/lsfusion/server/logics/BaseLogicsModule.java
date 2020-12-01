@@ -85,11 +85,9 @@ import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.obj
 
 public class BaseLogicsModule extends ScriptingLogicsModule {
     // classes
-    // classes
     public BaseClass baseClass;
 
     // groups
-    public Group actionGroup;
     public Group drillDownGroup; // для того чтобы в reflection'е можно было для всех drillDown одну политику безопасности проставлять
     public Group propertyPolicyGroup; // для того чтобы в reflection'е можно было для всех propertyPolicy одну политику безопасности проставлять
 
@@ -110,6 +108,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP subtract;
     public LP multiply;
     public LP divide;
+    public LP round;
+    public LP roundScale;
 
 //    public LP string2SP, istring2SP, string3SP, istring3SP, string4SP, istring4SP, string5SP, istring5SP;
 //    public LP string2, istring2, string3, istring3;
@@ -427,6 +427,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         multiply = addMultProp();
         subtract = addSubtractProp();
         divide = addDivideProp();
+        round = addRoundProp(false);
+        roundScale = addRoundProp(true);
 
         minus = addSFProp("(-(prm1))", 1);
 
@@ -714,6 +716,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("divide"), 2, DivideFormulaImpl.instance)));
     }
 
+    @Override
+    @IdentityStrongLazy
+    protected LP addRoundProp(boolean hasScale) {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("round"), hasScale ? 2 : 1, RoundFormulaImpl.instance)));
+    }
 
     @Override
     public SessionDataProperty getAddedObjectProperty() {

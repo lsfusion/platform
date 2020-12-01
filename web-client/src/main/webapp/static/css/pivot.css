@@ -309,6 +309,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     cursor: default;
     width: 300px;
     border: 1px solid var(--component-border-color);
+    border-radius: var(--panel-border-radius);
     background-color: var(--background-color);
     position: absolute !important; /* draggable() sets relative */
     text-align: center;

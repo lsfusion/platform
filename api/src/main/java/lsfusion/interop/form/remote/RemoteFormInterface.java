@@ -77,7 +77,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse changePropertyOrder(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
 
-    ServerResponse clearPropertyOrders(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;
+    ServerResponse setPropertyOrders(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) throws RemoteException;
     
     ServerResponse setUserFilters(long requestIndex, long lastReceivedRequestIndex, byte[][] filters) throws RemoteException;
 

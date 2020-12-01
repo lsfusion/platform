@@ -186,14 +186,13 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
 
             @Override
-            protected void ordersCleared(final ClientGroupObject groupObject) {
+            protected void ordersSet(ClientGroupObject groupObject, LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orders) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        GridTable.this.ordersCleared(groupObject);
+                        GridTable.this.ordersSet(groupObject, orders);
                     }
                 });
-
             }
 
             @Override
@@ -368,8 +367,17 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         tableHeader.repaint();
     }
 
-    private void ordersCleared(ClientGroupObject groupObject) {
-        form.clearPropertyOrders(groupObject);
+    private void ordersSet(ClientGroupObject groupObject, LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orders) {
+        List<Integer> propertyList = new ArrayList<>();
+        List<byte[]> columnKeyList = new ArrayList<>();
+        List<Boolean> orderList = new ArrayList<>();
+        for(Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> entry : orders.entrySet()) {
+            propertyList.add(entry.getKey().first.ID);
+            columnKeyList.add(entry.getKey().second.serialize());
+            orderList.add(entry.getValue());
+        }
+
+        form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
         tableHeader.resizeAndRepaint();
         tableHeader.repaint();
     }
@@ -800,10 +808,14 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         this.tabVertical = tabVertical;
     }
 
-    public List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> getVisibleProperties() {
-        //возвращает все свойства, за исключеним тех, что формируют группы в колонки без единого значения
+    public List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> getVisibleProperties(boolean withUserOrder) {
+        //возвращает все свойства, за исключением тех, что формируют группы в колонки без единого значения
         List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> props = new ArrayList<>();
-        for (ClientPropertyDraw property : properties) {
+        List<ClientPropertyDraw> propList = new ArrayList<>(properties);
+        if (withUserOrder && hasUserPreferences()) {
+            propList.sort(getCurrentPreferences().getUserOrderComparator());
+        }
+        for (ClientPropertyDraw property : propList) {
             for (ClientGroupObjectValue columnKey : columnKeys.get(property)) {
                 if (model.getPropertyIndex(property, columnKey) != -1) {
                     props.add(new Pair<>(property, columnKey));
@@ -1620,7 +1632,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     public boolean hasUserPreferences() {
-        return currentGridPreferences.hasUserPreferences();
+        return currentGridPreferences != null && currentGridPreferences.hasUserPreferences();
     }
 
     public void setHasUserPreferences(boolean hasUserPreferences) {

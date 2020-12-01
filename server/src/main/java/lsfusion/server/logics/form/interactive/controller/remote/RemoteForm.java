@@ -52,6 +52,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupMode;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -443,16 +444,32 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse clearPropertyOrders(long requestIndex, long lastReceivedRequestIndex, final int groupObjectID) throws RemoteException {
+    public ServerResponse setPropertyOrders(long requestIndex, long lastReceivedRequestIndex, final int groupObjectID,
+                                            List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
 
             if (logger.isTraceEnabled()) {
-                logger.trace(String.format("clearPropertyOrders: [ID: %1$d]", groupObject.getID()));
+                logger.trace(String.format("setPropertyOrders: [ID: %1$d]", groupObject.getID()));
             }
-            
-            form.getGroupObjectInstance(groupObjectID).clearOrders();
+
+            groupObject.clearOrders();
+
+            for(int i = 0; i < propertyList.size(); i++) {
+                Integer propertyID = propertyList.get(i);
+                byte[] columnKeys = columnKeyList.get(i);
+                Boolean order = orderList.get(i);
+                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
+                if(propertyDraw != null) {
+                    ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+                    PropertyObjectInstance property = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys);
+                    propertyDraw.toDraw.changeOrder(property, Order.ADD);
+                    if(!order)
+                        propertyDraw.toDraw.changeOrder(property, Order.DIR);
+                }
+            }
+
         });
     }
 

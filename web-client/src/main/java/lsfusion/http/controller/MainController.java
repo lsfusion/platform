@@ -76,6 +76,8 @@ public class MainController {
         }
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
+        model.addAttribute("disableRegistration", serverSettings.disableRegistration);
+
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
@@ -91,7 +93,7 @@ public class MainController {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION_HEADER", "oauthException");
         }
 
-        model.addAttribute("jnlpUrls", getJNLPUrls(request));
+        model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
         if (checkVersionError.result != null) {
             model.addAttribute("error", checkVersionError.result);
             return "restricted";
@@ -242,8 +244,8 @@ public class MainController {
         return serverSettings != null ? serverSettings.logicsName : null;
     }
 
-    private String getJNLPUrls(HttpServletRequest request) {
-        return "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request)
+    private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
+        return serverSettings != null ? serverSettings.jnlpUrls : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request)
                 + ">" + ServerMessages.getString(request, "run.desktop.client") + "</a>";
     }
 

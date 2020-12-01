@@ -25,9 +25,10 @@ public class ServerSettings {
     public String jnlpUrls;
     public List<Pair<String, RawFileData>> resourceFiles;
     public Set<String> filesUrls = null;
+    public boolean disableRegistration;
 
     public ServerSettings(String logicsName, String displayName, RawFileData logicsLogo, RawFileData logicsIcon, String platformVersion, Integer apiVersion,
-                          int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, List<Pair<String, RawFileData>> jsFiles) {
+                          int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, List<Pair<String, RawFileData>> jsFiles, boolean disableRegistration) {
         this.logicsName = logicsName;
         this.displayName = displayName;
         this.logicsLogo = logicsLogo;
@@ -38,6 +39,7 @@ public class ServerSettings {
         this.anonymousUI = anonymousUI;
         this.jnlpUrls = jnlpUrls;
         this.resourceFiles = jsFiles;
+        this.disableRegistration = disableRegistration;
     }
 
     public synchronized void saveFiles(String appPath, String  externalResourcesParentPath) {

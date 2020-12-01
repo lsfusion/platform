@@ -234,6 +234,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
         updateRendererState(this.updateState); // update state with server response
     }
+
     protected abstract void updateView();
     protected void updatePageSizeState(boolean hit) {
         messageLabel.setText(ClientMessages.Instance.get().formGridPageSizeHit(keys == null ? getPageSize() : keys.size() )); //need to show current objects size
@@ -338,7 +339,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected boolean isCurrentKey(GGroupObjectValue object){
         return Objects.equals(object, getCurrentKey());
     }
-
 
     @Override
     public GPropertyDraw getCurrentProperty() {

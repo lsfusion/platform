@@ -1148,13 +1148,13 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void clearPropertyOrders(final ClientGroupObject groupObject) {
+    public void setPropertyOrders(final ClientGroupObject groupObject, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) {
         commitOrCancelCurrentEditing();
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("clearPropertyOrders - " + groupObject.getLogName()) {
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("setPropertyOrders - " + groupObject.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.clearPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObject.getID());
+                return remoteForm.setPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObject.getID(), propertyList, columnKeyList, orderList);
             }
         });
     }
@@ -1715,7 +1715,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private boolean equalGroup(ClientGroupObject groupObject, Binding binding) {
-        return groupObject != null && groupObject.equals(binding.groupObject);
+        return Objects.equals(groupObject, binding.groupObject);
     }
 
     private boolean bindEditing(Binding binding, KeyEvent ke) {

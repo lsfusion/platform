@@ -1,13 +1,20 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
+import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -156,6 +163,23 @@ public abstract class FormsController {
         return formContainer;
     }
 
+    public void addContextMenuHandler(FormDockable formContainer) {
+        formContainer.getTabWidget().addDomHandler(new ContextMenuHandler() {
+            @Override
+            public void onContextMenu(ContextMenuEvent event) {
+                GwtClientUtils.stopPropagation(event);
+
+                PopupDialogPanel popup = new PopupDialogPanel();
+                final MenuBar menuBar = new MenuBar(true);
+                menuBar.addItem(new MenuItem(messages.closeAllTabs(), () -> {
+                    popup.hide();
+                    closeAllTabs();
+                }));
+                GwtClientUtils.showPopupInWindow(popup, menuBar, event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY());
+            }
+        }, ContextMenuEvent.getType());
+    }
+
     public void initForm(FormContainer<?> formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, Event initFilterEvent) {
         formContainer.initForm(this, form, () -> {
             formContainer.hide();
@@ -191,14 +215,39 @@ public abstract class FormsController {
 
     public void removeDockable(FormDockable dockable) {
         int index = forms.indexOf(dockable);
+        boolean isTabSelected = forms.get(tabsPanel.getSelectedTab()).equals(dockable);
 
-        assert !isRemoving;
-        isRemoving = true;
+        if (isTabSelected) {
+            assert !isRemoving;
+            isRemoving = true;
+        }
+
         tabsPanel.remove(index);
-        assert !isRemoving;
+        assert !isRemoving; // checking that the active tab is closing
 
         forms.remove(index);
         formFocusOrder.remove(index);
+    }
+
+    private void closeAllTabs() {
+        Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
+            private int size = forms.size();
+            @Override
+            public boolean execute() {
+                if (MainFrame.isModalPopup())
+                    return true;
+
+                if (size > 0 && size <= forms.size()) { // check if some tab not closed by user while running "closeAllTabs"
+                    FormDockable lastTab = forms.get(size - 1);
+                    selectTab(lastTab);
+                    lastTab.closePressed();
+                    size--;
+                    return true;
+                }
+
+                return false;
+            }
+        }, 20);
     }
 
     public void ensureTabSelected() {
