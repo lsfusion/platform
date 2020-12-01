@@ -176,11 +176,11 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
         sortableHeaderManager = new TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>>(this) {
-            protected void orderChanged(final Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, final Order modiType, final boolean alreadySet) {
+            protected void orderChanged(final Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, final Order modiType) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        GridTable.this.orderChanged(columnKey, modiType, alreadySet);
+                        GridTable.this.orderChanged(columnKey, modiType);
                     }
                 });
             }
@@ -361,8 +361,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         return false;
     }
 
-    private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType, boolean alreadySet) {
-        form.changePropertyOrder(columnKey.first, modiType, columnKey.second, alreadySet);
+    private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
+        form.changePropertyOrder(columnKey.first, modiType, columnKey.second);
         tableHeader.resizeAndRepaint();
         tableHeader.repaint();
     }
