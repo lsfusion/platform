@@ -20,7 +20,7 @@ public class LinkToStringAction extends InternalAction {
     public LinkToStringAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         stringInterface = i.next();
     }
 

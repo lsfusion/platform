@@ -1,7 +1,6 @@
 package lsfusion.server.physics.dev.integration.external.to.net;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -10,7 +9,6 @@ import lsfusion.server.physics.dev.integration.external.to.net.client.PingClient
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.net.InetAddress;
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class PingAction extends InternalAction {
@@ -20,7 +18,7 @@ public class PingAction extends InternalAction {
     public PingAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         hostInterface = i.next();
         isClientInterface = i.next();
     }

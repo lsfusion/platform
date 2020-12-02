@@ -37,7 +37,7 @@ public class ListFilesAction extends InternalAction {
     public ListFilesAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         pathInterface = i.next();
         charsetInterface = i.next();
         isClientInterface = i.next();

@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -15,7 +14,6 @@ import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModul
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.net.URLDecoder;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -39,7 +37,7 @@ public class GenerateJNLPAction extends InternalAction {
     public GenerateJNLPAction(SecurityLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         maxHeapSizeInterface = i.next();
         vmargsInterface = i.next();
     }

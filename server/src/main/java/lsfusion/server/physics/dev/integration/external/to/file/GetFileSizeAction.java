@@ -19,7 +19,7 @@ public class GetFileSizeAction extends InternalAction {
     public GetFileSizeAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         fileInterface = i.next();
     }
 

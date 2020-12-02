@@ -20,7 +20,7 @@ public class ChangeColorThemeAction extends InternalAction {
     public ChangeColorThemeAction(AuthenticationLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         colorThemeInterface = i.next();
     }
 
