@@ -1,7 +1,6 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -9,7 +8,6 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.file.client.MoveFileClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class MoveAction extends InternalAction {
@@ -20,7 +18,7 @@ public class MoveAction extends InternalAction {
     public MoveAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         sourceInterface = i.next();
         destinationInterface = i.next();
         isClientInterface = i.next();

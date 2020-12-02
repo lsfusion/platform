@@ -26,7 +26,7 @@ public class ReadResourcesAction extends InternalAction {
     public ReadResourcesAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         resourcePathInterface = i.next();
     }
 

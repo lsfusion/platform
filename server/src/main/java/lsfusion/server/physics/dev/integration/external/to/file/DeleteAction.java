@@ -3,7 +3,6 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -12,7 +11,6 @@ import lsfusion.server.physics.dev.integration.external.to.file.client.DeleteFil
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class DeleteAction extends InternalAction {
@@ -22,7 +20,7 @@ public class DeleteAction extends InternalAction {
     public DeleteAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         sourceInterface = i.next();
         isClientInterface = i.next();
     }

@@ -18,7 +18,7 @@ public class UpdatePermissionAction extends InternalAction {
     public UpdatePermissionAction(SecurityLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         userRoleInterface = i.next();
         canonicalNameNavigatorElementInterface = i.next();
         staticNamePermissionInterface = i.next();

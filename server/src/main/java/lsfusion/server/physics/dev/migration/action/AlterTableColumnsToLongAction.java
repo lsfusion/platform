@@ -30,7 +30,7 @@ public class AlterTableColumnsToLongAction extends InternalAction {
     public AlterTableColumnsToLongAction(ScriptingLogicsModule LM, ValueClass... classes) {
 
         super(LM, classes);
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         tableInterface = i.next();
     }
 

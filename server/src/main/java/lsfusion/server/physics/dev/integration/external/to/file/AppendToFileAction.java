@@ -2,7 +2,6 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.file.IOUtils;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -13,7 +12,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class AppendToFileAction extends InternalAction {
@@ -24,7 +22,7 @@ public class AppendToFileAction extends InternalAction {
     public AppendToFileAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         pathInterface = i.next();
         textInterface = i.next();
         charsetInterface = i.next();

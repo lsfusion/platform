@@ -22,7 +22,7 @@ public class TranslateDictionaryAction extends InternalAction {
     public TranslateDictionaryAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         dictionaryInterface = i.next();
         termInterface = i.next();
     }

@@ -1,6 +1,5 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -16,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class DownloadFileAction extends InternalAction {
@@ -25,7 +23,7 @@ public class DownloadFileAction extends InternalAction {
     public DownloadFileAction(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         pathInterface = i.next();
     }
 
