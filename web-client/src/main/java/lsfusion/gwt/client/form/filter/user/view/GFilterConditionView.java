@@ -200,7 +200,11 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         compareView.setWidth(width + "px");
     }
 
+    public int getValueViewWidth() {
+        return valueView.getWidth(condition.property);
+    }
+
     public void setValueViewWidth(int width) {
-        valueView.setWidth(condition.property, width);
+        valueView.setWidth(width);
     }
 }

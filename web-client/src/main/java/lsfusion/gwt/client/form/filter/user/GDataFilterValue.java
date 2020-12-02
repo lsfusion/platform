@@ -24,14 +24,4 @@ public class GDataFilterValue extends GFilterValue {
     public GFilterValueDTO getDTO() {
         return new GFilterValueDTO(0, value);
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof GDataFilterValue && Objects.equals(value, ((GDataFilterValue) o).value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
-    }
 }
