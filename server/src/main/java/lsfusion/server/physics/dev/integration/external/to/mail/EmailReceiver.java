@@ -320,9 +320,11 @@ public class EmailReceiver {
         return content;
     }
 
-    private Timestamp getSentDate(Message message) throws MessagingException {
-        Date sentDate = message.getSentDate();
-        return sentDate == null ? null : new Timestamp(sentDate.getTime());
+    private Timestamp getSentDate(Message message) {
+        return (Timestamp) BaseUtils.executeWithTimeout(() -> {
+            Date sentDate = message.getSentDate();
+            return sentDate == null ? null : new Timestamp(sentDate.getTime());
+        }, 60000);
     }
 
     private RawFileData getEMLByteArray (Message msg) throws IOException, MessagingException {
