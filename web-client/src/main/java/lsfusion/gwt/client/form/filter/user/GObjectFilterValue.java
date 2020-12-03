@@ -17,14 +17,4 @@ public class GObjectFilterValue extends GFilterValue {
     public GFilterValueDTO getDTO() {
         return new GFilterValueDTO(1, object.ID);
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof GObjectFilterValue && object.equals(((GObjectFilterValue) o).object);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(object);
-    }
 }

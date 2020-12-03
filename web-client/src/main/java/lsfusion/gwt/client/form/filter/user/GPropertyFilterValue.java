@@ -17,14 +17,4 @@ public class GPropertyFilterValue extends GFilterValue {
     public GFilterValueDTO getDTO() {
         return new GFilterValueDTO(2, property.ID);
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof GPropertyFilterValue && property.equals(((GPropertyFilterValue) o).property);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(property);
-    }
 }
