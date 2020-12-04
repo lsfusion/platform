@@ -82,8 +82,8 @@ public abstract class AbstractLogicsProviderImpl {
         try {
             return runRequest(connection, sessionObject -> sessionObject.getServerSettings(sessionInfo, contextPath, noCache));
         } catch (Throwable t) {
-            throw Throwables.propagate(t);
-//            return null;
+//            throw Throwables.propagate(t);
+            return null;
         }
     }
 }
