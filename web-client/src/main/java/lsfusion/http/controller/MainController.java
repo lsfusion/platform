@@ -76,8 +76,7 @@ public class MainController {
         }
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
-        model.addAttribute("disableRegistration", serverSettings.disableRegistration);
-
+        model.addAttribute("disableRegistration", getDisableRegistration(serverSettings));
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
@@ -226,6 +225,10 @@ public class MainController {
 
     private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {
         return logicsProvider.getServerSettings(request, noCache);
+    }
+
+    private boolean getDisableRegistration(ServerSettings serverSettings) {
+        return serverSettings != null && serverSettings.disableRegistration;
     }
 
     private String getTitle(ServerSettings serverSettings) {
