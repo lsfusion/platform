@@ -38,11 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static lsfusion.interop.session.ExternalUtils.getCharsetFromContentType;
@@ -213,9 +209,10 @@ public class MainController {
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request) {
         ServerSettings serverSettings = getServerSettings(request, false);
-        serverSettings.saveFiles(FileUtils.APP_PATH, externalResourcesParentPath);
 
-        model.addAttribute("filesUrls", serverSettings.getFilesUrls());
+        if(serverSettings != null)
+            serverSettings.saveFiles(FileUtils.APP_PATH, externalResourcesParentPath);
+        model.addAttribute("filesUrls", getFileUrls(serverSettings));
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));
@@ -229,6 +226,10 @@ public class MainController {
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {
         return serverSettings != null && serverSettings.disableRegistration;
+    }
+
+    private Set<String> getFileUrls(ServerSettings serverSettings) {
+        return serverSettings != null && serverSettings.filesUrls != null ? serverSettings.filesUrls : Collections.emptySet();
     }
 
     private String getTitle(ServerSettings serverSettings) {
