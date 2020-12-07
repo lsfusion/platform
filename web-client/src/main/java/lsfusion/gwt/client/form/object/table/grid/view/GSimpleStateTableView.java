@@ -3,9 +3,12 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
@@ -21,6 +24,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
+
 public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected final JavaScriptObject controller;
@@ -30,6 +35,29 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         this.controller = getController();
         getDrawElement().getStyle().setProperty("zIndex", "0"); // need this because views like leaflet and some others uses z-indexes and therefore dialogs for example are shown below layers
+
+        getElement().setTabIndex(0);
+        initSinkEvents(this);
+
+        getElement().setPropertyObject("groupObject", grid.groupObject);
+    }
+
+    @Override
+    public void onBrowserEvent(Event event) {
+        Element target = DataGrid.getTargetAndCheck(getElement(), event);
+        if(target == null)
+            return;
+        if(!form.previewEvent(target, event))
+            return;
+
+        super.onBrowserEvent(event);
+
+        form.onPropertyBrowserEvent(new EventHandler(event), null, getElement(),
+                handler -> {}, // no outer context
+                handler -> {}, // no edit
+                handler -> {}, // no outer context
+                handler -> {}, handler -> {} // no copy / paste for now
+        );
     }
 
     private NativeHashMap<String, Column> columnMap;
@@ -127,7 +155,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
         GGroupObjectValue key = toObject(object);
-        long requestIndex = changeGroupObject(key, rendered);
+
+        long requestIndex;
+        if(!GwtClientUtils.nullEquals(this.currentKey, key))
+            requestIndex = changeGroupObject(key, rendered);
+        else
+            requestIndex = -2; // we're not waiting for any response, just show popup as it is
 
         Widget recordView;
         if(elementClicked != null && (recordView = grid.recordView) != null) {

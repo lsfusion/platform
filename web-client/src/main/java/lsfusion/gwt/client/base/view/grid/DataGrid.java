@@ -221,8 +221,8 @@ public abstract class DataGrid<T> extends ResizableSimplePanel implements Focusa
         emptyTableWidgetContainer.setHeight("1px");
 
         getTableDataFocusElement().setTabIndex(0);
-
         initSinkEvents(this);
+
         addStyleName(style.dataGridWidget());
 
         MainFrame.addColorThemeChangeListener(this);
