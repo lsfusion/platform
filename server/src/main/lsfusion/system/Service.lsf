@@ -422,7 +422,7 @@ DESIGN settings {
 getServerSettings() {
     readResources('/web/.*');
     LOCAL jsonResourceFiles = JSONFILE ();
-    EXPORT FROM file = resourceFiles(STRING str), name = str WHERE resourceFiles(str) TO jsonResourceFiles;
+    EXPORT FROM file = resourceFiles(STRING str), name = substrFrom(str, 5) WHERE (endsWith(str, '.js') AND resourceFiles(str)) TO jsonResourceFiles;
 
     generateJnlpUrls();
     EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
