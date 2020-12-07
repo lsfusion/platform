@@ -1814,7 +1814,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void render(GPropertyDraw property, Element element, RenderContext renderContext) {
-        if(editContext != null && editContext.getRenderElement() == element) { // is edited
+        if(isEditedOrAsync(property, element)) {
             assert false;
             return;
         }
@@ -1822,10 +1822,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         property.getCellRenderer().renderStatic(element, renderContext);
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
-        if(editContext != null && editContext.getRenderElement() == element) // is edited
+        if(isEditedOrAsync(property, element))
             return;
 
         property.getCellRenderer().renderDynamic(element, value, updateContext);
+    }
+
+    public boolean isEditedOrAsync(GPropertyDraw property, Element element) {
+        return (editContext != null && editContext.getRenderElement() == element) || (property.drawAsync && asyncCount > 0);
     }
 
     public static void setBackgroundColor(Element element, String color) {
