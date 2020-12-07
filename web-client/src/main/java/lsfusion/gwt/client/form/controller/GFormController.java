@@ -1822,7 +1822,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         property.getCellRenderer().renderStatic(element, renderContext);
     }
     public void update(GPropertyDraw property, Element element, Object value, UpdateContext updateContext) {
-        if(editContext != null && editContext.getRenderElement() == element) // is edited
+        if((editContext != null && editContext.getRenderElement() == element) || (property.drawAsync && asyncCount > 0)) // is edited or async
             return;
 
         property.getCellRenderer().renderDynamic(element, value, updateContext);
