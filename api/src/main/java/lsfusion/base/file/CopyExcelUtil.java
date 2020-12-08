@@ -44,7 +44,7 @@ public final class CopyExcelUtil {
         Set<String> mergedRegions = new TreeSet<>();
         List<CellRangeAddress> sheetMergedRegions = sheet.getMergedRegions();
         int firstRowNum = sheet.getFirstRowNum();
-        if(firstRowNum > 0) {
+        if(firstRowNum >= 0) {
             for (int i = firstRowNum; i <= sheet.getLastRowNum(); i++) {
                 HSSFRow srcRow = sheet.getRow(i);
                 HSSFRow destRow = newSheet.createRow(i);
@@ -293,7 +293,10 @@ public final class CopyExcelUtil {
                 newCell.setCellType(CellType.BLANK);
                 break;
             case BOOLEAN:
-                newCell.setCellValue(oldCell.getBooleanCellValue());
+                Boolean value = getBooleanCellValue(oldCell);
+                if(value != null) {
+                    newCell.setCellValue(value);
+                }
                 break;
             case ERROR:
                 newCell.setCellErrorValue(oldCell.getErrorCellValue());
@@ -305,6 +308,12 @@ public final class CopyExcelUtil {
                 break;
         }
 
+    }
+
+    private static Boolean getBooleanCellValue(XSSFCell cell) {
+        //XSSFCell.getBooleanCellValue compares only with "1"
+        String rawValue = cell.getRawValue();
+        return rawValue != null ? (cell.getBooleanCellValue() || rawValue.equals("true")) : null;
     }
 
     private static void copyFreezePane(Sheet newSheet, Sheet sheet) {
