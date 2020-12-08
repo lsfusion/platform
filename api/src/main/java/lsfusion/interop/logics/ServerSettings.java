@@ -52,12 +52,10 @@ public class ServerSettings {
                     File outputFile = new File(externalResourcesAbsolutePath, pair.first);
                     if (!outputFile.exists()) {
                         outputFile.getParentFile().mkdirs();
-                        if (pair.first.matches(".*\\.\\w+")) {
-                            try (OutputStream out = new FileOutputStream(outputFile)) {
-                                out.write(pair.second.getBytes());
-                            }
-                            filesUrls.add(externalResourcesParentPath + pair.first);
+                        try (OutputStream out = new FileOutputStream(outputFile)) {
+                            out.write(pair.second.getBytes());
                         }
+                        filesUrls.add(externalResourcesParentPath + pair.first);
                     }
                 }
             } catch (IOException e) {
