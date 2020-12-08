@@ -67,19 +67,19 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     // when we don't want property value (it's content) to influence on layouting, and in particular flex - basis
     // so we use absolute positioning for that (and not width 100%, or writing to div itself)
-    public void setStatic(Panel panel, boolean isProperty) { // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
-        panel.add(this);
+    public void setStatic(ResizableMainPanel panel, boolean isProperty) { // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
+        panel.setMain(this);
         setupFillParent(getElement());
-        borderWidget = panel;
+        borderWidget = panel.getPanelWidget();
 
         setBaseSize(isProperty);
     }
-    public void setDynamic(Panel panel, boolean isProperty) {
-        panel.add(this);
+    public void setDynamic(ResizableMainPanel panel, boolean isProperty) {
+        panel.setMain(this);
         com.google.gwt.dom.client.Element element = getElement();
         element.getStyle().setWidth(100, Style.Unit.PCT);
         element.getStyle().setHeight(100, Style.Unit.PCT);
-        borderWidget = panel;
+        borderWidget = panel.getPanelWidget();
 
         setBaseSize(isProperty);
     }
