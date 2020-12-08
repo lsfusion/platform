@@ -21,7 +21,7 @@ import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.Column;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
@@ -275,6 +275,25 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             changeSimpleGroupObject: function (object, rendered, elementClicked) {
                 var jsObject = thisObj.@GSimpleStateTableView::fromObject(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(jsObject, rendered, elementClicked);
+            },
+            getGroupObjectBackgroundColor: function(object) {
+                var color = thisObj.@GStateTableView::getRowBackgroundColor(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
+                return color ? color.toString() : null;
+            },
+            getDisplayBackgroundColor: function (color, isCurrentKey) {
+                if (isCurrentKey) {
+                    if (color) {
+                        return @lsfusion.gwt.client.base.view.ColorUtils::mixColors(*)(color, @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBackgroundColor(*)(true))
+                    } else {
+                        return @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBackgroundColor(*)(false)
+                    }
+                } else {
+                    return color ? @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(color) : null
+                }
+            },
+            getGroupObjectForegroundColor: function(object) {
+                var color = thisObj.@GStateTableView::getRowForegroundColor(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));
+                return color ? color.toString() : null;
             }
         };
     }-*/;

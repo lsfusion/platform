@@ -24,7 +24,10 @@ import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
 
 // view with state, without incremental updates
 // flexpanel, since we need to add pagesize widget + attach it to handle events
@@ -48,6 +51,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<List<NativeHashMap<GGroupObjectValue, Object>>> lastAggrs = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, Object>> readOnlys = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, Object>> showIfs = new ArrayList<>();
+    protected NativeHashMap<GGroupObjectValue, Object> rowBackgroundValues = new NativeHashMap<>();
+    protected NativeHashMap<GGroupObjectValue, Object> rowForegroundValues = new NativeHashMap<>();
 
     protected boolean checkShowIf(int property, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, Object> propertyShowIfs = showIfs.get(property);
@@ -283,12 +288,20 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     @Override
     public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
-
+        rowBackgroundValues = values;
+    }
+    
+    public Object getRowBackgroundColor(GGroupObjectValue key) {
+        return rowBackgroundValues.get(key);
     }
 
     @Override
     public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
+        rowForegroundValues = values;
+    }
 
+    public Object getRowForegroundColor(GGroupObjectValue key) {
+        return rowForegroundValues.get(key);
     }
 
     @Override
