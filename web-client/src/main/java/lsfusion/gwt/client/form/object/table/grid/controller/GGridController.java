@@ -82,7 +82,7 @@ public class GGridController extends GAbstractTableController {
 
                 // we need to add recordview somewhere, to attach it (events, listeners, etc.)
                 ResizableComplexPanel virtualGridView = new ResizableComplexPanel();
-                virtualGridView.add(gridView);
+                virtualGridView.setMain(gridView);
                 setupFillParent(gridView.getElement());
 
                 // need to wrap recordView to setVisible false recordView's parent and not recordView itself (since it will be moved and shown by table view implementation)
