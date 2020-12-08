@@ -49,10 +49,9 @@ public class ServerSettings {
                 String externalResourcesAbsolutePath = appPath + "/" + externalResourcesParentPath;
                 FileUtils.deleteDirectory(new File(externalResourcesAbsolutePath));
                 for (Pair<String, RawFileData> pair : resourceFiles) {
-                    String folderPath = externalResourcesAbsolutePath + pair.first.split("/")[0];
                     File outputFile = new File(externalResourcesAbsolutePath, pair.first);
                     if (!outputFile.exists()) {
-                        new File(folderPath).mkdirs();
+                        outputFile.getParentFile().mkdirs();
                         try (OutputStream out = new FileOutputStream(outputFile)) {
                             out.write(pair.second.getBytes());
                         }
