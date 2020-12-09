@@ -7,6 +7,7 @@ import com.github.junrar.impl.FileVolumeManager;
 import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
 import com.sun.mail.imap.IMAPBodyPart;
+import com.sun.mail.imap.IMAPInputStream;
 import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.FolderClosedIOException;
 import com.sun.mail.util.MailSSLSocketFactory;
@@ -16,6 +17,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -27,6 +29,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.service.*;
+import org.apache.http.entity.ContentType;
 import org.apache.poi.hmef.Attachment;
 import org.apache.poi.hmef.HMEFMessage;
 
@@ -212,6 +215,7 @@ public class EmailReceiver {
         //options to increase downloading big attachments
         mailProps.put("mail.imaps.partialfetch", "true");
         mailProps.put("mail.imaps.fetchsize", "819200");
+        System.setProperty("mail.mime.base64.ignoreerrors", "true"); //ignore errors decoding base64
         if (!isPOP3) { //imaps
             MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
             socketFactory.setTrustAllHosts(true);
@@ -392,6 +396,8 @@ public class EmailReceiver {
                         attachments.putAll(unpack(byteArray, fileName, unpack));
                     } else if (content instanceof MimeMultipart) {
                         body = getMultipartBody(subjectEmail, (Multipart) content, unpack).message;
+                    } else if(content instanceof IMAPInputStream){
+                        body = parseIMAPInputStream(bp, (IMAPInputStream) content);
                     } else
                         body = String.valueOf(content);
                 } catch (IOException e) {
@@ -405,7 +411,7 @@ public class EmailReceiver {
     private Object getIMAPBodyPartContent(IMAPBodyPart bp) throws MessagingException, IOException {
         Object content = null;
         String encoding = bp.getEncoding();
-        if(encoding != null && (encoding.equals("8bit") || encoding.equals("quoted-printable"))) {
+        if(encoding != null) {
             content = MimeUtility.decode(bp.getInputStream(), encoding);
         }
         return content;
@@ -440,6 +446,25 @@ public class EmailReceiver {
             value = MimeUtility.decodeText(value);
         }
         return value;
+    }
+
+    private String parseIMAPInputStream(BodyPart bp, IMAPInputStream content) throws IOException, MessagingException {
+        String contentType = bp.getContentType();
+        if (contentType != null) {
+            ContentType ct = null;
+            try {
+                ct = ContentType.parse(contentType);
+            } catch (Exception ignored) {
+            }
+            if (ct != null) {
+                String mimeType = ct.getMimeType();
+                if (mimeType.equals("text/plain")) {
+                    byte[] bytes = IOUtils.readBytesFromStream(content);
+                    return new String(bytes, ct.getCharset());
+                }
+            }
+        }
+        return null;
     }
 
     private class MultipartBody {
