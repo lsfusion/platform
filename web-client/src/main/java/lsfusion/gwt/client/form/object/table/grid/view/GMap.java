@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.StyleElement;
@@ -172,7 +173,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 lines.add(createLine(map, route));
 
         if(markerCreated && !markers.isEmpty())
-            fitBounds(map, GwtSharedUtils.toArray(markers.values()));
+            Scheduler.get().scheduleDeferred(() -> fitBounds(map, GwtSharedUtils.toArray(markers.values())));
     }
 
     private boolean getReadOnly(GGroupObjectValue key, GroupMarker groupMarker) {
