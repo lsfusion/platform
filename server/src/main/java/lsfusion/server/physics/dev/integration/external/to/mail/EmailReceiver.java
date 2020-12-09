@@ -215,6 +215,7 @@ public class EmailReceiver {
         //options to increase downloading big attachments
         mailProps.put("mail.imaps.partialfetch", "true");
         mailProps.put("mail.imaps.fetchsize", "819200");
+        System.setProperty("mail.mime.base64.ignoreerrors", "true"); //ignore errors decoding base64
         if (!isPOP3) { //imaps
             MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
             socketFactory.setTrustAllHosts(true);
