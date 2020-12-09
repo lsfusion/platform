@@ -35,7 +35,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     private static class GroupMarker {
 
         public final String name;
-        public final String color;
+        public String color;
         public final Object line;
         public final String icon;
 
@@ -120,6 +120,12 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             GGroupObjectValue key = getKey(object);
 
             GroupMarker groupMarker = new GroupMarker(object);
+            if (groupMarker.color == null) {
+                Object rowBackgroundColor = getRowBackgroundColor(getKey(object));
+                if (rowBackgroundColor != null) {
+                    groupMarker.color = rowBackgroundColor.toString();
+                }
+            }
             groupMarker.isReadOnly = getReadOnly(key, groupMarker);
 
             GroupMarker oldGroupMarker = groupMarkers.put(key, groupMarker);
