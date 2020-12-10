@@ -271,9 +271,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getCurrentDay: function (propertyName) {
                 return thisObj.@GSimpleStateTableView::getPropertyValue(*)(propertyName);
-            },
-            highlightEvent: function (calendar, eventId) {
-                return thisObj.@GCalendar::highlightEvent(*)(calendar, eventId);
             }
         };
     }-*/;
