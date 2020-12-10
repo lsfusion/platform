@@ -65,15 +65,12 @@ public class GToolbarNavigatorView extends GNavigatorView {
         buttonStyle.setPaddingLeft(PADDING_H, Style.Unit.PX);
         buttonStyle.setPaddingRight(PADDING_H, Style.Unit.PX);
         
-        button.addMouseUpHandler(new MouseUpHandler() {
-            @Override
-            public void onMouseUp(MouseUpEvent event) {
-                TooltipManager.get().hideTooltip(null); // not sure if this is needed
+        button.addClickHandler(event -> {
+            TooltipManager.get().hideTooltip(null); // not sure if this is needed
 
-                selected = element;
-                navigatorController.update();
-                navigatorController.openElement(element, event.getNativeEvent());
-            }
+            selected = element;
+            navigatorController.update();
+            navigatorController.openElement(element, event.getNativeEvent());
         });
 
         TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
