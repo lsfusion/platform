@@ -25,4 +25,12 @@ public enum ListViewType {
     public boolean isPivot() {
         return this == PIVOT;
     }
+
+    public boolean isMap() {
+        return this == MAP;
+    }
+
+    public boolean isCalendar() {
+        return this == CALENDAR;
+    }
 }
