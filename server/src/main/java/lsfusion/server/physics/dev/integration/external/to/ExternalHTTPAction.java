@@ -148,7 +148,7 @@ public class ExternalHTTPAction extends ExternalAction {
                 }
                 context.getBL().LM.statusHttp.change(response.statusCode, context);
                 if (response.statusCode < 200 || response.statusCode >= 300) {
-                    throw new RuntimeException(response.statusText);
+                    throw new RuntimeException(response.statusCode + " " + response.statusText);
                 }
             } else {
                 throw new RuntimeException("connectionString not specified");
