@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class GCalendar extends GTippySimpleStateTableView {
 
@@ -70,8 +71,8 @@ public class GCalendar extends GTippySimpleStateTableView {
             nextDayThreshold: '01:00:00',
             eventOrder: 'start,index',
             eventChange: function (info) {
-                changeProperty(info, 'start', this.objects);
-                changeProperty(info, 'end', this.objects);
+                changeProperty(info, 'start');
+                changeProperty(info, 'end');
             },
             datesSet: function () {
                 var filterLeftBorder = parseCalendarDateElement(calendar.view.activeStart);
@@ -87,18 +88,18 @@ public class GCalendar extends GTippySimpleStateTableView {
         return calendar;
 
         function changeCurrentEvent(newEvent, elementClicked) {
-            controller.changeSimpleGroupObject(calendar.objects[newEvent.extendedProps.index], true, elementClicked); // we're rerendering current event below
-            @GCalendar::highlightEvent(*)(calendar, newEvent.id);
+            controller.changeSimpleGroupObject(newEvent.extendedProps.key, true, elementClicked); // we're rerendering current event below
+            @GCalendar::highlightEvent(*)(calendar, newEvent.extendedProps.key);
         }
 
-        function changeProperty(info, position, objects) {
+        function changeProperty(info, position) {
             var currentEvent = info.event;
-            var oldEvent = info.oldEvent;
-            if (currentEvent[position] !== null && currentEvent[position].getTime() !== oldEvent[position].getTime()) {
+            var oldEvent = info.oldEvent; // oldEvent[position] can be null due to property dateTo(dateTimeTo) can be null
+            if (currentEvent[position] !== null && oldEvent[position] !== null && currentEvent[position].getTime() !== oldEvent[position].getTime()) {
                 var propertyName = currentEvent.extendedProps[position + 'FieldName'];
                 var controllerFunction = propertyName.includes('dateTime') ? 'changeDateTimeProperty' : 'changeDateProperty';
                 var eventElement = parseCalendarDateElement(currentEvent[position]);
-                controller[controllerFunction](propertyName, objects[currentEvent.extendedProps.index], eventElement.year,
+                controller[controllerFunction](propertyName, info.event.extendedProps.key, eventElement.year,
                     eventElement.month, eventElement.day, eventElement.hour, eventElement.minute, eventElement.second);
             }
         }
@@ -124,10 +125,10 @@ public class GCalendar extends GTippySimpleStateTableView {
         public boolean editable;
         public boolean durationEditable;
         public final boolean allDay;
-        public final GGroupObjectValue id;
         public final String startFieldName;
         public final String endFieldName;
         public final int index;
+        public final GGroupObjectValue key;
 
         public Event(JavaScriptObject object, int index) {
             String endEventFieldName = calendarDateType.contains("From") ? calendarDateType.replace("From", "To") : null;
@@ -138,21 +139,23 @@ public class GCalendar extends GTippySimpleStateTableView {
             editable = isEditable(object, controller, calendarDateType, endEventFieldName);
             durationEditable = isDurationEditable(object, controller, endEventFieldName);
             allDay = calendarDateType.equals("date") || calendarDateType.equals("dateFrom");
-            id = getKey(object);
             startFieldName = calendarDateType;
             endFieldName = endEventFieldName;
             this.index = index;
+            this.key = getKey(object);
         }
     }
 
     private void updateEvents(JsArray<JavaScriptObject> list) {
         NativeHashMap<GGroupObjectValue, Event> oldEvents = new NativeHashMap<>();
         oldEvents.putAll(events);
-        List<Event> eventsToAdd = new ArrayList<>();
-        int updateCol = 0;
+
         boolean needFullUpdate = false;
+        List<Runnable> eventsToAdd = new ArrayList<>();
+        NativeHashMap<GGroupObjectValue, Consumer<JavaScriptObject>> eventsToUpdate = new NativeHashMap<>();
+
         for (int i = 0; i < list.length(); i++) {
-            if (updateCol > 10) {
+            if (eventsToAdd.size() + eventsToUpdate.size() > 10) {
                 needFullUpdate = true;
                 break;
             }
@@ -164,62 +167,70 @@ public class GCalendar extends GTippySimpleStateTableView {
             events.put(key, event);
 
             Event oldEvent = oldEvents.remove(key);
-            if (oldEvent == null) {
-                eventsToAdd.add(event);
-                updateCol++;
-            } else {
-                JavaScriptObject calendarEvent = getCalendarEventById(calendar, oldEvent.id);
-
-                if (oldEvent.title == null || !oldEvent.title.equals(event.title)) {
-                    updateCalendarProperty("title", event.title, calendarEvent);
-                    updateCol++;
-                }
-
-                if (!oldEvent.start.equals(event.start)) {
-                    updateStart(event.start, calendarEvent);
-                    updateCol++;
-                }
-
-                if (oldEvent.end != null && !oldEvent.end.equals(event.end)) {
-                    updateEnd(event.end, calendarEvent);
-                    updateCol++;
-                }
-
-                if (oldEvent.editable != event.editable) {
-                    updateCalendarProperty("editable", event.editable, calendarEvent);
-                    updateCol++;
-                }
-
-                if (oldEvent.durationEditable != event.durationEditable) {
-                    updateCalendarProperty("durationEditable", event.durationEditable, calendarEvent);
-                    updateCol++;
-                }
-
-                if (oldEvent.index != event.index) {
-                    updateCalendarExtendedProperty("index", event.index, calendarEvent);
-                    updateCol++;
-                }
-            }
+            if (oldEvent == null)
+                eventsToAdd.add(() -> addSingleCalendarEvent(calendar, getJsEvent(event)));
+            else
+                updateActionMap(eventsToUpdate, key, event, oldEvent);
         }
 
-        if (needFullUpdate) {
+        if (needFullUpdate || oldEvents.size() > 10) { // ??
             events.clear();
             for (int i = 0; i < list.length(); i++) {
                 JavaScriptObject object = list.get(i);
                 events.put(getKey(object), new Event(object, i));
             }
             setCalendarEvents(calendar, createCalendarEventsObject(events));
-        } else if (!eventsToAdd.isEmpty()) {
-            eventsToAdd.forEach(eventToAdd -> addSingleCalendarEvent(calendar, getJsEvent(eventToAdd)));
         } else {
-            oldEvents.foreachEntry((key, event) -> {
-                removeSingleCalendarEvent(calendar, key);
-                events.remove(key);
-            });
+            eventsToAdd.forEach(Runnable::run);
+            updateEvents(oldEvents, eventsToUpdate);
         }
 
-        setExtendedProp(calendar, list);
         highlightEvent(calendar, getCurrentKey());
+    }
+
+    private void updateEvents(NativeHashMap<GGroupObjectValue, Event> oldEvents, NativeHashMap<GGroupObjectValue, Consumer<JavaScriptObject>> eventsToUpdate) {
+        JsArray<JavaScriptObject> calendarEvents = getCalendarEvents(calendar);
+        for (int i = 0; i < calendarEvents.length(); i++) {
+            JavaScriptObject eventToUpdate = calendarEvents.get(i);
+            GGroupObjectValue eventKey = getCalendarEventKey(eventToUpdate);
+            Consumer<JavaScriptObject> updateAction = eventsToUpdate.get(eventKey);
+            if (updateAction != null)
+                updateAction.accept(eventToUpdate);
+            if (oldEvents.get(eventKey) != null)
+                removeSingleCalendarEvent(eventToUpdate);
+        }
+    }
+
+    private void updateActionMap(NativeHashMap<GGroupObjectValue, Consumer<JavaScriptObject>> eventsToUpdate, GGroupObjectValue key, Event event, Event oldEvent) {
+        Consumer<JavaScriptObject> updateAction = null;
+
+        if (oldEvent.title == null || !oldEvent.title.equals(event.title))
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarProperty("title", event.title, calendarEvent), null);
+
+        if (oldEvent.start != null && !oldEvent.start.equals(event.start))
+            updateAction = addUpdateAction(calendarEvent -> updateStart(event.start, calendarEvent), updateAction);
+
+        if (oldEvent.end != null && !oldEvent.end.equals(event.end))
+            updateAction = addUpdateAction(calendarEvent -> updateEnd(event.end, calendarEvent), updateAction);
+
+        if (oldEvent.editable != event.editable)
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarProperty("editable", event.editable, calendarEvent), updateAction);
+
+        if (oldEvent.durationEditable != event.durationEditable)
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarProperty("durationEditable", event.durationEditable, calendarEvent), updateAction);
+
+        if (oldEvent.index != event.index)
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("index", event.index, calendarEvent), updateAction);
+
+        if (updateAction != null)
+            eventsToUpdate.put(key, updateAction);
+    }
+
+    private Consumer<JavaScriptObject> addUpdateAction(Consumer<JavaScriptObject> action, Consumer<JavaScriptObject> updateAction) {
+        if (updateAction == null)
+            return action;
+        else
+            return updateAction.andThen(action);
     }
 
     private JsArray<JavaScriptObject> createCalendarEventsObject(NativeHashMap<GGroupObjectValue, Event> events){
@@ -228,9 +239,15 @@ public class GCalendar extends GTippySimpleStateTableView {
         return calendarEvents;
     }
 
-    protected native void removeSingleCalendarEvent(JavaScriptObject calendar, GGroupObjectValue eventId)/*-{
-        var event = calendar.getEventById(eventId);
-        if (event != null) // element can be null due to events with null-date not displayed after filtering
+    protected native JsArray<JavaScriptObject> getCalendarEvents(JavaScriptObject calendar)/*-{
+        return calendar.getEvents();
+    }-*/;
+
+    protected native GGroupObjectValue getCalendarEventKey(JavaScriptObject event)/*-{
+        return event.extendedProps.key;
+    }-*/;
+
+    protected native void removeSingleCalendarEvent(JavaScriptObject event)/*-{
             event.remove();
     }-*/;
 
@@ -239,12 +256,17 @@ public class GCalendar extends GTippySimpleStateTableView {
     }-*/;
 
     protected static native void highlightEvent(JavaScriptObject calendar, GGroupObjectValue id)/*-{
-        var oldEvent = calendar.currentEventId != null ? calendar.getEventById(calendar.currentEventId) : null;
-        if (oldEvent != null)
-            oldEvent.setProp('classNames', '');
-        var newEvent = calendar.getEventById(id);
-        if (newEvent != null)
-            newEvent.setProp('classNames', 'event-highlight');
+        var calendarEvents = calendar.getEvents();
+
+        for (var i = 0; i < calendarEvents.length; i++) {
+            var calendarEvent = calendarEvents[i];
+            var key = calendarEvent.extendedProps.key;
+            if (calendar.currentEventId != null && @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, calendar.currentEventId))
+                calendarEvent.setProp('classNames', '');
+
+            if (@lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, id))
+                calendarEvent.setProp('classNames', 'event-highlight');
+        }
         calendar.currentEventId = id;
     }-*/;
 
@@ -272,17 +294,13 @@ public class GCalendar extends GTippySimpleStateTableView {
         event.setEnd(end);
     }-*/;
 
-    protected native void setExtendedProp(JavaScriptObject calendar, JsArray<JavaScriptObject> list)/*-{
-        calendar.objects = list;
-    }-*/;
-
     private JavaScriptObject getJsEvent(Event event){
         return getEventAsJs(event.title, event.start, event.end, event.editable, event.durationEditable,
-                event.allDay, event.id, event.startFieldName, event.endFieldName, event.index);
+                event.allDay, event.key, event.startFieldName, event.endFieldName, event.index);
     }
 
     protected native JavaScriptObject getEventAsJs(String title, String start, String end, boolean editable, boolean durationEditable,
-                                                 boolean allDay, GGroupObjectValue id, String startFieldName, String endFieldName, int index)/*-{
+                                                 boolean allDay, GGroupObjectValue key, String startFieldName, String endFieldName, int index)/*-{
         return {
             title: title,
             start: start,
@@ -290,10 +308,10 @@ public class GCalendar extends GTippySimpleStateTableView {
             editable: editable,
             durationEditable: durationEditable,
             allDay: allDay,
-            id: id,
             startFieldName: startFieldName,
             endFieldName: endFieldName,
-            index: index
+            index: index,
+            key: key
         };
     }-*/;
 
