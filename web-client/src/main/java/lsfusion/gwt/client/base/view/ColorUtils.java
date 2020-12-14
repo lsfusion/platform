@@ -171,4 +171,15 @@ public class ColorUtils {
     public static String rgbToArgb(String rgb) {
         return rgb.replace("#", "FF");
     }
+    
+
+    public static String correctSB(String color, float saturation_factor, float brightness_factor) {
+        int rgb = toRGB(color);
+        float[] hsb = RGBtoHSB(getRed(rgb), getGreen(rgb), getBlue(rgb));
+        return toColorString(HSBtoRGB(
+                hsb[0], 
+                max(min(hsb[1] * saturation_factor, 1.0f), 0), 
+                max(min(hsb[2] * brightness_factor, 1.0f), 0))
+        );
+    }
 }
