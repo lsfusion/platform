@@ -12,7 +12,6 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
-import lsfusion.gwt.client.view.StyleDefaults;
 import org.vectomatic.dom.svg.OMSVGDocument;
 import org.vectomatic.dom.svg.OMSVGFEColorMatrixElement;
 import org.vectomatic.dom.svg.OMSVGFilterElement;
@@ -23,6 +22,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static java.lang.Math.pow;
+import static lsfusion.gwt.client.base.view.ColorUtils.correctSB;
+import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
+import static lsfusion.gwt.client.view.StyleDefaults.getFocusColor;
+import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundColor;
 
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
     // No need to support color themes here as we apply svg filters to the icon anyway.
@@ -146,15 +151,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 updateLatLng(marker, groupMarker.latitude, groupMarker.longitude, getLatLngs(groupMarker.polygon));
 
             if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color)))) {
-                String iconFilterStyle = createFilter(groupMarker.color);
-                if (iconFilterStyle == null) {
-                    iconFilterStyle = createFilter(StyleDefaults.getFocusColor(true));
-                }
-                updateIcon(marker, groupMarker.icon, iconFilterStyle);
+                updateIcon(marker, groupMarker.icon, getDisplayColorFilter(key));
             }
 
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color)))
-                updateColor(marker, groupMarker.color);
+                updateColor(marker, groupMarker.color, getDisplayClusterColor(groupMarker.color));
 
             if(!groupMarker.isReadOnly)
                 updateEditing(marker, isPoly);
@@ -217,7 +218,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             iconCreateFunction: function (cluster) {
                 var colors = [];
                 cluster.getAllChildMarkers().forEach(function (marker) {
-                    colors.push(marker.color ? marker.color : "var(--focus-color)");
+                    colors.push(marker.clusterColor);
                 });
                 var colorsSetArray = Array.from(new Set(colors));
 
@@ -307,7 +308,14 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         }
 
         marker.on('click', function (e) {
+            var oldKey = thisObject.@GMap::getCurrentKey()();
+            
             thisObject.@GMap::changeSimpleGroupObject(*)(key, false, marker); // we want "full rerender", at least for now
+            
+            if (oldKey !== key) {
+                thisObject.@GMap::updateIconFilter(*)(oldKey);
+                thisObject.@GMap::updateIconFilter(*)(key);
+            }
         });
 
 //        marker = marker.addTo(map);
@@ -315,6 +323,50 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         
         return marker;
     }-*/;
+    
+    protected void updateIconFilter(JavaScriptObject keyObject) {
+        GGroupObjectValue key = toObject(keyObject);
+        updateIcon(markers.get(key), groupMarkers.get(key).icon, getDisplayColorFilter(key));
+    }
+
+    protected String getDisplayColorFilter(GGroupObjectValue key) {
+        GroupMarker groupMarker = groupMarkers.get(key);
+        String color = groupMarker.color;
+        
+        if (color == null) {
+            if (groupMarker.icon == null) {
+                color = getFocusColor(true);
+                if (isCurrentKey(key)) {
+                    color = darken(mixColors(color, getFocusedCellBackgroundColor(true)));
+                }
+            } else if (isCurrentKey(key)) {
+                color = darken(getFocusedCellBackgroundColor(true));
+            }
+        } else {
+            if (isCurrentKey(key)) {
+                color = darken(mixColors(color, getFocusedCellBackgroundColor(true)), 2);
+            } else {
+                color = darken(color);
+            }
+        }
+        
+        return createFilter(color);
+    }
+
+    protected String getDisplayClusterColor(String color) {
+        return color == null ? getFocusColor(false) : darken(color);
+    }
+
+    protected String darken(String color) {
+        return darken(color, 1);
+    }
+    
+    protected String darken(String color, int times) {
+        if (color != null) {
+            return correctSB(color, (float) pow(1.8f, times), (float) pow(0.8f, times));
+        }
+        return null;
+    }
 
     protected native void removeMarker(JavaScriptObject marker, JavaScriptObject markerClusters)/*-{
         markerClusters.removeLayer(marker);
@@ -433,14 +485,15 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             iconUrl = L.Icon.Default.prototype._getIconUrl('icon'); 
         }
         var myIcon = L.divIcon({
-            html: "<img src=" + iconUrl + " alt=\"\" tabindex=\"0\">",
-            className: filterStyle ? filterStyle : ''
+            html: "<img class=\"" + (filterStyle ? filterStyle : "") + "\" src=" + iconUrl + " alt=\"\" tabindex=\"0\">",
+            className: ''
         });
         marker.setIcon(myIcon);
     }-*/;
 
-    protected native void updateColor(JavaScriptObject marker, String color)/*-{
+    protected native void updateColor(JavaScriptObject marker, String color, String clusterColor)/*-{
         marker.color = color;
+        marker.clusterColor = clusterColor;
     }-*/;
 
     protected native void updateEditing(JavaScriptObject marker, boolean poly)/*-{
