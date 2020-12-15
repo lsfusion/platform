@@ -298,7 +298,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                 //игнорируем double click по editable boolean
                 boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
                 if (!ignore) {
-                    form.processBinding(new MouseInputEvent(e), null, () -> groupObject);
+                    form.processBinding(new MouseInputEvent(e), null, () -> groupObject, property);
                 }
             }
         });

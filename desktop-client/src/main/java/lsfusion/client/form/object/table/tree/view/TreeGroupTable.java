@@ -262,7 +262,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                     //игнорируем double click по editable boolean
                     boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
                     if (!ignore)
-                        form.processBinding(new MouseInputEvent(e), null, () -> null);
+                        form.processBinding(new MouseInputEvent(e), null, () -> null, property);
                 }
             }
         });

@@ -48,6 +48,11 @@ public class PropertyPanelController {
             public boolean showing() {
                 return views.values().iterator().next().isShowing();
             }
+
+            @Override
+            public boolean panel() {
+                return !property.isList;
+            }
         });
 
         viewsPanel = new JComponentPanel(property.panelColumnVertical, Alignment.START);

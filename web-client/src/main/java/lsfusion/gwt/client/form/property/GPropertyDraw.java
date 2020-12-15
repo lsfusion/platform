@@ -63,7 +63,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String columnsName;
     public ArrayList<GGroupObject> columnGroupObjects;
 
-    public boolean grid;
+    public boolean isList;
 
     public GType baseType;
     public String pattern;

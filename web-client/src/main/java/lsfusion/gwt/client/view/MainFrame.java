@@ -59,6 +59,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.IGNORE_DBLCLICK_CHECK;
+
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint, ServerMessageProvider {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -178,11 +180,22 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 beforeLastClickedTarget = lastClickedTarget;
                 lastClickedTarget = target;
             }
-        if(GMouseStroke.isDblClickEvent(event)) {
+        if(GMouseStroke.isDblClickEvent(event) && !hasIgnoreDblClickCheck(lastClickedTarget)) {
             if(beforeLastClickedTarget != null && lastClickedTarget != null && target == lastClickedTarget && beforeLastClickedTarget != lastClickedTarget)
                 return false;
         }
         return true;
+    }
+
+    //lastClickedTarget and beforeLastClickedTarget can be not equal if we change element at first click
+    private static boolean hasIgnoreDblClickCheck(Element element) {
+        while (element != null) {
+            if (element.getPropertyObject(IGNORE_DBLCLICK_CHECK) != null) {
+                return true;
+            }
+            element = element.getParentElement();
+        }
+        return false;
     }
 
     public void initializeFrame() {

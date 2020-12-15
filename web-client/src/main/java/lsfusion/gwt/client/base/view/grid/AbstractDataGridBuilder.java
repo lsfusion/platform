@@ -32,12 +32,14 @@ public abstract class AbstractDataGridBuilder<T> {
     /**
      * The attribute used to indicate that an element contains a cell.
      */
-    private static final String COLUMN_ATTRIBUTE = "__gwt_column";
+    public static final String COLUMN_ATTRIBUTE = "__gwt_column";
 
     /**
      * The attribute used to specify the logical row index.
      */
     private static final String ROW_ATTRIBUTE = "__gwt_row";
+
+    public static final String IGNORE_DBLCLICK_CHECK = "__ignore_dblclick_check";
 
     protected final DataGrid<T> cellTable;
 
@@ -145,6 +147,16 @@ public abstract class AbstractDataGridBuilder<T> {
 
     public final Column<T, ?> getColumn(Element elem) {
         return (Column<T, ?>) elem.getPropertyObject(COLUMN_ATTRIBUTE);
+    }
+
+    public static Element getColumnAttributeParent(Element element) {
+        while (element != null) {
+            if (element.getPropertyObject(COLUMN_ATTRIBUTE) != null) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
     }
 
     protected final <C> void updateCell(TableCellElement cellParent, Cell cell, Column<T, C> column) {

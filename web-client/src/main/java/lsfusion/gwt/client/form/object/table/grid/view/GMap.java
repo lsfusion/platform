@@ -315,7 +315,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if (oldKey !== key) {
                 thisObject.@GMap::updateIconFilter(*)(oldKey);
                 thisObject.@GMap::updateIconFilter(*)(key);
+                //we change icon at first click and should process dblclick
+                marker._icon[@lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::IGNORE_DBLCLICK_CHECK] = "true";
             }
+
+            marker._icon[@lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE] = "true";
         });
 
 //        marker = marker.addTo(map);
