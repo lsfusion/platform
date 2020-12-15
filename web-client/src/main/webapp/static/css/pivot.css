@@ -14,13 +14,22 @@
 }
 
 .pvtUiWrapperDiv {
-    height: 100%;
-    width: 100%;
+    /* Since .pivotTable has flex-basis: auto, we can't use height: 100% here.
+    Even though Chrome and Firefox allows this, Safari doesn't.
+    Maybe flex-basis should be propagated to .pivotTable if we want to see scrollbar. */
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .pvtUiContainer {
-    height: 100%;
-    width: 100%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .pvtUnusedCellDivWrapper {
@@ -31,12 +40,16 @@
 
 .pvtUiCellVDiv {
     height: 100%;
-    overflow: hidden auto;
+    /*overflow: hidden auto;  Multiple keyword syntax is not supported in Safari */
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .pvtUiCellHDiv {
     width: 100%;
-    overflow: auto hidden;
+    /*overflow: auto hidden; Multiple keyword syntax is not supported in Safari */
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .pvtUnusedCellDiv {
@@ -192,7 +205,7 @@ table.pvtTable tbody tr td {
 }
 
 .pvtUiCell > div:not(.pvtUnusedCellDivWrapper), .pvtUnusedCellDivWrapper > div {
-    padding: 4px;
+    padding: 4px 7px 4px 4px;
 }
 
 .pvtAxisContainer li, 
