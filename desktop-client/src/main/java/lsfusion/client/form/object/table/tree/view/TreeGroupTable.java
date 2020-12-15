@@ -262,7 +262,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                     //игнорируем double click по editable boolean
                     boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
                     if (!ignore)
-                        form.processBinding(new MouseInputEvent(e), null, () -> null, property);
+                        form.processBinding(new MouseInputEvent(e), null, () -> null);
                 }
             }
         });
@@ -348,7 +348,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     private ClientFormController.Binding getEnterBinding(boolean shiftPressed) {
-        ClientFormController.Binding binding = new ClientFormController.Binding(BaseUtils.last(treeGroup.groups), -100) {
+        ClientFormController.Binding binding = new ClientFormController.Binding(BaseUtils.last(treeGroup.groups), -100, false) {
             @Override
             public boolean pressed(KeyEvent ke) {
                 tabAction(!shiftPressed);

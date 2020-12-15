@@ -610,7 +610,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     int column = getPropertyIndex(property, null);
                     if(column >= 0 && getSelectedRow() >= 0)
                         onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
-                }, GGridTable.this));
+                }, GGridTable.this, false));
 
                 this.columnKeys.put(property, columnKeys);
 

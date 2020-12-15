@@ -180,22 +180,16 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 beforeLastClickedTarget = lastClickedTarget;
                 lastClickedTarget = target;
             }
-        if(GMouseStroke.isDblClickEvent(event) && !hasIgnoreDblClickCheck(lastClickedTarget)) {
-            if(beforeLastClickedTarget != null && lastClickedTarget != null && target == lastClickedTarget && beforeLastClickedTarget != lastClickedTarget)
+        if(GMouseStroke.isDblClickEvent(event)) {
+            if(beforeLastClickedTarget != null && lastClickedTarget != null && target == lastClickedTarget && beforeLastClickedTarget != lastClickedTarget && noIgnoreDblClickCheck(lastClickedTarget))
                 return false;
         }
         return true;
     }
 
     //lastClickedTarget and beforeLastClickedTarget can be not equal if we change element at first click
-    private static boolean hasIgnoreDblClickCheck(Element element) {
-        while (element != null) {
-            if (element.getPropertyObject(IGNORE_DBLCLICK_CHECK) != null) {
-                return true;
-            }
-            element = element.getParentElement();
-        }
-        return false;
+    private static boolean noIgnoreDblClickCheck(Element element) {
+        return GwtClientUtils.getParentWithAttribute(element, IGNORE_DBLCLICK_CHECK) == null;
     }
 
     public void initializeFrame() {

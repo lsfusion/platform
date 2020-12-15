@@ -66,7 +66,7 @@ public class GPropertyPanelController {
                         newRenderer.setReadOnly(property.isReadOnly());
                         Widget component = newRenderer.getComponent();
                         renderersPanel.addFill(component);
-                        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component);
+                        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component, true);
 
                         renderer = newRenderer;
                     }

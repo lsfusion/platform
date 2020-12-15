@@ -1597,24 +1597,26 @@ public class ClientFormController implements AsyncListener {
         public BindingMode bindEditing;
         public BindingMode bindShowing;
         public BindingMode bindPanel;
+        public boolean panel;
         public Function<EventObject, Boolean> isSuitable;
 
         public Binding(ClientGroupObject groupObject, int priority) {
-            this(groupObject, priority, null);
+            this(groupObject, priority, true);
         }
 
-        public Binding(ClientGroupObject groupObject, int priority, Function<EventObject, Boolean> isSuitable) {
+        public Binding(ClientGroupObject groupObject, int priority, boolean panel) {
+            this(groupObject, priority, panel, null);
+        }
+
+        public Binding(ClientGroupObject groupObject, int priority, boolean panel, Function<EventObject, Boolean> isSuitable) {
             this.groupObject = groupObject;
             this.priority = priority;
+            this.panel = panel;
             this.isSuitable = isSuitable;
         }
 
         public abstract boolean pressed(KeyEvent ke);
         public abstract boolean showing();
-
-        public boolean panel() {
-            return true;
-        }
     }
 
     public void addBinding(InputEvent ks, Binding binding) {
@@ -1658,7 +1660,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public boolean processBinding(InputEvent ks, KeyEvent ke, Supplier<ClientGroupObject> groupObjectSupplier, ClientPropertyDraw property) {
+    public boolean processBinding(InputEvent ks, KeyEvent ke, Supplier<ClientGroupObject> groupObjectSupplier) {
         List<Binding> keyBinding = bindings.getOrDefault(ks, keySetBindings);
         if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
             if(ks instanceof MouseInputEvent) // not sure that it should be done only for mouse events, but it's been working like this for a long time
@@ -1765,9 +1767,9 @@ public class ClientFormController implements AsyncListener {
             case AUTO:
                 return true;
             case ONLY:
-                return binding.panel();
+                return binding.panel;
             case NO:
-                return !binding.panel();
+                return !binding.panel;
         }
         return true;
     }

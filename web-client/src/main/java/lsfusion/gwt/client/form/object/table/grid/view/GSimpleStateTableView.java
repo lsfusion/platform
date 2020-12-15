@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.getColumnAttributeParent;
+import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
 import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
 
 public abstract class GSimpleStateTableView<P> extends GStateTableView {
@@ -53,7 +53,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         super.onBrowserEvent(event);
 
-        form.onPropertyBrowserEvent(new EventHandler(event), getColumnAttributeParent(target), getElement(),
+        form.onPropertyBrowserEvent(new EventHandler(event), GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE), getElement(),
                 handler -> {}, // no outer context
                 handler -> {}, // no edit
                 handler -> {}, // no outer context
